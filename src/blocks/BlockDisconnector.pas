@@ -5,7 +5,7 @@ unit BlockDisconnector;
 interface
 
 uses IniFiles, Block, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
-     IdContext, TOblRizeni, TechnologieRCS;
+     IdContext, Area, TechnologieRCS;
 
 type
  TBlkDiscBasicState = (disabled = -5, not_selected = 0, mounting = 1, active = 2);
@@ -66,13 +66,13 @@ type
     //----- Disconnector specific functions -----
 
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton;
-                         rights: TORCOntrolRights; params: string = ''); override;
+                         rights: TAreaRights; params: string = ''); override;
     function PanelStateString(): string; override;
 
     function GetSettings(): TBlkDiscSettings;
     procedure SetSettings(data: TBlkDiscSettings);
 
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
     property fullState: TBlkDiscState read RozpStav;
@@ -107,7 +107,7 @@ begin
 
  Self.RozpSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
  Self.LoadORs(ini_rel, 'R').Free();
- PushRCStoOR(Self.m_stations, Self.RozpSettings.RCSAddrs);
+ PushRCSToArea(Self.m_areas, Self.RozpSettings.RCSAddrs);
 
  Self.RozpStav.note := ini_stat.ReadString(section, 'stit', '');
 end;
@@ -207,14 +207,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkDisconnector.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+procedure TBlkDisconnector.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  case (Button) of
-   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
    ENTER: begin
      case (Self.state) of
-       TBlkDiscBasicState.disabled: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+       TBlkDiscBasicState.disabled: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
        TBlkDiscBasicState.not_selected: Self.Mount();
        TBlkDiscBasicState.mounting: Self.Activate();
        TBlkDiscBasicState.active: Self.Prolong();
@@ -232,7 +232,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkDisconnector.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkDisconnector.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
  Result := inherited;
  if (Self.state = TBlkDiscBasicState.active) then

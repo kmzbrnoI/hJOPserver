@@ -5,7 +5,7 @@ unit BlockAC;
 interface
 
 uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
-     Generics.Collections, TOblRizeni, Graphics;
+     Generics.Collections, Area, Graphics;
 
 type
 
@@ -59,7 +59,7 @@ type
     procedure MenuPOKRACClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuSTAVClick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure PanelShowState(pnl: TIdContext; OblR: TOR);
+    procedure PanelShowState(pnl: TIdContext; area: TArea);
     procedure PanelSTAVClosed(Sender: TIdContext; success: Boolean);
 
   public
@@ -97,9 +97,9 @@ type
 
     // GUI:
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton;
-                         rights: TORCOntrolRights; params: string = ''); override;
+                         rights: TAreaRights; params: string = ''); override;
     function PanelStateString(): string; override;
 
  end;
@@ -188,7 +188,7 @@ begin
    Self.Start();
  except
    on E: Exception do
-     ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
+     ORTCPServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
  end;
 end;
 
@@ -198,7 +198,7 @@ begin
    Self.Stop();
  except
    on E: Exception do
-     ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
+     ORTCPServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
  end;
 end;
 
@@ -208,7 +208,7 @@ begin
    Self.Pause();
  except
    on E: Exception do
-     ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
+     ORTCPServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
  end;
 end;
 
@@ -216,7 +216,7 @@ procedure TBlkAC.MenuPOKRACClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (not Self.paused) then
   begin
-   ORTCPServer.BottomError(SenderPnl, 'AC není v režimu pauza!', TOR(SenderOR).ShortName, 'AC');
+   ORTCPServer.BottomError(SenderPnl, 'AC není v režimu pauza!', TArea(SenderOR).shortName, 'AC');
    Exit();
   end;
 
@@ -224,18 +224,18 @@ begin
    Self.Start();
  except
    on E: Exception do
-     ORTCPServer.BottomError(SenderPnl, E.Message, TOR(SenderOR).ShortName, 'AC');
+     ORTCPServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
  end;
 end;
 
 procedure TBlkAC.MenuSTAVClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- Self.PanelShowState(SenderPnl, SenderOR as TOR);
+ Self.PanelShowState(SenderPnl, SenderOR as TArea);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkAC.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkAC.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
  Result := inherited;
 
@@ -255,10 +255,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkAC.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton;
-                            rights: TORCOntrolRights; params: string = '');
+                            rights: TAreaRights; params: string = '');
 begin
  if (Self.enabled) then
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -393,7 +393,7 @@ end;
 
 procedure TBlkAC.ClientParse(Sender: TIdContext; parsed: TStrings);
 var color: TColor;
-    oblr: TOR;
+    area: TArea;
     panel: TIdContext;
 begin
  if (parsed.Count < 4) then Exit();
@@ -435,8 +435,8 @@ begin
      Self.SetFgColor(color);
  end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 7) and (UpperCase(parsed[4]) = 'ERROR')) then begin
    if (UpperCase(parsed[5]) = 'DISPBOTTOM') then
-     for oblr in Self.m_stations do
-       oblr.BroadcastBottomError(parsed[6], 'AC', TORControlRights.write, Self.name);
+     for area in Self.m_areas do
+       area.BroadcastBottomError(parsed[6], 'AC', TAreaRights.write, Self.name);
  end;
 end;
 
@@ -493,27 +493,27 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkAC.PanelShowState(pnl: TIdContext; OblR: TOR);
-var podm: TList<TPSPodminka>;
+procedure TBlkAC.PanelShowState(pnl: TIdContext; area: TArea);
+var podm: TList<TConfSeqItem>;
     str: string;
 begin
- podm := TList<TPSPodminka>.Create();
+ podm := TList<TConfSeqItem>.Create();
  if (Self.clientConnected) then
-   podm.Add(TOR.GetPSPodminka('Klient: pøipojen', ''))
+   podm.Add(TArea.GetPSPodminka('Klient: pøipojen', ''))
  else
-   podm.Add(TOR.GetPSPodminka('Klient: nepøipojen', ''));
+   podm.Add(TArea.GetPSPodminka('Klient: nepøipojen', ''));
  case (Self.acState) of
-   TACState.stopped: podm.Add(TOR.GetPSPodminka('AC: zastaven', ''));
-   TACState.running: podm.Add(TOR.GetPSPodminka('AC: bìží', ''));
-   TACState.paused: podm.Add(TOR.GetPSPodminka('AC: pozastaven', ''))
+   TACState.stopped: podm.Add(TArea.GetPSPodminka('AC: zastaven', ''));
+   TACState.running: podm.Add(TArea.GetPSPodminka('AC: bìží', ''));
+   TACState.paused: podm.Add(TArea.GetPSPodminka('AC: pozastaven', ''))
  end;
 
  for str in Self.m_state.lines do
-   podm.Add(TOR.GetPSPodminka(str, ''));
+   podm.Add(TArea.GetPSPodminka(str, ''));
 
  if (not Self.m_state.panelsShowingState.Contains(pnl)) then
    Self.m_state.panelsShowingState.Add(pnl);
- ORTCPServer.PotvrOrInfo(pnl, 'IS', Self.PanelSTAVClosed, OblR, 'Zobrazení stavu AC',
+ ORTCPServer.PotvrOrInfo(pnl, 'IS', Self.PanelSTAVClosed, area, 'Zobrazení stavu AC',
                          TBlocks.GetBlksList(Self), podm)
 end;
 

@@ -1,4 +1,4 @@
-unit THVDatabase;
+﻿unit THVDatabase;
 
 {
   Trida THVDb je databaze hnacich vozidel.
@@ -70,7 +70,7 @@ type
      procedure SaveData(const dirname: string);
      procedure SaveState(const statefn: string);
 
-     function Add(data: THVData; addr: Word; StanovisteA: THVStanoviste; OblR: TObject): THV; overload;
+     function Add(data: THVData; addr: Word; StanovisteA: THVStanoviste; area: TObject): THV; overload;
      function Add(panel_str: string; SenderOR: TObject): THV; overload;
      procedure Remove(addr: Word);
 
@@ -107,7 +107,7 @@ var
 
 implementation
 
-uses fMain, DataHV, TOblRizeni, appEv, Trakce, TechnologieTrakce;
+uses fMain, DataHV, Area, appEv, Trakce, TechnologieTrakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -279,7 +279,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THVDb.Add(data: THVData; addr: Word; StanovisteA: THVStanoviste; OblR: TObject): THV;
+function THVDb.Add(data: THVData; addr: Word; StanovisteA: THVStanoviste; area: TObject): THV;
 var i, index: Integer;
     stav: THVStav;
 begin
@@ -293,7 +293,7 @@ begin
  stav.StanovisteA := StanovisteA;
  stav.traveled_forward := 0;
  stav.traveled_backward := 0;
- stav.stanice := (OblR as TOR);
+ stav.stanice := (area as TArea);
 
  stav.train := -1;
  stav.ruc := false;
@@ -341,7 +341,7 @@ var HV: THV;
     index, i: Integer;
 begin
  try
-   HV := THV.Create(panel_str, (SenderOR as TOR));
+   HV := THV.Create(panel_str, (SenderOR as TArea));
  except
    on e: Exception do
     begin

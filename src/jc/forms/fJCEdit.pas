@@ -109,7 +109,7 @@ type
     function TurnoutIndex(id: Integer): Integer;
     function IsAnyTurnoutMinus(): Boolean;
 
-    procedure MakeObls(var obls: TArStr);
+    procedure MakeObls(var areas: TArStr);
 
   public
     procedure EditJC(JCIndex: Integer);
@@ -757,15 +757,15 @@ begin
 end;
 
 procedure TF_JCEdit.CHB_TratClick(Sender: TObject);
-var obls: TArStr;
+var areas: TArStr;
 begin
  Self.CB_TratBlok.Enabled := Self.CHB_Trat.Checked;
  Self.CB_TratSmer.Enabled := Self.CHB_Trat.Checked;
 
  if (Self.CHB_Trat.Checked) then
   begin
-   Self.MakeObls(obls);
-   Blocks.FillCB(Self.CB_TratBlok, @Self.CB_TratPolozky, nil, obls, btRailway, Self.JCData.railwayId);
+   Self.MakeObls(areas);
+   Blocks.FillCB(Self.CB_TratBlok, @Self.CB_TratPolozky, nil, areas, btRailway, Self.JCData.railwayId);
    Self.CB_TratSmer.ItemIndex := Integer(Self.JCData.railwayDir)-1;
   end else begin
    Self.CB_TratBlok.ItemIndex := -1;
@@ -773,7 +773,7 @@ begin
   end;
 end;
 
-procedure TF_JCEdit.MakeObls(var obls: TArStr);
+procedure TF_JCEdit.MakeObls(var areas: TArStr);
 var Blk: TBlk;
     i: Integer;
 begin
@@ -782,9 +782,9 @@ begin
  if (Blk = nil) then Exit();
  if (Blk.typ <> btSignal) then Exit();
 
- SetLength(obls, (Blk as TBlkSignal).stations.Count);
- for i := 0 to (Blk as TBlkSignal).stations.Count-1 do
-  obls[i] := (Blk as TBlkSignal).stations[i].id;
+ SetLength(areas, (Blk as TBlkSignal).areas.Count);
+ for i := 0 to (Blk as TBlkSignal).areas.Count-1 do
+  areas[i] := (Blk as TBlkSignal).areas[i].id;
 end;
 
 procedure TF_JCEdit.UpdateJCName();
@@ -797,8 +797,8 @@ begin
 end;
 
 procedure TF_JCEdit.UpdateNextSignal();
-var vypustit: TArI;
-    obls: TArStr;
+var ignore: TArI;
+    areas: TArStr;
     blk: TBlk;
     i: Integer;
     navestidlo: TBlkSignal;
@@ -818,9 +818,9 @@ begin
  Self.CB_Dalsi_Nav.Enabled := true;
  Blocks.GetBlkByID(JCData.signalId, TBlk(navestidlo));
 
- SetLength(vypustit, 1);
- vypustit[0] := JCData.signalId;
- Self.MakeObls(obls);
+ SetLength(ignore, 1);
+ ignore[0] := JCData.signalId;
+ Self.MakeObls(areas);
 
  if (Self.m_tracks.Count > 0) then
   begin
@@ -857,7 +857,7 @@ begin
       end;
     end;
   end else begin
-   Blocks.FillCB(CB_Dalsi_Nav, @CB_DalsiNavPolozky, @vypustit, obls, btSignal, JCData.nextSignalId);
+   Blocks.FillCB(CB_Dalsi_Nav, @CB_DalsiNavPolozky, @ignore, areas, btSignal, JCData.nextSignalId);
    Self.CB_Dalsi_Nav.Items.Insert(0, 'Žádné návěstidlo');
    Self.CB_Dalsi_Nav.Items.Insert(1, 'Trať');
   end;
@@ -902,7 +902,7 @@ end;
 
 procedure TF_JCEdit.FillTurnouts();
 var i: Integer;
-    obls: TArStr;
+    areas: TArStr;
     zaver: TJCTurnoutZav;
     LI: TListItem;
 begin
@@ -921,8 +921,8 @@ begin
    end;
   end;
 
- Self.MakeObls(obls);
- Blocks.FillCB(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, nil, obls, btTurnout);
+ Self.MakeObls(areas);
+ Blocks.FillCB(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, nil, areas, btTurnout);
 end;
 
 function TF_JCEdit.TurnoutIndex(id: Integer): Integer;
@@ -937,7 +937,7 @@ end;
 procedure TF_JCEdit.FillTracks();
 var i: Integer;
     LI: TListItem;
-    obls: TArStr;
+    areas: TArStr;
 begin
  Self.LV_Useky.Clear();
  for i := 0 to Self.m_tracks.Count-1 do
@@ -947,8 +947,8 @@ begin
    LI.SubItems.Add(Blocks.GetBlkName(Self.m_tracks[i]));
   end;
 
- Self.MakeObls(obls);
- Blocks.FillCB(CB_NewUsek, @CB_NewUsekPolozky, nil, obls, btTrack, -1, btRT);
+ Self.MakeObls(areas);
+ Blocks.FillCB(CB_NewUsek, @CB_NewUsekPolozky, nil, areas, btTrack, -1, btRT);
 end;
 
 function TF_JCEdit.IsAnyTurnoutMinus(): Boolean;

@@ -72,7 +72,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, Block, TOblRizeni;
+uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, Block, Area;
 
 {$R *.dfm}
 
@@ -132,7 +132,7 @@ var glob: TBlkSettings;
     settings: TBlkRailwaySettings;
     id: Integer;
     LI: TListItem;
-    oblr: TOR;
+    area: TArea;
  begin
   glob := Self.railway.GetGlobalSettings();
   Self.E_Trat_Name.Text := glob.name;
@@ -141,14 +141,14 @@ var glob: TBlkSettings;
   glob := Self.linkerA.GetGlobalSettings();
   Self.E_UA_name.Text := glob.name;
   Self.SE_UA_id.Value := glob.id;
-  for oblr in Self.linkerA.stations do
-    Self.LB_UA_St.Items.Add(oblr.Name);
+  for area in Self.linkerA.areas do
+    Self.LB_UA_St.Items.Add(area.name);
 
   glob := Self.linkerB.GetGlobalSettings();
   Self.E_UB_name.Text := glob.name;
   Self.SE_UB_id.Value := glob.id;
-  for oblr in Self.linkerB.stations do
-    Self.LB_UB_St.Items.Add(oblr.Name);
+  for area in Self.linkerB.areas do
+    Self.LB_UB_St.Items.Add(area.name);
 
   settings := Self.railway.GetSettings();
 
@@ -174,7 +174,7 @@ var glob: TBlkSettings;
 
 procedure TF_BlkRailway.FillCBNewTratBlok();
 var trackIgnore: TArI;
-    obls: TArStr;
+    areas: TArStr;
     i: Integer;
 begin
  SetLength(trackIgnore, Self.LV_Useky.Items.Count);
@@ -183,14 +183,14 @@ begin
 
  if ((Self.linkerA <> nil) and (Self.linkerB <> nil)) then
   begin
-   SetLength(obls, Self.linkerA.stations.Count + Self.linkerB.stations.Count);
-   for i := 0 to Self.linkerA.stations.Count-1 do
-     obls[i] := Self.linkerA.stations[i].id;
-   for i := 0 to Self.linkerB.stations.Count-1 do
-     obls[i+Self.linkerA.stations.Count] := Self.linkerB.stations[i].id;
+   SetLength(areas, Self.linkerA.areas.Count + Self.linkerB.areas.Count);
+   for i := 0 to Self.linkerA.areas.Count-1 do
+     areas[i] := Self.linkerA.areas[i].id;
+   for i := 0 to Self.linkerB.areas.Count-1 do
+     areas[i+Self.linkerA.areas.Count] := Self.linkerB.areas[i].id;
   end;
 
- Blocks.FillCB(Self.CB_NewTratBlok, @Self.CB_NewTratBlokData, @trackIgnore, obls, btRT, -1);
+ Blocks.FillCB(Self.CB_NewTratBlok, @Self.CB_NewTratBlokData, @trackIgnore, areas, btRT, -1);
 end;
 
 procedure TF_BlkRailway.CommonOpenForm();

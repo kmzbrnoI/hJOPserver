@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
-     IdContext, Generics.Collections, JsonDataObjects, TOblRizeni, Train,
+     IdContext, Generics.Collections, JsonDataObjects, Area, Train,
      stanicniHlaseni, changeEvent, predvidanyOdjezd, TechnologieRCS;
 
 type
@@ -156,7 +156,7 @@ type
     function GetTrainIS(): Integer;
     function GetTrainS(): TTrain;
 
-    procedure ShowProperMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORControlRights; params: string);
+    procedure ShowProperMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; params: string);
     function CanTrainSpeedInsert(index: Integer): Boolean;
     function IsStujForTrain(train: TTrain): Boolean;
     function RealBoosterShortCircuit(): TBoosterSignal;
@@ -264,8 +264,8 @@ type
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
-    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
     procedure POdjChanged(trainId: Integer; var podj: TPOdj);
     function GetTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer): string;
     function PanelStateString(): string; override;
@@ -401,7 +401,7 @@ begin
    strs.Free();
  end;
 
- PushRCSToOR(Self.m_stations, Self.m_settings.RCSAddrs);
+ PushRCSToArea(Self.m_areas, Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkTrack.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -495,13 +495,13 @@ begin
 end;
 
 procedure TBlkTrack.Disable();
-var oblr: TOR;
+var area: TArea;
 begin
  inherited;
 
  if (Self.m_state.shortCircuit = TBoosterSignal.error) then
-   for oblr in Self.stations do
-     oblr.ZKratBlkCnt := oblr.ZKratBlkCnt - 1;
+   for area in Self.areas do
+     area.shortCircBlkCnt := area.shortCircBlkCnt - 1;
 
  Self.m_state.occupied := disabled;
  Self.m_state.occupiedOld := disabled;
@@ -540,7 +540,7 @@ procedure TBlkTrack.Update();
 var i, train: Integer;
     state: TRCSInputState;
     trackState: TTrackState;
-    oblr: TOR;
+    area: TArea;
 begin
  inherited Update();
 
@@ -616,8 +616,8 @@ begin
 
      // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
      if ((Self.typ = btRT) or (Self.spnl.stationTrack)) then
-       for oblr in Self.stations do
-         oblr.BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.name, 'TECHNOLOGIE');
+       for area in Self.areas do
+         area.BlkWriteError(Self, 'Ztráta soupravy v úseku '+Self.name, 'TECHNOLOGIE');
      if (Self.m_state.zaver <> TZaver.no) then Self.m_state.Zaver := TZaver.nouz;
     end;//if train_vypadek_time > 3
   end;//if train_vypadek
@@ -681,19 +681,19 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTrack.SetNUZ(nuz: Boolean);
-var oblr: TOR;
+var area: TArea;
 begin
  if (Self.m_state.NUZ = nuz) then Exit();
 
  if (Self.m_state.NUZ) and (not nuz) then
   begin
-   for oblr in Self.m_stations do
-     if (oblr.NUZblkCnt > 0) then
-       oblr.NUZblkCnt := oblr.NUZblkCnt - 1;
+   for area in Self.m_areas do
+     if (area.NUZblkCnt > 0) then
+       area.NUZblkCnt := area.NUZblkCnt - 1;
   end else begin
     if ((not Self.m_state.NUZ) and (nuz)) then
-      for oblr in Self.m_stations do
-        oblr.NUZblkCnt := oblr.NUZblkCnt + 1;
+      for area in Self.m_areas do
+        area.NUZblkCnt := area.NUZblkCnt + 1;
   end;
 
  Self.m_state.NUZ := nuz;
@@ -744,7 +744,7 @@ procedure TBlkTrack.SetLockout(Sender: TIDCOntext; lockout: string);
 begin
  if ((self.m_state.lockout <> '') and (lockout = '')) then
   begin
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_stations[0], 'Zrušení výluky', TBlocks.GetBlksList(Self), nil);
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_areas[0], 'Zrušení výluky', TBlocks.GetBlksList(Self), nil);
   end else begin
    Self.lockout := lockout;
   end;
@@ -797,7 +797,7 @@ begin
 end;
 
 procedure TBlkTrack.SetShortCircuit(state: TBoosterSignal);
-var oblr: TOR;
+var area: TArea;
 begin
  if (Self.frozen) then
    Self.last_zes_zkrat := state;
@@ -821,12 +821,12 @@ begin
  if (state = TBoosterSignal.error) then
   begin
    // do OR oznamime, ze nastal zkrat, pak se prehraje zvuk v klientech...
-   for oblr in Self.m_stations do
-    oblr.ZKratBlkCnt := oblr.ZkratBlkCnt + 1;
+   for area in Self.m_areas do
+    area.shortCircBlkCnt := area.shortCircBlkCnt + 1;
   end else begin
    if (Self.m_state.shortCircuit = TBoosterSignal.error) then
-     for oblr in Self.m_stations do
-       oblr.ZKratBlkCnt := oblr.ZkratBlkCnt - 1;
+     for area in Self.m_areas do
+       area.shortCircBlkCnt := area.shortCircBlkCnt - 1;
   end;
 
  Self.m_state.shortCircuit := state;
@@ -921,10 +921,10 @@ end;
 procedure TBlkTrack.MenuNewLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
 begin
  // nejdrive posleme aktualni seznam hnacich vozidel
- (SenderOR as TOR).PanelHVList(SenderPnl);
+ (SenderOR as TArea).PanelHVList(SenderPnl);
 
  // pak posleme pozadavek na editaci hnaciho vozidla
- (SenderOR as TOR).BlkNewTrain(Self, SenderPnl, (itemindex-2) div 2);
+ (SenderOR as TArea).BlkNewTrain(Self, SenderPnl, (itemindex-2) div 2);
 end;
 
 procedure TBlkTrack.MenuVLOZLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
@@ -938,23 +938,23 @@ begin
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  // nejdrive posleme aktualni senam hnacich vozidel
- (SenderOR as TOR).PanelHVList(SenderPnl);
+ (SenderOR as TArea).PanelHVList(SenderPnl);
 
  // pak posleme pozadavek na editaci hnaciho vozidla
- (SenderOR as TOR).BlkEditTrain(Self, SenderPnl, TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]]);
+ (SenderOR as TArea).BlkEditTrain(Self, SenderPnl, TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]]);
 end;
 
 procedure TBlkTrack.MenuDeleteLokClick(SenderPnl: TIdContext; SenderOR: TObject);
-var podm: TPSPodminky;
+var podm: TConfSeqItems;
     blk: TObject;
 begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
- podm := TPSPodminky.Create();
+ podm := TConfSeqItems.Create();
  for blk in Blocks.GetBlkWithTrain(TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]]) do
-   podm.Add(TOR.GetPSPodminka(blk, 'Smazání soupravy z úseku'));
- ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TOR,
+   podm.Add(TArea.GetPSPodminka(blk, 'Smazání soupravy z úseku'));
+ ORTCPServer.Potvr(SenderPnl, Self.PotvrDeleteLok, SenderOR as TArea,
    'Smazání soupravy '+TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].name,
    TBlocks.GetBlksList(Self), podm);
 end;
@@ -993,7 +993,7 @@ begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
- ORTCPServer.Potvr(SenderPnl, Self.PotvrUvolLok, SenderOR as TOR,
+ ORTCPServer.Potvr(SenderPnl, Self.PotvrUvolLok, SenderOR as TArea,
   'Uvolnění soupravy '+TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].name+' z bloku',
   TBlocks.GetBlksList(Self), nil);
 end;
@@ -1040,7 +1040,7 @@ begin
 end;
 
 procedure TBlkTrack.MenuRegVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
-var podm: TPSPodminky;
+var podm: TConfSeqItems;
     train: TTrain;
     hvaddr: Integer;
 begin
@@ -1048,12 +1048,12 @@ begin
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
  train := TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]];
 
- podm := TPSPodminky.Create();
+ podm := TConfSeqItems.Create();
  for hvaddr in train.HVs do
    if (HVDb[hvaddr] <> nil) then
-     podm.Add(TOR.GetPSPodminka(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
+     podm.Add(TArea.GetPSPodminka(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
 
- ORTCPServer.Potvr(SenderPnl, Self.PotvrRegVezmiLok, SenderOR as TOR,
+ ORTCPServer.Potvr(SenderPnl, Self.PotvrRegVezmiLok, SenderOR as TArea,
   'Nouzové převzetí hnacích vozidel do automatického řízení',
   TBlocks.GetBlksList(Self), podm);
 end;
@@ -1070,7 +1070,7 @@ begin
    ORTCPServer.SendInfoMsg(Sender, 'Vlak převzat');
  except
   on E: Exception do
-    ORTCPServer.BottomError(Sender, 'Vlak se nepodařilo převzít', TOR(Sender).ShortName, 'TECHNOLOGIE');
+    ORTCPServer.BottomError(Sender, 'Vlak se nepodařilo převzít', TArea(Sender).ShortName, 'TECHNOLOGIE');
  end;
 end;
 
@@ -1090,15 +1090,15 @@ end;
 function TBlkTrack.MenuKCClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
 var signal: TBlkSignal;
 begin
- if ((Self.m_state.jcEnd <> TZaver.no) and (not (SenderOR as TOR).vb.Contains(Self))) then
+ if ((Self.m_state.jcEnd <> TZaver.no) and (not (SenderOR as TArea).vb.Contains(Self))) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Probíhá volba');
    Exit(true);
   end;
 
- if ((SenderOR as TOR).vb.Contains(Self)) then (SenderOR as TOR).vb.Remove(self);
+ if ((SenderOR as TArea).vb.Contains(Self)) then (SenderOR as TArea).vb.Remove(self);
 
- signal := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id) as TBlkSignal;
+ signal := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id) as TBlkSignal;
  if (signal = nil) then Exit(false);
 
  case (signal.selected) of
@@ -1123,10 +1123,10 @@ begin
    Exit();
   end;
 
- Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
  if (Blk = nil) then Exit();
 
- if (not Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
+ if (not Self.CanBeNextVB((SenderOR as TArea).vb, blk)) then
   begin
    ORTCPServer.SendInfoMsg(SenderPnl, 'Není variantním bodem žádné JC');
    Exit();
@@ -1139,7 +1139,7 @@ begin
   TBlkSignalSelection.PP : Self.m_state.jcEnd := TZaver.nouz;
  end;
 
- (SenderOR as TOR).vb.Add(Self);
+ (SenderOR as TArea).vb.Add(Self);
 
  Self.Change();
 end;
@@ -1168,7 +1168,7 @@ begin
      Exit();
     end;
 
-   Blk := Blocks.GetBlkUsekVlakPresun((SenderOR as TOR).id);
+   Blk := Blocks.GetBlkUsekVlakPresun((SenderOR as TArea).id);
    if (Blk <> nil) then (Blk as TBlkTrack).trainMoving := -1;
    Self.trainMoving := TTCPORsRef(SenderPnl.Data).train_menu_index;
   end else begin
@@ -1184,7 +1184,7 @@ begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
- str := (SenderOR as TOR).id + ';LOK-TOKEN;OK;';
+ str := (SenderOR as TArea).id + ';LOK-TOKEN;OK;';
  for addr in TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].HVs do
   begin
    HV := HVDb[addr];
@@ -1202,7 +1202,7 @@ begin
  if ((TTCPORsRef(SenderPnl.Data).train_menu_index < 0) or
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
- str := (SenderOR as TOR).id + ';MAUS;{';
+ str := (SenderOR as TArea).id + ';MAUS;{';
  for addr in TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]].HVs do
   begin
    HV := HVDb[addr];
@@ -1220,7 +1220,7 @@ begin
    for rcsaddr in Self.m_settings.RCSAddrs do
      RCSi.SetInput(rcsaddr.board, rcsaddr.port, 1);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -1231,7 +1231,7 @@ begin
    for rcsaddr in Self.m_settings.RCSAddrs do
      RCSi.SetInput(rcsaddr.board, rcsaddr.port, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -1241,13 +1241,13 @@ begin
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  try
-   if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
-   TOR(SenderOR).hlaseni.Odjede(Self.GetSHTrain(TTCPORsRef(SenderPnl.Data).train_menu_index));
+   if (not Assigned(TArea(SenderOR).announcement)) then Exit();
+   TArea(SenderOR).announcement.Odjede(Self.GetSHTrain(TTCPORsRef(SenderPnl.Data).train_menu_index));
  except
    on E: Exception do
     begin
      writelog('Nepodařilo se spustit staniční hlášení : ' + E.Message, WR_ERROR);
-     ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+     ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TArea(SenderOR).ShortName, 'TECHNOLOGIE');
     end;
  end;
 end;
@@ -1260,21 +1260,21 @@ begin
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  try
-   if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
+   if (not Assigned(TArea(SenderOR).announcement)) then Exit();
 
    shTrain := Self.GetSHTrain(TTCPORsRef(SenderPnl.Data).train_menu_index);
    blk := stanicniHlaseniHelper.CanPlayPrijezdSH(
       TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]],
-      TOR(SenderOR)).stanicniKolej;
+      TArea(SenderOR)).stanicniKolej;
    if (blk = nil) then Exit();
 
    shTrain.kolej := blk.spnl.trackName;
-   TOR(SenderOR).hlaseni.Prijede(shTrain);
+   TArea(SenderOR).announcement.Prijede(shTrain);
  except
    on E: Exception do
     begin
      writelog('Nepodařilo se spustit staniční hlášení : ' + E.Message, WR_ERROR);
-     ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+     ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TArea(SenderOR).ShortName, 'TECHNOLOGIE');
     end;
  end;
 end;
@@ -1287,21 +1287,21 @@ begin
      (TTCPORsRef(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then Exit();
 
  try
-   if (not Assigned(TOR(SenderOR).hlaseni)) then Exit();
+   if (not Assigned(TArea(SenderOR).announcement)) then Exit();
 
    shTrain := Self.GetSHTrain(TTCPORsRef(SenderPnl.Data).train_menu_index);
    blk := stanicniHlaseniHelper.CanPlayPrijezdSH(
       TrainDb.Trains[Self.trains[TTCPORsRef(SenderPnl.Data).train_menu_index]],
-      TOR(SenderOR)).stanicniKolej;
+      TArea(SenderOR)).stanicniKolej;
 
    if (blk <> nil) then
      shTrain.kolej := blk.spnl.trackName;
-   TOR(SenderOR).hlaseni.Projede(shTrain);
+   TArea(SenderOR).announcement.Projede(shTrain);
  except
    on E: Exception do
     begin
      writelog('Nepodařilo se spustit staniční hlášení : ' + E.Message, WR_ERROR);
-     ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+     ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TArea(SenderOR).ShortName, 'TECHNOLOGIE');
     end;
  end;
 end;
@@ -1335,13 +1335,13 @@ begin
  menu := menu + '$Souprava ' + TrainDb.Trains[Self.trains[trainLocalI]].name + ',-,';
  menu := menu + Self.GetTrainMenu(SenderPnl, SenderOr, trainLocalI);
 
- ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), menu);
+ ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), menu);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkTrack.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkTrack.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 var Blk: TBlk;
     train: Integer;
     canAdd: Boolean;
@@ -1350,7 +1350,7 @@ var Blk: TBlk;
 begin
  Result := inherited;
 
- if (Blocks.GetBlkUsekVlakPresun((SenderOR as TOR).id) <> nil) then
+ if (Blocks.GetBlkUsekVlakPresun((SenderOR as TArea).id) <> nil) then
    addStr := 'VLOŽ vlak,'
  else
    addStr := 'NOVÝ vlak,';
@@ -1385,21 +1385,21 @@ begin
  if (Self.m_state.NUZ) then
    Result := Result + '-,NUZ<,';
 
- if ((((not (SenderOR as TOR).NUZtimer) and (Integer(Self.m_state.Zaver) > 0) and (Self.m_state.Zaver <> TZaver.ab) and
+ if ((((not (SenderOR as TArea).NUZtimer) and (Integer(Self.m_state.Zaver) > 0) and (Self.m_state.Zaver <> TZaver.ab) and
       (Self.m_state.Zaver <> TZaver.staveni) and (Self.typ = btTrack) and
       (not Self.spnl.stationTrack)) or (rights >= superuser)) and
       (not Self.m_state.NUZ)) then
    Result := Result + '-,NUZ>,';
 
  //11 = KC
- Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
  if (Blk <> nil) then
   begin
-   if ((Self.CanBeKC((SenderOR as TOR).vb, blk)) or Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
+   if ((Self.CanBeKC((SenderOR as TArea).vb, blk)) or Self.CanBeNextVB((SenderOR as TArea).vb, blk)) then
      Result := Result + '-,';
-   if (Self.CanBeKC((SenderOR as TOR).vb, blk)) then
+   if (Self.CanBeKC((SenderOR as TArea).vb, blk)) then
      Result := Result + 'KC,';
-   if (Self.CanBeNextVB((SenderOR as TOR).vb, blk)) then
+   if (Self.CanBeNextVB((SenderOR as TArea).vb, blk)) then
      Result := Result + 'VB,';
   end;
 
@@ -1463,14 +1463,14 @@ begin
  if (Self.CanStandTrain()) then
    Result := Result + 'PODJ,';
 
- if ((Assigned(TOR(SenderOR).hlaseni)) and (TOR(SenderOR).hlaseni.available) and
+ if ((Assigned(TArea(SenderOR).announcement)) and (TArea(SenderOR).announcement.available) and
      (train.stationFrom <> nil) and (train.stationTo <> nil) and (train.typ <> '')) then
   begin
    if ((Self.spnl.stationTrack) and (train.announcement)) then
      Result := Result + 'HLÁŠENÍ odjezd,';
 
    try
-     shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(train, TOR(SenderOR));
+     shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(train, TArea(SenderOR));
    except
      on E: Exception do
        AppEvents.LogException(E, 'CanPlayPrijezdSH');
@@ -1485,22 +1485,22 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTrack.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+procedure TBlkTrack.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TAreaRights; params: string = '');
 var Blk: TBlk;
 begin
  case (Button) of
-  F2: Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params);
+  F2: Self.ShowProperMenu(SenderPnl, (SenderOR as TArea), rights, params);
 
   ENTER: begin
     if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
       if (((Self.m_settings.maxTrains <> 1) and (Self.trains.Count > 0)) or (not Self.MoveLok(SenderPnl, SenderOR, 0))) then
-        Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params);
+        Self.ShowProperMenu(SenderPnl, (SenderOR as TArea), rights, params);
   end;
 
   F1: begin
-    Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
+    Blk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
     if (Blk = nil) then
-      Self.ShowProperMenu(SenderPnl, (SenderOR as TOR), rights, params)
+      Self.ShowProperMenu(SenderPnl, (SenderOR as TArea), rights, params)
     else
       Self.MenuVBClick(SenderPnl, SenderOR);
   end;
@@ -1553,7 +1553,7 @@ function TBlkTrack.MoveLok(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI
 var Blk, signal: TBlk;
     train: TTrain;
 begin
- Blk := Blocks.GetBlkUsekVlakPresun((SenderOR as TOR).id);
+ Blk := Blocks.GetBlkUsekVlakPresun((SenderOR as TArea).id);
  if (Blk = nil) then Exit(false);
 
  if (not Self.CanStandTrain()) then
@@ -1834,11 +1834,11 @@ function TBlkTrack.GetSHTrain(trainLocalIndex: Integer): TSHTrain;
 begin
  if ((trainLocalIndex < 0) or (trainLocalIndex >= Self.trains.Count)) then Exit();
 
- Result.cislo    := TrainDb.Trains[Self.trains[trainLocalIndex]].name;
- Result.typ      := TrainDb.Trains[Self.trains[trainLocalIndex]].typ;
- Result.kolej    := Self.spnl.trackName;
- Result.fromORid := TOR(TrainDb.Trains[Self.trains[trainLocalIndex]].stationFrom).id;
- Result.toORid   := TOR(TrainDb.Trains[Self.trains[trainLocalIndex]].stationTo).id;
+ Result.cislo := TrainDb.Trains[Self.trains[trainLocalIndex]].name;
+ Result.typ := TrainDb.Trains[Self.trains[trainLocalIndex]].typ;
+ Result.kolej := Self.spnl.trackName;
+ Result.fromORid := TArea(TrainDb.Trains[Self.trains[trainLocalIndex]].stationFrom).id;
+ Result.toORid := TArea(TrainDb.Trains[Self.trains[trainLocalIndex]].stationTo).id;
 
  Result.timeArrive := 0;
 
@@ -2075,17 +2075,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTrack.ShowProperMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORControlRights; params: string);
+procedure TBlkTrack.ShowProperMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; params: string);
 var i: Integer;
 begin
  if (params <> '') then begin
    i := StrToIntDef(params, -1);
    if ((i <> -1) and (i >= 0) and (i < Self.trains.Count)) then
-     Self.MenuSOUPRAVA(SenderPnl, (SenderOR as TOR), i)
+     Self.MenuSOUPRAVA(SenderPnl, (SenderOR as TArea), i)
    else
-     ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+     ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end else
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2145,7 +2145,7 @@ var traini: Integer;
     shouldChange: Boolean;
     podj: TPOdj;
     signal: TBlk;
-    oblr: TOR;
+    area: TArea;
     train: TTrain;
 begin
  shouldChange := false;
@@ -2162,12 +2162,12 @@ begin
      if ((not shouldChange) and (Self.IsStujForTrain(train))) then
       begin
         if ((podj.phase_old = ppPreparing) and (podj.GetPhase() = ppGoingToLeave)) then
-          for oblr in Self.m_stations do
-            oblr.BlkPlaySound(Self, TORControlRights.write, _SND_STAVENI_VYZVA)
+          for area in Self.m_areas do
+            area.BlkPlaySound(Self, TAreaRights.write, _SND_STAVENI_VYZVA)
 
         else if ((podj.phase_old = ppGoingToLeave) and (podj.GetPhase() = ppSoundLeave)) then
-          for oblr in Self.m_stations do
-            oblr.BlkPlaySound(Self, TORControlRights.write, _SND_NENI_JC);
+          for area in Self.m_areas do
+            area.BlkPlaySound(Self, TAreaRights.write, _SND_NENI_JC);
       end;
 
      if (train.GetPOdj(Self).DepRealDelta() < 0) then

@@ -59,7 +59,7 @@ end;
 
 implementation
 
-uses TCPServerOR, TOblRizeni, TCPORsRef;
+uses TCPServerOR, Area, TCPORsRef;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -86,9 +86,9 @@ begin
 
  if (parsed[2] = 'REGISTER') then
   begin
-   if (not TTCPORsRef(Sender.Data).st_hlaseni.Contains(TOR(SenderOR))) then
+   if (not TTCPORsRef(Sender.Data).st_hlaseni.Contains(TArea(SenderOR))) then
     begin
-     TTCPORsRef(Sender.Data).st_hlaseni.Add(TOR(SenderOR));
+     TTCPORsRef(Sender.Data).st_hlaseni.Add(TArea(SenderOR));
      ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Sender.Data).index);
     end;
 
@@ -105,9 +105,9 @@ begin
    ORTCPServer.SendLn(Sender, parsed[0] + ';SH;REGISTER-RESPONSE;OK');
 
   end else if (parsed[2] = 'UNREGISTER') then begin
-   if (TTCPORsRef(Sender.Data).st_hlaseni.Contains(TOR(SenderOR))) then
+   if (TTCPORsRef(Sender.Data).st_hlaseni.Contains(TArea(SenderOR))) then
     begin
-     TTCPORsRef(Sender.Data).st_hlaseni.Remove(TOR(SenderOR));
+     TTCPORsRef(Sender.Data).st_hlaseni.Remove(TArea(SenderOR));
      ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Sender.Data).index);
     end;
 

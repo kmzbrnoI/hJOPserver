@@ -134,7 +134,7 @@
 			<DCCReference Include="blocks\BlockIR.pas"/>
 			<DCCReference Include="blocks\BlockSignal.pas"/>
 			<DCCReference Include="TOblsRizeni.pas"/>
-			<DCCReference Include="TOblRizeni.pas"/>
+			<DCCReference Include="areas\Area.pas"/>
 			<DCCReference Include="Booster.pas"/>
 			<DCCReference Include="BoosterDb.pas"/>
 			<DCCReference Include="blocks\forms\state\fBlkTurnoutState.pas">

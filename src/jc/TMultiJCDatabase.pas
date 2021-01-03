@@ -60,7 +60,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, BlockDb, BlockTrack, TOblRizeni, TCPServerOR,
+uses Logging, GetSystems, BlockDb, BlockTrack, Area, TCPServerOR,
       DataMultiJC, Stack, TOblsRizeni, TechnologieJC, TJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -261,20 +261,20 @@ function TMultiJCDb.Activate(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; Send
 var mJC: TMultiJC;
     j: Integer;
 begin
- mJC := Self.Find(startBlk as TBlkSignal, (SenderOR as TOR).vb, endBlk);
+ mJC := Self.Find(startBlk as TBlkSignal, (SenderOR as TArea).vb, endBlk);
  Result := (mJC <> nil);
 
  if (mJC <> nil) then
   begin
-   if ((SenderOR as TOR).stack.mode = TORStackMode.VZ) then
+   if ((SenderOR as TArea).stack.mode = TORStackMode.VZ) then
     begin
      // VZ -> pridame do zasobniku postupne vsechny jizdni cesty
      for j := 0 to mJC.data.JCs.Count-1 do
-       (SenderOR as TOR).stack.AddJC(JCDb.GetJCByID(mJC.data.JCs[j]), SenderPnl, false, abAfter);
+       (SenderOR as TArea).stack.AddJC(JCDb.GetJCByID(mJC.data.JCs[j]), SenderPnl, false, abAfter);
 
      (StartBlk as TBlkSignal).selected := TBlkSignalSelection.none;
      (EndBlk as TBlkTrack).jcEnd := TZaver.no;
-     (SenderOR as TOR).ClearVb();
+     (SenderOR as TArea).ClearVb();
     end else begin
      mJC.Activate(SenderPnl, SenderOR);
     end;

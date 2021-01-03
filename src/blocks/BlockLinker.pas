@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes,
-     IdContext, StrUtils, TOblRizeni, Generics.Collections;
+     IdContext, StrUtils, Area, Generics.Collections;
 
 type
  TBlkLinkerSettings = record
@@ -96,9 +96,9 @@ type
     property emLock: Boolean read m_state.emLock write SetEmLock;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
-    procedure ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights; train_index: Integer);
-    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
+    procedure ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; train_index: Integer);
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
     function PanelStateString(): string; override;
  end;
 
@@ -213,8 +213,8 @@ end;
 
 procedure TBlkLinker.MenuZTSOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- case ((SenderOR as TOR).stack.mode) of
-  TORStackMode.VZ : (SenderOR as TOR).stack.AddZTS(self, SenderPnl);
+ case ((SenderOR as TArea).stack.mode) of
+  TORStackMode.VZ : (SenderOR as TArea).stack.AddZTS(self, SenderPnl);
   TORStackMode.PV : Self.DoZTS(SenderPnl, SenderOR);
  end;
 end;
@@ -226,8 +226,8 @@ end;
 
 procedure TBlkLinker.MenuUTSClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- case ((SenderOR as TOR).stack.mode) of
-  TORStackMode.VZ : (SenderOR as TOR).stack.AddUTS(self, SenderPnl);
+ case ((SenderOR as TArea).stack.mode) of
+  TORStackMode.VZ : (SenderOR as TArea).stack.AddUTS(self, SenderPnl);
   TORStackMode.PV : Self.DoUTS(SenderPnl, SenderOR);
  end;
 end;
@@ -268,7 +268,7 @@ end;
 
 procedure TBlkLinker.MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TOR,
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TArea,
     'Zrušení zákazu odjezdu na trať', TBlocks.GetBlksList(Self), nil);
 end;
 
@@ -284,7 +284,7 @@ end;
 
 procedure TBlkLinker.MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TOR,
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TArea,
     'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
 end;
 
@@ -303,16 +303,16 @@ procedure TBlkLinker.UPOZTSOnClick(Sender: TObject);
 begin
  Self.request := true;
 
- if (Self.m_stations[0].stack.mode = TORStackMode.VZ) then
-   Self.m_stations[0].stack.RemoveZTS(Self);
+ if (Self.m_areas[0].stack.mode = TORStackMode.VZ) then
+   Self.m_areas[0].stack.RemoveZTS(Self);
 end;
 
 procedure TBlkLinker.UPOUTSClick(Sender: TObject);
 begin
  Self.ApproveRequest();
 
- if (Self.m_stations[0].stack.mode = TORStackMode.VZ) then
-   Self.m_stations[0].stack.RemoveUTS(Self);
+ if (Self.m_areas[0].stack.mode = TORStackMode.VZ) then
+   Self.m_areas[0].stack.RemoveUTS(Self);
 end;
 
 procedure TBlkLinker.UPOOTSClick(Sender: TObject);
@@ -332,7 +332,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkLinker.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkLinker.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 var Blk, Blk2: TBlk;
     railway: TBlkRailway;
 begin
@@ -358,7 +358,7 @@ begin
      if (((not Self.request) and (railway.direction = TRailwayDirection.BtoA) and (not railway.request) and
           (not railway.RBPCan) and (not railway.emLock) and
           (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
-          ((SenderOR as TOR).stack.mode = TORStackMode.VZ)) then
+          ((SenderOR as TArea).stack.mode = TORStackMode.VZ)) then
        Result := Result + 'ZTS>,';
 
     end else begin
@@ -367,12 +367,12 @@ begin
      if (((not Self.request) and (railway.direction = TRailwayDirection.AtoB) and (not railway.request) and
           (not railway.RBPCan) and (not railway.emLock) and
           (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
-          ((SenderOR as TOR).stack.mode = TORStackMode.VZ)) then
+          ((SenderOR as TArea).stack.mode = TORStackMode.VZ)) then
        Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
-   if ((SenderOR as TOR).stack.mode = TORStackMode.VZ) and ((Self.request) or (not railway.request)) then
+   if ((SenderOR as TArea).stack.mode = TORStackMode.VZ) and ((Self.request) or (not railway.request)) then
      Result := Result + 'UTS,';
 
    if (((not Self.request) and railway.request)) then
@@ -397,7 +397,7 @@ begin
      if (((not Self.request) and(railway.direction <> TRailwayDirection.AtoB) and (not railway.request) and
           (not railway.RBPCan) and (not railway.emLock) and
           (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
-          ((SenderOR as TOR).stack.mode = TORStackMode.VZ)) then
+          ((SenderOR as TArea).stack.mode = TORStackMode.VZ)) then
        Result := Result + 'ZTS>,';
 
     end else begin
@@ -406,12 +406,12 @@ begin
      if (((not Self.request) and (railway.direction <> TRailwayDirection.BtoA) and (not railway.request) and
           (not railway.RBPCan) and (not railway.emLock) and
           (not railway.occupied) and (not railway.Zaver) and (not railway.departureForbidden)) or
-          ((SenderOR as TOR).stack.mode = TORStackMode.VZ)) then
+          ((SenderOR as TArea).stack.mode = TORStackMode.VZ)) then
        Result := Result + 'ZTS>,';
 
     end;// else IsFirstUvazka
 
-   if ((SenderOR as TOR).stack.mode = TORStackMode.VZ) and ((Self.request) or (not railway.request)) then
+   if ((SenderOR as TArea).stack.mode = TORStackMode.VZ) and ((Self.request) or (not railway.request)) then
      Result := Result + 'UTS,';
 
    if (((not Self.request) and railway.request)) then
@@ -445,7 +445,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkLinker.ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights; train_index: Integer);
+procedure TBlkLinker.ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; train_index: Integer);
 var railway: TBlkRailway;
     blk: TBlk;
     train: TTrain;
@@ -462,7 +462,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkLinker.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+procedure TBlkLinker.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  if (TBlkRailway(Self.parent).direction < TRailwayDirection.no) then Exit();
  if (Button = TPanelButton.ESCAPE) then Exit(); 
@@ -470,7 +470,7 @@ begin
  if (params <> '') then
    Self.ShowUvazkaTrainMenu(SenderPnl, SenderOR, rights, StrToInt(params))
  else
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

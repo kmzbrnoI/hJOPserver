@@ -29,7 +29,7 @@ var
 
 implementation
 
-uses fMain, UserDb, User, ownStrUtils, StrUtils, TOblRizeni, TOblsRizeni,
+uses fMain, UserDb, User, ownStrUtils, StrUtils, Area, TOblsRizeni,
       ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ end;
 procedure TUsersTableData.UpdateLine(line: Integer);
 var user: TUser;
     str: string;
-    oblr: TOR;
+    area: TArea;
 begin
  user := UsrDb.GetUser(line);
 
@@ -84,15 +84,15 @@ begin
  Self.LV.Items[line].SubItems[6] := FormatDateTime('yyyy-mm-dd hh:nn:ss', user.lastlogin);
 
  str := '';
- for oblr in ORs do
+ for area in ORs do
   begin
-   if ((user.OblR.ContainsKey(oblr.id)) and (user.OblR[oblr.id] > TORControlRights.null)) then
+   if ((user.areas.ContainsKey(area.id)) and (user.areas[area.id] > TAreaRights.null)) then
     begin
-     str := str + oblr.ShortName + ':';
-     case user.OblR[oblr.id] of
-       TORControlRights.read: str := str + 'R';
-       TORControlRights.write: str := str + 'W';
-       TORControlRights.superuser: str := str + 'S';
+     str := str + area.shortName + ':';
+     case user.areas[area.id] of
+       TAreaRights.read: str := str + 'R';
+       TAreaRights.write: str := str + 'W';
+       TAreaRights.superuser: str := str + 'S';
      end;
      str := str + ', ';
     end;

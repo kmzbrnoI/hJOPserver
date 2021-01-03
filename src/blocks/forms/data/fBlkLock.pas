@@ -39,7 +39,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, TOblRizeni;
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area;
 
 {$R *.dfm}
 
@@ -68,12 +68,12 @@ procedure TF_BlkLock.NewBlkOpenForm();
 
 procedure TF_BlkLock.NormalOpenForm();
 var glob: TBlkSettings;
-    oblr: TOR;
+    area: TArea;
  begin
   glob := Self.Blk.GetGlobalSettings();
 
-  for oblr in Self.Blk.stations do
-    Self.LB_Stanice.Items.Add(oblr.Name);
+  for area in Self.Blk.areas do
+    Self.LB_Stanice.Items.Add(area.name);
 
   Self.E_Nazev.Text := glob.name;
   Self.SE_ID.Value := glob.id;

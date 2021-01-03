@@ -46,7 +46,7 @@ uses
   BlockIR in 'blocks\BlockIR.pas',
   BlockSignal in 'blocks\BlockSignal.pas',
   TOblsRizeni in 'TOblsRizeni.pas',
-  TOblRizeni in 'TOblRizeni.pas',
+  Area in 'areas\Area.pas',
   Booster in 'Booster.pas',
   BoosterDb in 'BoosterDb.pas',
   fBlkTurnoutState in 'blocks\forms\state\fBlkTurnoutState.pas' {F_BlkTurnoutState},

@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, SysUtils, BlockTrack, Menus, TOblsRizeni,
      Classes, IdContext, Generics.Collections, JsonDataObjects, RCS,
-     TOblRizeni, TechnologieRCS;
+     Area, TechnologieRCS;
 
 {
  Jak funguje intentionalLock:
@@ -240,9 +240,9 @@ type
 
     // Panel:
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
-        Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+        Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
     function PanelStateString(): string; override;
 
     // PT:
@@ -309,7 +309,7 @@ begin
    strs.Free();
  end;
 
- PushRCStoOR(Self.m_stations, Self.m_settings.RCSAddrs);
+ PushRCSToArea(Self.m_areas, Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkTurnout.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -576,7 +576,7 @@ end;
 procedure TBlkTurnout.SetLockout(Sender: TIDCOntext; lockout: string);
 begin
  if ((self.m_state.lockout <> '') and (lockout = '')) then
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_stations[0], 'Zrušení výluky', TBlocks.GetBlksList(Self), nil)
+   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_areas[0], 'Zrušení výluky', TBlocks.GetBlksList(Self), nil)
  else
    Self.lockout := lockout;
 end;
@@ -605,7 +605,7 @@ end;
 
 procedure TBlkTurnout.UpdatePosition();
 var inp, couplingInp: TBlkTurnoutInputs;
-    oblr: TOR;
+    area: TArea;
     coupling: TBlkTurnout;
  begin
   if (Self.m_settings.RCSAddrs.Count < 4) then Exit();
@@ -667,8 +667,8 @@ var inp, couplingInp: TBlkTurnoutInputs;
       (Self.LockLocked()))
      and (Self.Zaver <> TZaver.staveni)) then
      begin
-      for oblr in Self.stations do
-        oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.m_globSettings.name, 'TECHNOLOGIE');
+      for area in Self.areas do
+        area.BlkWriteError(Self, 'Není koncová poloha '+Self.m_globSettings.name, 'TECHNOLOGIE');
       JCDb.Cancel(Self);
      end;//if Blokovani
 
@@ -704,8 +704,8 @@ var inp, couplingInp: TBlkTurnoutInputs;
 
         if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> plus))) then
          begin
-          for oblr in Self.stations do
-            oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.m_globSettings.name, 'TECHNOLOGIE');
+          for area in Self.areas do
+            area.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.m_globSettings.name, 'TECHNOLOGIE');
           JCDb.Cancel(Self);
          end;
        end;
@@ -741,8 +741,8 @@ var inp, couplingInp: TBlkTurnoutInputs;
 
         if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> minus))) then
          begin
-          for oblr in Self.stations do
-            oblr.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.m_globSettings.name, 'TECHNOLOGIE');
+          for area in Self.areas do
+            area.BlkWriteError(Self, 'Ztráta dohledu na výhybce '+Self.m_globSettings.name, 'TECHNOLOGIE');
           JCDb.Cancel(Self);
          end;
        end;
@@ -757,8 +757,8 @@ var inp, couplingInp: TBlkTurnoutInputs;
     if ((((Self.ShouldBeLocked()) and (Self.Zaver <> TZaver.staveni)) or (Self.LockLocked()))
         and (Self.m_state.positionOld <> both)) then
      begin
-      for oblr in Self.stations do
-        oblr.BlkWriteError(Self, 'Není koncová poloha '+Self.m_globSettings.name, 'TECHNOLOGIE');
+      for area in Self.areas do
+        area.BlkWriteError(Self, 'Není koncová poloha '+Self.m_globSettings.name, 'TECHNOLOGIE');
       JCDb.Cancel(Self);
      end;//if Blokovani
 
@@ -1007,9 +1007,9 @@ begin
  Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
  Blocks.GetBlkByID(Self.trackID, Blk);
- ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSPlus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
+ ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSPlus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TArea),
                     'Nouzové stavění do polohy plus', TBlocks.GetBlksList(Self),
-                    TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
+                    TArea.GetPSPodminky(TArea.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
 procedure TBlkTurnout.UPONSMinusClick(Sender: TObject);
@@ -1019,9 +1019,9 @@ begin
  Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
 
  Blocks.GetBlkByID(Self.trackID, Blk);
- ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSMinus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
+ ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSMinus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TArea),
                     'Nouzové stavění do polohy mínus', TBlocks.GetBlksList(Self),
-                    TOR.GetPSPodminky(TOR.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
+                    TArea.GetPSPodminky(TArea.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
 procedure TBlkTurnout.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1043,7 +1043,7 @@ end;
 
 procedure TBlkTurnout.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR),
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TArea),
     'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
 end;
 
@@ -1065,7 +1065,7 @@ begin
    RCSi.SetInput(Self.rcsInPlus, 1);
    RCSi.SetInput(Self.rcsInMinus, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -1075,7 +1075,7 @@ begin
    RCSi.SetInput(Self.rcsInPlus, 0);
    RCSi.SetInput(Self.rcsInMinus, 1);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -1085,13 +1085,13 @@ begin
    RCSi.SetInput(Self.rcsInPlus, 0);
    RCSi.SetInput(Self.rcsInMinus, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkTurnout.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 var coupling: TBlkTurnout;
 begin
  Result := inherited;
@@ -1124,7 +1124,7 @@ begin
   if ((Self.position = TTurnoutPosition.plus) or (Self.position = TTurnoutPosition.minus)) then
     Result := Result + 'ZAV>,';
 
- if (rights >= TORControlRights.superuser) then
+ if (rights >= TAreaRights.superuser) then
   begin
    Result := Result + '-,';
    if (Self.intentionalLocked) then Result := Result + '*ZRUŠ REDUKCI,';
@@ -1144,10 +1144,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+procedure TBlkTurnout.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  case (Button) of
-  F1, F2, ENTER: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+  F1, F2, ENTER: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end;//case
 end;
 
@@ -1272,7 +1272,7 @@ begin
   if ((Assigned(Self.m_state.movingPanel)) and (Assigned(Self.m_state.movingOR))) then
    begin
     ORTCPServer.BottomError(Self.m_state.movingPanel, 'Nepřestavena '+Self.m_globSettings.name + ': ' + Self.SetErrorToMsg(error),
-      (Self.m_state.movingOR as TOR).ShortName, 'TECHNOLOGIE');
+      (Self.m_state.movingOR as TArea).ShortName, 'TECHNOLOGIE');
     Self.m_state.movingPanel := nil;
     Self.m_state.movingOR := nil;
    end;

@@ -89,7 +89,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, BlockTrack, TOblRizeni, TCPServerOR, BlockRailway,
+uses Logging, GetSystems, BlockTrack, Area, TCPServerOR, BlockRailway,
       DataJC, Stack, TOblsRizeni, TMultiJCDatabase, appEv, BlockTurnout,
       BlockRailwayTrack;
 
@@ -266,26 +266,26 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TJCDb.ActivateJC(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
-var oblr: TOR;
+var area: TArea;
     startSignal: TBlkSignal;
-    senderOblr: TOR;
+    senderArea: TArea;
     jc: TJC;
 begin
  startSignal := StartBlk as TBlkSignal;
- senderOblr := SenderOR as TOR;
+ senderArea := SenderOR as TArea;
 
- jc := Self.FindJC(startSignal, SenderOblr.vb, EndBlk);
+ jc := Self.FindJC(startSignal, senderArea.vb, EndBlk);
 
  if (jc <> nil) then
   begin
    // v pripade nouzove cesty klik na DK opet prevest na klienta
    if (startSignal.selected = TBlkSignalSelection.NC) then
-     for oblr in startSignal.stations do
-       oblr.ORDKClickClient();
+     for area in startSignal.areas do
+       area.ORDKClickClient();
 
-   if (SenderOblr.stack.mode = TORStackMode.VZ) then
+   if (senderArea.stack.mode = TORStackMode.VZ) then
     begin
-     SenderOblr.stack.AddJC(
+     senderArea.stack.AddJC(
       jc,
       SenderPnl,
       (startSignal.selected = TBlkSignalSelection.NC) or (startSignal.selected = TBlkSignalSelection.PP),
@@ -295,9 +295,9 @@ begin
      // zrusime zacatek, konec a variantni body
      startSignal.selected := TBlkSignalSelection.none;
      (EndBlk as TBlkTrack).jcEnd := TZaver.no;
-     SenderOblr.ClearVb();
+     senderArea.ClearVb();
     end else begin
-     SenderOblr.vb.Clear(); // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
+     senderArea.vb.Clear(); // variantni body aktualne stavene JC jen smazeme z databaze (zrusime je na konci staveni JC)
      jc.Activate(
        SenderPnl,
        SenderOR,
@@ -353,16 +353,16 @@ end;
 
 procedure TJCDb.Remove(index: Integer);
 var i: Integer;
-    OblR: TOR;
+    area: TArea;
 begin
  if (index < 0) then raise Exception.Create('Index podtekl seznam JC');
  if (index >= Self.JCs.Count) then raise Exception.Create('Index pretekl seznam JC');
  if (Self.JCs[index].active or Self.JCs[index].activating) then
    raise Exception.Create('JC postavena, nelze smazat');
 
- for OblR in ORs do
-   if (OblR.stack.IsJCInStack(Self.JCs[index])) then
-     raise Exception.Create('JC v zasobniku OR '+OblR.id);
+ for area in ORs do
+   if (area.stack.IsJCInStack(Self.JCs[index])) then
+     raise Exception.Create('JC v zasobniku OR '+area.id);
 
  if (Self.JCsStartSignal.ContainsKey(Self.JCs[index].signal as TBlkSignal)) then
    Self.JCsStartSignal[Self.JCs[index].signal as TBlkSignal].Remove(Self.JCs[index]);
@@ -593,7 +593,7 @@ end;
 procedure TJCDb.Cancel(blk: TBlk);
 var tmpblk: TBlk;
     jc: TJC;
-    oblr: TOR;
+    area: TArea;
     jcs: TList<TJC>;
 begin
  jcs := TList<TJC>.Create();
@@ -632,8 +632,8 @@ begin
          ((TBlkSignal(tmpblk).IsGoSignal()) or (TBlkSignal(tmpblk).ZAM) or (jc.waitForLastTrackOrRailwayOccupy))) then
       begin
        jc.CancelWithoutTrackRelease();
-       for oblr in (tmpBlk as TBlkSignal).stations do
-         oblr.BlkWriteError(Self, 'Chyba povolovací návěsti '+tmpblk.name, 'TECHNOLOGIE');
+       for area in (tmpBlk as TBlkSignal).areas do
+         area.BlkWriteError(Self, 'Chyba povolovací návěsti '+tmpblk.name, 'TECHNOLOGIE');
       end;
     end;
   finally

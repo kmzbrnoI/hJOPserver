@@ -57,7 +57,7 @@ type
     procedure NormalOpenForm();
     procedure EmptyOpenForm();
 
-    procedure MakeObls(var obls: TArStr);
+    procedure MakeAreas(var areas: TArStr);
 
   public
     procedure EditMJC(mJC: TMultiJC);
@@ -71,8 +71,8 @@ implementation
 
 {$R *.dfm}
 
-uses TJCDatabase, TechnologieJC, Block, TOblRizeni,
-      BlockSignal, TMultiJCDatabase, DataMultiJC;
+uses TJCDatabase, TechnologieJC, Block, Area, BlockSignal, TMultiJCDatabase,
+     DataMultiJC;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -239,36 +239,36 @@ begin
 end;
 
 procedure TF_MJCEdit.UpdateVBCb();
-var obls: TArStr;
+var areas: TArStr;
 begin
- Self.MakeObls(obls);
- Blocks.FillCB(Self.CB_VB_New, @CB_VB_indexes, nil, obls, btTrack, -1);
+ Self.MakeAreas(areas);
+ Blocks.FillCB(Self.CB_VB_New, @CB_VB_indexes, nil, areas, btTrack, -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // vytvoreni seznamu oblasti rizeni pro pridani variantnich bodu:
 // oblasti rizeni vytvarime podle 0. JC
-procedure TF_MJCEdit.MakeObls(var obls: TArStr);
+procedure TF_MJCEdit.MakeAreas(var areas: TArStr);
 var Blk: TBlk;
     i: Integer;
 begin
- if (Self.JCs.Count < 1) then obls := nil
+ if (Self.JCs.Count < 1) then areas := nil
  else begin
    try
      Blocks.GetBlkByID(JCDb.GetJCByID(Self.JCs[0]).data.signalId, Blk);
 
      if ((Blk = nil) or (Blk.typ <> btSignal)) then
       begin
-       obls := nil;
+       areas := nil;
        Exit();
       end;
 
-     SetLength(obls, (Blk as TBlkSignal).stations.Count);
-     for i := 0 to (Blk as TBlkSignal).stations.Count-1 do
-      obls[i] := (Blk as TBlkSignal).stations[i].id;
+     SetLength(areas, (Blk as TBlkSignal).areas.Count);
+     for i := 0 to (Blk as TBlkSignal).areas.Count-1 do
+      areas[i] := (Blk as TBlkSignal).areas[i].id;
    except
-     obls := nil;
+     areas := nil;
    end;
  end;
 end;

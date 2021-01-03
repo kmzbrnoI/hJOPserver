@@ -69,7 +69,7 @@ type
 
      procedure ReleaseAllLoko();
 
-     procedure SetOR(station: TObject);
+     procedure SetOR(area: TObject);
 
      procedure HVComErr(Sender: TObject; Data: Pointer);
      procedure SetSpeed(speed: Integer);
@@ -88,14 +88,14 @@ type
     changed: Boolean;
 
      constructor Create(ini: TMemIniFile; const section: string; index: Integer); overload;
-     constructor Create(panelStr: TStrings; index: Integer; usek: TObject; oblr: TObject; ok: TCb; err: TCb); overload;
+     constructor Create(panelStr: TStrings; index: Integer; usek: TObject; area: TObject; ok: TCb; err: TCb); overload;
      constructor Create(train: TJsonObject; index: Integer; ok: TCb; err: TCb); overload;
      destructor Destroy(); override;
 
      procedure SaveToFile(ini: TMemIniFile; const section: string);
 
      function GetPanelString(): string;   // vraci string, kterym je definovana souprava, do panelu
-     procedure UpdateTrainFromPanel(train: TStrings; usek: TObject; oblr: TObject; ok: TCb; err: TCb);
+     procedure UpdateTrainFromPanel(train: TStrings; usek: TObject; area: TObject; ok: TCb; err: TCb);
      procedure SetSpeedDirection(speed: Cardinal; dir: THVStanoviste);
      procedure Acquire(ok: TCb; err: TCb);
      procedure UpdateFront();
@@ -159,7 +159,7 @@ type
 implementation
 
 uses THVDatabase, Logging, ownStrUtils, TrainDb, BlockTrack, DataSpr, appEv,
-      DataHV, TOblsRizeni, TOblRizeni, TCPServerOR, BlockDb, BlockSignal,
+      DataHV, TOblsRizeni, Area, TCPServerOR, BlockDb, BlockSignal,
       fRegulator, fMain, BlockRailwayTrack, stanicniHlaseniHelper, stanicniHlaseni,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse;
 
@@ -172,11 +172,11 @@ begin
  Self.LoadFromFile(ini, section);
 end;
 
-constructor TTrain.Create(panelStr: TStrings; index: Integer; usek: TObject; oblr: TObject; ok: TCb; err: TCb);
+constructor TTrain.Create(panelStr: TStrings; index: Integer; usek: TObject; area: TObject; ok: TCb; err: TCb);
 begin
  inherited Create();
  Self.Init(index);
- Self.UpdateTrainFromPanel(panelStr, usek, oblr, ok, err);
+ Self.UpdateTrainFromPanel(panelStr, usek, area, ok, err);
 end;
 
 constructor TTrain.Create(train: TJsonObject; index: Integer; ok: TCb; err: TCb);
@@ -284,12 +284,12 @@ begin
    ini.WriteInteger(section, 'maxRychlost', Self.data.maxSpeed);
 
  if (Self.data.stationFrom <> nil) then
-   ini.WriteString(section, 'z', TOR(Self.data.stationFrom).id)
+   ini.WriteString(section, 'z', TArea(Self.data.stationFrom).id)
  else
    ini.DeleteKey(section, 'z');
 
  if (Self.data.stationTo <> nil) then
-   ini.WriteString(section, 'do', TOR(Self.data.stationTo).id)
+   ini.WriteString(section, 'do', TArea(Self.data.stationTo).id)
  else
    ini.DeleteKey(section, 'do');
 
@@ -299,7 +299,7 @@ begin
    ini.WriteInteger(section, 'front', -1);
 
  if (Self.data.station <> nil) then
-   ini.WriteString(section, 'OR', (Self.data.station as TOR).id)
+   ini.WriteString(section, 'OR', (Self.data.station as TArea).id)
  else
    ini.DeleteKey(section, 'OR');
 
@@ -336,11 +336,11 @@ begin
  Result := Result + '};';
 
  if (Self.stationFrom <> nil) then
-   Result := Result + TOR(Self.stationFrom).id;
+   Result := Result + TArea(Self.stationFrom).id;
  Result := Result + ';';
 
  if (Self.stationTo <> nil) then
-   Result := Result + TOR(Self.stationTo).id;
+   Result := Result + TArea(Self.stationTo).id;
  Result := Result + ';';
 
  if (Self.data.announcement) then
@@ -356,7 +356,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.UpdateTrainFromPanel(train: TStrings; Usek: TObject; OblR: TObject; ok: TCb; err: TCb);
+procedure TTrain.UpdateTrainFromPanel(train: TStrings; Usek: TObject; area: TObject; ok: TCb; err: TCb);
 var json: TJsonObject;
     hvs, hv: TStrings;
     s, straddr: string;
@@ -371,7 +371,7 @@ begin
    json['dirS'] := train[3][2] = '1';
    json['length'] := train[4];
    json['type'] := train[5];
-   json['station'] := TOR(OblR).id;
+   json['station'] := TArea(area).id;
    json['front'] := TBlk(usek).id;
 
    if (train.Count > 7) then
@@ -433,7 +433,7 @@ begin
    if ((Trains[i].name = train['name']) and (Trains[i] <> Self)) then
     begin
      if (Trains[i].station <> nil) then
-       raise Exception.Create('Souprava '+Trains[i].name+' již existuje v OŘ '+(Trains[i].station as TOR).Name);
+       raise Exception.Create('Souprava '+Trains[i].name+' již existuje v OŘ '+(Trains[i].station as TArea).name);
      raise Exception.Create('Souprava '+Trains[i].name+' již existuje');
     end;
   end;
@@ -652,12 +652,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.SetOR(station: TObject);
+procedure TTrain.SetOR(area: TObject);
 var addr: Integer;
 begin
- Self.data.station := station;
+ Self.data.station := area;
  for addr in Self.HVs do
-   HVDb[addr].PredejStanici(station as TOR);
+   HVDb[addr].MoveToArea(area as TArea);
  Self.Data.announcementPlayed := false;
  Self.changed := true;
 end;
@@ -743,7 +743,7 @@ end;
 procedure TTrain.HVComErr(Sender: TObject; Data: Pointer);
 begin
  if (Self.data.station <> nil) then
-   (Self.data.station as TOR).BlkWriteError(nil, 'Souprava '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
+   (Self.data.station as TArea).BlkWriteError(nil, 'Souprava '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -954,7 +954,7 @@ end;
 
 procedure TTrain.CheckSH(signal: TObject);
 var msignal: TBlkSignal;
-    oblr: TOR;
+    area: TArea;
     shPlay: TSHToPlay;
     shTrain: TSHTrain;
 begin
@@ -962,13 +962,13 @@ begin
      (self.stationTo = nil) or (Self.typ = '')) then Exit();
 
  msignal := TBlkSignal(signal);
- if (msignal.stations.Count < 1) then Exit();
- oblr := msignal.stations[0];
+ if (msignal.areas.Count < 1) then Exit();
+ area := msignal.areas[0];
 
- if ((not Assigned(oblr.hlaseni)) or (not oblr.hlaseni.available)) then Exit();
+ if ((not Assigned(area.announcement)) or (not area.announcement.available)) then Exit();
 
  try
-   shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(self, oblr);
+   shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(self, area);
  except
    on E: Exception do
      AppEvents.LogException(E, 'CanPlayPrijezdSH');
@@ -976,8 +976,8 @@ begin
 
  shTrain.cislo := Self.name;
  shTrain.typ   := Self.typ;
- shTrain.fromORid := TOR(Self.stationFrom).id;
- shTrain.toORid := TOR(Self.stationTo).id;
+ shTrain.fromORid := TArea(Self.stationFrom).id;
+ shTrain.toORid := TArea(Self.stationTo).id;
  shTrain.timeArrive := 0;
  shTrain.timeDepart := 0;
 
@@ -991,10 +991,10 @@ begin
 
  try
    if ((shPlay.stanicniKolej <> nil) and ((shPlay.trat = nil) or (Self.IsPOdj(shPlay.stanicniKolej)))) then begin
-     oblr.hlaseni.Prijede(shTrain);
+     area.announcement.Prijede(shTrain);
      Self.data.announcementPlayed := true;
    end else if (shPlay.trat <> nil) then begin
-     oblr.hlaseni.Projede(shTrain);
+     area.announcement.Projede(shTrain);
      Self.data.announcementPlayed := true;
    end;
  except
@@ -1206,7 +1206,7 @@ begin
    json.A['hvs'].Add(addr);
 
  if (Self.data.station <> nil) then
-   json['station'] := TOR(Self.data.station).id;
+   json['station'] := TArea(Self.data.station).id;
  json['speed'] := Self.data.speed;
  json['wantedSpeed'] := Self.data.wantedSpeed;
  if (Self.data.maxSpeed > 0) then
@@ -1215,9 +1215,9 @@ begin
  if (Self.data.front <> nil) then
    json['front'] := TBlk(Self.data.front).id;
  if (Self.data.stationFrom <> nil) then
-   json['stationFrom'] := TOR(Self.data.stationFrom).id;
+   json['stationFrom'] := TArea(Self.data.stationFrom).id;
  if (Self.data.stationTo <> nil) then
-   json['stationTo'] := TOR(Self.data.stationTo).id;
+   json['stationTo'] := TArea(Self.data.stationTo).id;
  json['announcement'] := Self.data.announcement;
 
  for blkId in Self.data.podj.Keys do

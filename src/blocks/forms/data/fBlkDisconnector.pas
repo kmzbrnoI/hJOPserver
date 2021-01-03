@@ -45,7 +45,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, TOblRizeni;
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area;
 
 {$R *.dfm}
 
@@ -84,13 +84,13 @@ procedure TF_BlkDisconnector.NewBlkOpenForm;
 procedure TF_BlkDisconnector.NormalOpenForm;
 var glob: TBlkSettings;
     settings: TBlkDiscSettings;
-    oblr: TOR;
+    area: TArea;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  for oblr in Self.Blk.stations do
-    Self.LB_Stanice.Items.Add(oblr.Name);
+  for area in Self.Blk.areas do
+    Self.LB_Stanice.Items.Add(area.name);
 
   if (settings.RCSAddrs.Count > 0) then
    begin

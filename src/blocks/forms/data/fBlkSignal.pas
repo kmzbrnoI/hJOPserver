@@ -61,7 +61,7 @@ type
     OpenIndex: Integer;
     Blk: TBlkSignal;
     NewBlk: Boolean;
-    obls: TArstr;   // oblasti rizeni, ve kterych se navestidlo nachazi
+    areas: TArstr;   // oblasti rizeni, ve kterych se navestidlo nachazi
 
     eventForms: TObjectList<TF_BlkSignalEvent>;
     eventTabSheets: TObjectList<TTabSheet>;
@@ -84,7 +84,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, Block, TOblRizeni, DataBloky;
+uses GetSystems, FileSystem, TechnologieRCS, Block, Area, DataBloky;
 
 {$R *.dfm}
 
@@ -134,7 +134,7 @@ var glob: TBlkSettings;
     i: Integer;
     eventForm: TF_BlkSignalEvent;
     ts: TCloseTabSheet;
-    oblr: TOR;
+    area: TArea;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
@@ -142,12 +142,12 @@ var glob: TBlkSettings;
   Self.E_Nazev.Text := glob.name;
   Self.SE_ID.Value := glob.id;
 
-  for oblr in Self.Blk.stations do
-    Self.LB_Stanice.Items.Add(oblr.Name);
+  for area in Self.Blk.areas do
+    Self.LB_Stanice.Items.Add(area.name);
 
-  SetLength(obls, Self.Blk.stations.Count);
-  for i := 0 to Self.Blk.stations.Count-1 do
-    obls[i] := Self.Blk.stations[i].id;
+  SetLength(areas, Self.Blk.areas.Count);
+  for i := 0 to Self.Blk.areas.Count-1 do
+    areas[i] := Self.Blk.areas[i].id;
 
   Self.SE_Delay.Value := settings.fallDelay;
 
@@ -190,7 +190,7 @@ var glob: TBlkSettings;
       ts.Caption := IntToStr(settings.events[i].length.min)+'-'+IntToStr(settings.events[i].length.max)+'      ';
     eventForm  := TF_BlkSignalEvent.Create(ts);
 
-    eventForm.OpenForm(settings.events[i], (i = 0), Self.obls);
+    eventForm.OpenForm(settings.events[i], (i = 0), Self.areas);
     eventForm.Parent := ts;
     eventForm.Show();
 
@@ -206,7 +206,7 @@ var glob: TBlkSettings;
 
 procedure TF_BlkSignal.HlavniOpenForm();
  begin
-  SetLength(Self.obls, 0);
+  SetLength(Self.areas, 0);
   Self.LB_Stanice.Clear();
   Self.SE_RCSmodule1.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCSmodule2.MaxValue := RCSi.maxModuleAddrSafe;
@@ -266,7 +266,7 @@ begin
   eventForm := TF_BlkSignalEvent.Create(ts);
   Self.PC_Events.ActivePage := ts;
 
-  eventForm.OpenEmptyForm((Self.eventForms.Count = 0), Self.obls);
+  eventForm.OpenEmptyForm((Self.eventForms.Count = 0), Self.areas);
   eventForm.Parent := ts;
   eventForm.Show();
 

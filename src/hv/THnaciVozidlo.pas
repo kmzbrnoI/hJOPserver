@@ -48,7 +48,7 @@
 
 interface
 
-uses Trakce, Classes, SysUtils, TOblRizeni, Generics.Collections, IdContext,
+uses Trakce, Classes, SysUtils, Area, Generics.Collections, IdContext,
      IniFiles, IBUtils, JsonDataObjects, FileSystem;
 
 const
@@ -111,7 +111,7 @@ type
    traveled_backward: Real; // in meters
    funkce: TFunkce; // stav funkci tak, jak je chceme; uklada se do souboru
    train: Integer; // index soupravy; -1 pokud neni na souprave
-   stanice: TOR;
+   stanice: TArea;
    regulators: TList<THVRegulator>; // seznam regulatoru -- klientu
    tokens: TList<THVToken>;
    ruc: Boolean;
@@ -181,7 +181,7 @@ type
 
      constructor Create(data_ini: TMemIniFile; state_ini: TMemIniFile; section: string); overload;
      constructor Create(adresa: Word; data: THVData; stav: THVStav); overload;
-     constructor Create(panel_str: string; Sender: TOR); overload;
+     constructor Create(panel_str: string; Sender: TArea); overload;
      destructor Destroy(); override;
 
      procedure SaveData(); overload;
@@ -193,7 +193,7 @@ type
      procedure ResetStats();
      function ExportStats(): string;
 
-     function PredejStanici(st: TOR): Integer;
+     function MoveToArea(area: TArea): Integer;
      function GetPanelLokString(mode: TLokStringMode = normal): string; // vrati HV ve standardnim formatu pro klienta
      procedure UpdateRuc(send_remove: Boolean = true); // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
 
@@ -325,32 +325,32 @@ begin
  Self.m_funcDict := TDictionary<string, Integer>.Create();
  Self.UpdateFuncDict();
 
- if (not Assigned(Self.data.POMtake))    then Self.data.POMtake    := TList<THVPomCV>.Create;
+ if (not Assigned(Self.data.POMtake)) then Self.data.POMtake := TList<THVPomCV>.Create;
  if (not Assigned(Self.data.POMrelease)) then Self.data.POMrelease := TList<THVPomCV>.Create;
  if (not Assigned(Self.Stav.regulators)) then Self.Stav.regulators := TList<THVRegulator>.Create();
- if (not Assigned(Self.Stav.tokens))     then Self.Stav.tokens     := TList<THVToken>.Create();
-end;//ctor
+ if (not Assigned(Self.Stav.tokens)) then Self.Stav.tokens := TList<THVToken>.Create();
+end;
 
-constructor THV.Create(panel_str: string; Sender: TOR);
+constructor THV.Create(panel_str: string; Sender: TArea);
 begin
  inherited Create();
 
  Self.ResetStats();
 
  Self.Stav.regulators := TList<THVRegulator>.Create();
- Self.Stav.tokens     := TList<THVToken>.Create();
+ Self.Stav.tokens := TList<THVToken>.Create();
 
  Self.Stav.train := -1;
- Self.Stav.stanice  := Sender;
+ Self.Stav.stanice := Sender;
  Self.Stav.last_used := Now;
 
- Self.data.POMtake    := TList<THVPomCV>.Create;
+ Self.data.POMtake := TList<THVPomCV>.Create;
  Self.data.POMrelease := TList<THVPomCV>.Create;
 
  Self.m_funcDict := TDictionary<string, Integer>.Create();
 
  Self.UpdateFromPanelString(panel_str);
-end;//ctor
+end;
 
 destructor THV.Destroy();
 begin
@@ -358,8 +358,9 @@ begin
  Self.Stav.tokens.Free();
  Self.data.POMtake.Free();
  Self.data.POMrelease.Free();
- inherited Destroy();
-end;//dtor
+
+ inherited;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -679,13 +680,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THV.PredejStanici(st: TOR): Integer;
+function THV.MoveToArea(area: TArea): Integer;
 begin
  // zruseni RUC u stare stanice
  Self.Stav.stanice.BroadcastData('RUC-RM;'+IntToStr(Self.addr));
 
  // zmena stanice
- Self.Stav.stanice := st;
+ Self.Stav.stanice := area;
 
  // RUC do nove stanice
  Self.UpdateRuc(false);

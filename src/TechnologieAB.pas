@@ -121,10 +121,10 @@ begin
     writelog('DN JC '+JC.name+' : podmínky splněny, stavím', WR_STACK);
 
     Blocks.GetBlkByID(JC.data.signalId, blk);
-    if ((blk = nil) or (blk.typ <> btSignal) or (TBlkSignal(blk).stations.Count = 0)) then
+    if ((blk = nil) or (blk.typ <> btSignal) or (TBlkSignal(blk).areas.Count = 0)) then
       Self.Remove(jc);
 
-    JC.Activate(nil, TBlkSignal(blk).stations[0], nil, false, true);
+    JC.Activate(nil, TBlkSignal(blk).areas[0], nil, false, true);
   finally
     bariery.Free();
   end;

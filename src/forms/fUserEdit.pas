@@ -55,7 +55,7 @@ implementation
 
 {$R *.dfm}
 
-uses UserDb, DataUsers, TOblsRizeni, TOblRizeni, fMain;
+uses UserDb, DataUsers, TOblsRizeni, Area, fMain;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -71,9 +71,9 @@ begin
   begin
    if (Self.LV_ORs.Items[i].Selected) then
     begin
-     Self.openUser.SetRights(Self.LV_ORs.Items[i].Caption, TORControlRights(Self.CB_Rights.ItemIndex));
-     Self.LV_ORs.Items[i].SubItems.Strings[1] := TOR.ORRightsToString(TORControlRights(Self.CB_Rights.ItemIndex));
-     TORControlRights(Self.LV_ORs.Items[i].Data^) := TORControlRights(Self.CB_Rights.ItemIndex);
+     Self.openUser.SetRights(Self.LV_ORs.Items[i].Caption, TAreaRights(Self.CB_Rights.ItemIndex));
+     Self.LV_ORs.Items[i].SubItems.Strings[1] := TArea.ORRightsToString(TAreaRights(Self.CB_Rights.ItemIndex));
+     TAreaRights(Self.LV_ORs.Items[i].Data^) := TAreaRights(Self.CB_Rights.ItemIndex);
     end;
   end;
 
@@ -92,7 +92,7 @@ end;
 
 procedure TF_UserEdit.LV_ORsChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
-var rights, rights2: TORControlRights;
+var rights, rights2: TAreaRights;
     i: Integer;
 begin
  if (Self.LV_ORs.SelCount = 0) then
@@ -105,7 +105,7 @@ begin
    if (Self.LV_ORs.SelCount = 1) then
     begin
      // 1 vybrana polozka
-     if (Self.openUser.OblR.TryGetValue(Self.LV_ORs.Selected.Caption, rights)) then
+     if (Self.openUser.areas.TryGetValue(Self.LV_ORs.Selected.Caption, rights)) then
       Self.CB_Rights.ItemIndex := Integer(rights)
      else
       Self.CB_Rights.ItemIndex := -1;
@@ -114,12 +114,12 @@ begin
 
      for i := 0 to Self.LV_ORs.Items.Count-1 do
        if (Self.LV_ORs.Items[i].Selected) then
-         Self.openUser.OblR.TryGetValue(Self.LV_ORs.Items[i].Caption, rights);
+         Self.openUser.areas.TryGetValue(Self.LV_ORs.Items[i].Caption, rights);
 
      for i := 0 to Self.LV_ORs.Items.Count-1 do
        if (Self.LV_ORs.Items[i].Selected) then
         begin
-         Self.openUser.OblR.TryGetValue(Self.LV_ORs.Items[i].Caption, rights2);
+         Self.openUser.areas.TryGetValue(Self.LV_ORs.Items[i].Caption, rights2);
          if (rights2 <> rights) then
           begin
            Self.CB_Rights.ItemIndex := -1;
@@ -135,11 +135,11 @@ end;
 procedure TF_UserEdit.LV_ORsCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
- case TORCOntrolRights(Item.Data^) of
-  TORCOntrolRights.null      : Self.LV_ORs.Canvas.Brush.Color := clWhite;
-  TORCOntrolRights.read      : Self.LV_ORs.Canvas.Brush.Color := $FFFFAA;
-  TORCOntrolRights.write     : Self.LV_ORs.Canvas.Brush.Color := $AAFFFF;
-  TORCOntrolRights.superuser : Self.LV_ORs.Canvas.Brush.Color := $AAAAFF;
+ case TAreaRights(Item.Data^) of
+  TAreaRights.null      : Self.LV_ORs.Canvas.Brush.Color := clWhite;
+  TAreaRights.read      : Self.LV_ORs.Canvas.Brush.Color := $FFFFAA;
+  TAreaRights.write     : Self.LV_ORs.Canvas.Brush.Color := $AAFFFF;
+  TAreaRights.superuser : Self.LV_ORs.Canvas.Brush.Color := $AAAAFF;
  end;//case
 end;
 
@@ -266,24 +266,24 @@ end;
 
 procedure TF_UserEdit.FillORs();
 var LI: TListItem;
-    rights: TORCOntrolRights;
+    rights: TAreaRights;
     data: Pointer;
-    oblr: TOR;
+    area: TArea;
 begin
  Self.LV_ORs.Clear();
 
- for oblr in ORs do
+ for area in ORs do
   begin
    LI := Self.LV_ORs.Items.Add;
-   LI.Caption := oblr.id;
-   LI.SubItems.Add(oblr.Name);
+   LI.Caption := area.id;
+   LI.SubItems.Add(area.name);
 
-   if (not Self.openUser.OblR.TryGetValue(LI.Caption, rights)) then
-    rights := TORCOntrolRights.null;
-   LI.SubItems.Add(TOR.ORRightsToString(rights));
+   if (not Self.openUser.areas.TryGetValue(LI.Caption, rights)) then
+    rights := TAreaRights.null;
+   LI.SubItems.Add(TArea.ORRightsToString(rights));
 
    GetMem(data, 3);
-   TORControlRights(data^) := rights;
+   TAreaRights(data^) := rights;
 
    LI.Data := data;
   end;

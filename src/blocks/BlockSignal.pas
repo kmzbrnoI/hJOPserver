@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, rrEvent,
       TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
-      TOblRizeni, StrUtils, JsonDataObjects, TechnologieRCS, Train, JclPCRE;
+      Area, StrUtils, JsonDataObjects, TechnologieRCS, Train, JclPCRE;
 
 type
  TBlkSignalSelection = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
@@ -248,8 +248,8 @@ type
     property groupMaster: TBlk read m_groupMaster write m_groupMaster;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
-    procedure PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
+    procedure PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
     function PanelStateString(): string; override;
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
@@ -379,7 +379,7 @@ begin
     end;
   end;
 
- PushRCSToOR(Self.m_stations, Self.m_settings.RCSAddrs);
+ PushRCSToArea(Self.m_areas, Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkSignal.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -519,7 +519,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSignal.SetSignal(code: TBlkSignalCode; changeCallbackOk: TNotifyEvent = nil; changeCallbackErr: TNotifyEvent = nil);
-var oblr: TOR;
+var area: TArea;
     traini: Integer;
 begin
  if ((Self.m_state.signal = ncDisabled) or (Self.m_settings.locked)) then
@@ -533,10 +533,10 @@ begin
   begin
    // prodlouzeni nebo zruseni privolavaci navesti -> zrusit odpocet v panelu
    if (Self.m_state.privolTimerId > 0) then
-     for oblr in Self.m_stations do
+     for area in Self.m_areas do
       begin
-       oblr.BroadcastGlobalData('INFO-TIMER-RM;'+IntToStr(Self.m_state.privolTimerId));
-       oblr.TimerCnt := oblr.TimerCnt - 1;
+       area.BroadcastGlobalData('INFO-TIMER-RM;'+IntToStr(Self.m_state.privolTimerId));
+       area.TimerCnt := area.TimerCnt - 1;
       end;
    Self.m_state.privolTimerId := 0;
   end;
@@ -594,8 +594,8 @@ begin
  if ((Self.signal = ncPrivol) and (code = ncStuj)) then
   begin
    // STUJ po privolavacce -> vypnout zvukovou vyzvu
-   for oblr in Self.m_stations do
-     oblr.PrivolavackaBlkCnt := oblr.PrivolavackaBlkCnt - 1;
+   for area in Self.m_areas do
+     area.pnBlkCnt := area.pnBlkCnt - 1;
   end;
 
  if (not Self.changing) then
@@ -631,15 +631,15 @@ end;
 
 procedure TBlkSignal.OnSignalSetOk();
 var tmp: TNotifyEvent;
-    oblr: TOR;
+    area: TArea;
 begin
  Self.m_state.signal := Self.m_state.targetSignal;
 
  if (Self.m_state.targetSignal = ncPrivol) then
   begin
    // nova navest je privolavacka -> zapnout zvukovou vyzvu
-   for oblr in Self.m_stations do
-     oblr.PrivolavackaBlkCnt := oblr.PrivolavackaBlkCnt + 1;
+   for area in Self.m_areas do
+     area.pnBlkCnt := area.pnBlkCnt + 1;
   end;
 
  if (Self.autoblok) then
@@ -774,15 +774,15 @@ procedure TBlkSignal.MenuVCStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 var Blk: TBlk;
 begin
  if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit();
- if ((SenderOR as TOR).stack.mode = PV) then
+ if ((SenderOR as TArea).stack.mode = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.destroyEndBlock < 1)) or
        (JCDb.FindJCActivating(Self.id) <> nil)) then Exit();
 
- Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
  if (Blk <> nil) then
   begin
    (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
-   TOR(SenderOR).ClearVb(); // smazeme dosavadni seznam variantnich bodu
+   TArea(SenderOR).ClearVb(); // smazeme dosavadni seznam variantnich bodu
   end;
  Self.selected := TBlkSignalSelection.VC;
  Self.m_state.beginAB := false;
@@ -796,11 +796,11 @@ end;
 procedure TBlkSignal.MenuPCStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 var Blk: TBlk;
 begin
- if ((SenderOR as TOR).stack.mode = PV) then
+ if ((SenderOR as TArea).stack.mode = PV) then
    if (((Self.DNjc <> nil) and (Self.DNjc.destroyEndBlock < 1)) or
        (JCDb.FindJCActivating(Self.id) <> nil)) then Exit();
 
- Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
  Self.selected := TBlkSignalSelection.PC;
  Self.m_state.beginAB := false;
@@ -827,7 +827,7 @@ begin
 
  if (Self.RCinProgress()) then
   begin
-   TOR(SenderOR).StopMereniCasu(Self.m_state.RCtimer);
+   TArea(SenderOR).RemoveCountdown(Self.m_state.RCtimer);
    Self.m_state.RCtimer := -1;
   end;
 
@@ -847,19 +847,19 @@ begin
  if ((Blk = nil) or ((Blk.typ <> btTrack) and (Blk.typ <> btRT))) then
   begin
    // pokud blok pred JC neni -> 30 sekund
-   Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.Cancel, EncodeTime(0, 0, 30, 0));
+   Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 0, 30, 0));
   end else begin
    if ((Blk as TBlkTrack).occupied = TTrackState.free) then
     begin
      // pokud neni blok pred JC obsazen -> 2 sekundy
-     Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.Cancel, EncodeTime(0, 0, 2, 0));
+     Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 0, 2, 0));
     end else begin
      // pokud je obsazen, zalezi na typu jizdni cesty
      case (JC.typ) of
-      TJCType.train: Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.Cancel, EncodeTime(0, 0, 15, 0));   // vlakova cesta : 20 sekund
-      TJCType.shunt: Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.Cancel, EncodeTime(0, 0,  5, 0));   // posunova cesta: 10 sekund
+      TJCType.train: Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 0, 15, 0));   // vlakova cesta : 20 sekund
+      TJCType.shunt: Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 0,  5, 0));   // posunova cesta: 10 sekund
      else
-      Self.m_state.RCtimer := (SenderOR as TOR).AddMereniCasu(JC.Cancel, EncodeTime(0, 1, 0, 0));                   // nejaka divna cesta: 1 minuta
+      Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 1, 0, 0));                   // nejaka divna cesta: 1 minuta
      end;
     end;
   end;
@@ -902,16 +902,16 @@ end;
 
 procedure TBlkSignal.MenuPNStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 var Blk: TBlk;
-    oblr: TOR;
+    area: TArea;
 begin
  if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit();
 
- Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
  Self.selected := TBlkSignalSelection.NC;
 
- for oblr in Self.stations do
-   oblr.ORDKClickServer(Self.PrivolDKClick);
+ for area in Self.areas do
+   area.ORDKClickServer(Self.PrivolDKClick);
 end;
 
 procedure TBlkSignal.MenuPNStopClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -924,10 +924,10 @@ end;
 procedure TBlkSignal.MenuPPStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 var Blk: TBlk;
 begin
- if ((SenderOR as TOR).stack.mode = PV) then
+ if ((SenderOR as TArea).stack.mode = PV) then
    if ((Self.signal > ncStuj) or (JCDb.FindJC(Self.id, false) <> nil)) then Exit();
 
- Blk := Blocks.GeTBlkSignalSelected((SenderOR as TOR).id);
+ Blk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
  if (Blk <> nil) then (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
  Self.selected := TBlkSignalSelection.PP;
 end;
@@ -941,34 +941,36 @@ end;
 
 procedure TBlkSignal.MenuPPNClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Prodloužení doby přivolávací návěsti', TBlocks.GetBlksList(Self), nil);
+ ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea, 'Prodloužení doby přivolávací návěsti',
+    TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkSignal.MenuRNZClick(SenderPnl: TIdContext; SenderOR: TObject);
-var podminky: TList<TPSPodminka>;
+var conditions: TList<TConfSeqItem>;
     blkId: Integer;
     blk: TBlk;
 begin
- podminky := TList<TPSPodminka>.Create();
+ conditions := TList<TConfSeqItem>.Create();
 
  for blkId in Self.m_state.toRnz.Keys do
   begin
    Blocks.GetBlkByID(blkId, Blk);
    if (blk <> nil) then
-     podminky.Add(TOR.GetPSPodminka(blk, 'Rušení NZ'));
+     conditions.Add(TArea.GetPSPodminka(blk, 'Rušení NZ'));
   end;
 
- ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TOR, 'Zrušení nouzových závěrů po nouzové cestě', TBlocks.GetBlksList(Self), podminky);
+ ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TArea, 'Zrušení nouzových závěrů po nouzové cestě',
+    TBlocks.GetBlksList(Self), conditions);
 end;
 
 procedure TBlkSignal.MenuKCDKClick(SenderPnl: TIdContext; SenderOR: TObject);
-var oblr: TOR;
+var area: TArea;
 begin
  if (Self.selected = TBlkSignalSelection.NC) then
   begin
-   for oblr in Self.stations do
-     oblr.ORDKClickClient();
-   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí přivolávací návěsti',
+   for area in Self.areas do
+     area.ORDKClickClient();
+   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea, 'Zapnutí přivolávací návěsti',
                      TBlocks.GetBlksList(Self), nil);
   end;
 end;
@@ -987,33 +989,33 @@ begin
        RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs[0].board, TBlkIR(Blk).GetSettings().RCSAddrs[0].port, 0);
     end;
  except
-   ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se nastavit stav IR čidla!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se nastavit stav IR čidla!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkSignal.PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+procedure TBlkSignal.PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  case (Button) of
-  F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+  F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
   ENTER: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.destroyEndBlock >= 1)) and
            (JCDb.FindJCActivating(Self.id) = nil) and (Self.signal <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self) and (Self.enabled)))
-         or (TOR(SenderOR).stack.mode = VZ)) and (JCDb.IsAnyVC(Self))) then begin
+         or (TArea(SenderOR).stack.mode = VZ)) and (JCDb.IsAnyVC(Self))) then begin
       if ((not Self.m_settings.locked) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
     end else
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
 
   F1: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.destroyEndBlock >= 1)) and
            (JCDb.FindJCActivating(Self.id) = nil) and (Self.signal <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)) and (Self.enabled))
-         or ((SenderOR as TOR).stack.mode = VZ)) and (JCDb.IsAnyPC(Self))) then begin
+         or ((SenderOR as TArea).stack.mode = VZ)) and (JCDb.IsAnyPC(Self))) then begin
       if ((not Self.m_settings.locked) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
     end else
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
  end;//case
 end;
@@ -1023,32 +1025,32 @@ end;
 //toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
 procedure TBlkSignal.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
- if      (item = 'VC>')  then Self.MenuVCStartClick(SenderPnl, SenderOR)
- else if (item = 'VC<')  then Self.MenuVCStopClick (SenderPnl, SenderOR)
- else if (item = 'PC>')  then Self.MenuPCStartClick(SenderPnl, SenderOR)
- else if (item = 'PC<')  then Self.MenuPCStopClick (SenderPnl, SenderOR)
- else if (item = 'STUJ') then Self.MenuSTUJClick   (SenderPnl, SenderOR)
- else if (item = 'DN')   then Self.MenuDNClick     (SenderPnl, SenderOR)
- else if (item = 'RC')   then Self.MenuRCClick     (SenderPnl, SenderOR)
- else if (item = 'AB>')  then Self.MenuABStartClick(SenderPnl, SenderOR)
- else if (item = 'AB<')  then Self.MenuABStopClick (SenderPnl, SenderOR)
- else if (item = 'ZAM>') then Self.MenuLockClick   (SenderPnl, SenderOR)
- else if (item = 'ZAM<') then Self.MenuUnlockClick (SenderPnl, SenderOR)
- else if (item = 'PN>')  then Self.MenuPNStartClick(SenderPnl, SenderOR)
- else if (item = 'PN<')  then Self.MenuPNStopClick (SenderPnl, SenderOR)
- else if (item = 'PP>')  then Self.MenuPPStartClick(SenderPnl, SenderOR)
- else if (item = 'PP<')  then Self.MenuPPStopClick (SenderPnl, SenderOR)
- else if (item = 'PPN')  then Self.MenuPPNClick    (SenderPnl, SenderOR)
- else if (item = 'RNZ')  then Self.MenuRNZClick    (SenderPnl, SenderOR)
- else if (item = 'IR>')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, true)
- else if (item = 'IR<')  then Self.MenuAdminStopIR (SenderPnl, SenderOR, false)
- else if (item = 'KC')   then Self.MenuKCDKClick   (SenderPnl, SenderOR);
+ if      (item = 'VC>') then Self.MenuVCStartClick(SenderPnl, SenderOR)
+ else if (item = 'VC<') then Self.MenuVCStopClick(SenderPnl, SenderOR)
+ else if (item = 'PC>') then Self.MenuPCStartClick(SenderPnl, SenderOR)
+ else if (item = 'PC<') then Self.MenuPCStopClick(SenderPnl, SenderOR)
+ else if (item = 'STUJ') then Self.MenuSTUJClick(SenderPnl, SenderOR)
+ else if (item = 'DN') then Self.MenuDNClick(SenderPnl, SenderOR)
+ else if (item = 'RC') then Self.MenuRCClick(SenderPnl, SenderOR)
+ else if (item = 'AB>') then Self.MenuABStartClick(SenderPnl, SenderOR)
+ else if (item = 'AB<') then Self.MenuABStopClick(SenderPnl, SenderOR)
+ else if (item = 'ZAM>') then Self.MenuLockClick(SenderPnl, SenderOR)
+ else if (item = 'ZAM<') then Self.MenuUnlockClick(SenderPnl, SenderOR)
+ else if (item = 'PN>') then Self.MenuPNStartClick(SenderPnl, SenderOR)
+ else if (item = 'PN<') then Self.MenuPNStopClick(SenderPnl, SenderOR)
+ else if (item = 'PP>') then Self.MenuPPStartClick(SenderPnl, SenderOR)
+ else if (item = 'PP<') then Self.MenuPPStopClick(SenderPnl, SenderOR)
+ else if (item = 'PPN') then Self.MenuPPNClick(SenderPnl, SenderOR)
+ else if (item = 'RNZ') then Self.MenuRNZClick(SenderPnl, SenderOR)
+ else if (item = 'IR>') then Self.MenuAdminStopIR(SenderPnl, SenderOR, true)
+ else if (item = 'IR<') then Self.MenuAdminStopIR(SenderPnl, SenderOR, false)
+ else if (item = 'KC') then Self.MenuKCDKClick(SenderPnl, SenderOR);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro konkretni s-com:
-function TBlkSignal.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkSignal.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 var Blk: TBlk;
 begin
  Result := inherited;
@@ -1058,7 +1060,7 @@ begin
 
  if (((((Self.DNjc = nil) or (Self.DNjc.destroyEndBlock >= 1)) and
         (JCDb.FindJCActivating(Self.id) = nil) and (Self.signal <> ncPrivol) and (not Self.AB))
-      or ((SenderOR as TOR).stack.mode = VZ)) and
+      or ((SenderOR as TArea).stack.mode = VZ)) and
      (not Self.autoblok)) then
   begin
     case (Self.m_state.selected) of
@@ -1074,7 +1076,7 @@ begin
       //2 = VC, 3= PC
       if (Self.m_spnl.symbolType = TBlkSignalSymbol.main) then
        begin
-        if (((JCDb.IsAnyVCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TOR).stack.mode = VZ)) then // i kdyz neni zadna VC, schvalne umoznime PN
+        if (((JCDb.IsAnyVCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TArea).stack.mode = VZ)) then // i kdyz neni zadna VC, schvalne umoznime PN
          begin
           Result := Result + 'VC>,';
           if (Self.DNjc = nil) then
@@ -1084,7 +1086,7 @@ begin
        end;
       if (JCDb.IsAnyPC(Self)) then
        begin
-        if (((JCDb.IsAnyPCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TOR).stack.mode = VZ)) then
+        if (((JCDb.IsAnyPCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TArea).stack.mode = VZ)) then
           Result := Result + 'PC>,';
         Result := Result + 'PP>,';
        end;
@@ -1459,18 +1461,18 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSignal.UpdatePrivol();
-var oblr: TOR;
+var area: TArea;
 begin
  if ((Self.m_state.privolStart+EncodeTime(0, _PRIVOL_MIN, _PRIVOL_SEC, 0) < Now+EncodeTime(0, 0, 30, 0)) and
      (Self.m_state.privolTimerId = 0)) then
   begin
    // oznameni o brzkem ukonceni privolavaci navesti
    Self.m_state.privolTimerId := Random(65536)+1;
-   for oblr in Self.m_stations do
+   for area in Self.m_areas do
     begin
-     oblr.BroadcastGlobalData('INFO-TIMER;'+IntToStr(Self.m_state.privolTimerId)+
+     area.BroadcastGlobalData('INFO-TIMER;'+IntToStr(Self.m_state.privolTimerId)+
                               ';0;30; PN '+Self.m_globSettings.name);
-     oblr.TimerCnt := oblr.TimerCnt + 1;
+     area.TimerCnt := area.TimerCnt + 1;
     end;
   end;
 
@@ -1485,17 +1487,17 @@ end;
 
 // privolavaci navest bez podpory zabezpecovaciho zarizeni
 procedure TBlkSignal.PrivolDKClick(SenderPnl: TIDContext; SenderOR: TObject; Button: TPanelButton);
-var oblr: TOR;
+var area: TArea;
 begin
  if (Button = ENTER) then
   begin
-   for oblr in Self.stations do
-     oblr.ORDKClickClient();
-   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TOR, 'Zapnutí přivolávací návěsti',
+   for area in Self.areas do
+     area.ORDKClickClient();
+   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea, 'Zapnutí přivolávací návěsti',
                      TBlocks.GetBlksList(Self), nil);
   end else begin
    if (Button = TPanelButton.F2) then
-     ORTCPServer.Menu(SenderPnl, Self, TOR(SenderOR), '$'+TOR(SenderOR).Name + ',-,' + 'KC');
+     ORTCPServer.Menu(SenderPnl, Self, TArea(SenderOR), '$'+TArea(SenderOR).Name + ',-,' + 'KC');
   end;
 end;
 

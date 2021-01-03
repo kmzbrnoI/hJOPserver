@@ -1,4 +1,4 @@
-unit TOblsRizeni;
+﻿unit TOblsRizeni;
 
 {
   Trida TORs sdruzuje oblasti rizeni do databaze.
@@ -6,8 +6,8 @@ unit TOblsRizeni;
 
 interface
 
-uses TOblRizeni, IniFiles, SysUtils, Classes, COmCtrls, IdContext,
-      StdCtrls, Generics.Collections;
+uses Area, IniFiles, SysUtils, Classes, COmCtrls, IdContext,
+     StdCtrls, Generics.Collections;
 
 type
   TORs = class
@@ -15,7 +15,7 @@ type
      _SECT_OR = 'OR';                                                           // sekce ini souboru .spnl, ve ktere jsou ulozeny oblasti rizeni
 
    private
-     db: TObjectList<TOR>;
+     db: TObjectList<TArea>;
      fstat_filename: string;
 
       function GetORCnt(): Integer;
@@ -27,29 +27,29 @@ type
       procedure LoadData(const filename: string; const stat_filename: string);
       procedure SaveStatus(const filename: string);
 
-      function Get(index: Integer): TOR; overload;
-      function Get(id: string): TOR; overload;
+      function Get(index: Integer): TArea; overload;
+      function Get(id: string): TArea; overload;
 
-      function ParseORs(str: string): TList<TOR>;                                 // parsuje seznam oblasti rizeni
+      function ParseORs(str: string): TList<TArea>;                                 // parsuje seznam oblasti rizeni
       procedure RCSFail(addr: integer);                                          // je vyvolano pri vypadku RCS modulu, resi zobrazeni chyby do panelu v OR
 
       procedure Update();                                                       // aktualizuje stav OR
       procedure DisconnectPanels();                                             // odpoji vsechny panely dane OR
       procedure SendORList(Context: TIdContext);                                 // odesle seznam vsech OR na spojeni \Context
 
-      procedure FillCB(CB: TComboBox; selected: TOR);                             // naplni ComboBox seznamem oblasti rizeni
+      procedure FillCB(CB: TComboBox; selected: TArea);                             // naplni ComboBox seznamem oblasti rizeni
       procedure InitOsv();
-      procedure BroadcastBottomError(err: string; tech: string; min_rights: TORControlRights = read);
+      procedure BroadcastBottomError(err: string; tech: string; min_rights: TAreaRights = read);
                                                                                 // broadcast chybove hlasky, ktera ma jit jen panelum,
                                                                                 // kde alespon jeden je minimalne opravneni min_rights
-      procedure BroadcastPlaySound(sound_code: Integer; loop: Boolean = false; min_rights: TORControlRights = read);
+      procedure BroadcastPlaySound(sound_code: Integer; loop: Boolean = false; min_rights: TAreaRights = read);
 
-      function GetEnumerator(): TEnumerator<TOR>;
-      property Items[index : integer] : TOR read Get; default;
+      function GetEnumerator(): TEnumerator<TArea>;
+      property Items[index : integer] : TArea read Get; default;
       property Count: Integer read GetORCnt;
 
       property status_filename: string read fstat_filename;
-  end;//TORs
+  end;
 
 var
   ORs: TORs;
@@ -63,14 +63,14 @@ uses Logging, TCPServerOR, THVDatabase, appEv, FileSystem;
 constructor TORs.Create();
 begin
  inherited;
- Self.db := TObjectList<TOR>.Create(TOR.IdComparer());
-end;//ctor
+ Self.db := TObjectList<TArea>.Create(TArea.IdComparer());
+end;
 
 destructor TORs.Destroy();
 begin
  Self.db.Free();
  inherited Destroy();
-end;//dtor
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -79,7 +79,7 @@ procedure TORs.LoadData(const filename: string; const stat_filename: string);
 var ini, ini_stat: TMemIniFile;
     oblasti: TStrings;
     i: Integer;
-    OblR: TOR;
+    area: TArea;
 begin
  writelog('Načítám stanice - '+filename, WR_DATA);
  Self.fstat_filename := stat_filename;
@@ -97,16 +97,16 @@ begin
 
    for i := 0 to oblasti.Count-1 do
     begin
-     OblR := TOR.Create(i+1);
+     area := TArea.Create(i+1);
      try
-       OblR.LoadData(ini.ReadString(_SECT_OR, oblasti[i], ''));
-       OblR.LoadStat(ini_stat, OblR.id);
-       Self.db.Add(OblR);
+       area.LoadData(ini.ReadString(_SECT_OR, oblasti[i], ''));
+       area.LoadStat(ini_stat, area.id);
+       Self.db.Add(area);
      except
        on E: Exception do
         begin
          AppEvents.LogException(E, 'Nacitam oblast rizeni ' + IntToStr(i));
-         OblR.Free();
+         area.Free();
         end;
      end;
     end;
@@ -128,17 +128,17 @@ end;
 
 procedure TORs.SaveStatus(const filename: string);
 var ini: TMemIniFile;
-    oblr: TOR;
+    area: TArea;
 begin
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
- for oblr in Self.db do
+ for area in Self.db do
   begin
    try
-     oblr.SaveStat(ini, oblr.id);
+     area.SaveStat(ini, area.id);
    except
      on E: Exception do
-       AppEvents.LogException(E, 'Ukladani stavu OR ' + oblr.id);
+       AppEvents.LogException(E, 'Ukladani stavu OR ' + area.id);
    end;
   end;
 
@@ -149,17 +149,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //parsing OR stringu
-function TORs.ParseORs(str: string): TList<TOR>;
+function TORs.ParseORs(str: string): TList<TArea>;
 var parsed: TStrings;
-    oblr: string;
+    areaid: string;
 begin
  parsed := TStringList.Create();
  try
    ExtractStrings(['|'],[], PChar(str), parsed);
 
-   Result := TList<TOR>.Create();
-   for oblr in parsed do
-     Result.Add(Self.Get(oblr));
+   Result := TList<TArea>.Create();
+   for areaid in parsed do
+     Result.Add(Self.Get(areaid));
  finally
    parsed.Free();
  end;
@@ -167,7 +167,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORs.Get(index: Integer): TOR;
+function TORs.Get(index: Integer): TArea;
 begin
  Result := Self.db[index];
 end;
@@ -207,15 +207,15 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORs.RCSFail(addr: integer);
-var OblR: TOR;
+var area: TArea;
 begin
- for OblR in Self.db do
-   OblR.RCSFail(addr);
+ for area in Self.db do
+   area.RCSFail(addr);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORs.FillCB(CB: TComboBox; selected: TOR);
+procedure TORs.FillCB(CB: TComboBox; selected: TArea);
 var i: Integer;
 begin
  CB.Clear();
@@ -237,23 +237,23 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORs.InitOsv();
-var oblr: TOR;
+var areas: TArea;
 begin
- for oblr in Self.db do
-   oblr.OsvInit();
+ for areas in Self.db do
+   areas.OsvInit();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TORs.BroadcastBottomError(err: string; tech: string; min_rights: TORControlRights = read);
-var OblR: TOR;
-    connected: TORPanel;
+procedure TORs.BroadcastBottomError(err: string; tech: string; min_rights: TAreaRights = read);
+var areas: TArea;
+    connected: TAreaPanel;
     clients: TDictionary<TIdContext, Boolean>; // set
     client: TIdContext;
 begin
  clients := TDictionary<TIdContext, Boolean>.Create();
- for OblR in Self.db do
-   for connected in OblR.Connected do
+ for areas in Self.db do
+   for connected in areas.Connected do
      if (connected.Rights >= min_rights) then
        clients.AddOrSetValue(connected.Panel, true);
 
@@ -263,15 +263,15 @@ begin
  clients.Free();
 end;
 
-procedure TORs.BroadcastPlaySound(sound_code: Integer; loop: Boolean = false; min_rights: TORControlRights = read);
-var OblR: TOR;
-    connected: TORPanel;
+procedure TORs.BroadcastPlaySound(sound_code: Integer; loop: Boolean = false; min_rights: TAreaRights = read);
+var area: TArea;
+    connected: TAreaPanel;
     clients: TDictionary<TIdContext, Boolean>; // set
     client: TIdContext;
 begin
  clients := TDictionary<TIdContext, Boolean>.Create();
- for OblR in Self.db do
-   for connected in OblR.Connected do
+ for area in Self.db do
+   for connected in area.Connected do
      if (connected.Rights >= min_rights) then
        clients.AddOrSetValue(connected.Panel, true);
 
@@ -283,7 +283,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORs.Get(id: string): TOR;
+function TORs.Get(id: string): TArea;
 var left, right, mid: Integer;
 begin
  left := 0;
@@ -304,7 +304,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TORs.GetEnumerator(): TEnumerator<TOR>;
+function TORs.GetEnumerator(): TEnumerator<TArea>;
 begin
  Result := Self.db.GetEnumerator();
 end;

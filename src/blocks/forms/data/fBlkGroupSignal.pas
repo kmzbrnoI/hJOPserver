@@ -70,7 +70,7 @@ var
 
 implementation
 
-uses Block, TOblRizeni, DataBloky, TechnologieRCS, BlockSignal;
+uses Block, Area, DataBloky, TechnologieRCS, BlockSignal;
 
 {$R *.dfm}
 
@@ -127,7 +127,7 @@ procedure TF_BlkGroupSignal.EditBlkOpenForm();
 var glob: TBlkSettings;
     settings: TBlkGSSettings;
     signalSettings: TBlkSignalSettings;
-    oblr: TOR;
+    area: TArea;
     LI: TListItem;
     id: Integer;
 begin
@@ -135,8 +135,8 @@ begin
  settings := Self.blk.GetSettings();
  signalSettings := TBlkSignal(Self.blk).GetSettings();
 
- for oblr in Self.Blk.stations do
-   Self.LB_Stations.Items.Add(oblr.Name);
+ for area in Self.Blk.areas do
+   Self.LB_Stations.Items.Add(area.name);
 
  Self.E_Name.Text := glob.name;
  Self.SE_ID.Value := glob.id;
@@ -348,7 +348,7 @@ end;
 
 procedure TF_BlkGroupSignal.FillCBNewSignal();
 var signalIgnore: TArI;
-    obls: TArStr;
+    areas: TArStr;
     i: Integer;
 begin
  SetLength(signalIgnore, Self.LV_Signals.Items.Count);
@@ -357,12 +357,12 @@ begin
 
  if (Self.blk <> nil) then
   begin
-   SetLength(obls, Self.blk.stations.Count);
-   for i := 0 to Self.blk.stations.Count-1 do
-     obls[i] := Self.blk.stations[i].id;
+   SetLength(areas, Self.blk.areas.Count);
+   for i := 0 to Self.blk.areas.Count-1 do
+     areas[i] := Self.blk.areas[i].id;
   end;
 
- Blocks.FillCB(Self.CB_NewSignal, @Self.CB_NewSignalData, @signalIgnore, obls, btSignal, -1);
+ Blocks.FillCB(Self.CB_NewSignal, @Self.CB_NewSignalData, @signalIgnore, areas, btSignal, -1);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

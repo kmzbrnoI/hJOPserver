@@ -42,7 +42,7 @@ Jak to funguje:
 interface
 
 uses BlockTrack, Classes, Block, IniFiles, SysUtils, IdContext, rrEvent,
-      Generics.Collections, TOblRizeni, THnaciVozidlo, Train, JclPCRE;
+      Generics.Collections, Area, THnaciVozidlo, Train, JclPCRE;
 
 type
  TBlkRTStopEvents = class // zastavka v jednom smeru
@@ -187,8 +187,8 @@ type
     procedure Change(now: Boolean = false); override;
     procedure ChangeFromTrat();                                                 // aktualizace TU z trati, vola se zejemna pri zmene smeru a jeho ucel je nastavit navestidla autobloku podle smeru trati
 
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
-    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
     procedure CreateNavRefs();                                                  // navestidlum autobloku nastavi UsekPred a smer
@@ -595,7 +595,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkRT.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkRT.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
  Result := inherited;
 
@@ -623,22 +623,22 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkRT.PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
-    Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+    Button: TPanelButton; rights: TAreaRights; params: string = '');
 var Blk: TBlk;
 begin
  case (Button) of
-  F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+  F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
   ENTER : begin
     if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
     if (not Self.MoveLok(SenderPnl, SenderOR, 0)) then // predpokladame, ze TU muze mit max. 1 soupravu
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
 
   F1: begin
-    Blk := Blocks.GetBlkSignalSelected((SenderOR as TOR).id);
+    Blk := Blocks.GetBlkSignalSelected((SenderOR as TArea).id);
     if (Blk = nil) then
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
+      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
     else
       Self.MenuVBClick(SenderPnl, SenderOR);
   end;
@@ -767,19 +767,19 @@ begin
 end;
 
 procedure TBlkRT.MenuRBPClick(SenderPnl: TIdContext; SenderOR: TObject);
-var podm: TPSPodminky;
+var podm: TConfSeqItems;
 begin
- podm := TPSPodminky.Create();
+ podm := TConfSeqItems.Create();
  if (Self.IsTrain()) then
   begin
-   podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z úseku'));
+   podm.Add(TArea.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z úseku'));
    if ((Self.railway <> nil) and (not TBlkRailway(Self.railway).IsTrainInMoreTUs(Self.train))) then
-     podm.Add(TOR.GetPSPodminka(Self.railway, 'Smazání soupravy '+Self.train.name+' z tratě'));
+     podm.Add(TArea.GetPSPodminka(Self.railway, 'Smazání soupravy '+Self.train.name+' z tratě'));
    if (Blocks.GetBlkWithTrain(Self.train).Count = 1) then
-     podm.Add(TOR.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z kolejiště'));
+     podm.Add(TArea.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z kolejiště'));
   end;
 
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TOR,
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TArea,
                    'Zrušení poruchy blokové podmínky', TBlocks.GetBlksList(Self), podm);
 end;
 

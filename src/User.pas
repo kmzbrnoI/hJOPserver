@@ -17,7 +17,7 @@ unit User;
 interface
 
 uses IniFiles, Generics.Collections, DCPsha256, SysUtils, Classes,
-     Generics.Defaults, TOblRizeni, Windows, JsonDataObjects;
+     Generics.Defaults, Area, Windows, JsonDataObjects;
 
 const
   _SALT_LEN = 24;
@@ -45,7 +45,7 @@ type
     firstname: string;
     lastname: string;
     root: Boolean;
-    OblR: TDictionary<string, TORControlRights>;
+    areas: TDictionary<string, TAreaRights>;
     note: string;
     lastlogin: TDateTime;
 
@@ -58,8 +58,8 @@ type
      procedure SaveData(ini: TMemIniFile; section: string);
      procedure SaveStat(ini: TMemIniFile; section: string);
 
-     function GetRights(OblR: string): TORCOntrolRights;
-     procedure SetRights(OblR: string; rights: TORControlRights);
+     function GetRights(areaId: string): TAreaRights;
+     procedure SetRights(areaId: string; rights: TAreaRights);
      function PasswordMatch(hash: string): Boolean;
      function LoginMatch(username: string; passwordhash: string): Boolean;
 
@@ -87,20 +87,20 @@ uses TOblsRizeni, TCPServerOR, UserDb, ownStrUtils;
 constructor TUser.Create(iniData, iniStat: TMemIniFile; section: string);
 begin
  inherited Create();
- Self.OblR := TDictionary<string, TORControlRights>.Create();
+ Self.areas := TDictionary<string, TAreaRights>.Create();
  Self.LoadData(iniData, section);
  Self.LoadStat(iniStat, section);
 end;//ctor
 
 constructor TUser.Create();
 begin
- Self.OblR := TDictionary<string, TORControlRights>.Create();
+ Self.areas := TDictionary<string, TAreaRights>.Create();
  inherited Create();
 end;//ctor
 
 destructor TUser.Destroy();
 begin
- Self.OblR.Free();
+ Self.areas.Free();
  inherited Destroy();
 end;//dtor
 
@@ -110,7 +110,7 @@ procedure TUser.LoadData(ini: TMemIniFile; section: string);
 var i: Integer;
     data: TStrings;
 begin
- Self.OblR.Clear();
+ Self.areas.Clear();
 
  Self.fusername := section;
  Self.fpasswd := ini.ReadString(section, 'passwd', '');
@@ -135,7 +135,7 @@ begin
    for i := 0 to (data.Count div 2)-1 do
     begin
      try
-      Self.OblR.Add(data[i*2], TORControlRights(StrToInt(data[i*2 + 1])));
+      Self.areas.Add(data[i*2], TAreaRights(StrToInt(data[i*2 + 1])));
      except
 
      end;
@@ -156,9 +156,9 @@ begin
 end;
 
 procedure TUser.SaveData(ini: TMemIniFile; section: string);
-var rights: TORControlRights;
+var rights: TAreaRights;
     str: string;
-    oblr: TOR;
+    area: TArea;
 begin
  ini.WriteString(section, 'passwd', Self.fpasswd);
 
@@ -184,9 +184,9 @@ begin
    ini.WriteString(section, 'salt', Self.fsalt);
 
  str := '';
- for oblr in ORs do
-   if (Self.OblR.TryGetValue(oblr.id, rights)) then
-     str := str + '(' + oblr.id + ';' + IntToStr(Integer(rights)) + ')';
+ for area in ORs do
+   if (Self.areas.TryGetValue(area.id, rights)) then
+     str := str + '(' + area.id + ';' + IntToStr(Integer(rights)) + ')';
 
  if (str <> '') then
    ini.WriteString(section, 'ORs', str);
@@ -208,12 +208,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TUser.GetRights(OblR: string): TORCOntrolRights;
-var rights: TORControlRights;
+function TUser.GetRights(areaId: string): TAreaRights;
+var rights: TAreaRights;
 begin
- if (Self.root) then Exit(TORCOntrolRights.superuser);
+ if (Self.root) then Exit(TAreaRights.superuser);
 
- if (Self.OblR.TryGetValue(OblR, rights)) then
+ if (Self.areas.TryGetValue(areaId, rights)) then
   Result := rights
  else
   Result := null;
@@ -245,31 +245,31 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TUser.SetRights(OblR: string; rights: TORControlRights);
-var OblRRef: TOR;
+procedure TUser.SetRights(areaId: string; rights: TAreaRights);
+var area: TArea;
 begin
- Self.OblR.AddOrSetValue(OblR, rights);
- OblRRef := ORs.Get(OblR);
- if (OblRRef <> nil) then
-   OblRRef.UserUpdateRights(Self);
+ Self.areas.AddOrSetValue(areaId, rights);
+ area := ORs.Get(areaId);
+ if (area <> nil) then
+   area.UserUpdateRights(Self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TUser.SetBan(state: Boolean);
-var oblr: string;
-    OblRRef: TOR;
+var areaId: string;
+    area: TArea;
 begin
  if (Self.fban = state) then Exit();
  Self.fban := state;
  if (Self.fban) then
   begin
    // user prave dostal BAN -> aktualizovat oblasti rizeni
-   for oblr in Self.OblR.Keys do
+   for areaId in Self.areas.Keys do
     begin
-     OblRRef := ORs.Get(oblr);
-     if (OblRRef <> nil) then
-       OblRRef.UserUpdateRights(Self);
+     area := ORs.Get(areaId);
+     if (area <> nil) then
+       area.UserUpdateRights(Self);
     end;
   end;
 end;
@@ -342,7 +342,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TUser.GetPtData(json: TJsonObject);
-var orrights: TPair<string, TORControlRights>;
+var orrights: TPair<string, TAreaRights>;
 begin
  json['username'] := Self.username;
  json['firstname'] := Self.firstname;
@@ -354,12 +354,12 @@ begin
  json['regulator'] := Self.regulator;
 
  json.O['ors'];
- for orrights in Self.OblR do
+ for orrights in Self.areas do
   begin
    case (orrights.Value) of
-     TORControlRights.read: json['ors'].O[orrights.Key] := 'read';
-     TORControlRights.write: json['ors'].O[orrights.Key] := 'write';
-     TORControlRights.superuser: json['ors'].O[orrights.Key] := 'superuser';
+     TAreaRights.read: json['ors'].O[orrights.Key] := 'read';
+     TAreaRights.write: json['ors'].O[orrights.Key] := 'write';
+     TAreaRights.superuser: json['ors'].O[orrights.Key] := 'superuser';
    else
      json['ors'].O[orrights.Key] := 'null';
    end;

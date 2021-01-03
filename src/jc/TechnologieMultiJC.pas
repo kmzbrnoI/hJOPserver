@@ -73,7 +73,7 @@ type
 
 implementation
 
-uses TJCDatabase, BlockTrack, TOblRizeni;
+uses TJCDatabase, BlockTrack, Area;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -214,7 +214,7 @@ begin
  Self.activatingJC.Activate(SenderPnl, SenderOR);
  Self.m_state.JCIndex := 0;
 
- (SenderOR as TOR).vb.Clear();
+ (SenderOR as TArea).vb.Clear();
 
  Self.changed := true;
 end;

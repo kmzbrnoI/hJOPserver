@@ -35,7 +35,7 @@ type
    OpenIndex: Integer;
    Blk: TBlkSummary;
    NewBlk: Boolean;
-   obls: TArstr;   //oblasti rizeni, ve kterych se blok nachazi
+   areas: TArstr;   //oblasti rizeni, ve kterych se blok nachazi
 
    prejezdy: TList<Integer>;
    CB_PrjAddData: TArI;
@@ -57,7 +57,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni, Block, FileSystem,
+uses GetSystems, TechnologieRCS, TOblsRizeni, Area, Block, FileSystem,
      DataBloky;
 
 {$R *.dfm}
@@ -162,7 +162,7 @@ end;
 
 procedure TF_BlkSummary.MainOpenForm();
 begin
- SetLength(Self.obls, 0);
+ SetLength(Self.areas, 0);
 
  Self.LB_Stanice.Clear();
  Self.prejezdy.Clear();
@@ -176,17 +176,17 @@ var glob: TBlkSettings;
     settings: TBlkSummarySettings;
     i, prjid: Integer;
     LI: TListItem;
-    oblr: TOR;
+    area: TArea;
 begin
  glob := Self.Blk.GetGlobalSettings();
  settings := Self.Blk.GetSettings();
 
- for oblr in Self.Blk.stations do
-   Self.LB_Stanice.Items.Add(oblr.Name);
+ for area in Self.Blk.areas do
+   Self.LB_Stanice.Items.Add(area.name);
 
- SetLength(obls, Self.Blk.stations.Count);
- for i := 0 to Self.Blk.stations.Count-1 do
-   obls[i] := Self.Blk.stations[i].id;
+ SetLength(areas, Self.Blk.areas.Count);
+ for i := 0 to Self.Blk.areas.Count-1 do
+   areas[i] := Self.Blk.areas[i].id;
 
  E_Name.Text := glob.name;
  SE_ID.Value := glob.id;

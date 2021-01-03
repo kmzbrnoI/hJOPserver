@@ -22,7 +22,7 @@ type
     P_ZastForm: TPanel;
     procedure CHB_ZpomalitClick(Sender: TObject);
   private
-   obls: TArstr;
+   areas: TArstr;
    first: Boolean;
 
    fZast: TF_RREv;
@@ -32,8 +32,8 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
 
-    procedure OpenForm(event: TBlkSignalTrainEvent; first: Boolean; obls: TArstr);
-    procedure OpenEmptyForm(first: Boolean; obls: TArstr);
+    procedure OpenForm(event: TBlkSignalTrainEvent; first: Boolean; areas: TArstr);
+    procedure OpenEmptyForm(first: Boolean; areas: TArstr);
     function Check(): string;
 
     function GetEvent(): TBlkSignalTrainEvent; // returns new object!
@@ -73,9 +73,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkSignalEvent.OpenForm(event: TBlkSignalTrainEvent; first: Boolean; obls: TArstr);
+procedure TF_BlkSignalEvent.OpenForm(event: TBlkSignalTrainEvent; first: Boolean; areas: TArstr);
 begin
- Self.obls  := obls;
+ Self.areas  := areas;
  Self.first := first;
 
  if (first) then
@@ -110,9 +110,9 @@ begin
  Self.CHB_ZpomalitClick(CHB_Zpomalit);
 end;
 
-procedure TF_BlkSignalEvent.OpenEmptyForm(first: Boolean; obls: TArstr);
+procedure TF_BlkSignalEvent.OpenEmptyForm(first: Boolean; areas: TArstr);
 begin
- Self.obls  := obls;
+ Self.areas  := areas;
  Self.first := first;
 
  if (first) then

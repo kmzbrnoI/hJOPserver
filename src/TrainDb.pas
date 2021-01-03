@@ -31,7 +31,7 @@ type
       procedure LoadData(const filename: string);
       procedure SaveData(const filename: string);
 
-      function Add(train: TStrings; usek: TObject; oblr: TObject; sprUsekIndex: Integer; ok: TCb; err: TCb): TTrain; overload;
+      function Add(train: TStrings; usek: TObject; area: TObject; sprUsekIndex: Integer; ok: TCb; err: TCb): TTrain; overload;
       function Add(train: TJsonObject; ok: TCb; err: TCb): TTrain; overload;
       procedure Remove(index: Integer);
 
@@ -174,13 +174,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrainDb.Add(train: TStrings; usek: TObject; oblr: TObject; sprUsekIndex: Integer; ok: TCb; err: TCb): TTrain;
+function TTrainDb.Add(train: TStrings; usek: TObject; area: TObject; sprUsekIndex: Integer; ok: TCb; err: TCb): TTrain;
 var i: Integer;
 begin
  i := Self.GetEmptySpaceForTrain();
 
  try
-  Self.trains[i] := TTrain.Create(train, i, usek, oblr, ok, err);
+  Self.trains[i] := TTrain.Create(train, i, usek, area, ok, err);
   if (Assigned(usek)) then          // toto musi byt tady, nikoliv v konstruktoru
    begin
     (Usek as TBlkTrack).AddTrain(sprUsekIndex, i);

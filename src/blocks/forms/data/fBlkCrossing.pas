@@ -80,7 +80,7 @@ type
    OpenIndex: Integer;
    Blk: TBlkCrossing;
    NewBlk: Boolean;
-   obls: TArstr;
+   areas: TArstr;
    tracks: TObjectList<TBlkCrossingTrack>;
 
     procedure NormalOpenForm();
@@ -99,8 +99,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, TOblsRizeni, TOblRizeni,
-     Block, FileSystem, DataBloky;
+uses GetSystems, TechnologieRCS, TOblsRizeni, Area, Block, FileSystem, DataBloky;
 
 {$R *.dfm}
 
@@ -347,7 +346,7 @@ end;
 
 procedure TF_BlkCrossing.HlavniOpenForm();
  begin
-  SetLength(Self.obls,0);
+  SetLength(Self.areas,0);
   Self.LB_Stanice.Clear();
 
   Self.SE_vyst_close_board.MaxValue := RCSi.maxModuleAddrSafe;
@@ -363,17 +362,17 @@ procedure TF_BlkCrossing.NormalOpenForm();
 var glob: TBlkSettings;
     settings: TBlkCrossingSettings;
     i: Integer;
-    oblr: TOR;
+    area: TArea;
  begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  for oblr in Self.Blk.stations do
-    Self.LB_Stanice.Items.Add(oblr.Name);
+  for area in Self.Blk.areas do
+    Self.LB_Stanice.Items.Add(area.name);
 
-  SetLength(obls, Self.Blk.stations.Count);
-  for i := 0 to Self.Blk.stations.Count-1 do
-    obls[i] := Self.Blk.stations[i].id;
+  SetLength(areas, Self.Blk.areas.Count);
+  for i := 0 to Self.Blk.areas.Count-1 do
+    areas[i] := Self.Blk.areas[i].id;
 
   E_Prj_Nazev.Text := glob.name;
   SE_ID.Value := glob.id;

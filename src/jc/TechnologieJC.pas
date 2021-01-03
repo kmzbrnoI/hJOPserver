@@ -42,7 +42,7 @@ uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Logging,
   Dialogs, Menus, Buttons, ComCtrls, fMain, BlockDb, Block, IbUtils, Train,
   IniFiles, IdContext, BlockRailway, Generics.Collections, UPO, BlockTurnout,
-  TOblRizeni, changeEvent, changeEventCaller, JsonDataObjects, PTUtils;
+  Area, changeEvent, changeEventCaller, JsonDataObjects, PTUtils;
 
 const
   _JC_INITPOTVR_TIMEOUT_SEC = 60;                                               // timeout UPO a potvrzeni na zacatku staveni JC
@@ -275,7 +275,7 @@ type
       procedure BarriersNC(var barriers: TList<TJCBarrier>);
       procedure BarriersNCToAccept(var bariery: TList<TJCBarrier>);
 
-      function BarriersToPotvrSekv(barriers: TJCBarriers): TPSPodminky; // seznam barier nouzve cesty prevede na potvrzovaci sekvence pro klienta
+      function BarriersToPotvrSekv(barriers: TJCBarriers): TConfSeqItems; // seznam barier nouzve cesty prevede na potvrzovaci sekvence pro klienta
 
       function GetTrain(nav: TBlk = nil; usek: TBlk = nil): TTrain; // vraci cislo soupravy na useku pred navestidlem
 
@@ -630,7 +630,7 @@ begin
   Self.BarriersVCPC(Result);
 
  // kontrola zaplych privolavacich navesti
- privol := Blocks.GetNavPrivol(Self.m_state.senderOR as TOR);
+ privol := Blocks.GetNavPrivol(Self.m_state.senderOR as TArea);
 
  for i := 0 to privol.Count-1 do
    Result.Add(Self.JCBarrier(_JCB_PRIVOLAVACKA, privol[i] as TBlk, (privol[i] as TBlk).id));
@@ -926,14 +926,14 @@ begin
     Blocks.GetBlkByID(Self.m_data.railwayId, Blk);
 
     // kontrola stitku uvazky v nasi OR:
-    if ((TBlkLinker(TBlkRailway(Blk).linkerA).stations.Count > 0) and
-        (TBlkLinker(TBlkRailway(Blk).linkerA).stations[0] = Self.m_state.senderOR) and
+    if ((TBlkLinker(TBlkRailway(Blk).linkerA).areas.Count > 0) and
+        (TBlkLinker(TBlkRailway(Blk).linkerA).areas[0] = Self.m_state.senderOR) and
         (TBlkLinker(TBlkRailway(Blk).linkerA).note <> '')) then
       barriers.Add(Self.JCBarrier(_JCB_TRAT_STITEK, TBlkLinker(TBlkRailway(Blk).linkerA),
           TBlkLinker(TBlkRailway(Blk).linkerA).id));
 
-    if ((TBlkLinker(TBlkRailway(Blk).linkerB).stations.Count > 0) and
-        (TBlkLinker(TBlkRailway(Blk).linkerB).stations[0] = Self.m_state.senderOR) and
+    if ((TBlkLinker(TBlkRailway(Blk).linkerB).areas.Count > 0) and
+        (TBlkLinker(TBlkRailway(Blk).linkerB).areas[0] = Self.m_state.senderOR) and
         (TBlkLinker(TBlkRailway(Blk).linkerB).note <> '')) then
       barriers.Add(Self.JCBarrier(_JCB_TRAT_STITEK, TBlkLinker(TBlkRailway(Blk).linkerB),
           TBlkLinker(TBlkRailway(Blk).linkerB).id));
@@ -1168,14 +1168,14 @@ begin
      end;
 
     // kontrola stitku uvazky v nasi OR:
-    if ((TBlkLinker(TBlkRailway(Blk).linkerA).stations.Count > 0) and
-        (TBlkLinker(TBlkRailway(Blk).linkerA).stations[0] = Self.m_state.senderOR) and
+    if ((TBlkLinker(TBlkRailway(Blk).linkerA).areas.Count > 0) and
+        (TBlkLinker(TBlkRailway(Blk).linkerA).areas[0] = Self.m_state.senderOR) and
         (TBlkLinker(TBlkRailway(Blk).linkerA).note <> '')) then
       barriers.Add(Self.JCBarrier(_JCB_TRAT_STITEK, TBlkLinker(TBlkRailway(Blk).linkerA),
           TBlkLinker(TBlkRailway(Blk).linkerA).id));
 
-    if ((TBlkLinker(TBlkRailway(Blk).linkerB).stations.Count > 0) and
-        (TBlkLinker(TBlkRailway(Blk).linkerB).stations[0] = Self.m_state.senderOR) and
+    if ((TBlkLinker(TBlkRailway(Blk).linkerB).areas.Count > 0) and
+        (TBlkLinker(TBlkRailway(Blk).linkerB).areas[0] = Self.m_state.senderOR) and
         (TBlkLinker(TBlkRailway(Blk).linkerB).note <> '')) then
       barriers.Add(Self.JCBarrier(_JCB_TRAT_STITEK, TBlkLinker(TBlkRailway(Blk).linkerB),
           TBlkLinker(TBlkRailway(Blk).linkerB).id));
@@ -1327,7 +1327,7 @@ begin
    Self.CancelActivating('Nelze postavit - kritické bariéry');
    if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
      ORTCPServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit '+Self.name+' - kritické bariéry',
-        (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+        (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
    barriers.Free();
    Exit();
   end;
@@ -1344,7 +1344,7 @@ var barriers: TJCBarriers;
     critical: Boolean;
     i: Integer;
     signal: TBlk;
-    conditions: TList<TPSPodminka>;
+    conditions: TList<TConfSeqItem>;
 begin
  if (Self.step <> _STEP_POTVR_BARIERY) then Exit();
 
@@ -1368,17 +1368,17 @@ begin
    Self.CancelActivating('Nelze postavit - kritické bariéry');
    if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
      ORTCPServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit '+Self.name+' - kritické bariéry',
-        (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+        (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
    barriers.Free();
    Exit();
   end;
 
  // existuji bariery na potvrzeni potvrzovaci sekvenci ?
- conditions := TList<TPSPodminka>.Create;
+ conditions := TList<TConfSeqItem>.Create;
  for i := 0 to barriers.Count-1 do
   begin
    if (Self.PotvrSekvBarrier(barriers[i].typ)) then
-     conditions.Add(TOR.GetPSPodminka(barriers[i].block, TJC.PotvrSekvBarrierToReason(barriers[i].typ)));
+     conditions.Add(TArea.GetPSPodminka(barriers[i].block, TJC.PotvrSekvBarrierToReason(barriers[i].typ)));
   end;//for i
 
  if (conditions.Count > 0) then
@@ -1388,7 +1388,7 @@ begin
    Blocks.GetBlkByID(Self.m_data.signalId, signal);
 
    if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-     ORTCPServer.Potvr(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TOR),
+     ORTCPServer.Potvr(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TArea),
         'Jízdní cesta s potvrzením', TBlocks.GetBlksList(signal, Self.lastTrack), conditions);
 
    Self.step := _STEP_POTVR_SEKV;
@@ -1436,7 +1436,7 @@ var i, j: Integer;
     crossing: TBlkCrossing;
     signal: TBlkSignal;
     railway: TBlkRailway;
-    oblr: TOR;
+    area: TArea;
     tuAdd: TBlkRT;
     train: TTrain;
     chEv: TChangeEvent;
@@ -1597,7 +1597,7 @@ var i, j: Integer;
            begin
             if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
               ORTCPServer.BottomError(Self.m_state.senderPnl, 'Neuvolněn ' + neprofil.name,
-                  (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+                  (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
             Self.Log('Krok 14 : Neprofilovy usek '+neprofil.name+' neuvolnen!');
             Self.CancelActivating();
             Exit();
@@ -1789,7 +1789,7 @@ var i, j: Integer;
           signal.signal := ncStuj;
         if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
           ORTCPServer.BottomError(Self.m_state.senderPnl, 'Podmínky pro JC nesplněny!',
-            (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+            (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
         Self.Log('Krok 16 : Podmínky pro JC nesplněny!');
         Exit();
        end;
@@ -1881,14 +1881,14 @@ var i, j: Integer;
       Blocks.GetBlkByID(Self.m_data.railwayId, TBlk(railway));
 
       // najdeme si uvazku, ktera je v OR navestidla a te nastavime nouzovy zaver
-      if ((railway.linkerA as TBlkLinker).stations.Count > 0) then
+      if ((railway.linkerA as TBlkLinker).areas.Count > 0) then
        begin
-        for oblr in signal.stations do
-          if ((railway.linkerA as TBlkLinker).stations[0] = oblr) then
+        for area in signal.areas do
+          if ((railway.linkerA as TBlkLinker).areas[0] = area) then
              (railway.linkerA as TBlkLinker).emLock := true;
 
-        for oblr in signal.stations do
-          if ((railway.linkerB as TBlkLinker).stations[0] = oblr) then
+        for area in signal.areas do
+          if ((railway.linkerB as TBlkLinker).areas[0] = area) then
              (railway.linkerB as TBlkLinker).emLock := true;
        end;
      end;
@@ -1953,7 +1953,7 @@ var i, j: Integer;
         str := 'Nouzová posunová cesta';
 
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-        ORTCPServer.Potvr(Self.m_state.senderPnl, Self.NC_PS_Callback, Self.m_state.senderOR as TOR,
+        ORTCPServer.Potvr(Self.m_state.senderPnl, Self.NC_PS_Callback, Self.m_state.senderOR as TArea,
           str, TBlocks.GetBlksList(signal, lastTrack), Self.BarriersToPotvrSekv(Self.m_state.ncBariery));
      end;
     Self.m_state.ncBarieryCntLast := Self.m_state.ncBariery.Count;
@@ -2150,7 +2150,7 @@ begin
     if (stack_remove) then (Self.m_state.from_stack as TORStack).RemoveJC(Self)
   else
    if (Self.m_state.senderOR <> nil) then
-     (Self.m_state.senderOR as TOR).BroadcastData('ZAS;FIRST;1');
+     (Self.m_state.senderOR as TArea).BroadcastData('ZAS;FIRST;1');
 
  Self.m_state.from_stack := nil;
 end;
@@ -2232,7 +2232,7 @@ var signal: TBlk;
       (signal as TBlkSignal).AB := false; // automaticky zrusi AB
       if (Self.m_state.senderPnl <> nil) then
         ORTCPServer.BottomError(Self.m_state.senderPnl, 'Zrušena AB '+signal.name,
-          (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+          (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
      end;
    end;
 
@@ -2351,7 +2351,7 @@ begin
           begin
            if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
              ORTCPServer.BottomError(Self.m_state.senderPnl, 'Chyba povolovací návěsti '+signal.name,
-                (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+                (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
            Self.CancelWithoutTrackRelease();
           end;
 
@@ -2543,7 +2543,7 @@ begin
     begin
      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
        ORTCPServer.BottomError(Self.m_state.senderPnl, 'Chyba povolovací návěsti '+signal.name,
-            (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+            (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
      Self.CancelWithoutTrackRelease();
     end;
   end;
@@ -2601,14 +2601,14 @@ var trackActual, trackNext, signal: TBlk;
  end;
 
 procedure TJC.CheckLoopBlock(blk: TBlk);
-var oblr: TOR;
+var area: TArea;
 begin
  if (((Blk as TBlkTrack).GetSettings().loop) and ((Blk as TBlkTrack).IsTrain())) then
   begin
    // kontrola zmeny vychozi a cilove stanice
-   for oblr in blk.stations do
+   for area in blk.areas do
     begin
-     if (oblr = (Blk as TBlkTrack).train.stationTo) then
+     if (area = (Blk as TBlkTrack).train.stationTo) then
       begin
        (Blk as TBlkTrack).train.InterChangeStanice(false);
        break;
@@ -2921,14 +2921,14 @@ begin
         if (crossing.state <> TBlkCrossingBasicState.closed) then
           if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
             ORTCPServer.BottomError(Self.m_state.senderPnl, 'Neuzavřen '+crossing.name,
-              (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+              (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
        end;//for i
     end;//case 13
 
    else
      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
        ORTCPServer.BottomError(Self.m_state.senderPnl, 'Timeout '+Self.name,
-         (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+         (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
    end;//else case
 
    //timeout
@@ -3483,7 +3483,7 @@ begin
  if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
    ORTCPServer.BottomError(Self.m_state.senderPnl,
      'Nepřestavena '+(Sender as TBlkTurnout).name + ': ' + TBlkTurnout.SetErrorToMsg(error),
-     (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+     (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
  Self.CancelActivating('', true);
  Self.Cancel();
 end;
@@ -3556,7 +3556,7 @@ begin
 
  if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
    ORTCPServer.BottomError(Self.m_state.senderPnl, 'Návěstidlo '+signal.name + ' nepostaveno',
-     (Self.m_state.senderOR as TOR).ShortName, 'TECHNOLOGIE');
+     (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
  Self.CancelActivating('', true);
 end;
 
@@ -3785,39 +3785,39 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.BarriersToPotvrSekv(barriers: TJCBarriers): TPSPodminky;
+function TJC.BarriersToPotvrSekv(barriers: TJCBarriers): TConfSeqItems;
 var i: Integer;
 begin
- Result := TList<TPSPodminka>.Create();
+ Result := TList<TConfSeqItem>.Create();
 
  for i := 0 to barriers.Count-1 do
   begin
    case (barriers[i].typ) of
-    _JCB_BLOK_DISABLED           : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Blok neaktivní'));
+    _JCB_BLOK_DISABLED           : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Blok neaktivní'));
 
-    _JCB_USEK_OBSAZENO           : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Úsek obsazen'));
-    _JCB_USEK_SOUPRAVA           : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Úsek obsahuje soupravu'));
+    _JCB_USEK_OBSAZENO           : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Úsek obsazen'));
+    _JCB_USEK_SOUPRAVA           : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Úsek obsahuje soupravu'));
 
-    _JCB_PREJEZD_NOUZOVE_OTEVREN : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Nouzově otevřen'));
-    _JCB_PREJEZD_PORUCHA         : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Porucha'));
-    _JCB_PREJEZD_NEUZAVREN       : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Neuzavřen'));
+    _JCB_PREJEZD_NOUZOVE_OTEVREN : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Nouzově otevřen'));
+    _JCB_PREJEZD_PORUCHA         : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Porucha'));
+    _JCB_PREJEZD_NEUZAVREN       : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Neuzavřen'));
 
-    _JCB_VYHYBKA_KONC_POLOHA     : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Není správná poloha'));
-    _JCB_VYHYBKA_NOUZ_ZAVER      : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Není zaveden nouzový závěr'));
-    _JCB_VYHYBKA_NESPAVNA_POLOHA : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Není správná poloha'));
+    _JCB_VYHYBKA_KONC_POLOHA     : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Není správná poloha'));
+    _JCB_VYHYBKA_NOUZ_ZAVER      : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Není zaveden nouzový závěr'));
+    _JCB_VYHYBKA_NESPAVNA_POLOHA : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Není správná poloha'));
 
-    _JCB_TRAT_ZAK                : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Zákaz odjezdu'));
-    _JCB_TRAT_NOT_ZAK            : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Nezaveden zákaz odjezdu'));
-    _JCB_TRAT_ZAVER              : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Závěr'));
-    _JCB_TRAT_NEPRIPRAVENA       : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Nepovoluje odjezd'));
-    _JCB_TRAT_ZADOST             : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Probíhá žádost'));
-    _JCB_TRAT_NESOUHLAS          : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Nesouhlas'));
-    _JCB_TRAT_NO_BP              : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Bloková podmínka nezavedena'));
-    _JCB_TRAT_NEPRENOS           : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Nedojde k přenosu čísla vlaku'));
-    _JCB_TRAT_PRENOS_NAKONEC     : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Vlak bude přenesen až na konec trati'));
+    _JCB_TRAT_ZAK                : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Zákaz odjezdu'));
+    _JCB_TRAT_NOT_ZAK            : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Nezaveden zákaz odjezdu'));
+    _JCB_TRAT_ZAVER              : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Závěr'));
+    _JCB_TRAT_NEPRIPRAVENA       : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Nepovoluje odjezd'));
+    _JCB_TRAT_ZADOST             : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Probíhá žádost'));
+    _JCB_TRAT_NESOUHLAS          : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Nesouhlas'));
+    _JCB_TRAT_NO_BP              : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Bloková podmínka nezavedena'));
+    _JCB_TRAT_NEPRENOS           : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Nedojde k přenosu čísla vlaku'));
+    _JCB_TRAT_PRENOS_NAKONEC     : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Vlak bude přenesen až na konec trati'));
 
-    _JCB_ZAMEK_NEUZAMCEN         : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Neuzamčen'));
-    _JCB_ZAMEK_NOUZ_ZAVER        : Result.Add(TOR.GetPSPodminka(barriers[i].block, 'Není zaveden nouzový závěr'));
+    _JCB_ZAMEK_NEUZAMCEN         : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Neuzamčen'));
+    _JCB_ZAMEK_NOUZ_ZAVER        : Result.Add(TArea.GetPSPodminka(barriers[i].block, 'Není zaveden nouzový závěr'));
    end;
   end;
 end;
@@ -4041,7 +4041,7 @@ var barriers: TJCBarriers;
     ok: Integer;
     ab: Boolean;
 begin
- if ((Self.signal = nil) or (TBlkSignal(Self.signal).stations.Count = 0)) then
+ if ((Self.signal = nil) or (TBlkSignal(Self.signal).areas.Count = 0)) then
   begin
    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Návěstidlo není v OŘ');
    Exit();
@@ -4051,7 +4051,7 @@ begin
 
  barriers := TJCBarriers.Create();
  try
-   ok := Self.Activate(nil, TBlkSignal(Self.signal).stations[0], barriers, nil, false, false, ab);
+   ok := Self.Activate(nil, TBlkSignal(Self.signal).areas[0], barriers, nil, false, false, ab);
    respJson['success'] := (ok = 0);
    for barrier in barriers do
      Self.BarrierToJson(barrier, respJson.A['bariery'].AddObject());

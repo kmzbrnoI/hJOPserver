@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
-     Generics.Collections, TOblRizeni, JsonDataObjects;
+     Generics.Collections, Area, JsonDataObjects;
 
 type
 
@@ -82,8 +82,8 @@ type
     property error: Boolean read m_state.error write SetError;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
-    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
     function PanelStateString(): string; override;
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
@@ -191,7 +191,7 @@ end;
 
 procedure TBlkLock.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TOR), 'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
+ ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TArea), 'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkLock.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
@@ -206,7 +206,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkLock.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkLock.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
  Result := inherited;
 
@@ -227,10 +227,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkLock.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+procedure TBlkLock.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  if (Self.m_state.enabled) then
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

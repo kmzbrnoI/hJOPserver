@@ -191,7 +191,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 0
       end
       object CB_NewZaverPoloha: TComboBox
@@ -277,7 +277,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 13
+        ItemHeight = 0
         TabOrder = 0
       end
       object B_Usek_Add: TButton
@@ -374,7 +374,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
+    ItemHeight = 0
     TabOrder = 2
     OnChange = CB_NavestidloChange
   end
@@ -405,7 +405,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
+    ItemHeight = 0
     TabOrder = 5
     OnChange = CB_Dalsi_NavChange
   end
@@ -505,7 +505,7 @@ object F_JCEdit: TF_JCEdit
       Width = 145
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
+      ItemHeight = 0
       TabOrder = 1
       OnChange = CB_TratBlokChange
     end

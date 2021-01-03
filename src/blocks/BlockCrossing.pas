@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, Block, SysUtils, Menus, TOblsRizeni, Classes, TechnologieRCS,
-     IdContext, TOblRizeni, Generics.Collections, JsonDataObjects,
+     IdContext, Area, Generics.Collections, JsonDataObjects,
      BlockCrossingLogic;
 
 type
@@ -137,8 +137,8 @@ type
     property annulation: Boolean read GetAnnulation;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
-    procedure PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
+    procedure PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
     function PanelStateString(): string; override;
 
     procedure PanelZUZCallBack(Sender: TIdContext; success: Boolean);
@@ -177,7 +177,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
-var oblr: TOR;
+var area: TArea;
     defaultModule: Integer;
     module: Cardinal;
     i, notracks: Integer;
@@ -240,9 +240,9 @@ begin
  Self.FillRCSModules();
  for module in Self.m_state.rcsModules do
    RCSi.SetNeeded(module);
- for oblr in Self.m_stations do
+ for area in Self.m_areas do
    for module in Self.m_state.rcsModules do
-     oblr.RCSAdd(module);
+     area.RCSAdd(module);
 end;
 
 procedure TBlkCrossing.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -334,7 +334,7 @@ end;
 procedure TBlkCrossing.Update();
 var new_stav: TBlkCrossingBasicState;
     available: Boolean;
-    oblr: TOR;
+    area: TArea;
     module: Cardinal;
 begin
  available := true;
@@ -361,15 +361,15 @@ begin
    // necekaniy stav = prejezd je pod zaverem a na vstupu se objevi cokoliv jineho, nez "uzavreno"
    if ((Self.Zaver) and (Self.m_state.basicState = TBlkCrossingBasicState.closed)) then
     begin
-     for oblr in Self.stations do
-      oblr.BlkWriteError(Self, 'Ztráta dohledu na přejezdu : '+Self.m_globSettings.name, 'TECHNOLOGIE');
+     for area in Self.areas do
+      area.BlkWriteError(Self, 'Ztráta dohledu na přejezdu : '+Self.m_globSettings.name, 'TECHNOLOGIE');
      JCDb.Cancel(Self);
     end;
 
    if ((new_stav = TBlkCrossingBasicState.none) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
     begin
-     for oblr in Self.stations do
-      oblr.BlkWriteError(Self, 'Porucha přejezdu : '+Self.m_globSettings.name, 'TECHNOLOGIE');
+     for area in Self.areas do
+      area.BlkWriteError(Self, 'Porucha přejezdu : '+Self.m_globSettings.name, 'TECHNOLOGIE');
      JCDb.Cancel(Self);
     end;
 
@@ -394,8 +394,8 @@ begin
   begin
    if (Now > Self.m_state.closeStart+EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
     begin
-     for oblr in Self.stations do
-      oblr.BlkWriteError(Self, Self.m_globSettings.name+' uzavřen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
+     for area in Self.areas do
+      area.BlkWriteError(Self, Self.m_globSettings.name+' uzavřen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
      Self.m_state.closeStart := now;
     end;
   end;
@@ -596,14 +596,14 @@ end;
 procedure TBlkCrossing.UPOZUZClick(Sender: TObject);
 begin
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZUZCallBack,
-    (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
+    (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TArea),
     'Zrušení uzavření přejezdu', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkCrossing.UPONOTClick(Sender: TObject);
 begin
  ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZNOTCallBack,
-    (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TOR),
+    (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TArea),
     'Nouzové otevření přejezdu', TBlocks.GetBlksList(Self), nil);
 end;
 
@@ -637,7 +637,7 @@ begin
  try
    RCSi.SetInput(Self.m_settings.RCSInputs.annulation, 1);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
  end;
 end;
 
@@ -646,7 +646,7 @@ begin
  try
    RCSi.SetInput(Self.m_settings.RCSInputs.annulation, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
  end;
 end;
 
@@ -664,14 +664,14 @@ begin
    RCSi.SetInput(Self.m_settings.RCSInputs.caution, ownConvert.BoolToInt(vystraha));
    RCSi.SetInput(Self.m_settings.RCSInputs.open, ownConvert.BoolToInt(otevreno));
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 //vytvoreni menu pro potreby konkretniho bloku:
-function TBlkCrossing.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkCrossing.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
  Result := inherited;
 
@@ -713,7 +713,7 @@ begin
     end;
   end;
 
- if (rights >= TORControlRights.superuser) then
+ if (rights >= TAreaRights.superuser) then
   begin
    Result := Result + '-,';
    if (Self.zaver) then Result := Result + '*NUZ>,';
@@ -722,10 +722,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkCrossing.PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+procedure TBlkCrossing.PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  if (Button <> TPanelButton.ESCAPE) then
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

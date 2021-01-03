@@ -10,7 +10,7 @@ unit BlockIO;
 
 interface
 
-uses IniFiles, Block, TechnologieRCS, Classes, SysUtils, IdContext, TOblRizeni,
+uses IniFiles, Block, TechnologieRCS, Classes, SysUtils, IdContext, Area,
      Graphics, JsonDataObjects, RCSErrors, RCS;
 
 type
@@ -75,9 +75,9 @@ type
 
     procedure Update(); override;
 
-    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
     function PanelStateString(): string; override;
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
     //----- IO own functions -----
@@ -154,12 +154,12 @@ begin
 
  if (Self.isRCSinput) then
   begin
-   PushRCStoOR(Self.m_stations, Self.m_settings.RCSinput);
+   PushRCSToArea(Self.m_areas, Self.m_settings.RCSinput);
    RCSi.SetNeeded(Self.m_settings.RCSinput.board);
   end;
  if (Self.isRCSoutput) then
   begin
-   PushRCStoOR(Self.m_stations, Self.m_settings.RCSoutput);
+   PushRCSToArea(Self.m_areas, Self.m_settings.RCSoutput);
    RCSi.SetNeeded(Self.m_settings.RCSoutput.board);
   end;
 end;
@@ -320,10 +320,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkIO.PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
-    Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+    Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  if (Button = TPanelButton.F2) then
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
  if (Button = TPanelButton.ENTER) then begin
    if (Self.enabled) then
@@ -331,17 +331,17 @@ begin
      try
        Self.Activate();
      except
-       ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se aktivovat blok', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+       ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se aktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
      end
     end else
-     ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+     ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end else if (Button = TPanelButton.ESCAPE) then begin
    if (Self.enabled) then
     begin
      try
        Self.Deactivate();
      except
-       ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se deaktivovat blok', TOR(SenderOR).ShortName, 'TECHNOLOGIE');
+       ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se deaktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
      end
     end;
  end;
@@ -442,7 +442,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkIO.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkIO.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
  Result := inherited;
  if (Self.enabled) then
@@ -498,7 +498,7 @@ begin
  try
    RCSi.SetInput(Self.m_settings.RCSinput, ownConvert.BoolToInt(target));
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TOR(SenderOR).ShortName, 'SIMULACE');
+   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TArea(SenderOR).shortName, 'SIMULACE');
  end;
 end;
 

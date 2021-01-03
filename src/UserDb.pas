@@ -1,4 +1,4 @@
-unit UserDb;
+﻿unit UserDb;
 
 {
   Trida TUsrDb udrzuje seznam uzivatelu a resi veskere operace s touto
@@ -8,7 +8,7 @@ unit UserDb;
 interface
 
 uses Generics.Collections, User, IniFiles, Classes, SysUtils, Windows,
-     Generics.Defaults, TOblRizeni, JsonDataObjects;
+     Generics.Defaults, Area, JsonDataObjects;
 
 type
   TUsrDb = class
@@ -28,8 +28,8 @@ type
      procedure SaveData(const filename: string);
      procedure SaveStat(const filename: string);
 
-     function GetRights(username: string; passwd: string; OblR: string):
-                TORCOntrolRights;
+     function GetRights(username: string; passwd: string; areaId: string):
+                TAreaRights;
      procedure LoginUser(username: string);
 
      procedure AddUser(User: TUser);
@@ -180,13 +180,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TUsrDb.GetRights(username: string; passwd: string; OblR: string): TORCOntrolRights;
+function TUsrDb.GetRights(username: string; passwd: string; areaId: string): TAreaRights;
 var user: TUser;
 begin
  for user in Self.users do
   if (user.LoginMatch(username, passwd)) then
-    Exit(user.GetRights(OblR));
- Result := TORControlRights.null;
+    Exit(user.GetRights(areaId));
+ Result := TAreaRights.null;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -211,13 +211,13 @@ begin
 end;
 
 procedure TUsrDb.RemoveUser(index: Integer);
-var oblr: string;
+var areaId: string;
 begin
  try
    // nejprve je zapotrebi odpojit vsechny pripojene panely
-   for oblr in Self.users[index].OblR.Keys do
-     if (ORs.Get(oblr) <> nil) then
-       ORs.Get(oblr).UserDelete(Self.users[index].username);
+   for areaId in Self.users[index].areas.Keys do
+     if (ORs.Get(areaId) <> nil) then
+       ORs.Get(areaId).UserDelete(Self.users[index].username);
 
    if (Assigned(Self.users[index])) then
      Self.users.Delete(index);

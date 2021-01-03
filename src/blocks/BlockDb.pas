@@ -13,7 +13,7 @@
 
 interface
 
-uses IniFiles, Block, SysUtils, Windows, TOblsRizeni, TOblRizeni, StdCtrls,
+uses IniFiles, Block, SysUtils, Windows, TOblsRizeni, Area, StdCtrls,
      Generics.Collections, Classes, IdContext, IBUtils, TechnologieRCS,
      JsonDataObjects, Train;
 
@@ -46,7 +46,6 @@ type
     constructor Create();
     destructor Destroy(); override;
 
-    //data loading/saving
     procedure LoadFromFile(const tech_filename, rel_filename, stat_filename: string);
     procedure SaveToFile(const tech_filename: string);
     procedure SaveStatToFile(const stat_filename: string);
@@ -57,12 +56,10 @@ type
     function GetBlkByIndex(index: integer; var Blk: TBlk): Integer;
     function SetBlk(index: integer; data: TBlk): Integer;
 
-    //enable/disable all block (on screen)
     procedure Enable();
     procedure Disable();
     procedure Reset();
 
-    //update all blokcs states (should be called in timer every x ms)
     procedure Update();
 
     function GetBlkIndex(id: Integer): Integer;
@@ -74,10 +71,10 @@ type
     function GetBlkSignalSelected(obl: string): TBlk;
     function GetBlkUsekVlakPresun(obl: string): TBlk;
 
-    function GetNavPrivol(oblR: TOR): TBlksList;
+    function GetNavPrivol(area: TArea): TBlksList;
 
     //ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
-    procedure GetORBlk(OblRizeni_id: string; conn: TIdContext);
+    procedure GetAreaBlk(areaId: string; conn: TIdContext);
 
     //kontroluje, zda-li blok s timto ID uz nahadou existuje
     //pri hledani vynechava blok s indexem index
@@ -114,7 +111,7 @@ type
     class function SEPortMaxValue(addr: Integer; currentValue: Integer): Integer;
 
     // vrati vsechny bloky do JSON objektu PTserveru
-    procedure GetPtData(json: TJsonObject; includeState: Boolean; stanice: TOR = nil; typ: TBlkType = btAny);
+    procedure GetPtData(json: TJsonObject; includeState: Boolean; area: TArea = nil; typ: TBlkType = btAny);
 
     procedure NouzZaverZrusen(Sender: TBlk);
     procedure MoveTurnoutBasicPosition();
@@ -176,9 +173,9 @@ end;
 //tady se resi veskere provazanosti bloku a odesilani eventu do oblasti rizeni
 procedure TBlocks.BlkChange(Sender: TObject);
 var blkset: TBlkSettings;
-    obls: TList<TOR>;
+    areas: TList<TArea>;
     blk: TBlk;
-    oblr: TOR;
+    area: TArea;
 begin
  if (((Sender as TBlk).typ = btTrack) or ((Sender as TBlk).typ = btRT)) then
   begin
@@ -192,10 +189,10 @@ begin
   end;//btUsek
 
  //zavolame OnChange vsech OR daneho bloku
- obls := (Sender as TBlk).stations;
- if (obls.Count > 0) then
-   for oblr in obls do
-     oblr.BlkChange(Sender);
+ areas := (Sender as TBlk).areas;
+ if (areas.Count > 0) then
+   for area in areas do
+     area.BlkChange(Sender);
 
  ACBlk.OnBlkChange(TBlk(Sender).id);
 end;
@@ -539,22 +536,22 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 //ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
-procedure TBlocks.GetORBlk(OblRizeni_id: string; conn: TIdContext);
+procedure TBlocks.GetAreaBlk(areaId: string; conn: TIdContext);
 var blk: TBlk;
-    ors: TList<TOR>;
-    oblr: TOR;
+    areas: TList<TArea>;
+    area: TArea;
 begin
  for blk in Self.Data do
   begin
    //ziskame vsechny oblasti rizeni prislusnych bloku
-   ors := blk.stations;
+   areas := blk.areas;
 
    //tyto OR porovname na "OblRizeni: PTOR"
-   for oblr in ors do
+   for area in areas do
     begin
-     if (oblr.id = OblRizeni_id) then
+     if (area.id = areaId) then
       begin
-       oblr.BlkChange(blk, conn);
+       area.BlkChange(blk, conn);
        Break;
       end;
     end;
@@ -609,14 +606,14 @@ begin
    if (blk.typ <> btSignal) then continue;
 
    orindex := -1;
-   for j := 0 to (blk as TBlkSignal).stations.Count-1 do
-     if ((blk as TBlkSignal).stations[j].id = obl) then orindex := j;
+   for j := 0 to (blk as TBlkSignal).areas.Count-1 do
+     if ((blk as TBlkSignal).areas[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
 
    if (((blk as TBlkSignal).selected > TBlkSignalSelection.none) and
       ((JCDb.FindJCActivating((blk as TBlkSignal).id) = nil) or
-        ((blk as TBlkSignal).stations[orindex].stack.mode = VZ))) then
+        ((blk as TBlkSignal).areas[orindex].stack.mode = VZ))) then
      Exit(blk);
   end;
 
@@ -633,8 +630,8 @@ begin
    if ((blk.typ <> btTrack) and (blk.typ <> btRT)) then continue;
 
    orindex := -1;
-   for j := 0 to (blk as TBlkTrack).stations.Count-1 do
-     if ((blk as TBlkTrack).stations[j].id = obl) then orindex := j;
+   for j := 0 to (blk as TBlkTrack).areas.Count-1 do
+     if ((blk as TBlkTrack).areas[j].id = obl) then orindex := j;
 
    if (orindex = -1) then continue;
    if ((blk as TBlkTrack).IsTrainMoving()) then Exit(blk);
@@ -663,7 +660,7 @@ procedure TBlocks.NUZ(or_id: string; state: Boolean = true);
 var traini: Integer;
     blk: TBlk;
     track: TBlkTrack;
-    oblr: TOR;
+    area: TArea;
  begin
   for blk in Self.Data do
    begin
@@ -671,9 +668,9 @@ var traini: Integer;
     track := (blk as TBlkTrack);
     if (not track.NUZ) then continue;
 
-    for oblr in track.stations do
+    for area in track.areas do
      begin
-      if (oblr.id = or_id) then
+      if (area.id = or_id) then
        begin
         if (state) then
          begin
@@ -702,8 +699,8 @@ var bloki, i: Integer;
     assign: Boolean;
     count: Integer;
     Blk: TBlk;
-    Obl_r: TList<TOR>;
-    oblr: TOR;
+    areas: TList<TArea>;
+    area: TArea;
     glob: TBlkSettings;
  begin
   count := 0;
@@ -721,17 +718,17 @@ var bloki, i: Integer;
     if (Assigned(orid)) then
      begin
       assign := false;
-      Obl_r := Blk.stations;
+      areas := Blk.areas;
 
       if ((glob.typ = btRailway) or (glob.typ = btIR)) then
          assign := true
       else begin
         for i := 0 to Length(orid)-1 do
          begin
-          if (Obl_r.Count = 0) then assign := true;
+          if (areas.Count = 0) then assign := true;
           if (assign) then Break;
-          for oblr in Obl_r do
-            if (oblr.id = orid[i]) then
+          for area in areas do
+            if (area.id = orid[i]) then
              begin
               assign := true;
               Break;
@@ -896,9 +893,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlocks.GetNavPrivol(oblR: TOR): TBlksList;
+function TBlocks.GetNavPrivol(area: TArea): TBlksList;
 var blk: TBlk;
-    moblr: TOR;
+    marea: TArea;
 begin
  Result := TList<TObject>.Create();
  for blk in Self.data do
@@ -906,8 +903,8 @@ begin
    if (blk.typ <> btSignal) then continue;
    if ((blk as TBlkSignal).signal <> ncPrivol) then continue;
 
-   for moblr in (blk as TBlkSignal).stations do
-    if (moblr = oblR) then
+   for marea in (blk as TBlkSignal).areas do
+    if (marea = area) then
      begin
       Result.Add(blk);
       break;
@@ -1005,13 +1002,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlocks.GetPtData(json: TJsonObject; includeState: Boolean; stanice: TOR = nil; typ: TBlkType = btAny);
+procedure TBlocks.GetPtData(json: TJsonObject; includeState: Boolean; area: TArea = nil; typ: TBlkType = btAny);
 var Blk: TBlk;
 begin
  for Blk in Self.data do
   begin
    try
-     if ((stanice <> nil) and (not Blk.IsInOR(stanice))) then continue;
+     if ((area <> nil) and (not Blk.IsInArea(area))) then continue;
      if ((typ <> btAny) and (Blk.typ <> typ)) then continue;
 
      Blk.GetPtData(json.A['blocks'].AddObject, includeState);

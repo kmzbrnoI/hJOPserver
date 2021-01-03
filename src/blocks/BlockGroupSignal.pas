@@ -5,7 +5,7 @@ unit BlockGroupSignal;
 interface
 
 uses IniFiles, Block, TOblsRizeni, BlockSignal, IdContext, Generics.Collections,
-      JsonDataObjects, TOblRizeni;
+      JsonDataObjects, Area;
 
 type
 
@@ -41,8 +41,8 @@ type
     property signals: TList<TBlkSignal> read GetSignals;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
-    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string; override;
-    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TORCOntrolRights; params: string = ''); override;
+    function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
 
@@ -162,14 +162,14 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkGroupSignal.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TORCOntrolRights): string;
+function TBlkGroupSignal.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
  Result := TBlk(Self).ShowPanelMenu(SenderPnl, SenderOR, rights);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkGroupSignal.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TORCOntrolRights; params: string = '');
+procedure TBlkGroupSignal.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  // This should be empty
 end;

@@ -24,14 +24,14 @@ type
 
 implementation
 
-uses BlockDb, PTUtils, TOblRizeni, TOblsRizeni, Block;
+uses BlockDb, PTUtils, Area, TOblsRizeni, Block;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TPTEndpointBloky.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
 var params:TDictionary<string, string>;
-    stanice:TOR;
+    stanice:TArea;
     typ: TBlkType;
 begin
  stanice := nil;

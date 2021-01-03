@@ -78,7 +78,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, Block, DataBloky, TOblRizeni;
+uses GetSystems, FileSystem, TechnologieRCS, Block, DataBloky, Area;
 
 {$R *.dfm}
 
@@ -145,27 +145,27 @@ procedure TF_BlkTurnout.NormalOpenForm();
 var glob: TBlkSettings;
     i: Integer;
     spojkaSettings, settings: TBlkTurnoutSettings;
-    obls: TArStr;
-    oblr: TOR;
-    vyh: TBlkTurnout;
+    areas: TArStr;
+    area: TArea;
+    turnout: TBlkTurnout;
  begin
   glob := Self.Blk.GetGlobalSettings();
 
   E_Nazev.Text  := glob.name;
   SE_ID.Value   := glob.id;
 
-  for oblr in Self.Blk.stations do
-    Self.LB_Stanice.Items.Add(oblr.Name);
+  for area in Self.Blk.areas do
+    Self.LB_Stanice.Items.Add(area.name);
 
   settings := Blk.GetSettings();
 
   Self.CHB_Spojka.Checked := (settings.coupling > -1);
   Self.CHB_SpojkaClick(Self.CHB_Spojka);
 
-  Blocks.GetBlkByID(settings.coupling, TBlk(vyh));
-  if ((vyh <> nil) and (vyh.typ = btTurnout)) then
+  Blocks.GetBlkByID(settings.coupling, TBlk(turnout));
+  if ((turnout <> nil) and (turnout.typ = btTurnout)) then
    begin
-    spojkaSettings := vyh.GetSettings();
+    spojkaSettings := turnout.GetSettings();
 
     Self.CHB_Spojka_Common_In.Checked := (spojkaSettings.RCSAddrs.Count >= 2) and (settings.RCSAddrs.Count >= 2) and
       (spojkaSettings.RCSAddrs[0] = settings.RCSAddrs[0]) and (spojkaSettings.RCSAddrs[1] = settings.RCSAddrs[1]);
@@ -241,9 +241,9 @@ var glob: TBlkSettings;
   Self.CHB_npMinus.Checked := (settings.npMinus > -1);
   Self.CHB_npMinusClick(Self.CHB_npMinus);
 
-  SetLength(obls, Self.Blk.stations.Count);
-  for i := 0 to Self.Blk.stations.Count-1 do
-    obls[i] := Self.Blk.stations[i].id;
+  SetLength(areas, Self.Blk.areas.Count);
+  for i := 0 to Self.Blk.areas.Count-1 do
+    areas[i] := Self.Blk.areas[i].id;
 
   F_BlkTurnout.Caption := 'Uprabit blok '+glob.name+' (výhybka)';
   F_BlkTurnout.ActiveControl := B_Save;
@@ -251,7 +251,7 @@ var glob: TBlkSettings;
 
 procedure TF_BlkTurnout.HlavniOpenForm;
 var spojka_vypust: TArI;
-    obls: TArStr;
+    areas: TArStr;
     i: Integer;
  begin
   Self.LB_Stanice.Clear();
@@ -263,26 +263,26 @@ var spojka_vypust: TArI;
 
   if (Self.Blk <> nil) then
    begin
-    SetLength(obls, Self.Blk.stations.Count);
-    for i := 0 to Self.Blk.stations.Count-1 do
-      obls[i] := Self.Blk.stations[i].id;
+    SetLength(areas, Self.Blk.areas.Count);
+    for i := 0 to Self.Blk.areas.Count-1 do
+      areas[i] := Self.Blk.areas[i].id;
     SetLength(spojka_vypust, 1);
     spojka_vypust[0] := Self.Blk.id;
 
     // spojka
-    Blocks.FillCB(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, obls, btTurnout, Self.Blk.GetSettings().coupling);
+    Blocks.FillCB(Self.CB_Spojka, @Self.CB_SpojkaData, @spojka_vypust, areas, btTurnout, Self.Blk.GetSettings().coupling);
     Self.CHB_Spojka.Enabled := (Length(Self.CB_SpojkaData) > 0) or (Self.Blk.GetSettings.coupling > -1);
 
     // zamek
-    Blocks.FillCB(Self.CB_Zamek, @Self.CB_ZamekData, nil, obls, btLock, Self.Blk.GetSettings().lock);
+    Blocks.FillCB(Self.CB_Zamek, @Self.CB_ZamekData, nil, areas, btLock, Self.Blk.GetSettings().lock);
     Self.CHB_Zamek.Enabled := (Length(Self.CB_ZamekData) > 0) or (Self.Blk.GetSettings.lock > -1);
 
     // neprofilove styky +
-    Blocks.FillCB(Self.CB_npPlus, @Self.CB_NeprofilData, nil, obls, btTrack, Self.Blk.GetSettings().npPlus, btRT);
+    Blocks.FillCB(Self.CB_npPlus, @Self.CB_NeprofilData, nil, areas, btTrack, Self.Blk.GetSettings().npPlus, btRT);
     Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npPlus > -1);
 
     // neprofilove styky -
-    Blocks.FillCB(Self.CB_npMinus, @Self.CB_NeprofilData, nil, obls, btTrack, Self.Blk.GetSettings().npMinus, btRT);
+    Blocks.FillCB(Self.CB_npMinus, @Self.CB_NeprofilData, nil, areas, btTrack, Self.Blk.GetSettings().npMinus, btRT);
     Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npMinus > -1);
 
    end else begin

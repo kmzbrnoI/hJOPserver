@@ -66,7 +66,7 @@ var
 implementation
 
 uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky,
-     Booster, TOblRizeni;
+     Booster, Area;
 
 {$R *.dfm}
 
@@ -129,19 +129,19 @@ procedure TF_BlkTrack.NormalOpenForm();
 var glob: TBlkSettings;
     settings: TBlkTrackSettings;
     i: Integer;
-    obls: TArstr;
-    oblr: TOR;
+    areas: TArstr;
+    area: TArea;
  begin
   if (Assigned(Self.Blk)) then glob := Self.Blk.GetGlobalSettings();
   Self.E_Nazev.Text := glob.name;
   Self.SE_ID.Value  := glob.id;
 
-  for oblr in Self.Blk.stations do
-    Self.LB_Stanice.Items.Add(oblr.Name);
+  for area in Self.Blk.areas do
+    Self.LB_Stanice.Items.Add(area.name);
 
-  SetLength(obls, Self.Blk.stations.Count);
-  for i := 0 to Self.Blk.stations.Count-1 do
-    obls[i] := Self.Blk.stations[i].id;
+  SetLength(areas, Self.Blk.areas.Count);
+  for i := 0 to Self.Blk.areas.Count-1 do
+    areas[i] := Self.Blk.areas[i].id;
 
   if (Assigned(Self.Blk)) then settings := Self.Blk.GetSettings();
 

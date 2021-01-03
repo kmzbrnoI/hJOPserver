@@ -10,7 +10,7 @@
 interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
-     Classes, StrUtils, Graphics, Windows, TOblRizeni, ExtCtrls,
+     Classes, StrUtils, Graphics, Windows, Area, ExtCtrls,
      IdContext, Block, ComCtrls, IdSync, BlockDb, UPO, TCPORsRef,
      User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
@@ -101,12 +101,12 @@ type
      procedure SendInfoMsg(AContext: TIdContext; msg: string);
      procedure Stitek(AContext: TIdContext; Blk: TBlk; stit: string);
      procedure Vyluka(AContext: TIdContext; Blk: TBlk; vyl: string);
-     procedure Menu(AContext: TIdContext; Blk: TBlk; OblR: TOR; menu: string);
-     procedure Potvr(AContext: TIdContext; callback: TPSCallback; stanice: TOR;
-                     udalost: string; senders: TBlksList; podminky: TPSPodminky;
+     procedure Menu(AContext: TIdContext; Blk: TBlk; area: TArea; menu: string);
+     procedure Potvr(AContext: TIdContext; callback: TPSCallback; area: TArea;
+                     event: string; senders: TBlksList; podminky: TConfSeqItems;
                      free_senders: Boolean = true; free_podm: Boolean = true);
-     procedure PotvrOrInfo(AContext: TIdContext; mode: string; callback: TPSCallback; stanice: TOR;
-                           udalost: string; senders: TBlksList; podminky: TPSPodminky;
+     procedure PotvrOrInfo(AContext: TIdContext; mode: string; callback: TPSCallback; area: TArea;
+                           event: string; senders: TBlksList; conditions: TConfSeqItems;
                            free_senders: Boolean = true; free_podm: Boolean = true);
      procedure PotvrClose(AContext: TIdContext; msg: string = '');
      procedure PotvrOrInfoClose(AContext: TIdContext; mode: string; msg: string = '');
@@ -398,13 +398,13 @@ begin
 end;
 
 procedure TORTCPServer.OnTcpServerDisconnectMainThread(AContext: TIdContext; ORsRef: TTCPORsRef);
-var oblr: TOR;
+var area: TArea;
     jc: TJC;
 begin
  // Warning: AContext is destroyed, only address is left.
  // vymazeme klienta ze vsech oblasti rizeni
- for oblr in ORsRef.ORs do
-   oblr.RemoveClient(AContext, true);
+ for area in ORsRef.ORs do
+   area.RemoveClient(AContext, true);
  ORsRef.ORs.Clear();
 
  // ukoncime probihajici potvrzovaci sekvenci
@@ -444,9 +444,9 @@ begin
    Self.BroadcastData('-;DCC;STOP');
   end;
 
- for oblr in ORsRef.st_hlaseni do
-   if (Assigned(oblr.hlaseni)) then
-     oblr.hlaseni.ClientDisconnect(AContext);
+ for area in ORsRef.st_hlaseni do
+   if (Assigned(area.announcement)) then
+     area.announcement.ClientDisconnect(AContext);
 
  for jc in JCdb do
    if (jc.state.SenderPnl = AContext) then
@@ -545,7 +545,7 @@ var i, j: Integer;
     found: Boolean;
     btn: TPanelButton;
     podj: TPOdj;
-    oblr: TOR;
+    area: TArea;
     orRef: TTCPORsRef;
 begin
  orRef := (AContext.Data as TTCPORsRef);
@@ -723,19 +723,19 @@ begin
  else if (parsed[1] = 'SPR-LIST') then
   begin
    tmp := '';
-   for oblr in orRef.ORs do
-     tmp := tmp + oblr.PanelGetTrains(AContext);
+   for area in orRef.ORs do
+     tmp := tmp + area.PanelGetTrains(AContext);
    Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
 
  else if (parsed[1] = 'SPR-REMOVE') then
   begin
    i := Trains.GetTrainIndexByName(parsed[2]);
-   if (i >= 0) then (Trains[i].station as TOR).PanelRemoveTrain(AContext, i);
+   if (i >= 0) then (Trains[i].station as TArea).PanelRemoveTrain(AContext, i);
 
    tmp := '';
-   for oblr in orRef.ORs do
-    tmp := tmp + oblr.PanelGetTrains(AContext);
+   for area in orRef.ORs do
+    tmp := tmp + area.PanelGetTrains(AContext);
    Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
 
@@ -814,7 +814,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORTCPServer.ParseOR(AContext: TIdContext; parsed: TStrings);
-var oblr: TOR;
+var area: TArea;
     btn: TPanelButton;
     orRef: TTCPORsRef;
 begin
@@ -827,10 +827,10 @@ begin
    Exit();
  end else if (parsed[1] = 'SH') then begin
    try
-     oblr := ORs.Get(parsed[0]);
-     if (Assigned(oblr)) then begin
-       if (Assigned(oblr.hlaseni)) then
-         oblr.hlaseni.Parse(AContext, oblr, parsed)
+     area := ORs.Get(parsed[0]);
+     if (Assigned(area)) then begin
+       if (Assigned(area.announcement)) then
+         area.announcement.Parse(AContext, area, parsed)
        else
          Self.SendLn(AContext, parsed[0] + ';SH;' + parsed[2]+'-RESPONSE;ERR;INTERNAL_ERROR');
      end else if (parsed.Count > 2) then
@@ -845,24 +845,24 @@ begin
 
  // vsechna ostatni data pak podlehaji znalosti OR, ktere mam autorizovane, tak z toho vyjdeme
 
- oblr := ORs.Get(parsed[0]);
- if (oblr = nil) then
+ area := ORs.Get(parsed[0]);
+ if (area = nil) then
   begin
    Self.SendInfoMsg(AContext, 'Neautorizováno');
    Exit();
   end;
 
  if (parsed[1] = 'GET-ALL') then
-  oblr.PanelFirstGet(AContext)
+  area.PanelFirstGet(AContext)
 
  else if (parsed[1] = 'CLICK') then begin
   try
    btn := Self.StrToPanelButton(parsed[2]);
 
    if (parsed.Count > 4) then
-     oblr.PanelClick(AContext, StrToInt(parsed[3]), btn, parsed[4])
+     area.PanelClick(AContext, StrToInt(parsed[3]), btn, parsed[4])
    else
-     oblr.PanelClick(AContext, StrToInt(parsed[3]), btn);
+     area.PanelClick(AContext, StrToInt(parsed[3]), btn);
 
    if (btn = ESCAPE) then
      orRef.Escape(AContext);
@@ -872,48 +872,48 @@ begin
   end;
 
  end else if (parsed[1] = 'MSG') then
-   oblr.PanelMessage(ACOntext, parsed[2], parsed[3])
+   area.PanelMessage(ACOntext, parsed[2], parsed[3])
 
  else if (parsed[1] = 'SPR-CHANGE') then
   begin
    parsed.Delete(0);
    parsed.Delete(0);
-   oblr.PanelTrainChange(AContext, parsed);
+   area.PanelTrainChange(AContext, parsed);
   end
 
  else if (parsed[1] = 'MENUCLICK') then
   begin
    if (parsed.Count > 3) then
-     oblr.PanelDkMenuClick(AContext, parsed[2], parsed[3])
+     area.PanelDkMenuClick(AContext, parsed[2], parsed[3])
    else
-     oblr.PanelDkMenuClick(AContext, parsed[2], '');
+     area.PanelDkMenuClick(AContext, parsed[2], '');
   end
 
  else if (parsed[1] = 'HV') then
   begin
    if (parsed[2] = 'ADD') then
-     oblr.PanelHVAdd(AContext, parsed[3])
+     area.PanelHVAdd(AContext, parsed[3])
    else if (parsed[2] = 'REMOVE') then
-     oblr.PanelHVRemove(AContext, StrToInt(parsed[3]))
+     area.PanelHVRemove(AContext, StrToInt(parsed[3]))
    else if (parsed[2] = 'EDIT') then
-     oblr.PanelHVEdit(AContext, parsed[3])
+     area.PanelHVEdit(AContext, parsed[3])
    else if (parsed[2] = 'MOVE') then
-     oblr.PanelMoveLok(AContext, StrToInt(parsed[3]), parsed[4])
+     area.PanelMoveLok(AContext, StrToInt(parsed[3]), parsed[4])
    else if (parsed[2] = 'LIST') then
-     oblr.PanelHVList(AContext)
+     area.PanelHVList(AContext)
   end
 
  else if (parsed[1] = 'ZAS') then
-  oblr.PanelZAS(AContext, parsed)
+  area.PanelZAS(AContext, parsed)
 
  else if (parsed[1] = 'DK-CLICK') then
-  oblr.PanelDKClick(AContext, TPanelButton(StrToInt(parsed[2])))
+  area.PanelDKClick(AContext, TPanelButton(StrToInt(parsed[2])))
 
  else if (parsed[1] = 'LOK-REQ') then
-  oblr.PanelLokoReq(AContext, parsed)
+  area.PanelLokoReq(AContext, parsed)
 
  else if (parsed[1] = 'SHP') then
-  oblr.PanelHlaseni(AContext, parsed);
+  area.PanelHlaseni(AContext, parsed);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -956,11 +956,11 @@ begin
  end;
 end;
 
-procedure TORTCPServer.Menu(AContext: TIdContext; Blk: TBlk; OblR: TOR; menu: string);
+procedure TORTCPServer.Menu(AContext: TIdContext; Blk: TBlk; area: TArea; menu: string);
 begin
  try
    (AContext.Data as TTCPORsRef).menu    := Blk;
-   (AContext.Data as TTCPORsRef).menu_or := OblR;
+   (AContext.Data as TTCPORsRef).menu_or := area;
    Self.SendLn(AContext, '-;MENU;'+menu+';');
    F_Main.LV_Clients.Items[(AContext.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_MENU] := Blk.name;
  except
@@ -969,16 +969,16 @@ begin
 end;
 
 procedure TORTCPServer.Potvr(AContext: TIdContext;
-  callback: TPSCallback; stanice: TOR; udalost: string; senders: TBlksList;
-  podminky: TPSPodminky; free_senders: Boolean = true; free_podm: Boolean = true);
+  callback: TPSCallback; area: TArea; event: string; senders: TBlksList;
+  podminky: TConfSeqItems; free_senders: Boolean = true; free_podm: Boolean = true);
 begin
- Self.PotvrOrInfo(AContext, 'PS', callback, stanice, udalost, senders, podminky, free_senders, free_podm);
+ Self.PotvrOrInfo(AContext, 'PS', callback, area, event, senders, podminky, free_senders, free_podm);
 end;
 
 procedure TORTCPServer.PotvrOrInfo(AContext: TIdContext; mode: string;
-  callback: TPSCallback; stanice: TOR; udalost: string; senders: TBlksList;
-  podminky: TPSPodminky; free_senders: Boolean = true; free_podm: Boolean = true);
-var str, station_name: string;
+  callback: TPSCallback; area: TArea; event: string; senders: TBlksList;
+  conditions: TConfSeqItems; free_senders: Boolean = true; free_podm: Boolean = true);
+var str, areaName: string;
     i: Integer;
 begin
  str := '';
@@ -988,31 +988,31 @@ begin
      begin
       if ((senders[i].ClassType.InheritsFrom(TBlk))) then
         str := str + (senders[i] as TBlk).name + '|'
-      else if (senders[i].ClassType = TOR) then
-        str := str + 'Stanoviště výpravčího '+(senders[i] as TOR).Name + '|';
+      else if (senders[i].ClassType = TArea) then
+        str := str + 'Stanoviště výpravčího '+(senders[i] as TArea).Name + '|';
      end;
 
  str := str + ';';
 
- if (podminky <> nil) then
-   for i := 0 to podminky.Count-1 do
-     str := str + '[' + podminky[i].cil + '|' + podminky[i].podminka + ']';
+ if (conditions <> nil) then
+   for i := 0 to conditions.Count-1 do
+     str := str + '[' + conditions[i].block + '|' + conditions[i].note + ']';
 
- if (stanice <> nil) then
-   station_name := stanice.Name
+ if (area <> nil) then
+   areaName := area.Name
  else
-   station_name := '-';
+   areaName := '-';
 
  try
    (AContext.Data as TTCPORsRef).potvr := callback;
-   Self.SendLn(AContext, '-;'+UpperCase(mode)+';'+station_name+';'+udalost+';'+str);
-   F_Main.LV_Clients.Items[(AContext.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_RIZ] := udalost;
+   Self.SendLn(AContext, '-;'+UpperCase(mode)+';'+areaName+';'+event+';'+str);
+   F_Main.LV_Clients.Items[(AContext.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_RIZ] := event;
  except
 
  end;
 
  if ((free_senders) and (Assigned(senders))) then senders.Free();
- if ((free_podm) and (Assigned(podminky))) then podminky.Free();
+ if ((free_podm) and (Assigned(conditions))) then conditions.Free();
 end;
 
 procedure TORTCPServer.PotvrClose(AContext: TIdContext; msg: string = '');
@@ -1140,22 +1140,21 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORTCPServer.Auth(AContext: TIdContext; parsed: TStrings);
-var OblR: TOR;
+var area: TArea;
 begin
- OblR := ORs.Get(parsed[0]);
- if (OblR = nil) then
+ area := ORs.Get(parsed[0]);
+ if (area = nil) then
   begin
    Self.SendInfoMsg(AContext, 'Tato OR neexistuje');
    Exit();
   end;
 
  if (parsed.Count < 4) then
-  OblR.PanelAuthorise(AContext, TORControlRights(StrToInt(parsed[2])), '', '')
+   area.PanelAuthorise(AContext, TAreaRights(StrToInt(parsed[2])), '', '')
  else if (parsed.Count < 5) then
-  OblR.PanelAuthorise(AContext, TORControlRights(StrToInt(parsed[2])), parsed[3], '')
+   area.PanelAuthorise(AContext, TAreaRights(StrToInt(parsed[2])), parsed[3], '')
  else
-  OblR.PanelAuthorise(AContext, TORControlRights(StrToInt(parsed[2])), parsed[3], parsed[4]);
-
+   area.PanelAuthorise(AContext, TAreaRights(StrToInt(parsed[2])), parsed[3], parsed[4]);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1204,9 +1203,9 @@ end;
 procedure TORTCPServer.GUIRefreshLine(index: Integer; repaint: Boolean = true);
 var i: Integer;
     str: string;
-    ORPanel: TORPanel;
+    ORPanel: TAreaPanel;
     HV: THV;
-    oblr: TOR;
+    area: TArea;
     orRef: TTCPORsRef;
     Hour, Min, Sec, MSec: Word;
 begin
@@ -1257,7 +1256,7 @@ begin
      // klient existuje
      orRef.ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
      F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_OR1+i] :=
-       orRef.ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TOR.GetRightsString(ORPanel.Rights) +')';
+       orRef.ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TArea.GetRightsString(ORPanel.Rights) +')';
     end else begin
      // klient neexistuje
      F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_OR1+i] := '';
@@ -1270,7 +1269,7 @@ begin
    for i := 3 to orRef.ORs.Count-1 do
     begin
      orRef.ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
-     str := str + orRef.ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TOR.GetRightsString(ORPanel.Rights) +')' + ', ';
+     str := str + orRef.ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TArea.GetRightsString(ORPanel.Rights) +')' + ', ';
     end;
    F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_OR_NEXT] := LeftStr(str, Length(str)-2);
   end;
@@ -1312,8 +1311,8 @@ begin
   F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_REGULATOR] := '';
 
  str := '';
- for oblr in TTCPORsRef(Self.clients[index].conn.Data).st_hlaseni do
-   str := str + oblr.ShortName + ', ';
+ for area in TTCPORsRef(Self.clients[index].conn.Data).st_hlaseni do
+   str := str + area.ShortName + ', ';
  F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_SH] := LeftStr(str, Length(str)-2);
 
  F_Main.LV_Clients.UpdateItems(index, index);

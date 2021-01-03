@@ -6,7 +6,7 @@ unit stanicniHlaseniHelper;
 
 interface
 
-uses Train, TOblRizeni, Generics.Collections, BlockTrack, BlockRailway;
+uses Train, Area, Generics.Collections, BlockTrack, BlockRailway;
 
 type
   // jaka stanicni hlaseni prehrat
@@ -22,7 +22,7 @@ type
      - trat != nil, stanicniKolej != nil: prehrat prujezd po koleji
   }
 
-function CanPlayPrijezdSH(train: TTrain; OblR: TOR): TSHToPlay;
+function CanPlayPrijezdSH(train: TTrain; area: TArea): TSHToPlay;
   // vraci jaka prijezdova stanicni hlaseni lze prehrat
   // tato funkce predpoklada, ze jsou spravne vypocitany predpovidani souprav
   // funkce overuje jen pritomnost na usecich, overeni dostupnosti fyzickeho
@@ -34,7 +34,7 @@ uses BlockDb, Block, BlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function CanPlayPrijezdSH(train: TTrain; OblR: TOR): TSHToPlay;
+function CanPlayPrijezdSH(train: TTrain; area: TArea): TSHToPlay;
 var blksWithTrain: TList<TBlkTrack>;
     blk: TBlk;
     blkUsek: TBlkTrack;
@@ -53,13 +53,13 @@ begin
    // ziskame trat, ve ktere se aktualne souprava nachazi
    for blk in Blocks do
     begin
-     inOR := Blk.stations.Contains(OblR);
+     inOR := Blk.areas.Contains(area);
 
      // trate z aktualni stanice kontrolujeme cele
      if ((not inOR) and (blk.typ = btRT) and (TBlkTrack(blk).trainPredict = train) and
          (TBlkRT(blk).railway <> nil) and
-         (((TBlkRailway(TBlkRT(blk).railway)).linkerA.stations[0] = OblR) or
-          ((TBlkRailway(TBlkRT(blk).railway)).linkerB.stations[0] = OblR))) then
+         (((TBlkRailway(TBlkRT(blk).railway)).linkerA.areas[0] = area) or
+          ((TBlkRailway(TBlkRT(blk).railway)).linkerB.areas[0] = area))) then
        blksWithTrain.Add(TBlkTrack(blk));
 
      if (not inOR) then continue;

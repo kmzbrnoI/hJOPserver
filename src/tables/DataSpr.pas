@@ -28,7 +28,7 @@ var
 
 implementation
 
-uses TrainDb, Train, THVDatabase, TOblsRizeni, TOblRizeni, fMain,
+uses TrainDb, Train, THVDatabase, TOblsRizeni, Area, fMain,
        BlockDb, Block, THnaciVozidlo, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -149,7 +149,7 @@ var train: TTrainData;
 
   try
     if (train.station <> nil) then
-      Self.LV.Items[line].SubItems[9] := (train.station as TOR).Name
+      Self.LV.Items[line].SubItems[9] := (train.station as TArea).name
     else
       Self.LV.Items[line].SubItems[9] := '-';
   except
@@ -165,12 +165,12 @@ var train: TTrainData;
   Self.LV.Items[line].SubItems[12] := train.typ;
 
   if (train.stationFrom <> nil) then
-    Self.LV.Items[line].SubItems[13] := TOR(train.stationFrom).Name
+    Self.LV.Items[line].SubItems[13] := TArea(train.stationFrom).name
   else
     Self.LV.Items[line].SubItems[13] := '-';
 
   if (train.stationTo <> nil) then
-    Self.LV.Items[line].SubItems[14] := TOR(train.stationTo).Name
+    Self.LV.Items[line].SubItems[14] := TArea(train.stationTo).name
   else
     Self.LV.Items[line].SubItems[14] := '-';
 

@@ -1,4 +1,4 @@
-unit RegulatorTCP;
+﻿unit RegulatorTCP;
 
 // Trida TTCPRegulator se stara o komunikaci s regulatory -- klienty.
 //  napr. regulator Jerry.
@@ -50,7 +50,7 @@ var
 implementation
 
 uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, TrainDb, TCPORsRef, Logging,
-     fRegulator, fMain, TOblRizeni, TOblsRizeni, TechnologieTrakce, ownConvert;
+     fRegulator, fMain, Area, TOblsRizeni, TechnologieTrakce, ownConvert;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ end;
 
 procedure TTCPRegulator.ParseGlobal(Sender: TIdContext; parsed: TStrings);
 var user: TUser;
-    OblR: TOR;
+    area: TArea;
 begin
  parsed[3] := UpperCase(parsed[3]);
 
@@ -138,13 +138,13 @@ begin
        ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Žádost již probíhá');
        Exit();
       end;
-     OblR := ORs.Get(parsed[4]);
-     if (OblR = nil) then
+     area := ORs.Get(parsed[4]);
+     if (area = nil) then
       begin
        ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Tato oblast řízení neexistuje');
        Exit();
       end;
-     if (OblR.reg_please <> nil) then
+     if (area.regPlease <> nil) then
       begin
        ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Do oblasti řízení již probíhá žádost');
        Exit();
@@ -155,11 +155,11 @@ begin
        Exit();
       end;
 
-     (Sender.Data as TTCPORsRef).regulator_zadost := OblR;
+     (Sender.Data as TTCPORsRef).regulator_zadost := area;
      if (parsed.Count > 5) then
-       OblR.LokoPlease(Sender, (Sender.Data as TTCPORsRef).regulator_user, parsed[5])
+       area.LokoPlease(Sender, (Sender.Data as TTCPORsRef).regulator_user, parsed[5])
      else
-       OblR.LokoPlease(Sender, (Sender.Data as TTCPORsRef).regulator_user, '');
+       area.LokoPlease(Sender, (Sender.Data as TTCPORsRef).regulator_user, '');
 
      ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok');
    except

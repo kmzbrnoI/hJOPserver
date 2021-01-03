@@ -489,7 +489,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fAbout, Verze, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
      fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, BlockDb,
-     Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, TOblRizeni,
+     Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area,
      SnadnSpusteni, BlockSummary, BlockCrossing, TJCDatabase, Logging,
      TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkCrossing,
@@ -1404,7 +1404,7 @@ begin
    ORTCPServer.DCCStart();
   end else begin
 
-   ORs.BroadcastPlaySound(_SND_CHYBA, false, TORControlRights.write);
+   ORs.BroadcastPlaySound(_SND_CHYBA, false, TAreaRights.write);
 
    //neni DCC
    Self.S_DCC.Brush.Color := clRed;
@@ -2214,13 +2214,13 @@ begin
 end;
 
 procedure TF_Main.B_RemoveStackClick(Sender: TObject);
-var OblR: TOR;
+var area: TArea;
 begin
  if (Self.LV_Stanice.Selected = nil) then Exit();
- OblR := ORs[Self.LV_Stanice.ItemIndex];
- if (Application.MessageBox(PChar('Opravdu smazat zásobník jízdních cest stanice '+OblR.Name+' ?'),
+ area := ORs[Self.LV_Stanice.ItemIndex];
+ if (Application.MessageBox(PChar('Opravdu smazat zásobník jízdních cest stanice '+area.name+' ?'),
                             'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-   OblR.stack.Clear();
+   area.stack.Clear();
 end;
 
 procedure TF_Main.B_User_AddClick(Sender: TObject);
@@ -2817,12 +2817,12 @@ end;
 
 procedure TF_Main.LV_StaniceChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
-var OblR: TOR;
+var area: TArea;
 begin
  if (Self.LV_Stanice.Selected <> nil) then
   begin
-   OblR := ORs[Self.LV_Stanice.ItemIndex];
-   if (OblR.stack.Count > 0) then Self.B_RemoveStack.Enabled := true else Self.B_RemoveStack.Enabled := false;
+   area := ORs[Self.LV_Stanice.ItemIndex];
+   if (area.stack.Count > 0) then Self.B_RemoveStack.Enabled := true else Self.B_RemoveStack.Enabled := false;
   end else begin
    Self.B_RemoveStack.Enabled := false;
   end;

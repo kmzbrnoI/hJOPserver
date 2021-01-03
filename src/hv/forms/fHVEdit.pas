@@ -68,7 +68,7 @@ var
 
 implementation
 
-uses fMain, FileSystem, THVDatabase, DataHV, TOblsRizeni, TOblRizeni,
+uses fMain, FileSystem, THVDatabase, DataHV, TOblsRizeni, Area,
       fHVPomEdit, BlockDb, TrainDb;
 
 {$R *.dfm}
@@ -144,7 +144,7 @@ end;
 procedure TF_HVEdit.B_SaveClick(Sender: TObject);
 var data: THVData;
     stav: THVStav;
-    OblR: TOR;
+    area: TArea;
     i: Integer;
     pomCV: THVPomCV;
  begin
@@ -174,8 +174,8 @@ var data: THVData;
     Exit();
    end;
 
-  OblR := ORs[Self.CB_OR.ItemIndex];
-  if ((Self.OpenHV <> nil) and (Self.OpenHV.Stav.train > -1) and (Self.OpenHV.Stav.stanice <> OblR)) then
+  area := ORs[Self.CB_OR.ItemIndex];
+  if ((Self.OpenHV <> nil) and (Self.OpenHV.Stav.train > -1) and (Self.OpenHV.Stav.stanice <> area)) then
     if (Application.MessageBox('Měníte stanici HV, které je na soupravě, opravdu pokračovat?', 'Opravdu?', MB_YESNO OR MB_ICONWARNING) = mrNo) then
       Exit();
 
@@ -231,9 +231,9 @@ var data: THVData;
      // vytvoreni noveho HV
      data.maxSpeed := _DEFAUT_MAX_SPEED;
      data.transience := 0;
-     OblR := ORs[Self.CB_OR.ItemIndex];
+     area := ORs[Self.CB_OR.ItemIndex];
      try
-       HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), OblR);
+       HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), area);
      except
        on E: Exception do
         begin
@@ -251,12 +251,12 @@ var data: THVData;
      // update HV
      Self.OpenHV.data := data;
 
-     OblR := ORs[Self.CB_OR.ItemIndex];
+     area := ORs[Self.CB_OR.ItemIndex];
 
      stav := Self.OpenHV.stav;
      stav.StanovisteA := THVStanoviste(CB_Orientace.ItemIndex);
      Self.OpenHV.Stav := stav;
-     Self.OpenHV.PredejStanici(OblR);
+     Self.OpenHV.MoveToArea(area);
      Self.OpenHV.UpdateAllRegulators();
 
      HVTableData.UpdateLine(OpenHV);

@@ -2,7 +2,7 @@
 
 interface
 
-uses Generics.Collections, TOblRizeni, Block, Classes, Train, User,
+uses Generics.Collections, Area, Block, Classes, Train, User,
      THnaciVozidlo, IdContext, SysUtils;
 
 type
@@ -32,14 +32,14 @@ type
     procedure PingNewReceived(time: TTime);
 
    public
-    ORs: TList<TOR>;                                                             // reference na OR
+    ORs: TList<TArea>;
     protocol_version: string;
 
     stitek: TBlk;                                                                // blok, na kterema kutalne probiha zmena stitku
     vyluka: TBlk;                                                                // blok, na kterem aktualne probiha zmena vyluky
     potvr: TPSCallback;                                                          // callback probihajici potvrzovaci sekvence
     menu: TBlk;                                                                  // blok, kteremu odeslat callback kliku na polozku v menu
-    menu_or: TOR;                                                                // OR, ze ktere bylo vyvolano menu
+    menu_or: TArea;                                                              // OR, ze ktere bylo vyvolano menu
     UPO_OK, UPO_Esc: TNotifyEvent;                                               // callbacky manipulace s upozornenim vlevo dole
     UPO_ref: TObject;                                                            //
     index: Integer;                                                              // index spojeni v tabulce ve F_Main
@@ -52,10 +52,10 @@ type
 
     regulator: Boolean;                                                          // true pokud klient autorizoval rizeni pres regulator
     regulator_user: TUser;                                                       // uzivatel, ktery autorizoval regulator
-    regulator_zadost: TOR;                                                       // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
+    regulator_zadost: TArea;                                                     // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
     regulator_loks: TList<THV>;                                                  // seznam lokomotiv v regulatoru
 
-    st_hlaseni: TList<TOR>;                                                      // stanice, do kterych je autorizovano stanicni hlaseni
+    st_hlaseni: TList<TArea>;                                                    // stanice, do kterych je autorizovano stanicni hlaseni
     train_menu_index: Integer;                                                   // index sopuravy, ktere se aktualne zorbazuje menu (viz blok usek)
 
     soundDict: TDictionary<Integer, Cardinal>;                                   // pro kazdy zvuk obsahuje pocet jeho prehravani
@@ -96,9 +96,9 @@ constructor TTCPORsRef.Create(index: Integer);
 begin
  inherited Create();
  Self.regulator_loks := TList<THV>.Create();
- Self.st_hlaseni := TList<TOR>.Create();
+ Self.st_hlaseni := TList<TArea>.Create();
  Self.soundDict := TDictionary<Integer, Cardinal>.Create();
- Self.ORs := TList<TOR>.Create();
+ Self.ORs := TList<TArea>.Create();
  Self.regulator_zadost := nil;
  Self.index := index;
  Self.ping_sent := TQueue<TORPing>.Create();
@@ -123,11 +123,11 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTCPORsRef.Escape(AContext: TIdContext);
-var oblr: TOR;
+var area: TArea;
 begin
  if ((Self.stitek = nil) and (Self.vyluka = nil) and (not Assigned(Self.potvr)) and (Self.menu = nil) and (not Assigned(Self.UPO_OK))) then
-   for oblr in Self.ORs do
-     oblr.PanelEscape(AContext);
+   for area in Self.ORs do
+     area.PanelEscape(AContext);
 
  Self.Reset();
 end;

@@ -192,7 +192,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, BlockDb, TOblRizeni, BlockSignal, Logging,
+uses GetSystems, TechnologieRCS, BlockDb, Area, BlockSignal, Logging,
     TJCDatabase, fMain, TCPServerOR, BlockTrack, BlockLinker, TrainDb, THVDatabase,
     BlockRailwayTrack, appEv, timeHelper, ownConvert, Graphics;
 
@@ -422,26 +422,26 @@ begin
 end;
 
 procedure TBlkRailway.SetRequest(Zadost: Boolean);
-var uvazka: TBlkLinker;
-    oblr: TOR;
+var linker: TBlkLinker;
+    area: TArea;
 begin
  if (Self.request = Zadost) then Exit();
 
  // tady se resi prehravani zvuku
  try
-   uvazka := nil;
-   if ((Self.m_linkerA as TBlkLinker).request) then uvazka := (Self.m_linkerB as TBlkLinker)
-   else if ((Self.m_linkerB as TBlkLinker).request) then uvazka := (Self.m_linkerA as TBlkLinker);
+   linker := nil;
+   if ((Self.m_linkerA as TBlkLinker).request) then linker := (Self.m_linkerB as TBlkLinker)
+   else if ((Self.m_linkerB as TBlkLinker).request) then linker := (Self.m_linkerA as TBlkLinker);
 
-   if ((uvazka <> nil) and (Zadost <> Self.m_state.request)) then
+   if ((linker <> nil) and (Zadost <> Self.m_state.request)) then
     begin
      if (Zadost) then
       begin
-       for oblr in uvazka.stations do
-         oblr.ZadostBlkCnt := oblr.ZadostBlkCnt + 1;
+       for area in linker.areas do
+         area.railwayReqBlkCnt := area.railwayReqBlkCnt + 1;
       end else begin
-       for oblr in uvazka.stations do
-         oblr.ZadostBlkCnt := oblr.ZadostBlkCnt - 1;
+       for area in linker.areas do
+         area.railwayReqBlkCnt := area.railwayReqBlkCnt - 1;
       end;
     end;
  except
@@ -626,21 +626,21 @@ procedure TBlkRailway.TrainChangeOR(train: TTrain; smer: TRailwayDirection);
 begin
  case (smer) of
    TRailwayDirection.AtoB: begin
-      if ((Self.linkerB as TBlkLinker).stations.Count > 0) then
-        train.station := (Self.linkerB as TBlkLinker).stations[0]
+      if ((Self.linkerB as TBlkLinker).areas.Count > 0) then
+        train.station := (Self.linkerB as TBlkLinker).areas[0]
       else
         train.station := nil;
    end;//AtoB
    TRailwayDirection.BtoA: begin
-      if ((Self.linkerA as TBlkLinker).stations.Count > 0) then
-        train.station := (Self.linkerA as TBlkLinker).stations[0]
+      if ((Self.linkerA as TBlkLinker).areas.Count > 0) then
+        train.station := (Self.linkerA as TBlkLinker).areas[0]
       else
         train.station := nil;
    end;//BtoA
  end;//case
 
  writelog('Trať '+Self.m_globSettings.name+ ' : souprava '+train.name+
-          ' : stanice změněna na '+(train.station as TOR).Name, WR_SPRPREDAT);
+          ' : stanice změněna na '+(train.station as TArea).Name, WR_SPRPREDAT);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -674,7 +674,7 @@ begin
     begin
      if (Blk.typ <> btSignal) then continue;
      if ((TBlkSignal(Blk).trackId = Self.m_settings.trackIds[0]) and
-         (Blk.stations[0] = Self.linkerA.stations[0]) and
+         (Blk.areas[0] = Self.linkerA.areas[0]) and
          ((BlkTU = nil) or (Blk.id <> BlkTU.GetSettings.signalLid))) then
       begin
        Self.m_signalA := Blk;
@@ -704,7 +704,7 @@ begin
     begin
      if (Blk.typ <> btSignal) then continue;
      if ((TBlkSignal(Blk).trackId = Self.m_settings.trackIds[Self.m_settings.trackIds.Count-1]) and
-         (Blk.stations[0] = Self.linkerB.stations[0]) and
+         (Blk.areas[0] = Self.linkerB.areas[0]) and
          ((BlkTU = nil) or (Blk.id <> BlkTU.GetSettings.signalSid))) then
       begin
        Self.m_signalB := Blk;
@@ -991,15 +991,15 @@ end;
 // kvuli staveni ze zasobniku.
 
 function TBlkRailway.SameUserBothLinkers(): Boolean;
-var first, second: TORPanel;
+var first, second: TAreaPanel;
 begin
  if ((not Assigned(Self.linkerA)) or (not Assigned(Self.linkerB))) then Exit(false);
- if ((TBlkLinker(Self.linkerA).stations.Count <> 1) or (TBlkLinker(Self.linkerB).stations.Count <> 1)) then Exit(false);
+ if ((TBlkLinker(Self.linkerA).areas.Count <> 1) or (TBlkLinker(Self.linkerB).areas.Count <> 1)) then Exit(false);
 
- for first in TBlkLinker(Self.linkerA).stations[0].Connected do
-   if (first.Rights >= TORControlRights.write) then
-     for second in TBlkLinker(Self.linkerB).stations[0].Connected do
-       if ((first.user = second.user) and (second.Rights >= TORControlRights.write)) then
+ for first in TBlkLinker(Self.linkerA).areas[0].Connected do
+   if (first.rights >= TAreaRights.write) then
+     for second in TBlkLinker(Self.linkerB).areas[0].Connected do
+       if ((first.user = second.user) and (second.rights >= TAreaRights.write)) then
          Exit(true);
 
  Result := false;

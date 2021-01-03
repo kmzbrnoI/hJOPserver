@@ -5,7 +5,7 @@ unit BlockSummary;
 interface
 
 uses IniFiles, Block, Menus, SysUtils, Classes, IdContext, Generics.Collections,
-     TOblRizeni, TCPServerOR;
+     Area, TCPServerOR;
 
 type
  TBlkSummarySettings = record
@@ -66,9 +66,9 @@ type
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject;
                              item: string; itemindex: Integer); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject;
-                           rights: TORCOntrolRights): string; override;
+                           rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
-                         Button: TPanelButton; rights: TORCOntrolRights;
+                         Button: TPanelButton; rights: TAreaRights;
                          params: string = ''); override;
     function PanelStateString(): string; override;
 
@@ -171,7 +171,7 @@ end;
 
 //vytvoreni menu pro potreby konkretniho bloku:
 function TBlkSummary.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject;
-                              rights: TORCOntrolRights): string;
+                              rights: TAreaRights): string;
 var prjid: Integer;
     crossing: TBlk;
 begin
@@ -190,10 +190,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSummary.PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
-                            Button: TPanelButton; rights: TORCOntrolRights;
+                            Button: TPanelButton; rights: TAreaRights;
                             params: string = '');
 begin
- ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TOR),
+ ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea),
                   Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
@@ -210,8 +210,8 @@ begin
   begin
    Blocks.GetBlkByID(Self.m_settings.crossings[itemindex-2], crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
-     ORTCPServer.Menu(SenderPnl, crossing, SenderOR as TOR,
-                      crossing.ShowPanelMenu(SenderPnl, SenderOR, TORControlRights.write));
+     ORTCPServer.Menu(SenderPnl, crossing, SenderOR as TArea,
+                      crossing.ShowPanelMenu(SenderPnl, SenderOR, TAreaRights.write));
   end;
 end;
 

@@ -24,7 +24,7 @@ var
 
 implementation
 
-uses TOblsRizeni, TOblRizeni;
+uses TOblsRizeni, Area;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -56,14 +56,14 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TORsTableData.UpdateTable(force: Boolean = false);
-var OblR: TOR;
+var area: TArea;
 begin
- for OblR in ORs do
+ for area in ORs do
   begin
-   if ((OblR.changed) or (force)) then
+   if ((area.changed) or (force)) then
     begin
-     OblR.UpdateLine(Self.LV.Items[OblR.index]);
-     OblR.changed := false;
+     area.UpdateLine(Self.LV.Items[area.index]);
+     area.changed := false;
     end;
   end;
 end;

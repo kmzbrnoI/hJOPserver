@@ -170,8 +170,6 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       Align = alBottom
       Caption = ' P'#345'idat nov'#233' n'#225'v'#283'stidlo '
       TabOrder = 2
-      ExplicitTop = 217
-      ExplicitWidth = 302
       object B_BlkAdd: TButton
         Left = 227
         Top = 14
