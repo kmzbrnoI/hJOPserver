@@ -480,7 +480,7 @@ end;
 
 procedure TBlkIO.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Stitek(SenderPnl, Self, Self.note);
+ ORTCPServer.Note(SenderPnl, Self, Self.note);
 end;
 
 procedure TBlkIO.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);

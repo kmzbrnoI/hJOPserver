@@ -59,7 +59,7 @@ end;
 
 implementation
 
-uses TCPServerOR, Area, TCPORsRef;
+uses TCPServerOR, Area, TCPAreasRef;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -370,7 +370,7 @@ end;
 
 procedure TBlkDisconnector.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Stitek(SenderPnl, Self, Self.fullState.note);
+ ORTCPServer.Note(SenderPnl, Self, Self.fullState.note);
 end;
 
 procedure TBlkDisconnector.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);

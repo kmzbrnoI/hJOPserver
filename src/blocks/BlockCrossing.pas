@@ -153,7 +153,7 @@ type
 implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
-     Graphics, TCPORsRef, Diagnostics, appEv, ownConvert;
+     Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
@@ -614,7 +614,7 @@ end;
 
 procedure TBlkCrossing.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Stitek(SenderPnl, Self, Self.m_state.note);
+ ORTCPServer.Note(SenderPnl, Self, Self.m_state.note);
 end;
 
 procedure TBlkCrossing.MenuAdminZavreno(SenderPnl: TIdContext; SenderOR: TObject);

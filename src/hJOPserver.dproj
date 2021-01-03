@@ -122,7 +122,7 @@
 			</DCCReference>
 			<DCCReference Include="helpers\GetSystems.pas"/>
 			<DCCReference Include="helpers\ownConvert.pas"/>
-			<DCCReference Include="TechnologieRCS.pas"/>
+			<DCCReference Include="hw\TechnologieRCS.pas"/>
 			<DCCReference Include="jc\TechnologieJC.pas"/>
 			<DCCReference Include="FileSystem.pas"/>
 			<DCCReference Include="forms\fConsole.pas">
@@ -135,8 +135,8 @@
 			<DCCReference Include="blocks\BlockSignal.pas"/>
 			<DCCReference Include="areas\AreaDb.pas"/>
 			<DCCReference Include="areas\Area.pas"/>
-			<DCCReference Include="Booster.pas"/>
-			<DCCReference Include="BoosterDb.pas"/>
+			<DCCReference Include="boosters\Booster.pas"/>
+			<DCCReference Include="boosters\BoosterDb.pas"/>
 			<DCCReference Include="blocks\forms\state\fBlkTurnoutState.pas">
 				<Form>F_BlkTurnoutState</Form>
 			</DCCReference>
@@ -145,7 +145,7 @@
 			<DCCReference Include="hv\THVDatabase.pas"/>
 			<DCCReference Include="hv\THnaciVozidlo.pas"/>
 			<DCCReference Include="Logging.pas"/>
-			<DCCReference Include="TCPServerOR.pas"/>
+			<DCCReference Include="net\TCPServerOR.pas"/>
 			<DCCReference Include="tables\DataRCS.pas"/>
 			<DCCReference Include="tables\DataHV.pas"/>
 			<DCCReference Include="tables\DataJC.pas"/>
@@ -154,11 +154,11 @@
 			<DCCReference Include="tables\DataORs.pas"/>
 			<DCCReference Include="blocks\BlockRailway.pas"/>
 			<DCCReference Include="blocks\BlockLinker.pas"/>
-			<DCCReference Include="Train.pas"/>
-			<DCCReference Include="TrainDb.pas"/>
+			<DCCReference Include="trains\Train.pas"/>
+			<DCCReference Include="trains\TrainDb.pas"/>
 			<DCCReference Include="tables\DataSpr.pas"/>
-			<DCCReference Include="User.pas"/>
-			<DCCReference Include="UserDb.pas"/>
+			<DCCReference Include="users\User.pas"/>
+			<DCCReference Include="users\UserDb.pas"/>
 			<DCCReference Include="tables\DataUsers.pas"/>
 			<DCCReference Include="forms\fUserEdit.pas">
 				<Form>F_UserEdit</Form>
@@ -204,7 +204,7 @@
 				<Form>F_BlkRTStopEvent</Form>
 			</DCCReference>
 			<DCCReference Include="RCSdebugger.pas"/>
-			<DCCReference Include="UDPdiscover.pas"/>
+			<DCCReference Include="net\UDPdiscover.pas"/>
 			<DCCReference Include="helpers\USock.pas"/>
 			<DCCReference Include="helpers\appEv.pas"/>
 			<DCCReference Include="helpers\SystemCriticalU.pas"/>
@@ -250,15 +250,15 @@
 			</DCCReference>
 			<DCCReference Include="predvidanyOdjezd.pas"/>
 			<DCCReference Include="helpers\timeHelper.pas"/>
-			<DCCReference Include="TechnologieAB.pas"/>
+			<DCCReference Include="jc\TechnologieAB.pas"/>
 			<DCCReference Include="tables\DataAB.pas"/>
-			<DCCReference Include="TCPORsRef.pas"/>
+			<DCCReference Include="areas\TCPAreasRef.pas"/>
 			<DCCReference Include="blocks\forms\data\fBlkSignal.pas">
 				<Form>F_BlkSignal</Form>
 			</DCCReference>
 			<DCCReference Include="trakce\Trakce.pas"/>
 			<DCCReference Include="trakce\TrakceErrors.pas"/>
-			<DCCReference Include="TechnologieTrakce.pas">
+			<DCCReference Include="hw\TechnologieTrakce.pas">
 				<Form>$R *.res</Form>
 			</DCCReference>
 			<DCCReference Include="CpuLoad.pas"/>

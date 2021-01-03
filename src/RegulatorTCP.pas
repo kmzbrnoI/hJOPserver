@@ -49,7 +49,7 @@ var
 
 implementation
 
-uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, TrainDb, TCPORsRef, Logging,
+uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, TrainDb, TCPAreasRef, Logging,
      fRegulator, fMain, Area, AreaDb, TechnologieTrakce, ownConvert;
 
 

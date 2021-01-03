@@ -260,7 +260,7 @@ type
 implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
-      TCPServerOR, BlockLock, PTUtils, changeEvent, TCPORsRef, ownConvert,
+      TCPServerOR, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
       IfThenElse;
 
 constructor TBlkTurnout.Create(index: Integer);
@@ -1026,12 +1026,12 @@ end;
 
 procedure TBlkTurnout.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Stitek(SenderPnl, Self, Self.state.note);
+ ORTCPServer.Note(SenderPnl, Self, Self.state.note);
 end;
 
 procedure TBlkTurnout.MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Vyluka(SenderPnl, Self, Self.state.lockout);
+ ORTCPServer.Lockut(SenderPnl, Self, Self.state.lockout);
 end;
 
 procedure TBlkTurnout.MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);

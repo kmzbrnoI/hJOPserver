@@ -274,7 +274,7 @@ end;
 
 procedure TBlkLinker.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Stitek(SenderPnl, Self, Self.m_state.note);
+ ORTCPServer.Note(SenderPnl, Self, Self.m_state.note);
 end;
 
 procedure TBlkLinker.MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);

@@ -11,7 +11,7 @@ interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
      Classes, StrUtils, Graphics, Windows, Area, ExtCtrls,
-     IdContext, Block, ComCtrls, IdSync, BlockDb, UPO, TCPORsRef,
+     IdContext, Block, ComCtrls, IdSync, BlockDb, UPO, TCPAreasRef,
      User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
 const
@@ -99,15 +99,15 @@ type
 
      // volani funkci do panelu, ktere neprislusi OR, ale jednotlivym panelum
      procedure SendInfoMsg(AContext: TIdContext; msg: string);
-     procedure Stitek(AContext: TIdContext; Blk: TBlk; stit: string);
-     procedure Vyluka(AContext: TIdContext; Blk: TBlk; vyl: string);
+     procedure Note(AContext: TIdContext; Blk: TBlk; stit: string);
+     procedure Lockut(AContext: TIdContext; Blk: TBlk; vyl: string);
      procedure Menu(AContext: TIdContext; Blk: TBlk; area: TArea; menu: string);
-     procedure Potvr(AContext: TIdContext; callback: TPSCallback; area: TArea;
+     procedure Potvr(AContext: TIdContext; callback: TCSCallback; area: TArea;
                      event: string; senders: TBlksList; podminky: TConfSeqItems;
-                     free_senders: Boolean = true; free_podm: Boolean = true);
-     procedure PotvrOrInfo(AContext: TIdContext; mode: string; callback: TPSCallback; area: TArea;
+                     free_senders: Boolean = true; free_cond: Boolean = true);
+     procedure PotvrOrInfo(AContext: TIdContext; mode: string; callback: TCSCallback; area: TArea;
                            event: string; senders: TBlksList; conditions: TConfSeqItems;
-                           free_senders: Boolean = true; free_podm: Boolean = true);
+                           free_senders: Boolean = true; free_cond: Boolean = true);
      procedure PotvrClose(AContext: TIdContext; msg: string = '');
      procedure PotvrOrInfoClose(AContext: TIdContext; mode: string; msg: string = '');
      procedure UPO(AContext: TIdContext; items: TUPOItems; critical: Boolean; callbackOK: TNotifyEvent; callbackEsc: TNotifyEvent; ref: TObject);
@@ -149,7 +149,7 @@ type
 
       property openned: Boolean read IsOpenned;
       property port: Word read fport write fport;
-  end;//TPanelTCPClient
+  end;
 
 var
   ORTCPServer : TORTCPServer;
@@ -403,9 +403,9 @@ var area: TArea;
 begin
  // Warning: AContext is destroyed, only address is left.
  // vymazeme klienta ze vsech oblasti rizeni
- for area in ORsRef.ORs do
+ for area in ORsRef.areas do
    area.RemoveClient(AContext, true);
- ORsRef.ORs.Clear();
+ ORsRef.areas.Clear();
 
  // ukoncime probihajici potvrzovaci sekvenci
  if (Assigned(ORsRef.potvr)) then
@@ -615,17 +615,17 @@ begin
 
    F_Main.LV_Clients.Items[orRef.index].SubItems[_LV_CLIENTS_COL_STIT] := '';
 
-   if (orRef.stitek = nil) then Exit();
-   case (orRef.stitek.typ) of
-    btTrack, btRT : (orRef.stitek as TBlkTrack).note := tmp;
-    btTurnout    : (orRef.stitek as TBlkTurnout).note := tmp;
-    btLinker     : (orRef.stitek as TBlkLinker).note := tmp;
-    btCrossing    : (orRef.stitek as TBlkCrossing).note := tmp;
-    btLock       : (orRef.stitek as TBlkLock).note := tmp;
-    btDisconnector       : (orRef.stitek as TBlkDisconnector).note := tmp;
-    btIO         : (orRef.stitek as TBlkIO).note := tmp;
+   if (orRef.note = nil) then Exit();
+   case (orRef.note.typ) of
+    btTrack, btRT : (orRef.note as TBlkTrack).note := tmp;
+    btTurnout    : (orRef.note as TBlkTurnout).note := tmp;
+    btLinker     : (orRef.note as TBlkLinker).note := tmp;
+    btCrossing    : (orRef.note as TBlkCrossing).note := tmp;
+    btLock       : (orRef.note as TBlkLock).note := tmp;
+    btDisconnector       : (orRef.note as TBlkDisconnector).note := tmp;
+    btIO         : (orRef.note as TBlkIO).note := tmp;
    end;//case
-   orRef.stitek := nil;
+   orRef.note := nil;
   end
 
  else if (parsed[1] = 'VYL') then
@@ -637,12 +637,12 @@ begin
 
    F_Main.LV_Clients.Items[orRef.index].SubItems[_LV_CLIENTS_COL_STIT] := '';
 
-   if (orRef.vyluka = nil) then Exit();
-   case (orRef.vyluka.typ) of
-    btTrack, btRT : (orRef.vyluka as TBlkTrack).SetLockout(AContext, tmp);
-    btTurnout    : (orRef.vyluka as TBlkTurnout).SetLockout(AContext, tmp);
+   if (orRef.lockout = nil) then Exit();
+   case (orRef.lockout.typ) of
+    btTrack, btRT: (orRef.lockout as TBlkTrack).SetLockout(AContext, tmp);
+    btTurnout: (orRef.lockout as TBlkTurnout).SetLockout(AContext, tmp);
    end;//case
-   orRef.vyluka := nil;
+   orRef.lockout := nil;
   end
 
  else if ((parsed[1] = 'PS') or (parsed[1] = 'IS')) then
@@ -723,7 +723,7 @@ begin
  else if (parsed[1] = 'SPR-LIST') then
   begin
    tmp := '';
-   for area in orRef.ORs do
+   for area in orRef.areas do
      tmp := tmp + area.PanelGetTrains(AContext);
    Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
@@ -734,7 +734,7 @@ begin
    if (i >= 0) then (Trains[i].station as TArea).PanelRemoveTrain(AContext, i);
 
    tmp := '';
-   for area in orRef.ORs do
+   for area in orRef.areas do
     tmp := tmp + area.PanelGetTrains(AContext);
    Self.SendLn(AContext, '-;SPR-LIST;'+tmp);
   end
@@ -768,12 +768,12 @@ begin
 
  else if (parsed[1] = 'PODJ') then
   begin
-   if (TTCPORsRef(AContext.Data).podj_usek <> nil) then
+   if (TTCPORsRef(AContext.Data).podj_track <> nil) then
     begin
      podj := nil;
      try
        podj := TPodj.Create(parsed[2], parsed[3]);
-       (TTCPORsRef(AContext.Data).podj_usek as TBlkTrack).POdjChanged(
+       (TTCPORsRef(AContext.Data).podj_track as TBlkTrack).POdjChanged(
          TTCPORsRef(AContext.Data).podj_trainid, podj
        ); // sets podj to nil if takes ownership
      except
@@ -783,7 +783,7 @@ begin
      if (podj <> nil) then
        podj.Free();
 
-     TTCPORsRef(AContext.Data).podj_usek := nil;
+     TTCPORsRef(AContext.Data).podj_track := nil;
      TTCPORsRef(AContext.Data).podj_trainid := -1;
     end;
 
@@ -934,10 +934,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 // volani funkci ke klientovi
 
-procedure TORTCPServer.Stitek(AContext: TIdContext; Blk: TBlk; stit: string);
+procedure TORTCPServer.Note(AContext: TIdContext; Blk: TBlk; stit: string);
 begin
  try
-   (AContext.Data as TTCPORsRef).stitek := Blk;
+   (AContext.Data as TTCPORsRef).note := Blk;
    Self.SendLn(AContext, '-;STIT;'+Blk.name+';'+stit+';');
    F_Main.LV_Clients.Items[(AContext.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_STIT] := Blk.name;
  except
@@ -945,10 +945,10 @@ begin
  end;
 end;
 
-procedure TORTCPServer.Vyluka(AContext: TIdContext; Blk: TBlk; vyl: string);
+procedure TORTCPServer.Lockut(AContext: TIdContext; Blk: TBlk; vyl: string);
 begin
  try
-   (AContext.Data as TTCPORsRef).vyluka := Blk;
+   (AContext.Data as TTCPORsRef).lockout := Blk;
    Self.SendLn(AContext, '-;VYL;'+Blk.name+';'+vyl+';');
    F_Main.LV_Clients.Items[(AContext.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_STIT] := Blk.name;
  except
@@ -969,15 +969,15 @@ begin
 end;
 
 procedure TORTCPServer.Potvr(AContext: TIdContext;
-  callback: TPSCallback; area: TArea; event: string; senders: TBlksList;
-  podminky: TConfSeqItems; free_senders: Boolean = true; free_podm: Boolean = true);
+  callback: TCSCallback; area: TArea; event: string; senders: TBlksList;
+  podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
 begin
- Self.PotvrOrInfo(AContext, 'PS', callback, area, event, senders, podminky, free_senders, free_podm);
+ Self.PotvrOrInfo(AContext, 'PS', callback, area, event, senders, podminky, free_senders, free_cond);
 end;
 
 procedure TORTCPServer.PotvrOrInfo(AContext: TIdContext; mode: string;
-  callback: TPSCallback; area: TArea; event: string; senders: TBlksList;
-  conditions: TConfSeqItems; free_senders: Boolean = true; free_podm: Boolean = true);
+  callback: TCSCallback; area: TArea; event: string; senders: TBlksList;
+  conditions: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
 var str, areaName: string;
     i: Integer;
 begin
@@ -1012,7 +1012,7 @@ begin
  end;
 
  if ((free_senders) and (Assigned(senders))) then senders.Free();
- if ((free_podm) and (Assigned(conditions))) then conditions.Free();
+ if ((free_cond) and (Assigned(conditions))) then conditions.Free();
 end;
 
 procedure TORTCPServer.PotvrClose(AContext: TIdContext; msg: string = '');
@@ -1131,7 +1131,7 @@ begin
    str := str + FormatDateTime('nn:ss', podj.rel);
  str := str + ';';
 
- (AContext.Data as TTCPORsRef).podj_usek := SenderBlk;
+ (AContext.Data as TTCPORsRef).podj_track := SenderBlk;
  (AContext.Data as TTCPORsRef).podj_trainid := SenderTrainId;
 
  Self.SendLn(AContext, str);
@@ -1251,25 +1251,25 @@ begin
 
  for i := 0 to 2 do
   begin
-   if (i < orRef.ORs.Count) then
+   if (i < orRef.areas.Count) then
     begin
      // klient existuje
-     orRef.ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
+     orRef.areas[i].GetORPanel(Self.clients[index].conn, ORPanel);
      F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_OR1+i] :=
-       orRef.ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TArea.GetRightsString(ORPanel.Rights) +')';
+       orRef.areas[i].ShortName + ' (' + ORPanel.user + ' :: ' + TArea.GetRightsString(ORPanel.Rights) +')';
     end else begin
      // klient neexistuje
      F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_OR1+i] := '';
     end;
   end;//for i
 
- if (orRef.ORs.Count > 3) then
+ if (orRef.areas.Count > 3) then
   begin
    str := '';
-   for i := 3 to orRef.ORs.Count-1 do
+   for i := 3 to orRef.areas.Count-1 do
     begin
-     orRef.ORs[i].GetORPanel(Self.clients[index].conn, ORPanel);
-     str := str + orRef.ORs[i].ShortName + ' (' + ORPanel.user + ' :: ' + TArea.GetRightsString(ORPanel.Rights) +')' + ', ';
+     orRef.areas[i].GetORPanel(Self.clients[index].conn, ORPanel);
+     str := str + orRef.areas[i].ShortName + ' (' + ORPanel.user + ' :: ' + TArea.GetRightsString(ORPanel.Rights) +')' + ', ';
     end;
    F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_OR_NEXT] := LeftStr(str, Length(str)-2);
   end;
@@ -1280,11 +1280,11 @@ begin
   F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_MENU] := '';
  end;
 
- if (orRef.vyluka <> nil) then
-  F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_STIT] := orRef.vyluka.name
+ if (orRef.lockout <> nil) then
+  F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_STIT] := orRef.lockout.name
  else begin
-   if (orRef.stitek <> nil) then
-    F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_STIT] := orRef.stitek.name
+   if (orRef.note <> nil) then
+    F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_STIT] := orRef.note.name
    else
     F_Main.LV_Clients.Items[index].SubItems[_LV_CLIENTS_COL_STIT] := '';
  end;

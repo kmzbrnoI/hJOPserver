@@ -201,7 +201,7 @@ type
       procedure BlkEditTrain(Sender: TObject; Panel: TIdContext; train: TObject);// posle do panelu pozadavek na otevreni dialogu editace soupravy
 
       //--- called from areas ---
-      procedure ORSendMessage(Sender: TArea; msg: string);
+      procedure SendMessage(Sender: TArea; msg: string);
       procedure ORDKClickServer(callback: TBlkCallback);
       procedure ORDKClickClient();
 
@@ -267,7 +267,7 @@ implementation
 
 uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, Logging, TechnologieJC,
      TJCDatabase, ownConvert, TCPServerOR, AreaDb, Block, THVDatabase, TrainDb,
-     UserDb, THnaciVozidlo, Trakce, User, TCPORsRef, fRegulator, RegulatorTCP,
+     UserDb, THnaciVozidlo, Trakce, User, TCPAreasRef, fRegulator, RegulatorTCP,
      ownStrUtils, Train, changeEvent, TechnologieTrakce;
 
 constructor TArea.Create(index: Integer);
@@ -478,7 +478,7 @@ begin
 
  if (Self.connected.Count >= _MAX_CON_PNL) then
    raise EMaxClients.Create('Připojen maximální počet klientů');
- if ((panel.Data as TTCPORsRef).ORs.Count >= _MAX_ORREF) then
+ if ((panel.Data as TTCPORsRef).areas.Count >= _MAX_ORREF) then
    raise EMaxClients.Create('Připojen maximální OR k jedné stanici');
 
  pnl.panel := panel;
@@ -489,7 +489,7 @@ begin
  authLog('or', 'login', user, Self.id + ' :: ' + Self.GetRightsString(rights));
 
  // pridame referenci na sami sebe do TIDContext
- (panel.Data as TTCPORsRef).ORs.Add(Self);
+ (panel.Data as TTCPORsRef).areas.Add(Self);
 
  // odesleme incializacni udaje
  if (rights > TAreaRights.null) then
@@ -513,8 +513,8 @@ begin
   end;
 
  if (not contextDestroyed) then
-   if ((panel.Data as TTCPORsRef).ORs.Contains(Self)) then
-     (panel.Data as TTCPORsRef).ORs.Remove(Self);
+   if ((panel.Data as TTCPORsRef).areas.Contains(Self)) then
+     (panel.Data as TTCPORsRef).areas.Remove(Self);
 end;
 
 function TArea.PanelDbRights(panel: TIdContext): TAreaRights;
@@ -785,7 +785,7 @@ begin
   end;
 
  try
-   area.ORSendMessage(Self, msg);
+   area.SendMessage(Self, msg);
  except
    on E: ENoClientConnected do
      Self.SendLn(Sender, 'MSG-ERR;' + recepient + ';K této OŘ aktuálně není připojen žádný panel');
@@ -1198,7 +1198,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.ORSendMessage(Sender: TArea; msg: string);
+procedure TArea.SendMessage(Sender: TArea; msg: string);
 var areaPanel: TAreaPanel;
 begin
  for areaPanel in Self.connected do

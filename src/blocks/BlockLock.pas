@@ -181,7 +181,7 @@ end;
 
 procedure TBlkLock.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Stitek(SenderPnl, Self, Self.note);
+ ORTCPServer.Note(SenderPnl, Self, Self.note);
 end;
 
 procedure TBlkLock.MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);

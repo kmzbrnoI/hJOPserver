@@ -285,7 +285,7 @@ implementation
 uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
     TJCDatabase, fMain, TCPServerOR, BlockRailway, TrainDb, THVDatabase, Math,
     Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv,
-    stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPORsRef,
+    stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef,
     Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase;
 
 constructor TBlkTrack.Create(index: Integer);
@@ -1078,12 +1078,12 @@ end;
 
 procedure TBlkTrack.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Stitek(SenderPnl, Self, Self.state.note);
+ ORTCPServer.Note(SenderPnl, Self, Self.state.note);
 end;
 
 procedure TBlkTrack.MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Vyluka(SenderPnl, Self, Self.state.lockout);
+ ORTCPServer.Lockut(SenderPnl, Self, Self.state.lockout);
 end;
 
 // pokud volba nebyla uspesna, vraci false a v tom pripade je vyvolano menu

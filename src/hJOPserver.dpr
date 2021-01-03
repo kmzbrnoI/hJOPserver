@@ -1,4 +1,4 @@
-// Project begin: september 2008
+﻿// Project begin: september 2008
 
 // JCL_DEBUG_EXPERT_INSERTJDBG ON
 // JCL_DEBUG_EXPERT_DELETEMAPFILE ON
@@ -130,7 +130,7 @@ uses
   timeHelper in 'helpers\timeHelper.pas',
   TechnologieAB in 'jc\TechnologieAB.pas',
   DataAB in 'tables\DataAB.pas',
-  TCPORsRef in 'areas\TCPORsRef.pas',
+  TCPAreasRef in 'areas\TCPAreasRef.pas',
   fBlkSignal in 'blocks\forms\data\fBlkSignal.pas' {F_BlkSignal},
   Trakce in 'trakce\Trakce.pas',
   TrakceErrors in 'trakce\TrakceErrors.pas',
