@@ -163,7 +163,7 @@
 			<DCCReference Include="forms\fUserEdit.pas">
 				<Form>F_UserEdit</Form>
 			</DCCReference>
-			<DCCReference Include="Stack.pas"/>
+			<DCCReference Include="areas\AreaStack.pas"/>
 			<DCCReference Include="jc\UPO.pas"/>
 			<DCCReference Include="blocks\forms\state\fBlkRailwayState.pas">
 				<Form>F_BlkRailwayState</Form>
@@ -274,7 +274,7 @@
 			<DCCReference Include="blocks\BlockCrossingLogic.pas"/>
 			<DCCReference Include="blocks\BlockTrackRef.pas"/>
 			<DCCReference Include="blocks\BlockTrackRefs.pas"/>
-			<DCCReference Include="orLighting.pas"/>
+			<DCCReference Include="areas\AreaLighting.pas"/>
 			<DCCReference Include="pt\PTEndpointTrain.pas"/>
 			<DCCReference Include="helpers\IfThenElse.pas"/>
 			<DCCReference Include="pt\PTEndpointUsers.pas"/>

@@ -1,4 +1,4 @@
-﻿unit Stack;
+﻿unit AreaStack;
 
 // Tato unita implementuje tridu TORStack, ktera resi zasobnik jizdnich cest pro
 //   jednu oblast rizeni

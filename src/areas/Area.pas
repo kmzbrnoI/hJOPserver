@@ -14,8 +14,8 @@
 interface
 
 uses IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
-      IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms, orLighting,
-      Generics.Collections, Stack, Windows, Generics.Defaults;
+      IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms, AreaLighting,
+      Generics.Collections, AreaStack, Windows, Generics.Defaults;
 
 const
   _MAX_CON_PNL = 16;  // max number of panels connected to an area

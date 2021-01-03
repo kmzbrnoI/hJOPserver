@@ -136,7 +136,7 @@ implementation
 
 uses BlockTurnout, BlockTrack, BlockIR, BlockSignal, fMain, BlockCrossing,
      BlockLock, TJCDatabase, Logging, BlockRailway, BlockLinker, BlockAC,
-     DataBloky, TrainDb, TechnologieJC, Stack, GetSystems, BlockDisconnector,
+     DataBloky, TrainDb, TechnologieJC, AreaStack, GetSystems, BlockDisconnector,
      BlockRailwayTrack, appEv, BlockIO, PTUtils, BlockSummary,
      TechnologieAB, ACBlocks, BlockGroupSignal;
 

@@ -1,4 +1,4 @@
-unit orLighting;
+unit AreaLighting;
 
 interface
 

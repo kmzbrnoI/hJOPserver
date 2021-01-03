@@ -277,7 +277,7 @@ type
 implementation
 
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerOR, Graphics, BlockGroupSignal,
-     GetSystems, Logging, TrainDb, BlockIR, Stack, ownStrUtils,
+     GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils,
      BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
      predvidanyOdjezd, ownConvert;
 

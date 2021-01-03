@@ -107,7 +107,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert,
-    TJCDatabase, fMain, TCPServerOR, BlockRailway, Stack, BlockTrack;
+    TJCDatabase, fMain, TCPServerOR, BlockRailway, AreaStack, BlockTrack;
 
 constructor TBlkLinker.Create(index: Integer);
 begin

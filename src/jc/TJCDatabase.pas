@@ -90,7 +90,7 @@ var
 implementation
 
 uses Logging, GetSystems, BlockTrack, Area, TCPServerOR, BlockRailway,
-      DataJC, Stack, AreaDb, TMultiJCDatabase, appEv, BlockTurnout,
+      DataJC, AreaStack, AreaDb, TMultiJCDatabase, appEv, BlockTurnout,
       BlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
