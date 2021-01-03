@@ -133,7 +133,7 @@
 			<DCCReference Include="blocks\BlockTrack.pas"/>
 			<DCCReference Include="blocks\BlockIR.pas"/>
 			<DCCReference Include="blocks\BlockSignal.pas"/>
-			<DCCReference Include="TOblsRizeni.pas"/>
+			<DCCReference Include="areas\AreaDb.pas"/>
 			<DCCReference Include="areas\Area.pas"/>
 			<DCCReference Include="Booster.pas"/>
 			<DCCReference Include="BoosterDb.pas"/>

@@ -24,7 +24,7 @@ type
 
 implementation
 
-uses BlockDb, PTUtils, Area, TOblsRizeni, Block;
+uses BlockDb, PTUtils, Area, AreaDb, Block;
 
 ////////////////////////////////////////////////////////////////////////////////
 

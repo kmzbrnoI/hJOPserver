@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, Block, SysUtils, BlockTrack, Menus, TOblsRizeni,
+uses IniFiles, Block, SysUtils, BlockTrack, Menus, AreaDb,
      Classes, IdContext, Generics.Collections, JsonDataObjects, RCS,
      Area, TechnologieRCS;
 

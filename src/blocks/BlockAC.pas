@@ -4,7 +4,7 @@ unit BlockAC;
 
 interface
 
-uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, IdContext,
+uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, IdContext,
      Generics.Collections, Area, Graphics;
 
 type

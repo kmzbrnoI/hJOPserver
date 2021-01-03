@@ -50,7 +50,7 @@ var
 implementation
 
 uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, TrainDb, TCPORsRef, Logging,
-     fRegulator, fMain, Area, TOblsRizeni, TechnologieTrakce, ownConvert;
+     fRegulator, fMain, Area, AreaDb, TechnologieTrakce, ownConvert;
 
 
 ////////////////////////////////////////////////////////////////////////////////

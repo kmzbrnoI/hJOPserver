@@ -57,7 +57,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, TOblsRizeni, Area, Block, FileSystem,
+uses GetSystems, TechnologieRCS, AreaDb, Area, Block, FileSystem,
      DataBloky;
 
 {$R *.dfm}

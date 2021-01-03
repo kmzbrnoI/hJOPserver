@@ -78,7 +78,7 @@ type
 
 implementation
 
-uses BlockCrossing, BlockDb, TOblsRizeni, Graphics, ownConvert;
+uses BlockCrossing, BlockDb, AreaDb, Graphics, ownConvert;
 
 constructor TBlkSummary.Create(index: Integer);
 begin

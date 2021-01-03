@@ -4,7 +4,7 @@ unit BlockGroupSignal;
 
 interface
 
-uses IniFiles, Block, TOblsRizeni, BlockSignal, IdContext, Generics.Collections,
+uses IniFiles, Block, AreaDb, BlockSignal, IdContext, Generics.Collections,
       JsonDataObjects, Area;
 
 type

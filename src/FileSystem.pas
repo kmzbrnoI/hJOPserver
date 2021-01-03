@@ -46,7 +46,7 @@ var
 implementation
 
 uses fSettings, fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
-     TechnologieRCS, TOblsRizeni, BlockDb, BoosterDb, SnadnSpusteni, THVDatabase,
+     TechnologieRCS, AreaDb, BlockDb, BoosterDb, SnadnSpusteni, THVDatabase,
      TCPServerPT, Logging, TCPServerOR, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
      DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce,
      TechnologieTrakce, TJCDatabase;

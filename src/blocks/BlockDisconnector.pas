@@ -4,7 +4,7 @@ unit BlockDisconnector;
 
 interface
 
-uses IniFiles, Block, Classes, TOblsRizeni, SysUtils, JsonDataObjects,
+uses IniFiles, Block, Classes, AreaDb, SysUtils, JsonDataObjects,
      IdContext, Area, TechnologieRCS;
 
 type

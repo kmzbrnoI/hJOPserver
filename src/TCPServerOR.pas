@@ -156,7 +156,7 @@ var
 
 implementation
 
-uses fMain, BlockTrack, BlockTurnout, BlockSignal, TOblsRizeni, BlockLinker,
+uses fMain, BlockTrack, BlockTurnout, BlockSignal, AreaDb, BlockLinker,
       BlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
       BlockLock, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
       UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks,

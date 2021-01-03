@@ -105,7 +105,7 @@ type
 
 implementation
 
-uses TOblsRizeni, TCPServerOR, ownConvert;
+uses AreaDb, TCPServerOR, ownConvert;
 
 constructor TBlkIO.Create(index: Integer);
 begin

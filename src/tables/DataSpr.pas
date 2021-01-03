@@ -28,7 +28,7 @@ var
 
 implementation
 
-uses TrainDb, Train, THVDatabase, TOblsRizeni, Area, fMain,
+uses TrainDb, Train, THVDatabase, AreaDb, Area, fMain,
        BlockDb, Block, THnaciVozidlo, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////

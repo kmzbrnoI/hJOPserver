@@ -45,7 +45,7 @@ uses
   BlockTrack in 'blocks\BlockTrack.pas',
   BlockIR in 'blocks\BlockIR.pas',
   BlockSignal in 'blocks\BlockSignal.pas',
-  TOblsRizeni in 'TOblsRizeni.pas',
+  AreaDb in 'areas\AreaDb.pas',
   Area in 'areas\Area.pas',
   Booster in 'Booster.pas',
   BoosterDb in 'BoosterDb.pas',

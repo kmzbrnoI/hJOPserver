@@ -55,7 +55,7 @@ implementation
 
 {$R *.dfm}
 
-uses UserDb, DataUsers, TOblsRizeni, Area, fMain;
+uses UserDb, DataUsers, AreaDb, Area, fMain;
 
 ////////////////////////////////////////////////////////////////////////////////
 

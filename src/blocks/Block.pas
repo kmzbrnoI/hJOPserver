@@ -5,7 +5,7 @@
 
 interface
 
-uses IniFiles, TechnologieRCS, SysUtils, TOblsRizeni, Generics.Collections,
+uses IniFiles, TechnologieRCS, SysUtils, AreaDb, Generics.Collections,
      IdContext, JsonDataObjects, Area, changeEvent, Classes;
 
 const

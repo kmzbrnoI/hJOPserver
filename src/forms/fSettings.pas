@@ -106,7 +106,7 @@ var
 implementation
 
 uses fRychlostiEdit, GetSystems, FileSystem, Block,
-     TOblsRizeni, BoosterDb, SnadnSpusteni, TJCDatabase, THVDatabase,
+     AreaDb, BoosterDb, SnadnSpusteni, TJCDatabase, THVDatabase,
      Logging, DataBloky, DataJC, DataRCS, Trakce, ModelovyCas;
 
 {$R *.dfm}

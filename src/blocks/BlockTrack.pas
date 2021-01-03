@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, Block, Menus, TOblsRizeni, SysUtils, Classes, Booster, houkEvent,
+uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, Booster, houkEvent,
      IdContext, Generics.Collections, JsonDataObjects, Area, Train,
      stanicniHlaseni, changeEvent, predvidanyOdjezd, TechnologieRCS;
 

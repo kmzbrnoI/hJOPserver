@@ -488,7 +488,7 @@ implementation
 uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      fAbout, Verze, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
      fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
-     TechnologieRCS, TechnologieJC, FileSystem, fConsole, TOblsRizeni, BlockDb,
+     TechnologieRCS, TechnologieJC, FileSystem, fConsole, AreaDb, BlockDb,
      Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area,
      SnadnSpusteni, BlockSummary, BlockCrossing, TJCDatabase, Logging,
      TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,

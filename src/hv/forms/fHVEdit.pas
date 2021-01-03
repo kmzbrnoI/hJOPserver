@@ -68,7 +68,7 @@ var
 
 implementation
 
-uses fMain, FileSystem, THVDatabase, DataHV, TOblsRizeni, Area,
+uses fMain, FileSystem, THVDatabase, DataHV, AreaDb, Area,
       fHVPomEdit, BlockDb, TrainDb;
 
 {$R *.dfm}

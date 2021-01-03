@@ -266,7 +266,7 @@ implementation
 ////////////////////////////////////////////////////////////////////////////////
 
 uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, Logging, TechnologieJC,
-     TJCDatabase, ownConvert, TCPServerOR, TOblsRizeni, Block, THVDatabase, TrainDb,
+     TJCDatabase, ownConvert, TCPServerOR, AreaDb, Block, THVDatabase, TrainDb,
      UserDb, THnaciVozidlo, Trakce, User, TCPORsRef, fRegulator, RegulatorTCP,
      ownStrUtils, Train, changeEvent, TechnologieTrakce;
 

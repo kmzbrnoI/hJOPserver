@@ -80,7 +80,7 @@ type
 
 implementation
 
-uses TOblsRizeni, TCPServerOR, UserDb, ownStrUtils;
+uses AreaDb, TCPServerOR, UserDb, ownStrUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 

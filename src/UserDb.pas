@@ -54,7 +54,7 @@ var
 
 implementation
 
-uses Logging, DataUsers, TOblsRizeni, appEv, PTUtils;
+uses Logging, DataUsers, AreaDb, appEv, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -29,7 +29,7 @@ var
 
 implementation
 
-uses fMain, UserDb, User, ownStrUtils, StrUtils, Area, TOblsRizeni,
+uses fMain, UserDb, User, ownStrUtils, StrUtils, Area, AreaDb,
       ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////

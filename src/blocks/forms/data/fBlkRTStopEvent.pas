@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
-  ExtCtrls, BlockRailwayTrack, TOblsRizeni, BlockDb, frrEv;
+  ExtCtrls, BlockRailwayTrack, AreaDb, BlockDb, frrEv;
 
 type
   TF_BlkRTStopEvent = class(TForm)

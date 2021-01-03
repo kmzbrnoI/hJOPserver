@@ -102,7 +102,7 @@ var
 implementation
 
 uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, ownStrUtils,
-      TOblsRizeni, Booster, Area;
+      AreaDb, Booster, Area;
 
 {$R *.dfm}
 

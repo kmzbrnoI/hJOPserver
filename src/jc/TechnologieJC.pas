@@ -364,7 +364,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, TOblsRizeni,
+uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
      BlockCrossing, TJCDatabase, TCPServerOR, TrainDb, timeHelper,
      THVDatabase, Stack, BlockLinker, BlockLock, BlockRailwayTrack;
 

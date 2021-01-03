@@ -13,7 +13,7 @@
 
 interface
 
-uses IniFiles, Block, SysUtils, Windows, TOblsRizeni, Area, StdCtrls,
+uses IniFiles, Block, SysUtils, Windows, AreaDb, Area, StdCtrls,
      Generics.Collections, Classes, IdContext, IBUtils, TechnologieRCS,
      JsonDataObjects, Train;
 
