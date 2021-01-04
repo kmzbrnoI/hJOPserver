@@ -5,7 +5,7 @@
 interface
 
 uses Area, IniFiles, SysUtils, Classes, COmCtrls, IdContext,
-     StdCtrls, Generics.Collections;
+     StdCtrls, Generics.Collections, JsonDataObjects;
 
 type
   TAreas = class
@@ -43,6 +43,9 @@ type
       procedure BroadcastPlaySound(sound_code: Integer; loop: Boolean = false; min_rights: TAreaRights = read);
 
       function GetEnumerator(): TEnumerator<TArea>;
+
+      procedure GetPtData(json: TJsonObject; dict: Boolean = false);
+
       property Items[index : integer] : TArea read Get; default;
       property Count: Integer read GetORCnt;
 
@@ -50,11 +53,11 @@ type
   end;
 
 var
-  ORs: TAreas;
+  Areas: TAreas;
 
 implementation
 
-uses Logging, TCPServerOR, THVDatabase, appEv, FileSystem;
+uses Logging, TCPServerOR, THVDatabase, appEv, FileSystem, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -309,9 +312,34 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+procedure TAreas.GetPtData(json: TJsonObject; dict: Boolean = false);
+var area: TArea;
+begin
+ if (dict) then
+   json.O['areas']
+ else
+   json.A['areas'];
+
+ for area in Self.db do
+  begin
+   try
+     if (dict) then
+       area.GetPtData(json.O['areas'].O[area.id])
+     else
+       area.GetPtData(json.A['areas'].AddObject);
+   except
+     on E: Exception do
+       PTUtils.PtErrorToJson(json.A['errors'].AddObject,
+        '500', 'Chyba pri nacitani oblasti rizeni '+area.id, E.Message);
+   end;
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 initialization
-  ORs := TAreas.Create();
+  Areas := TAreas.Create();
 finalization
-  FreeAndNil(ORs);
+  FreeAndNil(Areas);
 
 end.//unit

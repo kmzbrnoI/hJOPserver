@@ -15,7 +15,8 @@ interface
 
 uses IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
       IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms, AreaLighting,
-      Generics.Collections, AreaStack, Windows, Generics.Defaults;
+      Generics.Collections, AreaStack, Windows, Generics.Defaults,
+      JsonDataObjects;
 
 const
   _MAX_CON_PNL = 16;  // max number of panels connected to an area
@@ -238,6 +239,8 @@ type
 
       procedure UserUpdateRights(user: TObject);
       procedure UserDelete(userid: string);
+
+      procedure GetPtData(json: TJsonObject);
 
       class function ORRightsToString(rights: TAreaRights): string;
       class function GetPSPodminka(blok: TObject; podminka: string): TConfSeqItem; overload;
@@ -777,7 +780,7 @@ begin
    Exit();
   end;
 
- area := ORs.Get(recepient);
+ area := Areas.Get(recepient);
  if (area = nil) then
   begin
    Self.SendLn(Sender, 'MSG-ERR;' + recepient + ';Tato OŘ neexistuje');
@@ -904,7 +907,7 @@ begin
    Exit();
   end;
 
- new := ORs.Get(new_or);
+ new := Areas.Get(new_or);
  if (new = nil) then
   begin
    Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';ERR;Tato OR neexistuje!');
@@ -2090,6 +2093,15 @@ var panel: TIdContext;
 begin
  panel := TIdContext(Data);
  ORTCPServer.BottomError(panel, 'Nepodařilo se nastavit zvuky hnacích vozidel!', Self.shortName, 'Trakce');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TArea.GetPtData(json: TJsonObject);
+begin
+ json['id'] := Self.id;
+ json['name'] := Self.name;
+ json['shortName'] := Self.shortName;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
