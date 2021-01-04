@@ -103,7 +103,7 @@ type
      procedure InterChangeStanice(change_ev: Boolean = true);
      procedure SetSpeedBuffer(speedBuffer: PInteger);
      procedure LokDirChanged();
-     procedure CheckSH(signal: TObject);
+     procedure CheckAnnouncement(signal: TObject);
 
      procedure ToggleHouk(desc: string);
      procedure SetHoukState(desc: string; state: Boolean);
@@ -160,7 +160,7 @@ implementation
 
 uses THVDatabase, Logging, ownStrUtils, TrainDb, BlockTrack, DataSpr, appEv,
       DataHV, AreaDb, Area, TCPServerPanel, BlockDb, BlockSignal,
-      fRegulator, fMain, BlockRailwayTrack, stanicniHlaseniHelper, stanicniHlaseni,
+      fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -382,7 +382,7 @@ begin
    if (train.Count > 9) then
      json['announcement'] := (train[9] = '1')
    else
-     json['announcement'] := TStanicniHlaseni.HlasitTrainTyp(json.S['type']);
+     json['announcement'] := TStationAnnouncement.AnnounceTrainType(json.S['type']);
 
    if ((train.Count > 10) and (train[10] <> '')) then
      json['maxSpeed'] := StrToInt(train[10])
@@ -952,11 +952,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.CheckSH(signal: TObject);
+procedure TTrain.CheckAnnouncement(signal: TObject);
 var msignal: TBlkSignal;
     area: TArea;
-    shPlay: TSHToPlay;
-    shTrain: TSHTrain;
+    annPlay: TAnnToPlay;
+    annTrain: TAnnTrain;
 begin
  if ((not Self.announcement) or (Self.announcementPlayed) or (self.stationFrom = nil) or
      (self.stationTo = nil) or (Self.typ = '')) then Exit();
@@ -968,33 +968,33 @@ begin
  if ((not Assigned(area.announcement)) or (not area.announcement.available)) then Exit();
 
  try
-   shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(self, area);
+   annPlay := announcementHelper.CanPlayArrival(self, area);
  except
    on E: Exception do
      AppEvents.LogException(E, 'CanPlayPrijezdSH');
  end;
 
- shTrain.cislo := Self.name;
- shTrain.typ   := Self.typ;
- shTrain.fromORid := TArea(Self.stationFrom).id;
- shTrain.toORid := TArea(Self.stationTo).id;
- shTrain.timeArrive := 0;
- shTrain.timeDepart := 0;
+ annTrain.name := Self.name;
+ annTrain.typ   := Self.typ;
+ annTrain.fromAreaId := TArea(Self.stationFrom).id;
+ annTrain.toAreaId := TArea(Self.stationTo).id;
+ annTrain.timeArrive := 0;
+ annTrain.timeDepart := 0;
 
- if (shPlay.stanicniKolej <> nil) then
+ if (annPlay.stationTrack <> nil) then
   begin
-   shTrain.kolej := shPlay.stanicniKolej.spnl.trackName;
+   annTrain.track := annPlay.stationTrack.spnl.trackName;
 
-   if ((Self.IsPOdj(shPlay.stanicniKolej)) and (Self.GetPOdj(shPlay.stanicniKolej).abs_enabled)) then
-     shTrain.timeDepart := Self.GetPOdj(shPlay.stanicniKolej).abs;
+   if ((Self.IsPOdj(annPlay.stationTrack)) and (Self.GetPOdj(annPlay.stationTrack).abs_enabled)) then
+     annTrain.timeDepart := Self.GetPOdj(annPlay.stationTrack).abs;
   end;
 
  try
-   if ((shPlay.stanicniKolej <> nil) and ((shPlay.trat = nil) or (Self.IsPOdj(shPlay.stanicniKolej)))) then begin
-     area.announcement.Prijede(shTrain);
+   if ((annPlay.stationTrack <> nil) and ((annPlay.railway = nil) or (Self.IsPOdj(annPlay.stationTrack)))) then begin
+     area.announcement.Arrival(annTrain);
      Self.data.announcementPlayed := true;
-   end else if (shPlay.trat <> nil) then begin
-     area.announcement.Projede(shTrain);
+   end else if (annPlay.railway <> nil) then begin
+     area.announcement.Transit(annTrain);
      Self.data.announcementPlayed := true;
    end;
  except

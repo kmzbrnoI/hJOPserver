@@ -13,7 +13,7 @@
 
 interface
 
-uses IniFiles, SysUtils, Classes, Graphics, Menus, stanicniHlaseni,
+uses IniFiles, SysUtils, Classes, Graphics, Menus, announcement,
       IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms, AreaLighting,
       Generics.Collections, AreaStack, Windows, Generics.Defaults,
       JsonDataObjects;
@@ -163,7 +163,7 @@ type
      changed: Boolean; // jestli doslo ke zmene OR - true znamena aktualizaci tabulky
      vb: TList<TObject>; // seznam variantnich bodu, ktere jsou aktualne "naklikle"; zde je ulozen seznam bloku
      connected: TList<TAreaPanel>;
-     announcement: TStanicniHlaseni;
+     announcement: TStationAnnouncement;
 
       constructor Create(index: Integer);
       destructor Destroy(); override;
@@ -365,7 +365,7 @@ begin
       end;
     end;
 
-   Self.announcement := TStanicniHlaseni.Create(Self.id);
+   Self.announcement := TStationAnnouncement.Create(Self.id);
    Self.announcement.OnAvailable := Self.OnAnncmntAvailable;
  finally
    FreeAndNil(data_main);
@@ -1939,7 +1939,7 @@ begin
  str[2] := UpperCase(str[2]);
 
  if (str[2] = 'SPEC') then begin
-   Self.announcement.Spec(str[3]);
+   Self.announcement.Special(str[3]);
  end;
 end;
 

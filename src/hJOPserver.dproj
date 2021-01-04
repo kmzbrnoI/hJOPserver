@@ -240,8 +240,8 @@
 			<DCCReference Include="blocks\forms\fHoukEvsUsek.pas">
 				<Form>F_HoukEvsUsek</Form>
 			</DCCReference>
-			<DCCReference Include="stanicniHlaseni.pas"/>
-			<DCCReference Include="stanicniHlaseniHelper.pas"/>
+			<DCCReference Include="announcement\announcement.pas"/>
+			<DCCReference Include="announcement\announcementHelper.pas"/>
 			<DCCReference Include="changeEvent.pas"/>
 			<DCCReference Include="changeEventCaller.pas"/>
 			<DCCReference Include="blocks\BlockSummary.pas"/>

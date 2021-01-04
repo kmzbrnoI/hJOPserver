@@ -1368,7 +1368,7 @@ begin
        end;
 
        // kontrola prehravani stanicniho hlaseni
-       train.CheckSh(Self);
+       train.CheckAnnouncement(Self);
       end else begin
        // neni povolovaci navest -> zastavit LOKO
        if ((train.direction = Self.m_spnl.direction) and (train.wantedSpeed <> 0)) then

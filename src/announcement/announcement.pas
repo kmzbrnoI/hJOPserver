@@ -1,39 +1,37 @@
-unit stanicniHlaseni;
+unit announcement;
 
-{
-  Trida TStanicniHlaseni se stara o prehravani stanicniho hlaseni jedne oblasti
-  rizeni.
-}
+{ TStationAnnouncement class implements logic of a station announcement in an
+  area. }
 
 interface
 
 uses Generics.Collections, IdContext, Classes, SysUtils;
 
 const
-  _HLASENI_TRAINTYP_FORBIDDEN: array [0..5] of string = (
+  _ANN_TRAINTYPE_FORBIDDEN: array [0..5] of string = (
     'Pn', 'Mn', 'Vn', 'Lv', 'Vle', 'Slu'
   );
 
 type
   TAvailableEvent = procedure (Sender: TObject; available: Boolean) of object;
 
-  TSHTrain = record
-    cislo: string;
+  TAnnTrain = record
+    name: string;
     typ: string;
-    kolej: string;
-    fromORid: string;
-    toORid: string;
+    track: string;
+    fromAreaId: string;
+    toAreaId: string;
     timeArrive: TTime;
     timeDepart: TTime;
   end;
 
-  TStanicniHlaseni = class
+  TStationAnnouncement = class
    private
     m_clients: TList<TIdContext>;
     m_orid: string;
 
      procedure BroadcastData(data: string);
-     function TrainToStr(train: TSHTrain): string;
+     function TrainToStr(train: TAnnTrain): string;
      function GetAvailable(): Boolean;
 
    public
@@ -46,12 +44,12 @@ type
      procedure Reset();
      procedure ClientDisconnect(Client: TIdContext);
 
-     procedure Prijede(train: TSHTrain);
-     procedure Odjede(train: TSHTrain);
-     procedure Projede(train: TSHTrain);
-     procedure Spec(id: string);
+     procedure Arrival(train: TAnnTrain);
+     procedure Departure(train: TAnnTrain);
+     procedure Transit(train: TAnnTrain);
+     procedure Special(id: string);
 
-     class function HlasitTrainTyp(typ: string): Boolean;
+     class function AnnounceTrainType(typ: string): Boolean;
 
      property available: Boolean read GetAvailable;
 
@@ -63,7 +61,7 @@ uses TCPServerPanel, Area, TCPAreasRef;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TStanicniHlaseni.Create(orid: string);
+constructor TStationAnnouncement.Create(orid: string);
 begin
  inherited Create();
  Self.m_orid := orid;
@@ -71,7 +69,7 @@ begin
  Self.OnAvailable := nil;
 end;
 
-destructor TStanicniHlaseni.Destroy();
+destructor TStationAnnouncement.Destroy();
 begin
  Self.m_clients.Free();
  inherited;
@@ -79,7 +77,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TStanicniHlaseni.Parse(Sender: TIdContext; SenderOR: TObject; parsed: TStrings);
+procedure TStationAnnouncement.Parse(Sender: TIdContext; SenderOR: TObject; parsed: TStrings);
 begin
  if (parsed.Count < 2) then Exit();
  parsed[2] := UpperCase(parsed[2]);
@@ -127,7 +125,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TStanicniHlaseni.Reset();
+procedure TStationAnnouncement.Reset();
 begin
  if (Self.m_clients.Count > 0) then
   begin
@@ -139,7 +137,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TStanicniHlaseni.ClientDisconnect(Client: TIdContext);
+procedure TStationAnnouncement.ClientDisconnect(Client: TIdContext);
 begin
  if (Self.m_clients.Contains(Client)) then
   begin
@@ -151,29 +149,29 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TStanicniHlaseni.Prijede(train: TSHTrain);
+procedure TStationAnnouncement.Arrival(train: TAnnTrain);
 begin
  Self.BroadcastData('PRIJEDE;{' + Self.TrainToStr(train) + '}');
 end;
 
-procedure TStanicniHlaseni.Odjede(train: TSHTrain);
+procedure TStationAnnouncement.Departure(train: TAnnTrain);
 begin
  Self.BroadcastData('ODJEDE;{' + Self.TrainToStr(train) + '}');
 end;
 
-procedure TStanicniHlaseni.Projede(train: TSHTrain);
+procedure TStationAnnouncement.Transit(train: TAnnTrain);
 begin
  Self.BroadcastData('PROJEDE;{' + Self.TrainToStr(train) + '}');
 end;
 
-procedure TStanicniHlaseni.Spec(id: string);
+procedure TStationAnnouncement.Special(id: string);
 begin
  Self.BroadcastData('SPEC;' + id);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TStanicniHlaseni.BroadcastData(data: string);
+procedure TStationAnnouncement.BroadcastData(data: string);
 var client: TIdContext;
 begin
  for client in Self.m_clients do
@@ -182,10 +180,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TStanicniHlaseni.TrainToStr(train: TSHTrain): string;
+function TStationAnnouncement.TrainToStr(train: TAnnTrain): string;
 begin
- Result := train.cislo + ';' + train.typ + ';' + train.kolej + ';' + train.fromORid + ';' +
-             train.toORid + ';';
+ Result := train.name + ';' + train.typ + ';' + train.track + ';' + train.fromAreaId + ';' +
+             train.toAreaId + ';';
 
  if (train.timeArrive <> 0) then
    Result := Result + FormatDateTime('hh:nn', train.timeArrive);
@@ -197,17 +195,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TStanicniHlaseni.GetAvailable(): Boolean;
+function TStationAnnouncement.GetAvailable(): Boolean;
 begin
  Result := (Self.m_clients.Count > 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TStanicniHlaseni.HlasitTrainTyp(typ: string): Boolean;
+class function TStationAnnouncement.AnnounceTrainType(typ: string): Boolean;
 var s: string;
 begin
- for s in stanicniHlaseni._HLASENI_TRAINTYP_FORBIDDEN do
+ for s in announcement._ANN_TRAINTYPE_FORBIDDEN do
    if (typ = s) then
      Exit(False);
  Result := true;

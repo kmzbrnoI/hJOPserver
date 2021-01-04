@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, Booster, houkEvent,
      IdContext, Generics.Collections, JsonDataObjects, Area, Train,
-     stanicniHlaseni, changeEvent, predvidanyOdjezd, TechnologieRCS;
+     announcement, changeEvent, predvidanyOdjezd, TechnologieRCS;
 
 type
  TTrackState  = (disabled = -5, none = -1, free = 0, occupied = 1);
@@ -145,9 +145,9 @@ type
     function GetHoukEvEnabled(): Boolean;
     procedure SetHoukEvEnabled(state: Boolean);
 
-    function GetSHTrain(trainLocalIndex: Integer): TSHTrain;
+    function GetAnnouncementTrain(trainLocalIndex: Integer): TAnnTrain;
 
-    procedure NeprofilObsaz();
+    procedure NonProfileOccupy();
 
     function GetTrainI(): Integer;
     function GetTrain(): TTrain;
@@ -164,8 +164,8 @@ type
     function CanBeNextVB(vbs: TList<TObject>; start: TBlk): Boolean;
     function CanBeKC(vbs: TList<TObject>; start: TBlk): Boolean;
 
-    function GetNavL(): TBlk;
-    function GetNavS(): TBlk;
+    function GetSignalL(): TBlk;
+    function GetSignalS(): TBlk;
 
   protected
    m_settings: TBlkTrackSettings;
@@ -241,8 +241,8 @@ type
     property jcEnd: TZaver read m_state.jcEnd write SetJCend;
     property signalJCRef: TList<TBlk> read m_state.signalJCRef write m_state.signalJCRef;
     property sectionsState: TList<TTrackState> read m_state.sectionsOccupied;
-    property signalL: TBlk read GetNavL;  // warning: slow getter!
-    property signalS: TBLk read GetNavS;  // warning: slow getter!
+    property signalL: TBlk read GetSignalL;  // warning: slow getter!
+    property signalS: TBLk read GetSignalS;  // warning: slow getter!
 
     property trainI: Integer read GeTTrainI;
     property train: TTrain read GeTTrain;
@@ -285,7 +285,7 @@ implementation
 uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
     TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, THVDatabase, Math,
     Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv,
-    stanicniHlaseniHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef,
+    announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef,
     Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase;
 
 constructor TBlkTrack.Create(index: Integer);
@@ -646,7 +646,7 @@ begin
 
    // kontrola udalosti obsazeni
    if (Self.m_state.occupied = TTrackState.occupied) then begin
-     Self.NeprofilObsaz();
+     Self.NonProfileOccupy();
      Self.CallChangeEvents(Self.eventsOnOccupy);
    end else if (Self.m_state.occupied = TTrackState.free) then
      Self.CallChangeEvents(Self.eventsOnFree);
@@ -1242,7 +1242,7 @@ begin
 
  try
    if (not Assigned(TArea(SenderOR).announcement)) then Exit();
-   TArea(SenderOR).announcement.Odjede(Self.GetSHTrain(TPanelConnData(SenderPnl.Data).train_menu_index));
+   TArea(SenderOR).announcement.Departure(Self.GetAnnouncementTrain(TPanelConnData(SenderPnl.Data).train_menu_index));
  except
    on E: Exception do
     begin
@@ -1253,7 +1253,7 @@ begin
 end;
 
 procedure TBlkTrack.MenuHLASENIPrijezdClick(SenderPnl: TIdContext; SenderOR: TObject);
-var shTrain: TSHTrain;
+var annTrain: TAnnTrain;
     blk: TBlkTrack;
 begin
  if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or
@@ -1262,14 +1262,14 @@ begin
  try
    if (not Assigned(TArea(SenderOR).announcement)) then Exit();
 
-   shTrain := Self.GetSHTrain(TPanelConnData(SenderPnl.Data).train_menu_index);
-   blk := stanicniHlaseniHelper.CanPlayPrijezdSH(
+   annTrain := Self.GetAnnouncementTrain(TPanelConnData(SenderPnl.Data).train_menu_index);
+   blk := announcementHelper.CanPlayArrival(
       TrainDb.Trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]],
-      TArea(SenderOR)).stanicniKolej;
+      TArea(SenderOR)).stationTrack;
    if (blk = nil) then Exit();
 
-   shTrain.kolej := blk.spnl.trackName;
-   TArea(SenderOR).announcement.Prijede(shTrain);
+   annTrain.track := blk.spnl.trackName;
+   TArea(SenderOR).announcement.Arrival(annTrain);
  except
    on E: Exception do
     begin
@@ -1280,7 +1280,7 @@ begin
 end;
 
 procedure TBlkTrack.MenuHLASENIPrujezdClick(SenderPnl: TIdContext; SenderOR: TObject);
-var shTrain: TSHTrain;
+var annTrain: TAnnTrain;
     blk: TBlkTrack;
 begin
  if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or
@@ -1289,14 +1289,14 @@ begin
  try
    if (not Assigned(TArea(SenderOR).announcement)) then Exit();
 
-   shTrain := Self.GetSHTrain(TPanelConnData(SenderPnl.Data).train_menu_index);
-   blk := stanicniHlaseniHelper.CanPlayPrijezdSH(
+   annTrain := Self.GetAnnouncementTrain(TPanelConnData(SenderPnl.Data).train_menu_index);
+   blk := announcementHelper.CanPlayArrival(
       TrainDb.Trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]],
-      TArea(SenderOR)).stanicniKolej;
+      TArea(SenderOR)).stationTrack;
 
    if (blk <> nil) then
-     shTrain.kolej := blk.spnl.trackName;
-   TArea(SenderOR).announcement.Projede(shTrain);
+     annTrain.track := blk.spnl.trackName;
+   TArea(SenderOR).announcement.Transit(annTrain);
  except
    on E: Exception do
     begin
@@ -1429,7 +1429,7 @@ end;
 
 function TBlkTrack.GetTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer): string;
 var train: TTrain;
-    shPlay: stanicniHlaseniHelper.TSHToPlay;
+    shPlay: announcementHelper.TAnnToPlay;
     train_count: Integer;
 begin
  train := TrainDb.Trains[Self.trains[trainLocalI]];
@@ -1470,15 +1470,15 @@ begin
      Result := Result + 'HLÁŠENÍ odjezd,';
 
    try
-     shPlay := stanicniHlaseniHelper.CanPlayPrijezdSH(train, TArea(SenderOR));
+     shPlay := announcementHelper.CanPlayArrival(train, TArea(SenderOR));
    except
      on E: Exception do
        AppEvents.LogException(E, 'CanPlayPrijezdSH');
    end;
 
-   if ((shPlay.stanicniKolej <> nil) and ((shPlay.trat = nil) or (train.IsPOdj(shPlay.stanicniKolej)))) then
+   if ((shPlay.stationTrack <> nil) and ((shPlay.railway = nil) or (train.IsPOdj(shPlay.stationTrack)))) then
      Result := Result + 'HLÁŠENÍ příjezd,'
-   else if (shPlay.trat <> nil) then
+   else if (shPlay.railway <> nil) then
      Result := Result + 'HLÁŠENÍ průjezd,';
   end;
 end;
@@ -1830,15 +1830,15 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrack.GetSHTrain(trainLocalIndex: Integer): TSHTrain;
+function TBlkTrack.GetAnnouncementTrain(trainLocalIndex: Integer): TAnnTrain;
 begin
  if ((trainLocalIndex < 0) or (trainLocalIndex >= Self.trains.Count)) then Exit();
 
- Result.cislo := TrainDb.Trains[Self.trains[trainLocalIndex]].name;
+ Result.name := TrainDb.Trains[Self.trains[trainLocalIndex]].name;
  Result.typ := TrainDb.Trains[Self.trains[trainLocalIndex]].typ;
- Result.kolej := Self.spnl.trackName;
- Result.fromORid := TArea(TrainDb.Trains[Self.trains[trainLocalIndex]].stationFrom).id;
- Result.toORid := TArea(TrainDb.Trains[Self.trains[trainLocalIndex]].stationTo).id;
+ Result.track := Self.spnl.trackName;
+ Result.fromAreaId := TArea(TrainDb.Trains[Self.trains[trainLocalIndex]].stationFrom).id;
+ Result.toAreaId := TArea(TrainDb.Trains[Self.trains[trainLocalIndex]].stationTo).id;
 
  Result.timeArrive := 0;
 
@@ -1874,7 +1874,7 @@ begin
  Result := (Self.m_state.neprofilJCcheck.Count > 0);
 end;
 
-procedure TBlkTrack.NeprofilObsaz();
+procedure TBlkTrack.NonProfileOccupy();
 var jcid: Integer;
     jc: TJC;
 begin
@@ -2444,7 +2444,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrack.GetNavL(): TBlk;
+function TBlkTrack.GetSignalL(): TBlk;
 var blk: TBlk;
 begin
  for blk in Blocks do
@@ -2453,7 +2453,7 @@ begin
  Result := nil;
 end;
 
-function TBlkTrack.GetNavS(): TBlk;
+function TBlkTrack.GetSignalS(): TBlk;
 var blk: TBlk;
 begin
  for blk in Blocks do

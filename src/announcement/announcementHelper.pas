@@ -1,8 +1,6 @@
-unit stanicniHlaseniHelper;
+unit announcementHelper;
 
-{
- Tato unit implementuje pomocne funkce pro prehravani stanicho hlaseni.
-}
+{ This unit implements helper function for station announcement. }
 
 interface
 
@@ -10,19 +8,19 @@ uses Train, Area, Generics.Collections, BlockTrack, BlockRailway;
 
 type
   // jaka stanicni hlaseni prehrat
-  TSHToPlay = record
-    trat: TBlkRailway;
-    stanicniKolej: TBlkTrack;
+  TAnnToPlay = record
+    railway: TBlkRailway;
+    stationTrack: TBlkTrack;
   end;
 
   { Mozne stavy:
-     - trat = nil, stanicniKolej = nil: neprehravat hlaseni
-     - trat = nil, stanicniKolej != nil: prehrat prijezd na kolej
-     - trat != nil, stanicniKolej = nil: prehrat prujezd
-     - trat != nil, stanicniKolej != nil: prehrat prujezd po koleji
+     - railway = nil, stationTrack = nil: neprehravat hlaseni
+     - railway = nil, stationTrack != nil: prehrat prijezd na kolej
+     - railway != nil, stationTrack = nil: prehrat prujezd
+     - railway != nil, stationTrack != nil: prehrat prujezd po koleji
   }
 
-function CanPlayPrijezdSH(train: TTrain; area: TArea): TSHToPlay;
+function CanPlayArrival(train: TTrain; area: TArea): TAnnToPlay;
   // vraci jaka prijezdova stanicni hlaseni lze prehrat
   // tato funkce predpoklada, ze jsou spravne vypocitany predpovidani souprav
   // funkce overuje jen pritomnost na usecich, overeni dostupnosti fyzickeho
@@ -34,35 +32,35 @@ uses BlockDb, Block, BlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function CanPlayPrijezdSH(train: TTrain; area: TArea): TSHToPlay;
+function CanPlayArrival(train: TTrain; area: TArea): TAnnToPlay;
 var blksWithTrain: TList<TBlkTrack>;
     blk: TBlk;
-    blkUsek: TBlkTrack;
-    inTrat: TBlkRailway;
-    inOR: Boolean;
+    blkTrack: TBlkTrack;
+    inRailway: TBlkRailway;
+    inStation: Boolean;
 begin
  blksWithTrain := TList<TBlkTrack>.Create();
 
- Result.trat := nil;
- Result.stanicniKolej := nil;
+ Result.railway := nil;
+ Result.stationTrack := nil;
 
  try
-   inTrat := nil;
+   inRailway := nil;
 
    // ziskame seznam bloku na kterych je souprava predpovidana v dane stanici
    // ziskame trat, ve ktere se aktualne souprava nachazi
    for blk in Blocks do
     begin
-     inOR := Blk.areas.Contains(area);
+     inStation := Blk.areas.Contains(area);
 
      // trate z aktualni stanice kontrolujeme cele
-     if ((not inOR) and (blk.typ = btRT) and (TBlkTrack(blk).trainPredict = train) and
+     if ((not inStation) and (blk.typ = btRT) and (TBlkTrack(blk).trainPredict = train) and
          (TBlkRT(blk).railway <> nil) and
          (((TBlkRailway(TBlkRT(blk).railway)).linkerA.areas[0] = area) or
           ((TBlkRailway(TBlkRT(blk).railway)).linkerB.areas[0] = area))) then
        blksWithTrain.Add(TBlkTrack(blk));
 
-     if (not inOR) then continue;
+     if (not inStation) then continue;
 
      if (((blk.typ = btTrack) or (blk.typ = btRT)) and
          (TBlkTrack(blk).trainPredict = train)) then
@@ -70,27 +68,27 @@ begin
 
      if ((blk.typ = btRT) and (TBlkTrack(blk).train = train)) then
        if (TBlkRT(blk).railway <> nil) then
-         inTrat := TBlkRailway(TBlkRT(blk).railway);
+         inRailway := TBlkRailway(TBlkRT(blk).railway);
     end;
 
    // zjistime, na ktere stanicni a na ktere tratove koleje je souprava predpovidana
-   Result.trat := nil;
-   for blkUsek in blksWithTrain do
+   Result.railway := nil;
+   for blkTrack in blksWithTrain do
     begin
      // souprava je predpovidana do jine trati nez ve ktere je -> prujezd
-     if ((blkUsek.typ = btRT) and (TBlkRT(blkUsek).railway <> inTrat)
-         and (TBlkRT(blkUsek).railway <> nil)) then
-       Result.trat := TBlkRailway(TBlkRT(blkUsek).railway);
+     if ((blkTrack.typ = btRT) and (TBlkRT(blkTrack).railway <> inRailway)
+         and (TBlkRT(blkTrack).railway <> nil)) then
+       Result.railway := TBlkRailway(TBlkRT(blkTrack).railway);
 
      // souprava je predpovidana na stanicni kolej -> vybrat tu s nejkratsim nazvem
-     if ((blkUsek.spnl.trackName <> '') and ((Result.stanicniKolej = nil) or
-          (Length(blkUsek.spnl.trackName) < Length(Result.stanicniKolej.spnl.trackName)))) then
-       Result.stanicniKolej := blkUsek;
+     if ((blkTrack.spnl.trackName <> '') and ((Result.stationTrack = nil) or
+          (Length(blkTrack.spnl.trackName) < Length(Result.stationTrack.spnl.trackName)))) then
+       Result.stationTrack := blkTrack;
     end;
 
    // odjezd z koleje neni povazovan za prujezd
-   if ((inTrat = nil) and (Result.trat <> nil) and (Result.stanicniKolej = nil)) then
-     Result.trat := nil;
+   if ((inRailway = nil) and (Result.railway <> nil) and (Result.stationTrack = nil)) then
+     Result.railway := nil;
 
  finally
    blksWithTrain.Free();
