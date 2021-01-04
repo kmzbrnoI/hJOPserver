@@ -57,7 +57,7 @@ var
 
 implementation
 
-uses Logging, TCPServerOR, THVDatabase, appEv, FileSystem, PTUtils;
+uses Logging, TCPServerPanel, THVDatabase, appEv, FileSystem, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -202,7 +202,7 @@ begin
  for i := 0 to Self.db.Count-1 do
    str := str + '[' + Self.db[i].id + ',' + Self.db[i].Name + ']';
 
- ORTCPServer.SendLn(Context, str);
+ PanelServer.SendLn(Context, str);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -259,7 +259,7 @@ begin
        clients.AddOrSetValue(connected.Panel, true);
 
  for client in clients.Keys do
-   ORTCPServer.BottomError(client, err, '-', tech);
+   PanelServer.BottomError(client, err, '-', tech);
 
  clients.Free();
 end;
@@ -277,7 +277,7 @@ begin
        clients.AddOrSetValue(connected.Panel, true);
 
  for client in clients.Keys do
-   ORTCPServer.PlaySound(client, sound_code, loop);
+   PanelServer.PlaySound(client, sound_code, loop);
 
  clients.Free();
 end;

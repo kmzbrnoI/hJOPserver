@@ -269,7 +269,7 @@ implementation
 ////////////////////////////////////////////////////////////////////////////////
 
 uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, Logging, TechnologieJC,
-     TJCDatabase, ownConvert, TCPServerOR, AreaDb, Block, THVDatabase, TrainDb,
+     TJCDatabase, ownConvert, TCPServerPanel, AreaDb, Block, THVDatabase, TrainDb,
      UserDb, THnaciVozidlo, Trakce, User, TCPAreasRef, fRegulator, RegulatorTCP,
      ownStrUtils, Train, changeEvent, TechnologieTrakce;
 
@@ -411,8 +411,8 @@ begin
    Self.SendLn(areaPanel.panel, msg);
 
    // aktualizace menu
-   if ((areaPanel.panel.Data as TTCPORsRef).menu = Sender) then
-     ORTCPServer.Menu(areaPanel.panel, (Sender as TBlk), Self, (Sender as TBlk).ShowPanelMenu(areaPanel.panel,
+   if ((areaPanel.panel.Data as TPanelConnData).menu = Sender) then
+     PanelServer.Menu(areaPanel.panel, (Sender as TBlk), Self, (Sender as TBlk).ShowPanelMenu(areaPanel.panel,
                       Self, areaPanel.rights));
   end;
 end;
@@ -422,7 +422,7 @@ var areaPanel: TAreaPanel;
 begin
  for areaPanel in Self.connected do
   if (areaPanel.Rights >= TAreaRights.write) then
-    ORTCPServer.BottomError(areaPanel.Panel, error, Self.shortName, system);
+    PanelServer.BottomError(areaPanel.Panel, error, Self.shortName, system);
 end;
 
 procedure TArea.BlkPlaySound(Sender: TObject; min_rights: TAreaRights; sound: Integer; loop: Boolean = false);
@@ -430,28 +430,28 @@ var areaPanel: TAreaPanel;
 begin
  for areaPanel in Self.connected do
    if (areaPanel.Rights >= min_rights) then
-     ORTCPServer.PlaySound(areaPanel.Panel, sound, loop);
+     PanelServer.PlaySound(areaPanel.Panel, sound, loop);
 end;
 
 procedure TArea.BlkRemoveSound(Sender: TObject; sound: Integer);
 var areaPanel: TAreaPanel;
 begin
  for areaPanel in Self.connected do
-   ORTCPServer.DeleteSound(areaPanel.Panel, sound);
+   PanelServer.DeleteSound(areaPanel.Panel, sound);
 end;
 
 procedure TArea.BlkNewTrain(Sender: TObject; Panel: TIdContext; trainUsekIndex: Integer);
 begin
- TTCPORsRef(Panel.Data).train_new_usek_index := trainUsekIndex;
- TTCPORsRef(Panel.Data).train_usek := Sender;
+ TPanelConnData(Panel.Data).train_new_usek_index := trainUsekIndex;
+ TPanelConnData(Panel.Data).train_usek := Sender;
  Self.SendLn(Panel, 'SPR-NEW;');
 end;
 
 procedure TArea.BlkEditTrain(Sender: TObject; Panel: TIdContext; train: TObject);
 begin
- TTCPORsRef(Panel.Data).train_new_usek_index := -1;
- TTCPORsRef(Panel.Data).train_edit := TTrain(train);
- TTCPORsRef(Panel.Data).train_usek := Sender;
+ TPanelConnData(Panel.Data).train_new_usek_index := -1;
+ TPanelConnData(Panel.Data).train_edit := TTrain(train);
+ TPanelConnData(Panel.Data).train_usek := Sender;
 
  Self.SendLn(Panel, 'SPR-EDIT;'+TTrain(train).GetPanelString());
 end;
@@ -481,7 +481,7 @@ begin
 
  if (Self.connected.Count >= _MAX_CON_PNL) then
    raise EMaxClients.Create('Připojen maximální počet klientů');
- if ((panel.Data as TTCPORsRef).areas.Count >= _MAX_ORREF) then
+ if ((panel.Data as TPanelConnData).areas.Count >= _MAX_ORREF) then
    raise EMaxClients.Create('Připojen maximální OR k jedné stanici');
 
  pnl.panel := panel;
@@ -492,7 +492,7 @@ begin
  authLog('or', 'login', user, Self.id + ' :: ' + Self.GetRightsString(rights));
 
  // pridame referenci na sami sebe do TIDContext
- (panel.Data as TTCPORsRef).areas.Add(Self);
+ (panel.Data as TPanelConnData).areas.Add(Self);
 
  // odesleme incializacni udaje
  if (rights > TAreaRights.null) then
@@ -516,8 +516,8 @@ begin
   end;
 
  if (not contextDestroyed) then
-   if ((panel.Data as TTCPORsRef).areas.Contains(Self)) then
-     (panel.Data as TTCPORsRef).areas.Remove(Self);
+   if ((panel.Data as TPanelConnData).areas.Contains(Self)) then
+     (panel.Data as TPanelConnData).areas.Remove(Self);
 end;
 
 function TArea.PanelDbRights(panel: TIdContext): TAreaRights;
@@ -557,7 +557,7 @@ begin
  if (rights = TAreaRights.null) then
   begin
    Self.ORAuthoriseResponse(Sender, TAreaRights.null, 'Úspěšně autorizováno - odpojen', '');
-   ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
+   PanelServer.GUIQueueLineToRefresh((Sender.Data as TPanelConnData).index);
    if (Self.PanelDbRights(Sender) >= write) then Self.AuthWriteToRead(Sender);
    Self.PanelDbRemove(Sender);
    Exit();
@@ -597,7 +597,7 @@ begin
     begin
      Self.PanelDbRemove(Sender);
      Self.ORAuthoriseResponse(Sender, userRights, msg, '');
-     ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
+     PanelServer.GUIQueueLineToRefresh((Sender.Data as TPanelConnData).index);
      Exit();
     end;
    if (rights > userRights) then
@@ -608,7 +608,7 @@ begin
      // superuser muze autorizovat zapis i pri vyplych systemech
      Self.PanelDbAdd(Sender, TAreaRights.read, username);
      Self.ORAuthoriseResponse(Sender, TAreaRights.read, 'Nelze autorizovat zápis při vyplých systémech !', user.fullName);
-     ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
+     PanelServer.GUIQueueLineToRefresh((Sender.Data as TPanelConnData).index);
      Exit();
     end;
 
@@ -632,7 +632,7 @@ begin
            panel.rights := TAreaRights.read;
            Self.connected[i] := panel;
            Self.ORAuthoriseResponse(panel.panel, panel.rights, 'Převzetí řízení', user.fullName);
-           ORTCPServer.GUIQueueLineToRefresh(i);
+           PanelServer.GUIQueueLineToRefresh(i);
           end else begin
            rights := TAreaRights.read;
            msg := 'Panel již připojen!';
@@ -646,7 +646,7 @@ begin
   except
     on E: EMaxClients do
      begin
-      ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
+      PanelServer.GUIQueueLineToRefresh((Sender.Data as TPanelConnData).index);
       Self.ORAuthoriseResponse(Sender, TAreaRights.null, E.Message, user.fullName);
       Exit();
      end;
@@ -654,7 +654,7 @@ begin
 
  UsrDb.LoginUser(username);
  Self.ORAuthoriseResponse(Sender, rights, msg, user.fullName);
- ORTCPServer.GUIQueueLineToRefresh((Sender.Data as TTCPORsRef).index);
+ PanelServer.GUIQueueLineToRefresh((Sender.Data as TPanelConnData).index);
 
  if ((rights > read) and (lastRights <= read)) then Self.AuthReadToWrite(Sender);
  if ((rights < write) and (lastRights >= write)) then Self.AuthWriteToRead(Sender);
@@ -668,7 +668,7 @@ begin
  rights := Self.PanelDbRights(Sender);
  if (rights < read) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit();
   end;
 
@@ -691,7 +691,7 @@ begin
  rights := Self.PanelDbRights(Sender);
  if (rights < TAreaRights.write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit();
   end;
 
@@ -709,7 +709,7 @@ begin
     end;
   end;
 
- ORTCPServer.SendInfoMsg(Sender, 'Nemáte oprávnění měnit tento blok');
+ PanelServer.SendInfoMsg(Sender, 'Nemáte oprávnění měnit tento blok');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -759,7 +759,7 @@ begin
        podminky.Add(GetPSPodminka(Blk, 'Nouzové vybavování'));
   end;//for i
 
- ORTCPServer.Potvr(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků', TBlocks.GetBlksList(Self), podminky);
+ PanelServer.ConfirmationSequence(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků', TBlocks.GetBlksList(Self), podminky);
 end;
 
 procedure TArea.DkNUZStop(Sender: TIdContext);
@@ -776,7 +776,7 @@ var area: TArea;
 begin
  if (Self.PanelDbRights(Sender) < TAreaRights.write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit();
   end;
 
@@ -805,7 +805,7 @@ begin
  //kontrola opravneni klienta
  if (Self.PanelDbRights(Sender) < TAreaRights.read) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit();
   end;
 
@@ -825,32 +825,32 @@ var track: TBlkTrack;
 begin
  if (Self.PanelDbRights(Sender) < TAreaRights.write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit();
   end;
 
- if ((TTCPORsRef(Sender.Data).train_new_usek_index = -1) and (TTCPORsRef(Sender.Data).train_edit = nil)) then
+ if ((TPanelConnData(Sender.Data).train_new_usek_index = -1) and (TPanelConnData(Sender.Data).train_edit = nil)) then
   begin
    Self.SendLn(Sender, 'SPR-EDIT-ERR;Žádná souprava k editaci / neplatný úsek pro vytvoření soupravy');
    Exit();
   end;
 
  try
-  if (TTCPORsRef(Sender.Data).train_new_usek_index > -1) then begin
+  if (TPanelConnData(Sender.Data).train_new_usek_index > -1) then begin
     // nova souprava
     Trains.Add(
-      trainstr, TTCPORsRef(Sender.Data).train_usek, Self,
-      (TTCPORsRef(Sender.Data).train_new_usek_index),
+      trainstr, TPanelConnData(Sender.Data).train_usek, Self,
+      (TPanelConnData(Sender.Data).train_new_usek_index),
       TTrakce.Callback(Self.PanelTrainChangeOk, Sender),
       TTrakce.Callback(Self.PanelTrainCreateErr, Sender)
     );
   end else begin
 
    // uprava soupravy
-   track := (TTCPORsRef(Sender.Data).train_usek as TBlkTrack);
-   train := TTCPORsRef(Sender.Data).train_edit;
+   track := (TPanelConnData(Sender.Data).train_usek as TBlkTrack);
+   train := TPanelConnData(Sender.Data).train_edit;
 
-   if (not track.IsTrain(TTCPORsRef(Sender.Data).train_edit.index)) then
+   if (not track.IsTrain(TPanelConnData(Sender.Data).train_edit.index)) then
     begin
      Self.SendLn(Sender, 'SPR-EDIT-ERR;Souprava již není na úseku');
      Exit();
@@ -862,7 +862,7 @@ begin
      Exit();
     end;
 
-   TTCPORsRef(Sender.Data).train_edit.UpdateTrainFromPanel(
+   TPanelConnData(Sender.Data).train_edit.UpdateTrainFromPanel(
       trainstr, track, Self,
       TTrakce.Callback(Self.PanelTrainChangeOk, Sender),
       TTrakce.Callback(Self.PanelTrainChangeErr, Sender)
@@ -878,7 +878,7 @@ procedure TArea.PanelTrainChangeOk(Sender: TObject; Data: Pointer);
 var tcpSender: TIdContext;
 begin
  tcpSender := Data;
- TTCPORsRef(tcpSender.data).ResetTrains();
+ TPanelConnData(tcpSender.data).ResetTrains();
  Self.SendLn(tcpSender, 'SPR-EDIT-ACK;');
 end;
 
@@ -1029,7 +1029,7 @@ begin
         begin
          Blocks.GetBlkByID(JC.data.signalId, TBlk(signal));
          if ((signal.signal > ncStuj) and (signal.DNjc = JC)) then
-           ORTCPServer.BottomError(JC.state.SenderPnl, 'Chyba povolovací návěsti '+signal.name,
+           PanelServer.BottomError(JC.state.SenderPnl, 'Chyba povolovací návěsti '+signal.name,
                                    Self.shortName, 'TECHNOLOGIE');
          JC.CancelWithoutTrackRelease();
          if (signal.DNjc = JC) then
@@ -1094,14 +1094,14 @@ begin
    // V OR nastal zkrat -> prehrat zvuk
    for i := 0 to Self.connected.Count-1 do
     if (Self.connected[i].Rights > TAreaRights.read) then
-     ORTCPServer.PlaySound(Self.connected[i].Panel, _SND_PRETIZENI, true);
+     PanelServer.PlaySound(Self.connected[i].Panel, _SND_PRETIZENI, true);
   end;
 
  if ((new <= 2) and (Self.m_state.shortCircBlkCnt = 2)) then
   begin
    // zkrat skoncil -> vypnout zvuk
    for i := 0 to Self.connected.Count-1 do
-     ORTCPServer.DeleteSound(Self.connected[i].Panel, _SND_PRETIZENI);
+     PanelServer.DeleteSound(Self.connected[i].Panel, _SND_PRETIZENI);
   end;
 
  Self.m_state.shortCircBlkCnt := new;
@@ -1119,14 +1119,14 @@ begin
    // nastala zadost -> prehrat zvuk
    for i := 0 to Self.connected.Count-1 do
     if (Self.connected[i].Rights > TAreaRights.read) then
-     ORTCPServer.PlaySound(Self.connected[i].Panel, _SND_TRAT_ZADOST, true);
+     PanelServer.PlaySound(Self.connected[i].Panel, _SND_TRAT_ZADOST, true);
   end;
 
  if ((new = 0) and (Self.railwayReqBlkCnt > 0)) then
   begin
    // skocnila zadost -> vypnout zvuk
    for i := 0 to Self.connected.Count-1 do
-     ORTCPServer.DeleteSound(Self.connected[i].Panel, _SND_TRAT_ZADOST);
+     PanelServer.DeleteSound(Self.connected[i].Panel, _SND_TRAT_ZADOST);
   end;
 
  Self.m_state.railwayReqBlkCnt := new;
@@ -1144,14 +1144,14 @@ begin
    // aktivace prvni privolavaci navesti -> prehrat zvuk
    for i := 0 to Self.connected.Count-1 do
     if (Self.connected[i].Rights > TAreaRights.read) then
-     ORTCPServer.PlaySound(Self.connected[i].Panel, _SND_PRIVOLAVACKA, true);
+     PanelServer.PlaySound(Self.connected[i].Panel, _SND_PRIVOLAVACKA, true);
   end;
 
  if ((new = 0) and (Self.pnBlkCnt > 0)) then
   begin
    // skocnila posledni privolavaci navest -> vypnout zvuk
    for i := 0 to Self.connected.Count-1 do
-     ORTCPServer.DeleteSound(Self.connected[i].Panel, _SND_PRIVOLAVACKA);
+     PanelServer.DeleteSound(Self.connected[i].Panel, _SND_PRIVOLAVACKA);
   end;
 
  Self.m_state.pnBlkCnt := new;
@@ -1169,14 +1169,14 @@ begin
    // aktivace prvniho timeru -> prehrat zvuk
    for i := 0 to Self.connected.Count-1 do
     if (Self.connected[i].Rights > TAreaRights.read) then
-     ORTCPServer.PlaySound(Self.connected[i].Panel, _SND_TIMEOUT, true);
+     PanelServer.PlaySound(Self.connected[i].Panel, _SND_TIMEOUT, true);
   end;
 
  if ((new = 0) and (Self.timerCnt > 0)) then
   begin
    // skocnil posledni timer -> vypnout zvuk
    for i := 0 to Self.connected.Count-1 do
-     ORTCPServer.DeleteSound(Self.connected[i].Panel, _SND_TIMEOUT);
+     PanelServer.DeleteSound(Self.connected[i].Panel, _SND_TIMEOUT);
   end;
 
  Self.m_state.timerCnt := new;
@@ -1191,9 +1191,9 @@ begin
  for i := Self.connected.Count-1 downto 0 do
   begin
    Self.ORAuthoriseResponse(Self.connected[i].Panel, TAreaRights.null, 'Odpojení systémů', '');
-   index := (Self.connected[i].Panel.Data as TTCPORsRef).index;
+   index := (Self.connected[i].Panel.Data as TPanelConnData).index;
    Self.PanelDbRemove(Self.connected[i].Panel);
-   ORTCPServer.GUIQueueLineToRefresh(index);
+   PanelServer.GUIQueueLineToRefresh(index);
  end;
 
  Self.stack.Clear();
@@ -1262,7 +1262,7 @@ begin
 
    for panel in Self.connected do
      if (panel.rights >= read) then
-       ORTCPServer.BottomError(panel.panel, str, Self.shortName, 'TECHNOLOGIE');
+       PanelServer.BottomError(panel.panel, str, Self.shortName, 'TECHNOLOGIE');
   end;
 end;
 
@@ -1297,7 +1297,7 @@ procedure TArea.PanelZAS(Sender: TIdContext; str: TStrings);
 begin
  if (Self.PanelDbRights(Sender) < write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit();
   end;
 
@@ -1342,7 +1342,7 @@ var i: Integer;
 begin
  if (Self.PanelDbRights(Sender) < read) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit('');
   end;
 
@@ -1359,14 +1359,14 @@ procedure TArea.PanelRemoveTrain(Sender: TIDContext; train_index: integer);
 begin
  if (Self.PanelDbRights(Sender) < write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit();
   end;
 
  if ((Trains[train_index] <> nil) and (Trains[train_index].station = Self)) then
   begin
    Trains.Remove(train_index);
-   ORTCPServer.SendInfoMsg(Sender, 'Souprava smazána');
+   PanelServer.SendInfoMsg(Sender, 'Souprava smazána');
    Exit();
   end;
 end;
@@ -1481,7 +1481,7 @@ var panel: TAreaPanel;
 begin
  for panel in Self.connected do
    if (panel.rights >= min_rights) then
-     ORTCPServer.SendLn(panel.panel, '-;'+data);
+     PanelServer.SendLn(panel.panel, '-;'+data);
 end;
 
 procedure TArea.BroadcastBottomError(err: string; tech: string; min_rights: TAreaRights = read; stanice: string = '');
@@ -1492,7 +1492,7 @@ begin
 
  for panel in Self.connected do
    if (panel.rights >= min_rights) then
-     ORTCPServer.BottomError(panel.panel, err, stanice, tech);
+     PanelServer.BottomError(panel.panel, err, stanice, tech);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1538,7 +1538,7 @@ begin
  rights := Self.PanelDbRights(Sender);
  if (rights < write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit();
   end;
 
@@ -1654,7 +1654,7 @@ begin
       end;//for i
 
      // zrusit zadost regulatoru
-     (Self.m_state.regPlease.Data as TTCPORsRef).regulator_zadost := nil;
+     (Self.m_state.regPlease.Data as TPanelConnData).regulator_zadost := nil;
      Self.m_state.regPlease := nil;
 
      data.Free();
@@ -1666,9 +1666,9 @@ begin
  // relief odmitl zadost regulatoru o lokomotivu
  else if (str[2] = 'DENY') then
   begin
-   ORTCPServer.SendLn(Self.m_state.regPlease, '-;LOK;G;PLEASE-RESP;err;Dispečer odmítl žádost');
+   PanelServer.SendLn(Self.m_state.regPlease, '-;LOK;G;PLEASE-RESP;err;Dispečer odmítl žádost');
    Self.BroadcastData('LOK-REQ;CANCEL;');
-   (Self.m_state.regPlease.Data as TTCPORsRef).regulator_zadost := nil;
+   (Self.m_state.regPlease.Data as TPanelConnData).regulator_zadost := nil;
    Self.m_state.regPlease := nil;
   end
 
@@ -1742,7 +1742,7 @@ begin
  // pripradna zadost o lokomotivu
  if (Self.regPlease <> nil) then
   begin
-   user := (Self.regPlease.Data as TTCPORsRef).regulator_user;
+   user := (Self.regPlease.Data as TPanelConnData).regulator_user;
    if (user <> nil) then
      Self.SendLn(panel, 'LOK-REQ;REQ;'+user.username+';'+user.firstname+';'+user.lastname+';');
   end;
@@ -1756,7 +1756,7 @@ end;
 
 procedure TArea.SendLn(panel: TIdContext; str: string);
 begin
- ORTCPServer.SendLn(panel, Self.id + ';' + str);
+ PanelServer.SendLn(panel, Self.id + ';' + str);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1863,18 +1863,18 @@ end;
 
 procedure TArea.AuthReadToWrite(panel: TIdContext);
 begin
- if (Self.shortCircBlkCnt > 2) then ORTCPServer.PlaySound(panel, _SND_PRETIZENI, true);
- if (Self.railwayReqBlkCnt > 0) then ORTCPServer.PlaySound(panel, _SND_TRAT_ZADOST, true);
- if (Self.pnBlkCnt > 0) then ORTCPServer.PlaySound(panel, _SND_PRIVOLAVACKA, true);
- if (Self.timerCnt > 0) then ORTCPServer.PlaySound(panel, _SND_TIMEOUT, true);
+ if (Self.shortCircBlkCnt > 2) then PanelServer.PlaySound(panel, _SND_PRETIZENI, true);
+ if (Self.railwayReqBlkCnt > 0) then PanelServer.PlaySound(panel, _SND_TRAT_ZADOST, true);
+ if (Self.pnBlkCnt > 0) then PanelServer.PlaySound(panel, _SND_PRIVOLAVACKA, true);
+ if (Self.timerCnt > 0) then PanelServer.PlaySound(panel, _SND_TIMEOUT, true);
 end;
 
 procedure TArea.AuthWriteToRead(panel: TIdContext);
 begin
- if (Self.shortCircBlkCnt > 2) then ORTCPServer.DeleteSound(panel, _SND_PRETIZENI);
- if (Self.railwayReqBlkCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_TRAT_ZADOST);
- if (Self.pnBlkCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_PRIVOLAVACKA);
- if (Self.timerCnt > 0) then ORTCPServer.DeleteSound(panel, _SND_TIMEOUT);
+ if (Self.shortCircBlkCnt > 2) then PanelServer.DeleteSound(panel, _SND_PRETIZENI);
+ if (Self.railwayReqBlkCnt > 0) then PanelServer.DeleteSound(panel, _SND_TRAT_ZADOST);
+ if (Self.pnBlkCnt > 0) then PanelServer.DeleteSound(panel, _SND_PRIVOLAVACKA);
+ if (Self.timerCnt > 0) then PanelServer.DeleteSound(panel, _SND_TIMEOUT);
  Self.stack.OnWriteToRead(panel);
 end;
 
@@ -1932,7 +1932,7 @@ begin
  //kontrola opravneni klienta
  if (Self.PanelDbRights(Sender) < write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit();
   end;
 
@@ -2005,7 +2005,7 @@ procedure TArea.PanelDkMenuClick(Sender: TIdContext; rootItem, subItem: string);
 begin
  if (Self.PanelDbRights(Sender) < write) then
   begin
-   ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
+   PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
    Exit();
   end;
 
@@ -2027,14 +2027,14 @@ begin
    else if (rootItem = 'LOKO') then begin
      if ((subItem = 'ZVUK>') or (subItem = 'ZVUK<')) then
       begin
-       ORTCPServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
+       PanelServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
        TrakceI.LoksSetFunc(_SOUND_FUNC, (subItem = 'ZVUK>'), TTrakce.Callback(Self.DkHvFuncsSetOk, Sender),
                            TTrakce.Callback(Self.DkHvFuncsSetErr, Sender));
       end else if (subItem = 'ZVUK ztlum') then begin
-        ORTCPServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
+        PanelServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
         TrakceI.TurnOffSound(TTrakce.Callback(Self.DkHvFuncsSetOk, Sender), TTrakce.Callback(Self.DkHvFuncsSetErr, Sender))
       end else if (subItem = 'ZVUK obnov') then begin
-        ORTCPServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
+        PanelServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
         TrakceI.RestoreSound(TTrakce.Callback(Self.DkHvFuncsSetOk, Sender), TTrakce.Callback(Self.DkHvFuncsSetErr, Sender));
       end;
    end;
@@ -2085,14 +2085,14 @@ procedure TArea.DkHvFuncsSetOk(Sender: TObject; Data: Pointer);
 var panel: TIdContext;
 begin
  panel := TIdContext(Data);
- ORTCPServer.SendInfoMsg(panel, 'Funkce nastaveny.');
+ PanelServer.SendInfoMsg(panel, 'Funkce nastaveny.');
 end;
 
 procedure TArea.DkHvFuncsSetErr(Sender: TObject; Data: Pointer);
 var panel: TIdContext;
 begin
  panel := TIdContext(Data);
- ORTCPServer.BottomError(panel, 'Nepodařilo se nastavit zvuky hnacích vozidel!', Self.shortName, 'Trakce');
+ PanelServer.BottomError(panel, 'Nepodařilo se nastavit zvuky hnacích vozidel!', Self.shortName, 'Trakce');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -134,7 +134,7 @@ implementation
 
 uses fMain, diagnostics, GetSystems, BlockDb, Block, BlockTurnout, BlockTrack,
      BoosterDb, BlockCrossing, RCSErrors, AreaDb,
-     Logging, TCPServerOR, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
+     Logging, TCPServerPanel, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
 constructor TRCS.Create();
 begin

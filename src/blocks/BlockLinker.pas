@@ -107,7 +107,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert,
-    TJCDatabase, fMain, TCPServerOR, BlockRailway, AreaStack, BlockTrack;
+    TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack;
 
 constructor TBlkLinker.Create(index: Integer);
 begin
@@ -268,13 +268,13 @@ end;
 
 procedure TBlkLinker.MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TArea,
+ PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TArea,
     'Zrušení zákazu odjezdu na trať', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkLinker.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Note(SenderPnl, Self, Self.m_state.note);
+ PanelServer.Note(SenderPnl, Self, Self.m_state.note);
 end;
 
 procedure TBlkLinker.MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -284,7 +284,7 @@ end;
 
 procedure TBlkLinker.MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TArea,
+ PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TArea,
     'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
 end;
 
@@ -470,7 +470,7 @@ begin
  if (params <> '') then
    Self.ShowUvazkaTrainMenu(SenderPnl, SenderOR, rights, StrToInt(params))
  else
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -562,7 +562,7 @@ begin
    upo.Add(item);
   end;
 
-  ORTCPServer.UPO(SenderPnl, upo, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+  PanelServer.UPO(SenderPnl, upo, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
  finally
    upo.Free();
  end;

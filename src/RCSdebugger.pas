@@ -1,4 +1,4 @@
-unit RCSdebugger;
+﻿unit RCSdebugger;
 
 {
   Trida TRCSd se stara o komunikaci s RCS debugger klienty po standardnim
@@ -125,7 +125,7 @@ implementation
      * typy vystupu (B=binarni vystup, S=S-COM, -=nedostupny port)
 }
 
-uses TCPServerOR, UserDb, User, RCSErrors, RCS;
+uses TCPServerPanel, UserDb, User, RCSErrors, RCS;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -190,34 +190,34 @@ begin
  // kontrola existence uzivatele
  if (not Assigned(user)) then
   begin
-   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Neexistující uživatel');
+   PanelServer.SendLn(Sender, '-;RCSd;AUTH;not;Neexistující uživatel');
    Exit();
   end;
 
  // kontrola BANu uzivatele
  if (user.ban) then
   begin
-   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel '+user.username+' má BAN !');
+   PanelServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel '+user.username+' má BAN !');
    Exit();
   end;
 
  // kontrola hesla uzivatele
  if (not TUser.ComparePasswd(parsed[4], user.password, user.salt)) then
   begin
-   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Neplatné heslo');
+   PanelServer.SendLn(Sender, '-;RCSd;AUTH;not;Neplatné heslo');
    Exit();
   end;
 
  // kontrola opravneni root
  if (not user.root) then
   begin
-   ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel nemá oprávnění root');
+   PanelServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel nemá oprávnění root');
    Exit();
   end;
 
  client := TRCSdClient.Create(Sender);
  Self.clients.Add(client);
- ORTCPServer.SendLn(Sender, '-;RCSd;AUTH;ok;Autorizováno');
+ PanelServer.SendLn(Sender, '-;RCSd;AUTH;ok;Autorizováno');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -265,12 +265,12 @@ begin
    except
      on E: Exception do
       begin
-       ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;{' + E.Message+'}');
+       PanelServer.SendLn(Self.conn, '-;RCSd;ERR;{' + E.Message+'}');
        Exit();
       end;
    end;
   end;
- ORTCPServer.SendLn(Self.conn, '-;RCSd;MODULE;'+IntToStr(addr)+';CHANGE;O;{'+str+'}');
+ PanelServer.SendLn(Self.conn, '-;RCSd;MODULE;'+IntToStr(addr)+';CHANGE;O;{'+str+'}');
 end;
 
 procedure TRCSdClient.SendInput(addr: Integer);
@@ -288,12 +288,12 @@ begin
    except
      on E: Exception do
       begin
-       ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;{' + E.Message+'}');
+       PanelServer.SendLn(Self.conn, '-;RCSd;ERR;{' + E.Message+'}');
        Exit();
       end;
    end;
   end;
- ORTCPServer.SendLn(Self.conn, '-;RCSd;MODULE;'+IntToStr(addr)+';CHANGE;I;{'+str+'}');
+ PanelServer.SendLn(Self.conn, '-;RCSd;MODULE;'+IntToStr(addr)+';CHANGE;I;{'+str+'}');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -369,7 +369,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;'+parsed[2]+';not;Neplatná adresa modulu');
+    PanelServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;'+parsed[2]+';not;Neplatná adresa modulu');
     Exit();
   end;
 
@@ -382,7 +382,7 @@ begin
     Self.modules.Add(module);
     RCSi.AddInputChangeEvent(addr, Self.OnRCSInputChange);
     RCSi.AddOutputChangeEvent(addr, Self.OnRCSOutputChange);
-    ORTCPServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;'+IntToStr(addr)+';ok');
+    PanelServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;'+IntToStr(addr)+';ok');
     Self.SendInput(addr);
     Self.SendOutput(addr);
    end;
@@ -391,7 +391,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
+    PanelServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
     Exit();
   end;
 
@@ -401,14 +401,14 @@ begin
     RCSi.RemoveInputChangeEvent(Self.OnRCSInputChange, addr);
     RCSi.RemoveOutputChangeEvent(Self.OnRCSOutputChange, addr);
     Self.modules.Delete(index);
-    ORTCPServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;'+IntToStr(addr)+';not');
+    PanelServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;'+IntToStr(addr)+';not');
    end;
 
  end else if (parsed[2] = 'SETOUT') then begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
+    PanelServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
     Exit();
   end;
 
@@ -418,7 +418,7 @@ begin
   try
     addr := StrToInt(parsed[3]);
   except
-    ORTCPServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
+    PanelServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
     Exit();
   end;
 
@@ -426,14 +426,14 @@ begin
   Self.SendOutput(addr);
 
  end else if (parsed[2] = 'INFO') then begin
-   ORTCPServer.SendLn(Self.conn, '-;RCSd;INFO;{{'+TRCSd.GetRCSInfo(StrToInt(parsed[3]))+'}}');
+   PanelServer.SendLn(Self.conn, '-;RCSd;INFO;{{'+TRCSd.GetRCSInfo(StrToInt(parsed[3]))+'}}');
 
  end else if (parsed[2] = 'LIST') then begin
    str := '';
    for i := 0 to RCSi.maxModuleAddr do
      if ((RCSi.IsModule(i)) or (RCSi.GetNeeded(i))) then
         str := str + '{' + TRCSd.GetRCSInfo(i) + '}';
-   ORTCPServer.SendLn(Self.conn, '-;RCSd;INFO;{'+str+'}');
+   PanelServer.SendLn(Self.conn, '-;RCSd;INFO;{'+str+'}');
  end;
 end;
 

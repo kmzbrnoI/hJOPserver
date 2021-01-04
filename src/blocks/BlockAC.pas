@@ -109,7 +109,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, ownConvert, Diagnostics,
-    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, BlockTurnout,
+    TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout,
     TCPServerPT, ownStrUtils;
 
 constructor TBlkAC.Create(index: Integer);
@@ -188,7 +188,7 @@ begin
    Self.Start();
  except
    on E: Exception do
-     ORTCPServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
+     PanelServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
  end;
 end;
 
@@ -198,7 +198,7 @@ begin
    Self.Stop();
  except
    on E: Exception do
-     ORTCPServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
+     PanelServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
  end;
 end;
 
@@ -208,7 +208,7 @@ begin
    Self.Pause();
  except
    on E: Exception do
-     ORTCPServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
+     PanelServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
  end;
 end;
 
@@ -216,7 +216,7 @@ procedure TBlkAC.MenuPOKRACClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
  if (not Self.paused) then
   begin
-   ORTCPServer.BottomError(SenderPnl, 'AC není v režimu pauza!', TArea(SenderOR).shortName, 'AC');
+   PanelServer.BottomError(SenderPnl, 'AC není v režimu pauza!', TArea(SenderOR).shortName, 'AC');
    Exit();
   end;
 
@@ -224,7 +224,7 @@ begin
    Self.Start();
  except
    on E: Exception do
-     ORTCPServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
+     PanelServer.BottomError(SenderPnl, E.Message, TArea(SenderOR).shortName, 'AC');
  end;
 end;
 
@@ -258,7 +258,7 @@ procedure TBlkAC.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TP
                             rights: TAreaRights; params: string = '');
 begin
  if (Self.enabled) then
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -349,9 +349,9 @@ begin
  end;
 
  if (Self.paused) then
-   ORTCPServer.SendLn(Self.client, '-;AC;'+IntToStr(Self.id)+';CONTROL;RESUME')
+   PanelServer.SendLn(Self.client, '-;AC;'+IntToStr(Self.id)+';CONTROL;RESUME')
  else
-   ORTCPServer.SendLn(Self.client, '-;AC;'+IntToStr(Self.id)+';CONTROL;START');
+   PanelServer.SendLn(Self.client, '-;AC;'+IntToStr(Self.id)+';CONTROL;START');
 
  Self.m_state.state := TACState.running;
  Self.Change();
@@ -467,7 +467,7 @@ begin
   state := 'UNKNOWN';
  end;
 
- ORTCPServer.SendLn(Self.client, '-;AC;'+IntToStr(Self.id)+';CONTROL;'+state);
+ PanelServer.SendLn(Self.client, '-;AC;'+IntToStr(Self.id)+';CONTROL;'+state);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -481,7 +481,7 @@ end;
 
 procedure TBlkAC.SendLn(recipient: TIdContext; text: string);
 begin
- ORTCPServer.SendLn(recipient, '-;AC;'+IntToStr(Self.id)+';'+text);
+ PanelServer.SendLn(recipient, '-;AC;'+IntToStr(Self.id)+';'+text);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -513,7 +513,7 @@ begin
 
  if (not Self.m_state.panelsShowingState.Contains(pnl)) then
    Self.m_state.panelsShowingState.Add(pnl);
- ORTCPServer.PotvrOrInfo(pnl, 'IS', Self.PanelSTAVClosed, area, 'Zobrazení stavu AC',
+ PanelServer.CSWindow(pnl, 'IS', Self.PanelSTAVClosed, area, 'Zobrazení stavu AC',
                          TBlocks.GetBlksList(Self), podm)
 end;
 

@@ -16,7 +16,7 @@ type
   EPingNotYetComputed = class(Exception);
 
   // tady je ulozeno jedno fyzicke spojeni s panelem (obsahuje oblasti rizeni, otevrene okynko stitku, menu, ...)
-  TTCPORsRef = class
+  TPanelConnData = class
    const
     _PING_WINDOW_SIZE = 3;
     _PING_PERIOD_NOREG = 5;
@@ -88,11 +88,11 @@ type
 
 implementation
 
-uses fMain, TCPServerOR, RegulatorTCP;
+uses fMain, TCPServerPanel, RegulatorTCP;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TTCPORsRef.Create(index: Integer);
+constructor TPanelConnData.Create(index: Integer);
 begin
  inherited Create();
  Self.regulator_loks := TList<THV>.Create();
@@ -109,7 +109,7 @@ begin
  Self.Reset();
 end;
 
-destructor TTCPORsRef.Destroy();
+destructor TPanelConnData.Destroy();
 begin
  Self.areas.Free();
  Self.st_hlaseni.Free();
@@ -122,7 +122,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.Escape(AContext: TIdContext);
+procedure TPanelConnData.Escape(AContext: TIdContext);
 var area: TArea;
 begin
  if ((Self.note = nil) and (Self.lockout = nil) and (not Assigned(Self.potvr)) and (Self.menu = nil) and (not Assigned(Self.UPO_OK))) then
@@ -132,7 +132,7 @@ begin
  Self.Reset();
 end;
 
-procedure TTCPOrsRef.Reset();
+procedure TPanelConnData.Reset();
 begin
  Self.note := nil;
  Self.lockout := nil;
@@ -155,7 +155,7 @@ begin
  F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_RIZ] := '';
 end;
 
-procedure TTCPOrsRef.ResetTrains();
+procedure TPanelConnData.ResetTrains();
 begin
  Self.train_new_usek_index := -1;
  Self.train_edit := nil;
@@ -164,7 +164,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TTCPOrsRef.ORPing(id: Cardinal; sent: TDateTime): TAreaPing;
+class function TPanelConnData.ORPing(id: Cardinal; sent: TDateTime): TAreaPing;
 begin
  Result.id := id;
  Result.sent := sent;
@@ -172,12 +172,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTCPOrsRef.PingComputed(): Boolean;
+function TPanelConnData.PingComputed(): Boolean;
 begin
  Result := (Self.ping_received.Count > 0);
 end;
 
-function TTCPOrsRef.GetPing(): TTime;
+function TPanelConnData.GetPing(): TTime;
 var sum, ping: TTime;
 begin
  if (Self.ping_received.Count = 0) then
@@ -191,7 +191,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.OnUnreachable(AContext: TIdContext);
+procedure TPanelConnData.OnUnreachable(AContext: TIdContext);
 var i: Integer;
 begin
  // clear loco always (even when called after several attempts)
@@ -201,17 +201,17 @@ begin
  if (not Self.ping_unreachable) then
   begin
    Self.ping_received.Clear();
-   ORTCPServer.GUIQueueLineToRefresh(Self.index);
+   PanelServer.GUIQueueLineToRefresh(Self.index);
   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.CheckSendPing(AContext: TIdContext);
+procedure TPanelConnData.CheckSendPing(AContext: TIdContext);
 begin
  if (Now >= Self.ping_next_send) then
   begin
-   ORTCPServer.SendLn(AContext, '-;PING;REQ-RESP;'+IntToStr(Self.ping_next_id));
+   PanelServer.SendLn(AContext, '-;PING;REQ-RESP;'+IntToStr(Self.ping_next_id));
    Self.ping_sent.Enqueue(ORPing(Self.ping_next_id, Now));
 
    if (Self.regulator_loks.Count > 0) then
@@ -229,7 +229,7 @@ begin
   end;
 end;
 
-procedure TTCPORsRef.PongReceived(id: Cardinal);
+procedure TPanelConnData.PongReceived(id: Cardinal);
 var orPing: TAreaPing;
 begin
  while (Self.ping_sent.Count > 0) do
@@ -245,7 +245,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.CheckUnreachable(AContext: TIdContext);
+procedure TPanelConnData.CheckUnreachable(AContext: TIdContext);
 begin
  if (Self.ping_sent.Count > _PING_TRYOUT) then
   begin
@@ -256,7 +256,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.PingUpdate(AContext: TIdContext);
+procedure TPanelConnData.PingUpdate(AContext: TIdContext);
 begin
  Self.CheckSendPing(AContext);
  Self.CheckUnreachable(AContext);
@@ -264,12 +264,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPORsRef.PingNewReceived(time: TTime);
+procedure TPanelConnData.PingNewReceived(time: TTime);
 begin
  if (Self.ping_unreachable) then
   begin
    Self.ping_unreachable := false; // client restored
-   ORTCPServer.GUIQueueLineToRefresh(Self.index);
+   PanelServer.GUIQueueLineToRefresh(Self.index);
   end;
 
  if (Self.ping_received.Count <= Self.ping_received_next_index) then
@@ -279,7 +279,7 @@ begin
 
  Self.ping_received_next_index := (Self.ping_received_next_index+1) mod _PING_WINDOW_SIZE;
 
- ORTCPServer.GUIQueueLineToRefresh(Self.index);
+ PanelServer.GUIQueueLineToRefresh(Self.index);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

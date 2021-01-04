@@ -145,7 +145,7 @@
 			<DCCReference Include="hv\THVDatabase.pas"/>
 			<DCCReference Include="hv\THnaciVozidlo.pas"/>
 			<DCCReference Include="Logging.pas"/>
-			<DCCReference Include="net\TCPServerOR.pas"/>
+			<DCCReference Include="net\TCPServerPanel.pas"/>
 			<DCCReference Include="tables\DataRCS.pas"/>
 			<DCCReference Include="tables\DataHV.pas"/>
 			<DCCReference Include="tables\DataJC.pas"/>

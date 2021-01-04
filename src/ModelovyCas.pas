@@ -82,7 +82,7 @@ var
 
 implementation
 
-uses TCPServerOR, fMain, TrainDb, BlockDb;
+uses TCPServerPanel, fMain, TrainDb, BlockDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -200,12 +200,12 @@ begin
  F_Main.P_Zrychleni.Caption := strSpeed + '×';
  F_Main.CheckNasobicWidth();
 
- ORTCPServer.BroadcastData(Self.GetTCPString());
+ PanelServer.BroadcastData(Self.GetTCPString());
 end;
 
 procedure TModCas.SendTimeToPanel(AContext: TIDContext);
 begin
- ORTCPServer.SendLn(AContext, Self.GetTCPString());
+ PanelServer.SendLn(AContext, Self.GetTCPString());
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -260,12 +260,12 @@ end;
 function TModCas.GetTCPString(): string;
 begin
  if (Self.started) then
-  ORTCPServer.BroadcastData('-;MOD-CAS;1;'+Self.strSpeed+';'+TimeToStr(Self.time))
+  PanelServer.BroadcastData('-;MOD-CAS;1;'+Self.strSpeed+';'+TimeToStr(Self.time))
  else begin
   if (Self.used) then
-   ORTCPServer.BroadcastData('-;MOD-CAS;0;'+Self.strSpeed+';'+TimeToStr(Self.time))
+   PanelServer.BroadcastData('-;MOD-CAS;0;'+Self.strSpeed+';'+TimeToStr(Self.time))
   else
-   ORTCPServer.BroadcastData('-;MOD-CAS;0;'+Self.strSpeed+';'+TimeToStr(Self.time)+';0');
+   PanelServer.BroadcastData('-;MOD-CAS;0;'+Self.strSpeed+';'+TimeToStr(Self.time)+';0');
  end;
 end;
 

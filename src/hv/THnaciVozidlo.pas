@@ -275,7 +275,7 @@ type
 implementation
 
 uses ownStrUtils, AreaDb, THVDatabase, TrainDb, DataHV, fRegulator, BlockDb,
-      RegulatorTCP, fMain, PTUtils, TCPServerOR, appEv, Logging, TechnologieTrakce,
+      RegulatorTCP, fMain, PTUtils, TCPServerPanel, appEv, Logging, TechnologieTrakce,
       ownConvert, BlockSignal, IfThenElse;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1791,7 +1791,7 @@ procedure THV.BroadcastRegulators(msg: string);
 var reg: THVRegulator;
 begin
  for reg in Self.state.regulators do
-   ORTCPServer.SendLn(reg.conn, '-;LOK;'+IntToStr(Self.addr)+';'+msg);
+   PanelServer.SendLn(reg.conn, '-;LOK;'+IntToStr(Self.addr)+';'+msg);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

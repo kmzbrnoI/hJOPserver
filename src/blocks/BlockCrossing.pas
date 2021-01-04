@@ -152,7 +152,7 @@ type
 
 implementation
 
-uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerOR, RCS, UPO,
+uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCS, UPO,
      Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert;
 
 constructor TBlkCrossing.Create(index: Integer);
@@ -553,7 +553,7 @@ begin
  if (Self.note <> '') then
    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOUZClick, nil)
  else begin
-   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
    Self.UPOUZClick(SenderPnl);
  end;
 end;
@@ -563,7 +563,7 @@ begin
  if (Self.note <> '') then
    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOZUZClick, nil)
  else begin
-   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
    Self.UPOZUZClick(SenderPnl);
  end;
 end;
@@ -573,7 +573,7 @@ begin
  if (Self.note <> '') then
    Self.NoteUPO(SenderPnl, SenderOR, Self.UPONOTClick, nil)
  else begin
-   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
    Self.UPONOTClick(SenderPnl);
  end;
 end;
@@ -583,7 +583,7 @@ begin
  if (Self.note <> '') then
    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOZNOTClick, nil)
  else begin
-   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
    Self.UPOZNOTClick(SenderPnl);
  end;
 end;
@@ -595,15 +595,15 @@ end;
 
 procedure TBlkCrossing.UPOZUZClick(Sender: TObject);
 begin
- ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZUZCallBack,
-    (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TArea),
+ PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZUZCallBack,
+    (TPanelConnData(TIdContext(Sender).Data).UPO_ref as TArea),
     'Zrušení uzavření přejezdu', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkCrossing.UPONOTClick(Sender: TObject);
 begin
- ORTCPServer.Potvr(TIdContext(Sender), Self.PanelZNOTCallBack,
-    (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TArea),
+ PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZNOTCallBack,
+    (TPanelConnData(TIdContext(Sender).Data).UPO_ref as TArea),
     'Nouzové otevření přejezdu', TBlocks.GetBlksList(Self), nil);
 end;
 
@@ -614,7 +614,7 @@ end;
 
 procedure TBlkCrossing.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Note(SenderPnl, Self, Self.m_state.note);
+ PanelServer.Note(SenderPnl, Self, Self.m_state.note);
 end;
 
 procedure TBlkCrossing.MenuAdminZavreno(SenderPnl: TIdContext; SenderOR: TObject);
@@ -637,7 +637,7 @@ begin
  try
    RCSi.SetInput(Self.m_settings.RCSInputs.annulation, 1);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
+   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
  end;
 end;
 
@@ -646,7 +646,7 @@ begin
  try
    RCSi.SetInput(Self.m_settings.RCSInputs.annulation, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
+   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
  end;
 end;
 
@@ -664,7 +664,7 @@ begin
    RCSi.SetInput(Self.m_settings.RCSInputs.caution, ownConvert.BoolToInt(vystraha));
    RCSi.SetInput(Self.m_settings.RCSInputs.open, ownConvert.BoolToInt(otevreno));
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
+   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
  end;
 end;
 
@@ -725,7 +725,7 @@ end;
 procedure TBlkCrossing.PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  if (Button <> TPanelButton.ESCAPE) then
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -823,7 +823,7 @@ begin
    upo.Add(item);
   end;
 
-  ORTCPServer.UPO(SenderPnl, upo, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+  PanelServer.UPO(SenderPnl, upo, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
  finally
    upo.Free();
  end;

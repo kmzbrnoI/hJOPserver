@@ -49,7 +49,7 @@ var
 
 implementation
 
-uses UserDb, User, TCPServerOR,  Trakce, THVDatabase, TrainDb, TCPAreasRef, Logging,
+uses UserDb, User, TCPServerPanel,  Trakce, THVDatabase, TrainDb, TCPAreasRef, Logging,
      fRegulator, fMain, Area, AreaDb, TechnologieTrakce, ownConvert;
 
 
@@ -120,9 +120,9 @@ begin
   end;
 
  // kontrola autorizace (dalsi prikazy jsou podmineny existujicim pristupem)
- if (not (Sender.Data as TTCPORsRef).regulator) then
+ if (not (Sender.Data as TPanelConnData).regulator) then
   begin
-   ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Uživatel neuatorizován!');
+   PanelServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Uživatel neuatorizován!');
    Exit();
   end;
 
@@ -133,48 +133,48 @@ begin
  if (parsed[3] = 'PLEASE') then
   begin
    try
-     if ((Sender.Data as TTCPORsRef).regulator_zadost <> nil) then
+     if ((Sender.Data as TPanelConnData).regulator_zadost <> nil) then
       begin
-       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Žádost již probíhá');
+       PanelServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Žádost již probíhá');
        Exit();
       end;
      area := Areas.Get(parsed[4]);
      if (area = nil) then
       begin
-       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Tato oblast řízení neexistuje');
+       PanelServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Tato oblast řízení neexistuje');
        Exit();
       end;
      if (area.regPlease <> nil) then
       begin
-       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Do oblasti řízení již probíhá žádost');
+       PanelServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Do oblasti řízení již probíhá žádost');
        Exit();
       end;
-     if (((Sender.Data as TTCPORsRef).ping_unreachable) or (not (Sender.Data as TTCPORsRef).PingComputed())) then
+     if (((Sender.Data as TPanelConnData).ping_unreachable) or (not (Sender.Data as TPanelConnData).PingComputed())) then
       begin
-       ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Zařízení neodpovídá na ping');
+       PanelServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Zařízení neodpovídá na ping');
        Exit();
       end;
 
-     (Sender.Data as TTCPORsRef).regulator_zadost := area;
+     (Sender.Data as TPanelConnData).regulator_zadost := area;
      if (parsed.Count > 5) then
-       area.LokoPlease(Sender, (Sender.Data as TTCPORsRef).regulator_user, parsed[5])
+       area.LokoPlease(Sender, (Sender.Data as TPanelConnData).regulator_user, parsed[5])
      else
-       area.LokoPlease(Sender, (Sender.Data as TTCPORsRef).regulator_user, '');
+       area.LokoPlease(Sender, (Sender.Data as TPanelConnData).regulator_user, '');
 
-     ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok');
+     PanelServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok');
    except
-    ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Nesprávný formát příkazu');
+    PanelServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;err;Nesprávný formát příkazu');
    end;
   end
 
  // regulator rusi zadost o lokomotivu ze stanice
  else if (parsed[3] = 'CANCEL') then
   begin
-   if ((Sender.Data as TTCPORsRef).regulator_zadost = nil) then Exit();
+   if ((Sender.Data as TPanelConnData).regulator_zadost = nil) then Exit();
 
-   (Sender.Data as TTCPORsRef).regulator_zadost.LokoCancel(Sender);
-   (Sender.Data as TTCPORsRef).regulator_zadost := nil;
-   ORTCPServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok;Žádost zrušena');
+   (Sender.Data as TPanelConnData).regulator_zadost.LokoCancel(Sender);
+   (Sender.Data as TPanelConnData).regulator_zadost := nil;
+   PanelServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok;Žádost zrušena');
   end;
 end;
 
@@ -204,7 +204,7 @@ begin
   end;
 
  // kontrola opravneni
- if (not (Sender.Data as TTCPORsRef).regulator) then Exit();
+ if (not (Sender.Data as TPanelConnData).regulator) then Exit();
 
  if (parsed[3] = 'RELEASE') then
   begin
@@ -219,13 +219,13 @@ begin
 
    try
      // autorizovany regulator, ci regulator uzivatele root se nemusi prokazovat tokenem
-     if ((not (Sender.Data as TTCPORsRef).regulator_user.root) and (not HV.IsReg(Sender))) then
+     if ((not (Sender.Data as TPanelConnData).regulator_user.root) and (not HV.IsReg(Sender))) then
       begin
        // je loko uz na nejakem nerootovskem (!) ovladaci -> odmitnout
        for i := 0 to HV.state.regulators.Count-1 do
          if (not HV.state.regulators[i].root) then
           begin
-           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Loko je otevřené v jiném regulátoru');
+           PanelServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Loko je otevřené v jiném regulátoru');
            Exit();
           end;
 
@@ -234,14 +234,14 @@ begin
          if (not HV.IsReg(Sender)) then
           begin
            // Uzivatel nema na hnaci vozidlo narok
-           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Na toto hnací vozidlo nemáte nárok');
+           PanelServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Na toto hnací vozidlo nemáte nárok');
            Exit();
           end;
         end else begin
          // kontrola tokenu
          if ((not HV.IsToken(parsed[4]))) then
           begin
-           ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Špatný token');
+           PanelServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Špatný token');
            Exit();
           end;
         end;
@@ -254,7 +254,7 @@ begin
      Exit();
 
    except
-    ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Nesprávný formát příkazu');
+    PanelServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Nesprávný formát příkazu');
    end;
   end;//PLEASE
 
@@ -263,13 +263,13 @@ begin
  // je tento regulator uz v seznamu regulatoru?
  if (not HV.IsReg(Sender)) then
   begin
-   ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';RESP;err;Loko '+parsed[2]+' neautorizováno');
+   PanelServer.SendLn(Sender, '-;LOK;'+parsed[2]+';RESP;err;Loko '+parsed[2]+' neautorizováno');
    Exit();
   end;
 
  if (HV.stolen) then
   begin
-   ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';RESP;err;Loko '+parsed[2]+' ukradeno, nenastavuji');
+   PanelServer.SendLn(Sender, '-;LOK;'+parsed[2]+';RESP;err;Loko '+parsed[2]+' ukradeno, nenastavuji');
    Exit();
   end;
 
@@ -390,8 +390,8 @@ end;
 procedure TTCPRegulator.ClientAuthorise(conn: TIdContext; state: Boolean; user: TObject; comment: string='');
 var str: string;
 begin
- (conn.Data as TTCPORsRef).regulator := state;
- (conn.Data as TTCPORsRef).regulator_user := TUser(user);
+ (conn.Data as TPanelConnData).regulator := state;
+ (conn.Data as TPanelConnData).regulator_user := TUser(user);
 
  if (state) then
   begin
@@ -400,17 +400,17 @@ begin
    else
      str := 'ano';
 
-   F_Main.LV_Clients.Items[(conn.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_REGULATOR] := str;
+   F_Main.LV_Clients.Items[(conn.Data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_REGULATOR] := str;
    authLog('reg', 'login', str, 'Login to regulator');
-   ORTCPServer.SendLn(conn, '-;LOK;G;AUTH;ok;'+comment);
+   PanelServer.SendLn(conn, '-;LOK;G;AUTH;ok;'+comment);
   end else begin
-   (conn.Data as TTCPORsRef).regulator_user := nil;
-   F_Main.LV_Clients.Items[(conn.Data as TTCPORsRef).index].SubItems[_LV_CLIENTS_COL_REGULATOR] := '';
+   (conn.Data as TPanelConnData).regulator_user := nil;
+   F_Main.LV_Clients.Items[(conn.Data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_REGULATOR] := '';
    authLog('reg', 'deny', str, comment);
-   ORTCPServer.SendLn(conn, '-;LOK;G;AUTH;not;'+comment);
+   PanelServer.SendLn(conn, '-;LOK;G;AUTH;not;'+comment);
 
    // odhlasime vsechny prihlasene regulatory
-   TTCPORsRef(conn.Data).regulator_loks.Clear();
+   TPanelConnData(conn.Data).regulator_loks.Clear();
    HVDb.RemoveRegulator(conn);
   end;
 end;
@@ -420,7 +420,7 @@ end;
 procedure TTCPRegulator.ClientError(conn: TIdContext; error: string);
 begin
  try
-   ORTCPServer.SendLn(conn, '-;LOK;G;ERR;'+error)
+   PanelServer.SendLn(conn, '-;LOK;G;ERR;'+error)
  except
 
  end;
@@ -438,7 +438,7 @@ begin
   if (speed > HV.Data.maxSpeed) then
     speed := HV.Data.maxSpeed;
 
-  ORTCPServer.SendLn(TLokResponseData(Data^).conn, '-;LOK;'+IntToStr(TLokResponseData(Data^).addr)+
+  PanelServer.SendLn(TLokResponseData(Data^).conn, '-;LOK;'+IntToStr(TLokResponseData(Data^).addr)+
       ';RESP;ok;;'+IntToStr(speed));
   FreeMem(data);
  except
@@ -449,7 +449,7 @@ end;
 procedure TTCPRegulator.PanelLOKResponseErr(Sender: TObject; Data: Pointer);
 begin
  try
-  ORTCPServer.SendLn(TLokResponseData(Data^).conn, '-;LOK;'+IntToStr(TLokResponseData(Data^).addr)+';RESP;err;Command error;');
+  PanelServer.SendLn(TLokResponseData(Data^).conn, '-;LOK;'+IntToStr(TLokResponseData(Data^).addr)+';RESP;err;Command error;');
   FreeMem(data);
  except
 
@@ -473,7 +473,7 @@ begin
 
  for i := 0 to HV.state.regulators.Count-1 do
    if (HV.state.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';F;0-'+IntToStr(_HV_FUNC_MAX)+';'+func+';');
+     PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';F;0-'+IntToStr(_HV_FUNC_MAX)+';'+func+';');
 end;
 
 //  or;LOK;ADDR;SPD;sp_km/h;sp_stupne;dir
@@ -482,7 +482,7 @@ var i: Integer;
 begin
  for i := 0 to HV.state.regulators.Count-1 do
    if (HV.state.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';SPD;'+
+     PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';SPD;'+
                         IntToStr(HV.realSpeed)+';'+IntToStr(HV.speedStep)+';'+
                         IntToStr(ownConvert.BoolToInt(HV.direction))+';');
 end;
@@ -494,7 +494,7 @@ var i: Integer;
 begin
  for i := 0 to HV.state.regulators.Count-1 do
    if (HV.state.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';AUTH;stolen;Loko ukradeno ovladačem');
+     PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';AUTH;stolen;Loko ukradeno ovladačem');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -509,7 +509,7 @@ begin
    state := '0';
 
  for i := 0 to HV.state.regulators.Count-1 do
-   ORTCPServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';TOTAL;'+state);
+   PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';TOTAL;'+state);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -537,7 +537,7 @@ begin
   begin
    reg.conn := Regulator;
    HV.ruc   := HV.ruc or (HV.state.train = -1);
-   reg.root := (Regulator.Data as TTCPORsRef).regulator_user.root;
+   reg.root := (Regulator.Data as TPanelConnData).regulator_user.root;
    HV.state.regulators.Add(reg);
   end;
 
@@ -550,7 +550,7 @@ begin
    except
      on E: Exception do
       begin
-       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;not;Převzetí z centrály se nezdařilo :'+E.Message);
+       PanelServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;not;Převzetí z centrály se nezdařilo :'+E.Message);
        HV.state.regulators.Remove(reg);
       end;
    end;
@@ -565,7 +565,7 @@ begin
 
      if (timeout > 3000) then
       begin
-       ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;not;Převzetí z centrály se nezdařilo');
+       PanelServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;not;Převzetí z centrály se nezdařilo');
        HV.state.regulators.Remove(reg);
        Exit();
       end;
@@ -574,15 +574,15 @@ begin
    // odpoved na pozadavek o autorizaci rizeni hnaciho vozidla
    // kdyz loko prebirame, je odesilana automaticky
    if (HV.ruc) then
-     ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;total;{'+HV.GetPanelLokString()+'}')
+     PanelServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;total;{'+HV.GetPanelLokString()+'}')
    else
-     ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;ok;{'+HV.GetPanelLokString()+'}');
+     PanelServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;ok;{'+HV.GetPanelLokString()+'}');
   end;
 
   // pridani loko do seznamu autorizovanych loko klientem
 
  pom := false;
- for tmpHV in TTCPORsRef(Regulator.Data).regulator_loks do
+ for tmpHV in TPanelConnData(Regulator.Data).regulator_loks do
   begin
    if (tmpHV = HV) then
     begin
@@ -594,11 +594,11 @@ begin
  if (not pom) then
   begin
    // pridani nove loko do seznamu
-   TTCPORsRef(Regulator.Data).regulator_loks.Add(HV);
-   ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
+   TPanelConnData(Regulator.Data).regulator_loks.Add(HV);
+   PanelServer.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
   end;
 
- authLog('reg', 'loco-acquire', TTCPORsRef(Regulator.Data).regulator_user.username, 'Acquire loco '+IntToStr(HV.addr));
+ authLog('reg', 'loco-acquire', TPanelConnData(Regulator.Data).regulator_user.username, 'Acquire loco '+IntToStr(HV.addr));
  Self.SendExpectedSpeed(Regulator, HV);
  Self.SendPredictedSignal(Regulator, HV);
 end;
@@ -620,10 +620,10 @@ begin
 
  if (not contextDestroyed) then
   begin
-   authLog('reg', 'logout', TTCPORsRef(reg.Data).regulator_user.username, 'Logout from regulator');
-   TTCPORsRef(reg.Data).regulator := false;
-   TTCPORsRef(reg.Data).regulator_user := nil;
-   TTCPORsRef(reg.Data).regulator_loks.Clear();
+   authLog('reg', 'logout', TPanelConnData(reg.Data).regulator_user.username, 'Logout from regulator');
+   TPanelConnData(reg.Data).regulator := false;
+   TPanelConnData(reg.Data).regulator_user := nil;
+   TPanelConnData(reg.Data).regulator_loks.Clear();
   end;
 end;
 
@@ -632,22 +632,22 @@ end;
 procedure TTCPRegulator.RemoveLok(Regulator: TIdContext; HV: THV; info: string);
 begin
  HV.RemoveRegulator(Regulator);
- TTCPORsRef(Regulator.Data).regulator_loks.Remove(HV);
- ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;release;'+info);
- ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Regulator.Data).index);
- authLog('reg', 'loco-release', TTCPORsRef(Regulator.Data).regulator_user.username, 'Release loco '+IntToStr(HV.addr));
+ TPanelConnData(Regulator.Data).regulator_loks.Remove(HV);
+ PanelServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;release;'+info);
+ PanelServer.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
+ authLog('reg', 'loco-release', TPanelConnData(Regulator.Data).regulator_user.username, 'Release loco '+IntToStr(HV.addr));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTCPRegulator.SendExpectedSpeed(reg: TIdContext; HV: THV);
 begin
- ORTCPServer.SendLn(reg, '-;LOK;'+IntToStr(HV.addr)+';EXPECTED-SPEED;'+HV.ExpectedSpeedStr());
+ PanelServer.SendLn(reg, '-;LOK;'+IntToStr(HV.addr)+';EXPECTED-SPEED;'+HV.ExpectedSpeedStr());
 end;
 
 procedure TTCPRegulator.SendPredictedSignal(reg: TIdContext; HV: THV);
 begin
- ORTCPServer.SendLn(reg, '-;LOK;'+IntToStr(HV.addr)+';NAV;'+HV.PredictedSignalStr());
+ PanelServer.SendLn(reg, '-;LOK;'+IntToStr(HV.addr)+';NAV;'+HV.PredictedSignalStr());
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

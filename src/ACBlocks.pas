@@ -33,7 +33,7 @@ var
 
 implementation
 
-uses ownStrUtils, TCPServerOR, BlockDb;
+uses ownStrUtils, TCPServerPanel, BlockDb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -94,10 +94,10 @@ begin
          if (not Blocks.IsBlok(blkid)) then
            raise Exception.Create('Blok '+blk+' neexistuje');
          Self.ClientAddBlock(Sender, blkid);
-         ORTCPServer.SendLn(Sender, '-;AC;-;BLOCKS;REGISTER;'+blk+';OK');
+         PanelServer.SendLn(Sender, '-;AC;-;BLOCKS;REGISTER;'+blk+';OK');
        except
          on E: Exception do
-           ORTCPServer.SendLn(Sender, '-;AC;-;BLOCKS;REGISTER;'+blk+';ERR;'+E.Message);
+           PanelServer.SendLn(Sender, '-;AC;-;BLOCKS;REGISTER;'+blk+';ERR;'+E.Message);
        end;
       end;
     finally
@@ -112,10 +112,10 @@ begin
        try
          blkid := StrToInt(blk);
          Self.ClientRemoveBlock(Sender, blkid);
-         ORTCPServer.SendLn(Sender, '-;AC;-;BLOCKS;UNREGISTER;'+blk+';OK');
+         PanelServer.SendLn(Sender, '-;AC;-;BLOCKS;UNREGISTER;'+blk+';OK');
        except
          on E:Exception do
-           ORTCPServer.SendLn(Sender, '-;AC;-;BLOCKS;UNREGISTER;'+blk+';ERR;'+E.Message);
+           PanelServer.SendLn(Sender, '-;AC;-;BLOCKS;UNREGISTER;'+blk+';ERR;'+E.Message);
        end;
       end;
     finally
@@ -127,7 +127,7 @@ begin
      if (Self.clientToBlks.ContainsKey(Sender)) then
        for blkid in Self.clientToBlks[Sender] do
          list := list + IntToStr(blkid) + ',';
-     ORTCPServer.SendLn(Sender, '-;AC;-;BLOCKS;LIST;{'+list+'}');
+     PanelServer.SendLn(Sender, '-;AC;-;BLOCKS;LIST;{'+list+'}');
     end;
 
   end;
@@ -138,7 +138,7 @@ var client: TIdContext;
 begin
  if (not Self.blkToClients.ContainsKey(blkid)) then Exit();
  for client in Self.blkToClients[blkid] do
-   ORTCPServer.SendLn(client, '-;AC;-;BLOCKS;CHANGE;'+IntToStr(blkid));
+   PanelServer.SendLn(client, '-;AC;-;BLOCKS;CHANGE;'+IntToStr(blkid));
 end;
 
 procedure TACBlk.OnClientDisconnect(client: TIdContext);

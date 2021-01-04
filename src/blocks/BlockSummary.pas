@@ -5,7 +5,7 @@ unit BlockSummary;
 interface
 
 uses IniFiles, Block, Menus, SysUtils, Classes, IdContext, Generics.Collections,
-     Area, TCPServerOR;
+     Area, TCPServerPanel;
 
 type
  TBlkSummarySettings = record
@@ -193,7 +193,7 @@ procedure TBlkSummary.PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
                             Button: TPanelButton; rights: TAreaRights;
                             params: string = '');
 begin
- ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea),
+ PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea),
                   Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
@@ -210,7 +210,7 @@ begin
   begin
    Blocks.GetBlkByID(Self.m_settings.crossings[itemindex-2], crossing);
    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
-     ORTCPServer.Menu(SenderPnl, crossing, SenderOR as TArea,
+     PanelServer.Menu(SenderPnl, crossing, SenderOR as TArea,
                       crossing.ShowPanelMenu(SenderPnl, SenderOR, TAreaRights.write));
   end;
 end;

@@ -24,7 +24,7 @@ var
 
 implementation
 
-uses fMain, TechnologieRCS, BlockDb, AreaDb, TCPServerOR, TechnologieTrakce;
+uses fMain, TechnologieRCS, BlockDb, AreaDb, TCPServerPanel, TechnologieTrakce;
 
 
 function TGetFunctions.CanClose(): TCloseInfo;
@@ -32,7 +32,7 @@ begin
   if (SystemData.Status <> TSystemStatus.null) then Exit(TCloseInfo.ci_system_changing);
   if (GetFunctions.GetSystemStart) then Exit(TCloseInfo.ci_system_started);
   if (TrakceI.ConnectedSafe()) then Exit(TCloseInfo.ci_trakce);
-  if (ORTCPServer.openned) then Exit(TCloseInfo.ci_server);
+  if (PanelServer.openned) then Exit(TCloseInfo.ci_server);
 
   try
     if ((RCSi.ready) and (RCSi.Opened)) then Exit(TCloseInfo.ci_rcs);
@@ -48,7 +48,7 @@ end;
 function TGetFunctions.GetSystemStart: Boolean;
  begin
   try
-    Result := ((TrakceI.ConnectedSafe()) and (RCSi.ready) and (ORTCPServer.openned) and (RCSi.NoExStarted));
+    Result := ((TrakceI.ConnectedSafe()) and (RCSi.ready) and (PanelServer.openned) and (RCSi.NoExStarted));
   except
     Result := false;
   end;

@@ -89,7 +89,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, BlockTrack, Area, TCPServerOR, BlockRailway,
+uses Logging, GetSystems, BlockTrack, Area, TCPServerPanel, BlockRailway,
       DataJC, AreaStack, AreaDb, TMultiJCDatabase, appEv, BlockTurnout,
       BlockRailwayTrack;
 
@@ -314,7 +314,7 @@ begin
      if (MultiJCDb.Activate(StartBlk, EndBlk, SenderPnl, SenderOR, abAfter)) then Exit();
 
    (EndBlk as TBlkTrack).jcEnd := TZaver.no;
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závěrové tabulce');
+   PanelServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závěrové tabulce');
    writelog('Nelze postavit JC -  nenalezena v zaverove tabulce', WR_VC);
   end;
  end;

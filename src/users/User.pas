@@ -80,7 +80,7 @@ type
 
 implementation
 
-uses AreaDb, TCPServerOR, UserDb, ownStrUtils;
+uses AreaDb, TCPServerPanel, UserDb, ownStrUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -280,7 +280,7 @@ procedure TUser.SetReg(state: Boolean);
 begin
  if (Self.freg = state) then Exit();
  Self.freg := state;
- if (not Self.freg) then ORTCPServer.DisconnectRegulatorUser(self);
+ if (not Self.freg) then PanelServer.DisconnectRegulatorUser(self);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

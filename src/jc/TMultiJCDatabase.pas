@@ -60,7 +60,7 @@ var
 
 implementation
 
-uses Logging, GetSystems, BlockDb, BlockTrack, Area, TCPServerOR,
+uses Logging, GetSystems, BlockDb, BlockTrack, Area, TCPServerPanel,
       DataMultiJC, AreaStack, AreaDb, TechnologieJC, TJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////

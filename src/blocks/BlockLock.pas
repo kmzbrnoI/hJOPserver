@@ -96,7 +96,7 @@ type
 implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert,
-    TJCDatabase, fMain, TCPServerOR, TrainDb, THVDatabase, BlockTurnout;
+    TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout;
 
 constructor TBlkLock.Create(index: Integer);
 begin
@@ -181,7 +181,7 @@ end;
 
 procedure TBlkLock.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Note(SenderPnl, Self, Self.note);
+ PanelServer.Note(SenderPnl, Self, Self.note);
 end;
 
 procedure TBlkLock.MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -191,7 +191,7 @@ end;
 
 procedure TBlkLock.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TArea), 'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
+ PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TArea), 'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkLock.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
@@ -230,7 +230,7 @@ end;
 procedure TBlkLock.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  if (Self.m_state.enabled) then
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

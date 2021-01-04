@@ -105,7 +105,7 @@ type
 
 implementation
 
-uses AreaDb, TCPServerOR, ownConvert;
+uses AreaDb, TCPServerPanel, ownConvert;
 
 constructor TBlkIO.Create(index: Integer);
 begin
@@ -323,7 +323,7 @@ procedure TBlkIO.PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
     Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  if (Button = TPanelButton.F2) then
-   ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
  if (Button = TPanelButton.ENTER) then begin
    if (Self.enabled) then
@@ -331,17 +331,17 @@ begin
      try
        Self.Activate();
      except
-       ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se aktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
+       PanelServer.BottomError(SenderPnl, 'Nepodaøilo se aktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
      end
     end else
-     ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+     PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end else if (Button = TPanelButton.ESCAPE) then begin
    if (Self.enabled) then
     begin
      try
        Self.Deactivate();
      except
-       ORTCPServer.BottomError(SenderPnl, 'Nepodaøilo se deaktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
+       PanelServer.BottomError(SenderPnl, 'Nepodaøilo se deaktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
      end
     end;
  end;
@@ -480,7 +480,7 @@ end;
 
 procedure TBlkIO.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Note(SenderPnl, Self, Self.note);
+ PanelServer.Note(SenderPnl, Self, Self.note);
 end;
 
 procedure TBlkIO.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -498,7 +498,7 @@ begin
  try
    RCSi.SetInput(Self.m_settings.RCSinput, ownConvert.BoolToInt(target));
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TArea(SenderOR).shortName, 'SIMULACE');
+   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TArea(SenderOR).shortName, 'SIMULACE');
  end;
 end;
 

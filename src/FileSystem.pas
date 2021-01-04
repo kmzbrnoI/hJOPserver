@@ -47,7 +47,7 @@ implementation
 
 uses fSettings, fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
      TechnologieRCS, AreaDb, BlockDb, BoosterDb, SnadnSpusteni, THVDatabase,
-     TCPServerPT, Logging, TCPServerOR, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
+     TCPServerPT, Logging, TCPServerPanel, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
      DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce,
      TechnologieTrakce, TJCDatabase;
 
@@ -367,7 +367,7 @@ var str: string;
     FuncsFyznam.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
     F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
 
-    ORTCPServer.port := ini.ReadInteger('PanelServer', 'port', _PANEL_DEFAULT_PORT);
+    PanelServer.port := ini.ReadInteger('PanelServer', 'port', _DEFAULT_PORT);
 
     Self.LoadCfgPtServer(ini);
 

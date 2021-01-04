@@ -59,7 +59,7 @@ end;
 
 implementation
 
-uses TCPServerOR, Area, TCPAreasRef;
+uses TCPServerPanel, Area, TCPAreasRef;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -86,15 +86,15 @@ begin
 
  if (parsed[2] = 'REGISTER') then
   begin
-   if (not TTCPORsRef(Sender.Data).st_hlaseni.Contains(TArea(SenderOR))) then
+   if (not TPanelConnData(Sender.Data).st_hlaseni.Contains(TArea(SenderOR))) then
     begin
-     TTCPORsRef(Sender.Data).st_hlaseni.Add(TArea(SenderOR));
-     ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Sender.Data).index);
+     TPanelConnData(Sender.Data).st_hlaseni.Add(TArea(SenderOR));
+     PanelServer.GUIQueueLineToRefresh(TPanelConnData(Sender.Data).index);
     end;
 
    if (Self.m_clients.Contains(Sender)) then
     begin
-     ORTCPServer.SendLn(Sender, parsed[0] + ';SH;REGISTER-RESPONSE;ERR;ALREADY_REGISTERED');
+     PanelServer.SendLn(Sender, parsed[0] + ';SH;REGISTER-RESPONSE;ERR;ALREADY_REGISTERED');
      Exit();
     end;
 
@@ -102,18 +102,18 @@ begin
    if ((self.m_clients.Count = 1) and (Assigned(Self.OnAvailable))) then
      Self.OnAvailable(Self, true);
 
-   ORTCPServer.SendLn(Sender, parsed[0] + ';SH;REGISTER-RESPONSE;OK');
+   PanelServer.SendLn(Sender, parsed[0] + ';SH;REGISTER-RESPONSE;OK');
 
   end else if (parsed[2] = 'UNREGISTER') then begin
-   if (TTCPORsRef(Sender.Data).st_hlaseni.Contains(TArea(SenderOR))) then
+   if (TPanelConnData(Sender.Data).st_hlaseni.Contains(TArea(SenderOR))) then
     begin
-     TTCPORsRef(Sender.Data).st_hlaseni.Remove(TArea(SenderOR));
-     ORTCPServer.GUIQueueLineToRefresh(TTCPORsRef(Sender.Data).index);
+     TPanelConnData(Sender.Data).st_hlaseni.Remove(TArea(SenderOR));
+     PanelServer.GUIQueueLineToRefresh(TPanelConnData(Sender.Data).index);
     end;
 
    if (not Self.m_clients.Contains(Sender)) then
     begin
-     ORTCPServer.SendLn(Sender, parsed[0] + ';SH;UNREGISTER-RESPONSE;ERR;NOT_REGISTERED');
+     PanelServer.SendLn(Sender, parsed[0] + ';SH;UNREGISTER-RESPONSE;ERR;NOT_REGISTERED');
      Exit();
     end;
 
@@ -121,7 +121,7 @@ begin
    if ((Self.m_clients.Count = 0) and (Assigned(Self.OnAvailable))) then
      Self.OnAvailable(Self, false);
 
-   ORTCPServer.SendLn(Sender, parsed[0] + ';SH;UNREGISTER-RESPONSE;OK');
+   PanelServer.SendLn(Sender, parsed[0] + ';SH;UNREGISTER-RESPONSE;OK');
   end;
 end;
 
@@ -177,7 +177,7 @@ procedure TStanicniHlaseni.BroadcastData(data: string);
 var client: TIdContext;
 begin
  for client in Self.m_clients do
-   ORTCPServer.SendLn(client, Self.m_orid + ';SH;' + data);
+   PanelServer.SendLn(client, Self.m_orid + ';SH;' + data);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

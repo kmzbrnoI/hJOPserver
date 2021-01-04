@@ -365,7 +365,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
-     BlockCrossing, TJCDatabase, TCPServerOR, TrainDb, timeHelper,
+     BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper,
      THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1247,7 +1247,7 @@ var i: Integer;
       if (SenderPnl <> nil) then
        begin
         Self.step := _STEP_KRIT_BARIERY;
-        ORTCPServer.UPO(Self.m_state.senderPnl, upo, true, nil, Self.CritBarieraEsc, Self);
+        PanelServer.UPO(Self.m_state.senderPnl, upo, true, nil, Self.CritBarieraEsc, Self);
        end;
       Exit(1);
      end else begin
@@ -1267,7 +1267,7 @@ var i: Integer;
           upo.Add(item);
          end;
 
-        ORTCPServer.UPO(Self.m_state.senderPnl, upo, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
+        PanelServer.UPO(Self.m_state.senderPnl, upo, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
         Self.step := _STEP_POTVR_BARIERY;
         Exit(0);
        end;
@@ -1326,7 +1326,7 @@ begin
   begin
    Self.CancelActivating('Nelze postavit - kritické bariéry');
    if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-     ORTCPServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit '+Self.name+' - kritické bariéry',
+     PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit '+Self.name+' - kritické bariéry',
         (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
    barriers.Free();
    Exit();
@@ -1367,7 +1367,7 @@ begin
   begin
    Self.CancelActivating('Nelze postavit - kritické bariéry');
    if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-     ORTCPServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit '+Self.name+' - kritické bariéry',
+     PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit '+Self.name+' - kritické bariéry',
         (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
    barriers.Free();
    Exit();
@@ -1388,7 +1388,7 @@ begin
    Blocks.GetBlkByID(Self.m_data.signalId, signal);
 
    if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-     ORTCPServer.Potvr(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TArea),
+     PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TArea),
         'Jízdní cesta s potvrzením', TBlocks.GetBlksList(signal, Self.lastTrack), conditions);
 
    Self.step := _STEP_POTVR_SEKV;
@@ -1596,7 +1596,7 @@ var i, j: Integer;
           if (neprofil.occupied <> TTrackState.free) then
            begin
             if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-              ORTCPServer.BottomError(Self.m_state.senderPnl, 'Neuvolněn ' + neprofil.name,
+              PanelServer.BottomError(Self.m_state.senderPnl, 'Neuvolněn ' + neprofil.name,
                   (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
             Self.Log('Krok 14 : Neprofilovy usek '+neprofil.name+' neuvolnen!');
             Self.CancelActivating();
@@ -1788,7 +1788,7 @@ var i, j: Integer;
         if (signal.signal <> ncStuj) then
           signal.signal := ncStuj;
         if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-          ORTCPServer.BottomError(Self.m_state.senderPnl, 'Podmínky pro JC nesplněny!',
+          PanelServer.BottomError(Self.m_state.senderPnl, 'Podmínky pro JC nesplněny!',
             (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
         Self.Log('Krok 16 : Podmínky pro JC nesplněny!');
         Exit();
@@ -1953,7 +1953,7 @@ var i, j: Integer;
         str := 'Nouzová posunová cesta';
 
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-        ORTCPServer.Potvr(Self.m_state.senderPnl, Self.NC_PS_Callback, Self.m_state.senderOR as TArea,
+        PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.NC_PS_Callback, Self.m_state.senderOR as TArea,
           str, TBlocks.GetBlksList(signal, lastTrack), Self.BarriersToPotvrSekv(Self.m_state.ncBariery));
      end;
     Self.m_state.ncBarieryCntLast := Self.m_state.ncBariery.Count;
@@ -2117,14 +2117,14 @@ begin
  if (reason <> '') then
   begin
    if (Self.m_state.senderPnl <> nil) then
-     ORTCPServer.SendInfoMsg(Self.m_state.senderPnl, reason);
+     PanelServer.SendInfoMsg(Self.m_state.senderPnl, reason);
    Self.Log('Nelze postavit - '+reason);
   end;
 
  case (Self.step) of
     _NC_STEP_BARIERA_UPDATE: begin
       if (Self.m_state.senderPnl <> nil) then
-        ORTCPServer.PotvrClose(Self.m_state.senderPnl, reason);
+        PanelServer.CSClose(Self.m_state.senderPnl, reason);
     end   
  end;//case Self.krok
 
@@ -2145,7 +2145,7 @@ begin
  Self.CancelVBs();
  Self.CancelTrackEnd();
  if (Self.m_state.senderPnl <> nil) then
-   ORTCPServer.CancelUPO(Self.m_state.senderPnl, Self);
+   PanelServer.CancelUPO(Self.m_state.senderPnl, Self);
  if (Self.m_state.from_stack <> nil) then
     if (stack_remove) then (Self.m_state.from_stack as TORStack).RemoveJC(Self)
   else
@@ -2231,7 +2231,7 @@ var signal: TBlk;
      begin
       (signal as TBlkSignal).AB := false; // automaticky zrusi AB
       if (Self.m_state.senderPnl <> nil) then
-        ORTCPServer.BottomError(Self.m_state.senderPnl, 'Zrušena AB '+signal.name,
+        PanelServer.BottomError(Self.m_state.senderPnl, 'Zrušena AB '+signal.name,
           (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
      end;
    end;
@@ -2350,7 +2350,7 @@ begin
          if ((signal.targetSignal > ncStuj) and (signal.DNjc = Self)) then
           begin
            if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-             ORTCPServer.BottomError(Self.m_state.senderPnl, 'Chyba povolovací návěsti '+signal.name,
+             PanelServer.BottomError(Self.m_state.senderPnl, 'Chyba povolovací návěsti '+signal.name,
                 (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
            Self.CancelWithoutTrackRelease();
           end;
@@ -2542,7 +2542,7 @@ begin
    if (((signal as TBlkSignal).signal > ncStuj) and ((signal as TBlkSignal).DNjc = Self)) then
     begin
      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-       ORTCPServer.BottomError(Self.m_state.senderPnl, 'Chyba povolovací návěsti '+signal.name,
+       PanelServer.BottomError(Self.m_state.senderPnl, 'Chyba povolovací návěsti '+signal.name,
             (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
      Self.CancelWithoutTrackRelease();
     end;
@@ -2911,7 +2911,7 @@ begin
    case (Self.step) of
     _STEP_POTVR_SEKV: begin
      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-       ORTCPServer.PotvrClose(Self.m_state.senderPnl);
+       PanelServer.CSClose(Self.m_state.senderPnl);
     end;
     _JC_STEP_CEKANI_PREJEZDY: begin
       // prejezd(y) neuzavren
@@ -2920,14 +2920,14 @@ begin
         Blocks.GetBlkByID(crossingZav.crossingId, TBlk(crossing));
         if (crossing.state <> TBlkCrossingBasicState.closed) then
           if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-            ORTCPServer.BottomError(Self.m_state.senderPnl, 'Neuzavřen '+crossing.name,
+            PanelServer.BottomError(Self.m_state.senderPnl, 'Neuzavřen '+crossing.name,
               (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
        end;//for i
     end;//case 13
 
    else
      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-       ORTCPServer.BottomError(Self.m_state.senderPnl, 'Timeout '+Self.name,
+       PanelServer.BottomError(Self.m_state.senderPnl, 'Timeout '+Self.name,
          (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
    end;//else case
 
@@ -3481,7 +3481,7 @@ begin
  if (not Self.activating) then Exit();
 
  if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-   ORTCPServer.BottomError(Self.m_state.senderPnl,
+   PanelServer.BottomError(Self.m_state.senderPnl,
      'Nepřestavena '+(Sender as TBlkTurnout).name + ': ' + TBlkTurnout.SetErrorToMsg(error),
      (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
  Self.CancelActivating('', true);
@@ -3555,7 +3555,7 @@ begin
  Blocks.GetBlkByID(Self.m_data.signalId, signal);
 
  if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-   ORTCPServer.BottomError(Self.m_state.senderPnl, 'Návěstidlo '+signal.name + ' nepostaveno',
+   PanelServer.BottomError(Self.m_state.senderPnl, 'Návěstidlo '+signal.name + ' nepostaveno',
      (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
  Self.CancelActivating('', true);
 end;

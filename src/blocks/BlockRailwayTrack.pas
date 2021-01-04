@@ -234,7 +234,7 @@ type
 
 implementation
 
-uses TrainDb, BlockDb, TCPServerOR, BlockRailway, BlockSignal, TJCDatabase,
+uses TrainDb, BlockDb, TCPServerPanel, BlockRailway, BlockSignal, TJCDatabase,
      logging, TechnologieJC, ownStrUtils, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -627,18 +627,18 @@ procedure TBlkRT.PanelClick(SenderPnl: TIdContext; SenderOR: TObject;
 var Blk: TBlk;
 begin
  case (Button) of
-  F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+  F2: PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
   ENTER : begin
     if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
     if (not Self.MoveLok(SenderPnl, SenderOR, 0)) then // predpokladame, ze TU muze mit max. 1 soupravu
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+      PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
 
   F1: begin
     Blk := Blocks.GetBlkSignalSelected((SenderOR as TArea).id);
     if (Blk = nil) then
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
+      PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
     else
       Self.MenuVBClick(SenderPnl, SenderOR);
   end;
@@ -779,7 +779,7 @@ begin
      podm.Add(TArea.GetPSPodminka(Self, 'Smazání soupravy '+Self.train.name+' z kolejiště'));
   end;
 
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TArea,
+ PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TArea,
                    'Zrušení poruchy blokové podmínky', TBlocks.GetBlksList(Self), podm);
 end;
 

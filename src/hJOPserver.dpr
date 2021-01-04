@@ -55,7 +55,7 @@ uses
   THVDatabase in 'hv\THVDatabase.pas',
   THnaciVozidlo in 'hv\THnaciVozidlo.pas',
   Logging in 'Logging.pas',
-  TCPServerOR in 'net\TCPServerOR.pas',
+  TCPServerPanel in 'net\TCPServerPanel.pas',
   DataRCS in 'tables\DataRCS.pas',
   DataHV in 'tables\DataHV.pas',
   DataJC in 'tables\DataJC.pas',

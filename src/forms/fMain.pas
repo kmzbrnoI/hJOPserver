@@ -491,7 +491,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, AreaDb, BlockDb,
      Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area,
      SnadnSpusteni, BlockSummary, BlockCrossing, TJCDatabase, Logging,
-     TCPServerOR, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
+     TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
      fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkCrossing,
      fBlkSignal, fBlkRailway, BlockLinker, TrainDb, DataSpr, DataUsers, fUserEdit, UserDb,
      fBlkTurnoutState, fBlkRailwayState, BlockRailway, ModelovyCas, fBlkLock,
@@ -802,7 +802,7 @@ begin
   if ((F_Main.Showing) and (F_Main.PC_1.ActivePage = F_Main.TS_Bloky)) then
     BlokyTableData.UpdateTable();
 
-  ORTCPServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
+  PanelServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
 
   if (SystemData.Status = stopping) then
    Self.A_RCS_CloseExecute(nil);
@@ -879,7 +879,7 @@ begin
  Self.LogStatus('RCS: uzavřeno');
  SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
- ORTCPServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
+ PanelServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
 
  if (SystemData.Status = stopping) then
   begin
@@ -1348,7 +1348,7 @@ begin
 
  // no clinets shoudl be connected
  // when disconnect called with clients connected, fatal error happened
- ORTCPServer.BroadcastBottomError('Výpadek systému řízení trakce, ztráta kontroly nad jízdou!', 'TECHNOLOGIE');
+ PanelServer.BroadcastBottomError('Výpadek systému řízení trakce, ztráta kontroly nad jízdou!', 'TECHNOLOGIE');
 
  if (SystemData.Status = stopping) then
    Self.A_RCS_StopExecute(Self);
@@ -1401,7 +1401,7 @@ begin
    if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
      Self.A_Locos_AcquireExecute(nil);
 
-   ORTCPServer.DCCStart();
+   PanelServer.DCCStart();
   end else begin
 
    Areas.BroadcastPlaySound(_SND_CHYBA, false, TAreaRights.write);
@@ -1418,7 +1418,7 @@ begin
    if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
      Self.A_DCC_GoExecute(Self);
 
-   ORTCPServer.DCCStop();
+   PanelServer.DCCStop();
   end;//else state
 end;
 
@@ -1504,7 +1504,7 @@ begin
  if (PC_1.ActivePage = TS_Soupravy)   then TrainTableData.UpdateTable();
  if (PC_1.ActivePage = F_Main.TS_HV)  then HVTableData.UpdateTable();
  if (PC_1.ActivePage = TS_Stanice)    then ORsTableData.UpdateTable(true);
- if (PC_1.ActivePage = TS_Technologie) then ORTCPServer.GUIRefreshTable(); 
+ if (PC_1.ActivePage = TS_Technologie) then PanelServer.GUIRefreshTable();
 end;
 
 procedure TF_Main.PM_BlokyPopup(Sender: TObject);
@@ -1592,7 +1592,7 @@ var ci: TCloseInfo;
       writelog('Pokus o zavření okna bez vypnutí panel serveru', WR_ERROR);
       if (Application.MessageBox('PanelServer stále běží, vypnout?',
           'Nelze ukončit program', MB_YESNO OR MB_ICONWARNING) = mrYes) then
-       ORTCPServer.Stop();
+       PanelServer.Stop();
     end;
 
     TCloseInfo.ci_trakce : begin
@@ -1715,7 +1715,7 @@ begin
        // windows is going to sleep -> disconnect all devices
        if (TrakceI.ConnectedSafe()) then
         begin
-         ORTCPServer.Stop();
+         PanelServer.Stop();
          try
            TrakceI.EmergencyStop();
            TrakceI.Disconnect();
@@ -1754,7 +1754,7 @@ begin
   begin
    if (TrakceI.ConnectedSafe()) then
     begin
-     ORTCPServer.Stop();
+     PanelServer.Stop();
      try
        TrakceI.EmergencyStop();
        TrakceI.Disconnect();
@@ -1785,7 +1785,7 @@ begin
    Blocks.Enable();
 
  try
-   ORTCPServer.Start();
+   PanelServer.Start();
    Self.A_PanelServer_Start.Enabled := false;
    Self.A_PanelServer_Stop.Enabled  := true;
    Self.UpdateSystemButtons();
@@ -1802,7 +1802,7 @@ end;
 
 procedure TF_Main.A_PanelServer_StopExecute(Sender: TObject);
 begin
- ORTCPServer.Stop();
+ PanelServer.Stop();
 
  Self.A_PanelServer_Start.Enabled := true;
  Self.A_PanelServer_Stop.Enabled  := false;
@@ -2067,7 +2067,7 @@ begin
    if (Self.M_funcsVyznam.Lines[i] <> '') then
      data := data + '{' + Self.M_funcsVyznam.Lines[i] + '};';
  FuncsFyznam.ParseWholeList(data);
- ORTCPServer.BroadcastFuncsVyznam();
+ PanelServer.BroadcastFuncsDescription();
 end;
 
 procedure TF_Main.B_ClearStatsClick(Sender: TObject);
@@ -2347,7 +2347,7 @@ begin
      if (F_Main.PC_1.ActivePage = F_Main.TS_VC) then JCTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_MultiJC) then MultiJCTableData.UpdateTable();
      if (F_Main.PC_1.ActivePage = F_Main.TS_Stanice) then ORsTableData.UpdateTable();
-     if (F_Main.PC_1.ActivePage = F_Main.TS_Technologie) then ORTCPServer.GUIRefreshFromQueue();
+     if (F_Main.PC_1.ActivePage = F_Main.TS_Technologie) then PanelServer.GUIRefreshFromQueue();
 
      ABTableData.Update();
     end;
@@ -2437,10 +2437,10 @@ end;
 
 procedure TF_Main.MI_DisconnectClick(Sender: TObject);
 begin
- if (ORTCPServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil) then
+ if (PanelServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil) then
   begin
    try
-     ORTCPServer.DisconnectClient(ORTCPServer.GetClient(Self.LV_Clients.ItemIndex).conn);
+     PanelServer.DisconnectClient(PanelServer.GetClient(Self.LV_Clients.ItemIndex).connection);
    except
      on E: Exception do
        Application.MessageBox(PChar('Výjimka při odpojování - '+e.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
@@ -2616,7 +2616,7 @@ procedure TF_Main.OnStart();
 
   Self.PC_1.ActivePage := TS_Technologie;
 
-  ORTCPServer.GUIInitTable();
+  PanelServer.GUIInitTable();
   ModCas.UpdateGUIColors();
 
   Self.Visible := true;
@@ -2694,7 +2694,7 @@ procedure TF_Main.PM_ClientsPopup(Sender: TObject);
 var i: Integer;
 begin
  for i := 0 to F_Main.PM_Clients.Items.Count-1 do
-  F_Main.PM_Clients.Items[i].Enabled := (F_Main.LV_Clients.Selected <> nil) and (ORTCPServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil);
+  F_Main.PM_Clients.Items[i].Enabled := (F_Main.LV_Clients.Selected <> nil) and (PanelServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil);
 end;
 
 procedure TF_Main.PM_ConsoleClick(Sender: TObject);
@@ -3172,10 +3172,10 @@ end;
 procedure TF_Main.UpdateSystemButtons();
 begin
  Self.A_System_Start.Enabled := ((not RCSi.Started) or (not TrakceI.ConnectedSafe())
-    or (Self.A_Locos_Acquire.Enabled) or (not ORTCPServer.openned) or (not Blocks.enabled) or
+    or (Self.A_Locos_Acquire.Enabled) or (not PanelServer.openned) or (not Blocks.enabled) or
        ((GlobalConfig.ptAutoStart) and (not PtServer.openned)));
  Self.A_System_Stop.Enabled := (RCSi.Opened) or (TrakceI.ConnectedSafe())
-    or (ORTCPServer.openned) or (PtServer.openned);
+    or (PanelServer.openned) or (PtServer.openned);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

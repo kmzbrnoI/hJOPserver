@@ -77,7 +77,7 @@ var
 
 implementation
 
-uses TCPServerOR, ownStrUtils, Logging, USock;
+uses TCPServerPanel, ownStrUtils, Logging, USock;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -150,9 +150,9 @@ begin
  if (ABinding.IP = '0.0.0.0') then Exit();
 
  msg := 'hJOP;' + _DISC_PROTOCOL_VERSION + ';server;' + Self.name + ';' +
-        ABinding.IP + ';' + IntToStr(ORTCPServer.port) + ';';
+        ABinding.IP + ';' + IntToStr(PanelServer.port) + ';';
 
- case (ORTCPServer.openned) of
+ case (PanelServer.openned) of
    false : msg := msg + 'off;';
    true  : msg := msg + 'on;';
  end;

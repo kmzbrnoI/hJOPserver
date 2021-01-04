@@ -114,7 +114,7 @@ type
 
 implementation
 
-uses Area, TCPServerOR, Logging, TechnologieJC, Block, BlockDb,
+uses Area, TCPServerPanel, Logging, TechnologieJC, Block, BlockDb,
      BlockLinker, BlockRailway, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -207,14 +207,14 @@ begin
  i := Self.FindCmdIndexById(id);
  if (i = -1) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s tímto ID v zásobníku neexistuje!');
+   PanelServer.SendInfoMsg(SenderPnl, 'Povel s tímto ID v zásobníku neexistuje!');
    Exit();
   end;
 
  try
   if ((i = 0) and (Self.m_stack[i].ClassType = TORStackCmdJC) and (((Self.m_stack[i] as TORSTackCmdJC).JC as TJC).activating)) then
    begin
-    ORTCPServer.SendInfoMsg(SenderPnl, 'Nelze smazat JC, která se staví');
+    PanelServer.SendInfoMsg(SenderPnl, 'Nelze smazat JC, která se staví');
     Exit();
    end;
  except
@@ -237,7 +237,7 @@ begin
  i := Self.FindCmdIndexById(fromId);
  if (i = -1) then
   begin
-   ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s výchozím ID v zásobníku neexistuje!');
+   PanelServer.SendInfoMsg(SenderPnl, 'Povel s výchozím ID v zásobníku neexistuje!');
    Exit();
   end;
 
@@ -252,7 +252,7 @@ begin
      j := Self.FindCmdIndexById(toId);
      if (j = -1) then
       begin
-       ORTCPServer.SendInfoMsg(SenderPnl, 'Povel s cílovým ID v zásobníku neexistuje!');
+       PanelServer.SendInfoMsg(SenderPnl, 'Povel s cílovým ID v zásobníku neexistuje!');
        Self.m_stack.Insert(i, tmp);
        Exit();
       end;
@@ -331,7 +331,7 @@ begin
   Self.AddCmd(cmd);
  except
   on E: Exception do
-    ORTCPServer.SendInfoMsg(SenderPnl, E.Message);
+    PanelServer.SendInfoMsg(SenderPnl, E.Message);
  end;
 end;
 
@@ -346,7 +346,7 @@ begin
   Self.AddCmd(cmd);
  except
   on E: Exception do
-    ORTCPServer.SendInfoMsg(SenderPnl, E.Message);
+    PanelServer.SendInfoMsg(SenderPnl, E.Message);
  end;
 end;
 
@@ -361,7 +361,7 @@ begin
   Self.AddCmd(cmd);
  except
   on E: Exception do
-    ORTCPServer.SendInfoMsg(SenderPnl, E.Message);
+    PanelServer.SendInfoMsg(SenderPnl, E.Message);
  end;
 end;
 
@@ -534,7 +534,7 @@ end;
 // format dat: {id|name}{id|name} ...
 procedure TORStack.SendList(connection: TIdContext);
 begin
- ORTCPServer.SendLn(connection, (Self.m_area as TArea).id+';ZAS;LIST;'+Self.GetList());
+ PanelServer.SendLn(connection, (Self.m_area as TArea).id+';ZAS;LIST;'+Self.GetList());
 end;
 
 function TORStack.GetList(): string;
@@ -569,17 +569,17 @@ end;
 
 procedure TORStack.NewConnection(SenderPnl:TIdContext);
 begin
- ORTCPServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;INDEX;'+IntToStr(Self.m_index));
+ PanelServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;INDEX;'+IntToStr(Self.m_index));
  case (Self.mode) of
-  TORStackMode.PV : ORTCPServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;PV');
-  TORStackMode.VZ : ORTCPServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;VZ');
+  TORStackMode.PV : PanelServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;PV');
+  TORStackMode.VZ : PanelServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;VZ');
  end;
- ORTCPServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;HINT;'+Self.hint);
+ PanelServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;HINT;'+Self.hint);
 
  if (Self.UPOenabled) then
-  ORTCPServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;UPO;1')
+  PanelServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;UPO;1')
  else
-  ORTCPServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;UPO;0');
+  PanelServer.SendLn(SenderPnl, (Self.m_area as TArea).id+';ZAS;UPO;0');
 
  Self.SendList(SenderPnl);
 end;

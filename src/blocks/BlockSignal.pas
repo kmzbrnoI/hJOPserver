@@ -276,7 +276,7 @@ type
 
 implementation
 
-uses BlockDb, BlockTrack, TJCDatabase, TCPServerOR, Graphics, BlockGroupSignal,
+uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSignal,
      GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils,
      BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
      predvidanyOdjezd, ownConvert;
@@ -941,7 +941,7 @@ end;
 
 procedure TBlkSignal.MenuPPNClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea, 'Prodloužení doby přivolávací návěsti',
+ PanelServer.ConfirmationSequence(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea, 'Prodloužení doby přivolávací návěsti',
     TBlocks.GetBlksList(Self), nil);
 end;
 
@@ -959,7 +959,7 @@ begin
      conditions.Add(TArea.GetPSPodminka(blk, 'Rušení NZ'));
   end;
 
- ORTCPServer.Potvr(SenderPnl, Self.RNZPotvrSekv, SenderOR as TArea, 'Zrušení nouzových závěrů po nouzové cestě',
+ PanelServer.ConfirmationSequence(SenderPnl, Self.RNZPotvrSekv, SenderOR as TArea, 'Zrušení nouzových závěrů po nouzové cestě',
     TBlocks.GetBlksList(Self), conditions);
 end;
 
@@ -970,7 +970,7 @@ begin
   begin
    for area in Self.areas do
      area.ORDKClickClient();
-   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea, 'Zapnutí přivolávací návěsti',
+   PanelServer.ConfirmationSequence(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea, 'Zapnutí přivolávací návěsti',
                      TBlocks.GetBlksList(Self), nil);
   end;
 end;
@@ -989,7 +989,7 @@ begin
        RCSi.SetInput(TBlkIR(Blk).GetSettings().RCSAddrs[0].board, TBlkIR(Blk).GetSettings().RCSAddrs[0].port, 0);
     end;
  except
-   ORTCPServer.BottomError(SenderPnl, 'Nepodařilo se nastavit stav IR čidla!', TArea(SenderOR).ShortName, 'SIMULACE');
+   PanelServer.BottomError(SenderPnl, 'Nepodařilo se nastavit stav IR čidla!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -998,7 +998,7 @@ end;
 procedure TBlkSignal.PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  case (Button) of
-  F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+  F2: PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
   ENTER: begin
     if (((((Self.DNjc = nil) or (Self.DNjc.destroyEndBlock >= 1)) and
@@ -1006,7 +1006,7 @@ begin
          or (TArea(SenderOR).stack.mode = VZ)) and (JCDb.IsAnyVC(Self))) then begin
       if ((not Self.m_settings.locked) and (not Self.autoblok)) then Self.MenuVCStartClick(SenderPnl, SenderOR);
     end else
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+      PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
 
   F1: begin
@@ -1015,7 +1015,7 @@ begin
          or ((SenderOR as TArea).stack.mode = VZ)) and (JCDb.IsAnyPC(Self))) then begin
       if ((not Self.m_settings.locked) and (not Self.autoblok)) then Self.MenuPCStartClick(SenderPnl, SenderOR);
     end else
-      ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+      PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
  end;//case
 end;
@@ -1493,11 +1493,11 @@ begin
   begin
    for area in Self.areas do
      area.ORDKClickClient();
-   ORTCPServer.Potvr(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea, 'Zapnutí přivolávací návěsti',
+   PanelServer.ConfirmationSequence(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea, 'Zapnutí přivolávací návěsti',
                      TBlocks.GetBlksList(Self), nil);
   end else begin
    if (Button = TPanelButton.F2) then
-     ORTCPServer.Menu(SenderPnl, Self, TArea(SenderOR), '$'+TArea(SenderOR).Name + ',-,' + 'KC');
+     PanelServer.Menu(SenderPnl, Self, TArea(SenderOR), '$'+TArea(SenderOR).Name + ',-,' + 'KC');
   end;
 end;
 

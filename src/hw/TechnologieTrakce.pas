@@ -182,7 +182,7 @@ var
 implementation
 
 uses fMain, TechnologieRCS, fRegulator, TrainDb, GetSystems, THVDatabase, DataHV,
-    BlockDb, RegulatorTCP, TCPServerOR;
+    BlockDb, RegulatorTCP, TCPServerPanel;
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -89,7 +89,7 @@ type
 
 implementation
 
-uses TCPServerOR, ownConvert, Graphics, PTUtils;
+uses TCPServerPanel, ownConvert, Graphics, PTUtils;
 
 constructor TBlkDisconnector.Create(index: Integer);
 begin
@@ -210,11 +210,11 @@ end;
 procedure TBlkDisconnector.PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  case (Button) of
-   F2: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+   F2: PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 
    ENTER: begin
      case (Self.state) of
-       TBlkDiscBasicState.disabled: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+       TBlkDiscBasicState.disabled: PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
        TBlkDiscBasicState.not_selected: Self.Mount();
        TBlkDiscBasicState.mounting: Self.Activate();
        TBlkDiscBasicState.active: Self.Prolong();
@@ -370,7 +370,7 @@ end;
 
 procedure TBlkDisconnector.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Note(SenderPnl, Self, Self.fullState.note);
+ PanelServer.Note(SenderPnl, Self, Self.fullState.note);
 end;
 
 procedure TBlkDisconnector.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);

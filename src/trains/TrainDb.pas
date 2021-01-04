@@ -57,7 +57,7 @@ var
 implementation
 
 uses Logging, DataSpr, BlockDb, BlockTrack, DataHV, appEv, Block,
-     TCPServerOR, PTUtils;
+     TCPServerPanel, PTUtils;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -239,7 +239,7 @@ begin
  if (not Assigned(Self.trains[index])) then Exit();
 
  Blocks.RemoveTrain(Self.trains[index]);
- ORTCPServer.OnRemoveTrain(Self.trains[index]);
+ PanelServer.OnRemoveTrain(Self.trains[index]);
  FreeAndNil(Self.trains[index]);
  TrainTableData.reload := true;
 end;

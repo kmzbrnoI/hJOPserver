@@ -193,7 +193,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, Area, BlockSignal, Logging,
-    TJCDatabase, fMain, TCPServerOR, BlockTrack, BlockLinker, TrainDb, THVDatabase,
+    TJCDatabase, fMain, TCPServerPanel, BlockTrack, BlockLinker, TrainDb, THVDatabase,
     BlockRailwayTrack, appEv, timeHelper, ownConvert, Graphics;
 
 constructor TBlkRailway.Create(index: Integer);

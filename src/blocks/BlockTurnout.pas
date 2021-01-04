@@ -260,7 +260,7 @@ type
 implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
-      TCPServerOR, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
+      TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
       IfThenElse;
 
 constructor TBlkTurnout.Create(index: Integer);
@@ -576,7 +576,7 @@ end;
 procedure TBlkTurnout.SetLockout(Sender: TIDCOntext; lockout: string);
 begin
  if ((self.m_state.lockout <> '') and (lockout = '')) then
-   ORTCPServer.Potvr(Sender, Self.ORVylukaNull, Self.m_areas[0], 'Zrušení výluky', TBlocks.GetBlksList(Self), nil)
+   PanelServer.ConfirmationSequence(Sender, Self.ORVylukaNull, Self.m_areas[0], 'Zrušení výluky', TBlocks.GetBlksList(Self), nil)
  else
    Self.lockout := lockout;
 end;
@@ -949,7 +949,7 @@ begin
  if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPOPlusClick, nil)
  else begin
-   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
    Self.UPOPlusClick(SenderPnl);
  end;
 end;
@@ -959,7 +959,7 @@ begin
  if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPOMinusClick, nil)
  else begin
-   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
    Self.UPOMinusClick(SenderPnl);
  end;
 end;
@@ -969,7 +969,7 @@ begin
  if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPONSPlusClick, nil)
  else begin
-   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
    Self.UPONSPlusClick(SenderPnl);
  end;
 end;
@@ -979,7 +979,7 @@ begin
  if ((Self.note <> '') or (Self.lockout <> '')) then
    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPONSMinusClick, nil)
  else begin
-   TTCPOrsRef(SenderPnl.Data).UPO_ref := SenderOR;
+   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
    Self.UPONSMinusClick(SenderPnl);
  end;
 end;
@@ -987,7 +987,7 @@ end;
 procedure TBlkTurnout.UPOPlusClick(Sender: TObject);
 begin
  Self.m_state.movingPanel := TIdContext(Sender);
- Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
+ Self.m_state.movingOR := TPanelConnData(TIdContext(Sender).Data).UPO_ref;
 
  Self.SetPosition(TTurnoutPosition.plus, false, false, nil, Self.PanelMovingErr);
 end;
@@ -995,7 +995,7 @@ end;
 procedure TBlkTurnout.UPOMinusClick(Sender: TObject);
 begin
  Self.m_state.movingPanel := TIdContext(Sender);
- Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
+ Self.m_state.movingOR := TPanelConnData(TIdContext(Sender).Data).UPO_ref;
 
  Self.SetPosition(TTurnoutPosition.minus, false, false, nil, Self.PanelMovingErr);
 end;
@@ -1004,10 +1004,10 @@ procedure TBlkTurnout.UPONSPlusClick(Sender: TObject);
 var Blk: TBlk;
 begin
  Self.m_state.movingPanel := TIdContext(Sender);
- Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
+ Self.m_state.movingOR := TPanelConnData(TIdContext(Sender).Data).UPO_ref;
 
  Blocks.GetBlkByID(Self.trackID, Blk);
- ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSPlus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TArea),
+ PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelPotvrSekvNSPlus, (TPanelConnData(TIdContext(Sender).Data).UPO_ref as TArea),
                     'Nouzové stavění do polohy plus', TBlocks.GetBlksList(Self),
                     TArea.GetPSPodminky(TArea.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
@@ -1016,22 +1016,22 @@ procedure TBlkTurnout.UPONSMinusClick(Sender: TObject);
 var Blk: TBlk;
 begin
  Self.m_state.movingPanel := TIdContext(Sender);
- Self.m_state.movingOR := TTCPORsRef(TIdContext(Sender).Data).UPO_ref;
+ Self.m_state.movingOR := TPanelConnData(TIdContext(Sender).Data).UPO_ref;
 
  Blocks.GetBlkByID(Self.trackID, Blk);
- ORTCPServer.Potvr(TIdContext(Sender), Self.PanelPotvrSekvNSMinus, (TTCPORsRef(TIdContext(Sender).Data).UPO_ref as TArea),
+ PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelPotvrSekvNSMinus, (TPanelConnData(TIdContext(Sender).Data).UPO_ref as TArea),
                     'Nouzové stavění do polohy mínus', TBlocks.GetBlksList(Self),
                     TArea.GetPSPodminky(TArea.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
 end;
 
 procedure TBlkTurnout.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Note(SenderPnl, Self, Self.state.note);
+ PanelServer.Note(SenderPnl, Self, Self.state.note);
 end;
 
 procedure TBlkTurnout.MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Lockut(SenderPnl, Self, Self.state.lockout);
+ PanelServer.Lockut(SenderPnl, Self, Self.state.lockout);
 end;
 
 procedure TBlkTurnout.MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1043,7 +1043,7 @@ end;
 
 procedure TBlkTurnout.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- ORTCPServer.Potvr(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TArea),
+ PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TArea),
     'Zrušení nouzového závěru', TBlocks.GetBlksList(Self), nil);
 end;
 
@@ -1065,7 +1065,7 @@ begin
    RCSi.SetInput(Self.rcsInPlus, 1);
    RCSi.SetInput(Self.rcsInMinus, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
+   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -1075,7 +1075,7 @@ begin
    RCSi.SetInput(Self.rcsInPlus, 0);
    RCSi.SetInput(Self.rcsInMinus, 1);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
+   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -1085,7 +1085,7 @@ begin
    RCSi.SetInput(Self.rcsInPlus, 0);
    RCSi.SetInput(Self.rcsInMinus, 0);
  except
-   ORTCPServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
+   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
 end;
 
@@ -1147,7 +1147,7 @@ end;
 procedure TBlkTurnout.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
 begin
  case (Button) of
-  F1, F2, ENTER: ORTCPServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+  F1, F2, ENTER: PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
  end;//case
 end;
 
@@ -1271,7 +1271,7 @@ procedure TBlkTurnout.PanelMovingErr(Sender: TObject; error: TTurnoutSetError);
 begin
   if ((Assigned(Self.m_state.movingPanel)) and (Assigned(Self.m_state.movingOR))) then
    begin
-    ORTCPServer.BottomError(Self.m_state.movingPanel, 'Nepřestavena '+Self.m_globSettings.name + ': ' + Self.SetErrorToMsg(error),
+    PanelServer.BottomError(Self.m_state.movingPanel, 'Nepřestavena '+Self.m_globSettings.name + ': ' + Self.SetErrorToMsg(error),
       (Self.m_state.movingOR as TArea).ShortName, 'TECHNOLOGIE');
     Self.m_state.movingPanel := nil;
     Self.m_state.movingOR := nil;
@@ -1534,7 +1534,7 @@ begin
    upo.Add(item);
   end;
 
-  ORTCPServer.UPO(SenderPnl, upo, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+  PanelServer.UPO(SenderPnl, upo, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
  finally
    upo.Free();
  end;
