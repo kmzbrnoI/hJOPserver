@@ -95,7 +95,7 @@ type
  TBlkSignalSpnl = record
   symbolType: TBlkSignalSymbol;
   trackId: Integer;                                // ID useku pred navestidlem
-  direction: THVStanoviste;
+  direction: THVSite;
  end;
 
  TBlkSignal = class(TBlk)
@@ -227,7 +227,7 @@ type
 
     property symbolType: TBlkSignalSymbol read m_spnl.symbolType;
     property trackId: Integer read m_spnl.trackId write SetTrackId;
-    property direction: THVStanoviste read m_spnl.direction write m_spnl.direction;
+    property direction: THVSite read m_spnl.direction write m_spnl.direction;
 
     property signal: TBlkSignalCode read m_state.signal write mSetSignal;
     property targetSignal: TBlkSignalCode read GetTargetSignal;
@@ -236,7 +236,7 @@ type
     property AB: Boolean read GetAB write SetAB;
     property ABJC: TJC read m_state.ABJC write SetABJC;
     property ZAM: Boolean read m_state.ZAM write SetZAM;
-    property lichy: THVStanoviste read m_spnl.direction;
+    property lichy: THVSite read m_spnl.direction;
     property DNjc: TJC read m_state.dnJC write m_state.dnJC;
     property privol: TJC read m_state.privolJC write m_state.privolJC;
     property track: TBlk read GetTrackId;
@@ -325,13 +325,13 @@ begin
 
      // 0 = navestidlo v lichem smeru. 1 = navestidlo v sudem smeru
      if (strs[2] = '0') then
-       Self.m_spnl.direction := THVStanoviste.lichy
+       Self.m_spnl.direction := THVSite.odd
      else
-       Self.m_spnl.direction := THVStanoviste.sudy;
+       Self.m_spnl.direction := THVSite.even;
      Self.m_spnl.trackId := StrToInt(strs[3]);
     end else begin
      Self.m_spnl.symbolType := TBlkSignalSymbol.unknown;
-     Self.m_spnl.direction := THVStanoviste.lichy;
+     Self.m_spnl.direction := THVSite.odd;
      Self.m_spnl.trackId := -1;
     end;
  finally
@@ -1256,9 +1256,9 @@ begin
      Exit();
 
    // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontetu zmeny smeru soupravy)
-   if ((Self.autoblok) and (TBlkRailway(TBlkRT(Usek).railway).direction = TRailwayDirection.AtoB) and (Self.direction = THVStanoviste.sudy)) then
+   if ((Self.autoblok) and (TBlkRailway(TBlkRT(Usek).railway).direction = TRailwayDirection.AtoB) and (Self.direction = THVSite.even)) then
      Exit();
-   if ((Self.autoblok) and (TBlkRailway(TBlkRT(Usek).railway).direction = TRailwayDirection.BtoA) and (Self.direction = THVStanoviste.lichy)) then
+   if ((Self.autoblok) and (TBlkRailway(TBlkRT(Usek).railway).direction = TRailwayDirection.BtoA) and (Self.direction = THVSite.odd)) then
      Exit();
   end;
 
@@ -1639,7 +1639,7 @@ begin
  if (usek = nil) then
    Blocks.GetBlkByID(Self.trackId, usek);
 
- if (Self.direction = THVStanoviste.lichy) then
+ if (Self.direction = THVSite.odd) then
    Result := TBlkTrack(usek).trainSudy
  else
    Result := TBlkTrack(usek).trainL;

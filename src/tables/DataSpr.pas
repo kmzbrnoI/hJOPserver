@@ -143,8 +143,8 @@ var train: TTrainData;
     Self.LV.Items[line].SubItems[7] := Self.LV.Items[line].SubItems[7] + ' (' + IntToStr(train.wantedSpeed) + ' km/h)';
 
   case (train.direction) of
-   THVStanoviste.lichy: Self.LV.Items[line].SubItems[8] := 'lichý';
-   THVStanoviste.sudy : Self.LV.Items[line].SubItems[8] := 'sudý';
+   THVSite.odd: Self.LV.Items[line].SubItems[8] := 'lichý';
+   THVSite.even : Self.LV.Items[line].SubItems[8] := 'sudý';
   end;
 
   try

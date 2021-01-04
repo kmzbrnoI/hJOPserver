@@ -190,8 +190,8 @@ begin
 
  // vymazeme vsechny otevrene regulatory u klientu
  for i := 0 to _MAX_ADDR-1 do
-  if (Assigned(HVDb[i])) then
-    HVDb[i].Stav.regulators.Clear();
+   if (Assigned(HVDb[i])) then
+     HVDb[i].state.regulators.Clear();
 end;
 
 procedure TAreas.SendORList(Context: TIdContext);

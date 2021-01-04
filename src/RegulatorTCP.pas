@@ -185,7 +185,7 @@ procedure TTCPRegulator.ParseLoko(Sender: TIdContext; parsed: TStrings);
 var HV: THV;
     left, right, i: Integer;
     data: TStrings;
-    Func: TFunkce;
+    Func: TFunctions;
     LokResponseData: Pointer;
 begin
  parsed[3] := UpperCase(parsed[3]);
@@ -222,8 +222,8 @@ begin
      if ((not (Sender.Data as TTCPORsRef).regulator_user.root) and (not HV.IsReg(Sender))) then
       begin
        // je loko uz na nejakem nerootovskem (!) ovladaci -> odmitnout
-       for i := 0 to HV.Stav.regulators.Count-1 do
-         if (not HV.Stav.regulators[i].root) then
+       for i := 0 to HV.state.regulators.Count-1 do
+         if (not HV.state.regulators[i].root) then
           begin
            ORTCPServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Loko je otevřené v jiném regulátoru');
            Exit();
@@ -349,15 +349,15 @@ begin
      data.Free();
    end;
 
-   Func := HV.slotFunkce;
+   Func := HV.slotFunctions;
    for i := left to right do
      Func[i] := ownConvert.StrToBool(parsed[5][i-left+1]);
-   HV.stav.funkce := Func;
+   HV.state.functions := Func;
 
    GetMem(LokResponseData, SizeOf(TLokResponseData));
    TLokResponseData(LokResponseData^).addr := HV.addr;
    TLokResponseData(LokResponseData^).conn := Sender;
-   HV.StavFunctionsToSlotFunctions(TTrakce.Callback(PanelLOKResponseOK, LokResponseData),
+   HV.StateFunctionsToSlotFunctions(TTrakce.Callback(PanelLOKResponseOK, LokResponseData),
                                    TTrakce.Callback(PanelLOKResponseErr, LokResponseData),
                                    Sender);
   end
@@ -466,23 +466,23 @@ var i: Integer;
 begin
  func := '';
  for i := 0 to _HV_FUNC_MAX do
-  case (HV.slotFunkce[i]) of
+  case (HV.slotFunctions[i]) of
    false : func := func + '0';
    true  : func := func + '1';
   end;//case
 
- for i := 0 to HV.Stav.regulators.Count-1 do
-   if (HV.Stav.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';F;0-'+IntToStr(_HV_FUNC_MAX)+';'+func+';');
+ for i := 0 to HV.state.regulators.Count-1 do
+   if (HV.state.regulators[i].conn <> exclude) then
+     ORTCPServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';F;0-'+IntToStr(_HV_FUNC_MAX)+';'+func+';');
 end;
 
 //  or;LOK;ADDR;SPD;sp_km/h;sp_stupne;dir
 procedure TTCPRegulator.LokUpdateSpeed(HV: THV; exclude: TObject = nil);
 var i: Integer;
 begin
- for i := 0 to HV.Stav.regulators.Count-1 do
-   if (HV.Stav.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';SPD;'+
+ for i := 0 to HV.state.regulators.Count-1 do
+   if (HV.state.regulators[i].conn <> exclude) then
+     ORTCPServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';SPD;'+
                         IntToStr(HV.realSpeed)+';'+IntToStr(HV.speedStep)+';'+
                         IntToStr(ownConvert.BoolToInt(HV.direction))+';');
 end;
@@ -492,9 +492,9 @@ end;
 procedure TTCPRegulator.LokStolen(HV: THV; exclude: TObject = nil);
 var i: Integer;
 begin
- for i := 0 to HV.Stav.regulators.Count-1 do
-   if (HV.Stav.regulators[i].conn <> exclude) then
-     ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';AUTH;stolen;Loko ukradeno ovladačem');
+ for i := 0 to HV.state.regulators.Count-1 do
+   if (HV.state.regulators[i].conn <> exclude) then
+     ORTCPServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';AUTH;stolen;Loko ukradeno ovladačem');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -508,8 +508,8 @@ begin
  else
    state := '0';
 
- for i := 0 to HV.Stav.regulators.Count-1 do
-   ORTCPServer.SendLn(HV.Stav.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';TOTAL;'+state);
+ for i := 0 to HV.state.regulators.Count-1 do
+   ORTCPServer.SendLn(HV.state.regulators[i].conn, '-;LOK;'+IntToStr(HV.addr)+';TOTAL;'+state);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -524,11 +524,11 @@ var pom: Boolean;
 begin
  // je tento regulator uz v seznamu regulatoru?
  pom := false;
- for i := 0 to HV.Stav.regulators.Count-1 do
-   if (HV.Stav.regulators[i].conn = Regulator) then
+ for i := 0 to HV.state.regulators.Count-1 do
+   if (HV.state.regulators[i].conn = Regulator) then
     begin
      pom := true;
-     reg := HV.Stav.regulators[i];
+     reg := HV.state.regulators[i];
      break;
     end;
 
@@ -536,9 +536,9 @@ begin
  if (not pom) then
   begin
    reg.conn := Regulator;
-   HV.ruc   := HV.ruc or (HV.Stav.train = -1);
+   HV.ruc   := HV.ruc or (HV.state.train = -1);
    reg.root := (Regulator.Data as TTCPORsRef).regulator_user.root;
-   HV.Stav.regulators.Add(reg);
+   HV.state.regulators.Add(reg);
   end;
 
  // Je loko prevzato?
@@ -551,7 +551,7 @@ begin
      on E: Exception do
       begin
        ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;not;Převzetí z centrály se nezdařilo :'+E.Message);
-       HV.Stav.regulators.Remove(reg);
+       HV.state.regulators.Remove(reg);
       end;
    end;
 
@@ -566,7 +566,7 @@ begin
      if (timeout > 3000) then
       begin
        ORTCPServer.SendLn(Regulator, '-;LOK;'+IntToStr(HV.addr)+';AUTH;not;Převzetí z centrály se nezdařilo');
-       HV.Stav.regulators.Remove(reg);
+       HV.state.regulators.Remove(reg);
        Exit();
       end;
     end;//while
@@ -611,7 +611,7 @@ var addr: Integer;
 begin
  for addr := 0 to _MAX_ADDR-1 do
   begin
-   if ((HVDb[addr] <> nil) and (HVDb[addr].Stav.regulators.Count > 0)) then
+   if ((HVDb[addr] <> nil) and (HVDb[addr].state.regulators.Count > 0)) then
     begin
      authLog('reg', 'loco-release', '', 'Release loco '+IntToStr(HVDb[addr].addr));
      HVDb[addr].RemoveRegulator(reg);

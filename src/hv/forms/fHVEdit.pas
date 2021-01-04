@@ -143,7 +143,7 @@ end;
 
 procedure TF_HVEdit.B_SaveClick(Sender: TObject);
 var data: THVData;
-    stav: THVStav;
+    stav: THVState;
     area: TArea;
     i: Integer;
     pomCV: THVPomCV;
@@ -175,7 +175,7 @@ var data: THVData;
    end;
 
   area := Areas[Self.CB_OR.ItemIndex];
-  if ((Self.OpenHV <> nil) and (Self.OpenHV.Stav.train > -1) and (Self.OpenHV.Stav.stanice <> area)) then
+  if ((Self.OpenHV <> nil) and (Self.OpenHV.state.train > -1) and (Self.OpenHV.state.area <> area)) then
     if (Application.MessageBox('Měníte stanici HV, které je na soupravě, opravdu pokračovat?', 'Opravdu?', MB_YESNO OR MB_ICONWARNING) = mrNo) then
       Exit();
 
@@ -194,8 +194,8 @@ var data: THVData;
     data.POMtake    := TList<THVPomCV>.Create();
     data.POMrelease := TList<THVPomCV>.Create();
    end else begin
-    data.POMtake    := Self.OpenHV.Data.POMtake;
-    data.POMrelease := Self.OpenHV.Data.POMrelease;
+    data.POMtake    := Self.OpenHV.data.POMtake;
+    data.POMrelease := Self.OpenHV.data.POMrelease;
    end;
 
   data.POMtake.Clear();
@@ -233,7 +233,7 @@ var data: THVData;
      data.transience := 0;
      area := Areas[Self.CB_OR.ItemIndex];
      try
-       HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), area);
+       HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVSite(CB_Orientace.ItemIndex), area);
      except
        on E: Exception do
         begin
@@ -243,9 +243,9 @@ var data: THVData;
      end;
    end else begin
      // neupravovane veci jednoduse zkopirujeme
-     data.funcVyznam := Self.OpenHV.Data.funcVyznam;
-     data.maxSpeed := Self.OpenHV.Data.maxSpeed;
-     data.funcType := Self.OpenHV.Data.funcType;
+     data.funcDescription := Self.OpenHV.data.funcDescription;
+     data.maxSpeed := Self.OpenHV.data.maxSpeed;
+     data.funcType := Self.OpenHV.data.funcType;
      data.transience := Self.OpenHV.data.transience;
 
      // update HV
@@ -253,9 +253,9 @@ var data: THVData;
 
      area := Areas[Self.CB_OR.ItemIndex];
 
-     stav := Self.OpenHV.stav;
-     stav.StanovisteA := THVStanoviste(CB_Orientace.ItemIndex);
-     Self.OpenHV.Stav := stav;
+     stav := Self.OpenHV.state;
+     stav.siteA := THVSite(CB_Orientace.ItemIndex);
+     Self.OpenHV.state := stav;
      Self.OpenHV.MoveToArea(area);
      Self.OpenHV.UpdateAllRegulators();
 
@@ -337,7 +337,7 @@ end;
 
 procedure TF_HVEdit.NormalOpenForm();
 var data: THVData;
-    stav: THVStav;
+    stav: THVState;
     i: Integer;
     LI: TListItem;
  begin
@@ -345,7 +345,7 @@ var data: THVData;
   E_Addr.ReadOnly := true;
 
   data := Self.OpenHV.data;
-  stav := Self.OpenHV.stav;
+  stav := Self.OpenHV.state;
 
   Self.E_Nazev.Text := data.name;
   Self.E_Oznaceni.Text := data.designation;
@@ -356,7 +356,7 @@ var data: THVData;
     Self.CB_trida.ItemIndex := CB_Trida.Items.Count-1
   else
     Self.CB_trida.ItemIndex := Integer(data.typ);
-  Self.CB_Orientace.ItemIndex := Integer(stav.StanovisteA);
+  Self.CB_Orientace.ItemIndex := Integer(stav.siteA);
 
   Self.LV_Pom_Load.Clear();
   for i := 0 to data.POMtake.Count-1 do
@@ -374,7 +374,7 @@ var data: THVData;
     LI.SubItems.Add(IntToStr(data.POMrelease[i].data));
    end;
 
-  Areas.FillCB(Self.CB_OR, stav.stanice);
+  Areas.FillCB(Self.CB_OR, stav.area);
 
   F_HVEdit.Caption := 'HV '+IntToStr(Self.OpenHV.addr);
  end;

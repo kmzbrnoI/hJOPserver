@@ -676,7 +676,7 @@ begin
 
  // zjistime RUC u vsech hnacich vozidel
  for addr := 0 to _MAX_ADDR-1 do
-   if ((HVDb[addr] <> nil) and (HVDb[addr].Stav.stanice = Self)) then
+   if ((HVDb[addr] <> nil) and (HVDb[addr].state.area = Self)) then
      HVDb[addr].UpdateRuc(false);
 end;
 
@@ -811,7 +811,7 @@ begin
 
  str := 'HV;LIST;{';
  for addr := 0 to _MAX_ADDR-1 do
-   if ((Assigned(HVDb[addr])) and (HVDb[addr].Stav.stanice = Self)) then
+   if ((Assigned(HVDb[addr])) and (HVDb[addr].state.area = Self)) then
     str := str + '[{' + HVDb[addr].GetPanelLokString(full) + '}]';
  str := str + '}';
  Self.SendLn(Sender, str);
@@ -918,13 +918,13 @@ begin
    Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';ERR;HV neexistuje!');
    Exit();
   end;
- if (HVDb[lok_addr].Stav.train > -1) then
+ if (HVDb[lok_addr].state.train > -1) then
   begin
    Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';ERR;HV přiřazeno soupravě '+
-               Trains.GetTrainNameByIndex(HVDb[lok_addr].Stav.train)+'!');
+               Trains.GetTrainNameByIndex(HVDb[lok_addr].state.train)+'!');
    Exit();
   end;
- if (HVDb[lok_addr].Stav.stanice <> Self) then
+ if (HVDb[lok_addr].state.area <> Self) then
   begin
    Self.SendLn(Sender, 'HV;MOVE;'+IntToStr(lok_addr)+';ERR;HV nepatří této stanici!');
    Exit();
@@ -1407,7 +1407,7 @@ begin
    Self.SendLn(Sender, 'HV;REMOVE;'+IntToStr(addr)+';ERR;Loko neexsituje');
    Exit();
   end;
- if (HVDb[addr].Stav.stanice <> self) then
+ if (HVDb[addr].state.area <> self) then
   begin
    Self.SendLn(Sender, 'HV;REMOVE;'+IntToStr(addr)+';ERR;Loko se nenachází ve stanici '+Self.name);
    Exit();
@@ -1445,7 +1445,7 @@ begin
      Self.SendLn(Sender, 'HV;EDIT;'+IntToStr(addr)+';ERR;Loko neexistuje');
      Exit();
     end;
-   if (HVDb[addr].Stav.stanice <> self) then
+   if (HVDb[addr].state.area <> self) then
     begin
      Self.SendLn(Sender, 'HV;EDIT;'+IntToStr(addr)+';ERR;Loko se nenachází ve stanici '+Self.name);
      Exit();
@@ -1454,7 +1454,7 @@ begin
    HVDb[addr].UpdateFromPanelString(str);
 
    if (HVDb[addr].acquired) then
-     HVDb[addr].StavFunctionsToSlotFunctions(TTrakce.Callback(), TTrakce.Callback());
+     HVDb[addr].StateFunctionsToSlotFunctions(TTrakce.Callback(), TTrakce.Callback());
 
    Self.SendLn(Sender, 'HV;EDIT;'+IntToStr(addr)+';OK');
  except
@@ -1566,14 +1566,14 @@ begin
         end;
 
        // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
-       if ((HV.Stav.stanice <> Self) and (rights < TAreaRights.superuser)) then
+       if ((HV.state.area <> Self) and (rights < TAreaRights.superuser)) then
         begin
          Self.SendLn(Sender, 'LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' se nenachází ve stanici');
          Exit();
         end;
 
        // nelze vygenerovat token pro loko, ktere je uz v regulatoru
-       if ((HV.Stav.regulators.Count > 0) and (rights < TAreaRights.superuser)) then
+       if ((HV.state.regulators.Count > 0) and (rights < TAreaRights.superuser)) then
         begin
          Self.SendLn(Sender, 'LOK-TOKEN;ERR;'+str[3]+';Loko '+data[i]+' již otevřeno v regulátoru');
          Exit();
@@ -1623,14 +1623,14 @@ begin
         end;
 
        // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
-       if ((HV.Stav.stanice <> Self) and (rights < TAreaRights.superuser)) then
+       if ((HV.state.area <> Self) and (rights < TAreaRights.superuser)) then
         begin
          Self.SendLn(Sender, 'LOK-REQ;ERR;Loko '+data[i]+' se nenachází ve stanici');
          Exit();
         end;
 
        // nelze vygenerovat token pro loko, ktere je uz v regulatoru
-       if ((HV.Stav.regulators.Count > 0) and (rights < TAreaRights.superuser)) then
+       if ((HV.state.regulators.Count > 0) and (rights < TAreaRights.superuser)) then
         begin
          Self.SendLn(Sender, 'LOK-REQ;ERR;Loko '+data[i]+' již otevřeno v regulátoru');
          Exit();

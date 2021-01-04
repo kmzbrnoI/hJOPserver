@@ -70,7 +70,7 @@ type
      procedure SaveData(const dirname: string);
      procedure SaveState(const statefn: string);
 
-     function Add(data: THVData; addr: Word; StanovisteA: THVStanoviste; area: TObject): THV; overload;
+     function Add(data: THVData; addr: Word; siteA: THVSite; area: TObject): THV; overload;
      function Add(panel_str: string; SenderOR: TObject): THV; overload;
      procedure Remove(addr: Word);
 
@@ -279,9 +279,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function THVDb.Add(data: THVData; addr: Word; StanovisteA: THVStanoviste; area: TObject): THV;
+function THVDb.Add(data: THVData; addr: Word; siteA: THVSite; area: TObject): THV;
 var i, index: Integer;
-    stav: THVStav;
+    stav: THVState;
 begin
  if (addr > 9999) then
    raise EInvalidAddress.Create('Neplatná adresa lokomotivy ' + IntToStr(addr));
@@ -290,10 +290,10 @@ begin
 
  // pokud neexistuje, pridame ji
 
- stav.StanovisteA := StanovisteA;
+ stav.siteA := siteA;
  stav.traveled_forward := 0;
  stav.traveled_backward := 0;
- stav.stanice := (area as TArea);
+ stav.area := (area as TArea);
 
  stav.train := -1;
  stav.ruc := false;
@@ -399,7 +399,7 @@ begin
  // hv neexistuje
  if (Self.HVs[addr] = nil) then
    raise ENoLoco.Create('Lokomotiva s touto adresou neexistuje!');
- if (Self.HVs[addr].Stav.train > -1) then
+ if (Self.HVs[addr].state.train > -1) then
    raise ELocoOnTrain.Create('Lokomotiva je na soupravě!');
  if ((Self.HVs[addr].acquired) or (Self.HVs[addr].stolen)) then
    raise ELocoPrevzato.Create('Lokomotiva převzata do řízení počítače');
@@ -669,7 +669,7 @@ begin
  for hv in Self.HVs do
   begin
    if ((hv <> nil) and (hv.acquired) and (hv.funcDict.ContainsKey(func)) and
-       (hv.slotFunkce[hv.funcDict[func]])) then
+       (hv.slotFunctions[hv.funcDict[func]])) then
      Exit(true);
   end;
  Result := false;
@@ -681,7 +681,7 @@ begin
  for hv in Self.HVs do
   begin
    if ((hv <> nil) and (hv.acquired) and (hv.funcDict.ContainsKey(func)) and
-       (not hv.slotFunkce[hv.funcDict[func]])) then
+       (not hv.slotFunctions[hv.funcDict[func]])) then
      Exit(false);
   end;
  Result := true;
@@ -693,7 +693,7 @@ begin
  for hv in Self.HVs do
   begin
    if ((hv <> nil) and (hv.acquired) and (hv.funcDict.ContainsKey(func)) and
-       (not hv.slotFunkce[hv.funcDict[func]]) and (hv.stavFunkce[hv.funcDict[func]])) then
+       (not hv.slotFunctions[hv.funcDict[func]]) and (hv.stateFunctions[hv.funcDict[func]])) then
      Exit(true);
   end;
  Result := false;

@@ -37,7 +37,7 @@ type
     speed: Integer; // real speed passed to locomotives after all limitations
     wantedSpeed: Integer; // speed wanted by caller, before limitations
     maxSpeed: Cardinal; // max speed in km/h entered by user; maxSpeed = 0 <=> no limitation
-    direction: THVStanoviste;
+    direction: THVSite;
 
     front: TObject; // most forward block train is/was on (always instance of TBlkUsek)
     stationFrom: TObject; // instance of TOR or Nil
@@ -73,7 +73,7 @@ type
 
      procedure HVComErr(Sender: TObject; Data: Pointer);
      procedure SetSpeed(speed: Integer);
-     procedure SetDirection(direction: THVStanoviste);
+     procedure SetDirection(direction: THVSite);
      procedure SetFront(front: TObject);
 
      function IsStolen(): Boolean;
@@ -96,7 +96,7 @@ type
 
      function GetPanelString(): string;   // vraci string, kterym je definovana souprava, do panelu
      procedure UpdateTrainFromPanel(train: TStrings; usek: TObject; area: TObject; ok: TCb; err: TCb);
-     procedure SetSpeedDirection(speed: Cardinal; dir: THVStanoviste);
+     procedure SetSpeedDirection(speed: Cardinal; dir: THVSite);
      procedure Acquire(ok: TCb; err: TCb);
      procedure UpdateFront();
      procedure ChangeDirection();
@@ -134,7 +134,7 @@ type
      property station: TObject read data.station write SetOR;
      property speed: Integer read data.speed write SetSpeed;
      property wantedSpeed: Integer read data.wantedSpeed;
-     property direction: THVStanoviste read data.direction write SetDirection;
+     property direction: THVSite read data.direction write SetDirection;
      property stolen: Boolean read IsStolen;
      property front: TObject read data.front write SetFront;
      property length: Integer read data.length;
@@ -229,7 +229,7 @@ begin
  Self.data.length := ini.ReadInteger(section, 'delka', 0);
  Self.data.typ := ini.ReadString(section, 'typ', '');
  Self.filefront := ini.ReadInteger(section, 'front', -1);
- Self.data.direction := THVStanoviste(ini.ReadInteger(section, 'smer', Integer(THVStanoviste.lichy)));
+ Self.data.direction := THVSite(ini.ReadInteger(section, 'smer', Integer(THVSite.odd)));
  Self.data.maxSpeed := ini.ReadInteger(section, 'maxRychlost', 0);
 
  Self.data.stationFrom := Areas.Get(ini.ReadString(section, 'z', ''));
@@ -480,9 +480,9 @@ begin
   begin
    // vypocet smeru ze sipky
    if (Self.data.dir_L) then
-     Self.data.direction := THVStanoviste.lichy
+     Self.data.direction := THVSite.odd
    else
-     Self.data.direction := THVStanoviste.sudy;
+     Self.data.direction := THVSite.even;
 
    for addr in Self.HVs do
      HVDb[addr].OnPredictedSignalChange();
@@ -510,7 +510,7 @@ begin
      if (hv.Contains('note')) then
        HVDb[addr].Data.note := hv['note'];
      if (hv.Contains('sta')) then
-       HVDb[addr].Stav.StanovisteA := THVStanoviste(hv.I['sta']);
+       HVDb[addr].state.siteA := THVSite(hv.I['sta']);
 
      HVDb[addr].train := Self.index;
 
@@ -518,7 +518,7 @@ begin
       begin
        max_func := Min(System.Length(hv.S['func']), _HV_FUNC_MAX);
        for i := 0 to max_func do
-         HVDb[addr].Stav.funkce[i] := (hv.S['func'][i+1] = '1');
+         HVDb[addr].state.functions[i] := (hv.S['func'][i+1] = '1');
       end;
 
      new.Add(addr);
@@ -569,8 +569,8 @@ begin
    HVDb[addr].TrakceAcquire(TTrakce.Callback(Self.LocoAcquiredOk, acq),
                             TTrakce.Callback(Self.LocoAcquiredErr, acq));
   end else begin
-   HVDb[addr].StavFunctionsToSlotFunctions(TTrakce.Callback(Self.LocoAcquiredOk, acq),
-                                           TTrakce.Callback(Self.LocoAcquiredErr, acq));
+   HVDb[addr].StateFunctionsToSlotFunctions(TTrakce.Callback(Self.LocoAcquiredOk, acq),
+                                            TTrakce.Callback(Self.LocoAcquiredErr, acq));
   end;
 end;
 
@@ -664,7 +664,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.SetSpeedDirection(speed: Cardinal; dir: THVStanoviste);
+procedure TTrain.SetSpeedDirection(speed: Cardinal; dir: THVSite);
 var addr: Integer;
     direction: Boolean;
     dir_changed: Boolean;
@@ -706,7 +706,7 @@ begin
      continue;
     end;
 
-   direction := ownConvert.IntToBool(Integer(dir) xor Integer(HVDb[addr].stav.StanovisteA));
+   direction := ownConvert.IntToBool(Integer(dir) xor Integer(HVDb[addr].state.siteA));
 
    try
      HVDb[addr].SetSpeedDir(Self.data.speed, direction,
@@ -733,7 +733,7 @@ begin
  Self.SetSpeedDirection(speed, Self.data.direction);
 end;
 
-procedure TTrain.SetDirection(direction: THVStanoviste);
+procedure TTrain.SetDirection(direction: THVSite);
 begin
  Self.SetSpeedDirection(Self.data.speed, direction);
 end;
@@ -849,11 +849,11 @@ begin
  // zmenit orintaci stanoviste A hnacich vozidel
  for addr in Self.HVs do
   begin
-   case (HVDb[addr].Stav.StanovisteA) of
-    THVStanoviste.lichy : HVDb[addr].Stav.StanovisteA := THVStanoviste.sudy;
-    THVStanoviste.sudy  : HVDb[addr].Stav.StanovisteA := THVStanoviste.lichy;
-   end;//case
-  end;//for i
+   case (HVDb[addr].state.siteA) of
+    THVSite.odd : HVDb[addr].state.siteA := THVSite.even;
+    THVSite.even : HVDb[addr].state.siteA := THVSite.odd;
+   end;
+  end;
 
  // zmenit orientaci sipky soupravy
  tmp := Self.data.dir_L;
@@ -862,9 +862,9 @@ begin
 
  // zmenit smer suupravy - dulezite pro zastaveni pred navestidlem
  case (Self.data.direction) of
-  THVStanoviste.lichy : Self.direction := THVStanoviste.sudy;
-  THVStanoviste.sudy  : Self.direction := THVStanoviste.lichy;
- end;//case
+  THVSite.odd : Self.direction := THVSite.even;
+  THVSite.even : Self.direction := THVSite.odd;
+ end;
 
  if (Self.front <> nil) then
    (Self.front as TBlkTrack).Change();  // kvuli sipce
@@ -914,7 +914,7 @@ begin
      Exit();
 
  // vsechna hv nastavena do opacneho smeru -> zmenit smer soupravy
- Self.direction := THVStanoviste(dir);
+ Self.direction := THVSite(dir);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1076,7 +1076,7 @@ function TTrain.IsAnyLokoInRegulator(): Boolean;
 var hvaddr: Integer;
 begin
  for hvaddr in Self.HVs do
-   if (HVDb[hvaddr].Stav.regulators.Count > 0) then
+   if (HVDb[hvaddr].state.regulators.Count > 0) then
      Exit(true);
  Result := false;
 end;
@@ -1087,7 +1087,7 @@ procedure TTrain.ForceRemoveAllRegulators();
 var hvaddr: Integer;
 begin
  for hvaddr in Self.HVs do
-   if (HVDb[hvaddr].Stav.regulators.Count > 0) then
+   if (HVDb[hvaddr].state.regulators.Count > 0) then
      HVDb[hvaddr].ForceRemoveAllRegulators();
 end;
 
@@ -1141,8 +1141,8 @@ begin
    Exit(TBlkRT(frontblk).nextSignal);
 
  case (Self.direction) of
-   THVStanoviste.lichy: signal := frontblk.signalL as TBlkSignal;
-   THVStanoviste.sudy: signal := frontblk.signalS as TBlkSignal;
+   THVSite.odd: signal := frontblk.signalL as TBlkSignal;
+   THVSite.even: signal := frontblk.signalS as TBlkSignal;
  end;
 
  if ((signal <> nil) and (signal.SymbolType = TBlkSignalSymbol.main)) then

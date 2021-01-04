@@ -995,8 +995,8 @@ begin
    if (Self.typ = TJCType.train) then
     begin
      if (train.sdata.dir_L or train.sdata.dir_S) then
-       if (((TBlkSignal(Blk2).direction = THVStanoviste.lichy) and (not train.sdata.dir_L)) or
-           ((TBlkSignal(Blk2).direction = THVStanoviste.sudy) and (not train.sdata.dir_S))) then
+       if (((TBlkSignal(Blk2).direction = THVSite.odd) and (not train.sdata.dir_L)) or
+           ((TBlkSignal(Blk2).direction = THVSite.even) and (not train.sdata.dir_S))) then
          barriers.Add(Self.JCBarrier(_JCB_SPR_SMER, nil, train.index));
     end;
 
@@ -2047,7 +2047,7 @@ var i, j: Integer;
            end;
 
           // na dopravni kolej vlozime soupravu blize vjezdovemu navestidlu
-          if (signal.direction = THVStanoviste.lichy) then
+          if (signal.direction = THVSite.odd) then
             TBlkTrack(Self.lastTrack).AddTrainL(train)
           else
             TBlkTrack(Self.lastTrack).AddTrainS(train);

@@ -176,7 +176,7 @@ var tmp: THV;
     Self.OpenHV := nil;
 
     try
-      if ((tmp.acquired) and (tmp.Stav.regulators.Count = 0)) then
+      if ((tmp.acquired) and (tmp.state.regulators.Count = 0)) then
        begin
         tmp.ruc := false;
         tmp.CheckRelease();
@@ -217,7 +217,7 @@ begin
 end;
 
 procedure TF_DigiReg.LocoChanged(Sender: TObject);
-var funkce: TFunkce;
+var functions: TFunctions;
 begin
  Self.SetElemntsState(((Self.OpenHV.acquired) and ((Self.OpenHV.pom = pc) or (Self.OpenHV.pom = released))));
 
@@ -245,7 +245,7 @@ begin
  RG_Smer.ItemIndex := Integer(OpenHV.direction);
  Self.L_address.Caption := IntToStr(OpenHV.addr);
  Self.Caption := OpenHV.name+' ('+OpenHV.data.designation+') : '+IntToStr(OpenHV.addr);
- B_PrevzitLoko.Enabled := not OpenHV.acquired or OpenHV.stav.trakceError;
+ B_PrevzitLoko.Enabled := not OpenHV.acquired or OpenHV.state.trakceError;
  B_OdhlLoko.Enabled := OpenHV.acquired;
  CHB_Total.Checked := OpenHV.ruc;
  Self.L_mine.Caption := ownConvert.BoolToYesNo(OpenHV.acquired);
@@ -271,20 +271,20 @@ begin
 
  if (Sender <> Self) then
   begin
-   funkce := OpenHV.slotFunkce;
-   CHB_svetla.Checked := funkce[0];
-   CHB_f1.Checked  := funkce[1];
-   CHB_f2.Checked  := funkce[2];
-   CHB_f3.Checked  := funkce[3];
-   CHB_f4.Checked  := funkce[4];
-   CHB_f5.Checked  := funkce[5];
-   CHB_f6.Checked  := funkce[6];
-   CHB_f7.Checked  := funkce[7];
-   CHB_f8.Checked  := funkce[8];
-   CHB_f9.Checked  := funkce[9];
-   CHB_f10.Checked := funkce[10];
-   CHB_f11.Checked := funkce[11];
-   CHB_f12.Checked := funkce[12];
+   functions := OpenHV.slotFunctions;
+   CHB_svetla.Checked := functions[0];
+   CHB_f1.Checked  := functions[1];
+   CHB_f2.Checked  := functions[2];
+   CHB_f3.Checked  := functions[3];
+   CHB_f4.Checked  := functions[4];
+   CHB_f5.Checked  := functions[5];
+   CHB_f6.Checked  := functions[6];
+   CHB_f7.Checked  := functions[7];
+   CHB_f8.Checked  := functions[8];
+   CHB_f9.Checked  := functions[9];
+   CHB_f10.Checked := functions[10];
+   CHB_f11.Checked := functions[11];
+   CHB_f12.Checked := functions[12];
   end;
 end;
 

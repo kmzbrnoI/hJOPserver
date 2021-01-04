@@ -86,7 +86,7 @@ end;
 procedure THVTableData.UpdateLine(HV: THV);
 var line: Integer;
     data: THVData;
-    stav: THVStav;
+    state: THVState;
     slot: TTrkLocoInfo;
     i: Integer;
     str: string;
@@ -97,7 +97,7 @@ var line: Integer;
 
   line := HV.index;
   data := HV.data;
-  stav := HV.stav;
+  state := HV.state;
   slot := HV.Slot;
 
   Self.LV.Items[line].Caption := IntToStr(HV.addr);
@@ -117,34 +117,34 @@ var line: Integer;
 
   Self.LV.Items[line].SubItems[5] := IntToStr(data.transience);
 
-  case (stav.StanovisteA) of
-   lichy : Self.LV.Items[line].SubItems[6] := 'lichý';
-   sudy  : Self.LV.Items[line].SubItems[6] := 'sudý';
-  end;//case
+  case (state.siteA) of
+   odd: Self.LV.Items[line].SubItems[6] := 'lichý';
+   even: Self.LV.Items[line].SubItems[6] := 'sudý';
+  end;
 
-  Self.LV.Items[line].SubItems[20] := Format('%5.2f',[stav.traveled_forward]);
-  Self.LV.Items[line].SubItems[21] := Format('%5.2f',[stav.traveled_backward]);
+  Self.LV.Items[line].SubItems[20] := Format('%5.2f',[state.traveled_forward]);
+  Self.LV.Items[line].SubItems[21] := Format('%5.2f',[state.traveled_backward]);
 
-  if (stav.stanice <> nil) then
-    Self.LV.Items[line].SubItems[7] := stav.stanice.Name
+  if (state.area <> nil) then
+    Self.LV.Items[line].SubItems[7] := state.area.Name
   else
     Self.LV.Items[line].SubItems[7] := '';
 
   Self.LV.Items[line].SubItems[8] := IntToStr(data.maxSpeed) + ' km/h';
 
-  if (stav.train > -1) then
-    Self.LV.Items[line].SubItems[19] := Trains.GetTrainNameByIndex(stav.train)
+  if (state.train > -1) then
+    Self.LV.Items[line].SubItems[19] := Trains.GetTrainNameByIndex(state.train)
   else
     Self.LV.Items[line].SubItems[19] := '-';
 
-  case (stav.pom) of
+  case (state.pom) of
    TPomStatus.progr    : Self.LV.Items[line].SubItems[18] := 'progr';
    TPomStatus.error    : Self.LV.Items[line].SubItems[18] := 'error';
    TPomStatus.pc       : Self.LV.Items[line].SubItems[18] := 'automat';
    TPomStatus.released : Self.LV.Items[line].SubItems[18] := 'ruční';
   end;//case
 
- if ((not stav.acquired) and (not stav.stolen)) then
+ if ((not state.acquired) and (not state.stolen)) then
   begin
    // neprevzato
    Self.LV.Items[line].SubItems[9]  := '---';
@@ -161,24 +161,24 @@ var line: Integer;
 
    Self.LV.Items[line].SubItems[9] := IntToStr(hv.realSpeed) + 'km/h / '+IntToStr(Slot.step)+' st';
    Self.LV.Items[line].SubItems[10] := IntToStr(ownConvert.BoolToInt(Slot.direction));
-   Self.LV.Items[line].SubItems[11] := IntToStr(ownConvert.BoolToInt(HV.slotFunkce[0]));
+   Self.LV.Items[line].SubItems[11] := IntToStr(ownConvert.BoolToInt(HV.slotFunctions[0]));
 
    str := '';
-   for i := 1 to 4 do str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunkce[i]));
+   for i := 1 to 4 do str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
    Self.LV.Items[line].SubItems[12] := str;
 
    str := '';
-   for i := 5 to 8 do str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunkce[i]));
+   for i := 5 to 8 do str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
    Self.LV.Items[line].SubItems[13] := str;
 
    str := '';
-   for i := 9 to 12 do str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunkce[i]));
+   for i := 9 to 12 do str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
    Self.LV.Items[line].SubItems[14] := str;
 
    str := '';
    for i := 13 to 20 do
     begin
-     str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunkce[i]));
+     str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
      if (i = 16) then str := str + ' ';
     end;
    Self.LV.Items[line].SubItems[15] := str;
@@ -186,23 +186,23 @@ var line: Integer;
    str := '';
    for i := 21 to 28 do
     begin
-     str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunkce[i]));
+     str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
      if (i = 24) then str := str + ' ';
     end;
    Self.LV.Items[line].SubItems[16] := str;
 
-   if (stav.trakceError) then
+   if (state.trakceError) then
      Self.LV.Items[line].SubItems[17] := 'COM ERROR!'
-   else if (stav.stolen) then
+   else if (state.stolen) then
      Self.LV.Items[line].SubItems[17] := 'ukradeno'
    else
      Self.LV.Items[line].SubItems[17] := 'PC';
   end;//else not prevzato
 
-  if (stav.train > -1) then
+  if (state.train > -1) then
     Self.LV.Items[line].SubItems[22] := 'teď'
-  else if (stav.last_used > 0) then
-    Self.LV.Items[line].SubItems[22] := FormatDateTime('yyyy-mm-dd hh:nn:ss', stav.last_used)
+  else if (state.last_used > 0) then
+    Self.LV.Items[line].SubItems[22] := FormatDateTime('yyyy-mm-dd hh:nn:ss', state.last_used)
   else
     Self.LV.Items[line].SubItems[22] := '-';
  end;

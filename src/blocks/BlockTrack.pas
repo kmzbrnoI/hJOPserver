@@ -585,8 +585,8 @@ begin
    end;
 
    case (state) of
-    isOn  : Self.m_state.sectionsOccupied[i] := TTrackState.occupied;
-    isOff : Self.m_state.sectionsOccupied[i] := TTrackState.free;
+    isOn: Self.m_state.sectionsOccupied[i] := TTrackState.occupied;
+    isOff: Self.m_state.sectionsOccupied[i] := TTrackState.free;
     failure, notYetScanned, unavailableModule, unavailablePort: begin
         Self.m_state.sectionsOccupied[i] := TTrackState.disabled;
         Self.m_state.occupied := TTrackState.disabled;
@@ -1647,19 +1647,19 @@ var train: Integer;
     m_state: TTrackState;
 begin
  case (Self.occupied) of
-  TTrackState.disabled : json['state'] := 'off';
-  TTrackState.none     : json['state'] := 'none';
-  TTrackState.free : json['state'] := 'free';
-  TTrackState.occupied : json['state'] := 'occupied';
+  TTrackState.disabled: json['state'] := 'off';
+  TTrackState.none: json['state'] := 'none';
+  TTrackState.free: json['state'] := 'free';
+  TTrackState.occupied: json['state'] := 'occupied';
  end;
 
  for m_state in Self.sectionsState do
   begin
    case (m_state) of
-    TTrackState.disabled : json.A['sections'].Add('off');
-    TTrackState.none     : json.A['sections'].Add('none');
-    TTrackState.free : json.A['sections'].Add('free');
-    TTrackState.occupied : json.A['sections'].Add('occupied');
+    TTrackState.disabled: json.A['sections'].Add('off');
+    TTrackState.none: json.A['sections'].Add('none');
+    TTrackState.free: json.A['sections'].Add('free');
+    TTrackState.occupied: json.A['sections'].Add('occupied');
    end;
   end;
 
@@ -1822,7 +1822,7 @@ function TBlkTrack.GetHoukList(): TList<THoukEv>;
 begin
  if (not Self.IsTrain()) then Exit(nil);
 
- if (Self.TrainL.direction = THVStanoviste.lichy) then
+ if (Self.TrainL.direction = THVSite.odd) then
    Result := Self.m_settings.houkEvL
  else
    Result := Self.m_settings.houkEvS;
@@ -2096,9 +2096,9 @@ function TBlkTrack.CanTrainSpeedInsert(index: Integer): Boolean;
 begin
  Result := not ((Self.trains.Count > 0) and
                 (((index = 0) and (TrainDb.Trains[Self.trains[index]].wantedSpeed > 0) and
-                  (TrainDb.Trains[Self.trains[index]].direction = THVStanoviste.sudy)) or
+                  (TrainDb.Trains[Self.trains[index]].direction = THVSite.even)) or
                  ((index = Self.trains.Count) and (TrainDb.Trains[Self.trains[index-1]].wantedSpeed > 0) and
-                  (TrainDb.Trains[Self.trains[index-1]].direction = THVStanoviste.lichy))));
+                  (TrainDb.Trains[Self.trains[index-1]].direction = THVSite.odd))));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2178,8 +2178,8 @@ begin
        if ((train = Self.trainL) or (train = Self.trainSudy)) then
         begin
          for signal in Self.signalJCRef do
-           if (((TBlkSignal(signal).direction = THVStanoviste.sudy) and (train = Self.trainL)) or
-               ((TBlkSignal(signal).direction = THVStanoviste.lichy) and (train = Self.trainSudy))) then
+           if (((TBlkSignal(signal).direction = THVSite.even) and (train = Self.trainL)) or
+               ((TBlkSignal(signal).direction = THVSite.odd) and (train = Self.trainSudy))) then
              TBlkSignal(signal).UpdateRychlostTrain(true);
         end;
       end else
@@ -2254,7 +2254,7 @@ begin
  if (Self.signalJCRef.Count = 1) then
   begin
    if (not TBlkSignal(Self.signalJCRef[0]).IsGoSignal()) then Exit(true);
-   if (TBlkSignal(Self.signalJCRef[0]).direction = THvStanoviste.lichy) then
+   if (TBlkSignal(Self.signalJCRef[0]).direction = THVSite.odd) then
      Exit(train <> Self.trainSudy)
    else
      Exit(train <> Self.trainL);
@@ -2448,7 +2448,7 @@ function TBlkTrack.GetNavL(): TBlk;
 var blk: TBlk;
 begin
  for blk in Blocks do
-   if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = THVStanoviste.lichy)) then
+   if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = THVSite.odd)) then
      Exit(blk);
  Result := nil;
 end;
@@ -2457,7 +2457,7 @@ function TBlkTrack.GetNavS(): TBlk;
 var blk: TBlk;
 begin
  for blk in Blocks do
-   if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = THVStanoviste.sudy)) then
+   if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = THVSite.even)) then
      Exit(blk);
  Result := nil;
 end;

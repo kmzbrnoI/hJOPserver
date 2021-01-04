@@ -445,8 +445,8 @@ begin
       (Self.train.length > Self.m_tuSettings.stop.maxLength) or (Self.train.front <> self)) then Exit();
 
    // kontrola spravneho smeru
-   if (((Self.train.direction = THVSTanoviste.lichy) and (not Self.stopL)) or
-       ((Self.train.direction = THVSTanoviste.sudy) and (not Self.stopS))) then Exit();
+   if (((Self.train.direction = THVSite.odd) and (not Self.stopL)) or
+       ((Self.train.direction = THVSite.even) and (not Self.stopS))) then Exit();
 
    // kontrola typu soupravy:
    if (not Self.m_tuSettings.stop.trainTypeRe.Match(Self.train.typ)) then
@@ -456,7 +456,7 @@ begin
    if (Self.m_tuState.stopSlowReady) then
     begin
      case (Self.train.direction) of
-      THVSTanoviste.lichy: begin
+      THVSite.odd: begin
         if (Self.m_tuSettings.stop.evL.slow.enabled) then
          begin
           if (not Self.m_tuSettings.stop.evL.slow.ev.enabled) then
@@ -474,7 +474,7 @@ begin
          end;
       end;
 
-      THVSTanoviste.sudy: begin
+      THVSite.even: begin
         if (Self.m_tuSettings.stop.evS.slow.enabled) then
          begin
           if (not Self.m_tuSettings.stop.evS.slow.ev.enabled) then
@@ -496,7 +496,7 @@ begin
 
    // zastavovani v zastavce
    case (Self.train.direction) of
-    THVSTanoviste.lichy: begin
+    THVSite.odd: begin
       if (not Self.m_tuSettings.stop.evL.stop.enabled) then
         Self.m_tuSettings.stop.evL.stop.Register();
 
@@ -508,7 +508,7 @@ begin
        end;
     end;
 
-    THVSTanoviste.sudy: begin
+    THVSite.even: begin
       if (not Self.m_tuSettings.stop.evS.stop.enabled) then
         Self.m_tuSettings.stop.evS.stop.Register();
 
@@ -673,7 +673,7 @@ begin
    if ((Self.id = TBlkRailway(Self.railway).GetSettings().trackIds[0])) then
     begin
      if (TBlkRailway(Self.railway).direction = TRailwayDirection.AtoB) then begin // vjizdim do trati
-       if (Self.train.direction <> THVStanoviste.lichy) then
+       if (Self.train.direction <> THVSite.odd) then
          Self.train.ChangeDirection();
      end else if (TBlkRailway(Self.railway).direction = TRailwayDirection.BtoA) then begin // vjizdim do posledniho useku ve smeru trati
        if (Self.train.direction <> TBlkSignal(TBlkRailway(Self.railway).signalA).direction) then
@@ -683,7 +683,7 @@ begin
    if ((Self.id = TBlkRailway(Self.railway).GetSettings().trackIds[TBlkRailway(Self.railway).GetSettings().trackIds.Count-1])) then
     begin
      if (TBlkRailway(Self.railway).direction = TRailwayDirection.BtoA) then begin // vjizdim do trati
-       if ((Self.train.direction <> THVStanoviste.sudy) and (TBlkRailway(Self.railway).GetSettings().trackIds.Count > 0)) then
+       if ((Self.train.direction <> THVSite.even) and (TBlkRailway(Self.railway).GetSettings().trackIds.Count > 0)) then
          Self.train.ChangeDirection();
      end else if (TBlkRailway(Self.railway).direction = TRailwayDirection.AtoB) then begin // vjizdim do posledniho useku ve smeru trati
        if (Self.train.direction <> TBlkSignal(TBlkRailway(Self.railway).signalB).direction) then
@@ -1028,7 +1028,7 @@ begin
  if ((Blk <> nil) and (Blk.typ = btSignal) and (Self.lTU <> nil)) then
   begin
    TBlkSignal(Blk).trackId := Self.lTU.id;
-   TBlkSignal(Blk).direction := THVStanoviste.lichy;
+   TBlkSignal(Blk).direction := THVSite.odd;
    TBlkSignal(Blk).autoblok := true;
   end;
 
@@ -1036,7 +1036,7 @@ begin
  if ((Blk <> nil) and (Blk.typ = btSignal) and (Self.sTU <> nil)) then
   begin
    TBlkSignal(Blk).trackId := Self.sTU.id;
-   TBlkSignal(Blk).direction := THVStanoviste.sudy;
+   TBlkSignal(Blk).direction := THVSite.even;
    TBlkSignal(Blk).autoblok := true;
   end;
 end;

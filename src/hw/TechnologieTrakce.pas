@@ -404,7 +404,7 @@ begin
 
  while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].acquired) or
         (not HVDb[addr].funcDict.ContainsKey(cb^.description)) or
-        (HVDb[addr].slotFunkce[HVDb[addr].funcDict[cb^.description]] = cb^.state))) do
+        (HVDb[addr].slotFunctions[HVDb[addr].funcDict[cb^.description]] = cb^.state))) do
    Inc(addr);
 
  if (addr = _MAX_ADDR) then
@@ -580,7 +580,7 @@ begin
 
  while ((cb^.addr < _MAX_ADDR) and ((HVDb[cb^.addr] = nil) or (not HVDb[cb^.addr].acquired) or
         (not HVDb[cb^.addr].funcDict.ContainsKey(_SOUND_FUNC)) or
-        (HVDb[cb^.addr].slotFunkce[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = false))) do
+        (HVDb[cb^.addr].slotFunctions[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = false))) do
    Inc(cb^.addr);
 
  if (cb^.addr = _MAX_ADDR) then
@@ -595,7 +595,7 @@ begin
    HVDb[cb^.addr].SetSingleFunc(HVDb[cb^.addr].funcDict[_SOUND_FUNC], false,
                                 TTrakce.Callback(Self.TurnedOffSound, data),
                                 TTrakce.Callback(Self.TurnedOffSound, data));
-   HVDb[cb^.addr].Stav.funkce[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] := true;
+   HVDb[cb^.addr].state.functions[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] := true;
  except
    if (Assigned(cb^.callback_err.callback)) then
      cb^.callback_err.callback(Self, cb^.callback_err.data);
@@ -629,8 +629,8 @@ begin
 
  while ((cb^.addr < _MAX_ADDR) and ((HVDb[cb^.addr] = nil) or (not HVDb[cb^.addr].acquired) or
         (not HVDb[cb^.addr].funcDict.ContainsKey(_SOUND_FUNC)) or
-        (HVDb[cb^.addr].slotFunkce[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = true) or
-        (HVDb[cb^.addr].stavFunkce[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = false))) do
+        (HVDb[cb^.addr].slotFunctions[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = true) or
+        (HVDb[cb^.addr].stateFunctions[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = false))) do
    Inc(cb^.addr);
 
  if (cb^.addr = _MAX_ADDR) then
