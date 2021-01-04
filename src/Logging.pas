@@ -1,4 +1,4 @@
-unit Logging;
+﻿unit Logging;
 
 // This unit provides functions for logging
 
