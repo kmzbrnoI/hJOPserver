@@ -394,7 +394,7 @@ begin
  json['id'] := Self.id;
  json['type'] := TBlk.BlkTypeToStr(Self.typ);
  for area in Self.areas do
-   json.A['stations'].Add(area.id);
+   json.A['areas'].Add(area.id);
 end;
 
 procedure TBlk.GetPtState(json: TJsonObject);

@@ -109,7 +109,7 @@ type
     function TurnoutIndex(id: Integer): Integer;
     function IsAnyTurnoutMinus(): Boolean;
 
-    procedure MakeObls(var areas: TArStr);
+    procedure MakeAreas(var areas: TArStr);
 
   public
     procedure EditJC(JCIndex: Integer);
@@ -764,7 +764,7 @@ begin
 
  if (Self.CHB_Trat.Checked) then
   begin
-   Self.MakeObls(areas);
+   Self.MakeAreas(areas);
    Blocks.FillCB(Self.CB_TratBlok, @Self.CB_TratPolozky, nil, areas, btRailway, Self.JCData.railwayId);
    Self.CB_TratSmer.ItemIndex := Integer(Self.JCData.railwayDir)-1;
   end else begin
@@ -773,7 +773,7 @@ begin
   end;
 end;
 
-procedure TF_JCEdit.MakeObls(var areas: TArStr);
+procedure TF_JCEdit.MakeAreas(var areas: TArStr);
 var Blk: TBlk;
     i: Integer;
 begin
@@ -820,7 +820,7 @@ begin
 
  SetLength(ignore, 1);
  ignore[0] := JCData.signalId;
- Self.MakeObls(areas);
+ Self.MakeAreas(areas);
 
  if (Self.m_tracks.Count > 0) then
   begin
@@ -921,7 +921,7 @@ begin
    end;
   end;
 
- Self.MakeObls(areas);
+ Self.MakeAreas(areas);
  Blocks.FillCB(CB_NewZaverBlok, @CB_NewVyhybkaPolozky, nil, areas, btTurnout);
 end;
 
@@ -947,7 +947,7 @@ begin
    LI.SubItems.Add(Blocks.GetBlkName(Self.m_tracks[i]));
   end;
 
- Self.MakeObls(areas);
+ Self.MakeAreas(areas);
  Blocks.FillCB(CB_NewUsek, @CB_NewUsekPolozky, nil, areas, btTrack, -1, btRT);
 end;
 
