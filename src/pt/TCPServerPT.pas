@@ -1,14 +1,15 @@
 ﻿unit TCPServerPT;
 
 {
-  PTserver slouzi k administraci hJOPserveru.
+  PTserver slouzi k pripojeni externich nastroju k hJOPserveru
+  (napr. externi administrace, automat, GTN).
 
   PTserver implementuje rozhrani definovane v
   https://github.com/kmzbrnoI/hJOPserver/wiki/ptServer.
 
   Jak to funguje?
-   - Pokud chces vytvorit vlastni endpoint, instanciuj TPTEndpoint do sve
-     odvizene tridy a zarad svou tridu do seznamu endpointu v konstruktoru tridy
+   - Pokud chcete vytvorit vlastni endpoint, instanciujte TPTEndpoint do sve
+     odvozene tridy a zaradyr svou tridu do seznamu endpointu v konstruktoru tridy
      TPtServer.
    - Pri prichodu http pozadavku se postupne prochazi ednpointy, endpoint, ktery
      odpovi na EndpointMatch true, je vybran, pruchod je zastaven a endpoint
@@ -55,35 +56,35 @@ type
 
     httpServer: TIdHTTPServer;
 
-    receiveTimer:TTimer;                                                        // must be executed in main thread synchronously!
-    received:TObjectQueue<TPtReceived>;                                         // locked by receivedLock!
-    receivedLock:TCriticalSection;
+    receiveTimer: TTimer; // must be executed in main thread synchronously!
+    received: TObjectQueue<TPtReceived>; // locked by receivedLock!
+    receivedLock: TCriticalSection;
 
-    Fcompact:Boolean;
+    Fcompact: Boolean;
 
-    // http server events
-    procedure httpGet(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-      AResponseInfo: TIdHTTPResponseInfo);
-    procedure httpError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-      AResponseInfo: TIdHTTPResponseInfo; AException: Exception);
-    procedure httpException(AContext: TIdContext; AException: Exception);
+     // http server events
+     procedure httpGet(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+       AResponseInfo: TIdHTTPResponseInfo);
+     procedure httpError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+       AResponseInfo: TIdHTTPResponseInfo; AException: Exception);
+     procedure httpException(AContext: TIdContext; AException: Exception);
 
-    procedure httpSinkEndpoint(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-      var respJson:TJsonObject);
+     procedure httpSinkEndpoint(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+       var respJson:TJsonObject);
 
-    procedure ProcessReceivedMessages();
-    procedure OnReceiveTimerTick(Sender: TObject);
+     procedure ProcessReceivedMessages();
+     procedure OnReceiveTimerTick(Sender: TObject);
 
-    procedure httpAfterBind(Sender:TObject);
-    procedure httpStatus(ASender: TObject; const AStatus: TIdStatus;
-      const AStatusText: string);
+     procedure httpAfterBind(Sender: TObject);
+     procedure httpStatus(ASender: TObject; const AStatus: TIdStatus;
+       const AStatusText: string);
 
-    function IsOpenned():Boolean;
+     function IsOpenned(): Boolean;
 
-    function GetPort():Word;
-    procedure SetPort(new:Word);
+     function GetPort(): Word;
+     procedure SetPort(new: Word);
 
-    function GetEndpoint(path:string):TPTEndpoint;
+     function GetEndpoint(path: string): TPTEndpoint;
 
    public
 
@@ -93,13 +94,13 @@ type
      procedure Start();
      procedure Stop();
 
-     procedure AccessTokenAdd(login: string; token:string);
+     procedure AccessTokenAdd(login: string; token: string);
      procedure AccessTokenRemove(login: string);
-     function HasAccess(login:string):Boolean;
+     function HasAccess(login: string):Boolean;
 
-      property openned:Boolean read IsOpenned;
-      property port:Word read GetPort write SetPort;
-      property compact:Boolean read Fcompact write Fcompact;
+     property openned: Boolean read IsOpenned;
+     property port: Word read GetPort write SetPort;
+     property compact: Boolean read Fcompact write Fcompact;
   end;
 
 var
@@ -108,10 +109,10 @@ var
 implementation
 
 uses Logging, appEv, fMain,
-      PTEndpointBlok, PTEndpointBloky, PTEndpointBlokStav, PTEndpointJC,
-      PTEndpointLok, PTEndpointLoks, PTEndpointLokStav, PTEndpointJCs,
+      PTEndpointBlock, PTEndpointBlocks, PTEndpointBlockState, PTEndpointJC,
+      PTEndpointLok, PTEndpointLoks, PTEndpointLokState, PTEndpointJCs,
       PTEndpointJCStav, PTEndpointTrains, PTEndpointTrain, PTEndpointUsers,
-      PTEndpointUser;
+      PTEndpointUser, PTEndpointAreas;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -134,8 +135,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 constructor TPtServer.Create();
-var bindings:TIdSocketHandles;
-    binding:TIdSocketHandle;
+var bindings: TIdSocketHandles;
+    binding: TIdSocketHandle;
 begin
  inherited;
 
@@ -189,6 +190,7 @@ begin
  Self.endpoints.Add(TPTEndpointUsers.Create());
  Self.endpoints.Add(TPTEndpointUser.Create());
  Self.endpoints.Add(TPTEndpointUserAuth.Create());
+ Self.endpoints.Add(TPTEndpointAreas.Create());
 end;//ctor
 
 destructor TPtServer.Destroy();
@@ -341,8 +343,8 @@ begin
  end;
 end;
 
-function TPtServer.GetEndpoint(path:string):TPTEndpoint;
-var endpoint:TPTEndpoint;
+function TPtServer.GetEndpoint(path: string): TPTEndpoint;
+var endpoint: TPTEndpoint;
 begin
  Result := nil;
  for endpoint in Self.endpoints do
@@ -356,7 +358,7 @@ begin
 end;
 
 procedure TPtServer.ProcessReceivedMessages();
-var received:TPtReceived;
+var received: TPtReceived;
 begin
  if (not Assigned(Self.received)) then
    Exit(); // everything is shutting down
@@ -402,17 +404,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPtServer.IsOpenned():Boolean;
+function TPtServer.IsOpenned(): Boolean;
 begin
  Result := Self.httpServer.Active;
 end;
 
-function TPtServer.GetPort():Word;
+function TPtServer.GetPort(): Word;
 begin
  Result := Self.httpServer.Bindings[0].Port;
 end;
 
-procedure TPtServer.SetPort(new:Word);
+procedure TPtServer.SetPort(new: Word);
 begin
  if (Self.httpServer.Active) then
    raise EPTActive.Create('PT server je aktivni, nelze zmenit cislo portu!');
@@ -421,7 +423,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TPtServer.httpAfterBind(Sender:TObject);
+procedure TPtServer.httpAfterBind(Sender: TObject);
 begin
  writeLog('PT server spuštěn', WR_PT);
 
@@ -443,14 +445,14 @@ end;
 // Tento virtualni endpoint je volan pokud nenajdeme zadny jiny vhodny endpoint.
 
 procedure TPtServer.httpSinkEndpoint(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-  var respJson:TJsonObject);
+  var respJson: TJsonObject);
 begin
  PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Neznamy endpoint');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TPtServer.AccessTokenAdd(login: string; token:string);
+procedure TPtServer.AccessTokenAdd(login: string; token: string);
 begin
  Self.accessTokens.Add(login, token);
 end;
@@ -460,7 +462,7 @@ begin
  Self.accessTokens.Remove(login);
 end;
 
-function TPtServer.HasAccess(login:string):Boolean;
+function TPtServer.HasAccess(login: string): Boolean;
 begin
  Result := Self.accessTokens.ContainsKey(login);
 end;

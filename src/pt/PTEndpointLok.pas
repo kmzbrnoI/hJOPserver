@@ -1,8 +1,6 @@
 unit PTEndpointLok;
 
-{
-  Endpoint PTserveru /loks/id.
-}
+{ PTserver endpoint /loks/id. }
 
 interface
 

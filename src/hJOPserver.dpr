@@ -103,15 +103,15 @@ uses
   TCPServerPT in 'pt\TCPServerPT.pas',
   JsonDataObjects in '..\lib\JsonDataObjects\Source\JsonDataObjects.pas',
   PTEndpoint in 'pt\PTEndpoint.pas',
-  PTEndpointBlok in 'pt\PTEndpointBlok.pas',
-  PTEndpointBloky in 'pt\PTEndpointBloky.pas',
+  PTEndpointBlock in 'pt\PTEndpointBlock.pas',
+  PTEndpointBlocks in 'pt\PTEndpointBlocks.pas',
   PTEndpointTrains in 'pt\PTEndpointTrains.pas',
   PTEndpointJC in 'pt\PTEndpointJC.pas',
   PTUtils in 'pt\PTUtils.pas',
   PTEndpointLok in 'pt\PTEndpointLok.pas',
   PTEndpointLoks in 'pt\PTEndpointLoks.pas',
-  PTEndpointBlokStav in 'pt\PTEndpointBlokStav.pas',
-  PTEndpointLokStav in 'pt\PTEndpointLokStav.pas',
+  PTEndpointBlockState in 'pt\PTEndpointBlockState.pas',
+  PTEndpointLokState in 'pt\PTEndpointLokState.pas',
   RCS in 'rcs\RCS.pas',
   RCSErrors in 'rcs\RCSErrors.pas',
   rrEvent in 'rrEvent.pas',
@@ -149,11 +149,12 @@ uses
   AreaLighting in 'areas\AreaLighting.pas',
   PTEndpointTrain in 'pt\PTEndpointTrain.pas',
   IfThenElse in 'helpers\IfThenElse.pas',
-  PTEndpointUsers in 'pt\PTEndpointUsers.pas',
+  PTEndpointAreas in 'pt\PTEndpointAreas.pas',
   PTEndpointUser in 'pt\PTEndpointUser.pas',
   BlockDb in 'blocks\BlockDb.pas',
   BlockGroupSignal in 'blocks\BlockGroupSignal.pas',
-  fBlkGroupSignal in 'blocks\forms\data\fBlkGroupSignal.pas' {F_BlkGroupSignal};
+  fBlkGroupSignal in 'blocks\forms\data\fBlkGroupSignal.pas' {F_BlkGroupSignal},
+  PTEndpointUsers in 'pt\PTEndpointUsers.pas';
 
 {$R *.res}
 

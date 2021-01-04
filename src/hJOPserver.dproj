@@ -215,15 +215,15 @@
 			<DCCReference Include="pt\TCPServerPT.pas"/>
 			<DCCReference Include="..\lib\JsonDataObjects\Source\JsonDataObjects.pas"/>
 			<DCCReference Include="pt\PTEndpoint.pas"/>
-			<DCCReference Include="pt\PTEndpointBlok.pas"/>
-			<DCCReference Include="pt\PTEndpointBloky.pas"/>
+			<DCCReference Include="pt\PTEndpointBlock.pas"/>
+			<DCCReference Include="pt\PTEndpointBlocks.pas"/>
 			<DCCReference Include="pt\PTEndpointTrains.pas"/>
 			<DCCReference Include="pt\PTEndpointJC.pas"/>
 			<DCCReference Include="pt\PTUtils.pas"/>
 			<DCCReference Include="pt\PTEndpointLok.pas"/>
 			<DCCReference Include="pt\PTEndpointLoks.pas"/>
-			<DCCReference Include="pt\PTEndpointBlokStav.pas"/>
-			<DCCReference Include="pt\PTEndpointLokStav.pas"/>
+			<DCCReference Include="pt\PTEndpointBlockState.pas"/>
+			<DCCReference Include="pt\PTEndpointLokState.pas"/>
 			<DCCReference Include="rcs\RCS.pas"/>
 			<DCCReference Include="rcs\RCSErrors.pas"/>
 			<DCCReference Include="rrEvent.pas"/>
@@ -277,13 +277,14 @@
 			<DCCReference Include="areas\AreaLighting.pas"/>
 			<DCCReference Include="pt\PTEndpointTrain.pas"/>
 			<DCCReference Include="helpers\IfThenElse.pas"/>
-			<DCCReference Include="pt\PTEndpointUsers.pas"/>
+			<DCCReference Include="pt\PTEndpointAreas.pas"/>
 			<DCCReference Include="pt\PTEndpointUser.pas"/>
 			<DCCReference Include="blocks\BlockDb.pas"/>
 			<DCCReference Include="blocks\BlockGroupSignal.pas"/>
 			<DCCReference Include="blocks\forms\data\fBlkGroupSignal.pas">
 				<Form>F_BlkGroupSignal</Form>
 			</DCCReference>
+			<DCCReference Include="pt\PTEndpointUsers.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

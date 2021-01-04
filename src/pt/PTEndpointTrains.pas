@@ -1,8 +1,6 @@
 unit PTEndpointTrains;
 
-{
-  Endpoint PTserveru /trains/.
-}
+{ PTserver endpoint /trains/. }
 
 interface
 

@@ -1,8 +1,6 @@
 unit PTEndpointJC;
 
-{
-  Endpoint PTserveru /blok/id.
-}
+{ PTserver endpoint /jc/jc. }
 
 interface
 

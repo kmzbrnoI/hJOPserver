@@ -1,8 +1,6 @@
 unit PTEndpointJCs;
 
-{
-  Endpoint PTserveru /jc/.
-}
+{ PTserver endpoint /jc/. }
 
 interface
 

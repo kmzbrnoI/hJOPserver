@@ -1,8 +1,6 @@
 unit PTEndpointJCStav;
 
-{
-  Endpoint PTserveru /jc/id/stav.
-}
+{ PTserver endpoint /jc/id/activate. }
 
 interface
 

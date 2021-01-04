@@ -1,8 +1,6 @@
-unit PTEndpointLokStav;
+unit PTEndpointBlockState;
 
-{
-  Endpoint PTserveru /lokStav/id.
-}
+{ PTserver endpoint /blockState/id. }
 
 interface
 
@@ -10,9 +8,9 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
   Generics.Collections;
 
 type
-  TPTEndpointLokStav = class(TPTEndpoint)
+  TPTEndpointBlokStav = class(TPTEndpoint)
     private const
-      _ENDPOINT_MATCH_REGEX = '^/lokState/(\d+)/?$';
+      _ENDPOINT_MATCH_REGEX = '^/blockState/(\d+)/?$';
 
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -26,14 +24,15 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, THVDatabase;
+uses PTUtils, JclPCRE, BlockDb, Block;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TPTEndpointLokStav.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+procedure TPTEndpointBlokStav.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
 var re: TJclRegEx;
-    lokoAddr:Word;
+    blokId:Integer;
+    Blk:TBlk;
     params:TDictionary<string, string>;
 begin
  re := TJclRegEx.Create();
@@ -48,80 +47,74 @@ begin
    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
    try
-     lokoAddr := StrToInt(re.Captures[0]);
+     blokId := StrToInt(re.Captures[0]);
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni adresa lokmotivy',
-          re.Captures[0] + ' neni validni adresa lokmotivy');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id bloku', re.Captures[0] + ' neni validni id bloku');
        Exit();
       end;
    end;
 
-   if ((lokoAddr > 9999) or (HVDb[lokoAddr] = nil)) then
+   if (not Blocks.IsBlok(blokId)) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje',
-        'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Blok neexistuje', 'Blok s id '+IntToStr(blokId)+' neexistuje');
      Exit();
     end;
 
-   HVDb[lokoAddr].GetPtState(respJson.O['lokState']);
+   Blocks.GetBlkByID(blokId, Blk);
+   Blk.GetPtState(respJson.O['blockState']);
  finally
    re.Free();
    params.Free();
  end;
 end;
+
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TPTEndpointLokStav.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+procedure TPTEndpointBlokStav.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject);
 var re: TJclRegEx;
-    lokoAddr:Word;
-    params:TDictionary<string, string>;
+    blokId:Integer;
+    Blk:TBlk;
 begin
  re := TJclRegEx.Create();
- params := TDictionary<string, string>.Create();
-
  try
    re.Compile('\d+', false);
    re.Match(ARequestInfo.Document);
 
-   PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
-
    try
-     lokoAddr := StrToInt(re.Captures[0]);
+     blokId := StrToInt(re.Captures[0]);
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400',
-          'Nevalidni adresa lokmotivy', re.Captures[0] + ' neni validni adresa lokmotivy');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id bloku', re.Captures[0] + ' neni validni id bloku');
        Exit();
       end;
    end;
 
-   if ((lokoAddr > 9999) or (HVDb[lokoAddr] = nil)) then
+   if (not Blocks.IsBlok(blokId)) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje',
-        'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Blok neexistuje', 'Blok s id '+IntToStr(blokId)+' neexistuje');
      Exit();
     end;
 
-   if (not reqJson.Contains('lokStav')) then
+   if (not reqJson.Contains('blockState')) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce lokStav');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce blokStav');
      Exit();
     end;
 
-   HVDb[lokoAddr].PostPtState(reqJson['lokStav'], respJson);
+   Blocks.GetBlkByID(blokId, Blk);
+   Blk.PutPtState(reqJson['blockState'], respJson);
  finally
    re.Free();
-   params.Free();
  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPTEndpointLokStav.EndpointMatch(path:string):Boolean;
+function TPTEndpointBlokStav.EndpointMatch(path:string):Boolean;
 begin
  Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;
@@ -129,4 +122,3 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 end.
-

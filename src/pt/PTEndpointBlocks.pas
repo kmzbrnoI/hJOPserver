@@ -1,8 +1,6 @@
-unit PTEndpointBloky;
+unit PTEndpointBlocks;
 
-{
-  Endpoint PTserveru /blok/.
-}
+{ PTserver endpoint /blocks/. }
 
 interface
 

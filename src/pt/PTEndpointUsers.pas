@@ -1,8 +1,6 @@
 unit PTEndpointUsers;
 
-{
-  Endpoint PTserveru /users/.
-}
+{ PTserver endpoint /users/. }
 
 interface
 
