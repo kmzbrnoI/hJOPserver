@@ -360,7 +360,7 @@ begin
  if (Self.JCs[index].active or Self.JCs[index].activating) then
    raise Exception.Create('JC postavena, nelze smazat');
 
- for area in ORs do
+ for area in Areas do
    if (area.stack.IsJCInStack(Self.JCs[index])) then
      raise Exception.Create('JC v zasobniku OR '+area.id);
 

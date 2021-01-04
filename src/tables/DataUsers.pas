@@ -84,7 +84,7 @@ begin
  Self.LV.Items[line].SubItems[6] := FormatDateTime('yyyy-mm-dd hh:nn:ss', user.lastlogin);
 
  str := '';
- for area in ORs do
+ for area in Areas do
   begin
    if ((user.areas.ContainsKey(area.id)) and (user.areas[area.id] > TAreaRights.null)) then
     begin

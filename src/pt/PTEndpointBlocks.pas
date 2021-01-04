@@ -41,7 +41,7 @@ begin
 
    if (params.ContainsKey('station')) then
     begin
-     stanice := ORs.Get(params['station']);
+     stanice := Areas.Get(params['station']);
      if (stanice = nil) then
       begin
        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Oblast rizeni neexistuje',

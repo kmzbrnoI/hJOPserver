@@ -272,7 +272,7 @@ var LI: TListItem;
 begin
  Self.LV_ORs.Clear();
 
- for area in ORs do
+ for area in Areas do
   begin
    LI := Self.LV_ORs.Items.Add;
    LI.Caption := area.id;

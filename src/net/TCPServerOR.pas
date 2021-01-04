@@ -678,7 +678,7 @@ begin
   end;
 
  end else if (parsed[1] = 'OR-LIST') then
-   ORs.SendORList(AContext)
+   Areas.SendORList(AContext)
 
  else if (parsed[1] = 'UPO') then
   begin
@@ -827,7 +827,7 @@ begin
    Exit();
  end else if (parsed[1] = 'SH') then begin
    try
-     area := ORs.Get(parsed[0]);
+     area := Areas.Get(parsed[0]);
      if (Assigned(area)) then begin
        if (Assigned(area.announcement)) then
          area.announcement.Parse(AContext, area, parsed)
@@ -845,7 +845,7 @@ begin
 
  // vsechna ostatni data pak podlehaji znalosti OR, ktere mam autorizovane, tak z toho vyjdeme
 
- area := ORs.Get(parsed[0]);
+ area := Areas.Get(parsed[0]);
  if (area = nil) then
   begin
    Self.SendInfoMsg(AContext, 'Neautorizováno');
@@ -1142,7 +1142,7 @@ end;
 procedure TORTCPServer.Auth(AContext: TIdContext; parsed: TStrings);
 var area: TArea;
 begin
- area := ORs.Get(parsed[0]);
+ area := Areas.Get(parsed[0]);
  if (area = nil) then
   begin
    Self.SendInfoMsg(AContext, 'Tato OR neexistuje');

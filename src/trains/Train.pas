@@ -232,9 +232,9 @@ begin
  Self.data.direction := THVStanoviste(ini.ReadInteger(section, 'smer', Integer(THVStanoviste.lichy)));
  Self.data.maxSpeed := ini.ReadInteger(section, 'maxRychlost', 0);
 
- Self.data.stationFrom := ORs.Get(ini.ReadString(section, 'z', ''));
- Self.data.stationTo := ORs.Get(ini.ReadString(section, 'do', ''));
- Self.data.station := ORs.Get(ini.ReadString(section, 'OR', ''));
+ Self.data.stationFrom := Areas.Get(ini.ReadString(section, 'z', ''));
+ Self.data.stationTo := Areas.Get(ini.ReadString(section, 'do', ''));
+ Self.data.station := Areas.Get(ini.ReadString(section, 'OR', ''));
  Self.data.announcement := ini.ReadBool(section, 'hlaseni', false);
 
  data := TStringList.Create();
@@ -461,14 +461,14 @@ begin
  if (train.Contains('type')) then
    Self.data.typ := train['type'];
  if (train.Contains('station')) then
-   Self.data.station := ORs.Get(train.S['station']);
+   Self.data.station := Areas.Get(train.S['station']);
  if (train.Contains('front')) then
    Blocks.GetBlkByID(train['front'], TBlk(Self.data.front));
 
  if (train.Contains('stationFrom')) then
-   Self.data.stationFrom := ORs.Get(train.S['stationFrom']);
+   Self.data.stationFrom := Areas.Get(train.S['stationFrom']);
  if (train.Contains('stationTo')) then
-   Self.data.stationTo := ORs.Get(train.S['stationTo']);
+   Self.data.stationTo := Areas.Get(train.S['stationTo']);
 
  if (train.Contains('announcement')) then
    Self.data.announcement := train['announcement'];

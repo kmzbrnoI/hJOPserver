@@ -278,13 +278,14 @@
 			<DCCReference Include="pt\PTEndpointTrain.pas"/>
 			<DCCReference Include="helpers\IfThenElse.pas"/>
 			<DCCReference Include="pt\PTEndpointAreas.pas"/>
-			<DCCReference Include="pt\PTEndpointUser.pas"/>
+			<DCCReference Include="pt\PTEndpointArea.pas"/>
 			<DCCReference Include="blocks\BlockDb.pas"/>
 			<DCCReference Include="blocks\BlockGroupSignal.pas"/>
 			<DCCReference Include="blocks\forms\data\fBlkGroupSignal.pas">
 				<Form>F_BlkGroupSignal</Form>
 			</DCCReference>
 			<DCCReference Include="pt\PTEndpointUsers.pas"/>
+			<DCCReference Include="pt\PTEndpointUser.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

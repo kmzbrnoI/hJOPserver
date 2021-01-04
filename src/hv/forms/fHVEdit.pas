@@ -174,7 +174,7 @@ var data: THVData;
     Exit();
    end;
 
-  area := ORs[Self.CB_OR.ItemIndex];
+  area := Areas[Self.CB_OR.ItemIndex];
   if ((Self.OpenHV <> nil) and (Self.OpenHV.Stav.train > -1) and (Self.OpenHV.Stav.stanice <> area)) then
     if (Application.MessageBox('Měníte stanici HV, které je na soupravě, opravdu pokračovat?', 'Opravdu?', MB_YESNO OR MB_ICONWARNING) = mrNo) then
       Exit();
@@ -231,7 +231,7 @@ var data: THVData;
      // vytvoreni noveho HV
      data.maxSpeed := _DEFAUT_MAX_SPEED;
      data.transience := 0;
-     area := ORs[Self.CB_OR.ItemIndex];
+     area := Areas[Self.CB_OR.ItemIndex];
      try
        HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVStanoviste(CB_Orientace.ItemIndex), area);
      except
@@ -251,7 +251,7 @@ var data: THVData;
      // update HV
      Self.OpenHV.data := data;
 
-     area := ORs[Self.CB_OR.ItemIndex];
+     area := Areas[Self.CB_OR.ItemIndex];
 
      stav := Self.OpenHV.stav;
      stav.StanovisteA := THVStanoviste(CB_Orientace.ItemIndex);
@@ -374,7 +374,7 @@ var data: THVData;
     LI.SubItems.Add(IntToStr(data.POMrelease[i].data));
    end;
 
-  ORs.FillCB(Self.CB_OR, stav.stanice);
+  Areas.FillCB(Self.CB_OR, stav.stanice);
 
   F_HVEdit.Caption := 'HV '+IntToStr(Self.OpenHV.addr);
  end;
@@ -395,7 +395,7 @@ procedure TF_HVEdit.NewHVOpenForm();
   Self.LV_Pom_Load.Clear();
   Self.LV_Pom_Release.Clear();
 
-  ORs.FillCB(Self.CB_OR, nil);
+  Areas.FillCB(Self.CB_OR, nil);
 
   F_HVEdit.Caption := 'Nové hnací vozidlo';
  end;

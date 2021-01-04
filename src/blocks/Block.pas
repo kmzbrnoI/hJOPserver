@@ -493,7 +493,7 @@ begin
    if (strs.Count < 1) then Exit(strs);
    if (Self.m_areas <> nil) then
      Self.m_areas.Free();
-   Self.m_areas := ORs.ParseORs(strs[0]);
+   Self.m_areas := AreaDb.Areas.ParseORs(strs[0]);
  except
   strs.Free();
   raise;

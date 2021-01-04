@@ -216,8 +216,8 @@ begin
  try
    // nejprve je zapotrebi odpojit vsechny pripojene panely
    for areaId in Self.users[index].areas.Keys do
-     if (ORs.Get(areaId) <> nil) then
-       ORs.Get(areaId).UserDelete(Self.users[index].username);
+     if (Areas.Get(areaId) <> nil) then
+       Areas.Get(areaId).UserDelete(Self.users[index].username);
 
    if (Assigned(Self.users[index])) then
      Self.users.Delete(index);

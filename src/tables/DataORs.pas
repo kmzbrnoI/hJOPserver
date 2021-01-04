@@ -42,7 +42,7 @@ var LI: TListItem;
 begin
  Self.LV.Clear;
 
- for i := 0 to ORs.Count-1 do
+ for i := 0 to Areas.Count-1 do
   begin
    LI := Self.LV.Items.Add;
    LI.Caption := IntToStr(i);
@@ -58,7 +58,7 @@ end;
 procedure TORsTableData.UpdateTable(force: Boolean = false);
 var area: TArea;
 begin
- for area in ORs do
+ for area in Areas do
   begin
    if ((area.changed) or (force)) then
     begin

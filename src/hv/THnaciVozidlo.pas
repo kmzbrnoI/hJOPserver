@@ -469,9 +469,9 @@ procedure THV.LoadState(ini: TMemIniFile; section: string);
 var i: Integer;
     str: string;
 begin
- Self.Stav.stanice := ORs.Get(ini.ReadString(section, 'stanice', ''));
+ Self.Stav.stanice := Areas.Get(ini.ReadString(section, 'stanice', ''));
  if (Self.Stav.stanice = nil) then
-   Self.Stav.stanice := ORs[HVDb.default_or];
+   Self.Stav.stanice := Areas[HVDb.default_or];
 
  Self.Stav.traveled_forward := ini.ReadFloat(section, 'najeto_vpred_metru', 0);
  Self.Stav.traveled_backward := ini.ReadFloat(section, 'najeto_vzad_metru', 0);

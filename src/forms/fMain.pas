@@ -759,7 +759,7 @@ begin
   Self.LogStatus('RCS: moduly naskenovány');
 
   // inicialziace osvetleni
-  ORs.InitOsv();
+  Areas.InitOsv();
 
   if (SystemData.Status = starting) then
    Self.A_Trk_ConnectExecute(nil);
@@ -1404,7 +1404,7 @@ begin
    ORTCPServer.DCCStart();
   end else begin
 
-   ORs.BroadcastPlaySound(_SND_CHYBA, false, TAreaRights.write);
+   Areas.BroadcastPlaySound(_SND_CHYBA, false, TAreaRights.write);
 
    //neni DCC
    Self.S_DCC.Brush.Color := clRed;
@@ -1452,7 +1452,7 @@ procedure TF_Main.T_MainTimer(Sender: TObject);
     JCDb.Update();
     MultiJCDb.Update();
     Boosters.Update();
-    ORs.Update();
+    Areas.Update();
     UpdateCallMethod();
     RCSd.Update();
     TrakceI.Update();
@@ -1897,7 +1897,7 @@ begin
   end;
 
   try
-    ORs.SaveStatus(ORs.status_filename);
+    Areas.SaveStatus(Areas.status_filename);
   except
     on E: Exception do
       AppEvents.LogException(E, 'Save OR status');
@@ -1989,7 +1989,7 @@ begin
  if (PtServer.openned) then Self.A_PT_StopExecute(nil);
 
  Self.LogStatus('Odpojuji panely...');
- ORs.DisconnectPanels();
+ Areas.DisconnectPanels();
  Self.A_PanelServer_StopExecute(nil);
 
  JCDb.CancelAll();
@@ -2217,7 +2217,7 @@ procedure TF_Main.B_RemoveStackClick(Sender: TObject);
 var area: TArea;
 begin
  if (Self.LV_Stanice.Selected = nil) then Exit();
- area := ORs[Self.LV_Stanice.ItemIndex];
+ area := Areas[Self.LV_Stanice.ItemIndex];
  if (Application.MessageBox(PChar('Opravdu smazat zásobník jízdních cest stanice '+area.name+' ?'),
                             'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
    area.stack.Clear();
@@ -2821,7 +2821,7 @@ var area: TArea;
 begin
  if (Self.LV_Stanice.Selected <> nil) then
   begin
-   area := ORs[Self.LV_Stanice.ItemIndex];
+   area := Areas[Self.LV_Stanice.ItemIndex];
    if (area.stack.Count > 0) then Self.B_RemoveStack.Enabled := true else Self.B_RemoveStack.Enabled := false;
   end else begin
    Self.B_RemoveStack.Enabled := false;

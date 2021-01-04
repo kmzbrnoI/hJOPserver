@@ -93,7 +93,7 @@ var read, read2: string;
   read  := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'spnl', 'data\stanice.spnl');
   read2 := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'or', 'stav\or.ini');
   try
-    ORs.LoadData(read, read2);
+    Areas.LoadData(read, read2);
   except
     on E: EFileNotFound do
       writelog(E.Message, WR_ERROR);
@@ -317,10 +317,10 @@ var tmpStr: string;
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_HV_state.Text);
     inidata.WriteBool('Log', 'console', F_Options.CHB_Log_console.Checked);
 
-    if (ORs.status_filename = '') then
+    if (Areas.status_filename = '') then
       tmpStr := 'stav\or_stav.ini'
     else
-      tmpStr := ORs.status_filename;
+      tmpStr := Areas.status_filename;
 
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'or', tmpStr);
   except

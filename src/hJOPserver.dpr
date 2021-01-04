@@ -150,11 +150,12 @@ uses
   PTEndpointTrain in 'pt\PTEndpointTrain.pas',
   IfThenElse in 'helpers\IfThenElse.pas',
   PTEndpointAreas in 'pt\PTEndpointAreas.pas',
-  PTEndpointUser in 'pt\PTEndpointUser.pas',
+  PTEndpointArea in 'pt\PTEndpointArea.pas',
   BlockDb in 'blocks\BlockDb.pas',
   BlockGroupSignal in 'blocks\BlockGroupSignal.pas',
   fBlkGroupSignal in 'blocks\forms\data\fBlkGroupSignal.pas' {F_BlkGroupSignal},
-  PTEndpointUsers in 'pt\PTEndpointUsers.pas';
+  PTEndpointUsers in 'pt\PTEndpointUsers.pas',
+  PTEndpointUser in 'pt\PTEndpointUser.pas';
 
 {$R *.res}
 

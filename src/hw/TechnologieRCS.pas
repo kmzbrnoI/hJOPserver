@@ -300,7 +300,7 @@ begin
   end else begin
    // errors on RCS boards
    case (errValue) of
-    RCS_MODULE_FAIL: ORs.RCSFail(errAddr); // communication with module failed
+    RCS_MODULE_FAIL: Areas.RCSFail(errAddr); // communication with module failed
     RCS_MODULE_RESTORED:; // communication with module restored, nothing should be here
    end;
   end;//

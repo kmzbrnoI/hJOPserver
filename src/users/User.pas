@@ -184,7 +184,7 @@ begin
    ini.WriteString(section, 'salt', Self.fsalt);
 
  str := '';
- for area in ORs do
+ for area in AreaDb.Areas do
    if (Self.areas.TryGetValue(area.id, rights)) then
      str := str + '(' + area.id + ';' + IntToStr(Integer(rights)) + ')';
 
@@ -249,7 +249,7 @@ procedure TUser.SetRights(areaId: string; rights: TAreaRights);
 var area: TArea;
 begin
  Self.areas.AddOrSetValue(areaId, rights);
- area := ORs.Get(areaId);
+ area := AreaDb.Areas.Get(areaId);
  if (area <> nil) then
    area.UserUpdateRights(Self);
 end;
@@ -267,7 +267,7 @@ begin
    // user prave dostal BAN -> aktualizovat oblasti rizeni
    for areaId in Self.areas.Keys do
     begin
-     area := ORs.Get(areaId);
+     area := AreaDb.Areas.Get(areaId);
      if (area <> nil) then
        area.UserUpdateRights(Self);
     end;
