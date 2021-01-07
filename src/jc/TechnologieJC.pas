@@ -338,7 +338,7 @@ type
 
       procedure GetPtData(json: TJsonObject; includeStaveni: Boolean);
       procedure GetPtState(json: TJsonObject);
-      procedure PostPtStav(reqJson: TJsonObject; respJson: TJsonObject);
+      procedure PostPtActivate(reqJson: TJsonObject; respJson: TJsonObject);
 
       property data: TJCdata read m_data write SetData;
       property state: TJCstate read m_state;
@@ -4035,7 +4035,7 @@ begin
  json['ab'] := Self.AB;
 end;
 
-procedure TJC.PostPtStav(reqJson: TJsonObject; respJson: TJsonObject);
+procedure TJC.PostPtActivate(reqJson: TJsonObject; respJson: TJsonObject);
 var barriers: TJCBarriers;
     barrier: TJCBarrier;
     ok: Integer;
@@ -4054,7 +4054,7 @@ begin
    ok := Self.Activate(nil, TBlkSignal(Self.signal).areas[0], barriers, nil, false, false, ab);
    respJson['success'] := (ok = 0);
    for barrier in barriers do
-     Self.BarrierToJson(barrier, respJson.A['bariery'].AddObject());
+     Self.BarrierToJson(barrier, respJson.A['barriers'].AddObject());
  finally
    barriers.Free();
  end;

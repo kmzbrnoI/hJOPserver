@@ -54,7 +54,7 @@ begin
      Exit();
     end;
 
-   JC.PostPtStav(reqJson, respJson);
+   JC.PostPtActivate(reqJson, respJson);
  finally
    re.Free();
  end;
