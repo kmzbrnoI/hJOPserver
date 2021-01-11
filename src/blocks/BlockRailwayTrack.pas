@@ -909,20 +909,27 @@ begin
 
    if ((not Self.IsTrain()) and (Self.prevRT.IsTrain())) then
     begin
-     // mezi useky je potreba predat soupravu
-     Self.prevRT.train.front := Self;
-     Self.AddTrainL(Self.prevRT.trainI);
-     Self.slowingReady := true;
-     Self.houkEvEnabled := true;
-     Self.speedUpdate := true;
-
-     if (Self.nextRT = nil) then
+     if (Self.prevRT.train.front = Self.prevRT) then
       begin
-       // souprava vstoupila do posledniho bloku trati
-       // zmena stanic soupravy a hnacich vozidel v ni
-       TBlkRailway(Self.railway).TrainChangeOR(Self.train);
+       Self.prevRT.train.front := Self;
+       Self.AddTrainL(Self.prevRT.trainI); // must be after setting front! must be before setting houkEvEnabled = true!
+       Self.slowingReady := true;
+       Self.houkEvEnabled := true;
+       Self.speedUpdate := true;
+
+       if (Self.nextRT = nil) then
+        begin
+         // souprava vstoupila do posledniho bloku trati
+         // zmena stanic soupravy a hnacich vozidel v ni
+         TBlkRailway(Self.railway).TrainChangeOR(Self.train);
+        end;
+      end else begin
+       Self.AddTrainL(Self.prevRT.trainI);
+       Self.slowingReady := false;
+       Self.houkEvEnabled := false;
+       Self.speedUpdate := false;
       end;
-    end;//if predavam soupravu
+    end;
   end;
 
  // uvolnovani soupravy z TU (pokud je jiz predana do dalsiho TU)
