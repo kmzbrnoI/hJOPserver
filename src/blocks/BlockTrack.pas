@@ -2125,14 +2125,14 @@ begin
    // PODJ bylo odstraneno -> rozjet soupravu pred navestidlem i kdyz neni na zastavovaci udalosti
    // aktualizaci rychlosti pro vsechny signalJCRef bychom nemeli nic pokazit
    for nav in Self.signalJCRef do
-     TBlkSignal(nav).UpdateRychlostTrain(true);
+     TBlkSignal(nav).UpdateTrainSpeed(true);
   end;
 
  // Pri zruseni / zavedei PODJ aktualizovat rychlsot loko, ktera prijizdi,
  // protoze muze dojit ke zmene rychlosti
  jc := JCDb.FindActiveJCWithTrack(Self.id);
   if (jc <> nil) then
-    TBlkSignal(jc.signal).UpdateRychlostTrain(true);
+    TBlkSignal(jc.signal).UpdateTrainSpeed(true);
 
  Self.PropagatePOdjToRailway();
  Self.Change();
@@ -2180,7 +2180,7 @@ begin
          for signal in Self.signalJCRef do
            if (((TBlkSignal(signal).direction = THVSite.even) and (train = Self.trainL)) or
                ((TBlkSignal(signal).direction = THVSite.odd) and (train = Self.trainSudy))) then
-             TBlkSignal(signal).UpdateRychlostTrain(true);
+             TBlkSignal(signal).UpdateTrainSpeed(true);
         end;
       end else
        train.GetPOdj(Self).changed := false;
@@ -2241,7 +2241,7 @@ procedure TBlkTrack.PropagatePOdjToRailway();
 var signal: TBlk;
 begin
  for signal in Self.signalJCRef do
-   TBlkSignal(signal).PropagatePOdjToTrat();
+   TBlkSignal(signal).PropagatePOdjToRailway();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

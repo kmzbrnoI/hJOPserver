@@ -1835,7 +1835,7 @@ var i, j: Integer;
         Self.m_state.from_stack := nil;
        end;
 
-      signal.PropagatePOdjToTrat();
+      signal.PropagatePOdjToRailway();
 
       if ((Self.m_state.ab) and (not signal.AB)) then
         signal.ABJC := Self;

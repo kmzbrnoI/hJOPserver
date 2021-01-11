@@ -213,17 +213,17 @@ type
     function GetSettings(): TBlkSignalSettings;
     procedure SetSettings(data: TBlkSignalSettings);
 
-    procedure UpdateRychlostTrain(force: Boolean = false);
+    procedure UpdateTrainSpeed(force: Boolean = false);
     procedure AddBlkToRnz(blkId: Integer; change: Boolean = true);
     procedure RemoveBlkFromRnz(blkId: Integer);
     procedure RCtimerTimeout();
     function FourtyKmph(): Boolean;
-    class function AddOpak(navest: TBlkSignalCode): TBlkSignalCode;
+    class function AddOpak(code: TBlkSignalCode): TBlkSignalCode;
 
     function GetTrain(usek: TBlk = nil): TTrain;
-    procedure PropagatePOdjToTrat();
+    procedure PropagatePOdjToRailway();
 
-    class function SignalToString(navest: TBlkSignalCode): string;
+    class function SignalToString(code: TBlkSignalCode): string;
 
     property symbolType: TBlkSignalSymbol read m_spnl.symbolType;
     property trackId: Integer read m_spnl.trackId write SetTrackId;
@@ -455,7 +455,7 @@ procedure TBlkSignal.Update();
 begin
  Self.UpdateSignalSet();
  Self.UpdateFalling();
- Self.UpdateRychlostTrain();
+ Self.UpdateTrainSpeed();
 
  if (Self.signal = ncPrivol) then
    Self.UpdatePrivol();
@@ -611,7 +611,7 @@ begin
    Self.m_state.changeEnd := Now + EncodeTime(0, 0, _SIG_CHANGE_SHORT_DELAY_MSEC div 1000, _SIG_CHANGE_SHORT_DELAY_MSEC mod 1000);
 
  if (not TBlkSignal.IsGoSignal(Self.m_state.targetSignal)) then // zastavujeme ihned
-   Self.UpdateRychlostTrain(true);
+   Self.UpdateTrainSpeed(true);
 
  if (Self.track <> nil) then
   begin
@@ -655,7 +655,7 @@ begin
    tmp(Self);
   end;
 
- Self.UpdateRychlostTrain(true);
+ Self.UpdateTrainSpeed(true);
  JCDb.UpdatePrevSignal(Self);
  Self.Change();
 end;
@@ -1150,9 +1150,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TBlkSignal.SignalToString(navest: TBlkSignalCode): string;
+class function TBlkSignal.SignalToString(code: TBlkSignalCode): string;
 begin
-  case (navest) of
+  case (code) of
    ncChanging: Result  := 'stavění...';
    ncDisabled: Result  := 'disabled';
    ncStuj: Result  := 'stůj/posun zakázán';
@@ -1190,7 +1190,7 @@ begin
    Self.signal := ncStuj;
   end;
 
- Self.UpdateRychlostTrain(true);
+ Self.UpdateTrainSpeed(true);
 end;
 
 procedure TBlkSignal.UpdateFalling();
@@ -1210,20 +1210,20 @@ end;
 // pozor na padání !
 // force nucene zastavi vlak, resp. nastavi jeho rychlost
 //  metoda je volana s force v pripade, kdy dochazi k prime zmene navesti od uzivatele (STUJ, DN, RC)
-procedure TBlkSignal.UpdateRychlostTrain(force: Boolean = false);
-var Usek, signal: TBlk;
+procedure TBlkSignal.UpdateTrainSpeed(force: Boolean = false);
+var track, signal: TBlk;
     train: TTrain;
     signalEv: TBlkSignalTrainEvent;
     i: Integer;
-    trat: TBlkRailway;
+    railway: TBlkRailway;
 begin
  if (Self.m_settings.events.Count = 0) then Exit();
- Usek := Self.track;
+ track := Self.track;
  if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then Exit();          // pokud jsem posunove navestidlo, koncim funkci
- if ((Usek = nil) or ((Usek.typ <> btTrack) and (Usek.typ <> btRT))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
+ if ((track = nil) or ((track.typ <> btTrack) and (track.typ <> btRT))) then Exit();    // pokud pred navestidlem neni usek, koncim funkci
 
  // pokud na useku prede mnou neni souprava, koncim funkci
- if (not (Usek as TBlkTrack).IsTrain()) then
+ if (not (track as TBlkTrack).IsTrain()) then
   begin
    // tady musi dojit ke zruseni registrace eventu, kdyby nedoslo, muze se stat,
    // ze za nejakou dobu budou splneny podminky, pro overovani eventu, ale
@@ -1235,8 +1235,8 @@ begin
   end;
 
  // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
- train := Self.GetTrain(Usek);
- if (train.front <> Usek) then
+ train := Self.GetTrain(track);
+ if (train.front <> track) then
   begin
    // tady musime zrusit registraci eventu, viz vyse
    if ((Self.m_lastEvIndex >= 0) and (Self.m_lastEvIndex < Self.m_settings.events.Count)) then
@@ -1245,20 +1245,20 @@ begin
    Exit();
   end;
 
- if ((Usek.typ = btRT) and (TBlkRT(Usek).railway <> nil)) then
+ if ((track.typ = btRT) and (TBlkRT(track).railway <> nil)) then
   begin
-   trat := TBlkRailway(TBlkRT(Usek).railway);
+   railway := TBlkRailway(TBlkRT(track).railway);
 
    // Ignoruji krajni navestidla trati, ktera jsou proti smeru trati
-   if ((trat.direction = TRailwayDirection.AtoB) and (Self = trat.signalA)) then
+   if ((railway.direction = TRailwayDirection.AtoB) and (Self = railway.signalA)) then
      Exit();
-   if ((trat.direction = TRailwayDirection.BtoA) and (Self = trat.signalB)) then
+   if ((railway.direction = TRailwayDirection.BtoA) and (Self = railway.signalB)) then
      Exit();
 
    // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontetu zmeny smeru soupravy)
-   if ((Self.autoblok) and (TBlkRailway(TBlkRT(Usek).railway).direction = TRailwayDirection.AtoB) and (Self.direction = THVSite.even)) then
+   if ((Self.autoblok) and (TBlkRailway(TBlkRT(track).railway).direction = TRailwayDirection.AtoB) and (Self.direction = THVSite.even)) then
      Exit();
-   if ((Self.autoblok) and (TBlkRailway(TBlkRT(Usek).railway).direction = TRailwayDirection.BtoA) and (Self.direction = THVSite.odd)) then
+   if ((Self.autoblok) and (TBlkRailway(TBlkRT(track).railway).direction = TRailwayDirection.BtoA) and (Self.direction = THVSite.odd)) then
      Exit();
   end;
 
@@ -1286,18 +1286,18 @@ begin
 
  // ZPOMALOVANI
  if ((signalEv.slow.enabled) and (train.wantedSpeed > signalEv.slow.speed) and
-     ((Usek as TBlkTrack).slowingReady) and
-     ((not Self.IsGoSignal()) or (train.IsPOdj(Usek))) and
+     ((track as TBlkTrack).slowingReady) and
+     ((not Self.IsGoSignal()) or (train.IsPOdj(track))) and
      (train.direction = Self.m_spnl.direction)) then
   begin
    if (not signalEv.slow.ev.enabled) then
      signalEv.slow.ev.Register();
 
-   if (signalEv.slow.ev.IsTriggerred(Usek, true)) then
+   if (signalEv.slow.ev.IsTriggerred(track, true)) then
     begin
      signalEv.slow.ev.Unregister();
      train.speed := signalEv.slow.speed;
-     (Usek as TBlkTrack).slowingReady := false;
+     (track as TBlkTrack).slowingReady := false;
     end;
   end else begin
    if ((signalEv.slow.enabled) and (signalEv.slow.ev.enabled)) then
@@ -1310,22 +1310,22 @@ begin
  if (not signalEv.stop.enabled) then
    signalEv.stop.Register();
 
- if ((signalEv.stop.IsTriggerred(Usek, true)) or (force)) then       // podminka IsRychEvent take resi to, ze usek musi byt obsazeny (tudiz resi vypadek useku)
+ if ((signalEv.stop.IsTriggerred(track, true)) or (force)) then       // podminka IsTriggerred take resi to, ze usek musi byt obsazeny (tudiz resi vypadek useku)
   begin
    // event se odregistruje automaticky pri zmene
 
-   if ((train.IsPOdj(Usek)) and (train.direction = Self.m_spnl.direction)) then
+   if ((train.IsPOdj(track)) and (train.direction = Self.m_spnl.direction)) then
     begin
      // predvidany odjezd neuplynul -> zastavit soupravu
      if (train.wantedSpeed <> 0) then
-       train.SetSpeedDirection(0, Self.m_spnl.direction);
+       train.speed := 0;
 
      // souprava je na zastavovaci udalosti -> zacit pocitat cas
-     if (not train.GetPOdj(Usek).origin_set) then
+     if (not train.GetPOdj(track).origin_set) then
       begin
-       train.GetPOdj(Usek).RecordOriginNow();
-       TBlkTrack(Usek).PropagatePOdjToRailway();
-       Usek.Change();
+       train.GetPOdj(track).RecordOriginNow();
+       TBlkTrack(track).PropagatePOdjToRailway();
+       track.Change();
       end;
 
      Exit();
@@ -1661,7 +1661,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkSignal.PropagatePOdjToTrat();
+procedure TBlkSignal.PropagatePOdjToRailway();
 var train: TTrain;
     trat: TBlk;
     podj: TPOdj;
@@ -1763,16 +1763,16 @@ begin
            (Self.targetSignal = ncOpak40Ocek40);
 end;
 
-class function TBlkSignal.AddOpak(navest: TBlkSignalCode): TBlkSignalCode;
+class function TBlkSignal.AddOpak(code: TBlkSignalCode): TBlkSignalCode;
 begin
- case (navest) of
+ case (code) of
   ncVolno: Result := ncOpakVolno;
   ncVystraha: Result := ncOpakVystraha;
   ncOcek40: Result := ncOpakOcek40;
   ncVystraha40: Result := ncOpakVystraha40;
   nc40Ocek40: Result := ncOpak40Ocek40;
  else
-  Result := navest;
+  Result := code;
  end;
 end;
 

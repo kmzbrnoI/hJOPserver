@@ -600,7 +600,7 @@ begin
  TBlkTrack(Self.front).Change();
 
  for signal in TBlkTrack(Self.front).signalJCRef do
-   TBlkSignal(signal).UpdateRychlostTrain(true);
+   TBlkSignal(signal).UpdateTrainSpeed(true);
 
  Self.changed := true;
 end;
