@@ -133,6 +133,7 @@ type
 
     procedure MenuObsazClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuUvolClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuDetClick(SenderPnl: TIdContext; SenderOR: TObject; id: Integer; state: Boolean);
 
     procedure ORVylukaNull(Sender: TIdContext; success: Boolean);
 
@@ -284,7 +285,7 @@ implementation
 
 uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
     TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, THVDatabase, Math,
-    Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv,
+    Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils,
     announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef,
     Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase;
 
@@ -1218,7 +1219,7 @@ var rcsaddr: TRCSAddr;
 begin
  try
    for rcsaddr in Self.m_settings.RCSAddrs do
-     RCSi.SetInput(rcsaddr.board, rcsaddr.port, 1);
+     RCSi.SetInput(rcsaddr, 1);
  except
    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -1229,7 +1230,19 @@ var rcsaddr: TRCSAddr;
 begin
  try
    for rcsaddr in Self.m_settings.RCSAddrs do
-     RCSi.SetInput(rcsaddr.board, rcsaddr.port, 0);
+     RCSi.SetInput(rcsaddr, 0);
+ except
+   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
+ end;
+end;
+
+procedure TBlkTrack.MenuDetClick(SenderPnl: TIdContext; SenderOR: TObject; id: Integer; state: Boolean);
+begin
+ if ((id < 0) or (id >= Self.m_settings.RCSAddrs.Count)) then
+   Exit();
+
+ try
+   RCSi.SetInput(Self.m_settings.RCSAddrs[id], ownConvert.BoolToInt(state));
  except
    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName, 'SIMULACE');
  end;
@@ -1347,6 +1360,7 @@ var Blk: TBlk;
     canAdd: Boolean;
     addStr: string;
     m_state: TTrackState;
+    i: Integer;
 begin
  Result := inherited;
 
@@ -1410,18 +1424,36 @@ begin
    Result := Result + '-,';
 
    for m_state in Self.sectionsState do
-    if (m_state = TTrackState.free) then
-     begin
-      Result := Result + '*OBSAZ,';
-      break;
-     end;
+    begin
+     if (m_state = TTrackState.free) then
+      begin
+       Result := Result + '*OBSAZ,';
+       break;
+      end;
+    end;
 
    for m_state in Self.sectionsState do
-    if (m_state = TTrackState.occupied) then
-     begin
-      Result := Result + '*UVOL,';
-      break;
-     end;
+    begin
+     if (m_state = TTrackState.occupied) then
+      begin
+       Result := Result + '*UVOL,';
+       break;
+      end;
+    end;
+
+   if (Self.sectionsState.Count > 1) then
+    begin
+     for i := 0 to Self.sectionsState.Count-1 do
+      begin
+       case (Self.sectionsState[i]) of
+        TTrackState.free: Result := Result + '*DET' + IntToStr(i+1) + '>,';
+        TTrackState.occupied: Result := Result + '*DET' + IntToStr(i+1) + '<,';
+       else
+        Result := Result + '*DET' + IntToStr(i+1) + '>,';
+        Result := Result + '*DET' + IntToStr(i+1) + '<,';
+       end;
+      end;
+    end;
   end;//if RCSi.lib = 2
 end;
 
@@ -1535,7 +1567,9 @@ begin
  else if (item = 'HLÁŠENÍ příjezd')then Self.MenuHLASENIPrijezdClick(SenderPnl, SenderOR)
  else if (item = 'HLÁŠENÍ průjezd')then Self.MenuHLASENIPrujezdClick(SenderPnl, SenderOR)
  else if (item = 'PODJ')           then Self.MenuPOdjClick(SenderPnl, SenderOR)
- else begin
+ else if (LeftStr(item, 3) = 'DET') then begin
+  Self.MenuDetClick(SenderPnl, SenderOR, StrToInt(item[4])-1, item[5] = '>');
+ end else begin
   // cislo soupravy
   for i := 0 to Self.trains.Count-1 do
     if (item = TrainDb.Trains[Self.trains[i]].name) then
