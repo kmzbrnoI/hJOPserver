@@ -160,10 +160,17 @@ end;
 
 procedure TBlocks.DestroyBlocks();
 var i: Integer;
+    blk: TBlk;
 begin
- for i := 0 to Self.data.Count-1 do
+ for i := Self.data.Count-1 downto 0 do
+  begin
    if (Assigned(Self.Data[i])) then
-     Self.data[i].Free();
+    begin
+     blk := Self.data[i];
+     Self.data.Delete(i);
+     blk.Free();
+    end;
+  end;
  Self.data.Clear();
 end;
 

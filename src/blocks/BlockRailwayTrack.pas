@@ -153,6 +153,7 @@ type
     function GetSpeedUpdate(): Boolean;                                         // vrati, jestli bezi odpocet \sprRychUpdateIter
 
     function GetReady(): Boolean;                                                // jestli je usek pripraveny na vjeti soupravy
+    function IsStopSlowedDown(): Boolean;
 
     function mIsStop(): Boolean;
     function mIsStopL(): Boolean;
@@ -175,6 +176,7 @@ type
 
     function GetSettings(): TBlkRTSettings; overload;
     procedure SetSettings(data: TBlkRTSettings); overload;
+    procedure SetGlobalSettings(data: TBlkSettings); override;
 
     procedure LoadData(ini_tech: TMemIniFile; const section : string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
@@ -228,6 +230,7 @@ type
     property isStop: Boolean read mIsStop;
     property stopL: Boolean read mIsStopL;
     property stopS: Boolean read mIsStopS;
+    property stopSlowedDown: Boolean read IsStopSlowedDown;
 
  end;
 
@@ -258,7 +261,13 @@ begin
 end;
 
 destructor TBlkRT.Destroy();
+var blk: TBlk;
 begin
+ if (Assigned(Blocks)) then
+   for blk in Blocks do
+     if (blk.typ = TBlkType.btRailway) then
+       TBlkRailway(blk).RecalcTracks();
+
  Self.lsectTracks.Free();
  Self.ssectTracks.Free();
  Self.m_tuSettings.stop.Free();
@@ -365,8 +374,20 @@ begin
  if (Self.m_tuSettings.speeds <> data.speeds) then
    Self.m_tuSettings.speeds.Free();
 
+
  Self.m_tuSettings := data;
  Self.Change();
+end;
+
+procedure TBlkRT.SetGlobalSettings(data: TBlkSettings);
+var blk: TBlk;
+begin
+ inherited;
+
+ // id can change -> recalc new railway
+ for blk in Blocks do
+   if (blk.typ = TBlkType.btRailway) then
+     TBlkRailway(blk).RecalcTracks();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -707,10 +728,10 @@ begin
 end;
 
 procedure TBlkRT.RemoveTrain(index: Integer);
-var old_spr: TTrain;
-    trat: TBlkRailway;
+var oldTrain: TTrain;
+    railway: TBlkRailway;
 begin
- old_spr := Self.train;
+ oldTrain := Self.train;
 
  inherited;
 
@@ -718,7 +739,7 @@ begin
   begin
    // vlak, ktery oupsti TU a mel by stat v zastavce, je vracen do stavu, kdy se mu nastavuje rychlost
    // toto je pojistka, ke ktere by teoreticky nikdy nemelo dojit
-   old_spr.SetSpeedBuffer(nil);
+   oldTrain.SetSpeedBuffer(nil);
    Self.m_tuState.stopStopped := false;
   end;
 
@@ -738,14 +759,16 @@ begin
      Self.m_tuSettings.stop.evS.slow.ev.Unregister();
   end;
 
+ oldTrain.UpdateRailwaySpeed();
+
  // souprava uvolnena z useku, mozna bude nutne ji uvolnit z cele trati
  if (Self.railway <> nil) then
   begin
-   trat := TBlkRailway(Self.railway);
+   railway := TBlkRailway(Self.railway);
 
    // souprava vyjela z trate -> odstranit z trate
-   if (not trat.IsTrainInAnyTU(old_spr)) then
-     trat.RemoveTrain(old_spr);
+   if (not railway.IsTrainInAnyTU(oldTrain)) then
+     railway.RemoveTrain(oldTrain);
 
    // zavolame uvolneni posledniho TU z jizdni cesty
    Self.ReleasedFromJC();
@@ -1157,12 +1180,8 @@ begin
   begin
    Dec(Self.m_tuState.trainSpeedUpdateIter);
    if (Self.m_tuState.trainSpeedUpdateIter = 0) then
-    begin
-     if ((Self.IsTrain()) and (Self.slowingReady) and
-        (Self.train.wantedSpeed > 0) and
-        (Cardinal(Self.train.wantedSpeed) <> Self.Speed(Self.train))) then
-       Self.train.speed := Self.Speed(Self.train);
-    end;
+     if ((Self.IsTrain()) and (Self.slowingReady) and (Self.train.wantedSpeed > 0)) then
+       Self.train.UpdateRailwaySpeed();
   end;
 end;
 
@@ -1304,6 +1323,13 @@ begin
  Result := Self.isStop and Assigned(Self.m_tuSettings.stop.evS);
 end;
 
+function TBlkRT.IsStopSlowedDown(): Boolean;
+begin
+ Result := (Self.isStop) and (Self.m_tuState.stopEnabled) and (not Self.m_tuState.stopPassed) and
+           (not Self.m_tuState.stopSlowReady);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 constructor TBlkRTStop.Create();

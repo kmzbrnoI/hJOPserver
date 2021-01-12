@@ -1364,7 +1364,7 @@ begin
          TJCNextSignalType.no: begin
            if ((train.wantedSpeed <> Self.DNjc.data.speedStop) or (train.direction <> Self.m_spnl.direction)) then
              train.SetSpeedDirection(Self.DNjc.data.speedStop, Self.m_spnl.direction);
-          end;
+         end;
        end;
 
        // kontrola prehravani stanicniho hlaseni
@@ -1381,8 +1381,8 @@ begin
        if ((Self.IsGoSignal()) and (not Self.m_state.falling) and
            (Self.track.typ = btRT) and (TBlkRT(Self.track).inRailway > -1)) then
         begin
-         if (Cardinal(train.wantedSpeed) <> TBlkRT(Self.track).Speed(train)) then
-           train.SetSpeedDirection(TBlkRT(Self.track).Speed(train), Self.m_spnl.direction)
+         if ((Cardinal(train.wantedSpeed) <> train.GetRailwaySpeed()) and (not train.IsSpeedBuffer())) then
+           train.SetSpeedDirection(train.GetRailwaySpeed(), Self.m_spnl.direction)
         end else begin
          //  neni povolovaci navest -> zastavit
          if (train.wantedSpeed <> 0) then

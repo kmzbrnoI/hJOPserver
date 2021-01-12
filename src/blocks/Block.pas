@@ -82,8 +82,8 @@ type
     constructor Create(index: Integer);
     destructor Destroy(); override;
 
-    procedure SetGlobalSettings(data: TBlkSettings);
-    function GetGlobalSettings(): TBlkSettings;
+    procedure SetGlobalSettings(data: TBlkSettings); virtual;
+    function GetGlobalSettings(): TBlkSettings; virtual;
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); virtual;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); virtual;

@@ -152,8 +152,6 @@ var glob: TBlkSettings;
 
   settings := Self.railway.GetSettings();
 
-  Self.FillCBNewTratBlok();
-
   case (settings.rType) of
    TRailwayType.permanent : Self.CB_Trat_ZabZar.ItemIndex := 0;
    TRailwayType.request : Self.CB_Trat_ZabZar.ItemIndex := 1;
@@ -167,6 +165,8 @@ var glob: TBlkSettings;
     LI.Caption := IntToStr(id);
     LI.SubItems.Add(Blocks.GetBlkName(id));
    end;
+
+  Self.FillCBNewTratBlok();
 
   Self.Caption := 'Upravit blok '+Self.railway.name+' (trať)';
   Self.ActiveControl := Self.B_Save;

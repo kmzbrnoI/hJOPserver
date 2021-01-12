@@ -277,7 +277,7 @@ type
 
       function BarriersToPotvrSekv(barriers: TJCBarriers): TConfSeqItems; // seznam barier nouzve cesty prevede na potvrzovaci sekvence pro klienta
 
-      function GetTrain(nav: TBlk = nil; usek: TBlk = nil): TTrain; // vraci cislo soupravy na useku pred navestidlem
+      function GetTrain(signal: TBlk = nil; track: TBlk = nil): TTrain; // vraci cislo soupravy na useku pred navestidlem
 
       function GetAB(): Boolean;
       function IsCriticalBarrier(): Boolean;
@@ -2517,6 +2517,9 @@ begin
         TBlkRT(track).ReleasedFromJC();
      end;
 
+    if ((Self.lastTrack.typ = TBlkType.btRT) and (TBlkTrack(Self.lastTrack).IsTrain()) and (Self.typ = TJCType.train)) then
+      TBlkTrack(Self.lastTrack).train.UpdateRailwaySpeed();
+
     Self.destroyBlock := _JC_DESTROY_NONE;
     Self.destroyEndBlock := _JC_DESTROY_NONE;
     Self.Log('Ruseni: rozpad cesty vlakem');
@@ -2573,32 +2576,32 @@ end;
 procedure TJC.MoveTrainToNextTrack();
 var trackActual, trackNext, signal: TBlk;
     train: TTrain;
- begin
-  if (Self.destroyBlock = 0) then
-   begin
-    Blocks.GetBlkByID(Self.m_data.signalId, signal);
-    trackActual := (signal as TBlkSignal).track;
-    train := Self.GetTrain(signal, trackActual);
-    if ((trackActual as TBlkTrack).IsTrain()) then
-      if (train.front <> trackActual) then
-         Exit();
-   end else begin
-    Blocks.GetBlkByID(Self.m_data.tracks[Self.destroyBlock-1], trackActual);
-    train := TBlkTrack(trackActual).train;
-   end;
+begin
+ if (Self.destroyBlock = 0) then
+  begin
+   Blocks.GetBlkByID(Self.m_data.signalId, signal);
+   trackActual := (signal as TBlkSignal).track;
+   train := Self.GetTrain(signal, trackActual);
+   if ((trackActual as TBlkTrack).IsTrain()) then
+     if (train.front <> trackActual) then
+        Exit();
+  end else begin
+   Blocks.GetBlkByID(Self.m_data.tracks[Self.destroyBlock-1], trackActual);
+   train := TBlkTrack(trackActual).train;
+  end;
 
-  Blocks.GetBlkByID(Self.m_data.tracks[Self.destroyBlock], trackNext);
-  if (not (trackActual as TBlkTrack).IsTrain()) then Exit();
+ Blocks.GetBlkByID(Self.m_data.tracks[Self.destroyBlock], trackNext);
+ if (not (trackActual as TBlkTrack).IsTrain()) then Exit();
 
-  (trackNext as TBlkTrack).slowingReady := true;
-  (trackNext as TBlkTrack).AddTrainL(train);
-  (trackNext as TBlkTrack).train.front := trackNext;
-  (trackNext as TBlkTrack).houkEvEnabled := true;
-  Self.Log('Predana souprava '+(trackNext as TBlkTrack).train.name+
-      ' z bloku '+trackActual.name+' do bloku '+trackNext.name, WR_SPRPREDAT);
+ (trackNext as TBlkTrack).slowingReady := true;
+ (trackNext as TBlkTrack).AddTrainL(train);
+ (trackNext as TBlkTrack).train.front := trackNext;
+ (trackNext as TBlkTrack).houkEvEnabled := true;
+ Self.Log('Predana souprava '+(trackNext as TBlkTrack).train.name+
+     ' z bloku '+trackActual.name+' do bloku '+trackNext.name, WR_SPRPREDAT);
 
-  Self.CheckLoopBlock(trackNext);
- end;
+ Self.CheckLoopBlock(trackNext);
+end;
 
 procedure TJC.CheckLoopBlock(blk: TBlk);
 var area: TArea;
@@ -3848,12 +3851,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TJC.GetTrain(nav: TBlk = nil; usek: TBlk = nil): TTrain;
+function TJC.GetTrain(signal: TBlk = nil; track: TBlk = nil): TTrain;
 begin
- if (nav = nil) then
-   Blocks.GetBlkByID(Self.m_data.signalId, nav);
+ if (signal = nil) then
+   Blocks.GetBlkByID(Self.m_data.signalId, signal);
 
- Result := TBlkSignal(nav).GetTrain(usek);
+ Result := TBlkSignal(signal).GetTrain(track);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
