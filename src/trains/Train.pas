@@ -32,7 +32,7 @@ type
     typ: string; // MOs, Os, Mn, Pn, ...
     dir_L, dir_S: Boolean; // allowed directions
     HVs: TTrainHVs; // locomotives (engines)
-    station: TObject;
+    area: TObject; // Instance of TArea
 
     speed: Integer; // real speed passed to locomotives after all limitations
     wantedSpeed: Integer; // speed wanted by caller, before limitations
@@ -40,8 +40,8 @@ type
     direction: THVSite;
 
     front: TObject; // most forward block train is/was on (always instance of TBlkUsek)
-    stationFrom: TObject; // instance of TOR or Nil
-    stationTo: TObject; // instance of TOR or Nil
+    areaFrom: TObject; // instance of TArea or Nil
+    areaTo: TObject; // instance of TArea or Nil
 
     announcement: Boolean;
     announcementPlayed: Boolean;
@@ -69,7 +69,7 @@ type
 
      procedure ReleaseAllLoko();
 
-     procedure SetOR(area: TObject);
+     procedure SetArea(area: TObject);
 
      procedure HVComErr(Sender: TObject; Data: Pointer);
      procedure SetSpeed(speed: Integer);
@@ -100,7 +100,7 @@ type
      procedure Acquire(ok: TCb; err: TCb);
      procedure UpdateFront();
      procedure ChangeDirection();
-     procedure InterChangeStanice(change_ev: Boolean = true);
+     procedure InterChangeArea(change_ev: Boolean = true);
      procedure SetSpeedBuffer(speedBuffer: PInteger);
      procedure LokDirChanged();
      procedure CheckAnnouncement(signal: TObject);
@@ -120,6 +120,9 @@ type
      function IsAnyLokoInRegulator(): Boolean;
      procedure ForceRemoveAllRegulators();
 
+     procedure UpdateRailwaySpeed();
+     function GetRailwaySpeed(): Cardinal;
+
      function PredictedSignal(): TBlk;
      procedure OnPredictedSignalChange();
      procedure OnExpectedSpeedChange();
@@ -131,7 +134,7 @@ type
      property sdata: TTrainData read data;
 
      property name: string read data.name;
-     property station: TObject read data.station write SetOR;
+     property station: TObject read data.area write SetArea;
      property speed: Integer read data.speed write SetSpeed;
      property wantedSpeed: Integer read data.wantedSpeed;
      property direction: THVSite read data.direction write SetDirection;
@@ -140,8 +143,8 @@ type
      property length: Integer read data.length;
      property typ: string read data.typ;
 
-     property stationFrom: TObject read data.stationFrom;
-     property stationTo: TObject read data.stationTo;
+     property areaFrom: TObject read data.areaFrom;
+     property areaTo: TObject read data.areaTo;
 
      property announcement: Boolean read data.announcement;
      property announcementPlayed: Boolean read data.announcementPlayed;
@@ -232,9 +235,9 @@ begin
  Self.data.direction := THVSite(ini.ReadInteger(section, 'smer', Integer(THVSite.odd)));
  Self.data.maxSpeed := ini.ReadInteger(section, 'maxRychlost', 0);
 
- Self.data.stationFrom := Areas.Get(ini.ReadString(section, 'z', ''));
- Self.data.stationTo := Areas.Get(ini.ReadString(section, 'do', ''));
- Self.data.station := Areas.Get(ini.ReadString(section, 'OR', ''));
+ Self.data.areaFrom := Areas.Get(ini.ReadString(section, 'z', ''));
+ Self.data.areaTo := Areas.Get(ini.ReadString(section, 'do', ''));
+ Self.data.area := Areas.Get(ini.ReadString(section, 'OR', ''));
  Self.data.announcement := ini.ReadBool(section, 'hlaseni', false);
 
  data := TStringList.Create();
@@ -283,13 +286,13 @@ begin
  if (Self.data.maxSpeed > 0) then
    ini.WriteInteger(section, 'maxRychlost', Self.data.maxSpeed);
 
- if (Self.data.stationFrom <> nil) then
-   ini.WriteString(section, 'z', TArea(Self.data.stationFrom).id)
+ if (Self.data.areaFrom <> nil) then
+   ini.WriteString(section, 'z', TArea(Self.data.areaFrom).id)
  else
    ini.DeleteKey(section, 'z');
 
- if (Self.data.stationTo <> nil) then
-   ini.WriteString(section, 'do', TArea(Self.data.stationTo).id)
+ if (Self.data.areaTo <> nil) then
+   ini.WriteString(section, 'do', TArea(Self.data.areaTo).id)
  else
    ini.DeleteKey(section, 'do');
 
@@ -298,8 +301,8 @@ begin
  else
    ini.WriteInteger(section, 'front', -1);
 
- if (Self.data.station <> nil) then
-   ini.WriteString(section, 'OR', (Self.data.station as TArea).id)
+ if (Self.data.area <> nil) then
+   ini.WriteString(section, 'OR', (Self.data.area as TArea).id)
  else
    ini.DeleteKey(section, 'OR');
 
@@ -335,12 +338,12 @@ begin
    Result := Result + '[{' + HVDb[addr].GetPanelLokString() + '}]';
  Result := Result + '};';
 
- if (Self.stationFrom <> nil) then
-   Result := Result + TArea(Self.stationFrom).id;
+ if (Self.areaFrom <> nil) then
+   Result := Result + TArea(Self.areaFrom).id;
  Result := Result + ';';
 
- if (Self.stationTo <> nil) then
-   Result := Result + TArea(Self.stationTo).id;
+ if (Self.areaTo <> nil) then
+   Result := Result + TArea(Self.areaTo).id;
  Result := Result + ';';
 
  if (Self.data.announcement) then
@@ -375,9 +378,9 @@ begin
    json['front'] := TBlk(usek).id;
 
    if (train.Count > 7) then
-     json['stationFrom'] := train[7];
+     json['areaFrom'] := train[7];
    if (train.Count > 8) then
-     json['stationTo'] := train[8];
+     json['areaTo'] := train[8];
 
    if (train.Count > 9) then
      json['announcement'] := (train[9] = '1')
@@ -461,14 +464,14 @@ begin
  if (train.Contains('type')) then
    Self.data.typ := train['type'];
  if (train.Contains('station')) then
-   Self.data.station := Areas.Get(train.S['station']);
+   Self.data.area := Areas.Get(train.S['station']);
  if (train.Contains('front')) then
    Blocks.GetBlkByID(train['front'], TBlk(Self.data.front));
 
- if (train.Contains('stationFrom')) then
-   Self.data.stationFrom := Areas.Get(train.S['stationFrom']);
- if (train.Contains('stationTo')) then
-   Self.data.stationTo := Areas.Get(train.S['stationTo']);
+ if (train.Contains('areaFrom')) then
+   Self.data.areaFrom := Areas.Get(train.S['areaFrom']);
+ if (train.Contains('areaTo')) then
+   Self.data.areaTo := Areas.Get(train.S['areaTo']);
 
  if (train.Contains('announcement')) then
    Self.data.announcement := train['announcement'];
@@ -652,10 +655,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.SetOR(area: TObject);
+procedure TTrain.SetArea(area: TObject);
 var addr: Integer;
 begin
- Self.data.station := area;
+ Self.data.area := area;
  for addr in Self.HVs do
    HVDb[addr].MoveToArea(area as TArea);
  Self.Data.announcementPlayed := false;
@@ -742,8 +745,8 @@ end;
 
 procedure TTrain.HVComErr(Sender: TObject; Data: Pointer);
 begin
- if (Self.data.station <> nil) then
-   (Self.data.station as TArea).BlkWriteError(nil, 'Souprava '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
+ if (Self.data.area <> nil) then
+   (Self.data.area as TArea).BlkWriteError(nil, 'Souprava '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -872,12 +875,12 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.InterChangeStanice(change_ev: Boolean = true);
+procedure TTrain.InterChangeArea(change_ev: Boolean = true);
 var tmp: TObject;
 begin
- tmp := Self.data.stationFrom;
- Self.data.stationFrom := Self.data.stationTo;
- Self.data.stationTo := tmp;
+ tmp := Self.data.areaFrom;
+ Self.data.areaFrom := Self.data.areaTo;
+ Self.data.areaTo := tmp;
 
  Self.changed := true;
  if ((Self.front <> nil) and (change_ev)) then
@@ -958,8 +961,8 @@ var msignal: TBlkSignal;
     annPlay: TAnnToPlay;
     annTrain: TAnnTrain;
 begin
- if ((not Self.announcement) or (Self.announcementPlayed) or (self.stationFrom = nil) or
-     (self.stationTo = nil) or (Self.typ = '')) then Exit();
+ if ((not Self.announcement) or (Self.announcementPlayed) or (self.areaFrom = nil) or
+     (self.areaTo = nil) or (Self.typ = '')) then Exit();
 
  msignal := TBlkSignal(signal);
  if (msignal.areas.Count < 1) then Exit();
@@ -975,9 +978,9 @@ begin
  end;
 
  annTrain.name := Self.name;
- annTrain.typ   := Self.typ;
- annTrain.fromAreaId := TArea(Self.stationFrom).id;
- annTrain.toAreaId := TArea(Self.stationTo).id;
+ annTrain.typ := Self.typ;
+ annTrain.fromAreaId := TArea(Self.areaFrom).id;
+ annTrain.toAreaId := TArea(Self.areaTo).id;
  annTrain.timeArrive := 0;
  annTrain.timeDepart := 0;
 
@@ -1205,8 +1208,8 @@ begin
  for addr in Self.data.HVs do
    json.A['hvs'].Add(addr);
 
- if (Self.data.station <> nil) then
-   json['station'] := TArea(Self.data.station).id;
+ if (Self.data.area <> nil) then
+   json['station'] := TArea(Self.data.area).id;
  json['speed'] := Self.data.speed;
  json['wantedSpeed'] := Self.data.wantedSpeed;
  if (Self.data.maxSpeed > 0) then
@@ -1214,10 +1217,10 @@ begin
  json['direction'] := Integer(Self.data.direction);
  if (Self.data.front <> nil) then
    json['front'] := TBlk(Self.data.front).id;
- if (Self.data.stationFrom <> nil) then
-   json['stationFrom'] := TArea(Self.data.stationFrom).id;
- if (Self.data.stationTo <> nil) then
-   json['stationTo'] := TArea(Self.data.stationTo).id;
+ if (Self.data.areaFrom <> nil) then
+   json['areaFrom'] := TArea(Self.data.areaFrom).id;
+ if (Self.data.areaTo <> nil) then
+   json['areaTo'] := TArea(Self.data.areaTo).id;
  json['announcement'] := Self.data.announcement;
 
  for blkId in Self.data.podj.Keys do
@@ -1252,6 +1255,26 @@ begin
  finally
    hvs.Free();
  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+// Returns speed train should have based on its presence in railways.
+// Returns 0 in case train is not in railway
+function TTrain.GetRailwaySpeed(): Cardinal;
+begin
+
+end;
+
+procedure TTrain.UpdateRailwaySpeed();
+var speed: Cardinal;
+begin
+ if ((Self.front <> nil) and (TBlk(Self.front).typ = TBlkType.btRT)) then
+  begin
+   speed := Self.GetRailwaySpeed();
+   if (Self.wantedSpeed <> speed) then
+     Self.speed := speed;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

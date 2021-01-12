@@ -1464,7 +1464,7 @@ begin
    Result := Result + 'PODJ,';
 
  if ((Assigned(TArea(SenderOR).announcement)) and (TArea(SenderOR).announcement.available) and
-     (train.stationFrom <> nil) and (train.stationTo <> nil) and (train.typ <> '')) then
+     (train.areaFrom <> nil) and (train.areaTo <> nil) and (train.typ <> '')) then
   begin
    if ((Self.spnl.stationTrack) and (train.announcement)) then
      Result := Result + 'HLÁŠENÍ odjezd,';
@@ -1837,8 +1837,8 @@ begin
  Result.name := TrainDb.Trains[Self.trains[trainLocalIndex]].name;
  Result.typ := TrainDb.Trains[Self.trains[trainLocalIndex]].typ;
  Result.track := Self.spnl.trackName;
- Result.fromAreaId := TArea(TrainDb.Trains[Self.trains[trainLocalIndex]].stationFrom).id;
- Result.toAreaId := TArea(TrainDb.Trains[Self.trains[trainLocalIndex]].stationTo).id;
+ Result.fromAreaId := TArea(TrainDb.Trains[Self.trains[trainLocalIndex]].areaFrom).id;
+ Result.toAreaId := TArea(TrainDb.Trains[Self.trains[trainLocalIndex]].areaTo).id;
 
  Result.timeArrive := 0;
 
@@ -2361,7 +2361,7 @@ begin
                             IntToStr(ownConvert.BoolToInt(TrainDb.Trains[traini].sdata.dir_L)) +
                             IntToStr(ownConvert.BoolToInt(TrainDb.Trains[traini].sdata.dir_S)) + ';';
 
-   if ((TrainDb.Trains[traini].stationTo = TrainDb.Trains[traini].station) and (sbg = clBlack)) then
+   if ((TrainDb.Trains[traini].areaTo = TrainDb.Trains[traini].station) and (sbg = clBlack)) then
      sbg := clSilver;
 
    // predvidany odjezd

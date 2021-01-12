@@ -2608,9 +2608,9 @@ begin
    // kontrola zmeny vychozi a cilove stanice
    for area in blk.areas do
     begin
-     if (area = (Blk as TBlkTrack).train.stationTo) then
+     if (area = (Blk as TBlkTrack).train.areaTo) then
       begin
-       (Blk as TBlkTrack).train.InterChangeStanice(false);
+       (Blk as TBlkTrack).train.InterChangeArea(false);
        break;
       end;
     end;

@@ -148,8 +148,8 @@ var train: TTrainData;
   end;
 
   try
-    if (train.station <> nil) then
-      Self.LV.Items[line].SubItems[9] := (train.station as TArea).name
+    if (train.area <> nil) then
+      Self.LV.Items[line].SubItems[9] := (train.area as TArea).name
     else
       Self.LV.Items[line].SubItems[9] := '-';
   except
@@ -164,13 +164,13 @@ var train: TTrainData;
   Self.LV.Items[line].SubItems[11] := IntToStr(train.length);
   Self.LV.Items[line].SubItems[12] := train.typ;
 
-  if (train.stationFrom <> nil) then
-    Self.LV.Items[line].SubItems[13] := TArea(train.stationFrom).name
+  if (train.areaFrom <> nil) then
+    Self.LV.Items[line].SubItems[13] := TArea(train.areaFrom).name
   else
     Self.LV.Items[line].SubItems[13] := '-';
 
-  if (train.stationTo <> nil) then
-    Self.LV.Items[line].SubItems[14] := TArea(train.stationTo).name
+  if (train.areaTo <> nil) then
+    Self.LV.Items[line].SubItems[14] := TArea(train.areaTo).name
   else
     Self.LV.Items[line].SubItems[14] := '-';
 
