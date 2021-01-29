@@ -223,11 +223,13 @@ begin
       begin
        // je loko uz na nejakem nerootovskem (!) ovladaci -> odmitnout
        for i := 0 to HV.state.regulators.Count-1 do
+        begin
          if (not HV.state.regulators[i].root) then
           begin
            PanelServer.SendLn(Sender, '-;LOK;'+parsed[2]+';AUTH;not;Loko je otevřené v jiném regulátoru');
            Exit();
           end;
+        end;
 
        if (parsed.Count < 5) then
         begin
@@ -258,12 +260,24 @@ begin
    end;
   end;//PLEASE
 
- // DALSI PRIKAZY JSOU PODMINENY PREVZETIM HNACIHO VOZIDLA :
+ // ---- Authorized loco is required for commands below ----
 
  // je tento regulator uz v seznamu regulatoru?
  if (not HV.IsReg(Sender)) then
   begin
    PanelServer.SendLn(Sender, '-;LOK;'+parsed[2]+';RESP;err;Loko '+parsed[2]+' neautorizováno');
+   Exit();
+  end;
+
+ if (parsed[3] = 'EXPECTED-SPEED') then
+  begin
+   Self.SendExpectedSpeed(Sender, HV);
+   Exit();
+  end;
+
+ if (parsed[3] = 'NAV') then
+  begin
+   Self.SendPredictedSignal(Sender, HV);
    Exit();
   end;
 
@@ -273,69 +287,9 @@ begin
    Exit();
   end;
 
- // tady mame jisto, ze je loko autorizovano a ze je mone ho ridit
+ // ---- Unstolen loco is required for commands below ----
 
- if (parsed[3] = 'SP') then
-  begin
-   GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.addr;
-   TLokResponseData(LokResponseData^).conn := Sender;
-
-   HV.SetSpeed(StrToInt(parsed[4]),
-               TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
-               TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
-               Sender);
-  end
-
- else if (parsed[3] = 'SPD') then
-  begin
-   GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.addr;
-   TLokResponseData(LokResponseData^).conn := Sender;
-
-   HV.SetSpeedDir(StrToInt(parsed[4]), parsed[5] = '1',
-                  TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
-                  TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
-                  Sender);
-  end
-
- else if (parsed[3] = 'SP-S') then
-  begin
-   GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.addr;
-   TLokResponseData(LokResponseData^).conn := Sender;
-
-   HV.SetSpeedStepDir(StrToInt(parsed[4]), HV.direction,
-                      TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
-                      TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
-                      Sender);
-  end
-
- else if (parsed[3] = 'SPD-S') then
-  begin
-   GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.addr;
-   TLokResponseData(LokResponseData^).conn := Sender;
-
-   HV.SetSpeedStepDir(StrToInt(parsed[4]), parsed[5] = '1',
-                      TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
-                      TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
-                      Sender);
-  end
-
- else if (parsed[3] = 'D') then
-  begin
-   GetMem(LokResponseData, SizeOf(TLokResponseData));
-   TLokResponseData(LokResponseData^).addr := HV.addr;
-   TLokResponseData(LokResponseData^).conn := Sender;
-
-   HV.SetDirection(parsed[4] = '1',
-                   TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
-                   TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
-                   Sender);
-  end
-
- else if (parsed[3] = 'F') then
+ if (parsed[3] = 'F') then
   begin
    data := TStringList.Create();
    try
@@ -360,9 +314,10 @@ begin
    HV.StateFunctionsToSlotFunctions(TTrakce.Callback(PanelLOKResponseOK, LokResponseData),
                                    TTrakce.Callback(PanelLOKResponseErr, LokResponseData),
                                    Sender);
-  end
+   Exit();
+  end;
 
- else if (parsed[3] = 'STOP') then
+ if (parsed[3] = 'STOP') then
   begin
    GetMem(LokResponseData, SizeOf(TLokResponseData));
    TLokResponseData(LokResponseData^).addr := HV.addr;
@@ -371,17 +326,87 @@ begin
    HV.EmergencyStop(TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
                     TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
                     Sender);
-  end
+   Exit();
+  end;
 
- else if (parsed[3] = 'TOTAL') then
-   HV.ruc := (parsed[4] = '1')
+ if (parsed[3] = 'TOTAL') then
+  begin
+   HV.ruc := (parsed[4] = '1');
+   Exit();
+  end;
 
- else if (parsed[3] = 'EXPECTED-SPEED') then
-   Self.SendExpectedSpeed(Sender, HV)
+ // ---- Total control is required for commands below ----
 
- else if (parsed[3] = 'NAV') then
-   Self.SendPredictedSignal(Sender, HV);
+ if (not HV.ruc) then
+  begin
+   PanelServer.SendLn(Sender, '-;LOK;'+parsed[2]+';RESP;err;Loko '+parsed[2]+' není v ručním řízení');
+   Exit();
+  end;
 
+ if (parsed[3] = 'SP') then
+  begin
+   GetMem(LokResponseData, SizeOf(TLokResponseData));
+   TLokResponseData(LokResponseData^).addr := HV.addr;
+   TLokResponseData(LokResponseData^).conn := Sender;
+
+   HV.SetSpeed(StrToInt(parsed[4]),
+               TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+               TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+               Sender);
+   Exit();
+  end;
+
+ if (parsed[3] = 'SPD') then
+  begin
+   GetMem(LokResponseData, SizeOf(TLokResponseData));
+   TLokResponseData(LokResponseData^).addr := HV.addr;
+   TLokResponseData(LokResponseData^).conn := Sender;
+
+   HV.SetSpeedDir(StrToInt(parsed[4]), parsed[5] = '1',
+                  TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+                  TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+                  Sender);
+   Exit();
+  end;
+
+ if (parsed[3] = 'SP-S') then
+  begin
+   GetMem(LokResponseData, SizeOf(TLokResponseData));
+   TLokResponseData(LokResponseData^).addr := HV.addr;
+   TLokResponseData(LokResponseData^).conn := Sender;
+
+   HV.SetSpeedStepDir(StrToInt(parsed[4]), HV.direction,
+                      TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+                      TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+                      Sender);
+   Exit();
+  end;
+
+ if (parsed[3] = 'SPD-S') then
+  begin
+   GetMem(LokResponseData, SizeOf(TLokResponseData));
+   TLokResponseData(LokResponseData^).addr := HV.addr;
+   TLokResponseData(LokResponseData^).conn := Sender;
+
+   HV.SetSpeedStepDir(StrToInt(parsed[4]), parsed[5] = '1',
+                      TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+                      TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+                      Sender);
+   Exit();
+  end;
+
+ if (parsed[3] = 'D') then
+  begin
+   GetMem(LokResponseData, SizeOf(TLokResponseData));
+   TLokResponseData(LokResponseData^).addr := HV.addr;
+   TLokResponseData(LokResponseData^).conn := Sender;
+
+   HV.SetDirection(parsed[4] = '1',
+                   TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+                   TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData),
+                   Sender);
+   Exit();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
