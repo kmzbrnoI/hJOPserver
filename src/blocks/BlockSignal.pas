@@ -702,7 +702,7 @@ begin
        ABlist.Remove(Self.ABJC);
    except
      on E: EABJCNotInList do
-       asm nop; end; // ignore exception
+       begin end; // ignore exception
    end;
    Self.m_state.ABJC := nil;
    Self.Change();
@@ -711,7 +711,7 @@ begin
      ABlist.Add(ab);
    except
      on E: EABJCAlreadyInList do
-       asm nop; end; // ignore exception
+       begin end; // ignore exception
    end;
    Self.m_state.ABJC := ab;
    Self.Change();
