@@ -35,8 +35,8 @@ It maintains many databases and allows operators to control model railroad
 like [JOP](https://cs.wikipedia.org/wiki/Jednotné_obslužné_pracoviště) system
 does on the real railroad in the Czech Republic.
 
-The whole hJOP project targets mainly on czech users, so the whole GUI and
-some parts of the source codes are in czech language.
+The whole hJOP project targets mainly on czech users, so the whole GUI is in
+czech language.
 
 ## Development
 
