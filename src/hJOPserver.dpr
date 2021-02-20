@@ -18,7 +18,7 @@ uses
   fSplash in 'forms\fSplash.pas' {F_splash},
   fAbout in 'forms\fAbout.pas' {F_About},
   fBlkCrossing in 'blocks\forms\data\fBlkCrossing.pas' {F_BlkCrossing},
-  Verze in 'helpers\Verze.pas',
+  version in 'helpers\version.pas',
   adCpuUsage in 'helpers\adCpuUsage.pas',
   fZesilovacEdit in 'forms\fZesilovacEdit.pas' {F_ZesilovacEdit},
   fBlkRailway in 'blocks\forms\data\fBlkRailway.pas' {F_BlkRailway},
@@ -171,12 +171,6 @@ var
 
   FormatSettings.DecimalSeparator := '.';
 
-  if (ZkontrolujSpusteno) then
-   begin
-    Application.MessageBox('hJOPserver již spuštěn, povolena pouze jedna instance', 'Již spuštěn', MB_ICONWARNING OR MB_OK);
-    halt(0);
-   end;
-
   Application.Initialize();
   Application.Title := 'hJOPserver';
   Application.CreateForm(TF_Main, F_Main);
@@ -256,8 +250,6 @@ var
 
   FreeAndNil(TrakceI);
   FreeAndNil(RCSi);
-  if (Mutex <> 0) then
-    CloseHandle(Mutex);
  end.
 //08.06.2009 -  9 649 radku
 //03.07.2009 - 13 006 radku

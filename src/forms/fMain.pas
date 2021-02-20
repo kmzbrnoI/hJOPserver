@@ -486,7 +486,7 @@ var
 implementation
 
 uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
-     fAbout, Verze, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
+     fAbout, version, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
      fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
      TechnologieRCS, TechnologieJC, FileSystem, fConsole, AreaDb, BlockDb,
      Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area,
@@ -1653,7 +1653,7 @@ begin
 
  Self.LoadIniLibData();
 
- F_Main.Caption := 'hJOPserver – v'+NactiVerzi(Application.ExeName)+' (build '+GetLastBuildDate+')';
+ F_Main.Caption := 'hJOPserver – v'+VersionStr(Application.ExeName)+' (build '+LastBuildDate+')';
  F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 end;
 
@@ -1667,13 +1667,6 @@ end;
 procedure TF_Main.AE_1Message(var Msg: tagMSG; var Handled: Boolean);
 begin
  Handled := false;
-
- if (Msg.Message = runningMsg) then
-  begin
-   Application.Restore;
-   SetForeGroundWindow(F_Main.Handle);
-   Handled := true;
-  end;
 
  // STISK KLAVESY
  case (msg.message) of
@@ -2596,7 +2589,7 @@ procedure TF_Main.OnStart();
  begin
   mCpuLoad.DrawCPUGauge();
 
-  writelog('Spuštěn hJOPserver v'+NactiVerzi(application.ExeName), WR_MESSAGE);
+  writelog('Spuštěn hJOPserver v'+VersionStr(application.ExeName), WR_MESSAGE);
   writelog('----------------------------------------------------------------', WR_MESSAGE);
 
   if (not Self.CloseMessage) then

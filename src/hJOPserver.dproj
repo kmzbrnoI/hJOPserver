@@ -142,7 +142,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <DCCReference Include="blocks\forms\data\fBlkCrossing.pas">
             <Form>F_BlkCrossing</Form>
         </DCCReference>
-        <DCCReference Include="helpers\Verze.pas"/>
+        <DCCReference Include="helpers\version.pas"/>
         <DCCReference Include="helpers\adCpuUsage.pas"/>
         <DCCReference Include="forms\fZesilovacEdit.pas">
             <Form>F_ZesilovacEdit</Form>
