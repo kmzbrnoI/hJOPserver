@@ -31,7 +31,7 @@ implementation
 
 {$R *.dfm}
 
-uses fMain, Verze;
+uses fMain, version;
 
 procedure TF_splash.FormCreate(Sender: TObject);
  begin
@@ -41,8 +41,8 @@ procedure TF_splash.FormCreate(Sender: TObject);
 
 procedure TF_splash.FormShow(Sender: TObject);
  begin
-  ST_Version.Caption := 'Verze '+NactiVerzi(Application.ExeName);
-  L_BuildTime.Caption := GetLastBuildDate+'  '+GetLastBuildTime;
+  ST_Version.Caption := 'Verze '+VersionStr(Application.ExeName);
+  L_BuildTime.Caption := LastBuildDate+'  '+LastBuildTime;
  end;
 
 procedure TF_Splash.AddStav(Text: string);

@@ -4,7 +4,7 @@ unit DataORs;
 
 interface
 
-uses ComCtrls, SysUtils;
+uses ComCtrls, SysUtils, Classes;
 
 type
   TORsTableData=class

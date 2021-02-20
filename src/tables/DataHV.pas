@@ -4,7 +4,7 @@
 
 interface
 
-uses THnaciVozidlo, ComCtrls, SysUtils;
+uses THnaciVozidlo, ComCtrls, SysUtils, Classes;
 
 type
   THVTableData=class

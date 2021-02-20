@@ -8,9 +8,9 @@ unit fHoukEvs;
 interface
 
 uses
-  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Types,
   Dialogs, ComCtrls, CloseTabSheet, Themes, houkEvent, Generics.Collections,
-  fhoukEv, Buttons, StdCtrls;
+  fhoukEv, Buttons, StdCtrls, UITypes;
 
 type
   TF_HoukEvs = class(TForm)
@@ -129,8 +129,8 @@ begin
    for j := 0 to TPageControl(Sender).PageCount - 1 do
    begin
      TPageControl(Sender).Perform(TCM_GETITEMRECT, j, LParam(@TabRect)) ;
-     if PtInRect(TabRect, Point(X, Y)) then
-     begin
+     if (PtInRect(TabRect, Point(X, Y))) then
+      begin
        if TPageControl(Sender).ActivePage.PageIndex <> j then
         begin
          // vlozime okno na novou spravnou pozici
@@ -198,7 +198,7 @@ begin
     PageControl.Canvas.TextOut(TabCaption.X, TabCaption.Y,
             PageControl.Pages[TabIndex].Caption);
 
-    if not ThemeServices.ThemesEnabled then
+    if not StyleServices.Enabled then
     begin
       if (FCloseButtonMouseDownTab = TabSheet) and FCloseButtonShowPushed then
         CloseBtnDrawState := DFCS_CAPTIONCLOSE + DFCS_PUSHED
@@ -213,11 +213,11 @@ begin
       Dec(TabSheet.FCloseButtonRect.Left);
 
       if (FCloseButtonMouseDownTab = TabSheet) and FCloseButtonShowPushed then
-        CloseBtnDrawDetails := ThemeServices.GetElementDetails(twCloseButtonPushed)
+        CloseBtnDrawDetails := StyleServices.GetElementDetails(twCloseButtonPushed)
       else
-        CloseBtnDrawDetails := ThemeServices.GetElementDetails(twCloseButtonNormal);
+        CloseBtnDrawDetails := StyleServices.GetElementDetails(twCloseButtonNormal);
 
-      ThemeServices.DrawElement(PageControl.Canvas.Handle, CloseBtnDrawDetails,
+      StyleServices.DrawElement(PageControl.Canvas.Handle, CloseBtnDrawDetails,
                 TabSheet.FCloseButtonRect);
     end;
   end else begin

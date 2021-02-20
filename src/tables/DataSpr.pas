@@ -4,7 +4,7 @@
 
 interface
 
-uses ComCtrls, SysUtils, StrUtils;
+uses ComCtrls, SysUtils, StrUtils, Classes;
 
 type
   TTrainTableData=class

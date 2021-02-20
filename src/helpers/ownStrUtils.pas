@@ -2,7 +2,7 @@ unit ownStrUtils;
 
 interface
 
-uses Character, SysUtils, Classes, StrUtils;
+uses SysUtils, Classes, StrUtils, System.Character;
 
 function RemoveWhiteSpace(const s: string): string;
 procedure ExtractStringsEx(Separators: TSysCharSet; Ignore: TSysCharSet; Content: string; var Strings: TStrings);
@@ -24,7 +24,7 @@ begin
   SetLength(Result, Length(s));
   j := 0;
   for i := 1 to Length(s) do begin
-    if not TCharacter.IsWhiteSpace(s[i]) then begin
+    if not s[i].IsWhiteSpace() then begin
       inc(j);
       Result[j] := s[i];
     end;

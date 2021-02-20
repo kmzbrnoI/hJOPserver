@@ -7,7 +7,7 @@ unit PTUtils;
 
 interface
 
-uses JsonDataObjects, Generics.Collections, Classes, Character;
+uses JsonDataObjects, Generics.Collections, Classes, Character, SysUtils;
 
 procedure PtErrorToJson(json:TJsonObject; httpCode:string; title:string; detail:string = '');
 procedure HttpParametersToDict(params:TStrings; var dict:TDictionary<string, string>);
@@ -48,7 +48,7 @@ end;
 
 function HttpParamToBool(value:string):Boolean;
 begin
- Result := (ToLower(value) = 'true') or (value = '1');
+ Result := (LowerCase(value) = 'true') or (value = '1');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

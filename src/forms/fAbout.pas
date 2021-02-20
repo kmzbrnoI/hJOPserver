@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses Verze, TechnologieRCS, Logging, appEv;
+uses version, TechnologieRCS, Logging, appEv;
 
 {$R *.dfm}
 
@@ -52,7 +52,7 @@ procedure TF_About.FormShow(Sender: TObject);
   Self.ST_about5.Font.Color := clBlue;
   Self.ST_about3.Font.Color := clBlue;
 
-  Self.L_VApp.Caption       := NactiVerzi(Application.ExeName)+' ('+GetLastBuildDate+' '+GetLastBuildTime+')';
+  Self.L_VApp.Caption       := VersionStr(Application.ExeName)+' ('+LastBuildDate+' '+LastBuildTime+')';
 
   Self.L_VRCSLib.Caption    := RCSi.Lib;
 

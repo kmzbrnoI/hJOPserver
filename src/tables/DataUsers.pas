@@ -4,7 +4,7 @@ unit DataUsers;
 
 interface
 
-uses ComCtrls, SysUtils;
+uses ComCtrls, SysUtils, Classes;
 
 type
   TUsersTableData=class

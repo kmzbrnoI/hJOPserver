@@ -1,10 +1,10 @@
-unit DataRCS;
+﻿unit DataRCS;
 
 // TRCSTableData - trida starajici se o vyplnovani tabulky RCS
 
 interface
 
-uses ComCtrls, SysUtils, Generics.Collections;
+uses ComCtrls, SysUtils, Generics.Collections, Classes;
 
 type
   TRCSTableData=class

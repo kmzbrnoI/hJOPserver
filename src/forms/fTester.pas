@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Menus, ExtCtrls, Buttons, ComCtrls, fMain, BlockDb,
-  Generics.Collections;
+  Generics.Collections, UITypes;
 
 type
   TF_Tester = class(TForm)
