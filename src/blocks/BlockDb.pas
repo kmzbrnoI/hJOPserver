@@ -14,8 +14,8 @@
 interface
 
 uses IniFiles, Block, SysUtils, Windows, AreaDb, Area, StdCtrls,
-     Generics.Collections, Classes, IdContext, IBUtils, TechnologieRCS,
-     JsonDataObjects, Train;
+     Generics.Collections, Classes, IdContext, TechnologieRCS,
+     JsonDataObjects, Train, System.Math;
 
 type
  TArI  = array of Integer;

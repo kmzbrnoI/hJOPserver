@@ -169,7 +169,7 @@ var
   Randomize();
   SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 
-  DecimalSeparator := '.';
+  FormatSettings.DecimalSeparator := '.';
 
   if (ZkontrolujSpusteno) then
    begin

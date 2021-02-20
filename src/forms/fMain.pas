@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, Trakce,
   inifiles, ActnList, AppEvnts, adCpuUsage, cpuLoad, ExtDlgs, Gauges, StrUtils,
-  ComObj, TechnologieTrakce, BoosterDb;
+  ComObj, TechnologieTrakce, BoosterDb, System.Actions, System.ImageList;
 
 const
  _SB_LOG = 0;

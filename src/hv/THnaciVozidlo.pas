@@ -49,7 +49,7 @@
 interface
 
 uses Trakce, Classes, SysUtils, Area, Generics.Collections, IdContext,
-     IniFiles, IBUtils, JsonDataObjects, FileSystem;
+     IniFiles, JsonDataObjects, FileSystem, Math;
 
 const
   _HV_FUNC_MAX       = 28;   // maximalni funkcni cislo; funkce zacinaji na cisle 0

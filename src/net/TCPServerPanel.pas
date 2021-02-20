@@ -344,7 +344,7 @@ var i: Integer;
 begin
  Self.tcpServer.Contexts.LockList();
  try
-   AContext.Connection.IOHandler.DefStringEncoding := TIdEncoding.enUTF8;
+   AContext.Connection.IOHandler.DefStringEncoding := enUTF8;
 
    for i := 0 to _MAX_CLIENTS-1 do
      if (Self.clients[i] = nil) then

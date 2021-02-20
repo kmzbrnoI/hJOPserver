@@ -1,354 +1,436 @@
-﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-		<PropertyGroup>
-			<ProjectGuid>{3843E8C1-425E-4564-AD11-0A95B3B00280}</ProjectGuid>
-			<MainSource>hJOPserver.dpr</MainSource>
-			<Config Condition="'$(Config)'==''">Debug</Config>
-			<DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-			<ProjectVersion>12.0</ProjectVersion>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
-			<Cfg_1>true</Cfg_1>
-			<CfgParent>Base</CfgParent>
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
-			<Cfg_2>true</Cfg_2>
-			<CfgParent>Base</CfgParent>
-			<Base>true</Base>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Base)'!=''">
-			<DCC_DependencyCheckOutputName>..\..\..\KMZ\hJOP\serverOther\hJOPserver.exe</DCC_DependencyCheckOutputName>
-			<DCC_ImageBase>00400000</DCC_ImageBase>
-			<DCC_UsePackage>vcl;rtl;vclx;VclSmp;vclshlctrls</DCC_UsePackage>
-			<DCC_ExeOutput>d:\UsersData\vlak\KMZ\hJOP\serverOther\</DCC_ExeOutput>
-			<DCC_UnitAlias>WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;$(DCC_UnitAlias)</DCC_UnitAlias>
-			<DCC_BplOutput>..\outunit\</DCC_BplOutput>
-			<DCC_RangeChecking>true</DCC_RangeChecking>
-			<DCC_Platform>x86</DCC_Platform>
-			<DCC_K>false</DCC_K>
-			<DCC_F>false</DCC_F>
-			<DCC_N>true</DCC_N>
-			<DCC_DcpOutput>..\outunit\</DCC_DcpOutput>
-			<DCC_S>false</DCC_S>
-			<DCC_E>false</DCC_E>
-			<DebugSourcePath>D:\Users\Vlak\MTB\MTB_knihovna\;$(DebugSourcePath)</DebugSourcePath>
-			<DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
-			<DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
-			<DCC_DcuOutput>..\outunit\</DCC_DcuOutput>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Cfg_1)'!=''">
-			<DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
-			<DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
-			<DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
-			<DCC_DebugInformation>false</DCC_DebugInformation>
-		</PropertyGroup>
-		<PropertyGroup Condition="'$(Cfg_2)'!=''">
-			<DCC_MapFile>3</DCC_MapFile>
-			<DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
-		</PropertyGroup>
-		<ItemGroup>
-			<DelphiCompile Include="hJOPserver.dpr">
-				<MainSource>MainSource</MainSource>
-			</DelphiCompile>
-			<DCCReference Include="libPreload.pas"/>
-			<DCCReference Include="forms\fTester.pas">
-				<Form>F_Tester</Form>
-			</DCCReference>
-			<DCCReference Include="forms\fMain.pas">
-				<Form>F_Main</Form>
-			</DCCReference>
-			<DCCReference Include="forms\fSettings.pas">
-				<Form>F_Options</Form>
-			</DCCReference>
-			<DCCReference Include="forms\fNastaveni_Casu.pas">
-				<Form>F_ModCasSet</Form>
-			</DCCReference>
-			<DCCReference Include="hv\forms\fRegulator.pas">
-				<Form>F_DigiReg</Form>
-			</DCCReference>
-			<DCCReference Include="forms\fSplash.pas">
-				<Form>F_splash</Form>
-			</DCCReference>
-			<DCCReference Include="forms\fAbout.pas">
-				<Form>F_About</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\forms\data\fBlkCrossing.pas">
-				<Form>F_BlkCrossing</Form>
-			</DCCReference>
-			<DCCReference Include="helpers\Verze.pas"/>
-			<DCCReference Include="helpers\adCpuUsage.pas"/>
-			<DCCReference Include="forms\fZesilovacEdit.pas">
-				<Form>F_ZesilovacEdit</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\forms\data\fBlkRailway.pas">
-				<Form>F_BlkRailway</Form>
-			</DCCReference>
-			<DCCReference Include="hv\forms\fHVEdit.pas">
-				<Form>F_HVEdit</Form>
-			</DCCReference>
-			<DCCReference Include="forms\fSystemInfo.pas">
-				<Form>F_SystemInfo</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\forms\data\fBlkTrack.pas">
-				<Form>F_BlkTrack</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\forms\data\fBlkTurnout.pas">
-				<Form>F_BlkTurnout</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\forms\data\fBlkIR.pas">
-				<Form>F_BlkIR</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\BlockCrossing.pas"/>
-			<DCCReference Include="blocks\forms\fBlkNew.pas">
-				<Form>F_BlkNew</Form>
-			</DCCReference>
-			<DCCReference Include="forms\fAdminForm.pas">
-				<Form>F_Admin</Form>
-			</DCCReference>
-			<DCCReference Include="jc\forms\fJCEdit.pas">
-				<Form>F_JCEdit</Form>
-			</DCCReference>
-			<DCCReference Include="forms\fRychlostiEdit.pas">
-				<Form>F_RychlostiEdit</Form>
-			</DCCReference>
-			<DCCReference Include="forms\fSystemAutoStart.pas">
-				<Form>F_AutoStartSystems</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\forms\state\fBlkTrackState.pas">
-				<Form>F_BlkTrackState</Form>
-			</DCCReference>
-			<DCCReference Include="helpers\GetSystems.pas"/>
-			<DCCReference Include="helpers\ownConvert.pas"/>
-			<DCCReference Include="hw\TechnologieRCS.pas"/>
-			<DCCReference Include="jc\TechnologieJC.pas"/>
-			<DCCReference Include="FileSystem.pas"/>
-			<DCCReference Include="forms\fConsole.pas">
-				<Form>F_Console</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\Block.pas"/>
-			<DCCReference Include="blocks\BlockTurnout.pas"/>
-			<DCCReference Include="blocks\BlockTrack.pas"/>
-			<DCCReference Include="blocks\BlockIR.pas"/>
-			<DCCReference Include="blocks\BlockSignal.pas"/>
-			<DCCReference Include="areas\AreaDb.pas"/>
-			<DCCReference Include="areas\Area.pas"/>
-			<DCCReference Include="boosters\Booster.pas"/>
-			<DCCReference Include="boosters\BoosterDb.pas"/>
-			<DCCReference Include="blocks\forms\state\fBlkTurnoutState.pas">
-				<Form>F_BlkTurnoutState</Form>
-			</DCCReference>
-			<DCCReference Include="SnadnSpusteni.pas"/>
-			<DCCReference Include="jc\TJCDatabase.pas"/>
-			<DCCReference Include="hv\THVDatabase.pas"/>
-			<DCCReference Include="hv\THnaciVozidlo.pas"/>
-			<DCCReference Include="Logging.pas"/>
-			<DCCReference Include="net\TCPServerPanel.pas"/>
-			<DCCReference Include="tables\DataRCS.pas"/>
-			<DCCReference Include="tables\DataHV.pas"/>
-			<DCCReference Include="tables\DataJC.pas"/>
-			<DCCReference Include="tables\DataBloky.pas"/>
-			<DCCReference Include="tables\DataZesilovac.pas"/>
-			<DCCReference Include="tables\DataORs.pas"/>
-			<DCCReference Include="blocks\BlockRailway.pas"/>
-			<DCCReference Include="blocks\BlockLinker.pas"/>
-			<DCCReference Include="trains\Train.pas"/>
-			<DCCReference Include="trains\TrainDb.pas"/>
-			<DCCReference Include="tables\DataSpr.pas"/>
-			<DCCReference Include="users\User.pas"/>
-			<DCCReference Include="users\UserDb.pas"/>
-			<DCCReference Include="tables\DataUsers.pas"/>
-			<DCCReference Include="forms\fUserEdit.pas">
-				<Form>F_UserEdit</Form>
-			</DCCReference>
-			<DCCReference Include="areas\AreaStack.pas"/>
-			<DCCReference Include="jc\UPO.pas"/>
-			<DCCReference Include="blocks\forms\state\fBlkRailwayState.pas">
-				<Form>F_BlkRailwayState</Form>
-			</DCCReference>
-			<DCCReference Include="ModelovyCas.pas"/>
-			<DCCReference Include="blocks\forms\data\fBlkSignalEvent.pas">
-				<Form>F_BlkSignalEvent</Form>
-			</DCCReference>
-			<DCCReference Include="helpers\CloseTabSheet.pas"/>
-			<DCCReference Include="blocks\BlockLock.pas"/>
-			<DCCReference Include="blocks\forms\data\fBlkLock.pas">
-				<Form>F_BlkLock</Form>
-			</DCCReference>
-			<DCCReference Include="jc\TMultiJCDatabase.pas"/>
-			<DCCReference Include="jc\TechnologieMultiJC.pas"/>
-			<DCCReference Include="tables\DataMultiJC.pas"/>
-			<DCCReference Include="hv\forms\fHVPomEdit.pas">
-				<Form>F_HV_Pom</Form>
-			</DCCReference>
-			<DCCReference Include="jc\forms\fMJCEdit.pas">
-				<Form>F_MJCEdit</Form>
-			</DCCReference>
-			<DCCReference Include="helpers\ownStrUtils.pas"/>
-			<DCCReference Include="blocks\BlockDisconnector.pas"/>
-			<DCCReference Include="blocks\forms\data\fBlkDisconnector.pas">
-				<Form>F_BlkDisconnector</Form>
-			</DCCReference>
-			<DCCReference Include="RegulatorTCP.pas"/>
-			<DCCReference Include="forms\fFuncsSet.pas">
-				<Form>F_FuncsSet</Form>
-			</DCCReference>
-			<DCCReference Include="hv\FunkceVyznam.pas"/>
-			<DCCReference Include="blocks\BlockRailwayTrack.pas"/>
-			<DCCReference Include="blocks\forms\data\fBlkRT.pas">
-				<Form>F_BlkRT</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\forms\data\fBlkRTStopEvent.pas">
-				<Form>F_BlkRTStopEvent</Form>
-			</DCCReference>
-			<DCCReference Include="RCSdebugger.pas"/>
-			<DCCReference Include="net\UDPdiscover.pas"/>
-			<DCCReference Include="helpers\USock.pas"/>
-			<DCCReference Include="helpers\appEv.pas"/>
-			<DCCReference Include="helpers\SystemCriticalU.pas"/>
-			<DCCReference Include="blocks\BlockIO.pas"/>
-			<DCCReference Include="blocks\forms\data\fBlkIO.pas">
-				<Form>F_BlkIO</Form>
-			</DCCReference>
-			<DCCReference Include="pt\TCPServerPT.pas"/>
-			<DCCReference Include="..\lib\JsonDataObjects\Source\JsonDataObjects.pas"/>
-			<DCCReference Include="pt\PTEndpoint.pas"/>
-			<DCCReference Include="pt\PTEndpointBlock.pas"/>
-			<DCCReference Include="pt\PTEndpointBlocks.pas"/>
-			<DCCReference Include="pt\PTEndpointTrains.pas"/>
-			<DCCReference Include="pt\PTEndpointJC.pas"/>
-			<DCCReference Include="pt\PTUtils.pas"/>
-			<DCCReference Include="pt\PTEndpointLok.pas"/>
-			<DCCReference Include="pt\PTEndpointLoks.pas"/>
-			<DCCReference Include="pt\PTEndpointBlockState.pas"/>
-			<DCCReference Include="pt\PTEndpointLokState.pas"/>
-			<DCCReference Include="rcs\RCS.pas"/>
-			<DCCReference Include="rcs\RCSErrors.pas"/>
-			<DCCReference Include="rrEvent.pas"/>
-			<DCCReference Include="houkEvent.pas"/>
-			<DCCReference Include="forms\frrEv.pas">
-				<Form>F_RREv</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\forms\fhoukEv.pas">
-				<Form>F_HoukEv</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\forms\fHoukEvs.pas">
-				<Form>F_HoukEvs</Form>
-			</DCCReference>
-			<DCCReference Include="blocks\forms\fHoukEvsUsek.pas">
-				<Form>F_HoukEvsUsek</Form>
-			</DCCReference>
-			<DCCReference Include="announcement\announcement.pas"/>
-			<DCCReference Include="announcement\announcementHelper.pas"/>
-			<DCCReference Include="changeEvent.pas"/>
-			<DCCReference Include="changeEventCaller.pas"/>
-			<DCCReference Include="blocks\BlockSummary.pas"/>
-			<DCCReference Include="blocks\forms\data\fBlkSummary.pas">
-				<Form>F_BlkSummary</Form>
-			</DCCReference>
-			<DCCReference Include="predvidanyOdjezd.pas"/>
-			<DCCReference Include="helpers\timeHelper.pas"/>
-			<DCCReference Include="jc\TechnologieAB.pas"/>
-			<DCCReference Include="tables\DataAB.pas"/>
-			<DCCReference Include="areas\TCPAreasRef.pas"/>
-			<DCCReference Include="blocks\forms\data\fBlkSignal.pas">
-				<Form>F_BlkSignal</Form>
-			</DCCReference>
-			<DCCReference Include="trakce\Trakce.pas"/>
-			<DCCReference Include="trakce\TrakceErrors.pas"/>
-			<DCCReference Include="hw\TechnologieTrakce.pas">
-				<Form>$R *.res</Form>
-			</DCCReference>
-			<DCCReference Include="CpuLoad.pas"/>
-			<DCCReference Include="Diagnostics.pas"/>
-			<DCCReference Include="Simulation.pas"/>
-			<DCCReference Include="pt\PTEndpointJCs.pas"/>
-			<DCCReference Include="pt\PTEndpointJCStav.pas"/>
-			<DCCReference Include="blocks\BlockAC.pas"/>
-			<DCCReference Include="blocks\forms\data\fBlkAC.pas">
-				<Form>F_BlkAC</Form>
-			</DCCReference>
-			<DCCReference Include="ACBlocks.pas"/>
-			<DCCReference Include="blocks\BlockCrossingLogic.pas"/>
-			<DCCReference Include="blocks\BlockTrackRef.pas"/>
-			<DCCReference Include="blocks\BlockTrackRefs.pas"/>
-			<DCCReference Include="areas\AreaLighting.pas"/>
-			<DCCReference Include="pt\PTEndpointTrain.pas"/>
-			<DCCReference Include="helpers\IfThenElse.pas"/>
-			<DCCReference Include="pt\PTEndpointAreas.pas"/>
-			<DCCReference Include="pt\PTEndpointArea.pas"/>
-			<DCCReference Include="blocks\BlockDb.pas"/>
-			<DCCReference Include="blocks\BlockGroupSignal.pas"/>
-			<DCCReference Include="blocks\forms\data\fBlkGroupSignal.pas">
-				<Form>F_BlkGroupSignal</Form>
-			</DCCReference>
-			<DCCReference Include="pt\PTEndpointUsers.pas"/>
-			<DCCReference Include="pt\PTEndpointUser.pas"/>
-			<BuildConfiguration Include="Base">
-				<Key>Base</Key>
-			</BuildConfiguration>
-			<BuildConfiguration Include="Debug">
-				<Key>Cfg_2</Key>
-				<CfgParent>Base</CfgParent>
-			</BuildConfiguration>
-			<BuildConfiguration Include="Release">
-				<Key>Cfg_1</Key>
-				<CfgParent>Base</CfgParent>
-			</BuildConfiguration>
-		</ItemGroup>
-		<Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
-		<PropertyGroup>
-			<PreBuildEvent><![CDATA[del /q ..\outunit\*]]></PreBuildEvent>
-		</PropertyGroup>
-		<ProjectExtensions>
-			<Borland.Personality>Delphi.Personality.12</Borland.Personality>
-			<Borland.ProjectType>VCLApplication</Borland.ProjectType>
-			<BorlandProject>
-				<Delphi.Personality>
-					<Source>
-						<Source Name="MainSource">hJOPserver.dpr</Source>
-					</Source>
-					<Parameters>
-						<Parameters Name="UseLauncher">False</Parameters>
-						<Parameters Name="LoadAllSymbols">True</Parameters>
-						<Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-						<Parameters Name="DebugSourceDirs">C:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\;D:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\</Parameters>
-					</Parameters>
-					<VersionInfo>
-						<VersionInfo Name="IncludeVerInfo">True</VersionInfo>
-						<VersionInfo Name="AutoIncBuild">True</VersionInfo>
-						<VersionInfo Name="MajorVer">5</VersionInfo>
-						<VersionInfo Name="MinorVer">0</VersionInfo>
-						<VersionInfo Name="Release">13</VersionInfo>
-						<VersionInfo Name="Build">0</VersionInfo>
-						<VersionInfo Name="Debug">False</VersionInfo>
-						<VersionInfo Name="PreRelease">False</VersionInfo>
-						<VersionInfo Name="Special">False</VersionInfo>
-						<VersionInfo Name="Private">False</VersionInfo>
-						<VersionInfo Name="DLL">False</VersionInfo>
-						<VersionInfo Name="Locale">1029</VersionInfo>
-						<VersionInfo Name="CodePage">1250</VersionInfo>
-					</VersionInfo>
-					<VersionInfoKeys>
-						<VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
-						<VersionInfoKeys Name="FileDescription">hJOP technologický server</VersionInfoKeys>
-						<VersionInfoKeys Name="FileVersion">5.0.13.0</VersionInfoKeys>
-						<VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
-						<VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2020</VersionInfoKeys>
-						<VersionInfoKeys Name="LegalTrademarks"/>
-						<VersionInfoKeys Name="OriginalFilename">hJOPserver.exe</VersionInfoKeys>
-						<VersionInfoKeys Name="ProductName">hJOPserver</VersionInfoKeys>
-						<VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
-						<VersionInfoKeys Name="Comments"/>
-					</VersionInfoKeys>
-					<Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dcloffice2k120.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-						<Excluded_Packages Name="$(BDS)\bin\dclofficexp120.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-					</Excluded_Packages>
-				</Delphi.Personality>
-			</BorlandProject>
-			<ProjectFileVersion>12</ProjectFileVersion>
-		</ProjectExtensions>
-	</Project>
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{3843E8C1-425E-4564-AD11-0A95B3B00280}</ProjectGuid>
+        <MainSource>hJOPserver.dpr</MainSource>
+        <Config Condition="'$(Config)'==''">Debug</Config>
+        <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
+        <ProjectVersion>18.8</ProjectVersion>
+        <FrameworkType>VCL</FrameworkType>
+        <Base>True</Base>
+        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <TargetedPlatforms>1</TargetedPlatforms>
+        <AppType>Application</AppType>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+        <Base_Win32>true</Base_Win32>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+        <Base_Win64>true</Base_Win64>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+        <Cfg_1>true</Cfg_1>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_1)'=='true') or '$(Cfg_1_Win32)'!=''">
+        <Cfg_1_Win32>true</Cfg_1_Win32>
+        <CfgParent>Cfg_1</CfgParent>
+        <Cfg_1>true</Cfg_1>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+        <Cfg_2>true</Cfg_2>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base)'!=''">
+        <DCC_DependencyCheckOutputName>..\..\..\KMZ\hJOP\serverOther\hJOPserver.exe</DCC_DependencyCheckOutputName>
+        <DCC_ImageBase>00400000</DCC_ImageBase>
+        <DCC_UsePackage>vcl;rtl;vclx;VclSmp;vclshlctrls;$(DCC_UsePackage)</DCC_UsePackage>
+        <DCC_ExeOutput>d:\UsersData\vlak\KMZ\hJOP\serverOther\</DCC_ExeOutput>
+        <DCC_BplOutput>..\outunit\</DCC_BplOutput>
+        <DCC_RangeChecking>true</DCC_RangeChecking>
+        <DCC_Platform>x86</DCC_Platform>
+        <DCC_K>false</DCC_K>
+        <DCC_F>false</DCC_F>
+        <DCC_N>true</DCC_N>
+        <DCC_DcpOutput>..\outunit\</DCC_DcpOutput>
+        <DCC_S>false</DCC_S>
+        <DCC_E>false</DCC_E>
+        <DebugSourcePath>D:\Users\Vlak\MTB\MTB_knihovna\;$(DebugSourcePath)</DebugSourcePath>
+        <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
+        <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
+        <DCC_DcuOutput>..\outunit\</DCC_DcuOutput>
+        <SanitizedProjectName>hJOPserver</SanitizedProjectName>
+        <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;FMXTee.Editor.Series;IBX;$(DCC_Namespace)</DCC_Namespace>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_AutoGenVersion>true</VerInfo_AutoGenVersion>
+        <VerInfo_MajorVer>5</VerInfo_MajorVer>
+        <VerInfo_Release>13</VerInfo_Release>
+        <VerInfo_Locale>1029</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=Jan Horáček;FileDescription=hJOP technologický server;FileVersion=5.0.13.0;InternalName=hJOPserver;LegalCopyright=Jan Horáček 2008-2020;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=hJOPserver;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <BT_BuildType>Debug</BT_BuildType>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+        <Debugger_DebugSourcePath>C:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\;D:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\;$(Debugger_DebugSourcePath)</Debugger_DebugSourcePath>
+        <Icon_MainIcon>hJOPserver_Icon.ico</Icon_MainIcon>
+        <PreBuildEvent><![CDATA[del /q ..\outunit\*
+$(PreBuildEvent)]]></PreBuildEvent>
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
+        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+        <Icon_MainIcon>hJOPserver_Icon.ico</Icon_MainIcon>
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
+        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+        <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+        <DCC_DebugInformation>0</DCC_DebugInformation>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
+        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <DCC_MapFile>3</DCC_MapFile>
+        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
+        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+    </PropertyGroup>
+    <ItemGroup>
+        <DelphiCompile Include="$(MainSource)">
+            <MainSource>MainSource</MainSource>
+        </DelphiCompile>
+        <DCCReference Include="libPreload.pas"/>
+        <DCCReference Include="forms\fTester.pas">
+            <Form>F_Tester</Form>
+        </DCCReference>
+        <DCCReference Include="forms\fMain.pas">
+            <Form>F_Main</Form>
+        </DCCReference>
+        <DCCReference Include="forms\fSettings.pas">
+            <Form>F_Options</Form>
+        </DCCReference>
+        <DCCReference Include="forms\fNastaveni_Casu.pas">
+            <Form>F_ModCasSet</Form>
+        </DCCReference>
+        <DCCReference Include="hv\forms\fRegulator.pas">
+            <Form>F_DigiReg</Form>
+        </DCCReference>
+        <DCCReference Include="forms\fSplash.pas">
+            <Form>F_splash</Form>
+        </DCCReference>
+        <DCCReference Include="forms\fAbout.pas">
+            <Form>F_About</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\forms\data\fBlkCrossing.pas">
+            <Form>F_BlkCrossing</Form>
+        </DCCReference>
+        <DCCReference Include="helpers\Verze.pas"/>
+        <DCCReference Include="helpers\adCpuUsage.pas"/>
+        <DCCReference Include="forms\fZesilovacEdit.pas">
+            <Form>F_ZesilovacEdit</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\forms\data\fBlkRailway.pas">
+            <Form>F_BlkRailway</Form>
+        </DCCReference>
+        <DCCReference Include="hv\forms\fHVEdit.pas">
+            <Form>F_HVEdit</Form>
+        </DCCReference>
+        <DCCReference Include="forms\fSystemInfo.pas">
+            <Form>F_SystemInfo</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\forms\data\fBlkTrack.pas">
+            <Form>F_BlkTrack</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\forms\data\fBlkTurnout.pas">
+            <Form>F_BlkTurnout</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\forms\data\fBlkIR.pas">
+            <Form>F_BlkIR</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\BlockCrossing.pas"/>
+        <DCCReference Include="blocks\forms\fBlkNew.pas">
+            <Form>F_BlkNew</Form>
+        </DCCReference>
+        <DCCReference Include="forms\fAdminForm.pas">
+            <Form>F_Admin</Form>
+        </DCCReference>
+        <DCCReference Include="jc\forms\fJCEdit.pas">
+            <Form>F_JCEdit</Form>
+        </DCCReference>
+        <DCCReference Include="forms\fRychlostiEdit.pas">
+            <Form>F_RychlostiEdit</Form>
+        </DCCReference>
+        <DCCReference Include="forms\fSystemAutoStart.pas">
+            <Form>F_AutoStartSystems</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\forms\state\fBlkTrackState.pas">
+            <Form>F_BlkTrackState</Form>
+        </DCCReference>
+        <DCCReference Include="helpers\GetSystems.pas"/>
+        <DCCReference Include="helpers\ownConvert.pas"/>
+        <DCCReference Include="hw\TechnologieRCS.pas"/>
+        <DCCReference Include="jc\TechnologieJC.pas"/>
+        <DCCReference Include="FileSystem.pas"/>
+        <DCCReference Include="forms\fConsole.pas">
+            <Form>F_Console</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\Block.pas"/>
+        <DCCReference Include="blocks\BlockTurnout.pas"/>
+        <DCCReference Include="blocks\BlockTrack.pas"/>
+        <DCCReference Include="blocks\BlockIR.pas"/>
+        <DCCReference Include="blocks\BlockSignal.pas"/>
+        <DCCReference Include="areas\AreaDb.pas"/>
+        <DCCReference Include="areas\Area.pas"/>
+        <DCCReference Include="boosters\Booster.pas"/>
+        <DCCReference Include="boosters\BoosterDb.pas"/>
+        <DCCReference Include="blocks\forms\state\fBlkTurnoutState.pas">
+            <Form>F_BlkTurnoutState</Form>
+        </DCCReference>
+        <DCCReference Include="SnadnSpusteni.pas"/>
+        <DCCReference Include="jc\TJCDatabase.pas"/>
+        <DCCReference Include="hv\THVDatabase.pas"/>
+        <DCCReference Include="hv\THnaciVozidlo.pas"/>
+        <DCCReference Include="Logging.pas"/>
+        <DCCReference Include="net\TCPServerPanel.pas"/>
+        <DCCReference Include="tables\DataRCS.pas"/>
+        <DCCReference Include="tables\DataHV.pas"/>
+        <DCCReference Include="tables\DataJC.pas"/>
+        <DCCReference Include="tables\DataBloky.pas"/>
+        <DCCReference Include="tables\DataZesilovac.pas"/>
+        <DCCReference Include="tables\DataORs.pas"/>
+        <DCCReference Include="blocks\BlockRailway.pas"/>
+        <DCCReference Include="blocks\BlockLinker.pas"/>
+        <DCCReference Include="trains\Train.pas"/>
+        <DCCReference Include="trains\TrainDb.pas"/>
+        <DCCReference Include="tables\DataSpr.pas"/>
+        <DCCReference Include="users\User.pas"/>
+        <DCCReference Include="users\UserDb.pas"/>
+        <DCCReference Include="tables\DataUsers.pas"/>
+        <DCCReference Include="forms\fUserEdit.pas">
+            <Form>F_UserEdit</Form>
+        </DCCReference>
+        <DCCReference Include="areas\AreaStack.pas"/>
+        <DCCReference Include="jc\UPO.pas"/>
+        <DCCReference Include="blocks\forms\state\fBlkRailwayState.pas">
+            <Form>F_BlkRailwayState</Form>
+        </DCCReference>
+        <DCCReference Include="ModelovyCas.pas"/>
+        <DCCReference Include="blocks\forms\data\fBlkSignalEvent.pas">
+            <Form>F_BlkSignalEvent</Form>
+        </DCCReference>
+        <DCCReference Include="helpers\CloseTabSheet.pas"/>
+        <DCCReference Include="blocks\BlockLock.pas"/>
+        <DCCReference Include="blocks\forms\data\fBlkLock.pas">
+            <Form>F_BlkLock</Form>
+        </DCCReference>
+        <DCCReference Include="jc\TMultiJCDatabase.pas"/>
+        <DCCReference Include="jc\TechnologieMultiJC.pas"/>
+        <DCCReference Include="tables\DataMultiJC.pas"/>
+        <DCCReference Include="hv\forms\fHVPomEdit.pas">
+            <Form>F_HV_Pom</Form>
+        </DCCReference>
+        <DCCReference Include="jc\forms\fMJCEdit.pas">
+            <Form>F_MJCEdit</Form>
+        </DCCReference>
+        <DCCReference Include="helpers\ownStrUtils.pas"/>
+        <DCCReference Include="blocks\BlockDisconnector.pas"/>
+        <DCCReference Include="blocks\forms\data\fBlkDisconnector.pas">
+            <Form>F_BlkDisconnector</Form>
+        </DCCReference>
+        <DCCReference Include="RegulatorTCP.pas"/>
+        <DCCReference Include="forms\fFuncsSet.pas">
+            <Form>F_FuncsSet</Form>
+        </DCCReference>
+        <DCCReference Include="hv\FunkceVyznam.pas"/>
+        <DCCReference Include="blocks\BlockRailwayTrack.pas"/>
+        <DCCReference Include="blocks\forms\data\fBlkRT.pas">
+            <Form>F_BlkRT</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\forms\data\fBlkRTStopEvent.pas">
+            <Form>F_BlkRTStopEvent</Form>
+        </DCCReference>
+        <DCCReference Include="RCSdebugger.pas"/>
+        <DCCReference Include="net\UDPdiscover.pas"/>
+        <DCCReference Include="helpers\USock.pas"/>
+        <DCCReference Include="helpers\appEv.pas"/>
+        <DCCReference Include="helpers\SystemCriticalU.pas"/>
+        <DCCReference Include="blocks\BlockIO.pas"/>
+        <DCCReference Include="blocks\forms\data\fBlkIO.pas">
+            <Form>F_BlkIO</Form>
+        </DCCReference>
+        <DCCReference Include="pt\TCPServerPT.pas"/>
+        <DCCReference Include="..\lib\JsonDataObjects\Source\JsonDataObjects.pas"/>
+        <DCCReference Include="pt\PTEndpoint.pas"/>
+        <DCCReference Include="pt\PTEndpointBlock.pas"/>
+        <DCCReference Include="pt\PTEndpointBlocks.pas"/>
+        <DCCReference Include="pt\PTEndpointTrains.pas"/>
+        <DCCReference Include="pt\PTEndpointJC.pas"/>
+        <DCCReference Include="pt\PTUtils.pas"/>
+        <DCCReference Include="pt\PTEndpointLok.pas"/>
+        <DCCReference Include="pt\PTEndpointLoks.pas"/>
+        <DCCReference Include="pt\PTEndpointBlockState.pas"/>
+        <DCCReference Include="pt\PTEndpointLokState.pas"/>
+        <DCCReference Include="rcs\RCS.pas"/>
+        <DCCReference Include="rcs\RCSErrors.pas"/>
+        <DCCReference Include="rrEvent.pas"/>
+        <DCCReference Include="houkEvent.pas"/>
+        <DCCReference Include="forms\frrEv.pas">
+            <Form>F_RREv</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\forms\fhoukEv.pas">
+            <Form>F_HoukEv</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\forms\fHoukEvs.pas">
+            <Form>F_HoukEvs</Form>
+        </DCCReference>
+        <DCCReference Include="blocks\forms\fHoukEvsUsek.pas">
+            <Form>F_HoukEvsUsek</Form>
+        </DCCReference>
+        <DCCReference Include="announcement\announcement.pas"/>
+        <DCCReference Include="announcement\announcementHelper.pas"/>
+        <DCCReference Include="changeEvent.pas"/>
+        <DCCReference Include="changeEventCaller.pas"/>
+        <DCCReference Include="blocks\BlockSummary.pas"/>
+        <DCCReference Include="blocks\forms\data\fBlkSummary.pas">
+            <Form>F_BlkSummary</Form>
+        </DCCReference>
+        <DCCReference Include="predvidanyOdjezd.pas"/>
+        <DCCReference Include="helpers\timeHelper.pas"/>
+        <DCCReference Include="jc\TechnologieAB.pas"/>
+        <DCCReference Include="tables\DataAB.pas"/>
+        <DCCReference Include="areas\TCPAreasRef.pas"/>
+        <DCCReference Include="blocks\forms\data\fBlkSignal.pas">
+            <Form>F_BlkSignal</Form>
+        </DCCReference>
+        <DCCReference Include="trakce\Trakce.pas"/>
+        <DCCReference Include="trakce\TrakceErrors.pas"/>
+        <DCCReference Include="hw\TechnologieTrakce.pas">
+            <Form>$R *.res</Form>
+        </DCCReference>
+        <DCCReference Include="CpuLoad.pas"/>
+        <DCCReference Include="Diagnostics.pas"/>
+        <DCCReference Include="Simulation.pas"/>
+        <DCCReference Include="pt\PTEndpointJCs.pas"/>
+        <DCCReference Include="pt\PTEndpointJCStav.pas"/>
+        <DCCReference Include="blocks\BlockAC.pas"/>
+        <DCCReference Include="blocks\forms\data\fBlkAC.pas">
+            <Form>F_BlkAC</Form>
+        </DCCReference>
+        <DCCReference Include="ACBlocks.pas"/>
+        <DCCReference Include="blocks\BlockCrossingLogic.pas"/>
+        <DCCReference Include="blocks\BlockTrackRef.pas"/>
+        <DCCReference Include="blocks\BlockTrackRefs.pas"/>
+        <DCCReference Include="areas\AreaLighting.pas"/>
+        <DCCReference Include="pt\PTEndpointTrain.pas"/>
+        <DCCReference Include="helpers\IfThenElse.pas"/>
+        <DCCReference Include="pt\PTEndpointAreas.pas"/>
+        <DCCReference Include="pt\PTEndpointArea.pas"/>
+        <DCCReference Include="blocks\BlockDb.pas"/>
+        <DCCReference Include="blocks\BlockGroupSignal.pas"/>
+        <DCCReference Include="blocks\forms\data\fBlkGroupSignal.pas">
+            <Form>F_BlkGroupSignal</Form>
+        </DCCReference>
+        <DCCReference Include="pt\PTEndpointUsers.pas"/>
+        <DCCReference Include="pt\PTEndpointUser.pas"/>
+        <BuildConfiguration Include="Debug">
+            <Key>Cfg_2</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Base">
+            <Key>Base</Key>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Release">
+            <Key>Cfg_1</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+    </ItemGroup>
+    <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+    <ProjectExtensions>
+        <Borland.Personality>Delphi.Personality.12</Borland.Personality>
+        <Borland.ProjectType>VCLApplication</Borland.ProjectType>
+        <BorlandProject>
+            <Delphi.Personality>
+                <Source>
+                    <Source Name="MainSource">hJOPserver.dpr</Source>
+                </Source>
+                <Parameters>
+                    <Parameters Name="UseLauncher">False</Parameters>
+                    <Parameters Name="LoadAllSymbols">True</Parameters>
+                    <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
+                    <Parameters Name="DebugSourceDirs">C:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\;D:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\</Parameters>
+                </Parameters>
+                <VersionInfo>
+                    <VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+                    <VersionInfo Name="AutoIncBuild">True</VersionInfo>
+                    <VersionInfo Name="MajorVer">5</VersionInfo>
+                    <VersionInfo Name="MinorVer">0</VersionInfo>
+                    <VersionInfo Name="Release">13</VersionInfo>
+                    <VersionInfo Name="Build">0</VersionInfo>
+                    <VersionInfo Name="Debug">False</VersionInfo>
+                    <VersionInfo Name="PreRelease">False</VersionInfo>
+                    <VersionInfo Name="Special">False</VersionInfo>
+                    <VersionInfo Name="Private">False</VersionInfo>
+                    <VersionInfo Name="DLL">False</VersionInfo>
+                    <VersionInfo Name="Locale">1029</VersionInfo>
+                    <VersionInfo Name="CodePage">1250</VersionInfo>
+                </VersionInfo>
+                <VersionInfoKeys>
+                    <VersionInfoKeys Name="CompanyName">Jan Horáček</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileDescription">hJOP technologický server</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">5.0.13.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="InternalName">hJOPserver</VersionInfoKeys>
+                    <VersionInfoKeys Name="LegalCopyright">Jan Horáček 2008-2020</VersionInfoKeys>
+                    <VersionInfoKeys Name="LegalTrademarks"/>
+                    <VersionInfoKeys Name="OriginalFilename">hJOPserver.exe</VersionInfoKeys>
+                    <VersionInfoKeys Name="ProductName">hJOPserver</VersionInfoKeys>
+                    <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="Comments"/>
+                </VersionInfoKeys>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k120.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp120.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
+            </Delphi.Personality>
+            <Platforms>
+                <Platform value="Win32">True</Platform>
+                <Platform value="Win64">False</Platform>
+            </Platforms>
+        </BorlandProject>
+        <ProjectFileVersion>12</ProjectFileVersion>
+    </ProjectExtensions>
+    <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
+    <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win32'">
+        <PreBuildEvent>del /q ..\outunit\*</PreBuildEvent>
+        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent/>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win32'">
+        <PreBuildEvent>del /q ..\outunit\*</PreBuildEvent>
+        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
+        <PreLinkEvent/>
+        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
+        <PostBuildEvent/>
+        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
+    </PropertyGroup>
+</Project>

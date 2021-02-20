@@ -4,8 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, BlockIO, Generics.Collections,
-  IBUtils;
+  Dialogs, ExtCtrls, StdCtrls, Spin, fMain, BlockIO, Generics.Collections;
 
 type
   TF_BlkIO = class(TForm)

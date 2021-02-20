@@ -6,8 +6,8 @@
 
 interface
 
-uses TechnologieJC, Block, IniFiles, SysUtils, Windows, IdContext,
-      Generics.Collections, Classes, IBUtils, BlockDb, BlockSignal;
+uses TechnologieJC, Block, IniFiles, SysUtils, Windows, IdContext, System.Math,
+      Generics.Collections, Classes, BlockDb, BlockSignal;
 
 type
   EJCIdAlreadyExists = class(Exception);

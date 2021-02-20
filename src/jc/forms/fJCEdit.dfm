@@ -191,7 +191,6 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 0
         TabOrder = 0
       end
       object CB_NewZaverPoloha: TComboBox
@@ -204,7 +203,6 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 13
         ItemIndex = 0
         TabOrder = 1
         Text = '+'
@@ -277,7 +275,6 @@ object F_JCEdit: TF_JCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 0
         TabOrder = 0
       end
       object B_Usek_Add: TButton
@@ -374,7 +371,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
     TabOrder = 2
     OnChange = CB_NavestidloChange
   end
@@ -388,7 +384,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 3
     OnChange = CB_TypChange
     Items.Strings = (
@@ -405,7 +400,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 0
     TabOrder = 5
     OnChange = CB_Dalsi_NavChange
   end
@@ -419,7 +413,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 7
     Items.Strings = (
       '0 km/h'
@@ -444,7 +437,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 6
     Items.Strings = (
       '0 km/h'
@@ -505,7 +497,6 @@ object F_JCEdit: TF_JCEdit
       Width = 145
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
       TabOrder = 1
       OnChange = CB_TratBlokChange
     end
@@ -515,7 +506,6 @@ object F_JCEdit: TF_JCEdit
       Width = 145
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 2
       Items.Strings = (
         'A --> B'

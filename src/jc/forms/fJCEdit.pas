@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ComCtrls, Spin, TechnologieJC, Generics.Collections, BlockDb,
-  StrUtils;
+  StrUtils, Math;
 
 type
   TF_JCEdit = class(TForm)
@@ -122,7 +122,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, Block, AreaDb, IBUtils,
+uses GetSystems, FileSystem, Block, AreaDb,
       BlockSignal, TJCDatabase, DataJC, BlockRailway, BlockTurnout;
 
 {$R *.dfm}

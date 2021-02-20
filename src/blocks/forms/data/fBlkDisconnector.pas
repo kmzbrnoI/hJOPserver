@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Spin, BlockDisconnector, Generics.Collections, IBUtils;
+  Dialogs, ExtCtrls, StdCtrls, Spin, BlockDisconnector, Generics.Collections;
 
 type
   TF_BlkDisconnector = class(TForm)

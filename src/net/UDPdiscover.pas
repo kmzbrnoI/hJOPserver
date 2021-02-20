@@ -33,7 +33,7 @@ unit UDPdiscover;
 interface
 
 uses IdUDPServer, Classes, IdSocketHandle, SysUtils, Generics.Collections,
-     ExtCtrls;
+     ExtCtrls, IdGlobal;
 
 const
   _DISC_DEFAULT_PORT = 5880;
@@ -52,7 +52,7 @@ type
       updateBindTimer: TTimer;
 
        procedure OnUDPServerRead(AThread: TIdUDPListenerThread;
-        AData: TBytes; ABinding: TIdSocketHandle);
+        const AData: TIdBytes; ABinding: TIdSocketHandle);
        procedure SendDisc(ABinding: TIdSocketHandle; port: Word);
 
        procedure SetName(name: string);
@@ -120,7 +120,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TUDPDiscover.OnUDPServerRead(AThread: TIdUDPListenerThread;
-  AData: TBytes; ABinding: TIdSocketHandle);
+  const AData: TIdBytes; ABinding: TIdSocketHandle);
 var
   Msg: String;
   i, j: Integer;
@@ -145,7 +145,7 @@ end;
 
 procedure TUDPDiscover.SendDisc(ABinding: TIdSocketHandle; port: Word);
 var msg: string;
-    data: TBytes;
+    data: TIdBytes;
 begin
  if (ABinding.IP = '0.0.0.0') then Exit();
 
@@ -162,7 +162,7 @@ begin
  if (not broadcasts.ContainsKey(ABinding.IP)) then Self.UpdateBindings();
 
  try
-   data := TEncoding.UTF8.GetBytes(msg);
+   data := TIdBytes(TEncoding.UTF8.GetBytes(msg));
    ABinding.Broadcast(data, port, broadcasts[ABinding.IP]);
  except
    on E: Exception do

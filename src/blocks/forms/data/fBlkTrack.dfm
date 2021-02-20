@@ -427,7 +427,6 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 4
   end
   object SE_SprCnt: TSpinEdit

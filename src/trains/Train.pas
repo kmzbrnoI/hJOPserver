@@ -4,8 +4,8 @@
 
 interface
 
-uses IniFiles, SysUtils, Classes, Forms, IBUtils, THnaciVozidlo, JsonDataObjects,
-     Generics.Collections, predvidanyOdjezd, Block, Trakce;
+uses IniFiles, SysUtils, Classes, Forms, THnaciVozidlo, JsonDataObjects,
+     Generics.Collections, predvidanyOdjezd, Block, Trakce, Math;
 
 const
   _MAX_TRAIN_HV = 4;

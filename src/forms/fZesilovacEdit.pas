@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, Spin, fMain, Booster, IBUtils;
+  StdCtrls, ExtCtrls, Spin, fMain, Booster, Math;
 
 type
   TF_ZesilovacEdit = class(TForm)

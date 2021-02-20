@@ -503,7 +503,6 @@ object F_BlkCrossing: TF_BlkCrossing
       Width = 177
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 1
       OnChange = CB_TrackChange
     end
@@ -642,7 +641,6 @@ object F_BlkCrossing: TF_BlkCrossing
       Width = 241
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 4
       Items.Strings = (
         'Uvoln'#283'n'#237' prost'#345'edn'#237'ho '#250'seku'

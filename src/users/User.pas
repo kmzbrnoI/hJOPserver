@@ -16,7 +16,7 @@ unit User;
 
 interface
 
-uses IniFiles, Generics.Collections, DCPsha256, SysUtils, Classes,
+uses IniFiles, Generics.Collections, SysUtils, Classes,
      Generics.Defaults, Area, Windows, JsonDataObjects;
 
 const
@@ -80,7 +80,7 @@ type
 
 implementation
 
-uses AreaDb, TCPServerPanel, UserDb, ownStrUtils;
+uses AreaDb, TCPServerPanel, UserDb, ownStrUtils, System.Hash;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -227,20 +227,8 @@ begin
 end;
 
 class function TUser.GenerateHash(plain: AnsiString): string;
-var hash: TDCP_sha256;
-    Digest: array[0..31] of byte;  // RipeMD-160 produces a 160bit digest (20bytes)
-    i: Integer;
 begin
- hash := TDCP_sha256.Create(nil);
- hash.Init();
- hash.UpdateStr(plain);
- hash.Final(digest);
- hash.Free();
-
- Result := '';
- for i := 0 to 31 do
-   Result := Result + IntToHex(Digest[i], 2);
- Result := LowerCase(Result);
+ Result := LowerCase(System.Hash.THashSHA2.GetHashString(plain, SHA256));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

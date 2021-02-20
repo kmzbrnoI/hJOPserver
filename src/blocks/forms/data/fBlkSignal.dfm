@@ -187,7 +187,6 @@ object F_BlkSignal: TF_BlkSignal
       Margins.Right = 2
       Margins.Bottom = 2
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 5
       Items.Strings = (
         'S-Com'
@@ -332,7 +331,6 @@ object F_BlkSignal: TF_BlkSignal
     Top = 8
     Width = 21
     Height = 21
-    DoubleBuffered = True
     Glyph.Data = {
       36030000424D3603000000000000360000002800000010000000100000000100
       1800000000000003000000000000000000000000000000000000FFFFFFFFFFFF
@@ -360,7 +358,6 @@ object F_BlkSignal: TF_BlkSignal
       FFFFFFFFFFFFFFFFFFFFFFFF000000000000000000AAAAAAFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF09090900
       0000000000B3B3B3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-    ParentDoubleBuffered = False
     TabOrder = 9
     OnClick = BB_Event_AddClick
   end

@@ -344,7 +344,6 @@ object F_BlkTurnout: TF_BlkTurnout
       Width = 189
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 0
     end
     object CHB_Zamek: TCheckBox
@@ -362,7 +361,6 @@ object F_BlkTurnout: TF_BlkTurnout
       Width = 112
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 2
       Items.Strings = (
         '+'
@@ -391,7 +389,6 @@ object F_BlkTurnout: TF_BlkTurnout
       Width = 284
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 1
     end
     object CHB_npMinus: TCheckBox
@@ -409,7 +406,6 @@ object F_BlkTurnout: TF_BlkTurnout
       Width = 284
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 3
     end
   end
@@ -435,7 +431,6 @@ object F_BlkTurnout: TF_BlkTurnout
       Width = 187
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 1
     end
     object CHB_Spojka_Common_In: TCheckBox

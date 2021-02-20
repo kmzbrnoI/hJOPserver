@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, BlockSignal, IBUtils,
+  Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, BlockSignal,
   fBlkSignalEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
   BlockDb;
 
