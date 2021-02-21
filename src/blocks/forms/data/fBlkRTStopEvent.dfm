@@ -36,7 +36,7 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
     end
   end
   object GB_DetekceZpomalenii: TGroupBox
-    Left = 183
+    Left = 179
     Top = 7
     Width = 165
     Height = 242
@@ -46,39 +46,16 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
     Margins.Bottom = 2
     Caption = ' Detekce zpomalen'#237'  '
     TabOrder = 1
-    object CB_ZpomalitKmH: TComboBox
-      Left = 15
-      Top = 41
-      Width = 107
-      Height = 21
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Style = csDropDownList
-      TabOrder = 1
-      Items.Strings = (
-        '10 km/h'
-        '20 km/h'
-        '30 km/h'
-        '40 km/h'
-        '50 km/h'
-        '60 km/h'
-        '70 km/h'
-        '80 km/h'
-        '90 km/h'
-        '100 km/h')
-    end
     object CHB_Zpomal: TCheckBox
-      Left = 15
+      Left = 10
       Top = 20
-      Width = 121
+      Width = 148
       Height = 17
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Zpomalit na rychlost:'
+      Caption = 'Zpomalit na rychlost [km/h]:'
       TabOrder = 0
       OnClick = CHB_ZpomalClick
     end
@@ -90,6 +67,18 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
+      ExplicitLeft = 9
+      ExplicitTop = 65
+    end
+    object SE_Slow_Speed: TSpinEdit
+      Left = 11
+      Top = 42
+      Width = 146
+      Height = 22
+      MaxValue = 200
+      MinValue = 0
+      TabOrder = 1
+      Value = 0
     end
   end
 end

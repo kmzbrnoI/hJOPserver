@@ -4,16 +4,16 @@ interface
 
 uses
   Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls,
-  ExtCtrls, BlockRailwayTrack, AreaDb, BlockDb, frrEv;
+  ExtCtrls, BlockRailwayTrack, AreaDb, BlockDb, frrEv, Vcl.Samples.Spin;
 
 type
   TF_BlkRTStopEvent = class(TForm)
     GB_DetekceZastaveni: TGroupBox;
     GB_DetekceZpomalenii: TGroupBox;
-    CB_ZpomalitKmH: TComboBox;
     CHB_Zpomal: TCheckBox;
     P_Stop: TPanel;
     P_Zpom: TPanel;
+    SE_Slow_Speed: TSpinEdit;
     procedure CHB_ZpomalClick(Sender: TObject);
   private
     fZast: TF_RREv;
@@ -67,7 +67,7 @@ begin
   Self.CHB_Zpomal.Checked := events.slow.enabled;
   if (events.slow.enabled) then
   begin
-    Self.CB_ZpomalitKmH.ItemIndex := (events.slow.speed - 1) div 10;
+    Self.SE_Slow_Speed.Value := events.slow.speed;
     Self.fZpom.FillFromRR(events.slow.ev);
   end else begin
     Self.fZpom.ShowEmpty();
@@ -79,7 +79,7 @@ end;
 procedure TF_BlkRTStopEvent.OpenEmptyForm();
 begin
   Self.fZast.ShowEmpty();
-  Self.CB_ZpomalitKmH.ItemIndex := -1;
+  Self.SE_Slow_Speed.Value := 0;
   Self.CHB_Zpomal.Checked := false;
   Self.CHB_ZpomalClick(Self.CHB_Zpomal);
 end;
@@ -94,7 +94,7 @@ begin
   if ((Self.CHB_Zpomal.Checked) and (not Self.fZpom.InputValid())) then
     Exit('Vyberte zpomalovací událost!');
 
-  if ((CB_ZpomalitKmH.ItemIndex = -1) and (CHB_Zpomal.Checked)) then
+  if ((Self.SE_Slow_Speed.Value = 0) and (CHB_Zpomal.Checked)) then
     Exit('Vyberte rychlost, na kterou se ma zpomalit!');
 
   Result := '';
@@ -105,9 +105,9 @@ end;
 procedure TF_BlkRTStopEvent.CHB_ZpomalClick(Sender: TObject);
 begin
   Self.fZpom.enabled := Self.CHB_Zpomal.Checked;
-  Self.CB_ZpomalitKmH.enabled := Self.CHB_Zpomal.Checked;
+  Self.SE_Slow_Speed.Enabled := Self.CHB_Zpomal.Checked;
   if (not Self.CHB_Zpomal.Checked) then
-    Self.CB_ZpomalitKmH.ItemIndex := -1;
+    Self.SE_Slow_Speed.Value := 0;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ begin
   if (Self.CHB_Zpomal.Checked) then
   begin
     Result.slow.ev := fZpom.GetRREv();
-    Result.slow.speed := (Self.CB_ZpomalitKmH.ItemIndex + 1) * 10;
+    Result.slow.speed := Self.SE_Slow_Speed.Value;
   end;
 end;
 
