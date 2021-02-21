@@ -66,24 +66,24 @@ object F_JCEdit: TF_JCEdit
   object L_VC_10: TLabel
     Left = 7
     Top = 407
-    Width = 136
+    Width = 167
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Rychlost (dal'#353#237' n'#225'v. na st'#367'j) :'
+    Caption = 'Rychlost (dal'#353#237' n'#225'v. na st'#367'j) [km/h]:'
   end
   object L_VC_12: TLabel
     Left = 7
     Top = 439
-    Width = 170
+    Width = 201
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Rychlost (dal'#353#237' n'#225'v. povoluje j'#237'zdu) :'
+    Caption = 'Rychlost (dal'#353#237' n'#225'v. povoluje j'#237'zdu) [km/h]:'
   end
   object Label3: TLabel
     Left = 8
@@ -403,54 +403,6 @@ object F_JCEdit: TF_JCEdit
     TabOrder = 5
     OnChange = CB_Dalsi_NavChange
   end
-  object CB_Rychlost_Volno: TComboBox
-    Left = 191
-    Top = 439
-    Width = 145
-    Height = 21
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Style = csDropDownList
-    TabOrder = 7
-    Items.Strings = (
-      '0 km/h'
-      '10 km/h'
-      '20 km/h'
-      '30 km/h'
-      '40 km/h'
-      '50 km/h'
-      '60 km/h'
-      '70 km/h'
-      '80 km/h'
-      '90 km/h'
-      '100 km/h')
-  end
-  object CB_Rychlost_Stuj: TComboBox
-    Left = 191
-    Top = 407
-    Width = 145
-    Height = 21
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Style = csDropDownList
-    TabOrder = 6
-    Items.Strings = (
-      '0 km/h'
-      '10 km/h'
-      '20 km/h'
-      '30 km/h'
-      '40 km/h'
-      '50 km/h'
-      '60 km/h'
-      '70 km/h'
-      '80 km/h'
-      '90 km/h'
-      '100 km/h')
-  end
   object CHB_AutoName: TCheckBox
     Left = 88
     Top = 8
@@ -656,5 +608,25 @@ object F_JCEdit: TF_JCEdit
     Height = 17
     Caption = 'Nedostate'#269'n'#225' z'#225'brzdn'#225' vzd'#225'lenost'
     TabOrder = 11
+  end
+  object SE_Speed_Stop: TSpinEdit
+    Left = 232
+    Top = 407
+    Width = 105
+    Height = 22
+    MaxValue = 200
+    MinValue = 0
+    TabOrder = 6
+    Value = 0
+  end
+  object SE_Speed_Go: TSpinEdit
+    Left = 232
+    Top = 439
+    Width = 105
+    Height = 22
+    MaxValue = 200
+    MinValue = 0
+    TabOrder = 7
+    Value = 0
   end
 end

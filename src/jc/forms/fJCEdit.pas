@@ -35,8 +35,6 @@ type
     L_VC_07: TLabel;
     CB_Dalsi_Nav: TComboBox;
     L_VC_10: TLabel;
-    CB_Rychlost_Volno: TComboBox;
-    CB_Rychlost_Stuj: TComboBox;
     L_VC_12: TLabel;
     CHB_AutoName: TCheckBox;
     GB_trat: TGroupBox;
@@ -61,6 +59,8 @@ type
     CHB_NZV: TCheckBox;
     Label6: TLabel;
     SE_SignalFallTrackI: TSpinEdit;
+    SE_Speed_Stop: TSpinEdit;
+    SE_Speed_Go: TSpinEdit;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Vyh_AddClick(Sender: TObject);
     procedure B_Usek_AddClick(Sender: TObject);
@@ -155,13 +155,13 @@ begin
     SE_ID.Value := 1;
   Blocks.FillCB(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, btSignal, -1);
 
-  CB_Typ.ItemIndex := -1;
-  CB_Dalsi_Nav.ItemIndex := -1;
-  CB_Rychlost_Stuj.ItemIndex := 4;
-  CB_Rychlost_Volno.ItemIndex := 4;
-  CB_NavestidloChange(Self);
+  Self.CB_Typ.ItemIndex := -1;
+  Self.CB_Dalsi_Nav.ItemIndex := -1;
+  Self.SE_Speed_Stop.Value := 40;
+  Self.SE_Speed_Go.Value := 40;
+  Self.CB_NavestidloChange(Self);
   Self.Caption := 'Vytvořit novou jízdní cestu';
-  LV_Useky.Clear();
+  Self.LV_Useky.Clear();
   Self.FillTurnouts();
 
   Self.M_Prj.Clear();
@@ -194,8 +194,8 @@ begin
   Self.SE_ID.Value := JCData.id;
 
   Self.CB_Typ.ItemIndex := Integer(JCData.typ) - 1;
-  Self.CB_Rychlost_Volno.ItemIndex := JCData.speedGo div 10;
-  Self.CB_Rychlost_Stuj.ItemIndex := JCData.speedStop div 10;
+  Self.SE_Speed_Go.Value := JCData.speedGo;
+  Self.SE_Speed_Stop.Value := JCData.speedStop;
 
   Self.CB_TypChange(Self.CB_Typ);
 
@@ -392,15 +392,15 @@ begin
     Application.MessageBox('Vyberte další návěstidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (CB_Rychlost_Volno.ItemIndex = -1) then
+  if (Self.SE_Speed_Go.Value = 0) then
   begin
-    Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při postaveném dalším návěstidle!',
+    Application.MessageBox('Vyplňte, jaká bude rychlost lokomotivy při projiždění JC při postaveném dalším návěstidle!',
       'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (CB_Rychlost_Stuj.ItemIndex = -1) then
+  if (Self.SE_Speed_Stop.Value = 0) then
   begin
-    Application.MessageBox('Vyberte, jaká bude rychlost lokomotivy při projiždění JC při dalším návěstidle na stůj!',
+    Application.MessageBox('Vyplňte, jaká bude rychlost lokomotivy při projiždění JC při dalším návěstidle na stůj!',
       'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
@@ -435,8 +435,8 @@ begin
   JCData.signalId := Blocks.GetBlkID(Self.CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
   JCData.typ := TJCType(Self.CB_Typ.ItemIndex + 1);
 
-  JCData.speedGo := Self.CB_Rychlost_Volno.ItemIndex * 10;
-  JCData.speedStop := Self.CB_Rychlost_Stuj.ItemIndex * 10;
+  JCData.speedGo := Self.SE_Speed_Go.Value;
+  JCData.speedStop := Self.SE_Speed_Stop.Value;
   JCData.turn := Self.CHB_Odbocka.Checked;
   JCData.nzv := Self.CHB_NZV.Checked;
   JCData.signalFallTrackI := Self.SE_SignalFallTrackI.Value;
@@ -740,13 +740,13 @@ end;
 procedure TF_JCEdit.CB_TypChange(Sender: TObject);
 begin
   Self.JCData.typ := TJCType(Self.CB_Typ.ItemIndex + 1);
-  CB_Rychlost_Volno.Enabled := (JCData.typ <> TJCType.shunt);
-  CB_Rychlost_Stuj.Enabled := (JCData.typ <> TJCType.shunt);
+  Self.SE_Speed_Go.Enabled := (JCData.typ <> TJCType.shunt);
+  Self.SE_Speed_Stop.Enabled := (JCData.typ <> TJCType.shunt);
 
   if (JCData.typ = TJCType.shunt) then
   begin
-    CB_Rychlost_Volno.ItemIndex := 4;
-    CB_Rychlost_Stuj.ItemIndex := 4;
+    Self.SE_Speed_Go.Value := 40;
+    Self.SE_Speed_Stop.Value := 40;
   end;
 end;
 
