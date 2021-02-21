@@ -68,39 +68,16 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
     Margins.Bottom = 2
     Caption = ' Detekce zpomalen'#237'  '
     TabOrder = 1
-    object CB_ZpomalitKmH: TComboBox
-      Left = 11
-      Top = 40
-      Width = 141
-      Height = 21
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Style = csDropDownList
-      TabOrder = 1
-      Items.Strings = (
-        '10 km/h'
-        '20 km/h'
-        '30 km/h'
-        '40 km/h'
-        '50 km/h'
-        '60 km/h'
-        '70 km/h'
-        '80 km/h'
-        '90 km/h'
-        '100 km/h')
-    end
     object CHB_Zpomalit: TCheckBox
-      Left = 11
+      Left = 9
       Top = 19
-      Width = 121
+      Width = 152
       Height = 17
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Zpomalit na rychlost:'
+      Caption = 'Zpomalit na rychlost [km/h]:'
       TabOrder = 0
       OnClick = CHB_ZpomalitClick
     end
@@ -112,6 +89,16 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
+    end
+    object SE_Slow_Speed: TSpinEdit
+      Left = 9
+      Top = 42
+      Width = 146
+      Height = 22
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 1
+      Value = 0
     end
   end
   object E_Spr: TEdit

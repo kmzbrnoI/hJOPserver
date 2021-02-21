@@ -10,7 +10,6 @@ type
   TF_BlkSignalEvent = class(TForm)
     GB_DetekceZastaveni: TGroupBox;
     GB_DetekceZpomalenii: TGroupBox;
-    CB_ZpomalitKmH: TComboBox;
     CHB_Zpomalit: TCheckBox;
     Label1: TLabel;
     E_Spr: TEdit;
@@ -20,6 +19,7 @@ type
     SE_MaxLength: TSpinEdit;
     P_ZpomForm: TPanel;
     P_ZastForm: TPanel;
+    SE_Slow_Speed: TSpinEdit;
     procedure CHB_ZpomalitClick(Sender: TObject);
   private
     areas: TArstr;
@@ -97,10 +97,10 @@ begin
   if (event.slow.Enabled) then
   begin
     Self.fZpom.FillFromRR(event.slow.ev);
-    Self.CB_ZpomalitKmH.ItemIndex := (event.slow.speed - 1) div 10;
+    Self.SE_Slow_Speed.Value := event.slow.speed;
   end else begin
     Self.fZpom.ShowEmpty();
-    Self.CB_ZpomalitKmH.ItemIndex := -1;
+    Self.SE_Slow_Speed.Value := 0;
   end;
 
   Self.CHB_Zpomalit.Checked := event.slow.Enabled;
@@ -129,7 +129,7 @@ begin
   end;
 
   Self.E_Spr.Text := '.*';
-  Self.CB_ZpomalitKmH.ItemIndex := -1;
+  Self.SE_Slow_Speed.Value := 0;
 
   Self.fZast.ShowEmpty();
   Self.fZpom.ShowEmpty();
@@ -153,7 +153,7 @@ begin
   if (Self.CHB_Zpomalit.Checked) then
   begin
     Result.slow.ev := fZpom.GetRREv();
-    Result.slow.speed := (Self.CB_ZpomalitKmH.ItemIndex + 1) * 10;
+    Result.slow.speed := Self.SE_Slow_Speed.Value;
   end else begin
     Result.slow.ev := nil;
   end;
@@ -164,9 +164,9 @@ end;
 procedure TF_BlkSignalEvent.CHB_ZpomalitClick(Sender: TObject);
 begin
   Self.fZpom.Enabled := Self.CHB_Zpomalit.Checked;
-  Self.CB_ZpomalitKmH.Enabled := Self.CHB_Zpomalit.Checked;
+  Self.SE_Slow_Speed.Enabled := Self.CHB_Zpomalit.Checked;
   if (not Self.CHB_Zpomalit.Checked) then
-    Self.CB_ZpomalitKmH.ItemIndex := -1;
+    Self.SE_Slow_Speed.Value := 0;
 end;
 
 function TF_BlkSignalEvent.Check(): string;
@@ -177,7 +177,7 @@ begin
   if ((Self.CHB_Zpomalit.Checked) and (not Self.fZpom.InputValid())) then
     Exit('Vyberte zpomalovací událost!');
 
-  if ((CB_ZpomalitKmH.ItemIndex = -1) and (CHB_Zpomalit.Checked)) then
+  if ((Self.SE_Slow_Speed.Value = 0) and (Self.CHB_Zpomalit.Checked)) then
     Exit('Vyberte rychlost, na kterou se ma zpomalit!');
 
   Result := '';
