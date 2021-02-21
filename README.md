@@ -52,7 +52,6 @@ Main project file: [`src/hJOPserver.dpr`](src/hJOPserver.dpr)
 
 ### Special components & libraries
 
-* [dcpcrypt2](http://www.cityinthesky.co.uk/opensource/dcpcrypt/)
 * [JEDI Code Library](http://wiki.delphi-jedi.org/index.php?title=JEDI_Code_Library)
 
 ## Authors
