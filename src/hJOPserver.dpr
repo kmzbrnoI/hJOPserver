@@ -20,7 +20,6 @@ uses
   fAbout in 'forms\fAbout.pas' {F_About},
   fBlkCrossing in 'blocks\forms\data\fBlkCrossing.pas' {F_BlkCrossing},
   version in 'helpers\version.pas',
-  adCpuUsage in 'helpers\adCpuUsage.pas',
   fZesilovacEdit in 'forms\fZesilovacEdit.pas' {F_ZesilovacEdit},
   fBlkRailway in 'blocks\forms\data\fBlkRailway.pas' {F_BlkRailway},
   fHVEdit in 'hv\forms\fHVEdit.pas' {F_HVEdit},

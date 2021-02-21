@@ -2,17 +2,16 @@ unit CpuLoad;
 
 interface
 
-uses Gauges, Graphics, adCpuUsage, Windows;
+uses Gauges, Graphics, Windows, Classes;
 
 type
  TCpuLoad = class
-  Gauge: TGauge;
-  GraphPos: Integer;
-  LPa, LPb, LPc: Int64;
+  gauge: TGauge;
+  graphPos: Integer;
+  prevTime: TThread.TSystemTimes;
 
-   constructor Create();
-   procedure Refresh();
-   procedure DrawCPUGauge();
+   procedure RefreshCPUGauge();
+   procedure CreateCPUGauge();
    procedure ResizeCPUGauge();
  end;
 
@@ -20,48 +19,37 @@ implementation
 
 uses fMain;
 
-constructor TCpuLoad.Create();
+procedure TCpuLoad.RefreshCPUGauge();
 begin
- inherited;
- QueryPerformanceFrequency(Self.LPc);
+ Self.gauge.Progress := TThread.GetCPUUsage(Self.prevTime);
 end;
 
-procedure TCpuLoad.Refresh();
+procedure TCpuLoad.CreateCPUGauge();
+var i: Integer;
 begin
- CollectCPUData();
- Self.Gauge.Progress := Round(GetCPUUsage(GetCPUCount-1)*100);
-end;
-
-procedure TCpuLoad.DrawCPUGauge();
-var cyklus: Integer;
-begin
- Gauge := TGauge.Create(F_Main.SB1);
- Gauge.Parent := F_Main.SB1;
- Gauge.Visible := true;
- Gauge.Left := 0;
- for cyklus := 0 to _SB_PROC-1 do
-  begin
-   Gauge.Left := Gauge.Left+F_Main.SB1.Panels.Items[cyklus].Width;
-  end;//for cyklus
- Gauge.Left := Gauge.Left + 30;
- Gauge.Top := 3;
- Gauge.Height := 16;
- Gauge.Width := F_Main.SB1.Panels.Items[_SB_PROC].Width-30;
- Gauge.Color := clWhite;
- Gauge.ForeColor := clLime;
+ gauge := TGauge.Create(F_Main.SB1);
+ gauge.Parent := F_Main.SB1;
+ gauge.Visible := true;
+ gauge.Left := 0;
+ for i := 0 to _SB_PROC-1 do
+   gauge.Left := gauge.Left+F_Main.SB1.Panels.Items[i].Width;
+ gauge.Left := gauge.Left + 30;
+ gauge.Top := 3;
+ gauge.Height := 16;
+ gauge.Width := F_Main.SB1.Panels.Items[_SB_PROC].Width-30;
+ gauge.Color := clWhite;
+ gauge.ForeColor := clLime;
 end;
 
 procedure TCpuLoad.ResizeCPUGauge();
-var cyklus, Zleva: Integer;
+var i, left: Integer;
 begin
- Gauge.Parent  := F_Main.SB1;
- Zleva := 0;
- for cyklus := 0 to _SB_PROC-1 do
-  begin
-   Zleva := Zleva + F_Main.SB1.Panels.Items[cyklus].Width;
-  end;//for cyklus
- Zleva := Zleva + 30;
- Gauge.Left := Zleva;
+ gauge.Parent := F_Main.SB1;
+ left := 0;
+ for i := 0 to _SB_PROC-1 do
+   left := left + F_Main.SB1.Panels.Items[i].Width;
+ left := left + 30;
+ gauge.Left := left;
 end;
 
 end.

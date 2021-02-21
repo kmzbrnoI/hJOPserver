@@ -5,9 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, Buttons, ComCtrls,
-  ActnList, AppEvnts, adCpuUsage,
-
-  ComObj;
+  ActnList, AppEvnts, ComObj;
 
 const
  _CONSOLE_V = '1.6';

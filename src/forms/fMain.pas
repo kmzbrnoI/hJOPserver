@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, Trakce,
-  inifiles, ActnList, AppEvnts, adCpuUsage, cpuLoad, ExtDlgs, Gauges, StrUtils,
+  inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils,
   ComObj, TechnologieTrakce, BoosterDb, System.Actions, System.ImageList;
 
 const
@@ -2315,20 +2315,17 @@ end;
 
 procedure TF_Main.PM_SB1Click(Sender: TObject);
 begin
- if PM_SB1.Checked then
-  begin
-   SB1.Visible:=true;
-   writelog('Zobrazeno SB1', WR_MESSAGE);
-  end else begin
-   SB1.Visible:=false;
+ SB1.Visible := PM_SB1.Checked;
+ if (PM_SB1.Checked) then
+   writelog('Zobrazeno SB1', WR_MESSAGE)
+ else
    writelog('Skryto SB1', WR_MESSAGE);
-  end;
 end;
 
 procedure TF_Main.T_GUI_refreshTimer(Sender: TObject);
 begin
  try
-   mCpuLoad.Refresh();
+   mCpuLoad.RefreshCPUGauge();
 
    // update tables
    if (Self.Showing) then
@@ -2358,7 +2355,7 @@ end;
 
 procedure TF_Main.T_clear_log_msgTimer(Sender: TObject);
 begin
- if (Self.sb1Log) then                                              //zapis do SB1 - cekani 0,5 s
+ if (Self.sb1Log) then
   begin
    F_Main.SB1.Panels.Items[_SB_LOG].Text := '';
    Self.sb1Log := false;
@@ -2587,7 +2584,7 @@ procedure TF_Main.VypisDatumCas();
 
 procedure TF_Main.OnStart();
  begin
-  mCpuLoad.DrawCPUGauge();
+  mCpuLoad.CreateCPUGauge();
 
   writelog('Spuštěn hJOPserver v'+VersionStr(application.ExeName), WR_MESSAGE);
   writelog('----------------------------------------------------------------', WR_MESSAGE);
