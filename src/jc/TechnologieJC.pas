@@ -2633,10 +2633,16 @@ begin
   Self.m_data.typ := TJCType(ini.ReadInteger(section, 'typ', -1));
   Self.m_data.nextSignalType := TJCNextSignalType(ini.ReadInteger(section, 'dalsiNTyp', 0));
   Self.m_data.nextSignalId := ini.ReadInteger(section, 'dalsiN', 0);
-  Self.m_data.speedGo := ini.ReadInteger(section, 'rychDalsiN', 0) * 10;
-  Self.m_data.speedStop := ini.ReadInteger(section, 'rychNoDalsiN', 0) * 10;
   Self.m_data.railwayId := ini.ReadInteger(section, 'trat', -1);
   Self.m_data.railwayDir := TRailwayDirection(ini.ReadInteger(section, 'tratSmer', 0));
+
+  Self.m_data.speedGo := ini.ReadInteger(section, 'rychDalsiN', 0);
+  if (Self.m_data.speedGo < 10) then
+    Self.m_data.speedGo := Self.m_data.speedGo*10; //  backward compatibility
+
+  Self.m_data.speedStop := ini.ReadInteger(section, 'rychNoDalsiN', 0);
+  if (Self.m_data.speedStop < 10) then
+    Self.m_data.speedStop := Self.m_data.speedStop*10; //  backward compatibility
 
   sl := TStringList.Create();
   try
@@ -2765,8 +2771,8 @@ begin
     ini.WriteInteger(section, 'dalsiNTyp', Integer(Self.m_data.nextSignalType));
   if (Self.m_data.nextSignalType = TJCNextSignalType.signal) then
     ini.WriteInteger(section, 'dalsiN', Self.m_data.nextSignalId);
-  ini.WriteInteger(section, 'rychDalsiN', Self.m_data.speedGo div 10);
-  ini.WriteInteger(section, 'rychNoDalsiN', Self.m_data.speedStop div 10);
+  ini.WriteInteger(section, 'rychDalsiN', Self.m_data.speedGo);
+  ini.WriteInteger(section, 'rychNoDalsiN', Self.m_data.speedStop);
 
   if (Self.m_data.turn = Self.IsAnyTurnoutMinus) then
     ini.DeleteKey(section, 'odbocka')
