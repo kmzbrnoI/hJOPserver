@@ -649,12 +649,11 @@ begin
   var pomStrs: TStrings := TStringList.Create();
 
   try
-    Self.data.POMtake.Clear();
-    ExtractStringsEx([']'], ['['], str, pomsStrs);
+    ExtractStringsEx([']', ')'], ['[', '('], str, pomsStrs);
     for var pomStr: string in pomsStrs do
     begin
       pomStrs.Clear();
-      ExtractStringsEx(['|'], [], pomStr, pomStrs);
+      ExtractStringsEx(['|', ','], [], pomStr, pomStrs);
       var pomCV: THVPomCV;
       pomCV.cv := StrToInt(pomStrs[0]);
       if ((pomCV.cv < 1) or (pomCV.cv > 1023)) then
