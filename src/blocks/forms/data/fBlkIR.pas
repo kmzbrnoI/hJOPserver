@@ -24,11 +24,11 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SE_moduleExit(Sender: TObject);
   private
-   NewBlk: Boolean;
-   Blk: TBlkIR;
+    NewBlk: Boolean;
+    Blk: TBlkIR;
 
   public
-   OpenIndex: Integer;
+    OpenIndex: Integer;
 
     procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkOpenForm();
@@ -47,140 +47,142 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky;
 {$R *.dfm}
 
 procedure TF_BlkIR.OpenForm(BlokIndex: Integer);
- begin
+begin
   OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm;
 
   if (NewBlk) then
-   begin
+  begin
     NewBlkOpenForm();
-   end else begin
+  end else begin
     NormalOpenForm();
-   end;
+  end;
   F_BlkIR.ShowModal();
- end;
+end;
 
 procedure TF_BlkIR.SE_moduleExit(Sender: TObject);
 begin
- Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
+  Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
 procedure TF_BlkIR.NewBlkOpenForm;
- begin
+begin
   E_Nazev.Text := '';
-  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
+  SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
   Self.SE_module.Value := 1;
-  Self.SE_Port.Value := 0;
+  Self.SE_port.Value := 0;
   Self.SE_moduleExit(Self);
 
   F_BlkIR.Caption := 'Nový blok IR';
   F_BlkIR.ActiveControl := E_Nazev;
- end;
+end;
 
 procedure TF_BlkIR.NormalOpenForm;
 var glob: TBlkSettings;
-    settings: TBlkIRSettings;
- begin
+  settings: TBlkIRSettings;
+begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  if (settings.RCSAddrs.Count > 0) then
-   begin
+  if (settings.RCSAddrs.count > 0) then
+  begin
     if (settings.RCSAddrs[0].board > Cardinal(Self.SE_module.MaxValue)) then
       Self.SE_module.MaxValue := 0;
     Self.SE_port.MaxValue := 0;
     Self.SE_module.Value := settings.RCSAddrs[0].board;
-    Self.SE_Port.Value := settings.RCSAddrs[0].port;
-   end else begin
+    Self.SE_port.Value := settings.RCSAddrs[0].port;
+  end else begin
     Self.SE_module.Value := 0;
-    Self.SE_Port.Value := 0;
-   end;
+    Self.SE_port.Value := 0;
+  end;
 
   Self.SE_moduleExit(Self);
 
   E_Nazev.Text := glob.name;
-  SE_ID.Value  := glob.id;
+  SE_ID.Value := glob.id;
 
-  F_BlkIR.Caption := 'Upravit blok '+glob.name+' (IR)';
+  F_BlkIR.Caption := 'Upravit blok ' + glob.name + ' (IR)';
   F_BlkIR.ActiveControl := B_Save;
- end;
+end;
 
 procedure TF_BlkIR.HlavniOpenForm;
- begin
+begin
   Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
- end;
+end;
 
 procedure TF_BlkIR.NewBlkCreate;
- begin
+begin
   NewBlk := true;
   OpenForm(Blocks.count);
- end;
+end;
 
 procedure TF_BlkIR.B_StornoClick(Sender: TObject);
- begin
+begin
   F_BlkIR.Close();
- end;
+end;
 
 procedure TF_BlkIR.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkIRSettings;
-    another: TBlk;
- begin
+  settings: TBlkIRSettings;
+  another: TBlk;
+begin
   if (E_Nazev.Text = '') then
-   begin
+  begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
   if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
-   begin
+  begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
 
-  another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk, TRCSIOType.input);
+  another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value), Self.Blk,
+    TRCSIOType.input);
   if (another <> nil) then
-   begin
-    if (Application.MessageBox(PChar('RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
-                               'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+  begin
+    if (Application.MessageBox(PChar('RCS adresa se již používá na bloku ' + another.name + ', chcete pokračovat?'),
+      'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
       Exit();
-   end;
+  end;
 
   glob.name := Self.E_Nazev.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btIR;
 
   if (NewBlk) then
-   begin
+  begin
     glob.note := '';
     try
       Blk := Blocks.Add(glob) as TBlkIR;
     except
       on E: Exception do
-       begin
-        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
+          MB_OK OR MB_ICONWARNING);
         Exit();
-       end;
+      end;
     end;
-   end else begin
+  end else begin
     glob.note := Blk.note;
     Self.Blk.SetGlobalSettings(glob);
-   end;
+  end;
 
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value));
+  settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value));
 
   Self.Blk.SetSettings(settings);
 
   Self.Close();
   Self.Blk.Change();
- end;
+end;
 
 procedure TF_BlkIR.FormClose(Sender: TObject; var Action: TCloseAction);
- begin
+begin
   NewBlk := false;
   OpenIndex := -1;
   BlokyTableData.UpdateTable;
- end;
+end;
 
-end.//unit
+end.// unit

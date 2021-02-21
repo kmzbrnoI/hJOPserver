@@ -82,7 +82,6 @@ object F_BlkRailwayState: TF_BlkRailwayState
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 0
     Items.Strings = (
       'Ne'
@@ -99,7 +98,6 @@ object F_BlkRailwayState: TF_BlkRailwayState
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 1
     Items.Strings = (
       'disabled'
@@ -117,7 +115,6 @@ object F_BlkRailwayState: TF_BlkRailwayState
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 2
     Items.Strings = (
       'Ne'

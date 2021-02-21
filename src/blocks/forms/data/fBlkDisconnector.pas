@@ -26,18 +26,18 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SE_moduleExit(Sender: TObject);
   private
-   NewBlk: Boolean;
-   Blk: TBlkDisconnector;
+    NewBlk: Boolean;
+    Blk: TBlkDisconnector;
 
   public
 
-   OpenIndex: Integer;
+    OpenIndex: Integer;
 
-   procedure OpenForm(BlokIndex: Integer);
-   procedure NewBlkOpenForm;
-   procedure NormalOpenForm;
-   procedure HlavniOpenForm;
-   procedure NewBlkCreate;
+    procedure OpenForm(BlokIndex: Integer);
+    procedure NewBlkOpenForm;
+    procedure NormalOpenForm;
+    procedure HlavniOpenForm;
+    procedure NewBlkCreate;
   end;
 
 var
@@ -50,146 +50,148 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area;
 {$R *.dfm}
 
 procedure TF_BlkDisconnector.OpenForm(BlokIndex: Integer);
- begin
+begin
   OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm;
 
   if (NewBlk) then
-   begin
+  begin
     NewBlkOpenForm;
-   end else begin
+  end else begin
     NormalOpenForm;
-   end;
+  end;
   Self.ShowModal();
- end;
+end;
 
 procedure TF_BlkDisconnector.SE_moduleExit(Sender: TObject);
 begin
- Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
+  Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
 procedure TF_BlkDisconnector.NewBlkOpenForm;
- begin
+begin
   Self.E_Nazev.Text := '';
-  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
+  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
   Self.SE_module.Value := 1;
-  Self.SE_Port.Value := 0;
+  Self.SE_port.Value := 0;
   Self.SE_moduleExit(Self);
 
   Self.Caption := 'Nový ropojovač';
   Self.ActiveControl := E_Nazev;
- end;
+end;
 
 procedure TF_BlkDisconnector.NormalOpenForm;
 var glob: TBlkSettings;
-    settings: TBlkDiscSettings;
-    area: TArea;
- begin
+  settings: TBlkDiscSettings;
+  Area: TArea;
+begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  for area in Self.Blk.areas do
-    Self.LB_Stanice.Items.Add(area.name);
+  for Area in Self.Blk.areas do
+    Self.LB_Stanice.Items.Add(Area.name);
 
-  if (settings.RCSAddrs.Count > 0) then
-   begin
+  if (settings.RCSAddrs.count > 0) then
+  begin
     if (settings.RCSAddrs[0].board > Cardinal(Self.SE_module.MaxValue)) then
       Self.SE_module.MaxValue := 0;
     Self.SE_port.MaxValue := 0;
 
     Self.SE_module.Value := settings.RCSAddrs[0].board;
-    Self.SE_Port.Value   := settings.RCSAddrs[0].port;
-   end else begin
+    Self.SE_port.Value := settings.RCSAddrs[0].port;
+  end else begin
     Self.SE_module.Value := 0;
-    Self.SE_Port.Value   := 0;
-   end;
+    Self.SE_port.Value := 0;
+  end;
 
   Self.SE_moduleExit(Self);
 
   Self.E_Nazev.Text := glob.name;
   Self.SE_ID.Value := glob.id;
 
-  Self.Caption := 'Upravit blok '+glob.name+' (rozpojovač)';
+  Self.Caption := 'Upravit blok ' + glob.name + ' (rozpojovač)';
   Self.ActiveControl := B_Save;
- end;
+end;
 
 procedure TF_BlkDisconnector.HlavniOpenForm;
- begin
+begin
   Self.LB_Stanice.Clear();
   Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
- end;
+end;
 
 procedure TF_BlkDisconnector.NewBlkCreate;
- begin
+begin
   NewBlk := true;
   OpenForm(Blocks.count);
- end;
+end;
 
 procedure TF_BlkDisconnector.B_StornoClick(Sender: TObject);
- begin
+begin
   Self.Close();
- end;
+end;
 
 procedure TF_BlkDisconnector.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkDiscSettings;
-    another: TBlk;
- begin
+  settings: TBlkDiscSettings;
+  another: TBlk;
+begin
   if (E_Nazev.Text = '') then
-   begin
-    Application.MessageBox('Vyplnte nazev bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+  begin
+    Application.MessageBox('Vyplnte nazev bloku !', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
   if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
-   begin
-    Application.MessageBox('ID jiz bylo definovano na jinem bloku !','Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+  begin
+    Application.MessageBox('ID jiz bylo definovano na jinem bloku !', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
 
-  another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value), Self.Blk, TRCSIOType.output);
+  another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value), Self.Blk,
+    TRCSIOType.output);
   if (another <> nil) then
-   begin
-    if (Application.MessageBox(PChar('RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
-                               'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+  begin
+    if (Application.MessageBox(PChar('RCS adresa se již používá na bloku ' + another.name + ', chcete pokračovat?'),
+      'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
       Exit();
-   end;
+  end;
 
   glob.name := Self.E_Nazev.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btDisconnector;
 
   if (NewBlk) then
-   begin
+  begin
     glob.note := '';
     try
       Blk := Blocks.Add(glob) as TBlkDisconnector;
     except
       on E: Exception do
-       begin
-        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
+          MB_OK OR MB_ICONWARNING);
         Exit();
-       end;
+      end;
     end;
-   end else begin
+  end else begin
     glob.note := Self.Blk.note;
     Self.Blk.SetGlobalSettings(glob);
-   end;
+  end;
 
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_Port.Value));
+  settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value));
 
   Self.Blk.SetSettings(settings);
 
   Self.Close();
   Self.Blk.Change();
- end;
+end;
 
 procedure TF_BlkDisconnector.FormClose(Sender: TObject; var Action: TCloseAction);
- begin
-  NewBlk     := false;
-  OpenIndex  := -1;
+begin
+  NewBlk := false;
+  OpenIndex := -1;
   BlokyTableData.UpdateTable;
- end;
+end;
 
-end.//unit
+end.// unit

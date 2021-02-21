@@ -251,7 +251,6 @@ object F_UserEdit: TF_UserEdit
       Font.Height = -11
       Font.Name = 'Tahoma'
       Font.Style = []
-      ItemHeight = 13
       ParentFont = False
       TabOrder = 1
       OnChange = CB_RightsChange

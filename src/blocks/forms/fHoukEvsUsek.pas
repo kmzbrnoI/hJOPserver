@@ -25,16 +25,16 @@ type
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
   private
-   blk: TBlkTrack;
-   formL: TF_HoukEvs;
-   formS: TF_HoukEvs;
+    blk: TBlkTrack;
+    formL: TF_HoukEvs;
+    Forms: TF_HoukEvs;
 
   public
 
-     constructor Create(AOwner: TComponent); override;
-     destructor Destroy(); override;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy(); override;
 
-     procedure Open(Blk: TBlkTrack);
+    procedure Open(blk: TBlkTrack);
 
   end;
 
@@ -44,83 +44,84 @@ var
 implementation
 
 {$R *.dfm}
-
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 constructor TF_HoukEvsUsek.Create(AOwner: TComponent);
 begin
- inherited;
+  inherited;
 
- Self.blk := nil;
+  Self.blk := nil;
 
- formL := TF_HoukEvs.Create(nil);
- formL.Parent := Self.P_HoukL;
- formL.Left := 20;
- formL.Show();
+  formL := TF_HoukEvs.Create(nil);
+  formL.Parent := Self.P_HoukL;
+  formL.Left := 20;
+  formL.Show();
 
- formS := TF_HoukEvs.Create(nil);
- formS.Parent := Self.P_HoukS;
- formS.Left := 20;
- formS.Show();
+  Forms := TF_HoukEvs.Create(nil);
+  Forms.Parent := Self.P_HoukS;
+  Forms.Left := 20;
+  Forms.Show();
 end;
 
 destructor TF_HoukEvsUsek.Destroy();
 begin
- formL.Free();
- formS.Free();
+  formL.Free();
+  Forms.Free();
 
- inherited;
+  inherited;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-procedure TF_HoukEvsUsek.Open(Blk: TBlkTrack);
+procedure TF_HoukEvsUsek.Open(blk: TBlkTrack);
 begin
- Self.blk := Blk;
+  Self.blk := blk;
 
- formL.FillFromHouks(Blk.GetSettings().houkEvL);
- formS.FillFromHouks(Blk.GetSettings().houkEvS);
+  formL.FillFromHouks(blk.GetSettings().houkEvL);
+  Forms.FillFromHouks(blk.GetSettings().houkEvS);
 
- Self.Caption := 'Houkací události úseku ' + Blk.name;
- Self.ActiveControl := B_Apply;
- Self.ShowModal();
+  Self.Caption := 'Houkací události úseku ' + blk.name;
+  Self.ActiveControl := B_Apply;
+  Self.ShowModal();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEvsUsek.B_StornoClick(Sender: TObject);
 begin
- Self.Close();
+  Self.Close();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEvsUsek.B_ApplyClick(Sender: TObject);
 var s: TBlkTrackSettings;
 begin
- if (not formL.InputValid()) then
+  if (not formL.InputValid()) then
   begin
-   Application.MessageBox('Nějaká událost v lichém směru je špatně zadaná!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-   Exit();
+    Application.MessageBox('Nějaká událost v lichém směru je špatně zadaná!', 'Nelze uložit data',
+      MB_OK OR MB_ICONWARNING);
+    Exit();
   end;
 
- if (not formS.InputValid()) then
+  if (not Forms.InputValid()) then
   begin
-   Application.MessageBox('Nějaká událost v sudém směru je špatně zadaná!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-   Exit();
+    Application.MessageBox('Nějaká událost v sudém směru je špatně zadaná!', 'Nelze uložit data',
+      MB_OK OR MB_ICONWARNING);
+    Exit();
   end;
 
- if (Self.blk <> nil) then
+  if (Self.blk <> nil) then
   begin
-   s := Self.blk.GetSettings();
-   s.houkEvL := formL.GetHoukEvs();
-   s.houkEvS := formS.GetHoukEvs();
-   Self.blk.SetSettings(s); // destructors of the old data should be called manually
+    s := Self.blk.GetSettings();
+    s.houkEvL := formL.GetHoukEvs();
+    s.houkEvS := Forms.GetHoukEvs();
+    Self.blk.SetSettings(s); // destructors of the old data should be called manually
   end;
 
- Self.Close();
+  Self.Close();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 end.

@@ -8,21 +8,21 @@ unit UDPdiscover;
 
 {
   Format informacni zpravy je totozny pro pozadavek i pro odpoved:
-   textovy retezec ukonceny znaky #13#10 (novy radek) obsahujici informace
-   oddelene znakem ";":
+    textovy retezec ukonceny znaky #13#10 (novy radek) obsahujici informace
+    oddelene znakem ";":
 
   Verze protokolu 1.0:
     "hJOP";verze_protokolu;typ_zarizeni;server_nazev;server_ip;server_port;
     server_status;server_popis
 
-    \typ_zarizeni:
-      a) "server"
-      b) "panel"
-      c) "regulator"
+  \typ_zarizeni:
+    a) "server"
+    b) "panel"
+    c) "regulator"
 
-    \server_status
-      a) off
-      b) on
+  \server_status
+    a) off
+    b) on
 }
 
 {
@@ -33,7 +33,7 @@ unit UDPdiscover;
 interface
 
 uses IdUDPServer, Classes, IdSocketHandle, SysUtils, Generics.Collections,
-     ExtCtrls, IdGlobal;
+  ExtCtrls, IdGlobal;
 
 const
   _DISC_DEFAULT_PORT = 5880;
@@ -43,205 +43,208 @@ const
 
 type
   TUDPDiscover = class
-    private
-      UDPserver : TIdUDPServer;
-      fPort: Word;
-      fName, fDescription: string;
-      parsed: TStrings;
-      broadcasts: TDictionary<string, string>;
-      updateBindTimer: TTimer;
+  private
+    UDPserver: TIdUDPServer;
+    fPort: Word;
+    fName, fDescription: string;
+    parsed: TStrings;
+    broadcasts: TDictionary<string, string>;
+    updateBindTimer: TTimer;
 
-       procedure OnUDPServerRead(AThread: TIdUDPListenerThread;
-        const AData: TIdBytes; ABinding: TIdSocketHandle);
-       procedure SendDisc(ABinding: TIdSocketHandle; port: Word);
+    procedure OnUDPServerRead(AThread: TIdUDPListenerThread; const AData: TIdBytes; ABinding: TIdSocketHandle);
+    procedure SendDisc(ABinding: TIdSocketHandle; port: Word);
 
-       procedure SetName(name: string);
-       procedure SetDescription(desc: string);
-       procedure UpdateBindings();
-       procedure OnUpdateBindTimer(Sender: TObject);
+    procedure SetName(name: string);
+    procedure SetDescription(desc: string);
+    procedure UpdateBindings();
+    procedure OnUpdateBindTimer(Sender: TObject);
 
-    public
-       constructor Create(port: Word; name: string; description: string);
-       destructor Destroy(); override;
+  public
+    constructor Create(port: Word; name: string; description: string);
+    destructor Destroy(); override;
 
-       procedure SendDiscover();
+    procedure SendDiscover();
 
-       property port: Word read fPort write fPort;
-       property name: string read fName write SetName;
-       property description: string read fDescription write SetDescription;
+    property port: Word read fPort write fPort;
+    property name: string read fName write SetName;
+    property description: string read fDescription write SetDescription;
 
   end;
 
 var
-  UDPdisc : TUDPDiscover;
+  UDPdisc: TUDPDiscover;
 
 implementation
 
 uses TCPServerPanel, ownStrUtils, Logging, USock;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 constructor TUDPDiscover.Create(port: Word; name: string; description: string);
 begin
- inherited Create();
+  inherited Create();
 
- Self.updateBindTimer := TTimer.Create(nil);
- Self.updateBindTimer.Interval := 60000;
- Self.updateBindTimer.OnTimer := Self.OnUpdateBindTimer;
- Self.updateBindTimer.Enabled := true;
+  Self.updateBindTimer := TTimer.Create(nil);
+  Self.updateBindTimer.Interval := 60000;
+  Self.updateBindTimer.OnTimer := Self.OnUpdateBindTimer;
+  Self.updateBindTimer.Enabled := true;
 
- Self.broadcasts := TDictionary<string, string>.Create();
- Self.parsed := TStringList.Create();
- Self.fPort := port;
- Self.fName := name;
- Self.fDescription := description;
+  Self.broadcasts := TDictionary<string, string>.Create();
+  Self.parsed := TStringList.Create();
+  Self.fPort := port;
+  Self.fName := name;
+  Self.fDescription := description;
 
- try
-   Self.UDPserver := TIdUDPServer.Create(nil);
-   Self.UDPserver.OnUDPRead := Self.OnUDPServerRead;
-   Self.SendDiscover();
- except
-   on E: Exception do
+  try
+    Self.UDPserver := TIdUDPServer.Create(nil);
+    Self.UDPserver.OnUDPRead := Self.OnUDPServerRead;
+    Self.SendDiscover();
+  except
+    on E: Exception do
     begin
-     writelog('Nelze vytvorit discover UDPserver : '+E.Message, WR_ERROR);
+      writelog('Nelze vytvorit discover UDPserver : ' + E.Message, WR_ERROR);
     end;
- end;
+  end;
 
 end;
 
 destructor TUDPDiscover.Destroy();
 begin
- Self.UDPserver.Free();
- Self.parsed.Free();
- Self.broadcasts.Free();
- inherited;
+  Self.UDPserver.Free();
+  Self.parsed.Free();
+  Self.broadcasts.Free();
+  inherited;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-procedure TUDPDiscover.OnUDPServerRead(AThread: TIdUDPListenerThread;
-  const AData: TIdBytes; ABinding: TIdSocketHandle);
+procedure TUDPDiscover.OnUDPServerRead(AThread: TIdUDPListenerThread; const AData: TIdBytes; ABinding: TIdSocketHandle);
 var
   Msg: String;
-  i, j: Integer;
 begin
- try
-   msg := TEncoding.UTF8.GetString(AData);
-   Self.parsed.Clear();
-   ExtractStringsEx([';'], [], msg, parsed);
+  try
+    Msg := TEncoding.UTF8.GetString(AData);
+    Self.parsed.Clear();
+    ExtractStringsEx([';'], [], Msg, parsed);
 
-   if (parsed[2] <> 'server') then
+    if (parsed[2] <> 'server') then
     begin
-     for i := 0 to _DISC_PORT_RANGE-1 do
-       for j := 0 to _DISC_REPEAT-1 do
-         Self.SendDisc(ABinding, Self.port+i);
+      for var i: Integer := 0 to _DISC_PORT_RANGE - 1 do
+        for var j: Integer := 0 to _DISC_REPEAT - 1 do
+          Self.SendDisc(ABinding, Self.port + i);
     end;
- except
-  on E: Exception do
-    writelog('Vyjimka TUDPDiscover.OnUDPServerRead : '+E.Message, WR_ERROR);
- end;
+  except
+    on E: Exception do
+      writelog('Vyjimka TUDPDiscover.OnUDPServerRead : ' + E.Message, WR_ERROR);
+  end;
 end;
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TUDPDiscover.SendDisc(ABinding: TIdSocketHandle; port: Word);
-var msg: string;
-    data: TIdBytes;
+var Msg: string;
+  data: TIdBytes;
 begin
- if (ABinding.IP = '0.0.0.0') then Exit();
+  if (ABinding.IP = '0.0.0.0') then
+    Exit();
 
- msg := 'hJOP;' + _DISC_PROTOCOL_VERSION + ';server;' + Self.name + ';' +
-        ABinding.IP + ';' + IntToStr(PanelServer.port) + ';';
+  Msg := 'hJOP;' + _DISC_PROTOCOL_VERSION + ';server;' + Self.name + ';' + ABinding.IP + ';' +
+    IntToStr(PanelServer.port) + ';';
 
- case (PanelServer.openned) of
-   false : msg := msg + 'off;';
-   true  : msg := msg + 'on;';
- end;
+  case (PanelServer.openned) of
+    false:
+      Msg := Msg + 'off;';
+    true:
+      Msg := Msg + 'on;';
+  end;
 
- msg := msg + Self.description + ';';
+  Msg := Msg + Self.description + ';';
 
- if (not broadcasts.ContainsKey(ABinding.IP)) then Self.UpdateBindings();
+  if (not broadcasts.ContainsKey(ABinding.IP)) then
+    Self.UpdateBindings();
 
- try
-   data := TIdBytes(TEncoding.UTF8.GetBytes(msg));
-   ABinding.Broadcast(data, port, broadcasts[ABinding.IP]);
- except
-   on E: Exception do
-     writelog('Vyjimka TUDPDiscover.SendDisc : '+E.Message, WR_ERROR);
- end;
+  try
+    data := TIdBytes(TEncoding.UTF8.GetBytes(Msg));
+    ABinding.Broadcast(data, port, broadcasts[ABinding.IP]);
+  except
+    on E: Exception do
+      writelog('Vyjimka TUDPDiscover.SendDisc : ' + E.Message, WR_ERROR);
+  end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TUDPDiscover.SetName(name: string);
 begin
- if (Self.fName = name) then Exit();
- Self.fName := name;
- Self.SendDiscover();
+  if (Self.fName = name) then
+    Exit();
+  Self.fName := name;
+  Self.SendDiscover();
 end;
 
 procedure TUDPDiscover.SetDescription(desc: string);
 begin
- if (Self.fDescription = desc) then Exit();
- Self.fDescription := desc;
- Self.SendDiscover();
+  if (Self.fDescription = desc) then
+    Exit();
+  Self.fDescription := desc;
+  Self.SendDiscover();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TUDPDiscover.UpdateBindings();
-var i: Integer;
-    ifaces: tNetworkInterfaceList;
-    binding: TIdSocketHandle;
+var
+  ifaces: tNetworkInterfaceList;
 begin
- try
-   GetNetworkInterfaces(ifaces);
+  try
+    GetNetworkInterfaces(ifaces);
 
-   Self.UDPserver.Active := false;
-   Self.UDPserver.Bindings.Clear();
-   Self.broadcasts.Clear();
+    Self.UDPserver.Active := false;
+    Self.UDPserver.Bindings.Clear();
+    Self.broadcasts.Clear();
 
-   for i := 0 to Length(ifaces)-1 do
+    for var i: Integer := 0 to Length(ifaces) - 1 do
     begin
-     if ((ifaces[i].IsLoopback) or (not ifaces[i].IsInterfaceUp) or (not ifaces[i].BroadcastSupport)) then continue;
+      if ((ifaces[i].IsLoopback) or (not ifaces[i].IsInterfaceUp) or (not ifaces[i].BroadcastSupport)) then
+        continue;
 
-     binding      := Self.UDPserver.Bindings.Add;
-     binding.Port := port;
-     binding.IP   := ifaces[i].AddrIP;
-     Self.broadcasts.Add(binding.IP, ifaces[i].AddrDirectedBroadcast);
+      var binding: TIdSocketHandle := Self.UDPserver.Bindings.Add;
+      binding.port := port;
+      binding.IP := ifaces[i].AddrIP;
+      Self.broadcasts.Add(binding.IP, ifaces[i].AddrDirectedBroadcast);
     end;
 
-   Self.UDPserver.Active := true;
- except
-  on E: Exception do
-    writelog('Vyjimka TUDPDiscover.UpdateBindings : '+E.Message, WR_ERROR);
- end;
+    Self.UDPserver.Active := true;
+  except
+    on E: Exception do
+      writelog('Vyjimka TUDPDiscover.UpdateBindings : ' + E.Message, WR_ERROR);
+  end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TUDPDiscover.SendDiscover();
-var i, j, k: Integer;
 begin
- Self.UpdateBindings();
+  Self.UpdateBindings();
 
- for i := 0 to Self.UDPserver.Bindings.Count-1 do
-   for j := 0 to _DISC_PORT_RANGE-1 do
-     for k := 0 to _DISC_REPEAT-1 do
-       Self.SendDisc(Self.UDPserver.Bindings.Items[i], Self.port+j);
+  for var i: Integer := 0 to Self.UDPserver.Bindings.Count - 1 do
+    for var j: Integer := 0 to _DISC_PORT_RANGE - 1 do
+      for var k: Integer := 0 to _DISC_REPEAT - 1 do
+        Self.SendDisc(Self.UDPserver.Bindings.Items[i], Self.port + j);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TUDPDiscover.OnUpdateBindTimer(Sender: TObject);
 begin
- Self.UpdateBindings();
+  Self.UpdateBindings();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 initialization
 
 finalization
-  UDPdisc.Free();
+
+UDPdisc.Free();
 
 end.

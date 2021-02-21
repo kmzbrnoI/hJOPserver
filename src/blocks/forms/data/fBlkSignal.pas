@@ -43,15 +43,12 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure BB_Event_AddClick(Sender: TObject);
-     procedure PageControlCloseButtonMouseUp(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-     procedure PageControlCloseButtonMouseMove(Sender: TObject;
-  Shift: TShiftState; X, Y: Integer);
-     procedure PageControlCloseButtonMouseLeave(Sender: TObject);
-     procedure PageControlCloseButtonMouseDown(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-     procedure PageControlCloseButtonDrawTab(Control: TCustomTabControl;
-  TabIndex: Integer; const Rect: TRect; Active: Boolean);
+    procedure PageControlCloseButtonMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure PageControlCloseButtonMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure PageControlCloseButtonMouseLeave(Sender: TObject);
+    procedure PageControlCloseButtonMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure PageControlCloseButtonDrawTab(Control: TCustomTabControl; TabIndex: Integer; const Rect: TRect;
+      Active: Boolean);
     procedure CHB_RCS_OutputClick(Sender: TObject);
     procedure SE_RCSmodule1Exit(Sender: TObject);
     procedure SE_RCSmodule2Exit(Sender: TObject);
@@ -61,7 +58,7 @@ type
     OpenIndex: Integer;
     Blk: TBlkSignal;
     NewBlk: Boolean;
-    areas: TArstr;   // oblasti rizeni, ve kterych se navestidlo nachazi
+    areas: TArstr; // oblasti rizeni, ve kterych se navestidlo nachazi
 
     eventForms: TObjectList<TF_BlkSignalEvent>;
     eventTabSheets: TObjectList<TTabSheet>;
@@ -69,14 +66,14 @@ type
     FCloseButtonMouseDownTab: TCloseTabSheet;
     FCloseButtonShowPushed: Boolean;
 
-     procedure NormalOpenForm();
-     procedure HlavniOpenForm();
-     procedure NewBlkOpenForm();
+    procedure NormalOpenForm();
+    procedure HlavniOpenForm();
+    procedure NewBlkOpenForm();
 
-     procedure OnTabClose(Sender: TObject);
+    procedure OnTabClose(Sender: TObject);
   public
-     procedure OpenForm(BlokIndex: Integer);
-     procedure NewBlkCreate;
+    procedure OpenForm(BlokIndex: Integer);
+    procedure NewBlkCreate;
   end;
 
 var
@@ -89,7 +86,7 @@ uses GetSystems, FileSystem, TechnologieRCS, Block, Area, DataBloky;
 {$R *.dfm}
 
 procedure TF_BlkSignal.OpenForm(BlokIndex: Integer);
- begin
+begin
   Self.OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   Self.HlavniOpenForm();
@@ -100,19 +97,19 @@ procedure TF_BlkSignal.OpenForm(BlokIndex: Integer);
     Self.NormalOpenForm();
 
   Self.ShowModal();
- end;
+end;
 
 procedure TF_BlkSignal.NewBlkOpenForm();
- begin
+begin
   E_Nazev.Text := '';
-  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
+  SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
   SE_Delay.Value := TBlkSignal._SIG_DEFAULT_DELAY;
   CHB_Zamknuto.Checked := false;
   Self.L_UsekID.Caption := 'bude zobrazen příště';
 
   Self.SE_RCSmodule1.Value := 1;
   Self.SE_RCSmodule1Exit(Self);
-  Self.SE_RCSPort1.Value := 0;
+  Self.SE_RCSport1.Value := 0;
   Self.CB_Typ.ItemIndex := -1;
 
   Self.CHB_RCS_Second_Output.Checked := false;
@@ -126,69 +123,69 @@ procedure TF_BlkSignal.NewBlkOpenForm();
 
   Self.Caption := 'Nový blok Návěstidlo';
   Self.ActiveControl := Self.E_Nazev;
- end;
+end;
 
 procedure TF_BlkSignal.NormalOpenForm();
 var glob: TBlkSettings;
-    settings: TBlkSignalSettings;
-    i: Integer;
-    eventForm: TF_BlkSignalEvent;
-    ts: TCloseTabSheet;
-    area: TArea;
- begin
+  settings: TBlkSignalSettings;
+  i: Integer;
+  eventForm: TF_BlkSignalEvent;
+  ts: TCloseTabSheet;
+  Area: TArea;
+begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
   Self.E_Nazev.Text := glob.name;
   Self.SE_ID.Value := glob.id;
 
-  for area in Self.Blk.areas do
-    Self.LB_Stanice.Items.Add(area.name);
+  for Area in Self.Blk.areas do
+    Self.LB_Stanice.Items.Add(Area.name);
 
-  SetLength(areas, Self.Blk.areas.Count);
-  for i := 0 to Self.Blk.areas.Count-1 do
+  SetLength(areas, Self.Blk.areas.count);
+  for i := 0 to Self.Blk.areas.count - 1 do
     areas[i] := Self.Blk.areas[i].id;
 
   Self.SE_Delay.Value := settings.fallDelay;
 
-  Self.CHB_RCS_Output.Checked := (settings.RCSAddrs.Count > 0);
+  Self.CHB_RCS_Output.Checked := (settings.RCSAddrs.count > 0);
   Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
 
-  if (settings.RCSAddrs.Count > 0) then
-   begin
+  if (settings.RCSAddrs.count > 0) then
+  begin
     if (settings.RCSAddrs[0].board > Cardinal(Self.SE_RCSmodule1.MaxValue)) then
       Self.SE_RCSmodule1.MaxValue := 0;
-    Self.SE_RCSPort1.MaxValue := 0;
+    Self.SE_RCSport1.MaxValue := 0;
 
     Self.SE_RCSmodule1.Value := settings.RCSAddrs[0].board;
-    SE_RCSPort1.Value := settings.RCSAddrs[0].port;
+    SE_RCSport1.Value := settings.RCSAddrs[0].port;
     CB_Typ.ItemIndex := Integer(settings.OutputType);
-   end;
-  Self.CHB_RCS_Second_Output.Checked := (settings.RCSAddrs.Count > 1);
+  end;
+  Self.CHB_RCS_Second_Output.Checked := (settings.RCSAddrs.count > 1);
   Self.CHB_RCS_Second_OutputClick(Self);
-  if (settings.RCSAddrs.Count > 1) then
-   begin
+  if (settings.RCSAddrs.count > 1) then
+  begin
     if (settings.RCSAddrs[1].board > Cardinal(Self.SE_RCSmodule2.MaxValue)) then
       Self.SE_RCSmodule2.MaxValue := 0;
-    Self.SE_RCSPort2.MaxValue := 0;
+    Self.SE_RCSport2.MaxValue := 0;
 
     Self.SE_RCSmodule2.Value := settings.RCSAddrs[1].board;
-    SE_RCSPort2.Value := settings.RCSAddrs[1].port;
-   end;
+    SE_RCSport2.Value := settings.RCSAddrs[1].port;
+  end;
   Self.SE_RCSmodule1Exit(Self);
 
   Self.CHB_Zamknuto.Checked := settings.locked;
 
-  for i := 0 to settings.events.Count-1 do
-   begin
+  for i := 0 to settings.events.count - 1 do
+  begin
     ts := TCloseTabSheet.Create(Self.PC_Events);
     ts.PageControl := Self.PC_Events;
     ts.OnClose := Self.OnTabClose;
     if (i = 0) then
       ts.Caption := 'globální'
     else
-      ts.Caption := IntToStr(settings.events[i].length.min)+'-'+IntToStr(settings.events[i].length.max)+'      ';
-    eventForm  := TF_BlkSignalEvent.Create(ts);
+      ts.Caption := IntToStr(settings.events[i].length.min) + '-' + IntToStr(settings.events[i].length.max) + '      ';
+    eventForm := TF_BlkSignalEvent.Create(ts);
 
     eventForm.OpenForm(settings.events[i], (i = 0), Self.areas);
     eventForm.Parent := ts;
@@ -196,77 +193,77 @@ var glob: TBlkSettings;
 
     Self.eventForms.Add(eventForm);
     Self.eventTabSheets.Add(ts);
-   end;
+  end;
 
   Self.L_UsekID.Caption := Blocks.GetBlkName((Self.Blk as TBlkSignal).trackId);
 
-  Self.Caption := 'Upravit blok '+glob.name+' (návěstidlo)';
+  Self.Caption := 'Upravit blok ' + glob.name + ' (návěstidlo)';
   Self.ActiveControl := B_Save;
- end;
+end;
 
 procedure TF_BlkSignal.HlavniOpenForm();
- begin
+begin
   SetLength(Self.areas, 0);
   Self.LB_Stanice.Clear();
   Self.SE_RCSmodule1.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCSmodule2.MaxValue := RCSi.maxModuleAddrSafe;
- end;
+end;
 
 procedure TF_BlkSignal.NewBlkCreate();
- begin
+begin
   NewBlk := true;
   OpenForm(Blocks.count);
- end;
+end;
 
 procedure TF_BlkSignal.B_StornoClick(Sender: TObject);
- begin
+begin
   Self.Close();
- end;
+end;
 
 procedure TF_BlkSignal.CHB_RCS_OutputClick(Sender: TObject);
 begin
- Self.SE_RCSmodule1.Enabled  := Self.CHB_RCS_Output.Checked;
- Self.SE_RCSPort1.Enabled := Self.CHB_RCS_Output.Checked;
- Self.CB_Typ.Enabled := Self.CHB_RCS_Output.Checked;
+  Self.SE_RCSmodule1.Enabled := Self.CHB_RCS_Output.Checked;
+  Self.SE_RCSport1.Enabled := Self.CHB_RCS_Output.Checked;
+  Self.CB_Typ.Enabled := Self.CHB_RCS_Output.Checked;
 
- if (not Self.CHB_RCS_Output.Checked) then
+  if (not Self.CHB_RCS_Output.Checked) then
   begin
-   Self.SE_RCSmodule1.Value := 1;
-   Self.SE_RCSPort1.Value := 0;
-   Self.CB_Typ.ItemIndex := -1;
-   Self.CHB_RCS_Second_Output.Checked := false;
-   Self.CHB_RCS_Second_OutputClick(Self);
+    Self.SE_RCSmodule1.Value := 1;
+    Self.SE_RCSport1.Value := 0;
+    Self.CB_Typ.ItemIndex := -1;
+    Self.CHB_RCS_Second_Output.Checked := false;
+    Self.CHB_RCS_Second_OutputClick(Self);
   end;
 end;
 
 procedure TF_BlkSignal.CHB_RCS_Second_OutputClick(Sender: TObject);
 begin
- Self.SE_RCSmodule2.Enabled := Self.CHB_RCS_Second_Output.Checked;
- Self.SE_RCSport2.Enabled := Self.CHB_RCS_Second_Output.Checked;
- Self.SE_RCSmodule2Exit(Self);
- if (not Self.CHB_RCS_Second_Output.Checked) then
+  Self.SE_RCSmodule2.Enabled := Self.CHB_RCS_Second_Output.Checked;
+  Self.SE_RCSport2.Enabled := Self.CHB_RCS_Second_Output.Checked;
+  Self.SE_RCSmodule2Exit(Self);
+  if (not Self.CHB_RCS_Second_Output.Checked) then
   begin
-   Self.SE_RCSmodule2.Value := 1;
-   Self.SE_RCSport2.Value := 0;
+    Self.SE_RCSmodule2.Value := 1;
+    Self.SE_RCSport2.Value := 0;
   end;
 end;
 
 procedure TF_BlkSignal.BB_Event_AddClick(Sender: TObject);
 var eventForm: TF_BlkSignalEvent;
-    ts: TCloseTabSheet;
+  ts: TCloseTabSheet;
 begin
   ts := TCloseTabSheet.Create(Self.PC_Events);
-  if (Self.eventForms.Count = 0) then
+  if (Self.eventForms.count = 0) then
     ts.Caption := 'globální'
   else
-    ts.Caption := IntToStr(Self.eventForms.Count);
+    ts.Caption := IntToStr(Self.eventForms.count);
 
   ts.PageControl := Self.PC_Events;
   ts.OnClose := Self.OnTabClose;
   eventForm := TF_BlkSignalEvent.Create(ts);
   Self.PC_Events.ActivePage := ts;
 
-  eventForm.OpenEmptyForm((Self.eventForms.Count = 0), Self.areas);
+  eventForm.OpenEmptyForm((Self.eventForms.count = 0), Self.areas);
   eventForm.Parent := ts;
   eventForm.Show();
 
@@ -276,88 +273,90 @@ end;
 
 procedure TF_BlkSignal.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkSignalSettings;
-    str: string;
-    another: TBlk;
-    fBlkNavEvent: TF_BlkSignalEvent;
- begin
+  settings: TBlkSignalSettings;
+  str: string;
+  another: TBlk;
+  fBlkNavEvent: TF_BlkSignalEvent;
+begin
   if (E_Nazev.Text = '') then
-   begin
+  begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
   if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
-   begin
+  begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
   if (Self.CHB_RCS_Output.Checked) then
-   begin
+  begin
     if (CB_Typ.ItemIndex = -1) then
-     begin
+    begin
       Application.MessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
-     end;
+    end;
 
-    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSPort1.Value), Self.Blk, TRCSIOType.output);
+    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value), Self.Blk,
+      TRCSIOType.output);
     if (another <> nil) then
-     begin
-      if (Application.MessageBox(PChar('První RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
-                                 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+    begin
+      if (Application.MessageBox(PChar('První RCS adresa se již používá na bloku ' + another.name +
+        ', chcete pokračovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
-     end;
-   end;
+    end;
+  end;
   if (Self.CHB_RCS_Second_Output.Checked) then
-   begin
-    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSPort2.Value), Self.Blk, TRCSIOType.output);
+  begin
+    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value), Self.Blk,
+      TRCSIOType.output);
     if (another <> nil) then
-     begin
-      if (Application.MessageBox(PChar('Druhá RCS adresa se již používá na bloku '+another.name+', chcete pokračovat?'),
-                                 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+    begin
+      if (Application.MessageBox(PChar('Druhá RCS adresa se již používá na bloku ' + another.name +
+        ', chcete pokračovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
-     end;
-   end;
-
+    end;
+  end;
 
   for fBlkNavEvent in Self.eventForms do
-   begin
+  begin
     str := fBlkNavEvent.Check();
     if (str <> '') then
-     begin
+    begin
       Application.MessageBox(PChar(str), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
-     end;
-   end;
+    end;
+  end;
 
   glob.name := Self.E_Nazev.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btSignal;
 
   if (NewBlk) then
-   begin
+  begin
     glob.note := '';
     try
       Blk := Blocks.Add(glob) as TBlkSignal;
     except
       on E: Exception do
-       begin
-        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
+          MB_OK OR MB_ICONWARNING);
         Exit();
-       end;
+      end;
     end;
-   end else begin
+  end else begin
     glob.note := Self.Blk.note;
     Self.Blk.SetGlobalSettings(glob);
-   end;
+  end;
 
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   if (Self.CHB_RCS_Output.Checked) then
-   begin
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSPort1.Value));
+  begin
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value));
     settings.OutputType := TBlkSignalOutputType(CB_Typ.ItemIndex);
-   end;
+  end;
   if (Self.CHB_RCS_Second_Output.Checked) then
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSPort2.Value));
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value));
 
   settings.fallDelay := Self.SE_Delay.Value;
 
@@ -370,34 +369,34 @@ var glob: TBlkSettings;
 
   Self.Close();
   Self.Blk.Change();
- end;
+end;
 
 procedure TF_BlkSignal.FormClose(Sender: TObject; var Action: TCloseAction);
- begin
+begin
   Self.NewBlk := false;
   Self.OpenIndex := -1;
   BlokyTableData.UpdateTable();
 
   Self.eventForms.Clear();
   Self.eventTabSheets.Clear();
- end;
+end;
 
 procedure TF_BlkSignal.FormCreate(Sender: TObject);
 begin
- Self.eventForms := TObjectList<TF_BlkSignalEvent>.Create();
- Self.eventTabSheets := TObjectList<TTabSheet>.Create();;
+  Self.eventForms := TObjectList<TF_BlkSignalEvent>.Create();
+  Self.eventTabSheets := TObjectList<TTabSheet>.Create();;
 end;
 
 procedure TF_BlkSignal.FormDestroy(Sender: TObject);
 begin
- Self.eventForms.Free();
- Self.eventTabSheets.Free();
+  Self.eventForms.Free();
+  Self.eventTabSheets.Free();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkSignal.PageControlCloseButtonDrawTab(Control: TCustomTabControl;
-  TabIndex: Integer; const Rect: TRect; Active: Boolean);
+procedure TF_BlkSignal.PageControlCloseButtonDrawTab(Control: TCustomTabControl; TabIndex: Integer; const Rect: TRect;
+  Active: Boolean);
 var
   CloseBtnSize: Integer;
   PageControl: TPageControl;
@@ -415,9 +414,7 @@ begin
     CloseBtnRect.Top := Rect.Top + 4;
     CloseBtnRect.Right := Rect.Right - 5;
     TabCaption.X := Rect.Left + 6;
-  end
-  else
-  begin
+  end else begin
     CloseBtnRect.Top := Rect.Top + 3;
     CloseBtnRect.Right := Rect.Right - 5;
     TabCaption.X := Rect.Left + 3;
@@ -425,7 +422,7 @@ begin
 
   if (PageControl.Pages[TabIndex] is TCloseTabSheet) then
   begin
-    TabSheet:=PageControl.Pages[TabIndex] as TCloseTabSheet;
+    TabSheet := PageControl.Pages[TabIndex] as TCloseTabSheet;
     CloseBtnSize := 14;
 
     CloseBtnRect.Bottom := CloseBtnRect.Top + CloseBtnSize;
@@ -433,8 +430,7 @@ begin
     TabSheet.FCloseButtonRect := CloseBtnRect;
 
     PageControl.Canvas.FillRect(Rect);
-    PageControl.Canvas.TextOut(TabCaption.X, TabCaption.Y,
-            PageControl.Pages[TabIndex].Caption);
+    PageControl.Canvas.TextOut(TabCaption.X, TabCaption.Y, PageControl.Pages[TabIndex].Caption);
 
     if not StyleServices.Enabled then
     begin
@@ -443,11 +439,8 @@ begin
       else
         CloseBtnDrawState := DFCS_CAPTIONCLOSE;
 
-      Windows.DrawFrameControl(PageControl.Canvas.Handle,
-        TabSheet.FCloseButtonRect, DFC_CAPTION, CloseBtnDrawState);
-    end
-    else
-    begin
+      Windows.DrawFrameControl(PageControl.Canvas.Handle, TabSheet.FCloseButtonRect, DFC_CAPTION, CloseBtnDrawState);
+    end else begin
       Dec(TabSheet.FCloseButtonRect.Left);
 
       if (FCloseButtonMouseDownTab = TabSheet) and FCloseButtonShowPushed then
@@ -455,20 +448,18 @@ begin
       else
         CloseBtnDrawDetails := StyleServices.GetElementDetails(twCloseButtonNormal);
 
-      StyleServices.DrawElement(PageControl.Canvas.Handle, CloseBtnDrawDetails,
-                TabSheet.FCloseButtonRect);
+      StyleServices.DrawElement(PageControl.Canvas.Handle, CloseBtnDrawDetails, TabSheet.FCloseButtonRect);
     end;
   end else begin
     PageControl.Canvas.FillRect(Rect);
-    PageControl.Canvas.TextOut(TabCaption.X, TabCaption.Y,
-                 PageControl.Pages[TabIndex].Caption);
+    PageControl.Canvas.TextOut(TabCaption.X, TabCaption.Y, PageControl.Pages[TabIndex].Caption);
   end;
 end;
 
-procedure TF_BlkSignal.PageControlCloseButtonMouseDown(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TF_BlkSignal.PageControlCloseButtonMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
 var
-  I: Integer;
+  i: Integer;
   PageControl: TPageControl;
   TabSheet: TCloseTabSheet;
 begin
@@ -476,14 +467,15 @@ begin
 
   if Button = mbLeft then
   begin
-    for I := 0 to PageControl.PageCount - 1 do
+    for i := 0 to PageControl.PageCount - 1 do
     begin
-      if not (PageControl.Pages[i] is TCloseTabSheet) then Continue;
-      TabSheet:=PageControl.Pages[i] as TCloseTabSheet;
+      if not(PageControl.Pages[i] is TCloseTabSheet) then
+        Continue;
+      TabSheet := PageControl.Pages[i] as TCloseTabSheet;
       if PtInRect(TabSheet.FCloseButtonRect, Point(X, Y)) then
       begin
         FCloseButtonMouseDownTab := TabSheet;
-        FCloseButtonShowPushed := True;
+        FCloseButtonShowPushed := true;
         PageControl.Repaint;
       end;
     end;
@@ -495,12 +487,11 @@ var
   PageControl: TPageControl;
 begin
   PageControl := Sender as TPageControl;
-  FCloseButtonShowPushed := False;
+  FCloseButtonShowPushed := false;
   PageControl.Repaint;
 end;
 
-procedure TF_BlkSignal.PageControlCloseButtonMouseMove(Sender: TObject;
-  Shift: TShiftState; X, Y: Integer);
+procedure TF_BlkSignal.PageControlCloseButtonMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var
   PageControl: TPageControl;
   Inside: Boolean;
@@ -519,8 +510,8 @@ begin
   end;
 end;
 
-procedure TF_BlkSignal.PageControlCloseButtonMouseUp(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TF_BlkSignal.PageControlCloseButtonMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
 var
   PageControl: TPageControl;
 begin
@@ -539,38 +530,38 @@ end;
 
 procedure TF_BlkSignal.SE_RCSmodule1Exit(Sender: TObject);
 begin
- Self.SE_RCSport1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
+  Self.SE_RCSport1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
 end;
 
 procedure TF_BlkSignal.SE_RCSmodule2Exit(Sender: TObject);
 begin
- Self.SE_RCSport2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
+  Self.SE_RCSport2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_BlkSignal.OnTabClose(Sender: TObject);
 var i: Integer;
 begin
- if (Self.eventTabSheets.Count <= 1) then
+  if (Self.eventTabSheets.count <= 1) then
   begin
-   if (Application.MessageBox(PChar('Mazání globální události způsobí nezastavení vlaku před návěstidlem, '+
-      'proto je doporučeno jen u seřaďovacích návěstidel!'+#13#10+'Opravdu smazat globální událost?'),
-      'Opravdu?', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
-     Exit();
+    if (Application.MessageBox(PChar('Mazání globální události způsobí nezastavení vlaku před návěstidlem, ' +
+      'proto je doporučeno jen u seřaďovacích návěstidel!' + #13#10 + 'Opravdu smazat globální událost?'), 'Opravdu?',
+      MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
+      Exit();
   end;
 
- for i := 0 to Self.eventTabSheets.Count-1 do
+  for i := 0 to Self.eventTabSheets.count - 1 do
   begin
-   if (Self.eventTabSheets[i] = Sender) then
+    if (Self.eventTabSheets[i] = Sender) then
     begin
-     Self.eventForms.Delete(i);
-     Self.eventTabSheets.Delete(i);
-     Exit();
+      Self.eventForms.Delete(i);
+      Self.eventTabSheets.Delete(i);
+      Exit();
     end;
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-end.//unit
+end.// unit

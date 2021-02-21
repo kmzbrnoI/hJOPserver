@@ -5,62 +5,57 @@
 interface
 
 uses IniFiles, Block, SysUtils, Menus, AreaDb, Classes, TechnologieRCS,
-     IdContext, Area, Generics.Collections, JsonDataObjects,
-     BlockCrossingLogic;
+  IdContext, Area, Generics.Collections, JsonDataObjects,
+  BlockCrossingLogic;
 
 type
- TBlkCrossingRCSInputs = record
-  closed: TRCSAddr;
-  open: TRCSAddr;
-  caution: TRCSAddr;
-  annulation: TRCSAddr;
-  annulationUse: Boolean;
- end;
+  TBlkCrossingRCSInputs = record
+    closed: TRCSAddr;
+    open: TRCSAddr;
+    caution: TRCSAddr;
+    annulation: TRCSAddr;
+    annulationUse: Boolean;
+  end;
 
- TBlkCrossingRCSOutputs = record
-  close: TRCSAddr;
-  emOpen: TRCSAddr;
-  emOpenUse: Boolean;
-  blockPositive: TRCSAddr;
-  blockPositiveUse: Boolean;
- end;
+  TBlkCrossingRCSOutputs = record
+    close: TRCSAddr;
+    emOpen: TRCSAddr;
+    emOpenUse: Boolean;
+    blockPositive: TRCSAddr;
+    blockPositiveUse: Boolean;
+  end;
 
- TBlkCrossingSettings = record
-  RCSInputs: TBlkCrossingRCSInputs;
-  RCSOutputs: TBlkCrossingRCSOutputs;
- end;
+  TBlkCrossingSettings = record
+    RCSInputs: TBlkCrossingRCSInputs;
+    RCSOutputs: TBlkCrossingRCSOutputs;
+  end;
 
- TBlkCrossingBasicState = (disabled = -5, none = -1, open = 0, caution = 1, closed = 2);
+  TBlkCrossingBasicState = (disabled = -5, none = -1, open = 0, caution = 1, closed = 2);
 
- TBlkCrossingState = record
-  basicState: TBlkCrossingBasicState;
-  annulationOld: Boolean;
-  note, lockout: string;
-  pcEmOpen, pcClosed: Boolean;                       // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
-  zaver: Integer;                                    // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
-  closeStart: TDateTime;
-  shs: TList<TBlk>;                                  // seznam souctovych hlasek, kam hlasi prejezd stav
-  rcsModules: TList<Cardinal>;                       // seznam RCS modulu, ktere vyuziva prejezd
- end;
+  TBlkCrossingState = record
+    basicState: TBlkCrossingBasicState;
+    annulationOld: Boolean;
+    note, lockout: string;
+    pcEmOpen, pcClosed: Boolean;
+    // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
+    zaver: Integer; // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
+    closeStart: TDateTime;
+    shs: TList<TBlk>; // seznam souctovych hlasek, kam hlasi prejezd stav
+    rcsModules: TList<Cardinal>; // seznam RCS modulu, ktere vyuziva prejezd
+  end;
 
- EPrjNOT = class(Exception);
+  EPrjNOT = class(Exception);
 
- TBlkCrossing = class(TBlk)
+  TBlkCrossing = class(TBlk)
   const
-   _def_prj_state: TBlkCrossingState = (
-     basicState : disabled;
-     note : '';
-     lockout : '';
-     pcEmOpen : false;
-     pcClosed : false;
-    zaver: 0;
-   );
+    _def_prj_state: TBlkCrossingState = (basicState: disabled; note: ''; lockout: ''; pcEmOpen: false; pcClosed: false;
+      zaver: 0;);
 
-   _UZ_UPOZ_MIN = 4;      // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
+    _UZ_UPOZ_MIN = 4; // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
 
   private
-   m_settings: TBlkCrossingSettings;
-   m_state: TBlkCrossingState;
+    m_settings: TBlkCrossingSettings;
+    m_state: TBlkCrossingState;
 
     procedure SetNote(note: string);
     procedure SetLockout(lockout: string);
@@ -98,12 +93,12 @@ type
     procedure MenuAdminNUZClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure NoteUPO(SenderPnl: TIdContext; SenderOR: TObject;
-        UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
+    procedure NoteUPO(SenderPnl: TIdContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
+      UPO_EscCallback: TNotifyEvent);
     procedure FillRCSModules();
 
   public
-   tracks: TObjectList<TBlkCrossingTrack>;
+    tracks: TObjectList<TBlkCrossingTrack>;
 
     constructor Create(index: Integer);
     destructor Destroy(); override;
@@ -119,7 +114,7 @@ type
     procedure Update(); override;
     procedure Change(now: Boolean = false); override;
 
-    //----- Crossing specific functions -----
+    // ----- Crossing specific functions -----
 
     function GetSettings(): TBlkCrossingSettings;
     procedure SetSettings(data: TBlkCrossingSettings);
@@ -138,7 +133,8 @@ type
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
-    procedure PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
+      params: string = ''); override;
     function PanelStateString(): string; override;
 
     procedure PanelZUZCallBack(Sender: TIdContext; success: Boolean);
@@ -146,844 +142,863 @@ type
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
- end;
+  end;
 
-////////////////////////////////////////////////////////////////////////////////
+  /// /////////////////////////////////////////////////////////////////////////////
 
 implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCS, UPO,
-     Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert;
+  Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
- inherited;
+  inherited;
 
- Self.m_globSettings.typ := btCrossing;
- Self.m_state := Self._def_prj_state;
- Self.m_state.shs := TList<TBlk>.Create();
- Self.m_state.rcsModules := TList<Cardinal>.Create();
- Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
+  Self.m_globSettings.typ := btCrossing;
+  Self.m_state := Self._def_prj_state;
+  Self.m_state.shs := TList<TBlk>.Create();
+  Self.m_state.rcsModules := TList<Cardinal>.Create();
+  Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
 end;
 
 destructor TBlkCrossing.Destroy();
 begin
- Self.m_state.shs.Free();
- Self.m_state.rcsModules.Free();
- Self.tracks.Free();
- inherited;
+  Self.m_state.shs.Free();
+  Self.m_state.rcsModules.Free();
+  Self.tracks.Free();
+  inherited;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
-var area: TArea;
-    defaultModule: Integer;
-    module: Cardinal;
-    i, notracks: Integer;
-    track: TBlkCrossingTrack;
+var defaultModule: Integer;
 begin
- inherited LoadData(ini_tech, section, ini_rel, ini_stat);
+  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
- Self.m_state.note := '';
- Self.m_state.lockout := '';
+  Self.m_state.note := '';
+  Self.m_state.lockout := '';
 
- defaultModule := ini_tech.ReadInteger(section, 'RCS', -1); // old file specs for backward compatibility
+  defaultModule := ini_tech.ReadInteger(section, 'RCS', -1); // old file specs for backward compatibility
 
- Self.m_settings.RCSInputs.closed := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIzm', defaultModule),
-                                                  ini_tech.ReadInteger(section, 'RCSIz', 0));
- Self.m_settings.RCSInputs.open := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIom', defaultModule),
-                                                ini_tech.ReadInteger(section, 'RCSIo', 0));
- Self.m_settings.RCSInputs.caution := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIvm', defaultModule),
-                                                   ini_tech.ReadInteger(section, 'RCSIv', 0));
- Self.m_settings.RCSInputs.annulationUse := (ini_tech.ReadInteger(section, 'RCSam', defaultModule) <> -1);
- if (Self.m_settings.RCSInputs.annulationUse) then
+  Self.m_settings.RCSInputs.closed := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIzm', defaultModule),
+    ini_tech.ReadInteger(section, 'RCSIz', 0));
+  Self.m_settings.RCSInputs.open := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIom', defaultModule),
+    ini_tech.ReadInteger(section, 'RCSIo', 0));
+  Self.m_settings.RCSInputs.caution := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIvm', defaultModule),
+    ini_tech.ReadInteger(section, 'RCSIv', 0));
+  Self.m_settings.RCSInputs.annulationUse := (ini_tech.ReadInteger(section, 'RCSam', defaultModule) <> -1);
+  if (Self.m_settings.RCSInputs.annulationUse) then
   begin
-   Self.m_settings.RCSInputs.annulation := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSam', defaultModule),
-                                                        ini_tech.ReadInteger(section, 'RCSa', 0));
+    Self.m_settings.RCSInputs.annulation := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSam', defaultModule),
+      ini_tech.ReadInteger(section, 'RCSa', 0));
   end;
 
- Self.m_settings.RCSOutputs.close := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOzm', defaultModule),
-                                                  ini_tech.ReadInteger(section, 'RCSOz', 0));
- Self.m_settings.RCSOutputs.emOpenUse := (ini_tech.ReadInteger(section, 'RCSOnotm', defaultModule) <> -1);
- if (Self.m_settings.RCSOutputs.emOpenUse) then
+  Self.m_settings.RCSOutputs.close := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOzm', defaultModule),
+    ini_tech.ReadInteger(section, 'RCSOz', 0));
+  Self.m_settings.RCSOutputs.emOpenUse := (ini_tech.ReadInteger(section, 'RCSOnotm', defaultModule) <> -1);
+  if (Self.m_settings.RCSOutputs.emOpenUse) then
   begin
-   Self.m_settings.RCSOutputs.emOpen := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOnotm', defaultModule),
-                                                     ini_tech.ReadInteger(section, 'RCSOnot', 0));
+    Self.m_settings.RCSOutputs.emOpen := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOnotm', defaultModule),
+      ini_tech.ReadInteger(section, 'RCSOnot', 0));
   end;
 
- Self.m_settings.RCSOutputs.blockPositiveUse := (ini_tech.ReadInteger(section, 'RCSObpm', defaultModule) <> -1);
- if (Self.m_settings.RCSOutputs.blockPositiveUse) then
+  Self.m_settings.RCSOutputs.blockPositiveUse := (ini_tech.ReadInteger(section, 'RCSObpm', defaultModule) <> -1);
+  if (Self.m_settings.RCSOutputs.blockPositiveUse) then
   begin
-   Self.m_settings.RCSOutputs.blockPositive := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSObpm', defaultModule),
-                                                            ini_tech.ReadInteger(section, 'RCSObp', 0));
+    Self.m_settings.RCSOutputs.blockPositive := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSObpm', defaultModule),
+      ini_tech.ReadInteger(section, 'RCSObp', 0));
   end;
 
- Self.tracks.Clear();
- notracks := ini_tech.ReadInteger(section, 'tracks', 0);
- for i := 0 to notracks-1 do
+  Self.tracks.Clear();
+  var notracks: Integer := ini_tech.ReadInteger(section, 'tracks', 0);
+  for var i: Integer := 0 to notracks - 1 do
   begin
-   track := TBlkCrossingTrack.Create();
-   try
-     track.Load(ini_tech, section, 'T'+IntToStr(i));
-     Self.tracks.Add(track);
-   except
-     on E: Exception do
-       AppEvents.LogException(E, 'LoadTracks');
-   end;
+    var track: TBlkCrossingTrack := TBlkCrossingTrack.Create();
+    try
+      track.Load(ini_tech, section, 'T' + IntToStr(i));
+      Self.tracks.Add(track);
+    except
+      on E: Exception do
+        AppEvents.LogException(E, 'LoadTracks');
+    end;
   end;
 
- Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
+  Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
 
- Self.LoadORs(ini_rel, 'PRJ').Free();
+  Self.LoadORs(ini_rel, 'PRJ').Free();
 
- Self.FillRCSModules();
- for module in Self.m_state.rcsModules do
-   RCSi.SetNeeded(module);
- for area in Self.m_areas do
-   for module in Self.m_state.rcsModules do
-     area.RCSAdd(module);
+  Self.FillRCSModules();
+  for var module: Cardinal in Self.m_state.rcsModules do
+    RCSi.SetNeeded(module);
+  for var area: TArea in Self.m_areas do
+    for var module: Cardinal in Self.m_state.rcsModules do
+      area.RCSAdd(module);
 end;
 
 procedure TBlkCrossing.SaveData(ini_tech: TMemIniFile; const section: string);
-var i: Integer;
 begin
- inherited SaveData(ini_tech, section);
+  inherited SaveData(ini_tech, section);
 
- ini_tech.WriteInteger(section, 'RCSIzm', Self.m_settings.RCSInputs.closed.board);
- ini_tech.WriteInteger(section, 'RCSIz', Self.m_settings.RCSInputs.closed.port);
- ini_tech.WriteInteger(section, 'RCSIom', Self.m_settings.RCSInputs.open.board);
- ini_tech.WriteInteger(section, 'RCSIo', Self.m_settings.RCSInputs.open.port);
- ini_tech.WriteInteger(section, 'RCSIvm', Self.m_settings.RCSInputs.caution.board);
- ini_tech.WriteInteger(section, 'RCSIv', Self.m_settings.RCSInputs.caution.port);
- if (Self.m_settings.RCSInputs.annulationUse) then
+  ini_tech.WriteInteger(section, 'RCSIzm', Self.m_settings.RCSInputs.closed.board);
+  ini_tech.WriteInteger(section, 'RCSIz', Self.m_settings.RCSInputs.closed.port);
+  ini_tech.WriteInteger(section, 'RCSIom', Self.m_settings.RCSInputs.open.board);
+  ini_tech.WriteInteger(section, 'RCSIo', Self.m_settings.RCSInputs.open.port);
+  ini_tech.WriteInteger(section, 'RCSIvm', Self.m_settings.RCSInputs.caution.board);
+  ini_tech.WriteInteger(section, 'RCSIv', Self.m_settings.RCSInputs.caution.port);
+  if (Self.m_settings.RCSInputs.annulationUse) then
   begin
-   ini_tech.WriteInteger(section, 'RCSam', Self.m_settings.RCSInputs.annulation.board);
-   ini_tech.WriteInteger(section, 'RCSa', Self.m_settings.RCSInputs.annulation.port);
+    ini_tech.WriteInteger(section, 'RCSam', Self.m_settings.RCSInputs.annulation.board);
+    ini_tech.WriteInteger(section, 'RCSa', Self.m_settings.RCSInputs.annulation.port);
   end;
 
- ini_tech.WriteInteger(section, 'RCSOzm', Self.m_settings.RCSOutputs.close.board);
- ini_tech.WriteInteger(section, 'RCSOz', Self.m_settings.RCSOutputs.close.port);
- if (Self.m_settings.RCSOutputs.emOpenUse) then
+  ini_tech.WriteInteger(section, 'RCSOzm', Self.m_settings.RCSOutputs.close.board);
+  ini_tech.WriteInteger(section, 'RCSOz', Self.m_settings.RCSOutputs.close.port);
+  if (Self.m_settings.RCSOutputs.emOpenUse) then
   begin
-   ini_tech.WriteInteger(section, 'RCSOnotm', Self.m_settings.RCSOutputs.emOpen.board);
-   ini_tech.WriteInteger(section, 'RCSOnot', Self.m_settings.RCSOutputs.emOpen.port);
+    ini_tech.WriteInteger(section, 'RCSOnotm', Self.m_settings.RCSOutputs.emOpen.board);
+    ini_tech.WriteInteger(section, 'RCSOnot', Self.m_settings.RCSOutputs.emOpen.port);
   end;
- if (Self.m_settings.RCSOutputs.blockPositiveUse) then
+  if (Self.m_settings.RCSOutputs.blockPositiveUse) then
   begin
-   ini_tech.WriteInteger(section, 'RCSObpm', Self.m_settings.RCSOutputs.blockPositive.board);
-   ini_tech.WriteInteger(section, 'RCSObp', Self.m_settings.RCSOutputs.blockPositive.port);
+    ini_tech.WriteInteger(section, 'RCSObpm', Self.m_settings.RCSOutputs.blockPositive.board);
+    ini_tech.WriteInteger(section, 'RCSObp', Self.m_settings.RCSOutputs.blockPositive.port);
   end;
 
- if (Self.tracks.Count > 0) then
-   ini_tech.WriteInteger(section, 'tracks', Self.tracks.Count);
- for i := 0 to Self.tracks.Count-1 do
-   Self.tracks[i].Save(ini_tech, section, 'T'+IntToStr(i));
+  if (Self.tracks.Count > 0) then
+    ini_tech.WriteInteger(section, 'tracks', Self.tracks.Count);
+  for var i: Integer := 0 to Self.tracks.Count - 1 do
+    Self.tracks[i].Save(ini_tech, section, 'T' + IntToStr(i));
 end;
 
 procedure TBlkCrossing.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
- if (Self.m_state.note <> '') then
-   ini_stat.WriteString(section, 'stit', Self.m_state.note);
+  if (Self.m_state.note <> '') then
+    ini_stat.WriteString(section, 'stit', Self.m_state.note);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.Enable();
-var module: Cardinal;
 begin
- try
-   for module in Self.m_state.rcsModules do
-     if (not RCSi.IsNonFailedModule(module)) then
-       Exit();
- except
-   Exit();
- end;
+  try
+    for var module: Cardinal in Self.m_state.rcsModules do
+      if (not RCSi.IsNonFailedModule(module)) then
+        Exit();
+  except
+    Exit();
+  end;
 
- Self.m_state.basicState := TBlkCrossingBasicState.none;
- Self.m_state.annulationOld := Self.annulation;
- Self.Change();
+  Self.m_state.basicState := TBlkCrossingBasicState.none;
+  Self.m_state.annulationOld := Self.annulation;
+  Self.Change();
 end;
 
 procedure TBlkCrossing.Disable();
 begin
- Self.m_state.basicState := disabled;
- Self.m_state.shs.Clear();
- Self.Change(true);
+  Self.m_state.basicState := disabled;
+  Self.m_state.shs.Clear();
+  Self.Change(true);
 end;
 
 function TBlkCrossing.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
- Result := (((portType = TRCSIOType.input) and ((addr = Self.m_settings.RCSInputs.closed) or
-                                                (addr = Self.m_settings.RCSInputs.open) or
-                                                (addr = Self.m_settings.RCSInputs.caution)))
-            or
-            ((portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.close))
-           );
+  Result := (((portType = TRCSIOType.input) and ((addr = Self.m_settings.RCSInputs.closed) or
+    (addr = Self.m_settings.RCSInputs.open) or (addr = Self.m_settings.RCSInputs.caution))) or
+    ((portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.close)));
 
- if (Self.m_settings.RCSInputs.annulationUse) then
-   Result := Result or (portType = TRCSIOType.input) and (addr = Self.m_settings.RCSInputs.annulation);
- if (Self.m_settings.RCSOutputs.emOpenUse) then
-   Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.emOpen);
- if (Self.m_settings.RCSOutputs.blockPositiveUse) then
-   Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.blockPositive);
+  if (Self.m_settings.RCSInputs.annulationUse) then
+    Result := Result or (portType = TRCSIOType.input) and (addr = Self.m_settings.RCSInputs.annulation);
+  if (Self.m_settings.RCSOutputs.emOpenUse) then
+    Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.emOpen);
+  if (Self.m_settings.RCSOutputs.blockPositiveUse) then
+    Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.blockPositive);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.Update();
-var new_stav: TBlkCrossingBasicState;
-    available: Boolean;
-    area: TArea;
-    module: Cardinal;
+var available: Boolean;
 begin
- available := true;
- try
-   for module in Self.m_state.rcsModules do
-     available := available and RCSi.IsNonFailedModule(module);
- except
-   available := false;
- end;
-
- if ((not available) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
-  begin
-   Self.m_state.basicState := TBlkCrossingBasicState.disabled;
-   JCDb.Cancel(Self);
-   Self.Change(true);
+  available := true;
+  try
+    for var module: Cardinal in Self.m_state.rcsModules do
+      available := available and RCSi.IsNonFailedModule(module);
+  except
+    available := false;
   end;
 
- new_stav := Self.UpdateInputs();
-
- if ((Self.m_state.basicState <> new_stav) and
-     ((Self.m_state.basicState <> TBlkCrossingBasicState.disabled) or (new_stav <> TBlkCrossingBasicState.none))) then
+  if ((not available) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
   begin
-   // kontrola necekaneho otevreni prejezdu, pokud je v JC
-   // necekaniy stav = prejezd je pod zaverem a na vstupu se objevi cokoliv jineho, nez "uzavreno"
-   if ((Self.Zaver) and (Self.m_state.basicState = TBlkCrossingBasicState.closed)) then
-    begin
-     for area in Self.areas do
-      area.BlkWriteError(Self, 'Ztráta dohledu na přejezdu : '+Self.m_globSettings.name, 'TECHNOLOGIE');
-     JCDb.Cancel(Self);
-    end;
-
-   if ((new_stav = TBlkCrossingBasicState.none) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
-    begin
-     for area in Self.areas do
-      area.BlkWriteError(Self, 'Porucha přejezdu : '+Self.m_globSettings.name, 'TECHNOLOGIE');
-     JCDb.Cancel(Self);
-    end;
-
-   if (Self.m_state.basicState = disabled) then
-    begin
-     // wake-up
-     Self.UpdateOutputs();
-    end;
-
-   Self.m_state.basicState := new_stav;
-   Self.Change();
+    Self.m_state.basicState := TBlkCrossingBasicState.disabled;
+    JCDb.Cancel(Self);
+    Self.Change(true);
   end;
 
- if (Self.m_state.annulationOld <> Self.annulation) then
+  var new_state: TBlkCrossingBasicState := Self.UpdateInputs();
+
+  if ((Self.m_state.basicState <> new_state) and ((Self.m_state.basicState <> TBlkCrossingBasicState.disabled) or
+    (new_state <> TBlkCrossingBasicState.none))) then
   begin
-   Self.m_state.annulationOld := Self.annulation;
-   Self.Change();
+    // kontrola necekaneho otevreni prejezdu, pokud je v JC
+    // necekaniy stav = prejezd je pod zaverem a na vstupu se objevi cokoliv jineho, nez "uzavreno"
+    if ((Self.zaver) and (Self.m_state.basicState = TBlkCrossingBasicState.closed)) then
+    begin
+      for var area: TArea in Self.areas do
+        area.BlkWriteError(Self, 'Ztráta dohledu na přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+      JCDb.Cancel(Self);
+    end;
+
+    if ((new_state = TBlkCrossingBasicState.none) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
+    begin
+      for var area: TArea in Self.areas do
+        area.BlkWriteError(Self, 'Porucha přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+      JCDb.Cancel(Self);
+    end;
+
+    if (Self.m_state.basicState = disabled) then
+    begin
+      // wake-up
+      Self.UpdateOutputs();
+    end;
+
+    Self.m_state.basicState := new_state;
+    Self.Change();
   end;
 
- // kontrola prilis dlouho uzavreneho prejezdu
- if ((Self.zaver) or (Self.m_state.pcClosed)) then
+  if (Self.m_state.annulationOld <> Self.annulation) then
   begin
-   if (Now > Self.m_state.closeStart+EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
+    Self.m_state.annulationOld := Self.annulation;
+    Self.Change();
+  end;
+
+  // kontrola prilis dlouho uzavreneho prejezdu
+  if ((Self.zaver) or (Self.m_state.pcClosed)) then
+  begin
+    if (now > Self.m_state.closeStart + EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
     begin
-     for area in Self.areas do
-      area.BlkWriteError(Self, Self.m_globSettings.name+' uzavřen déle, jak '+IntToStr(_UZ_UPOZ_MIN)+' min', 'VAROVÁNÍ');
-     Self.m_state.closeStart := now;
+      for var area: TArea in Self.areas do
+        area.BlkWriteError(Self, Self.m_globSettings.name + ' uzavřen déle, jak ' + IntToStr(_UZ_UPOZ_MIN) + ' min',
+          'VAROVÁNÍ');
+      Self.m_state.closeStart := now;
     end;
   end;
 
- Self.UpdateTracks();
- inherited Update();
+  Self.UpdateTracks();
+  inherited Update();
 end;
 
 procedure TBlkCrossing.UpdateTracks();
-var track: TBlkCrossingTrack;
-    changed: Boolean;
+var changed: Boolean;
 begin
- changed := false;
- for track in Self.tracks do
+  changed := false;
+  for var track: TBlkCrossingTrack in Self.tracks do
   begin
-   track.Update();
-   if (track.stateChanged) then
+    track.Update();
+    if (track.stateChanged) then
     begin
-     changed := true;
-     track.stateChanged := false;
+      changed := true;
+      track.stateChanged := false;
     end;
   end;
 
- if (changed) then
+  if (changed) then
   begin
-   Self.UpdateOutputs();
-   if (diag.showZaver) then
-     Self.Change();
+    Self.UpdateOutputs();
+    if (diag.showZaver) then
+      Self.Change();
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.Change(now: Boolean = false);
-var sh: TBlk;
 begin
- inherited;
+  inherited;
 
- try
-   for sh in Self.m_state.shs do
-     sh.Change();
- except
+  try
+    for var sh: TBlk in Self.m_state.shs do
+      sh.Change();
+  except
 
- end;
+  end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkCrossing.UpdateInputs(): TBlkCrossingBasicState;
-var tmpInputs: record
-      closed: Boolean;
-      open: Boolean;
-      caution: Boolean;
-    end;
+var tmpInputs: record closed: Boolean;
+  open: Boolean;
+  caution: Boolean;
+end;
 begin
- // get data from RCS
- try
-   tmpInputs.closed := (RCSi.GetInput(Self.m_settings.RCSInputs.closed) = isOn);
-   tmpInputs.open := (RCSi.GetInput(Self.m_settings.RCSInputs.open) = isOn);
-   tmpInputs.caution := (RCSi.GetInput(Self.m_settings.RCSInputs.caution) = isOn);
- except
-   // prejezd prejde do poruchoveho stavu
-   tmpInputs.closed := false;
-   tmpInputs.open := false;
-   tmpInputs.caution := false;
- end;
+  // get data from RCS
+  try
+    tmpInputs.closed := (RCSi.GetInput(Self.m_settings.RCSInputs.closed) = isOn);
+    tmpInputs.open := (RCSi.GetInput(Self.m_settings.RCSInputs.open) = isOn);
+    tmpInputs.caution := (RCSi.GetInput(Self.m_settings.RCSInputs.caution) = isOn);
+  except
+    // prejezd prejde do poruchoveho stavu
+    tmpInputs.closed := false;
+    tmpInputs.open := false;
+    tmpInputs.caution := false;
+  end;
 
- if (tmpInputs.closed) then Exit(TBlkCrossingBasicState.closed);
- if (tmpInputs.caution) then Exit(TBlkCrossingBasicState.caution);
- if (tmpInputs.open) then Exit(TBlkCrossingBasicState.open);
+  if (tmpInputs.closed) then
+    Exit(TBlkCrossingBasicState.closed);
+  if (tmpInputs.caution) then
+    Exit(TBlkCrossingBasicState.caution);
+  if (tmpInputs.open) then
+    Exit(TBlkCrossingBasicState.open);
 
- // without data
- Result := none;
+  // without data
+  Result := none;
 end;
 
 procedure TBlkCrossing.UpdateOutputs();
 begin
- try
-   RCSi.SetOutput(
-     Self.m_settings.RCSOutputs.close,
-     ownConvert.BoolToInt(((Self.m_state.pcClosed) or (Self.Zaver) or (Self.TrackClosed)) and (not Self.m_state.pcEmOpen))
-   );
+  try
+    RCSi.SetOutput(Self.m_settings.RCSOutputs.close,
+      ownConvert.BoolToInt(((Self.m_state.pcClosed) or (Self.zaver) or (Self.TrackClosed)) and
+      (not Self.m_state.pcEmOpen)));
 
-   if (Self.m_settings.RCSOutputs.emOpenUse) then
-     RCSi.SetOutput(Self.m_settings.RCSOutputs.emOpen, ownConvert.BoolToInt(Self.m_state.pcEmOpen));
-   if (Self.m_settings.RCSOutputs.blockPositiveUse) then
-     RCSi.SetOutput(Self.m_settings.RCSOutputs.blockPositive, ownConvert.BoolToInt(not Self.TrackPositiveLight));
- except
+    if (Self.m_settings.RCSOutputs.emOpenUse) then
+      RCSi.SetOutput(Self.m_settings.RCSOutputs.emOpen, ownConvert.BoolToInt(Self.m_state.pcEmOpen));
+    if (Self.m_settings.RCSOutputs.blockPositiveUse) then
+      RCSi.SetOutput(Self.m_settings.RCSOutputs.blockPositive, ownConvert.BoolToInt(not Self.TrackPositiveLight));
+  except
 
- end;
+  end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkCrossing.GetSettings(): TBlkCrossingSettings;
 begin
- Result := Self.m_settings;
+  Result := Self.m_settings;
 end;
 
 procedure TBlkCrossing.SetSettings(data: TBlkCrossingSettings);
 begin
- Self.m_settings := data;
- Self.FillRCSModules();
- Self.Change();
+  Self.m_settings := data;
+  Self.FillRCSModules();
+  Self.Change();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.SetNote(note: string);
 begin
- Self.m_state.note := note;
- Self.Change();
+  Self.m_state.note := note;
+  Self.Change();
 end;
 
 procedure TBlkCrossing.SetLockout(lockout: string);
 begin
- Self.m_state.lockout := lockout;
- Self.Change();
- Self.UpdateOutputs();
+  Self.m_state.lockout := lockout;
+  Self.Change();
+  Self.UpdateOutputs();
 end;
 
 procedure TBlkCrossing.SetEmOpen(state: Boolean);
 begin
- if ((Self.zaver) and (state)) then Exit();
+  if ((Self.zaver) and (state)) then
+    Exit();
 
- if (state) then
+  if (state) then
   begin
-   // NOT rusi jizdni cesty vedouci pres prejezd
-   JCDb.Cancel(Self);
+    // NOT rusi jizdni cesty vedouci pres prejezd
+    JCDb.Cancel(Self);
   end;
 
- Self.m_state.pcEmOpen := state;
- Self.Change();
- Self.UpdateOutputs();
+  Self.m_state.pcEmOpen := state;
+  Self.Change();
+  Self.UpdateOutputs();
 end;
 
 procedure TBlkCrossing.SetClosed(state: Boolean);
 begin
- if (state) then
+  if (state) then
   begin
-   if (Self.pcEmOpen) then
-     raise EPrjNot.Create('Prejezd nouzove otevren, nelze uzavrit!');
-   Self.m_state.closeStart := now;
+    if (Self.pcEmOpen) then
+      raise EPrjNOT.Create('Prejezd nouzove otevren, nelze uzavrit!');
+    Self.m_state.closeStart := now;
   end;
 
- Self.m_state.pcClosed := state;
- Self.Change();
- Self.UpdateOutputs();
+  Self.m_state.pcClosed := state;
+  Self.Change();
+  Self.UpdateOutputs();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.MenuUZClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- if (Self.note <> '') then
-   Self.NoteUPO(SenderPnl, SenderOR, Self.UPOUZClick, nil)
- else begin
-   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
-   Self.UPOUZClick(SenderPnl);
- end;
+  if (Self.note <> '') then
+    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOUZClick, nil)
+  else
+  begin
+    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
+    Self.UPOUZClick(SenderPnl);
+  end;
 end;
 
 procedure TBlkCrossing.MenuZUZClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- if (Self.note <> '') then
-   Self.NoteUPO(SenderPnl, SenderOR, Self.UPOZUZClick, nil)
- else begin
-   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
-   Self.UPOZUZClick(SenderPnl);
- end;
+  if (Self.note <> '') then
+    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOZUZClick, nil)
+  else
+  begin
+    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
+    Self.UPOZUZClick(SenderPnl);
+  end;
 end;
 
 procedure TBlkCrossing.MenuNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- if (Self.note <> '') then
-   Self.NoteUPO(SenderPnl, SenderOR, Self.UPONOTClick, nil)
- else begin
-   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
-   Self.UPONOTClick(SenderPnl);
- end;
+  if (Self.note <> '') then
+    Self.NoteUPO(SenderPnl, SenderOR, Self.UPONOTClick, nil)
+  else
+  begin
+    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
+    Self.UPONOTClick(SenderPnl);
+  end;
 end;
 
 procedure TBlkCrossing.MenuZNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- if (Self.note <> '') then
-   Self.NoteUPO(SenderPnl, SenderOR, Self.UPOZNOTClick, nil)
- else begin
-   TPanelConnData(SenderPnl.Data).UPO_ref := SenderOR;
-   Self.UPOZNOTClick(SenderPnl);
- end;
+  if (Self.note <> '') then
+    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOZNOTClick, nil)
+  else
+  begin
+    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
+    Self.UPOZNOTClick(SenderPnl);
+  end;
 end;
 
 procedure TBlkCrossing.UPOUZClick(Sender: TObject);
 begin
- Self.pcClosed := true;
+  Self.pcClosed := true;
 end;
 
 procedure TBlkCrossing.UPOZUZClick(Sender: TObject);
 begin
- PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZUZCallBack,
-    (TPanelConnData(TIdContext(Sender).Data).UPO_ref as TArea),
-    'Zrušení uzavření přejezdu', TBlocks.GetBlksList(Self), nil);
+  PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZUZCallBack,
+    (TPanelConnData(TIdContext(Sender).data).UPO_ref as TArea), 'Zrušení uzavření přejezdu',
+    TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkCrossing.UPONOTClick(Sender: TObject);
 begin
- PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZNOTCallBack,
-    (TPanelConnData(TIdContext(Sender).Data).UPO_ref as TArea),
-    'Nouzové otevření přejezdu', TBlocks.GetBlksList(Self), nil);
+  PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZNOTCallBack,
+    (TPanelConnData(TIdContext(Sender).data).UPO_ref as TArea), 'Nouzové otevření přejezdu',
+    TBlocks.GetBlksList(Self), nil);
 end;
 
 procedure TBlkCrossing.UPOZNOTClick(Sender: TObject);
 begin
- Self.pcEmOpen := false;
+  Self.pcEmOpen := false;
 end;
 
 procedure TBlkCrossing.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- PanelServer.Note(SenderPnl, Self, Self.m_state.note);
+  PanelServer.note(SenderPnl, Self, Self.m_state.note);
 end;
 
 procedure TBlkCrossing.MenuAdminZavreno(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- Self.SetSimInputs(true, false, false, SenderPnl, SenderOR);
+  Self.SetSimInputs(true, false, false, SenderPnl, SenderOR);
 end;
 
 procedure TBlkCrossing.MenuAdminOtevreno(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- Self.SetSimInputs(false, false, true, SenderPnl, SenderOR);
+  Self.SetSimInputs(false, false, true, SenderPnl, SenderOR);
 end;
 
 procedure TBlkCrossing.MenuAdminVystraha(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- Self.SetSimInputs(false, true, false, SenderPnl, SenderOR);
+  Self.SetSimInputs(false, true, false, SenderPnl, SenderOR);
 end;
 
 procedure TBlkCrossing.MenuAdminAnulaceStart(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- try
-   RCSi.SetInput(Self.m_settings.RCSInputs.annulation, 1);
- except
-   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
- end;
+  try
+    RCSi.SetInput(Self.m_settings.RCSInputs.annulation, 1);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName,
+      'SIMULACE');
+  end;
 end;
 
 procedure TBlkCrossing.MenuAdminAnulaceStop(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- try
-   RCSi.SetInput(Self.m_settings.RCSInputs.annulation, 0);
- except
-   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
- end;
+  try
+    RCSi.SetInput(Self.m_settings.RCSInputs.annulation, 0);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName,
+      'SIMULACE');
+  end;
 end;
 
 procedure TBlkCrossing.MenuAdminNUZClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
- Self.m_state.zaver := 0;
- Self.UpdateOutputs();
- Self.Change();
+  Self.m_state.zaver := 0;
+  Self.UpdateOutputs();
+  Self.Change();
 end;
 
 procedure TBlkCrossing.SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
 begin
- try
-   RCSi.SetInput(Self.m_settings.RCSInputs.closed, ownConvert.BoolToInt(uzavreno));
-   RCSi.SetInput(Self.m_settings.RCSInputs.caution, ownConvert.BoolToInt(vystraha));
-   RCSi.SetInput(Self.m_settings.RCSInputs.open, ownConvert.BoolToInt(otevreno));
- except
-   PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName, 'SIMULACE');
- end;
+  try
+    RCSi.SetInput(Self.m_settings.RCSInputs.closed, ownConvert.BoolToInt(uzavreno));
+    RCSi.SetInput(Self.m_settings.RCSInputs.caution, ownConvert.BoolToInt(vystraha));
+    RCSi.SetInput(Self.m_settings.RCSInputs.open, ownConvert.BoolToInt(otevreno));
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName,
+      'SIMULACE');
+  end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-//vytvoreni menu pro potreby konkretniho bloku:
+// vytvoreni menu pro potreby konkretniho bloku:
 function TBlkCrossing.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
- Result := inherited;
+  Result := inherited;
 
- if (Self.m_state.basicState <> TBlkCrossingBasicState.disabled) then
+  if (Self.m_state.basicState <> TBlkCrossingBasicState.disabled) then
   begin
-   if (not Self.m_state.pcEmOpen) then
+    if (not Self.m_state.pcEmOpen) then
     begin
-     if (Self.m_state.pcClosed) then
-       Result := Result + '!ZUZ,'
+      if (Self.m_state.pcClosed) then
+        Result := Result + '!ZUZ,'
       else
-       Result := Result + 'UZ,';
+        Result := Result + 'UZ,';
     end;
 
-   if (not Self.Zaver) then
+    if (not Self.zaver) then
     begin
-     if (not Self.m_state.pcClosed) then
+      if (not Self.m_state.pcClosed) then
       begin
-       if (Self.m_state.pcEmOpen) then
-         Result := Result + 'NOT<,'
+        if (Self.m_state.pcEmOpen) then
+          Result := Result + 'NOT<,'
         else
-         Result := Result + '!NOT>,';
+          Result := Result + '!NOT>,';
       end;
     end;
   end;
 
- Result := Result + 'STIT,';
+  Result := Result + 'STIT,';
 
- // pokud mame knihovnu simulator, muzeme ridit stav useku
- //  DEBUG nastroj
- if (RCSi.simulation) then
+  // pokud mame knihovnu simulator, muzeme ridit stav useku
+  // DEBUG nastroj
+  if (RCSi.simulation) then
   begin
-   Result := Result + '-,*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
-   if (Self.m_settings.RCSInputs.annulationUse) then
+    Result := Result + '-,*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
+    if (Self.m_settings.RCSInputs.annulationUse) then
     begin
-     if (RCSi.GetInput(Self.m_settings.RCSInputs.annulation) = TRCSInputState.isOn) then
-       Result := Result + '*ANULACE<'
-     else
-       Result := Result + '*ANULACE>';
+      if (RCSi.GetInput(Self.m_settings.RCSInputs.annulation) = TRCSInputState.isOn) then
+        Result := Result + '*ANULACE<'
+      else
+        Result := Result + '*ANULACE>';
     end;
   end;
 
- if (rights >= TAreaRights.superuser) then
+  if (rights >= TAreaRights.superuser) then
   begin
-   Result := Result + '-,';
-   if (Self.zaver) then Result := Result + '*NUZ>,';
+    Result := Result + '-,';
+    if (Self.zaver) then
+      Result := Result + '*NUZ>,';
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkCrossing.PanelClick(SenderPnl: TIdCOntext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
+procedure TBlkCrossing.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
+  params: string = '');
 begin
- if (Button <> TPanelButton.ESCAPE) then
-   PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+  if (Button <> TPanelButton.ESCAPE) then
+    PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-//toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
+// toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
 procedure TBlkCrossing.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
- if      (item = 'UZ')       then Self.MenuUZClick  (SenderPnl, SenderOR)
- else if (item = 'ZUZ')      then Self.MenuZUZClick (SenderPnl, SenderOR)
- else if (item = 'NOT>')     then Self.MenuNOTClick (SenderPnl, SenderOR)
- else if (item = 'NOT<')     then Self.MenuZNOTClick(SenderPnl, SenderOR)
- else if (item = 'STIT')     then Self.MenuSTITClick (SenderPnl, SenderOR)
- else if (item = 'NUZ>')     then Self.MenuAdminNUZClick(SenderPnl, SenderOR)
- else if (item = 'ZAVŘENO')  then Self.MenuAdminZavreno(SenderPnl, SenderOR)
- else if (item = 'OTEVŘENO') then Self.MenuAdminOtevreno(SenderPnl, SenderOR)
- else if (item = 'VÝSTRAHA') then Self.MenuAdminVystraha(SenderPnl, SenderOR)
- else if (item = 'ANULACE>') then Self.MenuAdminAnulaceStart(SenderPnl, SenderOR)
- else if (item = 'ANULACE<') then Self.MenuAdminAnulaceStop(SenderPnl, SenderOR);
+  if (item = 'UZ') then
+    Self.MenuUZClick(SenderPnl, SenderOR)
+  else if (item = 'ZUZ') then
+    Self.MenuZUZClick(SenderPnl, SenderOR)
+  else if (item = 'NOT>') then
+    Self.MenuNOTClick(SenderPnl, SenderOR)
+  else if (item = 'NOT<') then
+    Self.MenuZNOTClick(SenderPnl, SenderOR)
+  else if (item = 'STIT') then
+    Self.MenuSTITClick(SenderPnl, SenderOR)
+  else if (item = 'NUZ>') then
+    Self.MenuAdminNUZClick(SenderPnl, SenderOR)
+  else if (item = 'ZAVŘENO') then
+    Self.MenuAdminZavreno(SenderPnl, SenderOR)
+  else if (item = 'OTEVŘENO') then
+    Self.MenuAdminOtevreno(SenderPnl, SenderOR)
+  else if (item = 'VÝSTRAHA') then
+    Self.MenuAdminVystraha(SenderPnl, SenderOR)
+  else if (item = 'ANULACE>') then
+    Self.MenuAdminAnulaceStart(SenderPnl, SenderOR)
+  else if (item = 'ANULACE<') then
+    Self.MenuAdminAnulaceStop(SenderPnl, SenderOR);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-//zavola se pri uspesnem zvladnuti potvrzovaci sekvence
+// zavola se pri uspesnem zvladnuti potvrzovaci sekvence
 procedure TBlkCrossing.PanelZNOTCallBack(Sender: TIdContext; success: Boolean);
 begin
- if (not success) then Exit();
- Self.pcEmOpen := true;
+  if (not success) then
+    Exit();
+  Self.pcEmOpen := true;
 end;
 
 procedure TBlkCrossing.PanelZUZCallBack(Sender: TIdContext; success: Boolean);
 begin
- if (success) then Self.pcClosed := false;
+  if (success) then
+    Self.pcClosed := false;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.SetZaver(zaver: Boolean);
 begin
- if (zaver) then
+  if (zaver) then
   begin
-   Inc(Self.m_state.zaver);
+    Inc(Self.m_state.zaver);
 
-   if (Self.pcEmOpen) then
-     raise EPrjNot.Create('Prejezd nouzove otevren, nelze udelit zaver!');
+    if (Self.pcEmOpen) then
+      raise EPrjNOT.Create('Prejezd nouzove otevren, nelze udelit zaver!');
 
-   if (Self.m_state.zaver = 1) then
+    if (Self.m_state.zaver = 1) then
     begin
-     // prvni udeleni zaveru
-     Self.m_state.closeStart := now;
-     Self.SetEmOpen(false);
+      // prvni udeleni zaveru
+      Self.m_state.closeStart := now;
+      Self.SetEmOpen(false);
 
-     Self.UpdateOutputs();
-     Self.Change();
+      Self.UpdateOutputs();
+      Self.Change();
     end;
   end else begin
-   Dec(Self.m_state.zaver);
+    Dec(Self.m_state.zaver);
 
-   if (Self.m_state.zaver <= 0) then
+    if (Self.m_state.zaver <= 0) then
     begin
-     // posledni odstraneni zaveru
-     Self.UpdateOutputs();
-     Self.Change();
+      // posledni odstraneni zaveru
+      Self.UpdateOutputs();
+      Self.Change();
     end;
   end;
 end;
 
 function TBlkCrossing.GetZaver(): Boolean;
 begin
- Result := (Self.m_state.zaver > 0);
+  Result := (Self.m_state.zaver > 0);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkCrossing.NoteUPO(SenderPnl: TIdContext; SenderOR: TObject;
-      UPO_OKCallback: TNotifyEvent; UPO_EscCallback: TNotifyEvent);
-var upo: TUPOItems;
-    item: TUPOItem;
-    lines: TStrings;
+procedure TBlkCrossing.NoteUPO(SenderPnl: TIdContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
+  UPO_EscCallback: TNotifyEvent);
+var UPO: TUPOItems;
+  item: TUPOItem;
+  lines: TStrings;
 begin
- upo := TList<TUPOItem>.Create;
- try
-  if (Self.note <> '') then
-   begin
-    item[0] := GetUPOLine('ŠTÍTEK '+Self.m_globSettings.name, taCenter, clBlack, clTeal);
-    lines := GetLines(Self.note, _UPO_LINE_LEN);
+  UPO := TList<TUPOItem>.Create;
+  try
+    if (Self.note <> '') then
+    begin
+      item[0] := GetUPOLine('ŠTÍTEK ' + Self.m_globSettings.name, taCenter, clBlack, clTeal);
+      lines := GetLines(Self.note, _UPO_LINE_LEN);
 
-    try
-      item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-      if (lines.Count > 1) then
-        item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-    finally
-      lines.Free();
+      try
+        item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+        if (lines.Count > 1) then
+          item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+      finally
+        lines.Free();
+      end;
+
+      UPO.Add(item);
     end;
 
-   upo.Add(item);
+    PanelServer.UPO(SenderPnl, UPO, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+  finally
+    UPO.Free();
   end;
-
-  PanelServer.UPO(SenderPnl, upo, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
- finally
-   upo.Free();
- end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.AddSH(Sender: TBlk);
 begin
- if (not Self.m_state.shs.Contains(Sender)) then
-   Self.m_state.shs.Add(Sender);
+  if (not Self.m_state.shs.Contains(Sender)) then
+    Self.m_state.shs.Add(Sender);
 end;
 
 procedure TBlkCrossing.RemoveSH(Sender: TBlk);
 begin
- if (Self.m_state.shs.Contains(Sender)) then
-   Self.m_state.shs.Remove(Sender);
+  if (Self.m_state.shs.Contains(Sender)) then
+    Self.m_state.shs.Remove(Sender);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.FillRCSModules();
 begin
- Self.m_state.rcsModules.Clear();
+  Self.m_state.rcsModules.Clear();
 
- Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.closed.board);
- if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.open.board)) then
-   Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.open.board);
- if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.caution.board)) then
-   Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.caution.board);
- if (Self.m_settings.RCSInputs.annulationUse) then
-   if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.annulation.board)) then
-     Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.annulation.board);
- if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.close.board)) then
-   Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.close.board);
- if (Self.m_settings.RCSOutputs.emOpenUse) then
-   if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.emOpen.board)) then
-     Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.emOpen.board);
+  Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.closed.board);
+  if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.open.board)) then
+    Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.open.board);
+  if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.caution.board)) then
+    Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.caution.board);
+  if (Self.m_settings.RCSInputs.annulationUse) then
+    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.annulation.board)) then
+      Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.annulation.board);
+  if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.close.board)) then
+    Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.close.board);
+  if (Self.m_settings.RCSOutputs.emOpenUse) then
+    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.emOpen.board)) then
+      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.emOpen.board);
 
- Self.m_state.rcsModules.Sort();
+  Self.m_state.rcsModules.Sort();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkCrossing.PanelStateString(): string;
 var fg, bg: TColor;
 begin
- Result := inherited;
+  Result := inherited;
 
- bg := clBlack;
- if (Self.note <> '') then bg := clTeal;
+  bg := clBlack;
+  if (Self.note <> '') then
+    bg := clTeal;
 
- if (diag.showZaver) then
+  if (diag.showZaver) then
   begin
-   if (Self.Zaver) then
-     bg := clGreen
-   else if (Self.TrackClosed()) then
-     bg := clBlue;
+    if (Self.zaver) then
+      bg := clGreen
+    else if (Self.TrackClosed()) then
+      bg := clBlue;
   end;
 
- if (Self.pcEmOpen) then fg := clRed
- else if (Self.pcClosed) then fg := clWhite
- else fg := $A0A0A0;
+  if (Self.pcEmOpen) then
+    fg := clRed
+  else if (Self.pcClosed) then
+    fg := clWhite
+  else
+    fg := $A0A0A0;
 
- case (Self.state) of
-   TBlkCrossingBasicState.disabled : begin
-     fg := bg;
-     bg := clFuchsia;
-   end;
+  case (Self.state) of
+    TBlkCrossingBasicState.disabled:
+      begin
+        fg := bg;
+        bg := clFuchsia;
+      end;
 
-   TBlkCrossingBasicState.none : begin
-     fg := bg;
-     bg := clRed;
-   end;
- end;
+    TBlkCrossingBasicState.none:
+      begin
+        fg := bg;
+        bg := clRed;
+      end;
+  end;
 
- Result := Result + ownConvert.ColorToStr(fg) + ';' +
-                    ownConvert.ColorToStr(bg) + ';0;' +
-                    IntToStr(Integer(Self.state)) + ';';
+  Result := Result + ownConvert.ColorToStr(fg) + ';' + ownConvert.ColorToStr(bg) + ';0;' +
+    IntToStr(Integer(Self.state)) + ';';
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
- inherited;
+  inherited;
 
- TBlk.RCStoJSON(Self.m_settings.RCSInputs.closed, json['rcs']['closed']);
- TBlk.RCStoJSON(Self.m_settings.RCSInputs.open, json['rcs']['opened']);
- TBlk.RCStoJSON(Self.m_settings.RCSInputs.caution, json['rcs']['warning']);
- if (Self.m_settings.RCSInputs.annulationUse) then
-   TBlk.RCStoJSON(Self.m_settings.RCSInputs.annulation, json['rcs']['annulation']);
- TBlk.RCStoJSON(Self.m_settings.RCSOutputs.close, json['rcs']['close']);
- if (Self.m_settings.RCSOutputs.emOpenUse) then
-   TBlk.RCStoJSON(Self.m_settings.RCSOutputs.emOpen, json['rcs']['emOpen']);
+  TBlk.RCStoJSON(Self.m_settings.RCSInputs.closed, json['rcs']['closed']);
+  TBlk.RCStoJSON(Self.m_settings.RCSInputs.open, json['rcs']['opened']);
+  TBlk.RCStoJSON(Self.m_settings.RCSInputs.caution, json['rcs']['warning']);
+  if (Self.m_settings.RCSInputs.annulationUse) then
+    TBlk.RCStoJSON(Self.m_settings.RCSInputs.annulation, json['rcs']['annulation']);
+  TBlk.RCStoJSON(Self.m_settings.RCSOutputs.close, json['rcs']['close']);
+  if (Self.m_settings.RCSOutputs.emOpenUse) then
+    TBlk.RCStoJSON(Self.m_settings.RCSOutputs.emOpen, json['rcs']['emOpen']);
 
- if (includeState) then
-   Self.GetPtState(json['blockState']);
+  if (includeState) then
+    Self.GetPtState(json['blockState']);
 end;
 
 procedure TBlkCrossing.GetPtState(json: TJsonObject);
 begin
- case (Self.m_state.basicState) of
-   TBlkCrossingBasicState.disabled: json['state'] := 'disabled';
-   TBlkCrossingBasicState.none: json['state'] := 'none';
-   TBlkCrossingBasicState.open: json['state'] := 'opened';
-   TBlkCrossingBasicState.caution: json['state'] := 'caution';
-   TBlkCrossingBasicState.closed: json['state'] := 'closed';
- end;
+  case (Self.m_state.basicState) of
+    TBlkCrossingBasicState.disabled:
+      json['state'] := 'disabled';
+    TBlkCrossingBasicState.none:
+      json['state'] := 'none';
+    TBlkCrossingBasicState.open:
+      json['state'] := 'opened';
+    TBlkCrossingBasicState.caution:
+      json['state'] := 'caution';
+    TBlkCrossingBasicState.closed:
+      json['state'] := 'closed';
+  end;
 
- json['annulation'] := Self.annulation;
- json['note'] := Self.m_state.note;
- json['lockout'] := Self.m_state.lockout;
- json['pcEmOpen'] := Self.m_state.pcEmOpen;
- json['pcClosed'] := Self.m_state.pcClosed;
- json['locks'] := Self.m_state.zaver;
+  json['annulation'] := Self.annulation;
+  json['note'] := Self.m_state.note;
+  json['lockout'] := Self.m_state.lockout;
+  json['pcEmOpen'] := Self.m_state.pcEmOpen;
+  json['pcClosed'] := Self.m_state.pcClosed;
+  json['locks'] := Self.m_state.zaver;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkCrossing.TrackClosed(): Boolean;
 var track: TBlkCrossingTrack;
 begin
- for track in Self.tracks do
-   if (track.shouldBeClosed) then
-     Exit(true);
- Result := false;
+  for track in Self.tracks do
+    if (track.shouldBeClosed) then
+      Exit(true);
+  Result := false;
 end;
 
 function TBlkCrossing.TrackPositiveLight(): Boolean;
 var track: TBlkCrossingTrack;
 begin
- for track in Self.tracks do
-   if (not track.positiveLight) then
-     Exit(false);
- Result := true;
+  for track in Self.tracks do
+    if (not track.positiveLight) then
+      Exit(false);
+  Result := true;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkCrossing.GetAnnulation(): Boolean;
-var track: TBlkCrossingTrack;
 begin
- Result := false;
- if (Self.m_settings.RCSInputs.annulationUse and RCSi.Started) then
+  Result := false;
+  if (Self.m_settings.RCSInputs.annulationUse and RCSi.Started) then
   begin
-   try
-     Result := (RCSi.GetInput(Self.m_settings.RCSInputs.annulation) = isOn);
-   except
+    try
+      Result := (RCSi.GetInput(Self.m_settings.RCSInputs.annulation) = isOn);
+    except
 
-   end;
+    end;
   end;
 
- if (not Result) then
-   for track in Self.tracks do
-     if (track.anullation) then
-       Exit(true);
+  if (not Result) then
+    for var track: TBlkCrossingTrack in Self.tracks do
+      if (track.anullation) then
+        Exit(true);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-end.//unit
-
+end.// unit

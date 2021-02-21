@@ -29,8 +29,8 @@ type
     procedure CHB_ZaverClick(Sender: TObject);
     procedure CHB_Show_Block_IdClick(Sender: TObject);
   public
-   procedure LoadData(ini: TMemIniFile);
-   procedure SaveData(ini: TMemIniFile);
+    procedure LoadData(ini: TMemIniFile);
+    procedure SaveData(ini: TMemIniFile);
   end;
 
 var
@@ -45,78 +45,78 @@ uses Diagnostics, Simulation, fSettings, TechnologieRCS, Logging;
 procedure TF_Admin.LoadData(ini: TMemIniFile);
 const SECTION = 'AdminData';
 begin
- Self.CHB_SimSoupravaUsek.Checked := diag.simSoupravaObsaz;
- Self.CHB_JC_Simulator.Checked := JCSimulator.timer.Enabled;
- Self.CHB_Trat_Sim.Checked := RailwaySimulator.timer.Enabled;
- Self.CHB_SimVyhybky.Checked := TurnoutSimulator.timer.Enabled;
- Self.CHB_SimInput.Checked := diag.simInputs;
- Self.CHB_Zaver.Checked := diag.showZaver;
- Self.CHB_Show_Block_Id.Checked := diag.showBlockId;
+  Self.CHB_SimSoupravaUsek.Checked := diag.simSoupravaObsaz;
+  Self.CHB_JC_Simulator.Checked := JCSimulator.timer.Enabled;
+  Self.CHB_Trat_Sim.Checked := RailwaySimulator.timer.Enabled;
+  Self.CHB_SimVyhybky.Checked := TurnoutSimulator.timer.Enabled;
+  Self.CHB_SimInput.Checked := diag.simInputs;
+  Self.CHB_Zaver.Checked := diag.showZaver;
+  Self.CHB_Show_Block_Id.Checked := diag.showBlockId;
 end;
 
 procedure TF_Admin.SaveData(ini: TMemIniFile);
 const SECTION = 'AdminData';
 begin
- ini.WriteInteger(SECTION, 'FormLeft', F_Admin.Left);
- ini.WriteInteger(SECTION, 'FormTop', F_Admin.Top);
+  ini.WriteInteger(SECTION, 'FormLeft', F_Admin.Left);
+  ini.WriteInteger(SECTION, 'FormTop', F_Admin.Top);
 end;
 
 procedure TF_Admin.B_SaveClick(Sender: TObject);
 var ini: TMemIniFile;
 const SECTION = 'AdminData';
 begin
- ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
- try
-   ini.EraseSection(SECTION);
-   Self.SaveData(ini);
-   diag.SaveData(ini, SECTION);
-   ini.UpdateFile();
- finally
-   ini.Free();
- end;
+  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
+  try
+    ini.EraseSection(SECTION);
+    Self.SaveData(ini);
+    diag.SaveData(ini, SECTION);
+    ini.UpdateFile();
+  finally
+    ini.Free();
+  end;
 end;
 
 procedure TF_Admin.CHB_JC_SimulatorClick(Sender: TObject);
 begin
- JCSimulator.timer.Enabled := Self.CHB_JC_Simulator.Checked;
+  JCSimulator.timer.Enabled := Self.CHB_JC_Simulator.Checked;
 end;
 
 procedure TF_Admin.CHB_Show_Block_IdClick(Sender: TObject);
 begin
- diag.showBlockId := Self.CHB_Show_Block_Id.Checked;
+  diag.showBlockId := Self.CHB_Show_Block_Id.Checked;
 end;
 
 procedure TF_Admin.CHB_SimInputClick(Sender: TObject);
 begin
- diag.simInputs := Self.CHB_SimInput.Checked;
+  diag.simInputs := Self.CHB_SimInput.Checked;
 end;
 
 procedure TF_Admin.CHB_SimSoupravaUsekClick(Sender: TObject);
 begin
- diag.simSoupravaObsaz := Self.CHB_SimSoupravaUsek.Checked;
+  diag.simSoupravaObsaz := Self.CHB_SimSoupravaUsek.Checked;
 end;
 
 procedure TF_Admin.CHB_SimVyhybkyClick(Sender: TObject);
 begin
- TurnoutSimulator.timer.Enabled := Self.CHB_SimVyhybky.Checked;
+  TurnoutSimulator.timer.Enabled := Self.CHB_SimVyhybky.Checked;
 end;
 
 procedure TF_Admin.CHB_Trat_SimClick(Sender: TObject);
 begin
- RailwaySimulator.timer.Enabled := Self.CHB_Trat_Sim.Checked;
+  RailwaySimulator.timer.Enabled := Self.CHB_Trat_Sim.Checked;
 end;
 
 procedure TF_Admin.CHB_ZaverClick(Sender: TObject);
 begin
- diag.showZaver := Self.CHB_Zaver.Checked;
+  diag.showZaver := Self.CHB_Zaver.Checked;
 end;
 
 procedure TF_Admin.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
- if (Self.Visible) then
+  if (Self.Visible) then
   begin
-   Self.FormStyle := fsNormal;
-   Self.Visible := false;
+    Self.FormStyle := fsNormal;
+    Self.Visible := false;
   end;
 end;
 
@@ -133,9 +133,9 @@ begin
 end;
 
 procedure TF_Admin.B_InputSimClick(Sender: TObject);
- begin
-  if (RCSi.simulation) then
-   begin
+begin
+  if (RCSi.Simulation) then
+  begin
     try
       RCSi.InputSim();
       writelog('Proveden InputSim', WR_RCS);
@@ -143,7 +143,7 @@ procedure TF_Admin.B_InputSimClick(Sender: TObject);
       on E: Exception do
         Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
     end;
-   end;
- end;
+  end;
+end;
 
-end.//unit
+end.// unit

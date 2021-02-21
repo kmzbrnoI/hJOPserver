@@ -131,7 +131,6 @@ object F_BlkTrackState: TF_BlkTrackState
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 2
     Items.Strings = (
       'Zadne'
@@ -148,7 +147,6 @@ object F_BlkTrackState: TF_BlkTrackState
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 1
     Items.Strings = (
       'Ne'
@@ -164,7 +162,6 @@ object F_BlkTrackState: TF_BlkTrackState
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 0
     Items.Strings = (
       #381#225'dn'#253
@@ -249,7 +246,6 @@ object F_BlkTrackState: TF_BlkTrackState
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 5
     Items.Strings = (
       'Undef'
@@ -266,7 +262,6 @@ object F_BlkTrackState: TF_BlkTrackState
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 6
     Items.Strings = (
       'Undef'

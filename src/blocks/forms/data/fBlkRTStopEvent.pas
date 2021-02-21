@@ -16,17 +16,17 @@ type
     P_Zpom: TPanel;
     procedure CHB_ZpomalClick(Sender: TObject);
   private
-   fZast: TF_RREv;
-   fZpom: TF_RREv;
+    fZast: TF_RREv;
+    fZpom: TF_RREv;
 
   public
-     constructor Create(AOwner: TComponent); override;
-     destructor Destroy(); override;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy(); override;
 
-     procedure OpenForm(events: TBlkRTStopEvents);
-     procedure OpenEmptyForm();
-     function GetEvent(): TBlkRTStopEvents;
-     function Check(): string;
+    procedure OpenForm(events: TBlkRTStopEvents);
+    procedure OpenEmptyForm();
+    function GetEvent(): TBlkRTStopEvents;
+    function Check(): string;
 
   end;
 
@@ -36,56 +36,55 @@ var
 implementation
 
 {$R *.dfm}
-
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 constructor TF_BlkRTStopEvent.Create(AOwner: TComponent);
 begin
- inherited;
+  inherited;
 
- Self.fZast := TF_RREv.Create(nil);
- Self.fZast.Parent := Self.P_Stop;
- Self.fZast.Show();
+  Self.fZast := TF_RREv.Create(nil);
+  Self.fZast.Parent := Self.P_Stop;
+  Self.fZast.Show();
 
- Self.fZpom := TF_RREv.Create(nil);
- Self.fZpom.Parent := Self.P_Zpom;
- Self.fZpom.Show();
+  Self.fZpom := TF_RREv.Create(nil);
+  Self.fZpom.Parent := Self.P_Zpom;
+  Self.fZpom.Show();
 end;
 
 destructor TF_BlkRTStopEvent.Destroy();
 begin
- Self.fZast.Free();
- Self.fZpom.Free();
- inherited;
+  Self.fZast.Free();
+  Self.fZpom.Free();
+  inherited;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_BlkRTStopEvent.OpenForm(events: TBlkRTStopEvents);
 begin
- Self.fZast.FillFromRR(events.stop);
+  Self.fZast.FillFromRR(events.stop);
 
- Self.CHB_Zpomal.Checked := events.slow.enabled;
- if (events.slow.enabled) then
+  Self.CHB_Zpomal.Checked := events.slow.enabled;
+  if (events.slow.enabled) then
   begin
-   Self.CB_ZpomalitKmH.ItemIndex := (events.slow.speed - 1) div 10;
-   Self.fZpom.FillFromRR(events.slow.ev);
+    Self.CB_ZpomalitKmH.ItemIndex := (events.slow.speed - 1) div 10;
+    Self.fZpom.FillFromRR(events.slow.ev);
   end else begin
-   Self.fZpom.ShowEmpty();
+    Self.fZpom.ShowEmpty();
   end;
 
- Self.CHB_ZpomalClick(Self.CHB_Zpomal);
+  Self.CHB_ZpomalClick(Self.CHB_Zpomal);
 end;
 
 procedure TF_BlkRTStopEvent.OpenEmptyForm();
 begin
- Self.fZast.ShowEmpty();
- Self.CB_ZpomalitKmH.ItemIndex := -1;
- Self.CHB_Zpomal.Checked := false;
- Self.CHB_ZpomalClick(Self.CHB_Zpomal);
+  Self.fZast.ShowEmpty();
+  Self.CB_ZpomalitKmH.ItemIndex := -1;
+  Self.CHB_Zpomal.Checked := false;
+  Self.CHB_ZpomalClick(Self.CHB_Zpomal);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TF_BlkRTStopEvent.Check(): string;
 begin
@@ -98,34 +97,34 @@ begin
   if ((CB_ZpomalitKmH.ItemIndex = -1) and (CHB_Zpomal.Checked)) then
     Exit('Vyberte rychlost, na kterou se ma zpomalit!');
 
- Result := '';
+  Result := '';
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_BlkRTStopEvent.CHB_ZpomalClick(Sender: TObject);
 begin
- Self.fZpom.Enabled := Self.CHB_Zpomal.Checked;
- Self.CB_ZpomalitKmH.Enabled := Self.CHB_Zpomal.Checked;
- if (not Self.CHB_Zpomal.Checked) then
-   Self.CB_ZpomalitKmH.ItemIndex := -1;
+  Self.fZpom.enabled := Self.CHB_Zpomal.Checked;
+  Self.CB_ZpomalitKmH.enabled := Self.CHB_Zpomal.Checked;
+  if (not Self.CHB_Zpomal.Checked) then
+    Self.CB_ZpomalitKmH.ItemIndex := -1;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TF_BlkRTStopEvent.GetEvent(): TBlkRTStopEvents;
 begin
- Result := TBlkRTStopEvents.Create();
- Result.stop := fZast.GetRREv();
- Result.slow.enabled := Self.CHB_Zpomal.Checked;
+  Result := TBlkRTStopEvents.Create();
+  Result.stop := fZast.GetRREv();
+  Result.slow.enabled := Self.CHB_Zpomal.Checked;
 
- if (Self.CHB_Zpomal.Checked) then
+  if (Self.CHB_Zpomal.Checked) then
   begin
-   Result.slow.ev := fZpom.GetRREv();
-   Result.slow.speed := (Self.CB_ZpomalitKmH.ItemIndex+1) * 10;
+    Result.slow.ev := fZpom.GetRREv();
+    Result.slow.speed := (Self.CB_ZpomalitKmH.ItemIndex + 1) * 10;
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-end.//unit
+end.// unit

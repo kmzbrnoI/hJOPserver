@@ -349,7 +349,6 @@ object F_BlkRailway: TF_BlkRailway
           Margins.Right = 2
           Margins.Bottom = 2
           Style = csDropDownList
-          ItemHeight = 13
           TabOrder = 0
         end
       end
@@ -385,7 +384,6 @@ object F_BlkRailway: TF_BlkRailway
       Margins.Right = 2
       Margins.Bottom = 2
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 2
       Items.Strings = (
         'pouze souhlasov'#253' stav'
@@ -401,7 +399,6 @@ object F_BlkRailway: TF_BlkRailway
       Margins.Right = 2
       Margins.Bottom = 2
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 3
       Items.Strings = (
         'autoblok'

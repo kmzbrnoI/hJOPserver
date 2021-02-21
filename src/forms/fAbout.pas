@@ -47,23 +47,23 @@ uses version, TechnologieRCS, Logging, appEv;
 {$R *.dfm}
 
 procedure TF_About.FormShow(Sender: TObject);
- begin
+begin
   writelog('Zobrazeno okno O programu', WR_MESSAGE);
   Self.ST_about5.Font.Color := clBlue;
   Self.ST_about3.Font.Color := clBlue;
 
-  Self.L_VApp.Caption       := VersionStr(Application.ExeName)+' ('+LastBuildDate+' '+LastBuildTime+')';
+  Self.L_VApp.Caption := VersionStr(Application.ExeName) + ' (' + LastBuildDate + ' ' + LastBuildTime + ')';
 
-  Self.L_VRCSLib.Caption    := RCSi.Lib;
+  Self.L_VRCSLib.Caption := RCSi.Lib;
 
   try
     Self.L_VRCSDriver.Caption := RCSi.GetDllVersion();
   except
     on E: Exception do
-     begin
+    begin
       Self.L_VRCSDriver.Caption := 'nelze získat';
-      AppEvents.LogException(e, 'RCS.GetDllVersion');
-     end;
+      AppEvents.LogException(E, 'RCS.GetDllVersion');
+    end;
   end;
 
   try
@@ -73,42 +73,42 @@ procedure TF_About.FormShow(Sender: TObject);
       Self.L_VRCSUSB.Caption := 'zařízení uzavřeno';
   except
     on E: Exception do
-     begin
+    begin
       Self.L_VRCSUSB.Caption := 'nelze získat';
-      AppEvents.LogException(e, 'RCS.GetDeviceVersion');
-     end;
+      AppEvents.LogException(E, 'RCS.GetDeviceVersion');
+    end;
   end;
- end;
+end;
 
 procedure TF_About.B_OKClick(Sender: TObject);
 begin
- F_About.Close;
+  F_About.Close;
 end;
 
 procedure TF_About.ST_about5Click(Sender: TObject);
- begin
+begin
   Screen.Cursor := crAppStart;
-  ShellExecute(0, nil, PChar(ST_about5.Caption), nil, nil,0);
+  ShellExecute(0, nil, PChar(ST_about5.Caption), nil, nil, 0);
   Screen.Cursor := crDefault;
   ST_about5.Font.Color := clPurple;
- end;
+end;
 
 procedure TF_About.FormClose(Sender: TObject; var Action: TCloseAction);
- begin
+begin
   writelog('Skryto okno O programu', WR_MESSAGE);
- end;
+end;
 
 procedure TF_About.ST_about3Click(Sender: TObject);
- begin
+begin
   Screen.Cursor := crAppStart;
-  ShellExecute(0, nil, PChar('mailto:'+ST_about3.Caption), nil, nil, 0);
+  ShellExecute(0, nil, PChar('mailto:' + ST_about3.Caption), nil, nil, 0);
   Screen.Cursor := crDefault;
   ST_about3.Font.Color := clPurple;
- end;
+end;
 
 procedure TF_About.B_RegistraceClick(Sender: TObject);
- begin
+begin
   F_About.Close;
- end;
+end;
 
-end.//unit
+end.// unit

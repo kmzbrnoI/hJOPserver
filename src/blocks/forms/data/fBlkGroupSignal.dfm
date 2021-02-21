@@ -142,7 +142,6 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_SignalsChange
-      ExplicitTop = -62
     end
     object B_BlkDelete: TButton
       Left = 88
@@ -193,7 +192,6 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 0
       end
     end
@@ -273,7 +271,6 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       Margins.Right = 2
       Margins.Bottom = 2
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 5
       Items.Strings = (
         'S-Com'

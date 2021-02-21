@@ -21,17 +21,17 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
 
   private
-   NewBlk: Boolean;
-   Blk: TBlkLock;
+    NewBlk: Boolean;
+    Blk: TBlkLock;
 
   public
-   OpenIndex: Integer;
+    OpenIndex: Integer;
 
-   procedure OpenForm(BlokIndex: Integer);
-   procedure NewBlkOpenForm();
-   procedure NormalOpenForm();
-   procedure HlavniOpenForm();
-   procedure NewBlkCreate();
+    procedure OpenForm(BlokIndex: Integer);
+    procedure NewBlkOpenForm();
+    procedure NormalOpenForm();
+    procedure HlavniOpenForm();
+    procedure NewBlkCreate();
   end;
 
 var
@@ -44,7 +44,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area;
 {$R *.dfm}
 
 procedure TF_BlkLock.OpenForm(BlokIndex: Integer);
- begin
+begin
   Self.OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   Self.HlavniOpenForm();
@@ -55,93 +55,94 @@ procedure TF_BlkLock.OpenForm(BlokIndex: Integer);
     Self.NormalOpenForm();
 
   Self.ShowModal();
- end;
+end;
 
 procedure TF_BlkLock.NewBlkOpenForm();
- begin
+begin
   Self.E_Nazev.Text := '';
-  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
+  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
 
   Self.Caption := 'Nový blok Zámek';
   Self.ActiveControl := Self.E_Nazev;
- end;
+end;
 
 procedure TF_BlkLock.NormalOpenForm();
 var glob: TBlkSettings;
-    area: TArea;
- begin
+  Area: TArea;
+begin
   glob := Self.Blk.GetGlobalSettings();
 
-  for area in Self.Blk.areas do
-    Self.LB_Stanice.Items.Add(area.name);
+  for Area in Self.Blk.areas do
+    Self.LB_Stanice.Items.Add(Area.name);
 
   Self.E_Nazev.Text := glob.name;
   Self.SE_ID.Value := glob.id;
 
-  Self.Caption := 'Upravit blok '+glob.name+' (zámek)';
+  Self.Caption := 'Upravit blok ' + glob.name + ' (zámek)';
   Self.ActiveControl := Self.B_Save;
- end;
+end;
 
 procedure TF_BlkLock.HlavniOpenForm();
- begin
+begin
   Self.LB_Stanice.Clear();
- end;
+end;
 
 procedure TF_BlkLock.NewBlkCreate();
- begin
+begin
   NewBlk := true;
   OpenForm(Blocks.count);
- end;
+end;
 
 procedure TF_BlkLock.B_StornoClick(Sender: TObject);
- begin
+begin
   Self.Close();
- end;
+end;
 
 procedure TF_BlkLock.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
- begin
+begin
   if (E_Nazev.Text = '') then
-   begin
+  begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
   if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
-   begin
+  begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
 
   glob.name := Self.E_Nazev.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btLock;
 
   if (NewBlk) then
-   begin
+  begin
     glob.note := '';
     try
       Blk := Blocks.Add(glob) as TBlkLock;
     except
       on E: Exception do
-       begin
-        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
+          MB_OK OR MB_ICONWARNING);
         Exit();
-       end;
+      end;
     end;
-   end else begin
+  end else begin
     glob.note := Self.Blk.note;
     Self.Blk.SetGlobalSettings(glob);
-   end;
+  end;
 
   Self.Close();
   Self.Blk.Change();
- end;
+end;
 
 procedure TF_BlkLock.FormClose(Sender: TObject; var Action: TCloseAction);
- begin
+begin
   Self.NewBlk := false;
   Self.OpenIndex := -1;
   BlokyTableData.UpdateTable();
- end;
+end;
 
-end.//unit
+end.// unit

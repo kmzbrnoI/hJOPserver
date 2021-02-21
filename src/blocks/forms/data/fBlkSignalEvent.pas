@@ -22,11 +22,11 @@ type
     P_ZastForm: TPanel;
     procedure CHB_ZpomalitClick(Sender: TObject);
   private
-   areas: TArstr;
-   first: Boolean;
+    areas: TArstr;
+    first: Boolean;
 
-   fZast: TF_RREv;
-   fZpom: TF_RREv;
+    fZast: TF_RREv;
+    fZpom: TF_RREv;
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -45,131 +45,128 @@ var
 
 implementation
 
-
-
 {$R *.dfm}
-
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 constructor TF_BlkSignalEvent.Create(AOwner: TComponent);
 begin
- inherited;
+  inherited;
 
- Self.fZast := TF_RREv.Create(nil);
- Self.fZast.Parent := Self.P_ZastForm;
- Self.fZast.Show();
+  Self.fZast := TF_RREv.Create(nil);
+  Self.fZast.Parent := Self.P_ZastForm;
+  Self.fZast.Show();
 
- Self.fZpom := TF_RREv.Create(nil);
- Self.fZpom.Parent := Self.P_ZpomForm;
- Self.fZpom.Show();
+  Self.fZpom := TF_RREv.Create(nil);
+  Self.fZpom.Parent := Self.P_ZpomForm;
+  Self.fZpom.Show();
 end;
 
 destructor TF_BlkSignalEvent.Destroy();
 begin
- Self.fZast.Free();
- Self.fZpom.Free();
- inherited;
+  Self.fZast.Free();
+  Self.fZpom.Free();
+  inherited;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_BlkSignalEvent.OpenForm(event: TBlkSignalTrainEvent; first: Boolean; areas: TArstr);
 begin
- Self.areas  := areas;
- Self.first := first;
+  Self.areas := areas;
+  Self.first := first;
 
- if (first) then
+  if (first) then
   begin
-   Self.E_Spr.Enabled        := false;
-   Self.SE_MinLength.Value   := -1;
-   Self.SE_MaxLength.Value   := -1;
-   Self.SE_MinLength.Enabled := false;
-   Self.SE_MaxLength.Enabled := false;
-   Self.E_Spr.Text := '.*';
+    Self.E_Spr.Enabled := false;
+    Self.SE_MinLength.Value := -1;
+    Self.SE_MaxLength.Value := -1;
+    Self.SE_MinLength.Enabled := false;
+    Self.SE_MaxLength.Enabled := false;
+    Self.E_Spr.Text := '.*';
   end else begin
-   Self.E_Spr.Enabled        := true;
-   Self.SE_MinLength.Value   := event.length.min;
-   Self.SE_MaxLength.Value   := event.length.max;
-   Self.SE_MinLength.Enabled := true;
-   Self.SE_MaxLength.Enabled := true;
-   Self.E_Spr.Text := Copy(event.train_typ_re.Pattern, 2, Length(event.train_typ_re.Pattern)-2);
+    Self.E_Spr.Enabled := true;
+    Self.SE_MinLength.Value := event.length.min;
+    Self.SE_MaxLength.Value := event.length.max;
+    Self.SE_MinLength.Enabled := true;
+    Self.SE_MaxLength.Enabled := true;
+    Self.E_Spr.Text := Copy(event.train_typ_re.Pattern, 2, length(event.train_typ_re.Pattern) - 2);
   end;
 
- Self.fZast.FillFromRR(event.stop);
+  Self.fZast.FillFromRR(event.stop);
 
- if (event.slow.enabled) then
+  if (event.slow.Enabled) then
   begin
-   Self.fZpom.FillFromRR(event.slow.ev);
-   Self.CB_ZpomalitKmH.ItemIndex := (event.slow.speed - 1) div 10;
+    Self.fZpom.FillFromRR(event.slow.ev);
+    Self.CB_ZpomalitKmH.ItemIndex := (event.slow.speed - 1) div 10;
   end else begin
-   Self.fZpom.ShowEmpty();
-   Self.CB_ZpomalitKmH.ItemIndex := -1;
+    Self.fZpom.ShowEmpty();
+    Self.CB_ZpomalitKmH.ItemIndex := -1;
   end;
 
- Self.CHB_Zpomalit.Checked := event.slow.enabled;
- Self.CHB_ZpomalitClick(CHB_Zpomalit);
+  Self.CHB_Zpomalit.Checked := event.slow.Enabled;
+  Self.CHB_ZpomalitClick(CHB_Zpomalit);
 end;
 
 procedure TF_BlkSignalEvent.OpenEmptyForm(first: Boolean; areas: TArstr);
 begin
- Self.areas  := areas;
- Self.first := first;
+  Self.areas := areas;
+  Self.first := first;
 
- if (first) then
+  if (first) then
   begin
-   Self.E_Spr.Enabled        := false;
-   Self.SE_MinLength.Value   := -1;
-   Self.SE_MaxLength.Value   := -1;
-   Self.SE_MinLength.Enabled := false;
-   Self.SE_MaxLength.Enabled := false;
+    Self.E_Spr.Enabled := false;
+    Self.SE_MinLength.Value := -1;
+    Self.SE_MaxLength.Value := -1;
+    Self.SE_MinLength.Enabled := false;
+    Self.SE_MaxLength.Enabled := false;
   end else begin
-   Self.E_Spr.Enabled        := true;
-   Self.SE_MinLength.Value   := 0;
-   Self.SE_MaxLength.Value   := 100;
-   Self.SE_MinLength.Enabled := true;
-   Self.SE_MaxLength.Enabled := true;
-   Self.E_Spr.Text           := '';
+    Self.E_Spr.Enabled := true;
+    Self.SE_MinLength.Value := 0;
+    Self.SE_MaxLength.Value := 100;
+    Self.SE_MinLength.Enabled := true;
+    Self.SE_MaxLength.Enabled := true;
+    Self.E_Spr.Text := '';
   end;
 
- Self.E_Spr.Text := '.*';
- Self.CB_ZpomalitKmH.ItemIndex := -1;
+  Self.E_Spr.Text := '.*';
+  Self.CB_ZpomalitKmH.ItemIndex := -1;
 
- Self.fZast.ShowEmpty();
- Self.fZpom.ShowEmpty();
+  Self.fZast.ShowEmpty();
+  Self.fZpom.ShowEmpty();
 
- Self.CHB_Zpomalit.Checked := false;
- Self.CHB_ZpomalitClick(CHB_Zpomalit);
+  Self.CHB_Zpomalit.Checked := false;
+  Self.CHB_ZpomalitClick(CHB_Zpomalit);
 end;
-///////////////////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 function TF_BlkSignalEvent.GetEvent(): TBlkSignalTrainEvent;
 begin
- Result := TBlkSignalTrainEvent.Create();
- if ((not Self.first) and (Self.E_Spr.Text <> '')) then
-   Result.train_typ_re.Compile('^'+Self.E_Spr.Text+'$', false);
- Result.length.min := Self.SE_MinLength.Value;
- Result.length.max := Self.SE_MaxLength.Value;
+  Result := TBlkSignalTrainEvent.Create();
+  if ((not Self.first) and (Self.E_Spr.Text <> '')) then
+    Result.train_typ_re.Compile('^' + Self.E_Spr.Text + '$', false);
+  Result.length.min := Self.SE_MinLength.Value;
+  Result.length.max := Self.SE_MaxLength.Value;
 
- Result.stop := fZast.GetRREv();
- Result.slow.enabled := Self.CHB_Zpomalit.Checked;
+  Result.stop := fZast.GetRREv();
+  Result.slow.Enabled := Self.CHB_Zpomalit.Checked;
 
- if (Self.CHB_Zpomalit.Checked) then
+  if (Self.CHB_Zpomalit.Checked) then
   begin
-   Result.slow.ev := fZpom.GetRREv();
-   Result.slow.speed := (Self.CB_ZpomalitKmH.ItemIndex+1) * 10;
+    Result.slow.ev := fZpom.GetRREv();
+    Result.slow.speed := (Self.CB_ZpomalitKmH.ItemIndex + 1) * 10;
   end else begin
-   Result.slow.ev := nil;
+    Result.slow.ev := nil;
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_BlkSignalEvent.CHB_ZpomalitClick(Sender: TObject);
 begin
- Self.fZpom.Enabled := Self.CHB_Zpomalit.Checked;
- Self.CB_ZpomalitKmH.Enabled := Self.CHB_Zpomalit.Checked;
- if (not Self.CHB_Zpomalit.Checked) then
-   Self.CB_ZpomalitKmH.ItemIndex := -1;
+  Self.fZpom.Enabled := Self.CHB_Zpomalit.Checked;
+  Self.CB_ZpomalitKmH.Enabled := Self.CHB_Zpomalit.Checked;
+  if (not Self.CHB_Zpomalit.Checked) then
+    Self.CB_ZpomalitKmH.ItemIndex := -1;
 end;
 
 function TF_BlkSignalEvent.Check(): string;
@@ -183,9 +180,9 @@ begin
   if ((CB_ZpomalitKmH.ItemIndex = -1) and (CHB_Zpomalit.Checked)) then
     Exit('Vyberte rychlost, na kterou se ma zpomalit!');
 
- Result := '';
+  Result := '';
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-end.//unit
+end.// unit

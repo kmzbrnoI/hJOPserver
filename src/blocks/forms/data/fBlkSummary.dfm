@@ -156,7 +156,6 @@ object F_BlkSummary: TF_BlkSummary
       Width = 232
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 1
     end
     object B_Add: TButton

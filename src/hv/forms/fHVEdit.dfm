@@ -362,7 +362,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 5
     Items.Strings = (
       'lich'#253' sm'#283'r'
@@ -378,7 +377,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 6
     Items.Strings = (
       'parn'#237
@@ -408,7 +406,6 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 10
     Items.Strings = (
       'Parn'#237

@@ -97,7 +97,6 @@ object F_MJCEdit: TF_MJCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 0
       end
       object B_JC_Add: TButton
@@ -186,7 +185,6 @@ object F_MJCEdit: TF_MJCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 0
       end
       object B_VB_New: TButton

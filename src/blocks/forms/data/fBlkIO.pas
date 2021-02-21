@@ -40,11 +40,11 @@ type
     procedure CHB_RCS_OutputClick(Sender: TObject);
     procedure CHB_NullableClick(Sender: TObject);
   private
-   NewBlk: Boolean;
-   Blk: TBlkIO;
+    NewBlk: Boolean;
+    Blk: TBlkIO;
 
   public
-   OpenIndex: Integer;
+    OpenIndex: Integer;
 
     procedure OpenForm(BlokIndex: Integer);
     procedure NewBlkOpenForm();
@@ -63,34 +63,36 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky;
 {$R *.dfm}
 
 procedure TF_BlkIO.OpenForm(BlokIndex: Integer);
- begin
+begin
   OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   HlavniOpenForm();
 
   if (NewBlk) then
-   begin
+  begin
     NewBlkOpenForm();
-   end else begin
+  end else begin
     NormalOpenForm();
-   end;
+  end;
   Self.ShowModal();
- end;
+end;
 
 procedure TF_BlkIO.SE_RCS_Input_ModuleExit(Sender: TObject);
 begin
- Self.SE_RCS_Input_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value);
+  Self.SE_RCS_Input_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Input_Module.Value,
+    Self.SE_RCS_Input_Port.Value);
 end;
 
 procedure TF_BlkIO.SE_RCS_Output_ModuleExit(Sender: TObject);
 begin
- Self.SE_RCS_Output_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value);
+  Self.SE_RCS_Output_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Output_Module.Value,
+    Self.SE_RCS_Output_Port.Value);
 end;
 
 procedure TF_BlkIO.NewBlkOpenForm();
- begin
+begin
   E_Nazev.Text := '';
-  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
+  SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
 
   Self.SE_RCS_Input_Module.Value := 1;
   Self.SE_RCS_Input_Port.Value := 0;
@@ -113,49 +115,48 @@ procedure TF_BlkIO.NewBlkOpenForm();
 
   Self.Caption := 'Nový blok Výstup';
   Self.ActiveControl := Self.E_Nazev;
- end;
+end;
 
 procedure TF_BlkIO.NormalOpenForm();
 var glob: TBlkSettings;
-    settings: TBlkIOsettings;
- begin
+  settings: TBlkIOsettings;
+begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
   Self.CHB_RCS_Input.Checked := settings.isRCSinput;
   Self.CHB_RCS_InputClick(Self);
   if (settings.isRCSinput) then
-   begin
+  begin
     if (settings.RCSinput.board > Cardinal(Self.SE_RCS_Input_Module.MaxValue)) then
       Self.SE_RCS_Input_Module.MaxValue := 0;
     Self.SE_RCS_Input_Port.MaxValue := 0;
     Self.SE_RCS_Input_Module.Value := settings.RCSinput.board;
     Self.SE_RCS_Input_Port.Value := settings.RCSinput.port;
     Self.CHB_RCS_Input_Needed.Checked := settings.RCSinputNeeded;
-   end else begin
+  end else begin
     Self.SE_RCS_Input_Module.Value := 0;
     Self.SE_RCS_Input_Port.Value := 0;
     Self.CHB_RCS_Input_Needed.Checked := false;
-   end;
+  end;
   Self.SE_RCS_Input_ModuleExit(Self);
 
   Self.CHB_RCS_Output.Checked := settings.isRCSOutput;
   Self.CHB_RCS_OutputClick(Self);
   if (settings.isRCSOutput) then
-   begin
+  begin
     if (settings.RCSOutput.board > Cardinal(Self.SE_RCS_Output_Module.MaxValue)) then
       Self.SE_RCS_Output_Module.MaxValue := 0;
     Self.SE_RCS_Output_Port.MaxValue := 0;
     Self.SE_RCS_Output_Module.Value := settings.RCSOutput.board;
     Self.SE_RCS_Output_Port.Value := settings.RCSOutput.port;
     Self.CHB_RCS_Output_Needed.Checked := settings.RCSoutputNeeded;
-   end else begin
+  end else begin
     Self.SE_RCS_Output_Module.Value := 0;
     Self.SE_RCS_Output_Port.Value := 0;
     Self.CHB_RCS_Output_Needed.Checked := false;
-   end;
+  end;
   Self.SE_RCS_Output_ModuleExit(Self);
-
 
   Self.E_Nazev.Text := glob.name;
   Self.SE_ID.Value := glob.id;
@@ -164,122 +165,123 @@ var glob: TBlkSettings;
   Self.SE_Null_Time.Value := settings.nullAfterSec;
   Self.CHB_NullableClick(Self);
 
-  Self.Caption := 'Upravit blok '+glob.name+' (IO)';
+  Self.Caption := 'Upravit blok ' + glob.name + ' (IO)';
   Self.ActiveControl := Self.B_Save;
- end;
+end;
 
 procedure TF_BlkIO.HlavniOpenForm();
- begin
+begin
   Self.SE_RCS_Input_Module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCS_Output_Module.MaxValue := RCSi.maxModuleAddrSafe;
- end;
+end;
 
 procedure TF_BlkIO.NewBlkCreate();
- begin
+begin
   NewBlk := true;
   Self.OpenForm(Blocks.count);
- end;
+end;
 
 procedure TF_BlkIO.B_StornoClick(Sender: TObject);
- begin
+begin
   Self.Close();
- end;
+end;
 
 procedure TF_BlkIO.CHB_NullableClick(Sender: TObject);
 begin
- Self.SE_Null_Time.Enabled := Self.CHB_Nullable.Checked;
+  Self.SE_Null_Time.Enabled := Self.CHB_Nullable.Checked;
 end;
 
 procedure TF_BlkIO.CHB_RCS_InputClick(Sender: TObject);
 begin
- Self.CHB_RCS_Input_Needed.Enabled := Self.CHB_RCS_Input.Checked;
- Self.SE_RCS_Input_Module.Enabled := Self.CHB_RCS_Input.Checked;
- Self.SE_RCS_Input_Port.Enabled := Self.CHB_RCS_Input.Checked;
+  Self.CHB_RCS_Input_Needed.Enabled := Self.CHB_RCS_Input.Checked;
+  Self.SE_RCS_Input_Module.Enabled := Self.CHB_RCS_Input.Checked;
+  Self.SE_RCS_Input_Port.Enabled := Self.CHB_RCS_Input.Checked;
 end;
 
 procedure TF_BlkIO.CHB_RCS_OutputClick(Sender: TObject);
 begin
- Self.CHB_RCS_Output_Needed.Enabled := Self.CHB_RCS_Output.Checked;
- Self.SE_RCS_Output_Module.Enabled := Self.CHB_RCS_Output.Checked;
- Self.SE_RCS_Output_Port.Enabled := Self.CHB_RCS_Output.Checked;
+  Self.CHB_RCS_Output_Needed.Enabled := Self.CHB_RCS_Output.Checked;
+  Self.SE_RCS_Output_Module.Enabled := Self.CHB_RCS_Output.Checked;
+  Self.SE_RCS_Output_Port.Enabled := Self.CHB_RCS_Output.Checked;
 end;
 
 procedure TF_BlkIO.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkIOsettings;
-    another: TBlk;
- begin
+  settings: TBlkIOsettings;
+  another: TBlk;
+begin
   if (E_Nazev.Text = '') then
-   begin
+  begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
   if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
-   begin
+  begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
 
   if (Self.CHB_RCS_Input.Checked) then
-   begin
+  begin
     another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value),
-                                        Self.Blk, TRCSIOType.input);
+      Self.Blk, TRCSIOType.input);
     if (another <> nil) then
-     begin
-      if (Application.MessageBox(PChar('RCS adresa vstupu se již používá na bloku '+another.name+', chcete pokračovat?'),
-                                 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+    begin
+      if (Application.MessageBox(PChar('RCS adresa vstupu se již používá na bloku ' + another.name +
+        ', chcete pokračovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
-     end;
-   end;
+    end;
+  end;
 
   if (Self.CHB_RCS_Output.Checked) then
-   begin
+  begin
     another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value),
-                                        Self.Blk, TRCSIOType.output);
+      Self.Blk, TRCSIOType.output);
     if (another <> nil) then
-     begin
-      if (Application.MessageBox(PChar('RCS adresa výstupu se již používá na bloku '+another.name+', chcete pokračovat?'),
-                                 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+    begin
+      if (Application.MessageBox(PChar('RCS adresa výstupu se již používá na bloku ' + another.name +
+        ', chcete pokračovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
-     end;
-   end;
+    end;
+  end;
 
   glob.name := Self.E_Nazev.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btIO;
 
   if (NewBlk) then
-   begin
+  begin
     glob.note := '';
     try
       Blk := Blocks.Add(glob) as TBlkIO;
     except
       on E: Exception do
-       begin
-        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      begin
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
+          MB_OK OR MB_ICONWARNING);
         Exit();
-       end;
+      end;
     end;
-   end else begin
+  end else begin
     glob.note := Blk.note;
     Self.Blk.SetGlobalSettings(glob);
-   end;
+  end;
 
   // ukladani dat
 
-  settings.isRCSoutput := Self.CHB_RCS_Output.Checked;
+  settings.isRCSOutput := Self.CHB_RCS_Output.Checked;
   if (Self.CHB_RCS_Output.Checked) then
-   begin
-    settings.RCSoutput := TRCS.RCSAddr(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value);
+  begin
+    settings.RCSOutput := TRCS.RCSAddr(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value);
     settings.RCSoutputNeeded := Self.CHB_RCS_Output_Needed.Checked;
-   end;
+  end;
 
   settings.isRCSinput := Self.CHB_RCS_Input.Checked;
   if (Self.CHB_RCS_Input.Checked) then
-   begin
-    settings.RCSInput := TRCS.RCSAddr(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value);
+  begin
+    settings.RCSinput := TRCS.RCSAddr(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value);
     settings.RCSinputNeeded := Self.CHB_RCS_Input_Needed.Checked;
-   end;
+  end;
 
   settings.setOutputOnStart := Self.CHB_Activate_On_Start.Checked;
   if (Self.CHB_Nullable.Checked) then
@@ -290,13 +292,13 @@ var glob: TBlkSettings;
   Self.Blk.SetSettings(settings);
   Self.Close();
   Self.Blk.Change();
- end;
+end;
 
 procedure TF_BlkIO.FormClose(Sender: TObject; var Action: TCloseAction);
- begin
+begin
   Self.NewBlk := false;
   Self.OpenIndex := -1;
   BlokyTableData.UpdateTable();
- end;
+end;
 
-end.//unit
+end.// unit

@@ -7,124 +7,128 @@ interface
 uses ComCtrls, SysUtils, Classes;
 
 type
-  TUsersTableData=class
-    private
-      LV: TListView;
+  TUsersTableData = class
+  private
+    LV: TListView;
 
-    public
+  public
 
-      procedure LoadToTable();
-      procedure UpdateTable();
+    procedure LoadToTable();
+    procedure UpdateTable();
 
-      procedure UpdateLine(line: Integer);
+    procedure UpdateLine(line: Integer);
 
-      procedure AddUser();
-      procedure RemoveUser(index: Integer);
+    procedure AddUser();
+    procedure RemoveUser(index: Integer);
 
-      constructor Create(LV: TListView);
+    constructor Create(LV: TListView);
   end;
 
 var
-  UsersTableData : TUsersTableData;
+  UsersTableData: TUsersTableData;
 
 implementation
 
 uses fMain, UserDb, User, ownStrUtils, StrUtils, Area, AreaDb,
-      ownConvert;
+  ownConvert;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 constructor TUsersTableData.Create(LV: TListView);
 begin
- inherited Create();
- Self.LV := LV;
-end;//ctor
+  inherited Create();
+  Self.LV := LV;
+end; // ctor
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TUsersTableData.LoadToTable();
 var i, j: Integer;
-    LI: TListItem;
+  LI: TListItem;
 begin
- F_Main.E_Dataload_Users.text := UsrDB.filenameData;
- F_Main.E_dataload_users_stat.text := UsrDB.filenameStat;
- Self.LV.Clear();
+  F_Main.E_Dataload_Users.text := UsrDB.filenameData;
+  F_Main.E_dataload_users_stat.text := UsrDB.filenameStat;
+  Self.LV.Clear();
 
- for i := 0 to UsrDB.Count-1 do
+  for i := 0 to UsrDB.Count - 1 do
   begin
-   LI := Self.LV.Items.Add;
-   LI.Caption := IntToStr(i);
-   for j := 0 to Self.LV.Columns.Count-2 do
-     LI.SubItems.Add('');
- end;
+    LI := Self.LV.Items.Add;
+    LI.Caption := IntToStr(i);
+    for j := 0 to Self.LV.Columns.Count - 2 do
+      LI.SubItems.Add('');
+  end;
 
- Self.UpdateTable();
+  Self.UpdateTable();
 end;
 
 procedure TUsersTableData.UpdateTable();
 var i: Integer;
 begin
- for i := 0 to UsrDB.Count-1 do
-   Self.UpdateLine(i);
+  for i := 0 to UsrDB.Count - 1 do
+    Self.UpdateLine(i);
 end;
 
 procedure TUsersTableData.UpdateLine(line: Integer);
-var user: TUser;
-    str: string;
-    area: TArea;
+var User: TUser;
+  str: string;
+  Area: TArea;
 begin
- user := UsrDb.GetUser(line);
+  User := UsrDB.GetUser(line);
 
- Self.LV.Items[line].Caption := IntToStr(line);
- Self.LV.Items[line].SubItems[0] := user.username;
- Self.LV.Items[line].SubItems[1] := user.fullName;
- Self.LV.Items[line].SubItems[3] := ownConvert.BoolToTick(user.regulator);
- Self.LV.Items[line].SubItems[4] := ownConvert.BoolToTick(user.root);
- Self.LV.Items[line].Subitems[5] := EscapeNewline(user.note);
- Self.LV.Items[line].SubItems[6] := FormatDateTime('yyyy-mm-dd hh:nn:ss', user.lastlogin);
+  Self.LV.Items[line].Caption := IntToStr(line);
+  Self.LV.Items[line].SubItems[0] := User.username;
+  Self.LV.Items[line].SubItems[1] := User.fullName;
+  Self.LV.Items[line].SubItems[3] := ownConvert.BoolToTick(User.regulator);
+  Self.LV.Items[line].SubItems[4] := ownConvert.BoolToTick(User.root);
+  Self.LV.Items[line].SubItems[5] := EscapeNewline(User.note);
+  Self.LV.Items[line].SubItems[6] := FormatDateTime('yyyy-mm-dd hh:nn:ss', User.lastlogin);
 
- str := '';
- for area in Areas do
+  str := '';
+  for Area in Areas do
   begin
-   if ((user.areas.ContainsKey(area.id)) and (user.areas[area.id] > TAreaRights.null)) then
+    if ((User.Areas.ContainsKey(Area.id)) and (User.Areas[Area.id] > TAreaRights.null)) then
     begin
-     str := str + area.shortName + ':';
-     case user.areas[area.id] of
-       TAreaRights.read: str := str + 'R';
-       TAreaRights.write: str := str + 'W';
-       TAreaRights.superuser: str := str + 'S';
-     end;
-     str := str + ', ';
+      str := str + Area.shortName + ':';
+      case User.Areas[Area.id] of
+        TAreaRights.read:
+          str := str + 'R';
+        TAreaRights.write:
+          str := str + 'W';
+        TAreaRights.superuser:
+          str := str + 'S';
+      end;
+      str := str + ', ';
     end;
   end;
 
- Self.LV.Items[line].Subitems[2] := LeftStr(str, Length(str)-2);
+  Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str) - 2);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TUsersTableData.AddUser();
 var LI: TListItem;
-    j: Integer;
+  j: Integer;
 begin
- LI := Self.LV.Items.Add;
- LI.Caption := IntToStr(Self.LV.Items.Count);
- for j := 0 to Self.LV.Columns.Count-2 do
-  LI.SubItems.Add('');
+  LI := Self.LV.Items.Add;
+  LI.Caption := IntToStr(Self.LV.Items.Count);
+  for j := 0 to Self.LV.Columns.Count - 2 do
+    LI.SubItems.Add('');
 
- Self.UpdateLine(Self.LV.Items.Count-1);
+  Self.UpdateLine(Self.LV.Items.Count - 1);
 end;
 
 procedure TUsersTableData.RemoveUser(index: Integer);
 begin
- Self.LV.Items.Delete(index);
+  Self.LV.Items.Delete(index);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 initialization
 
 finalization
- UsersTableData.Free();
 
-end.//unit
+UsersTableData.Free();
+
+end.// unit

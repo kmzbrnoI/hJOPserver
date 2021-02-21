@@ -7,52 +7,51 @@ interface
 uses ComCtrls, SysUtils, Generics.Collections, Classes;
 
 type
-  TRCSTableData=class
-    private
-      LV: TListView;
-      AddrToLine: TDictionary<Integer, Integer>;
+  TRCSTableData = class
+  private
+    LV: TListView;
+    AddrToLine: TDictionary<Integer, Integer>;
 
-    public
+  public
 
-      procedure LoadToTable(load_all: Boolean = false);
-      procedure UpdateBoard(addr: Integer);
-      procedure UpdateTable();
-      function CreateLineForNewBoard(addr: Integer): Integer;
-      function GetLineForNewBoard(addr: Integer): Integer;
+    procedure LoadToTable(load_all: Boolean = false);
+    procedure UpdateBoard(addr: Integer);
+    procedure UpdateTable();
+    function CreateLineForNewBoard(addr: Integer): Integer;
+    function GetLineForNewBoard(addr: Integer): Integer;
 
-      constructor Create(LV: TListView);
-      destructor Destroy(); override;
+    constructor Create(LV: TListView);
+    destructor Destroy(); override;
   end;
 
 var
-   RCSTableData: TRCSTableData;
-
+  RCSTableData: TRCSTableData;
 
 implementation
 
 uses TechnologieRCS, RCS;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 constructor TRCSTableData.Create(LV: TListView);
 begin
- inherited Create();
- Self.LV := LV;
- Self.AddrToLine := TDictionary<Integer, Integer>.Create();
-end;//ctor
+  inherited Create();
+  Self.LV := LV;
+  Self.AddrToLine := TDictionary<Integer, Integer>.Create();
+end; // ctor
 
 destructor TRCSTableData.Destroy();
 begin
- Self.AddrToLine.Free();
- inherited;
+  Self.AddrToLine.Free();
+  inherited;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSTableData.LoadToTable(load_all: Boolean = false);
-var i, j: integer;
-    LI: TListItem;
- begin
+var i, j: Integer;
+  LI: TListItem;
+begin
   Self.LV.Clear();
   Self.AddrToLine.Clear();
 
@@ -60,7 +59,7 @@ var i, j: integer;
     Exit();
 
   for i := 0 to RCSi.maxModuleAddr do
-   begin
+  begin
     if (RCSi.ready) then
       if ((not RCSi.IsModule(i)) and (not RCSi.GetNeeded(i)) and (not load_all)) then
         continue;
@@ -68,64 +67,64 @@ var i, j: integer;
     LI := Self.LV.Items.Add();
     LI.Data := Pointer(i);
     LI.Caption := IntToStr(i) + ' (0x' + IntToHex(i, 2) + ')';
-    for j := 0 to Self.LV.Columns.Count-1 do
+    for j := 0 to Self.LV.Columns.Count - 1 do
       LI.SubItems.Add('');
 
-    Self.AddrToLine.Add(i, Self.LV.Items.Count-1);
+    Self.AddrToLine.Add(i, Self.LV.Items.Count - 1);
     Self.UpdateBoard(i);
-   end;//for i
- end;
+  end; // for i
+end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSTableData.UpdateTable();
 var item: TListItem;
 begin
- for item in Self.LV.Items do
-   Self.UpdateBoard(Integer(item.Data));
+  for item in Self.LV.Items do
+    Self.UpdateBoard(Integer(item.Data));
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TRCSTableData.GetLineForNewBoard(addr: Integer): Integer;
 var i: Integer;
 begin
- for i := 0 to Self.LV.Items.Count-1 do
-   if (addr < Integer(Self.LV.Items[i].Data)) then
-     Exit(i);
- Result := Self.LV.Items.Count;
+  for i := 0 to Self.LV.Items.Count - 1 do
+    if (addr < Integer(Self.LV.Items[i].Data)) then
+      Exit(i);
+  Result := Self.LV.Items.Count;
 end;
 
 function TRCSTableData.CreateLineForNewBoard(addr: Integer): Integer;
 var LI: TListItem;
-    i, line: Integer;
+  i, line: Integer;
 begin
- line := Self.GetLineForNewBoard(addr);
- LI := Self.LV.Items.Insert(line);
- LI.Data := Pointer(addr);
- LI.Caption := IntToStr(addr) + ' (0x' + IntToHex(addr, 2) + ')';
- for i := 0 to Self.LV.Columns.Count-1 do
-   LI.SubItems.Add('');
+  line := Self.GetLineForNewBoard(addr);
+  LI := Self.LV.Items.Insert(line);
+  LI.Data := Pointer(addr);
+  LI.Caption := IntToStr(addr) + ' (0x' + IntToHex(addr, 2) + ')';
+  for i := 0 to Self.LV.Columns.Count - 1 do
+    LI.SubItems.Add('');
 
- Self.AddrToLine.Add(addr, line);
- Result := line;
+  Self.AddrToLine.Add(addr, line);
+  Result := line;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSTableData.UpdateBoard(addr: Integer);
-var j, cnt: integer;
-    output: Integer;
-    LI: TListItem;
-    start: integer;
- begin
+var j, cnt: Integer;
+  output: Integer;
+  LI: TListItem;
+  start: Integer;
+begin
   if (not Self.AddrToLine.ContainsKey(addr)) then
     Self.CreateLineForNewBoard(addr);
 
   LI := Self.LV.Items[Self.AddrToLine[addr]];
 
   if (not RCSi.ready) then
-   begin
+  begin
     LI.SubItems[0] := '';
     LI.SubItems[1] := '';
     LI.SubItems[2] := '';
@@ -135,11 +134,11 @@ var j, cnt: integer;
     LI.SubItems[6] := '-';
 
     Exit();
-   end;
+  end;
 
   try
     if (RCSi.IsModule(addr)) then
-     begin
+    begin
       if (RCSi.GetModuleType(addr) = 'MTB-UNI') then
         LI.ImageIndex := 0
       else if (RCSi.GetModuleType(addr) = 'MTB-TTL') then
@@ -149,9 +148,10 @@ var j, cnt: integer;
       else if (RCSi.GetModuleType(addr) = 'MTB-UNIo') then
         LI.ImageIndex := 5
       else
-       LI.ImageIndex := -1;
-     end else
-       LI.ImageIndex := -1;
+        LI.ImageIndex := -1;
+    end
+    else
+      LI.ImageIndex := -1;
   except
     LI.ImageIndex := -1;
   end;
@@ -180,11 +180,11 @@ var j, cnt: integer;
 
   try
     if (RCSi.Opened) then
-     begin
+    begin
       if (RCSi.IsNonFailedModule(addr)) then
-       begin
+      begin
         if (RCSi.Started) then
-         begin
+        begin
           LI.SubItems[3] := '';
           LI.SubItems[4] := '';
 
@@ -194,41 +194,46 @@ var j, cnt: integer;
           else
             start := 0;
 
-          for j := start to cnt-1 do
-           begin
-            if (j = ((cnt+start) div 2)) then
+          for j := start to cnt - 1 do
+          begin
+            if (j = ((cnt + start) div 2)) then
               LI.SubItems[3] := LI.SubItems[3] + ' ';
 
             case (RCSi.GetInput(addr, j)) of
-              isOn : LI.SubItems[3] := LI.SubItems[3] + '1';
-              isOff : LI.SubItems[3] := LI.SubItems[3] + '0';
-              failure : LI.SubItems[3] := LI.SubItems[3] + 'X';
-              notYetScanned : LI.SubItems[3] := LI.SubItems[3] + '?';
-              unavailableModule: LI.SubItems[3] := LI.SubItems[3] + '-';
+              isOn:
+                LI.SubItems[3] := LI.SubItems[3] + '1';
+              isOff:
+                LI.SubItems[3] := LI.SubItems[3] + '0';
+              failure:
+                LI.SubItems[3] := LI.SubItems[3] + 'X';
+              notYetScanned:
+                LI.SubItems[3] := LI.SubItems[3] + '?';
+              unavailableModule:
+                LI.SubItems[3] := LI.SubItems[3] + '-';
             end;
-           end;
+          end;
 
           cnt := RCSi.GetModuleOutputsCount(addr);
-          for j := 0 to cnt-1 do
-           begin
+          for j := 0 to cnt - 1 do
+          begin
             if (j = cnt div 2) then
               LI.SubItems[4] := LI.SubItems[4] + ' ';
 
             output := RCSi.GetOutput(addr, j);
             if (output > 1) then
-              LI.SubItems[4] := LI.SubItems[4]+'S'
+              LI.SubItems[4] := LI.SubItems[4] + 'S'
             else
-              LI.SubItems[4] := LI.SubItems[4]+IntToStr(output);
-           end;//for
+              LI.SubItems[4] := LI.SubItems[4] + IntToStr(output);
+          end; // for
 
-         end else begin
+        end else begin
           LI.SubItems[3] := '-';
           LI.SubItems[4] := '-';
-         end;
+        end;
 
         LI.SubItems[5] := '✓';
         LI.SubItems[6] := RCSi.GetModuleFW(addr);
-       end else begin
+      end else begin
         // neexistuje
         LI.SubItems[3] := '-';
         LI.SubItems[4] := '-';
@@ -237,30 +242,31 @@ var j, cnt: integer;
         else
           LI.SubItems[5] := '';
         LI.SubItems[6] := '-';
-       end;
-     end else begin
+      end;
+    end else begin
       // mtb closed
       LI.SubItems[3] := '-';
       LI.SubItems[4] := '-';
       LI.SubItems[5] := '-';
       LI.SubItems[6] := '-';
-     end;
+    end;
   except
     on E: Exception do
-     begin
+    begin
       LI.SubItems[3] := 'Exception';
       LI.SubItems[4] := E.Message;
       LI.SubItems[5] := 'Ex';
       LI.SubItems[6] := 'Ex';
-     end;
+    end;
   end;
- end;
+end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 initialization
 
 finalization
- RCSTableData.Free();
 
-end.//unit
+RCSTableData.Free();
+
+end.// unit

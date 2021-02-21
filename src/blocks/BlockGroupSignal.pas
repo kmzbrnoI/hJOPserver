@@ -5,17 +5,17 @@ unit BlockGroupSignal;
 interface
 
 uses IniFiles, Block, AreaDb, BlockSignal, IdContext, Generics.Collections,
-      JsonDataObjects, Area;
+  JsonDataObjects, Area;
 
 type
 
- TBlkGSSettings = record
-  signalIds: TList<Integer>;
- end;
+  TBlkGSSettings = record
+    signalIds: TList<Integer>;
+  end;
 
- TBlkGroupSignal = class(TBlkSignal)
+  TBlkGroupSignal = class(TBlkSignal)
   private
-   m_gs_settings: TBlkGSSettings;
+    m_gs_settings: TBlkGSSettings;
 
     function GetSignals(): TList<TBlkSignal>;
     procedure RefillSignals();
@@ -23,7 +23,7 @@ type
 
   public
 
-   m_signals: TList<TBlkSignal>;
+    m_signals: TList<TBlkSignal>;
 
     constructor Create(index: Integer);
     destructor Destroy(); override;
@@ -33,7 +33,7 @@ type
 
     procedure AfterLoad(); override;
 
-    //----- Group Signal specific functions -----
+    // ----- Group Signal specific functions -----
 
     function GetSettings(): TBlkGSSettings;
     procedure SetSettings(data: TBlkGSSettings);
@@ -42,13 +42,14 @@ type
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
-    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject ; Button: TPanelButton; rights: TAreaRights; params: string = ''); override;
+    procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
+      params: string = ''); override;
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
 
- end;
+  end;
 
-////////////////////////////////////////////////////////////////////////////////
+  /// /////////////////////////////////////////////////////////////////////////////
 
 implementation
 
@@ -56,160 +57,158 @@ uses Classes, ownStrUtils, SysUtils, BlockDb;
 
 constructor TBlkGroupSignal.Create(index: Integer);
 begin
- inherited Create(index);
- Self.m_globSettings.typ := btGroupSignal;
- Self.m_gs_settings.signalIds := TList<Integer>.Create();
- Self.m_signals := TList<TBlkSignal>.Create();
+  inherited Create(index);
+  Self.m_globSettings.typ := btGroupSignal;
+  Self.m_gs_settings.signalIds := TList<Integer>.Create();
+  Self.m_signals := TList<TBlkSignal>.Create();
 end;
 
 destructor TBlkGroupSignal.Destroy();
 begin
- Self.m_gs_settings.signalIds.Free();
- Self.m_signals.Free();
- inherited;
+  Self.m_gs_settings.signalIds.Free();
+  Self.m_signals.Free();
+  inherited;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkGroupSignal.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 var strs: TStrings;
-    str: string;
+  str: string;
 begin
- inherited LoadData(ini_tech, section, ini_rel, ini_stat);
- Self.m_spnl.trackId := -1;
+  inherited LoadData(ini_tech, section, ini_rel, ini_stat);
+  Self.m_spnl.trackId := -1;
 
- Self.m_gs_settings.signalIds.Clear();
+  Self.m_gs_settings.signalIds.Clear();
 
- strs := TStringList.Create();
- try
-   ExtractStringsEx([','], [], ini_tech.ReadString(section, 'navestidla', ''), strs);
-   for str in strs do
-     Self.m_gs_settings.signalIds.Add(StrToInt(str));
- finally
-   strs.Free();
- end;
+  strs := TStringList.Create();
+  try
+    ExtractStringsEx([','], [], ini_tech.ReadString(section, 'navestidla', ''), strs);
+    for str in strs do
+      Self.m_gs_settings.signalIds.Add(StrToInt(str));
+  finally
+    strs.Free();
+  end;
 end;
 
 procedure TBlkGroupSignal.SaveData(ini_tech: TMemIniFile; const section: string);
 var str: string;
-    id: Integer;
+  id: Integer;
 begin
- inherited SaveData(ini_tech, section);
+  inherited SaveData(ini_tech, section);
 
- str := '';
- for id in Self.m_gs_settings.signalIds do
-   str := str + IntToStr(id) + ',';
- ini_tech.WriteString(section, 'navestidla', str);
+  str := '';
+  for id in Self.m_gs_settings.signalIds do
+    str := str + IntToStr(id) + ',';
+  ini_tech.WriteString(section, 'navestidla', str);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkGroupSignal.GetSettings(): TBlkGSSettings;
 begin
- Result := Self.m_gs_settings;
+  Result := Self.m_gs_settings;
 end;
 
 procedure TBlkGroupSignal.SetSettings(data: TBlkGSSettings);
-var signal: TBlkSignal;
 begin
- for signal in Self.signals do
-   signal.groupMaster := nil;
+  for var signal: TBlkSignal in Self.signals do
+    signal.groupMaster := nil;
 
- if (Self.m_gs_settings.signalIds <> data.signalIds) then
-   Self.m_gs_settings.signalIds.Free();
+  if (Self.m_gs_settings.signalIds <> data.signalIds) then
+    Self.m_gs_settings.signalIds.Free();
 
- Self.SendGroupMasters();
+  Self.SendGroupMasters();
 
- Self.m_gs_settings := data;
- Self.Change();
+  Self.m_gs_settings := data;
+  Self.Change();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkGroupSignal.GetSignals(): TList<TBlkSignal>;
-var i: Integer;
 begin
- if (Self.m_gs_settings.signalIds.Count <> Self.m_signals.Count) then
+  if (Self.m_gs_settings.signalIds.Count <> Self.m_signals.Count) then
   begin
-   Self.RefillSignals();
-   Exit(Self.m_signals);
+    Self.RefillSignals();
+    Exit(Self.m_signals);
   end;
 
- for i := 0 to Self.m_signals.Count-1 do
+  for var i: Integer := 0 to Self.m_signals.Count - 1 do
   begin
-   if (Self.m_gs_settings.signalIds[i] <> Self.m_signals[i].id) then
+    if (Self.m_gs_settings.signalIds[i] <> Self.m_signals[i].id) then
     begin
-     Self.RefillSignals();
-     Exit(Self.m_signals);
+      Self.RefillSignals();
+      Exit(Self.m_signals);
     end;
   end;
 
- Result := Self.m_signals;
+  Result := Self.m_signals;
 end;
 
 procedure TBlkGroupSignal.RefillSignals();
 var sigId: Integer;
-    blk: TBlk;
+  blk: TBlk;
 begin
- Self.m_signals.Clear();
- for sigId in Self.m_gs_settings.signalIds do
+  Self.m_signals.Clear();
+  for sigId in Self.m_gs_settings.signalIds do
   begin
-   Blocks.GetBlkByID(sigId, blk);
-   if ((blk <> nil) and (blk.typ = TBlkType.btSignal)) then
-     Self.m_signals.Add(TBlkSignal(blk));
+    Blocks.GetBlkByID(sigId, blk);
+    if ((blk <> nil) and (blk.typ = TBlkType.btSignal)) then
+      Self.m_signals.Add(TBlkSignal(blk));
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkGroupSignal.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
- Result := TBlk(Self).ShowPanelMenu(SenderPnl, SenderOR, rights);
+  Result := TBlk(Self).ShowPanelMenu(SenderPnl, SenderOR, rights);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkGroupSignal.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights; params: string = '');
+procedure TBlkGroupSignal.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton;
+  rights: TAreaRights; params: string = '');
 begin
- // This should be empty
+  // This should be empty
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkGroupSignal.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
- // This should be empty
+  // This should be empty
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkGroupSignal.GetPtData(json: TJsonObject; includeState: Boolean);
 var sigId: Integer;
 begin
- inherited;
+  inherited;
 
- json.A['signals'];
- for sigId in Self.m_gs_settings.signalIds do
-   json.A['signals'].Add(sigId);
+  json.A['signals'];
+  for sigId in Self.m_gs_settings.signalIds do
+    json.A['signals'].Add(sigId);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkGroupSignal.AfterLoad();
 begin
- Self.SendGroupMasters();
+  Self.SendGroupMasters();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkGroupSignal.SendGroupMasters();
 var signal: TBlkSignal;
 begin
- for signal in Self.signals do
-   signal.groupMaster := Self;
+  for signal in Self.signals do
+    signal.groupMaster := Self;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
-end.//unit
-
+end.

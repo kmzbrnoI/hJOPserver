@@ -42,9 +42,9 @@ type
   private
     open_booster: TBooster;
 
-     procedure HlavniOpenForm;
-     procedure NormalOpenForm;
-     procedure NewOpenForm;
+    procedure HlavniOpenForm;
+    procedure NormalOpenForm;
+    procedure NewOpenForm;
   public
     procedure NewZes;
     procedure OpenForm(Zesilovac: TBooster);
@@ -56,159 +56,158 @@ var
 implementation
 
 uses GetSystems, TechnologieRCS, BoosterDb, FileSystem, DataZesilovac,
-    BlockDb;
+  BlockDb;
 
 {$R *.dfm}
 
 procedure TF_ZesilovacEdit.OpenForm(Zesilovac: TBooster);
- begin
+begin
   Self.open_booster := Zesilovac;
   Self.HlavniOpenForm;
-  if (zesilovac = nil) then
-   begin
+  if (Zesilovac = nil) then
+  begin
     Self.NewOpenForm();
-   end else begin
+  end else begin
     Self.NormalOpenForm();
-   end;
+  end;
 
   Self.ShowModal();
- end;
+end;
 
 procedure TF_ZesilovacEdit.SE_RCS_moduleExit(Sender: TObject);
 begin
- Self.SE_Napajeni_Port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Napajeni_module.Value))-1, 0);
- Self.SE_DCC_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_DCC_module.Value))-1, 0);
- Self.SE_Zkrat_Port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Zkrat_module.Value))-1, 0);
+  Self.SE_Napajeni_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Napajeni_module.Value)) - 1, 0);
+  Self.SE_DCC_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_DCC_module.Value)) - 1, 0);
+  Self.SE_Zkrat_Port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Zkrat_module.Value)) - 1, 0);
 end;
 
 procedure TF_ZesilovacEdit.B_SaveClick(Sender: TObject);
 var settings: TBoosterSettings;
 begin
- if (E_Nazev.Text = '') then
+  if (E_Nazev.Text = '') then
   begin
-   Application.MessageBox('Vyplňte název zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
-   Exit();
+    Application.MessageBox('Vyplňte název zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
+    Exit();
   end;
- if (E_ID.Text = '') then
+  if (E_ID.Text = '') then
   begin
-   Application.MessageBox('Vyplňte id zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
-   Exit();
+    Application.MessageBox('Vyplňte id zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
+    Exit();
   end;
- if (Boosters.ContainsKey(E_ID.Text, Self.open_booster)) then
+  if (Boosters.ContainsKey(E_ID.Text, Self.open_booster)) then
   begin
-   Application.MessageBox('Zesilovač s tímto ID již existuje!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
-   Exit();
+    Application.MessageBox('Zesilovač s tímto ID již existuje!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
+    Exit();
   end;
 
- if (Self.open_booster = nil) then
+  if (Self.open_booster = nil) then
   begin
-   Self.open_booster := TBooster.Create;
-   try
-     Boosters.Add(Self.open_booster);
-   except
-     on E: Exception do
+    Self.open_booster := TBooster.Create;
+    try
+      Boosters.Add(Self.open_booster);
+    except
+      on E: Exception do
       begin
-       Application.MessageBox(PChar(e.Message), 'Chyba při vytváření zesilovače', MB_OK OR MB_ICONERROR);
-       Exit();
+        Application.MessageBox(PChar(E.Message), 'Chyba při vytváření zesilovače', MB_OK OR MB_ICONERROR);
+        Exit();
       end;
-   end;
+    end;
   end;
 
- settings.name := E_Nazev.Text;
- settings.id := E_ID.Text;
+  settings.name := E_Nazev.Text;
+  settings.id := E_ID.Text;
 
- if (Self.CHB_Zkrat.Checked) then
+  if (Self.CHB_Zkrat.Checked) then
   begin
-   settings.RCS.overload.board := Self.SE_Zkrat_module.Value;
-   settings.RCS.overload.port := SE_Zkrat_Port.Value;
+    settings.RCS.overload.board := Self.SE_Zkrat_module.Value;
+    settings.RCS.overload.port := SE_Zkrat_Port.Value;
   end else begin
-   Settings.RCS.overload.board := 0;
-   Settings.RCS.overload.port := 0;
+    settings.RCS.overload.board := 0;
+    settings.RCS.overload.port := 0;
   end;
 
- if (Self.CHB_Napajeni.Checked) then
+  if (Self.CHB_Napajeni.Checked) then
   begin
-   settings.RCS.power.board := Self.SE_Napajeni_module.Value;
-   settings.RCS.power.port := SE_Napajeni_Port.Value;
+    settings.RCS.power.board := Self.SE_Napajeni_module.Value;
+    settings.RCS.power.port := SE_Napajeni_port.Value;
   end else begin
-   Settings.RCS.power.board := 0;
-   Settings.RCS.power.port := 0;
+    settings.RCS.power.board := 0;
+    settings.RCS.power.port := 0;
   end;
 
- if (Self.CHB_DCC.Checked) then
+  if (Self.CHB_DCC.Checked) then
   begin
-   Settings.RCS.DCC.board := Self.SE_DCC_module.Value;
-   Settings.RCS.DCC.port := Self.SE_DCC_port.Value;
+    settings.RCS.DCC.board := Self.SE_DCC_module.Value;
+    settings.RCS.DCC.port := Self.SE_DCC_port.Value;
   end else begin
-   Settings.RCS.DCC.board := 0;
-   Settings.RCS.DCC.port := 0;
+    settings.RCS.DCC.board := 0;
+    settings.RCS.DCC.port := 0;
   end;
 
- Self.open_booster.settings := settings;
+  Self.open_booster.settings := settings;
 
- Boosters.SyncStructures();
- ZesTableData.LoadToTable();
+  Boosters.SyncStructures();
+  ZesTableData.LoadToTable();
 
- Self.Close();
+  Self.Close();
 end;
 
 procedure TF_ZesilovacEdit.B_StornoClick(Sender: TObject);
- begin
+begin
   Self.Close();
- end;
+end;
 
 procedure TF_ZesilovacEdit.CHB_DCCClick(Sender: TObject);
 begin
- Self.SE_DCC_module.Enabled := Self.CHB_DCC.Checked;
- Self.SE_DCC_port.Enabled := Self.CHB_DCC.Checked;
+  Self.SE_DCC_module.Enabled := Self.CHB_DCC.Checked;
+  Self.SE_DCC_port.Enabled := Self.CHB_DCC.Checked;
 end;
 
 procedure TF_ZesilovacEdit.CHB_NapajeniClick(Sender: TObject);
 begin
- Self.SE_Napajeni_module.Enabled := Self.CHB_Napajeni.Checked;
- Self.SE_Napajeni_port.Enabled := Self.CHB_Napajeni.Checked;
+  Self.SE_Napajeni_module.Enabled := Self.CHB_Napajeni.Checked;
+  Self.SE_Napajeni_port.Enabled := Self.CHB_Napajeni.Checked;
 end;
 
 procedure TF_ZesilovacEdit.CHB_ZkratClick(Sender: TObject);
 begin
- Self.SE_Zkrat_module.Enabled  := Self.CHB_Zkrat.Checked;
- Self.SE_Zkrat_port.Enabled := Self.CHB_Zkrat.Checked;
+  Self.SE_Zkrat_module.Enabled := Self.CHB_Zkrat.Checked;
+  Self.SE_Zkrat_Port.Enabled := Self.CHB_Zkrat.Checked;
 end;
 
 procedure TF_ZesilovacEdit.NewZes;
- begin
+begin
   OpenForm(nil);
- end;
+end;
 
-procedure TF_ZesilovacEdit.FormCloseQuery(Sender: TObject;
-  var CanClose: Boolean);
- begin
+procedure TF_ZesilovacEdit.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
   Self.open_booster := nil;
   CanClose := true;
- end;
+end;
 
 procedure TF_ZesilovacEdit.HlavniOpenForm;
- begin
+begin
   F_ZesilovacEdit.ActiveControl := B_Save;
 
   Self.SE_Napajeni_module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_Zkrat_module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_DCC_module.MaxValue := RCSi.maxModuleAddrSafe;
- end;
+end;
 
 procedure TF_ZesilovacEdit.NormalOpenForm;
 var bSettings: TBoosterSettings;
-    IgnoraceRCS: TArI;
- begin
+  IgnoraceRCS: TArI;
+begin
   bSettings := open_booster.settings;
 
   E_ID.Text := bSettings.id;
   E_Nazev.Text := bSettings.name;
 
   SE_Zkrat_Port.Value := bSettings.RCS.overload.port;
-  SE_Napajeni_Port.Value := bSettings.RCS.power.port;
+  SE_Napajeni_port.Value := bSettings.RCS.power.port;
 
-  SetLength(IgnoraceRCS,2);
+  SetLength(IgnoraceRCS, 2);
   IgnoraceRCS[0] := 3;
   IgnoraceRCS[1] := 4;
 
@@ -229,27 +228,27 @@ var bSettings: TBoosterSettings;
 
   Self.SE_RCS_moduleExit(Self);
 
-  F_ZesilovacEdit.Caption := 'Zesilovač: '+bSettings.name;
- end;
+  F_ZesilovacEdit.Caption := 'Zesilovač: ' + bSettings.name;
+end;
 
 procedure TF_ZesilovacEdit.NewOpenForm;
 var IgnoraceRCS: TArI;
- begin
-  E_ID.Text         := '';
-  E_Nazev.Text      := '';
+begin
+  E_ID.Text := '';
+  E_Nazev.Text := '';
 
-  SE_Zkrat_Port.Value    := 0;
-  SE_Napajeni_Port.Value := 0;
+  SE_Zkrat_Port.Value := 0;
+  SE_Napajeni_port.Value := 0;
 
-  SetLength(IgnoraceRCS,2);
+  SetLength(IgnoraceRCS, 2);
   IgnoraceRCS[0] := 3;
   IgnoraceRCS[1] := 4;
 
   Self.SE_Napajeni_module.Value := 1;
-  Self.SE_Zkrat_module.Value    := 1;
+  Self.SE_Zkrat_module.Value := 1;
 
   Self.SE_DCC_module.Value := 1;
-  Self.SE_DCC_port.Value   := 0;
+  Self.SE_DCC_port.Value := 0;
 
   Self.CHB_Zkrat.Checked := true;
   Self.CHB_ZkratClick(Self.CHB_Zkrat);
@@ -263,6 +262,6 @@ var IgnoraceRCS: TArI;
   Self.SE_RCS_moduleExit(Self);
 
   F_ZesilovacEdit.Caption := 'Nový zesilovač';
- end;
+end;
 
-end.//unit
+end.// unit

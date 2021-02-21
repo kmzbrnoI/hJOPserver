@@ -51,7 +51,6 @@ object F_FuncsSet: TF_FuncsSet
     Top = 48
     Width = 241
     Height = 21
-    ItemHeight = 13
     TabOrder = 0
     Text = 'zvuk'
     Items.Strings = (

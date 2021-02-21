@@ -135,7 +135,6 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Margins.Bottom = 2
     Style = csDropDownList
     Enabled = False
-    ItemHeight = 13
     TabOrder = 4
     Items.Strings = (
       'Ne'
@@ -162,7 +161,6 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 6
     Items.Strings = (
       'Ne'
@@ -178,7 +176,6 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 7
     Items.Strings = (
       'Ne'

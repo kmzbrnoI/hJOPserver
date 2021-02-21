@@ -492,10 +492,6 @@ object F_BlkRT: TF_BlkRT
       TabOrder = 5
       object TS_Zast_lichy: TTabSheet
         Caption = 'Lich'#253' sm'#283'r'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
       object TS_Zast_sudy: TTabSheet
         Caption = 'Sud'#253' sm'#283'r'

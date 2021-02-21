@@ -86,7 +86,6 @@ object F_RREv: TF_RREv
       Width = 129
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 0
       Items.Strings = (
         'Uvoln'#283'no'
@@ -98,7 +97,6 @@ object F_RREv: TF_RREv
       Width = 129
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 1
       Items.Strings = (
         '1'
@@ -134,7 +132,6 @@ object F_RREv: TF_RREv
       Width = 129
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 0
       Items.Strings = (
         'Uvoln'#283'no'
@@ -146,7 +143,6 @@ object F_RREv: TF_RREv
       Width = 129
       Height = 21
       Style = csDropDownList
-      ItemHeight = 0
       TabOrder = 1
     end
   end
@@ -156,7 +152,6 @@ object F_RREv: TF_RREv
     Width = 145
     Height = 21
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 0
     OnChange = CB_TypChange
     Items.Strings = (

@@ -56,7 +56,6 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
       Margins.Right = 2
       Margins.Bottom = 2
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 1
       Items.Strings = (
         '10 km/h'

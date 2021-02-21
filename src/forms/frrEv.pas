@@ -53,124 +53,138 @@ uses Block, ownConvert;
 
 procedure TF_RREv.CB_TypChange(Sender: TObject);
 begin
- Self.GB_Usek.Visible := false;
- Self.GB_IR.Visible := false;
- Self.GB_Cas.Visible := false;
+  Self.GB_Usek.Visible := false;
+  Self.GB_IR.Visible := false;
+  Self.GB_Cas.Visible := false;
 
- case (Self.CB_Typ.ItemIndex) of
-  0: Self.GB_Usek.Visible := true;
-  1: Self.GB_IR.Visible := true;
-  2: Self.GB_Cas.Visible := true;
- end;
+  case (Self.CB_Typ.ItemIndex) of
+    0:
+      Self.GB_Usek.Visible := true;
+    1:
+      Self.GB_IR.Visible := true;
+    2:
+      Self.GB_Cas.Visible := true;
+  end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_RREv.ShowEmpty();
 begin
- Blocks.FillCB(CB_IRId, @CB_IR, nil, nil, btIR);
- Self.CB_UsekPart.ItemIndex := 0;
- Self.CB_IRId.ItemIndex := 0;
- Self.CB_UsekStav.ItemIndex := 1;
- Self.CB_IRStav.ItemIndex := 1;
- Self.ME_Cas.Text := '00:00.0';
- Self.CB_TypChange(Self.CB_Typ);
+  Blocks.FillCB(CB_IRId, @CB_IR, nil, nil, btIR);
+  Self.CB_UsekPart.ItemIndex := 0;
+  Self.CB_IRId.ItemIndex := 0;
+  Self.CB_UsekStav.ItemIndex := 1;
+  Self.CB_IRStav.ItemIndex := 1;
+  Self.ME_Cas.Text := '00:00.0';
+  Self.CB_TypChange(Self.CB_Typ);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_RREv.FillFromRR(ev: TRREv);
 begin
- Self.ShowEmpty();
+  Self.ShowEmpty();
 
- case (ev.typ) of
-   rrtUsek: begin
-     Self.CB_Typ.ItemIndex := 0;
-     Self.CB_UsekStav.ItemIndex := ownConvert.BoolToInt(ev.data.usekState);
-     Self.CB_UsekPart.ItemIndex := ev.data.usekPart;
-   end;
+  case (ev.typ) of
+    rrtUsek:
+      begin
+        Self.CB_Typ.ItemIndex := 0;
+        Self.CB_UsekStav.ItemIndex := ownConvert.BoolToInt(ev.data.usekState);
+        Self.CB_UsekPart.ItemIndex := ev.data.usekPart;
+      end;
 
-   rrtIR: begin
-     Self.CB_Typ.ItemIndex := 1;
-     Blocks.FillCB(CB_IRId, @CB_IR, nil, nil, btIR, ev.data.irId);
-     Self.CB_IRStav.ItemIndex := ownConvert.BoolToInt(ev.data.irState);
-   end;
+    rrtIR:
+      begin
+        Self.CB_Typ.ItemIndex := 1;
+        Blocks.FillCB(CB_IRId, @CB_IR, nil, nil, btIR, ev.data.irId);
+        Self.CB_IRStav.ItemIndex := ownConvert.BoolToInt(ev.data.irState);
+      end;
 
-   rrtTime: begin
-     Self.CB_Typ.ItemIndex := 2;
-     Self.ME_Cas.Text := FormatDateTime('nn:ss.z', ev.data.time);
-   end;
- end;
+    rrtTime:
+      begin
+        Self.CB_Typ.ItemIndex := 2;
+        Self.ME_Cas.Text := FormatDateTime('nn:ss.z', ev.data.time);
+      end;
+  end;
 
- Self.CB_TypChange(Self.CB_Typ);
+  Self.CB_TypChange(Self.CB_Typ);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TF_RREv.GetRREv(): TRREv;
 var data: TRREvData;
 begin
- case (Self.CB_Typ.ItemIndex) of
-  0: begin
-    data.typ := rrtUsek;
-    data.usekPart := Self.CB_UsekPart.ItemIndex;
-    data.usekState := ownConvert.IntToBool(Self.CB_UsekStav.ItemIndex);
+  case (Self.CB_Typ.ItemIndex) of
+    0:
+      begin
+        data.typ := rrtUsek;
+        data.usekPart := Self.CB_UsekPart.ItemIndex;
+        data.usekState := ownConvert.IntToBool(Self.CB_UsekStav.ItemIndex);
+      end;
+
+    1:
+      begin
+        data.typ := rrtIR;
+        data.irId := Blocks.GetBlkID(CB_IR[Self.CB_IRId.ItemIndex]);
+        data.irState := ownConvert.IntToBool(Self.CB_IRStav.ItemIndex);
+      end;
+
+    2:
+      begin
+        data.typ := rrtTime;
+        data.time := EncodeTime(0, StrToInt(LeftStr(Self.ME_Cas.Text, 2)), StrToInt(Copy(Self.ME_Cas.Text, 4, 2)),
+          StrToInt(RightStr(Self.ME_Cas.Text, 1)));
+      end;
   end;
 
-  1: begin
-    data.typ := rrtIR;
-    data.irId := Blocks.GetBlkID(CB_IR[Self.CB_IRId.ItemIndex]);
-    data.irState := ownConvert.IntToBool(Self.CB_IRStav.ItemIndex);
-  end;
-
-  2: begin
-    data.typ := rrtTime;
-    data.time := EncodeTime(0, StrToInt(LeftStr(Self.ME_Cas.Text, 2)),
-        StrToInt(Copy(Self.ME_Cas.Text, 4, 2)), StrToInt(RightStr(Self.ME_Cas.Text, 1)));
-  end;
- end;
-
- Result := TRREv.Create(data);
+  Result := TRREv.Create(data);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TF_RREv.InputValid(): Boolean;
 begin
- if (Self.CB_Typ.ItemIndex < 0) then Exit(false);
+  if (Self.CB_Typ.ItemIndex < 0) then
+    Exit(false);
 
- case (Self.CB_Typ.ItemIndex) of
-  0: if ((Self.CB_UsekPart.ItemIndex < 0) or (Self.CB_UsekStav.ItemIndex < 0)) then Exit(false);
-  1: if ((Self.CB_IRId.ItemIndex < 0) or (Self.CB_IRStav.ItemIndex < 0)) then Exit(false);
- end;
+  case (Self.CB_Typ.ItemIndex) of
+    0:
+      if ((Self.CB_UsekPart.ItemIndex < 0) or (Self.CB_UsekStav.ItemIndex < 0)) then
+        Exit(false);
+    1:
+      if ((Self.CB_IRId.ItemIndex < 0) or (Self.CB_IRStav.ItemIndex < 0)) then
+        Exit(false);
+  end;
 
- Result := true;
+  Result := true;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_RREv.SetEnabled(state: Boolean);
 begin
- inherited;
+  inherited;
 
- Self.CB_Typ.Enabled := state;
- Self.CB_UsekPart.Enabled := state;
- Self.CB_IRId.Enabled := state;
- Self.CB_UsekStav.Enabled := state;
- Self.CB_IRStav.Enabled := state;
- Self.ME_Cas.Enabled := state;
+  Self.CB_Typ.Enabled := state;
+  Self.CB_UsekPart.Enabled := state;
+  Self.CB_IRId.Enabled := state;
+  Self.CB_UsekStav.Enabled := state;
+  Self.CB_IRStav.Enabled := state;
+  Self.ME_Cas.Enabled := state;
 
- if (not state) then
+  if (not state) then
   begin
-   Self.CB_Typ.ItemIndex := -1;
-   Self.CB_UsekPart.ItemIndex := -1;
-   Self.CB_IRId.ItemIndex := -1;
-   Self.CB_UsekStav.ItemIndex := -1;
-   Self.CB_IRStav.ItemIndex := -1;
-   Self.ME_Cas.Text := '00:00.0';
+    Self.CB_Typ.ItemIndex := -1;
+    Self.CB_UsekPart.ItemIndex := -1;
+    Self.CB_IRId.ItemIndex := -1;
+    Self.CB_UsekStav.ItemIndex := -1;
+    Self.CB_IRStav.ItemIndex := -1;
+    Self.ME_Cas.Text := '00:00.0';
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 end.

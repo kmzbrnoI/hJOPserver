@@ -34,7 +34,6 @@ object F_HoukEv: TF_HoukEv
     Width = 145
     Height = 21
     Style = csDropDownList
-    ItemHeight = 13
     TabOrder = 0
     Items.Strings = (
       'Nic ned'#283'lat'
@@ -56,7 +55,6 @@ object F_HoukEv: TF_HoukEv
     Top = 75
     Width = 145
     Height = 21
-    ItemHeight = 0
     TabOrder = 2
   end
 end

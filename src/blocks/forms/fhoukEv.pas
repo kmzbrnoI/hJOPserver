@@ -19,7 +19,7 @@ type
     P_Ev: TPanel;
     CB_Func: TComboBox;
   private
-    fRREv: TF_RREv;
+    frrEv: TF_RREv;
 
     procedure FillFuncs();
 
@@ -39,66 +39,64 @@ implementation
 uses FunkceVyznam;
 
 {$R *.dfm}
-
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 constructor TF_HoukEv.Create(AOwner: TComponent);
 begin
- inherited;
- Self.fRREv := TF_RREv.Create(nil);
- Self.fRREv.Parent := Self.P_Ev;
- Self.fRREv.Show();
+  inherited;
+  Self.frrEv := TF_RREv.Create(nil);
+  Self.frrEv.Parent := Self.P_Ev;
+  Self.frrEv.Show();
 end;
 
 destructor TF_HoukEv.Destroy();
 begin
- Self.fRREv.Free();
- inherited;
+  Self.frrEv.Free();
+  inherited;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEv.FillFromHouk(ev: THoukEv);
 begin
- Self.FillFuncs();
- Self.CB_Func.Text := ev.sound;
- Self.CB_Action.ItemIndex := Integer(ev.funcType);
- Self.fRREv.FillFromRR(ev.event);
+  Self.FillFuncs();
+  Self.CB_Func.Text := ev.sound;
+  Self.CB_Action.ItemIndex := Integer(ev.funcType);
+  Self.frrEv.FillFromRR(ev.event);
 end;
 
 procedure TF_HoukEv.ShowEmpty();
 begin
- Self.FillFuncs();
- Self.CB_Func.Text := '';
- Self.CB_Action.ItemIndex := 0;
- Self.fRREv.ShowEmpty();
+  Self.FillFuncs();
+  Self.CB_Func.Text := '';
+  Self.CB_Action.ItemIndex := 0;
+  Self.frrEv.ShowEmpty();
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEv.FillFuncs();
 var vyzn: TFuncVyznam;
 begin
- Self.CB_Func.Clear();
- for vyzn in FuncsFyznam.Items do
-   Self.CB_Func.Items.Add(vyzn.popis);
+  Self.CB_Func.Clear();
+  for vyzn in FuncsFyznam.Items do
+    Self.CB_Func.Items.Add(vyzn.popis);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TF_HoukEv.GetHoukEv(): THoukEv;
 begin
- Result := THoukEv.Create(Self.fRREv.GetRREv(), Self.CB_Func.Text,
-                           THoukFuncType(Self.CB_Action.ItemIndex));
+  Result := THoukEv.Create(Self.frrEv.GetRREv(), Self.CB_Func.Text, THoukFuncType(Self.CB_Action.ItemIndex));
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TF_HoukEv.InputValid(): Boolean;
 begin
- Result := Self.fRREv.InputValid() and (Self.CB_Action.ItemIndex > -1);
+  Result := Self.frrEv.InputValid() and (Self.CB_Action.ItemIndex > -1);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 end.

@@ -75,15 +75,14 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure SE_RCS_BoardExit(Sender: TObject);
     procedure B_speed_applyClick(Sender: TObject);
-    procedure LV_SpeedsChange(Sender: TObject; Item: TListItem;
-      Change: TItemChange);
+    procedure LV_SpeedsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
   private
-   NewBlk: Boolean;
-   Blk: TBlkRT;
-   OpenIndex: Integer;
-   CB_NavData: TArI;
-   CB_NavLindex, CB_NavSindex: Integer;
-   zastLichy, zastSudy: TF_BlkRTStopEvent;
+    NewBlk: Boolean;
+    Blk: TBlkRT;
+    OpenIndex: Integer;
+    CB_NavData: TArI;
+    CB_NavLindex, CB_NavSindex: Integer;
+    zastLichy, zastSudy: TF_BlkRTStopEvent;
 
     procedure NewBlkOpenForm();
     procedure NormalOpenForm();
@@ -102,12 +101,12 @@ var
 implementation
 
 uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, ownStrUtils,
-      AreaDb, Booster, Area;
+  AreaDb, Booster, Area;
 
 {$R *.dfm}
 
 procedure TF_BlkRT.OpenForm(BlokIndex: Integer);
- begin
+begin
   Self.OpenIndex := BlokIndex;
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
   Self.HlavniOpenForm();
@@ -116,37 +115,37 @@ procedure TF_BlkRT.OpenForm(BlokIndex: Integer);
   else
     Self.NormalOpenForm();
   Self.ShowModal();
- end;
+end;
 
 procedure TF_BlkRT.SE_RCS_BoardExit(Sender: TObject);
 begin
- Self.SE_Port1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
- Self.SE_Port2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port1.Value);
- Self.SE_Port3.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board3.Value, Self.SE_Port1.Value);
- Self.SE_Port4.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port1.Value);
+  Self.SE_Port1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
+  Self.SE_Port2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port1.Value);
+  Self.SE_Port3.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board3.Value, Self.SE_Port1.Value);
+  Self.SE_Port4.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port1.Value);
 end;
 
 procedure TF_BlkRT.NewBlkCreate();
- begin
+begin
   NewBlk := true;
   OpenForm(Blocks.count);
- end;
+end;
 
 procedure TF_BlkRT.NewBlkOpenForm();
- begin
+begin
   E_Nazev.Text := '';
-  SE_ID.Value := Blocks.GetBlkID(Blocks.count-1)+1;
+  SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
   E_Delka.Text := '0';
   CHB_SmycBlok.Checked := false;
   Self.CB_Zesil.ItemIndex := -1;
 
-  Self.SE_Port1.Value  := 0;
+  Self.SE_Port1.Value := 0;
   Self.SE_Board1.Value := 1;
-  Self.SE_Port2.Value  := 0;
+  Self.SE_Port2.Value := 0;
   Self.SE_Board2.Value := 1;
-  Self.SE_Port3.Value  := 0;
+  Self.SE_Port3.Value := 0;
   Self.SE_Board3.Value := 1;
-  Self.SE_Port4.Value  := 0;
+  Self.SE_Port4.Value := 0;
   Self.SE_Board4.Value := 1;
   Self.SE_RCS_BoardExit(Self);
 
@@ -174,127 +173,132 @@ procedure TF_BlkRT.NewBlkOpenForm();
 
   Self.Caption := 'Nový blok Traťový úsek';
   Self.ActiveControl := E_Nazev;
- end;
+end;
 
 procedure TF_BlkRT.NormalOpenForm();
 var glob: TBlkSettings;
-    TUsettings: TBlkRTSettings;
-    Usettings: TBlkTrackSettings;
-    i: Integer;
-    areas: TArstr;
-    area: TArea;
-    LI: TListItem;
- begin
-  if (Assigned(Self.Blk)) then glob := Self.Blk.GetGlobalSettings();
+  TUsettings: TBlkRTSettings;
+  Usettings: TBlkTrackSettings;
+  i: Integer;
+  areas: TArstr;
+  Area: TArea;
+  LI: TListItem;
+begin
+  if (Assigned(Self.Blk)) then
+    glob := Self.Blk.GetGlobalSettings();
   E_Nazev.Text := glob.name;
-  SE_ID.Value  := glob.id;
+  SE_ID.Value := glob.id;
 
-  for area in Self.Blk.areas do
-    Self.LB_Stanice.Items.Add(area.name);
+  for Area in Self.Blk.areas do
+    Self.LB_Stanice.Items.Add(Area.name);
 
-  SetLength(areas, Self.Blk.areas.Count);
-  for i := 0 to Self.Blk.areas.Count-1 do
+  SetLength(areas, Self.Blk.areas.count);
+  for i := 0 to Self.Blk.areas.count - 1 do
     areas[i] := Self.Blk.areas[i].id;
 
   if (Assigned(Self.Blk)) then
-   begin
+  begin
     TUsettings := Self.Blk.GetSettings();
-    Usettings  := TBlkTrack(Self.Blk).GetSettings();
-   end;
+    Usettings := TBlkTrack(Self.Blk).GetSettings();
+  end;
 
   Self.CHB_D1.Checked := false;
   Self.CHB_D2.Checked := false;
   Self.CHB_D3.Checked := false;
   Self.CHB_D4.Checked := false;
 
-  case (Usettings.RCSAddrs.Count) of
-    0, 1: begin
-      Self.CHB_D1.Checked := true;
-      Self.CHB_D1Click(Self.CHB_D1);
-    end;
-    2: begin
-      Self.CHB_D2.Checked := true;
-      Self.CHB_D1Click(Self.CHB_D2);
-    end;
-    3: begin
-      Self.CHB_D3.Checked := true;
-      Self.CHB_D1Click(Self.CHB_D3);
-    end;
-    4: begin
-      Self.CHB_D4.Checked := true;
-      Self.CHB_D1Click(Self.CHB_D4);
-    end;
-   end;//case
+  case (Usettings.RCSAddrs.count) of
+    0, 1:
+      begin
+        Self.CHB_D1.Checked := true;
+        Self.CHB_D1Click(Self.CHB_D1);
+      end;
+    2:
+      begin
+        Self.CHB_D2.Checked := true;
+        Self.CHB_D1Click(Self.CHB_D2);
+      end;
+    3:
+      begin
+        Self.CHB_D3.Checked := true;
+        Self.CHB_D1Click(Self.CHB_D3);
+      end;
+    4:
+      begin
+        Self.CHB_D4.Checked := true;
+        Self.CHB_D1Click(Self.CHB_D4);
+      end;
+  end; // case
 
-  if (Usettings.RCSAddrs.Count > 0) then
-   begin
+  if (Usettings.RCSAddrs.count > 0) then
+  begin
     if (Usettings.RCSAddrs[0].board > Cardinal(Self.SE_Board1.MaxValue)) then
       Self.SE_Board1.MaxValue := 0;
     Self.SE_Port1.MaxValue := 0;
 
-    Self.SE_Port1.Value  := Usettings.RCSAddrs[0].port;
+    Self.SE_Port1.Value := Usettings.RCSAddrs[0].port;
     Self.SE_Board1.Value := Usettings.RCSAddrs[0].board;
-   end else begin
-    Self.SE_Port1.Value  := 0;
+  end else begin
+    Self.SE_Port1.Value := 0;
     Self.SE_Board1.Value := 0;
-   end;
+  end;
 
-  if (Usettings.RCSAddrs.Count > 1) then
-   begin
+  if (Usettings.RCSAddrs.count > 1) then
+  begin
     if (Usettings.RCSAddrs[1].board > Cardinal(Self.SE_Board2.MaxValue)) then
       Self.SE_Board2.MaxValue := 0;
     Self.SE_Port2.MaxValue := 0;
 
-    Self.SE_Port2.Value  := Usettings.RCSAddrs[1].port;
+    Self.SE_Port2.Value := Usettings.RCSAddrs[1].port;
     Self.SE_Board2.Value := Usettings.RCSAddrs[1].board;
-   end else begin
-    Self.SE_Port2.Value  := 0;
+  end else begin
+    Self.SE_Port2.Value := 0;
     Self.SE_Board2.Value := 0;
-   end;
+  end;
 
-  if (Usettings.RCSAddrs.Count > 2) then
-   begin
+  if (Usettings.RCSAddrs.count > 2) then
+  begin
     if (Usettings.RCSAddrs[2].board > Cardinal(Self.SE_Board3.MaxValue)) then
       Self.SE_Board3.MaxValue := 0;
     Self.SE_Port3.MaxValue := 0;
 
-    Self.SE_Port3.Value  := Usettings.RCSAddrs[2].port;
+    Self.SE_Port3.Value := Usettings.RCSAddrs[2].port;
     Self.SE_Board3.Value := Usettings.RCSAddrs[2].board;
-   end else begin
-    Self.SE_Port3.Value  := 0;
+  end else begin
+    Self.SE_Port3.Value := 0;
     Self.SE_Board3.Value := 0;
-   end;
+  end;
 
-  if (Usettings.RCSAddrs.Count > 3) then
-   begin
+  if (Usettings.RCSAddrs.count > 3) then
+  begin
     if (Usettings.RCSAddrs[3].board > Cardinal(Self.SE_Board4.MaxValue)) then
       Self.SE_Board4.MaxValue := 0;
     Self.SE_Port4.MaxValue := 0;
 
-    Self.SE_Port4.Value  := Usettings.RCSAddrs[3].port;
+    Self.SE_Port4.Value := Usettings.RCSAddrs[3].port;
     Self.SE_Board4.Value := Usettings.RCSAddrs[3].board;
-   end else begin
-    Self.SE_Port4.Value  := 0;
+  end else begin
+    Self.SE_Port4.Value := 0;
     Self.SE_Board4.Value := 0;
-   end;
+  end;
 
   Self.SE_RCS_BoardExit(Self);
 
   Self.CB_Zesil.ItemIndex := -1;
-  for i := 0 to Boosters.sorted.Count-1 do
-   begin
+  for i := 0 to Boosters.sorted.count - 1 do
+  begin
     if (Boosters.sorted[i].id = Usettings.boosterId) then
-     begin
+    begin
       Self.CB_Zesil.ItemIndex := i;
       break;
-     end;
-   end;
+    end;
+  end;
 
   E_Delka.Text := FloatToStr(Usettings.lenght);
   CHB_SmycBlok.Checked := Usettings.loop;
 
   Self.CHB_Zastavka_Lichy.Checked := Assigned(TUsettings.stop) and Assigned(TUsettings.stop.evL);
-  Self.CHB_Zastavka_Sudy.Checked  := Assigned(TUsettings.stop) and Assigned(TUsettings.stop.evS);
+  Self.CHB_Zastavka_Sudy.Checked := Assigned(TUsettings.stop) and Assigned(TUsettings.stop.evS);
   Self.CHB_Zastavka_LichyClick(Self);
 
   Blocks.FillCB(Self.CB_NavL, @Self.CB_NavData, nil, nil, btSignal, TUsettings.signalLid);
@@ -309,27 +313,27 @@ var glob: TBlkSettings;
 
   Self.LV_Speeds.Clear();
   for i in TUsettings.speeds.Keys do
-   begin
+  begin
     LI := Self.LV_Speeds.Items.Add();
     LI.Caption := IntToStr(i);
     LI.SubItems.Add(IntToStr(TUsettings.speeds[i]) + ' km/h');
-   end;
+  end;
 
   if (TUsettings.stop <> nil) then
-   begin
+  begin
     if (TUsettings.stop.evL <> nil) then
       Self.zastLichy.OpenForm(TUsettings.stop.evL);
     if (TUsettings.stop.evS <> nil) then
       Self.zastSudy.OpenForm(TUsettings.stop.evS);
-   end;
+  end;
 
-  Self.Caption := 'Upravit blok '+glob.name+' (traťový úsek)';
+  Self.Caption := 'Upravit blok ' + glob.name + ' (traťový úsek)';
   Self.ActiveControl := Self.B_OK;
- end;
+end;
 
 procedure TF_BlkRT.HlavniOpenForm;
-var booster: TBooster;
- begin
+var Booster: TBooster;
+begin
   Self.LB_Stanice.Clear();
 
   Self.SE_Board1.MaxValue := RCSi.maxModuleAddrSafe;
@@ -337,158 +341,165 @@ var booster: TBooster;
   Self.SE_Board3.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_Board4.MaxValue := RCSi.maxModuleAddrSafe;
 
-  //nacteni zesilovacu
+  // nacteni zesilovacu
   Self.CB_Zesil.Clear();
-  for booster in Boosters.sorted do Self.CB_Zesil.Items.Add(booster.name + ' (' + booster.id + ')');
- end;
+  for Booster in Boosters.sorted do
+    Self.CB_Zesil.Items.Add(Booster.name + ' (' + Booster.id + ')');
+end;
 
-procedure TF_BlkRT.LV_SpeedsChange(Sender: TObject; Item: TListItem;
-  Change: TItemChange);
+procedure TF_BlkRT.LV_SpeedsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 var str: string;
 begin
- if (Self.LV_Speeds.Selected = nil) then
+  if (Self.LV_Speeds.Selected = nil) then
   begin
-   Self.SE_prechodnost.Value := 0;
-   Self.SE_speed.Value := 0;
+    Self.SE_prechodnost.Value := 0;
+    Self.SE_speed.Value := 0;
   end else begin
-   Self.SE_prechodnost.Value := StrToInt(Self.LV_Speeds.Selected.Caption);
-   str := Self.LV_Speeds.Selected.SubItems.Strings[0];
-   Self.SE_speed.Value := StrToInt(LeftStr(str, Length(str)-5));
+    Self.SE_prechodnost.Value := StrToInt(Self.LV_Speeds.Selected.Caption);
+    str := Self.LV_Speeds.Selected.SubItems.Strings[0];
+    Self.SE_speed.Value := StrToInt(LeftStr(str, Length(str) - 5));
   end;
 end;
 
 procedure TF_BlkRT.B_speed_applyClick(Sender: TObject);
 var LI: TListItem;
-    i: Integer;
-    prechodnost, speed: Integer;
+  i: Integer;
+  prechodnost, speed: Integer;
 begin
- prechodnost := Self.SE_prechodnost.Value;
- speed := Self.SE_speed.Value;
+  prechodnost := Self.SE_prechodnost.Value;
+  speed := Self.SE_speed.Value;
 
- if (speed <= 0) then
+  if (speed <= 0) then
   begin
-   // delete speed
-   for i := 0 to Self.LV_Speeds.Items.Count-1 do
+    // delete speed
+    for i := 0 to Self.LV_Speeds.Items.count - 1 do
     begin
-     if (Self.LV_Speeds.Items[i].Caption = IntToStr(prechodnost)) then
+      if (Self.LV_Speeds.Items[i].Caption = IntToStr(prechodnost)) then
       begin
-       Self.LV_Speeds.Items.Delete(i);
-       Exit();
+        Self.LV_Speeds.Items.Delete(i);
+        Exit();
       end;
     end;
-   Exit();
+    Exit();
   end;
 
- for LI in Self.LV_Speeds.Items do
+  for LI in Self.LV_Speeds.Items do
   begin
-   if (LI.Caption = IntToStr(prechodnost)) then
+    if (LI.Caption = IntToStr(prechodnost)) then
     begin
-     LI.SubItems.Strings[0] := IntToStr(speed) + ' km/h';
-     Exit();
+      LI.SubItems.Strings[0] := IntToStr(speed) + ' km/h';
+      Exit();
     end;
   end;
 
- LI := Self.LV_Speeds.Items.Add();
- LI.Caption := IntToStr(prechodnost);
- LI.SubItems.Add(IntToStr(speed) + ' km/h');
+  LI := Self.LV_Speeds.Items.Add();
+  LI.Caption := IntToStr(prechodnost);
+  LI.SubItems.Add(IntToStr(speed) + ' km/h');
 end;
 
 procedure TF_BlkRT.B_StornoClick(Sender: TObject);
- begin
+begin
   Self.Close;
- end;
+end;
 
 procedure TF_BlkRT.B_OKClick(Sender: TObject);
 var glob: TBlkSettings;
-    settings: TBlkTrackSettings;
-    TUsettings: TBlkRTSettings;
-    str: string;
-    speeds: TDictionary<Cardinal, Cardinal>;
- begin
+  settings: TBlkTrackSettings;
+  TUsettings: TBlkRTSettings;
+  str: string;
+  speeds: TDictionary<Cardinal, Cardinal>;
+begin
   if (E_Nazev.Text = '') then
-   begin
+  begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
   if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
-   begin
+  begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
   if (Self.CB_Zesil.ItemIndex = -1) then
-   begin
+  begin
     Application.MessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
   if ((Self.CHB_NavL.Checked) and (Self.CB_NavL.ItemIndex = -1)) then
-   begin
-    Application.MessageBox('Vyberte návěstidlo kryjící úsek v lichém směru!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+  begin
+    Application.MessageBox('Vyberte návěstidlo kryjící úsek v lichém směru!', 'Nelze uložit data',
+      MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
   if ((Self.CHB_NavS.Checked) and (Self.CB_NavS.ItemIndex = -1)) then
-   begin
-    Application.MessageBox('Vyberte návěstidlo kryjící úsek v sudém směru!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+  begin
+    Application.MessageBox('Vyberte návěstidlo kryjící úsek v sudém směru!', 'Nelze uložit data',
+      MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
 
   if (CHB_Zastavka_Lichy.Checked) then
-   begin
+  begin
     str := Self.zastLichy.Check();
     if (str <> '') then
-     begin
-      Application.MessageBox(PChar('Zastavovací událost zastávky v lichém směru:'+#13#10+str), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-      Exit();
-     end;
-   end;
-
-  if (CHB_Zastavka_Sudy.Checked) then
-   begin
-    str := Self.zastSudy.Check();
-    if (str <> '') then
-     begin
-      Application.MessageBox(PChar('Zastavovací událost zastávky v sudém směru:'+#13#10+str), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-      Exit();
-     end;
-   end;
-
-  try
-   speeds := Self.GetSpeeds();
-  except
-   on E: Exception do
     begin
-     Application.MessageBox(PChar('Nepodařilo se načíst rychlosti:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-     Exit();
+      Application.MessageBox(PChar('Zastavovací událost zastávky v lichém směru:' + #13#10 + str), 'Nelze uložit data',
+        MB_OK OR MB_ICONWARNING);
+      Exit();
     end;
   end;
 
-  if (speeds.Keys.Count = 0) then
-   begin
+  if (CHB_Zastavka_Sudy.Checked) then
+  begin
+    str := Self.zastSudy.Check();
+    if (str <> '') then
+    begin
+      Application.MessageBox(PChar('Zastavovací událost zastávky v sudém směru:' + #13#10 + str), 'Nelze uložit data',
+        MB_OK OR MB_ICONWARNING);
+      Exit();
+    end;
+  end;
+
+  try
+    speeds := Self.GetSpeeds();
+  except
+    on E: Exception do
+    begin
+      Application.MessageBox(PChar('Nepodařilo se načíst rychlosti:' + #13#10 + E.Message), 'Nelze uložit data',
+        MB_OK OR MB_ICONWARNING);
+      Exit();
+    end;
+  end;
+
+  if (speeds.Keys.count = 0) then
+  begin
     speeds.Free();
-    Application.MessageBox('Rychlostní tabulka musí mít alespoň jednu rychlost!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Rychlostní tabulka musí mít alespoň jednu rychlost!', 'Nelze uložit data',
+      MB_OK OR MB_ICONWARNING);
     Exit();
-   end;
+  end;
 
   glob.name := Self.E_Nazev.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btRT;
 
   if (NewBlk) then
-   begin
+  begin
     glob.note := '';
     try
       Blk := Blocks.Add(glob) as TBlkRT;
     except
       on E: Exception do
-       begin
+      begin
         speeds.Free();
-        Application.MessageBox(PChar('Nepodařilo se přidat blok:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        Application.MessageBox(PChar('Nepodařilo se přidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
+          MB_OK OR MB_ICONWARNING);
         Exit();
-       end;
+      end;
     end;
-   end else begin
+  end else begin
     glob.note := Self.Blk.note;
     Self.Blk.SetGlobalSettings(glob);
-   end;
+  end;
 
   // ukladani dat
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
@@ -501,12 +512,12 @@ var glob: TBlkSettings;
   if (Self.CHB_D4.Checked) then
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board4.Value, Self.SE_Port4.Value));
 
-  settings.lenght := StrToFloatDef(Self.E_Delka.Text,0);
+  settings.lenght := StrToFloatDef(Self.E_Delka.Text, 0);
   settings.loop := Self.CHB_SmycBlok.Checked;
   settings.boosterId := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
   settings.maxTrains := 1;
 
-  TUSettings.speeds := speeds;
+  TUsettings.speeds := speeds;
 
   if (Self.CHB_NavL.Checked) then
     TUsettings.signalLid := Blocks.GetBlkID(Self.CB_NavData[Self.CB_NavL.ItemIndex])
@@ -518,15 +529,14 @@ var glob: TBlkSettings;
   else
     TUsettings.signalSid := -1;
 
-
   if ((Self.CHB_Zastavka_Lichy.Checked) or (Self.CHB_Zastavka_Sudy.Checked)) then
-   begin
+  begin
     TUsettings.stop := TBlkRTStop.Create();
-    TUsettings.stop.trainTypeRe.Compile('^'+Self.E_Zast_Spr.Text+'$', false);
+    TUsettings.stop.trainTypeRe.Compile('^' + Self.E_Zast_Spr.Text + '$', false);
     TUsettings.stop.maxLength := Self.SE_Zast_DelkaSpr.Value;
     try
       TUsettings.stop.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Zast_Delay.Text, 2)),
-                                              StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
+        StrToInt(RightStr(Self.ME_Zast_Delay.Text, 2)), 0);
     except
       speeds.Free();
       TUsettings.stop.Free();
@@ -543,8 +553,9 @@ var glob: TBlkSettings;
       TUsettings.stop.evS := Self.zastSudy.GetEvent()
     else
       TUsettings.stop.evS := nil;
-   end else
-     TUsettings.stop := nil;
+  end
+  else
+    TUsettings.stop := nil;
 
   settings.houkEvL := TBlkTrack(Self.Blk).GetSettings().houkEvL;
   settings.houkEvS := TBlkTrack(Self.Blk).GetSettings().houkEvS;
@@ -554,143 +565,154 @@ var glob: TBlkSettings;
 
   Self.Close();
   Self.Blk.Change();
- end;
+end;
 
 procedure TF_BlkRT.FormClose(Sender: TObject; var Action: TCloseAction);
- begin
-  OpenIndex  := -1;
-  NewBlk     := false;
+begin
+  OpenIndex := -1;
+  NewBlk := false;
   BlokyTableData.UpdateTable();
- end;
+end;
 
 procedure TF_BlkRT.FormCreate(Sender: TObject);
 begin
- Self.zastLichy := TF_BlkRTStopEvent.Create(Self.TS_Zast_lichy);
- Self.zastLichy.Parent := Self.TS_Zast_lichy;
- Self.zastLichy.Show();
+  Self.zastLichy := TF_BlkRTStopEvent.Create(Self.TS_Zast_lichy);
+  Self.zastLichy.Parent := Self.TS_Zast_lichy;
+  Self.zastLichy.Show();
 
- Self.zastSudy := TF_BlkRTStopEvent.Create(Self.TS_Zast_lichy);
- Self.zastSudy.Parent := Self.TS_Zast_sudy;
- Self.zastSudy.Show();
+  Self.zastSudy := TF_BlkRTStopEvent.Create(Self.TS_Zast_lichy);
+  Self.zastSudy.Parent := Self.TS_Zast_sudy;
+  Self.zastSudy.Show();
 end;
 
 procedure TF_BlkRT.FormDestroy(Sender: TObject);
 begin
- Self.zastLichy.Free();
- Self.zastSudy.Free();
+  Self.zastLichy.Free();
+  Self.zastSudy.Free();
 end;
 
 procedure TF_BlkRT.CHB_D1Click(Sender: TObject);
- begin
+begin
   case ((Sender as TCheckBox).Tag) of
-   1: begin
-    Self.SE_Port1.Enabled  := (Sender as TCheckBox).Checked;
-    Self.SE_Board1.Enabled := (Sender as TCheckBox).Checked;
-   end;
+    1:
+      begin
+        Self.SE_Port1.Enabled := (Sender as TCheckBox).Checked;
+        Self.SE_Board1.Enabled := (Sender as TCheckBox).Checked;
+      end;
 
-   2: begin
-    Self.SE_Port2.Enabled  := (Sender as TCheckBox).Checked;
-    Self.SE_Board2.Enabled := (Sender as TCheckBox).Checked;
-   end;
+    2:
+      begin
+        Self.SE_Port2.Enabled := (Sender as TCheckBox).Checked;
+        Self.SE_Board2.Enabled := (Sender as TCheckBox).Checked;
+      end;
 
-   3: begin
-    Self.SE_Port3.Enabled  := (Sender as TCheckBox).Checked;
-    Self.SE_Board3.Enabled := (Sender as TCheckBox).Checked;
-   end;
+    3:
+      begin
+        Self.SE_Port3.Enabled := (Sender as TCheckBox).Checked;
+        Self.SE_Board3.Enabled := (Sender as TCheckBox).Checked;
+      end;
 
-   4: begin
-    Self.SE_Port4.Enabled  := (Sender as TCheckBox).Checked;
-    Self.SE_Board4.Enabled := (Sender as TCheckBox).Checked;
-   end;
-  end;//case
+    4:
+      begin
+        Self.SE_Port4.Enabled := (Sender as TCheckBox).Checked;
+        Self.SE_Board4.Enabled := (Sender as TCheckBox).Checked;
+      end;
+  end; // case
 
   if ((Sender as TCheckBox).Checked) then
-   begin
+  begin
     // checked
     case ((Sender as TCheckBox).Tag) of
-     2: Self.CHB_D1.Checked := true;
-     3: Self.CHB_D2.Checked := true;
-     4: Self.CHB_D3.Checked := true;
+      2:
+        Self.CHB_D1.Checked := true;
+      3:
+        Self.CHB_D2.Checked := true;
+      4:
+        Self.CHB_D3.Checked := true;
     end;
-   end else begin
-    //not checked
+  end else begin
+    // not checked
     case ((Sender as TCheckBox).Tag) of
-     1: Self.CHB_D2.Checked := false;
-     2: Self.CHB_D3.Checked := false;
-     3: Self.CHB_D4.Checked := false;
+      1:
+        Self.CHB_D2.Checked := false;
+      2:
+        Self.CHB_D3.Checked := false;
+      3:
+        Self.CHB_D4.Checked := false;
     end;
-   end;
+  end;
 
- end;
+end;
 
 procedure TF_BlkRT.CHB_NavLClick(Sender: TObject);
 begin
- Self.CB_NavL.Enabled := Self.CHB_NavL.Checked;
- if (not Self.CHB_NavL.Checked) then
-   Self.CB_NavL.ItemIndex := -1
- else
-   Self.CB_NavL.ItemIndex := Self.CB_NavLindex;
+  Self.CB_NavL.Enabled := Self.CHB_NavL.Checked;
+  if (not Self.CHB_NavL.Checked) then
+    Self.CB_NavL.ItemIndex := -1
+  else
+    Self.CB_NavL.ItemIndex := Self.CB_NavLindex;
 end;
 
 procedure TF_BlkRT.CHB_NavSClick(Sender: TObject);
 begin
- Self.CB_NavS.Enabled := Self.CHB_NavS.Checked;
- if (not Self.CHB_NavS.Checked) then
-   Self.CB_NavS.ItemIndex := -1
- else
-   Self.CB_NavS.ItemIndex := Self.CB_NavSindex;
+  Self.CB_NavS.Enabled := Self.CHB_NavS.Checked;
+  if (not Self.CHB_NavS.Checked) then
+    Self.CB_NavS.ItemIndex := -1
+  else
+    Self.CB_NavS.ItemIndex := Self.CB_NavSindex;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_BlkRT.CHB_Zastavka_LichyClick(Sender: TObject);
 var zast: TBlkRTStop;
 begin
- if ((Self.CHB_Zastavka_Lichy.Checked) or (Self.CHB_Zastavka_Sudy.Checked)) then
+  if ((Self.CHB_Zastavka_Lichy.Checked) or (Self.CHB_Zastavka_Sudy.Checked)) then
   begin
-   Self.E_Zast_Spr.Enabled := true;
-   Self.SE_Zast_DelkaSpr.Enabled := true;
-   Self.ME_Zast_Delay.Enabled := true;
-   Self.PC_Zastavka.Enabled := true;
+    Self.E_Zast_Spr.Enabled := true;
+    Self.SE_Zast_DelkaSpr.Enabled := true;
+    Self.ME_Zast_Delay.Enabled := true;
+    Self.PC_Zastavka.Enabled := true;
 
-   if ((Assigned(Self.Blk)) and (Self.Blk.GetSettings.stop <> nil)) then
+    if ((Assigned(Self.Blk)) and (Self.Blk.GetSettings.stop <> nil)) then
     begin
-     zast := Self.Blk.GetSettings.stop;
-     Self.E_Zast_Spr.Text := Copy(zast.trainTypeRe.Pattern, 2, Length(zast.trainTypeRe.Pattern)-2);
-     Self.SE_Zast_DelkaSpr.Value := zast.maxLength;
-     Self.ME_Zast_Delay.Text := FormatDateTime('nn:ss', zast.delay);
+      zast := Self.Blk.GetSettings.stop;
+      Self.E_Zast_Spr.Text := Copy(zast.trainTypeRe.Pattern, 2, Length(zast.trainTypeRe.Pattern) - 2);
+      Self.SE_Zast_DelkaSpr.Value := zast.maxLength;
+      Self.ME_Zast_Delay.Text := FormatDateTime('nn:ss', zast.delay);
     end;
   end else begin
-   Self.E_Zast_Spr.Enabled := false;
-   Self.SE_Zast_DelkaSpr.Enabled := false;
-   Self.ME_Zast_Delay.Enabled := false;
-   Self.PC_Zastavka.Enabled := false;
+    Self.E_Zast_Spr.Enabled := false;
+    Self.SE_Zast_DelkaSpr.Enabled := false;
+    Self.ME_Zast_Delay.Enabled := false;
+    Self.PC_Zastavka.Enabled := false;
   end;
 
- Self.TS_Zast_lichy.TabVisible := Self.CHB_Zastavka_Lichy.Checked;
- Self.TS_Zast_sudy.TabVisible  := Self.CHB_Zastavka_Sudy.Checked;
+  Self.TS_Zast_lichy.TabVisible := Self.CHB_Zastavka_Lichy.Checked;
+  Self.TS_Zast_sudy.TabVisible := Self.CHB_Zastavka_Sudy.Checked;
 
- if (((not Self.CHB_Zastavka_Lichy.Checked) and ((not Self.CHB_Zastavka_Sudy.Checked))) or (not Assigned(Self.Blk))) then
+  if (((not Self.CHB_Zastavka_Lichy.Checked) and ((not Self.CHB_Zastavka_Sudy.Checked))) or (not Assigned(Self.Blk)))
+  then
   begin
-   Self.E_Zast_Spr.Text := '.*';
-   Self.SE_Zast_DelkaSpr.Value := 0;
-   Self.ME_Zast_Delay.Text := '00:00';
-   Self.PC_Zastavka.Enabled := false;
+    Self.E_Zast_Spr.Text := '.*';
+    Self.SE_Zast_DelkaSpr.Value := 0;
+    Self.ME_Zast_Delay.Text := '00:00';
+    Self.PC_Zastavka.Enabled := false;
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 function TF_BlkRT.GetSpeeds(): TDictionary<Cardinal, Cardinal>;
 var LI: TListItem;
-    speed: string;
+  speed: string;
 begin
- Result := TDictionary<Cardinal, Cardinal>.Create();
- for LI in Self.LV_Speeds.Items do
+  Result := TDictionary<Cardinal, Cardinal>.Create();
+  for LI in Self.LV_Speeds.Items do
   begin
-   speed := LeftStr(LI.SubItems.Strings[0], Length(LI.SubItems.Strings[0])-5);
-   Result.Add(StrToInt(LI.Caption), StrToInt(speed));
+    speed := LeftStr(LI.SubItems.Strings[0], Length(LI.SubItems.Strings[0]) - 5);
+    Result.Add(StrToInt(LI.Caption), StrToInt(speed));
   end;
 end;
 
-end.//unit
+end.// unit

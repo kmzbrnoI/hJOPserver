@@ -8,7 +8,7 @@ uses
   ActnList, AppEvnts, ComObj;
 
 const
- _CONSOLE_V = '1.6';
+  _CONSOLE_V = '1.6';
 
 type
   TF_Console = class(TForm)
@@ -33,149 +33,155 @@ var
 implementation
 
 uses fMain, fSettings, TechnologieRCS, GetSystems, TechnologieTrakce,
-     Logging, Block, BlockTrack, BlockDb;
+  Logging, Block, BlockTrack, BlockDb;
 
 {$R *.dfm}
 
 procedure TF_Console.E_consoleKeyPress(Sender: TObject; var Key: Char);
- begin
-  if (Key = #13) then B_OK_consoleClick(self);
- end;
+begin
+  if (Key = #13) then
+    B_OK_consoleClick(self);
+end;
 
 procedure TF_Console.FormCreate(Sender: TObject);
 begin
- Self.M_console.Lines.Add('Spustena konzole - v '+_CONSOLE_V);
- Self.M_console.Lines.Add('------------------------');
- Self.M_console.Lines.Add('> ');
+  self.M_console.Lines.Add('Spustena konzole - v ' + _CONSOLE_V);
+  self.M_console.Lines.Add('------------------------');
+  self.M_console.Lines.Add('> ');
 end;
 
 procedure TF_Console.B_OK_consoleClick(Sender: TObject);
-var pole_dat: TStrings;
-    Blk: TBlk;
+var
+  strings: TStrings;
+  blk: TBlk;
 begin
- pole_dat := TStringList.Create;
+  strings := TStringList.Create();
 
- try
-   ExtractStrings([' ','(',')'], [], PChar(LowerCase(E_console.Text)), pole_dat);
+  try
+    ExtractStrings([' ', '(', ')'], [], PChar(LowerCase(E_console.Text)), strings);
 
-   M_console.Lines.Strings[M_console.Lines.Count-1] := M_console.Lines.Strings[M_console.Lines.Count-1] + E_console.Text;
+    M_console.Lines.strings[M_console.Lines.Count - 1] := M_console.Lines.strings[M_console.Lines.Count - 1] +
+      E_console.Text;
 
-   if (F_Options.CHB_Log_console.Checked) then
-     writelog('Console: '+E_console.Text, WR_CONSOLE);
+    if (F_Options.CHB_Log_console.Checked) then
+      writelog('Console: ' + E_console.Text, WR_CONSOLE);
 
-   if (pole_dat.Count <> 0) then
+    if (strings.Count <> 0) then
     begin
-     if (pole_dat[0] = 'help') then
+      if (strings[0] = 'help') then
       begin
-       M_console.Lines.Add('Napoveda:');
-       M_console.Lines.Add('centrala [open/close]       Pripojeni k centrale');
-       M_console.Lines.Add('rcs [start/stop/open/close] Povely pro RCS');
-       M_console.Lines.Add('clear                       Smaze konzoli');
-       M_console.Lines.Add('exit                        Zavre okno konzole');
-       M_console.Lines.Add('app-exit                    Nouzove regulerni ukonceni aplikace');
-       M_console.Lines.Add('nuz [id bloku useku]        Nouzove uvolneni zaveru useku');
+        M_console.Lines.Add('Napoveda:');
+        M_console.Lines.Add('centrala [open/close]       Pripojeni k centrale');
+        M_console.Lines.Add('rcs [start/stop/open/close] Povely pro RCS');
+        M_console.Lines.Add('clear                       Smaze konzoli');
+        M_console.Lines.Add('exit                        Zavre okno konzole');
+        M_console.Lines.Add('app-exit                    Nouzove regulerni ukonceni aplikace');
+        M_console.Lines.Add('nuz [id bloku useku]        Nouzove uvolneni zaveru useku');
       end;
 
-     if (pole_dat[0] = 'clear') then PM_DeleteConsoleClick(Self);
+      if (strings[0] = 'clear') then
+        PM_DeleteConsoleClick(self);
 
-     if (pole_dat[0] = 'exit') then
+      if (strings[0] = 'exit') then
       begin
-       M_console.Lines.Add('Zavreno okno konzole');
-       F_Console.Close;
+        M_console.Lines.Add('Zavreno okno konzole');
+        F_Console.Close;
       end;
 
-     if (pole_dat[0] = 'centrala') and (pole_dat.Count >= 2) then
+      if (strings[0] = 'centrala') and (strings.Count >= 2) then
       begin
-       if (pole_dat[1] = 'open') then
+        if (strings[1] = 'open') then
         begin
-         M_console.Lines.Add('Pripojuji se k centrale...');
-         try
-           TrakceI.Connect();
-         except
-           on E: Exception do
+          M_console.Lines.Add('Pripojuji se k centrale...');
+          try
+            TrakceI.Connect();
+          except
+            on E: Exception do
             begin
-             M_console.Lines.Add(E.Message);
-             Exit();
+              M_console.Lines.Add(E.Message);
+              Exit();
             end;
-         end;
+          end;
 
-         M_console.Lines.Add('Pripojeno k centrale');
+          M_console.Lines.Add('Pripojeno k centrale');
         end;
 
-       if (pole_dat[1] = 'close') then
+        if (strings[1] = 'close') then
         begin
-         M_console.Lines.Add('Odpojuji se od cntraly...');
+          M_console.Lines.Add('Odpojuji se od cntraly...');
 
-         try
-           TrakceI.Disconnect();
-         except
-           on E: Exception do
+          try
+            TrakceI.Disconnect();
+          except
+            on E: Exception do
             begin
-             M_console.Lines.Add(E.Message);
-             Exit();
+              M_console.Lines.Add(E.Message);
+              Exit();
             end;
-         end;
-         M_console.Lines.Add('Odpojeno od centraly');
+          end;
+          M_console.Lines.Add('Odpojeno od centraly');
         end;
       end;
 
-     if (pole_dat[0] = 'rcs') and (pole_dat.Count >= 2) then
+      if (strings[0] = 'rcs') and (strings.Count >= 2) then
       begin
-       if (pole_dat[1] = 'start') then
-         F_Main.A_RCS_GoExecute(Self);
+        if (strings[1] = 'start') then
+          F_Main.A_RCS_GoExecute(self);
 
-       if (pole_dat[1] = 'stop') then
-         F_Main.A_RCS_StopExecute(Self);
+        if (strings[1] = 'stop') then
+          F_Main.A_RCS_StopExecute(self);
 
-       if (pole_dat[1] = 'open') then
-         F_Main.A_RCS_OpenExecute(Self);
+        if (strings[1] = 'open') then
+          F_Main.A_RCS_OpenExecute(self);
 
-       if (pole_dat[1] = 'close') then
-         F_Main.A_RCS_CloseExecute(Self);
+        if (strings[1] = 'close') then
+          F_Main.A_RCS_CloseExecute(self);
       end;
 
-     if (pole_dat[0] = 'app-exit') then
+      if (strings[0] = 'app-exit') then
       begin
-       F_Main.NUZClose := true;
-       F_Main.CloseMessage := false;
-       F_Main.Close();
-       Exit();
+        F_Main.NUZClose := true;
+        F_Main.CloseMessage := false;
+        F_Main.Close();
+        Exit();
       end;
 
-      if (pole_dat[0] = 'nuz') then
-       begin
-        if (pole_dat.Count < 2) then Exit();
+      if (strings[0] = 'nuz') then
+      begin
+        if (strings.Count < 2) then
+          Exit();
 
-        Blocks.GetBlkByID(StrToInt(pole_dat[1]), Blk);
+        Blocks.GetBlkByID(StrToInt(strings[1]), blk);
 
-        if (Blk = nil) then
-         begin
+        if (blk = nil) then
+        begin
           M_console.Lines.Add('Blok s timto id neexistuje');
-         end else begin
-          case (Blk.typ) of
-           btTrack, btRT: begin
-             (Blk as TBlkTrack).Zaver := TZaver.no;
-             M_console.Lines.Add('Zrusen zaver useku '+Blk.name);
-           end;
+        end else begin
+          case (blk.typ) of
+            btTrack, btRT:
+              begin
+                (blk as TBlkTrack).Zaver := TZaver.no;
+                M_console.Lines.Add('Zrusen zaver useku ' + blk.name);
+              end;
           else
             M_console.Lines.Add('Na bloku s timto typem neumim provest NUZ');
           end;
-         end;
-       end;
-    end;//Count <> 0
- except
-   on E: Exception do
-     M_Console.Lines.Add('Exception : ' + E.Message);
- end;
+        end;
+      end;
+    end; // Count <> 0
+  except
+    on E: Exception do
+      M_console.Lines.Add('Exception : ' + E.Message);
+  end;
 
- M_console.Lines.Add('> ');
- E_console.Text := '';
- pole_dat.Free;
+  M_console.Lines.Add('> ');
+  E_console.Text := '';
+  strings.Free;
 end;
 
 procedure TF_Console.PM_DeleteConsoleClick(Sender: TObject);
- begin
+begin
   M_console.Clear();
- end;
+end;
 
-end.//unit
+end.

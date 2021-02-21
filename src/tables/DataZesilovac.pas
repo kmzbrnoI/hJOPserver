@@ -7,87 +7,89 @@ interface
 uses ComCtrls, SysUtils;
 
 type
-  TZesTableData=class
-    private
-      LV: TListView;
-      changed: Boolean;
+  TZesTableData = class
+  private
+    LV: TListView;
+    changed: Boolean;
 
-    public
+  public
 
-      procedure LoadToTable();
-      procedure UpdateTable();
-      procedure ZesChange();
+    procedure LoadToTable();
+    procedure UpdateTable();
+    procedure ZesChange();
 
-      constructor Create(LV: TListView);
+    constructor Create(LV: TListView);
   end;
 
 var
-  ZesTableData : TZesTableData;
+  ZesTableData: TZesTableData;
 
 implementation
 
 uses Booster, BoosterDb;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 constructor TZesTableData.Create(LV: TListView);
 begin
- inherited Create();
- Self.LV := LV;
- Self.changed := true;
-end;//ctor
+  inherited Create();
+  Self.LV := LV;
+  Self.changed := true;
+end; // ctor
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TZesTableData.LoadToTable();
 var LI: TListItem;
-    booster: TBooster;
+  Booster: TBooster;
 begin
- Self.LV.Clear();
+  Self.LV.Clear();
 
- for booster in Boosters.sorted do
+  for Booster in Boosters.sorted do
   begin
-   LI := Self.LV.Items.Add;
+    LI := Self.LV.Items.Add;
 
-   LI.Caption := booster.id;
-   LI.SubItems.Add(booster.name);
-   if (booster.isOverloadDetection) then
-     LI.SubItems.Add(booster.settings.RCS.overload.ToString())
-   else
-     LI.SubItems.Add('-');
-   if (booster.isPowerDetection) then
-     LI.SubItems.Add(booster.settings.RCS.power.ToString())
-   else
-     LI.SubItems.Add('-');
-   if (booster.isDCCdetection) then
-     LI.SubItems.Add(booster.settings.RCS.DCC.ToString())
-   else
-     LI.SubItems.Add('-');
+    LI.Caption := Booster.id;
+    LI.SubItems.Add(Booster.name);
+    if (Booster.isOverloadDetection) then
+      LI.SubItems.Add(Booster.settings.RCS.overload.ToString())
+    else
+      LI.SubItems.Add('-');
+    if (Booster.isPowerDetection) then
+      LI.SubItems.Add(Booster.settings.RCS.power.ToString())
+    else
+      LI.SubItems.Add('-');
+    if (Booster.isDCCdetection) then
+      LI.SubItems.Add(Booster.settings.RCS.DCC.ToString())
+    else
+      LI.SubItems.Add('-');
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TZesTableData.UpdateTable();
 begin
- if (not Self.changed) then Exit();
+  if (not Self.changed) then
+    Exit();
 
- Self.LV.Repaint();
- Self.changed := false;
+  Self.LV.Repaint();
+  Self.changed := false;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TZesTableData.ZesChange();
 begin
- Self.changed := true;
+  Self.changed := true;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
 
 initialization
 
 finalization
- ZesTableData.Free();
 
-end.//unit
+ZesTableData.Free();
+
+end.// unit

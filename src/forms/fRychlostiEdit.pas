@@ -1,4 +1,4 @@
-unit fRychlostiEdit;
+﻿unit fRychlostiEdit;
 
 interface
 
@@ -15,13 +15,12 @@ type
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure SE_RychlostKeyUp(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure SE_RychlostKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
-   openStep: Integer;
+    openStep: Integer;
 
   public
-   procedure OpenForm(step: Cardinal);
+    procedure OpenForm(step: Cardinal);
   end;
 
 var
@@ -34,44 +33,43 @@ uses fMain, fSettings, TechnologieTrakce;
 {$R *.dfm}
 
 procedure TF_RychlostiEdit.OpenForm(step: Cardinal);
- begin
+begin
   Self.openStep := step;
   SE_Rychlost.Value := TrakceI.Speed(step);
-  F_RychlostiEdit.Caption := 'Editovat stupeň '+IntToStr(step);
+  F_RychlostiEdit.Caption := 'Editovat stupeň ' + IntToStr(step);
   Self.ActiveControl := Self.SE_Rychlost;
   F_RychlostiEdit.ShowModal;
- end;
+end;
 
-procedure TF_RychlostiEdit.SE_RychlostKeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TF_RychlostiEdit.SE_RychlostKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
- if (key = 13) then Self.B_SaveClick(Self);
+  if (Key = 13) then
+    Self.B_SaveClick(Self);
 end;
 
 procedure TF_RychlostiEdit.B_StornoClick(Sender: TObject);
- begin
+begin
   F_RychlostiEdit.Close;
- end;
+end;
 
 procedure TF_RychlostiEdit.B_SaveClick(Sender: TObject);
- begin
+begin
   try
     TrakceI.SetStepSpeed(Self.openStep, SE_Rychlost.Value);
   except
     on E: Exception do
-     begin
+    begin
       Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
       Exit();
-     end;
+    end;
   end;
-  F_Options.LV_DigiRych.Items[Self.openStep].SubItems[0] := IntToStr(Self.SE_Rychlost.Value)+' km/h';
+  F_Options.LV_DigiRych.Items[Self.openStep].SubItems[0] := IntToStr(Self.SE_Rychlost.Value) + ' km/h';
   Self.Close();
- end;
+end;
 
-procedure TF_RychlostiEdit.FormClose(Sender: TObject;
-  var Action: TCloseAction);
- begin
+procedure TF_RychlostiEdit.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
   Self.openStep := -1;
- end;
+end;
 
-end.//unit
+end.// unit

@@ -5,10 +5,10 @@ interface
 uses TechnologieRCS, Classes, ownStrUtils, SysUtils;
 
 type
-  TOrLighting = class
-   name: string;
-   rcsAddr: TRCSAddr;
-   default_state: Boolean;
+  TAreaLighting = class
+    name: string;
+    rcsAddr: TRCSAddr;
+    default_state: Boolean;
 
     constructor Create(spnlitem: string);
     procedure Parse(spnlitem: string);
@@ -17,37 +17,36 @@ type
     property active: Boolean read GetActive;
   end;
 
-
 implementation
 
-constructor TOrLighting.Create(spnlitem: string);
+constructor TAreaLighting.Create(spnlitem: string);
 begin
- inherited Create();
+  inherited Create();
 
- Self.default_state := false;
- Self.Parse(spnlitem);
+  Self.default_state := false;
+  Self.Parse(spnlitem);
 end;
 
-procedure TOrLighting.Parse(spnlitem: string);
+procedure TAreaLighting.Parse(spnlitem: string);
 var strs: TStrings;
 begin
- strs := TStringList.Create();
- try
-   ExtractStringsEx(['|'], [], spnlitem, strs);
-   Self.name := strs[2];
-   Self.rcsAddr := TRCS.RCSAddr(StrToInt(strs[0]), StrToInt(strs[1]));
- finally
-   strs.Free();
- end;
+  strs := TStringList.Create();
+  try
+    ExtractStringsEx(['|'], [], spnlitem, strs);
+    Self.name := strs[2];
+    Self.rcsAddr := TRCS.rcsAddr(StrToInt(strs[0]), StrToInt(strs[1]));
+  finally
+    strs.Free();
+  end;
 end;
 
-function TOrLighting.GetActive(): Boolean;
+function TAreaLighting.GetActive(): Boolean;
 begin
- try
-   Result := (RCSi.GetOutput(Self.rcsAddr) = 1);
- except
-   Result := false;
- end;
+  try
+    Result := (RCSi.GetOutput(Self.rcsAddr) = 1);
+  except
+    Result := false;
+  end;
 end;
 
 end.

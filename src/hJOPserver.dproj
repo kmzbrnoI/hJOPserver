@@ -157,6 +157,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <VerInfo_AutoGenVersion>false</VerInfo_AutoGenVersion>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
+        <Icon_MainIcon>..\icons\hJOPserver.ico</Icon_MainIcon>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -188,7 +189,6 @@ $(PreBuildEvent)]]></PreBuildEvent>
             <Form>F_BlkCrossing</Form>
         </DCCReference>
         <DCCReference Include="helpers\version.pas"/>
-        <DCCReference Include="helpers\adCpuUsage.pas"/>
         <DCCReference Include="forms\fZesilovacEdit.pas">
             <Form>F_ZesilovacEdit</Form>
         </DCCReference>
@@ -459,6 +459,12 @@ $(PreBuildEvent)]]></PreBuildEvent>
                 <Platform value="Win64">True</Platform>
             </Platforms>
             <Deployment Version="3">
+                <DeployFile LocalName="..\..\..\KMZ\hJOP\serverOther\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>hJOPserver.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\..\..\KMZ\hJOP\serverOther\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>hJOPserver.exe</RemoteName>

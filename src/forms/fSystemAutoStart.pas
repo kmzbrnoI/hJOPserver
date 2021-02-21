@@ -30,15 +30,15 @@ uses fMain, Logging;
 {$R *.dfm}
 
 procedure TF_AutoStartSystems.FormShow(Sender: TObject);
- begin
+begin
   F_AutoStartSystems.Show;
- end;
+end;
 
 procedure TF_AutoStartSystems.B_AbortClick(Sender: TObject);
- begin
+begin
   WriteLog('Automaticke pripojovani k systemum selhalo - vstup uzivatele', WR_MESSAGE);
   F_Main.KomunikacePocitani := 0;
   F_AutoStartSystems.Close;
- end;
+end;
 
-end.//unit
+end.// unit
