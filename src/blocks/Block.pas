@@ -279,8 +279,9 @@ end;
 
 procedure TBlk.CallChangeEvents(var events: TChangeEvents);
 begin
-  for var i: Integer := 0 to events.count - 1 do
-    if (Assigned(events[i].func)) then
+  for var i: Integer := events.count - 1 downto 0 do
+  begin
+    if ((i < events.Count) and (Assigned(events[i].func))) then // event could remove another event
     begin
       try
         events[i].func(Self, events[i].data);
@@ -289,6 +290,7 @@ begin
           AppEvents.LogException(E, 'CallChengeEvents exception : ' + E.Message);
       end;
     end;
+  end;
   events.Clear();
 end;
 
