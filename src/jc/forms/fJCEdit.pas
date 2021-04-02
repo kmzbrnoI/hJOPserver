@@ -61,6 +61,8 @@ type
     SE_SignalFallTrackI: TSpinEdit;
     SE_Speed_Stop: TSpinEdit;
     SE_Speed_Go: TSpinEdit;
+    CB_Navest: TComboBox;
+    Label9: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Vyh_AddClick(Sender: TObject);
     procedure B_Usek_AddClick(Sender: TObject);
@@ -125,18 +127,16 @@ uses GetSystems, FileSystem, Block, AreaDb,
 
 procedure TF_JCEdit.B_StornoClick(Sender: TObject);
 begin
-  Self.Close;
+  Self.Close();
 end;
 
 procedure TF_JCEdit.EmptyOpenForm();
 begin
   Self.OpenIndex := -1;
 
-  Self.JCData.railwayId := -1;
-
-  // reset JC data:
-  Self.JCData.railwayId := -1;
   Self.JCData.id := -1;
+  Self.JCData.signalCode := Integer(ncPosunZaj);
+  Self.JCData.railwayId := -1;
 
   Self.JCData.turnouts := nil;
   Self.JCData.tracks := nil;
@@ -156,6 +156,10 @@ begin
   Blocks.FillCB(CB_Navestidlo, @Self.CB_NavestidloPolozky, nil, nil, btSignal, -1);
 
   Self.CB_Typ.ItemIndex := -1;
+
+  Self.CB_Navest.Clear();
+  Self.CB_Navest.Enabled := false;
+
   Self.CB_Dalsi_Nav.ItemIndex := -1;
   Self.SE_Speed_Stop.Value := 40;
   Self.SE_Speed_Go.Value := 40;
@@ -362,12 +366,12 @@ var JC: TJC;
   i: Integer;
   line, Item: string;
   parsed: TStrings;
-  odvrat: TJCRefugeeZav;
-  prejezd: TJCCrossingZav;
+  refugeeZav: TJCRefugeeZav;
+  crossingZav: TJCCrossingZav;
   refz: TJCRefZav;
-  vyhZaver: TJCTurnoutZav;
+  turnoutZav: TJCTurnoutZav;
 begin
-  if (E_Name.Text = '') then
+  if (Self.E_Name.Text = '') then
   begin
     Application.MessageBox('Vyplňte název jízdní cesty!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -377,17 +381,22 @@ begin
     Application.MessageBox('JC s tímto ID již existuje!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (CB_Navestidlo.ItemIndex = -1) then
+  if (Self.CB_Navestidlo.ItemIndex = -1) then
   begin
     Application.MessageBox('Vyberte návestidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (CB_Typ.ItemIndex = -1) then
+  if (Self.CB_Typ.ItemIndex = -1) then
   begin
     Application.MessageBox('Vyberte typ jízdní cesty!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (CB_Dalsi_Nav.ItemIndex = -1) then
+  if (Self.CB_Navest.ItemIndex = -1) then
+  begin
+    Application.MessageBox('Vyberte návěst!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+  if (Self.CB_Dalsi_Nav.ItemIndex = -1) then
   begin
     Application.MessageBox('Vyberte další návěstidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -414,9 +423,10 @@ begin
     Application.MessageBox('Vyberte směr trati!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  for vyhZaver in Self.m_turnouts do
+
+  for turnoutZav in Self.m_turnouts do
   begin
-    if ((vyhZaver.position <> TTurnoutPosition.plus) and ((vyhZaver.position <> TTurnoutPosition.minus))) then
+    if ((turnoutZav.position <> TTurnoutPosition.plus) and ((turnoutZav.position <> TTurnoutPosition.minus))) then
     begin
       Application.MessageBox('Je třeba vybrat polohy všech výhybek!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
@@ -434,6 +444,14 @@ begin
   JCData.id := Self.SE_ID.Value;
   JCData.signalId := Blocks.GetBlkID(Self.CB_NavestidloPolozky[CB_Navestidlo.ItemIndex]);
   JCData.typ := TJCType(Self.CB_Typ.ItemIndex + 1);
+
+  if (JCData.typ = TJCType.shunt) then begin
+    case (Self.CB_Navest.ItemIndex) of
+     0: JCData.signalCode := Integer(ncPosunZaj);
+     1: JCData.signalCode := Integer(ncPosunNezaj);
+    end;
+  end else
+    JCData.signalCode := Integer(ncDisabled);
 
   JCData.speedGo := Self.SE_Speed_Go.Value;
   JCData.speedStop := Self.SE_Speed_Stop.Value;
@@ -467,8 +485,8 @@ begin
     // Prejezdy
     if (not Assigned(JCData.crossings) or (mNewJC)) then
       JCData.crossings := TList<TJCCrossingZav>.Create();
-    for prejezd in JCData.crossings do
-      prejezd.closeTracks.Free();
+    for crossingZav in JCData.crossings do
+      crossingZav.closeTracks.Free();
     JCData.crossings.Clear();
     for line in Self.M_Prj.Lines do
     begin
@@ -476,23 +494,23 @@ begin
       ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
 
       try
-        prejezd.closeTracks := nil;
-        prejezd.crossingId := StrToInt(parsed[0]);
+        crossingZav.closeTracks := nil;
+        crossingZav.crossingId := StrToInt(parsed[0]);
         if (parsed.Count > 1) then
-          prejezd.openTrack := StrToInt(parsed[1])
+          crossingZav.openTrack := StrToInt(parsed[1])
         else
-          prejezd.openTrack := -1;
+          crossingZav.openTrack := -1;
 
-        prejezd.closeTracks := TList<Integer>.Create();
+        crossingZav.closeTracks := TList<Integer>.Create();
         for i := 2 to parsed.Count - 1 do
-          prejezd.closeTracks.Add(StrToInt(parsed[i]));
+          crossingZav.closeTracks.Add(StrToInt(parsed[i]));
 
-        JCData.crossings.Add(prejezd);
+        JCData.crossings.Add(crossingZav);
       except
         on E: Exception do
         begin
-          if (Assigned(prejezd.closeTracks)) then
-            prejezd.closeTracks.Free();
+          if (Assigned(crossingZav.closeTracks)) then
+            crossingZav.closeTracks.Free();
 
           Application.MessageBox(PChar('Napodařilo se naparsovat přejezd "' + line + '":' + #13#10 + E.Message),
             'Chyba', MB_OK OR MB_ICONWARNING);
@@ -511,13 +529,13 @@ begin
       ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
 
       try
-        odvrat.Block := StrToInt(parsed[0]);
+        refugeeZav.Block := StrToInt(parsed[0]);
         if (parsed[1] = '+') then
-          odvrat.position := TTurnoutPosition.plus
+          refugeeZav.position := TTurnoutPosition.plus
         else
-          odvrat.position := TTurnoutPosition.minus;
-        odvrat.ref_blk := StrToInt(parsed[2]);
-        JCData.refuges.Add(odvrat);
+          refugeeZav.position := TTurnoutPosition.minus;
+        refugeeZav.ref_blk := StrToInt(parsed[2]);
+        JCData.refuges.Add(refugeeZav);
       except
         on E: Exception do
         begin
@@ -721,9 +739,9 @@ begin
         TBlkSignalSymbol.shunting:
           Self.CB_Typ.ItemIndex := 1;
       end;
+      Self.CB_TypChange(Self);
     end;
-
-  end; // if CB_Navestidlo.ItemIndex <> -1
+  end;
 
   if (Self.CHB_AutoName.Checked) then
     Self.UpdateJCName();
@@ -747,6 +765,23 @@ begin
   begin
     Self.SE_Speed_Go.Value := 40;
     Self.SE_Speed_Stop.Value := 40;
+  end;
+
+  Self.CB_Navest.Clear();
+  Self.CB_Navest.Enabled := (Self.JCData.typ = TJCType.shunt);
+  if (Self.JCData.typ = TJCType.train) then begin
+    Self.CB_Navest.Items.Add('automaticky');
+    Self.CB_Navest.ItemIndex := 0;
+  end else begin
+    Self.CB_Navest.Items.Add('Dovolen zajištěný posun');
+    Self.CB_Navest.Items.Add('Dovolen nezajištěný posun');
+
+    case (JCData.signalCode) of
+      Integer(ncPosunZaj): Self.CB_Navest.ItemIndex := 0;
+      Integer(ncPosunNezaj): Self.CB_Navest.ItemIndex := 1;
+    else
+      Self.CB_Navest.ItemIndex := 1;
+    end;
   end;
 end;
 

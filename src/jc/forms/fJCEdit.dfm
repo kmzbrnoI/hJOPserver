@@ -4,7 +4,7 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editace vlakove cesty [nazev]'
-  ClientHeight = 470
+  ClientHeight = 505
   ClientWidth = 922
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -54,7 +54,7 @@ object F_JCEdit: TF_JCEdit
   end
   object L_VC_07: TLabel
     Left = 8
-    Top = 377
+    Top = 410
     Width = 81
     Height = 13
     Margins.Left = 2
@@ -65,7 +65,7 @@ object F_JCEdit: TF_JCEdit
   end
   object L_VC_10: TLabel
     Left = 7
-    Top = 407
+    Top = 440
     Width = 167
     Height = 13
     Margins.Left = 2
@@ -76,7 +76,7 @@ object F_JCEdit: TF_JCEdit
   end
   object L_VC_12: TLabel
     Left = 7
-    Top = 439
+    Top = 472
     Width = 201
     Height = 13
     Margins.Left = 2
@@ -91,6 +91,13 @@ object F_JCEdit: TF_JCEdit
     Width = 14
     Height = 13
     Caption = 'ID:'
+  end
+  object Label9: TLabel
+    Left = 9
+    Top = 129
+    Width = 37
+    Height = 13
+    Caption = 'N'#225'v'#283'st:'
   end
   object E_Name: TEdit
     Left = 136
@@ -114,7 +121,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' V'#253'hybky '
-    TabOrder = 8
+    TabOrder = 9
     object LV_Vyhybky: TListView
       Left = 2
       Top = 54
@@ -241,7 +248,7 @@ object F_JCEdit: TF_JCEdit
   end
   object GB_Useky: TGroupBox
     Left = 7
-    Top = 122
+    Top = 155
     Width = 329
     Height = 243
     Hint = 'Zadavejte useky od navestidla smerem k poslednimu bloku (vcetne)'
@@ -252,7 +259,7 @@ object F_JCEdit: TF_JCEdit
     Caption = ' '#218'seky '
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 4
+    TabOrder = 5
     object CHB_NewBlok: TGroupBox
       Left = 2
       Top = 192
@@ -335,8 +342,8 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object B_Save: TButton
-    Left = 533
-    Top = 440
+    Left = 532
+    Top = 473
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -345,12 +352,12 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 13
+    TabOrder = 14
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
-    Left = 454
-    Top = 440
+    Left = 453
+    Top = 473
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -358,7 +365,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 14
+    TabOrder = 15
     OnClick = B_StornoClick
   end
   object CB_Navestidlo: TComboBox
@@ -392,7 +399,7 @@ object F_JCEdit: TF_JCEdit
   end
   object CB_Dalsi_Nav: TComboBox
     Left = 136
-    Top = 377
+    Top = 410
     Width = 201
     Height = 21
     Margins.Left = 2
@@ -400,7 +407,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    TabOrder = 5
+    TabOrder = 6
     OnChange = CB_Dalsi_NavChange
   end
   object CHB_AutoName: TCheckBox
@@ -411,7 +418,7 @@ object F_JCEdit: TF_JCEdit
     Caption = 'auto'
     Checked = True
     State = cbChecked
-    TabOrder = 16
+    TabOrder = 17
   end
   object GB_trat: TGroupBox
     Left = 345
@@ -419,7 +426,7 @@ object F_JCEdit: TF_JCEdit
     Width = 262
     Height = 105
     Caption = ' N'#225'vaznost na tra'#357' '
-    TabOrder = 9
+    TabOrder = 10
     object Label1: TLabel
       Left = 24
       Top = 40
@@ -481,7 +488,7 @@ object F_JCEdit: TF_JCEdit
     Width = 297
     Height = 390
     Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' kurzorem) '
-    TabOrder = 15
+    TabOrder = 16
     object Label4: TLabel
       Left = 8
       Top = 16
@@ -590,7 +597,7 @@ object F_JCEdit: TF_JCEdit
     Width = 164
     Height = 18
     Caption = 'Zobrazit pokro'#269'il'#225' nastaven'#237
-    TabOrder = 12
+    TabOrder = 13
     OnClick = CHB_AdvancedClick
   end
   object CHB_Odbocka: TCheckBox
@@ -599,7 +606,7 @@ object F_JCEdit: TF_JCEdit
     Width = 97
     Height = 17
     Caption = 'JC do odbo'#269'ky'
-    TabOrder = 10
+    TabOrder = 11
   end
   object CHB_NZV: TCheckBox
     Left = 349
@@ -607,26 +614,34 @@ object F_JCEdit: TF_JCEdit
     Width = 185
     Height = 17
     Caption = 'Nedostate'#269'n'#225' z'#225'brzdn'#225' vzd'#225'lenost'
-    TabOrder = 11
+    TabOrder = 12
   end
   object SE_Speed_Stop: TSpinEdit
     Left = 232
-    Top = 407
-    Width = 105
-    Height = 22
-    MaxValue = 200
-    MinValue = 0
-    TabOrder = 6
-    Value = 0
-  end
-  object SE_Speed_Go: TSpinEdit
-    Left = 232
-    Top = 439
+    Top = 440
     Width = 105
     Height = 22
     MaxValue = 200
     MinValue = 0
     TabOrder = 7
     Value = 0
+  end
+  object SE_Speed_Go: TSpinEdit
+    Left = 232
+    Top = 472
+    Width = 105
+    Height = 22
+    MaxValue = 200
+    MinValue = 0
+    TabOrder = 8
+    Value = 0
+  end
+  object CB_Navest: TComboBox
+    Left = 136
+    Top = 129
+    Width = 201
+    Height = 21
+    Style = csDropDownList
+    TabOrder = 4
   end
 end

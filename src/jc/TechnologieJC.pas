@@ -126,6 +126,7 @@ type
     typ: TJCType;
 
     signalId: Integer;
+    signalCode: Integer; // effective only for shunting jc
     nextSignalType: TJCNextSignalType;
     nextSignalId: Integer;
 
@@ -2573,9 +2574,8 @@ begin
     case (Self.typ) of
       TJCType.shunt:
         begin
-          // posunova cesta
-          code := ncPosunZaj;
-        end; // case posun
+          code := TBlkSignalCode(Self.m_data.signalCode);
+        end; // case shunt
 
       TJCType.train:
         begin
@@ -2617,7 +2617,7 @@ begin
         end; // case vlak
 
     end; // case
-  end; // else nouzova cesta
+  end; // else emergency
 
   (Self.signal as TBlkSignal).SetSignal(code, TNotifyEvent(nil), Self.SignalError);
 end;
@@ -2635,6 +2635,11 @@ begin
   Self.m_data.nextSignalId := ini.ReadInteger(section, 'dalsiN', 0);
   Self.m_data.railwayId := ini.ReadInteger(section, 'trat', -1);
   Self.m_data.railwayDir := TRailwayDirection(ini.ReadInteger(section, 'tratSmer', 0));
+
+  if (Self.m_data.typ = TJCType.shunt) then
+   Self.m_data.signalCode := ini.ReadInteger(section, 'navest', Integer(ncPosunZaj))
+  else
+   Self.m_data.signalCode := Integer(ncDisabled);
 
   Self.m_data.speedGo := ini.ReadInteger(section, 'rychDalsiN', 0);
   if (Self.m_data.speedGo < 10) then
@@ -2773,6 +2778,11 @@ begin
     ini.WriteInteger(section, 'dalsiN', Self.m_data.nextSignalId);
   ini.WriteInteger(section, 'rychDalsiN', Self.m_data.speedGo);
   ini.WriteInteger(section, 'rychNoDalsiN', Self.m_data.speedStop);
+
+  if ((Self.m_data.typ = TJCType.shunt) and (Self.m_data.signalCode <> Integer(ncPosunZaj))) then
+    ini.WriteInteger(section, 'navest', Integer(Self.m_data.signalCode))
+  else
+    ini.DeleteKey(section, 'navest');
 
   if (Self.m_data.turn = Self.IsAnyTurnoutMinus) then
     ini.DeleteKey(section, 'odbocka')
