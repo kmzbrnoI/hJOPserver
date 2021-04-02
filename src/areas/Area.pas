@@ -730,7 +730,7 @@ begin
       (blk as TBlkSignal).selected := TBlkSignalSelection.none;
   end;
 
-  blk := Blocks.GetBlkUsekVlakPresun(Self.id);
+  blk := Blocks.GetBlkTrackTrainMoving(Self.id);
   if (blk <> nil) then
     (blk as TBlkTrack).trainMoving := -1;
 end;

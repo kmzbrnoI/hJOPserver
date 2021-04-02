@@ -70,7 +70,7 @@ type
     function GetBlkIndexName(index: Integer): string;
 
     function GetBlkSignalSelected(obl: string): TBlk;
-    function GetBlkUsekVlakPresun(obl: string): TBlk;
+    function GetBlkTrackTrainMoving(obl: string): TBlk;
 
     function GetNavPrivol(Area: TArea): TBlksList;
 
@@ -660,7 +660,7 @@ begin
   Result := nil;
 end;
 
-function TBlocks.GetBlkUsekVlakPresun(obl: string): TBlk;
+function TBlocks.GetBlkTrackTrainMoving(obl: string): TBlk;
 begin
   for var blk: TBlk in Self.data do
   begin

@@ -163,7 +163,7 @@ type
 
     procedure MenuVBClick(SenderPnl: TIdContext; SenderOR: TObject);
     function MenuKCClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
-    function MoveLok(SenderPnl: TIdContext; SenderOR: TObject; trainLocalIndex: Integer): Boolean;
+    function MoveTrain(SenderPnl: TIdContext; SenderOR: TObject; trainLocalIndex: Integer): Boolean;
 
   public
 
@@ -916,7 +916,7 @@ end;
 
 procedure TBlkTrack.MenuVLOZLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
 begin
-  Self.MoveLok(SenderPnl, SenderOR, (itemindex - 2) div 2);
+  Self.MoveTrain(SenderPnl, SenderOR, (itemindex - 2) div 2);
 end;
 
 procedure TBlkTrack.MenuEditLokClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1160,13 +1160,7 @@ begin
 
   if (new_state) then
   begin
-    if (TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].station <> SenderOR) then
-    begin
-      PanelServer.SendInfoMsg(SenderPnl, 'Loko se nenachází ve vaši oblasti řízení');
-      Exit();
-    end;
-
-    var blk: TBlk := Blocks.GetBlkUsekVlakPresun((SenderOR as TArea).id);
+    var blk: TBlk := Blocks.GetBlkTrackTrainMoving((SenderOR as TArea).id);
     if (blk <> nil) then
       (blk as TBlkTrack).trainMoving := -1;
     Self.trainMoving := TPanelConnData(SenderPnl.Data).train_menu_index;
@@ -1361,7 +1355,7 @@ var blk: TBlk;
 begin
   Result := inherited;
 
-  if (Blocks.GetBlkUsekVlakPresun((SenderOR as TArea).id) <> nil) then
+  if (Blocks.GetBlkTrackTrainMoving((SenderOR as TArea).id) <> nil) then
     addStr := 'VLOŽ vlak,'
   else
     addStr := 'NOVÝ vlak,';
@@ -1483,7 +1477,7 @@ begin
 
   if (Self.trainMoving = trainLocalI) then
     Result := Result + 'PŘESUŇ vlak<,'
-  else if ((not Self.IsTrainMoving()) and (train.wantedSpeed = 0) and (train.station = SenderOR)) then
+  else if ((not Self.IsTrainMoving()) and (train.wantedSpeed = 0)) then
     Result := Result + 'PŘESUŇ vlak>,';
 
   if (train.stolen) then
@@ -1531,7 +1525,7 @@ begin
       begin
         if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
           if (((Self.m_settings.maxTrains <> 1) and (Self.trains.Count > 0)) or
-            (not Self.MoveLok(SenderPnl, SenderOR, 0))) then
+            (not Self.MoveTrain(SenderPnl, SenderOR, 0))) then
             Self.ShowProperMenu(SenderPnl, (SenderOR as TArea), rights, params);
       end;
 
@@ -1612,10 +1606,10 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // vraci true, pokud volba vyvolala nejaky efekt (false pokud se ma zobrazit menu)
-function TBlkTrack.MoveLok(SenderPnl: TIdContext; SenderOR: TObject; trainLocalIndex: Integer): Boolean;
+function TBlkTrack.MoveTrain(SenderPnl: TIdContext; SenderOR: TObject; trainLocalIndex: Integer): Boolean;
 var blk: TBlk;
 begin
-  blk := Blocks.GetBlkUsekVlakPresun((SenderOR as TArea).id);
+  blk := Blocks.GetBlkTrackTrainMoving((SenderOR as TArea).id);
   if (blk = nil) then
     Exit(false);
 
@@ -1669,6 +1663,9 @@ begin
       end;
     end;
   end;
+
+  if (train.station <> TArea(SenderOR)) then
+    train.station := TArea(SenderOR);
 
   PanelServer.SendInfoMsg(SenderPnl, 'Souprava ' + Train.name + ' přesunuta na ' + Self.m_globSettings.name + '.');
 

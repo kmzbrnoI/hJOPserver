@@ -667,7 +667,7 @@ begin
     ENTER:
       begin
         if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
-          if (not Self.MoveLok(SenderPnl, SenderOR, 0)) then // predpokladame, ze TU muze mit max. 1 soupravu
+          if (not Self.MoveTrain(SenderPnl, SenderOR, 0)) then // predpokladame, ze TU muze mit max. 1 soupravu
             PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
       end;
 
