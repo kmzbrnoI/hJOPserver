@@ -278,20 +278,28 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlk.CallChangeEvents(var events: TChangeEvents);
+var _events: TChangeEvents;
 begin
-  for var i: Integer := events.count - 1 downto 0 do
-  begin
-    if ((i < events.Count) and (Assigned(events[i].func))) then // event could remove another event
+  _events := TChangeEvents.Create(events);
+  events.Clear(); // first, clear events so call to event can add new events
+
+  try
+    for var event: TChangeEvent in _events do
     begin
-      try
-        events[i].func(Self, events[i].data);
-      except
-        on E: Exception do
-          AppEvents.LogException(E, 'CallChengeEvents exception : ' + E.Message);
+      if (Assigned(event.func)) then
+      begin
+        try
+          event.func(Self, event.data);
+        except
+          on E: Exception do
+            AppEvents.LogException(E, 'CallChengeEvents exception : ' + E.Message);
+        end;
       end;
     end;
+    events.Clear();
+  finally
+    _events.Free();
   end;
-  events.Clear();
 end;
 
 class procedure TBlk.AddChangeEvent(var events: TChangeEvents; func: TChangeEvent);
