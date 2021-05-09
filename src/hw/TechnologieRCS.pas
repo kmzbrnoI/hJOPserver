@@ -179,7 +179,7 @@ begin
 
   TRCSIFace(Self).LoadLib(filename, Self.configDir + '\' + ChangeFileExt(libName, '.ini'));
 
-  writelog('Načtena knihovna ' + libName, WR_RCS);
+  writelog('Načtena knihovna ' + libName + ', RCS API v'+Self.apiVersionStr(), WR_RCS);
 
   // kontrola bindnuti vsech eventu
 

@@ -3518,6 +3518,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Stav technologie'
       ImageIndex = 15
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GB_Connected_Panels: TGroupBox
         Left = 16
         Top = 206
@@ -5641,6 +5645,10 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'LOG komunikace s centr'#225'lou'
       ImageIndex = 14
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LV_log_lnet: TListView
         Left = 0
         Top = 26
