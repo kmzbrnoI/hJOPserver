@@ -162,7 +162,10 @@ begin
     LI.SubItems[0] := '';
 
   try
-    LI.SubItems[1] := RCSi.GetModuleName(addr);
+    if (RCSi.IsModule(addr)) then
+      LI.SubItems[1] := RCSi.GetModuleName(addr)
+    else
+      LI.SubItems[1] := '-';
   except
     on E: Exception do
       LI.SubItems[1] := E.Message;
