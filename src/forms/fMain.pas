@@ -394,6 +394,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure CHB_Log_AuthClick(Sender: TObject);
+    procedure LV_logDblClick(Sender: TObject);
   private
     KomunikaceGo: TdateTime;
     call_method: TNotifyEvent;
@@ -2821,6 +2822,11 @@ procedure TF_Main.LV_logCustomDrawItem(Sender: TCustomListView; Item: TListItem;
   var DefaultDraw: Boolean);
 begin
   LV_log.Canvas.Brush.Color := TColor(LV_log.Items[Item.Index].Data);
+end;
+
+procedure TF_Main.LV_logDblClick(Sender: TObject);
+begin
+  Self.LV_log.Clear();
 end;
 
 procedure TF_Main.LV_log_lnetCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
