@@ -76,6 +76,7 @@ type
 
   public
     log: Boolean;
+    logActionInProgress: Boolean;
 
     constructor Create();
     destructor Destroy; override;
@@ -141,6 +142,7 @@ begin
 
   Self.boards := TObjectDictionary<Cardinal, TRCSBoard>.Create();
 
+  Self.logActionInProgress := false;
   Self.log := false;
   Self.aReady := false;
   Self.fGeneralError := false;
@@ -280,33 +282,23 @@ procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; er
 begin
   writelog('RCS ERR: ' + errMsg + ' (' + IntToStr(errValue) + ':' + IntToStr(errAddr) + ')', WR_RCS);
 
-  if ((errValue = RCS_NOT_OPENED) and (SystemData.Status = TSystemStatus.starting)) then
-  begin
-    F_Main.LogStatus('ERR: ' + errMsg);
+  if (SystemData.Status = TSystemStatus.starting) then
     SystemData.Status := TSystemStatus.null;
-  end;
 
-  if (errAddr = 255) then
-  begin
-    // errors on main board (RCS-USB)
-    case (errValue) of
-      RCS_FT_EXCEPTION:
-        begin
-          // general IO error
-          F_Main.A_System_Start.Enabled := true;
-          F_Main.A_System_Stop.Enabled := true;
-          writelog('RCS FTDI Error - ' + IntToStr(errValue), WR_ERROR);
-        end;
-    end; // case
-  end else begin
-    // errors on RCS boards
-    case (errValue) of
-      RCS_MODULE_FAIL:
-        Areas.RCSFail(errAddr); // communication with module failed
-      RCS_MODULE_RESTORED:
-        ; // communication with module restored, nothing should be here
-    end;
-  end; //
+  if (Self.logActionInProgress) then
+    F_Main.LogStatus('ERR: ' + errMsg);
+
+  case (errValue) of
+    RCS_FT_EXCEPTION:
+      begin
+        // general IO error
+        F_Main.A_System_Start.Enabled := true;
+        F_Main.A_System_Stop.Enabled := true;
+        writelog('RCS FTDI Error - ' + IntToStr(errValue), WR_ERROR);
+      end;
+    RCS_MODULE_FAIL:
+      Areas.RCSFail(errAddr); // communication with module failed
+  end;
 end;
 
 procedure TRCS.DllOnLog(Sender: TObject; logLevel: TRCSLogLevel; msg: string);

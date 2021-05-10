@@ -148,6 +148,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <VerInfo_Release>1</VerInfo_Release>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>..\icons\hJOPserver.ico</Icon_MainIcon>
+        <DCC_ExeOutput>..\output\</DCC_ExeOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>

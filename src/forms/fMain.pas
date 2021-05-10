@@ -675,6 +675,7 @@ begin
   writelog('----- RCS OPENING -----', WR_RCS);
 
   try
+    RCSi.logActionInProgress := true;
     RCSi.Open();
   except
     on E: ERCSAlreadyOpened do
@@ -711,6 +712,7 @@ begin
   end; // with F_Main do
 
   try
+    RCSi.logActionInProgress := true;
     RCSi.Stop();
   except
     on E: ERCSNotStarted do
@@ -723,6 +725,8 @@ end;
 // --- events from RCS lib begin ---
 procedure TF_Main.OnRCSStart(Sender: TObject);
 begin
+  RCSi.logActionInProgress := false;
+
   with (F_Main) do
   begin
     A_RCS_Go.Enabled := false;
@@ -758,6 +762,8 @@ end;
 
 procedure TF_Main.OnRCSStop(Sender: TObject);
 begin
+  RCSi.logActionInProgress := false;
+
   if (Blocks.Enabled) then
   begin
     Blocks.Disable();
@@ -803,6 +809,8 @@ procedure TF_Main.OnRCSOpen(Sender: TObject);
 var i: Integer;
   str: string;
 begin
+  RCSi.logActionInProgress := false;
+
   Self.A_RCS_Open.Enabled := false;
   Self.A_RCS_Close.Enabled := true;
   Self.A_RCS_Go.Enabled := true;
@@ -848,6 +856,8 @@ end;
 
 procedure TF_Main.OnRCSClose(Sender: TObject);
 begin
+  RCSi.logActionInProgress := false;
+
   Self.A_RCS_Go.Enabled := false;
   Self.A_RCS_Stop.Enabled := false;
   Self.A_RCS_Close.Enabled := false;
@@ -885,6 +895,8 @@ end;
 
 procedure TF_Main.OnRCSErrOpen(Sender: TObject; errMsg: string);
 begin
+  RCSi.logActionInProgress := false;
+
   Self.A_RCS_Go.Enabled := false;
   Self.A_RCS_Stop.Enabled := false;
   Self.A_RCS_Open.Enabled := true;
@@ -903,6 +915,8 @@ end;
 
 procedure TF_Main.OnRCSErrClose(Sender: TObject; errMsg: string);
 begin
+  RCSi.logActionInProgress := false;
+
   A_RCS_Go.Enabled := false;
   A_RCS_Stop.Enabled := false;
   A_RCS_Open.Enabled := true;
@@ -920,6 +934,8 @@ end;
 
 procedure TF_Main.OnRCSErrStart(Sender: TObject; errMsg: string);
 begin
+  RCSi.logActionInProgress := false;
+
   A_RCS_Close.Enabled := true;
   Self.UpdateSystemButtons();
   A_RCS_Go.Enabled := true;
@@ -938,6 +954,8 @@ end;
 
 procedure TF_Main.OnRCSErrStop(Sender: TObject; errMsg: string);
 begin
+  RCSi.logActionInProgress := false;
+
   A_RCS_Open.Enabled := true;
   A_RCS_Close.Enabled := true;
   A_RCS_Go.Enabled := true;
