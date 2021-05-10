@@ -289,14 +289,7 @@ begin
     F_Main.LogStatus('ERR: ' + errMsg);
 
   case (errValue) of
-    RCS_FT_EXCEPTION:
-      begin
-        // general IO error
-        F_Main.A_System_Start.Enabled := true;
-        F_Main.A_System_Stop.Enabled := true;
-        writelog('RCS FTDI Error - ' + IntToStr(errValue), WR_ERROR);
-      end;
-    RCS_MODULE_FAIL:
+    RCS_MODULE_FAILED:
       Areas.RCSFail(errAddr); // communication with module failed
   end;
 end;
