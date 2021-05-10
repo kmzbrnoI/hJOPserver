@@ -543,7 +543,6 @@ begin
     if ((Self.DCC) and (Self.shortCircuit <> TBoosterSignal.error) and (Self.power <> TBoosterSignal.error) and
       (Now > Self.state.shortCircSenseTime)) then
       Self.UnFreeze();
-    Exit();
   end;
 
   if (Self.m_state.sectionsOccupied.Count <> Self.m_settings.RCSAddrs.Count) then
@@ -553,7 +552,8 @@ begin
       Self.m_state.sectionsOccupied.Add(TTrackState.none);
   end;
 
-  Self.m_state.occupied := TTrackState.free; // must be here to update booster state
+  if (not Self.frozen) then
+    Self.m_state.occupied := TTrackState.free; // must be here to update booster state
 
   for var i: Integer := 0 to Self.m_settings.RCSAddrs.Count - 1 do
   begin
@@ -566,9 +566,11 @@ begin
 
     case (state) of
       isOn:
-        Self.m_state.sectionsOccupied[i] := TTrackState.occupied;
+        if (not Self.frozen) then
+          Self.m_state.sectionsOccupied[i] := TTrackState.occupied;
       isOff:
-        Self.m_state.sectionsOccupied[i] := TTrackState.free;
+        if ((not Self.frozen) or (Self.m_state.sectionsOccupied[i] = TTrackState.disabled)) then
+          Self.m_state.sectionsOccupied[i] := TTrackState.free;
       failure, notYetScanned, unavailableModule, unavailablePort:
         begin
           Self.m_state.sectionsOccupied[i] := TTrackState.disabled;
