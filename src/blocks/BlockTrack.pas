@@ -1395,7 +1395,7 @@ begin
     Result := Result + '-,NUZ<,';
 
   if ((((not(SenderOR as TArea).NUZtimer) and (Integer(Self.m_state.zaver) > 0) and (Self.m_state.zaver <> TZaver.ab)
-    and (Self.m_state.zaver <> TZaver.staveni) and (Self.typ = btTrack) and (not Self.spnl.stationTrack)) or
+    and (Self.m_state.zaver <> TZaver.staveni) and (Self.typ = btTrack)) or
     (rights >= superuser)) and (not Self.m_state.NUZ)) then
     Result := Result + '-,NUZ>,';
 
