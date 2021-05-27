@@ -2065,7 +2065,7 @@ begin
   if (not HVDb.AllAcquiredHVsHaveActiveFunc(_SOUND_FUNC)) then
     menustr := menustr + 'ZVUK>,';
   if (HVDb.AnyAcquiredHVHasActiveFunc(_SOUND_FUNC)) then
-    menustr := menustr + 'ZVUK<,ZVUK ztlum';
+    menustr := menustr + 'ZVUK<,ZVUK ztlum,';
   if (HVDb.AnyHvToRestoreFunc(_SOUND_FUNC)) then
     menustr := menustr + 'ZVUK obnov,';
 
