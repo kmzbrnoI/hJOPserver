@@ -23,15 +23,15 @@ type
 
   TBlkDisconnector = class(TBlk)
   const
-    _def_rozp_stav: TBlkDiscState = (state: disabled; rcsFailed: false; note: '';);
+    _def_disc_stav: TBlkDiscState = (state: disabled; rcsFailed: false; note: '';);
 
   private const
     _MOUNT_TO_ACTIVE_TIME_SEC = 3;
     _ACTIVE_TO_DISABLE_TIME_SEC = 60;
 
   private
-    RozpSettings: TBlkDiscSettings;
-    RozpStav: TBlkDiscState;
+    m_settings: TBlkDiscSettings;
+    m_state: TBlkDiscState;
 
     procedure SetState(status: TBlkDiscBasicState);
     procedure UpdateOutput();
@@ -71,9 +71,9 @@ type
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
-    property fullState: TBlkDiscState read RozpStav;
-    property state: TBlkDiscBasicState read RozpStav.state write SetState;
-    property note: string read RozpStav.note write SetNote;
+    property fullState: TBlkDiscState read m_state;
+    property state: TBlkDiscBasicState read m_state.state write SetState;
+    property note: string read m_state.note write SetNote;
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
@@ -81,7 +81,7 @@ type
 
   end;
 
-  /// /////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 implementation
 
@@ -92,7 +92,7 @@ begin
   inherited Create(index);
 
   Self.m_globSettings.typ := btDisconnector;
-  Self.RozpStav := Self._def_rozp_stav;
+  Self.m_state := Self._def_disc_stav;
 end; // ctor
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -101,24 +101,24 @@ procedure TBlkDisconnector.LoadData(ini_tech: TMemIniFile; const section: string
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
-  Self.RozpSettings.RCSAddrs := Self.LoadRCS(ini_tech, section);
+  Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
   Self.LoadORs(ini_rel, 'R').Free();
-  PushRCSToArea(Self.m_areas, Self.RozpSettings.RCSAddrs);
+  PushRCSToArea(Self.m_areas, Self.m_settings.RCSAddrs);
 
-  Self.RozpStav.note := ini_stat.ReadString(section, 'stit', '');
+  Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
 end;
 
 procedure TBlkDisconnector.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
   inherited SaveData(ini_tech, section);
 
-  Self.SaveRCS(ini_tech, section, Self.RozpSettings.RCSAddrs);
+  Self.SaveRCS(ini_tech, section, Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkDisconnector.SaveStatus(ini_stat: TMemIniFile; const section: string);
 begin
-  if (Self.RozpStav.note <> '') then
-    ini_stat.WriteString(section, 'stit', Self.RozpStav.note);
+  if (Self.m_state.note <> '') then
+    ini_stat.WriteString(section, 'stit', Self.m_state.note);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -129,14 +129,14 @@ var rcsaddr: TRCSAddr;
 begin
   Enable := true;
   try
-    for rcsaddr in Self.RozpSettings.RCSAddrs do
+    for rcsaddr in Self.m_settings.RCSAddrs do
       if (not RCSi.IsNonFailedModule(rcsaddr.board)) then
         Enable := false;
   except
     Enable := false;
   end;
 
-  Self.RozpStav.rcsFailed := not Enable;
+  Self.m_state.rcsFailed := not Enable;
 
   if (Enable) then
     Self.state := TBlkDiscBasicState.not_selected;
@@ -145,46 +145,46 @@ end;
 procedure TBlkDisconnector.Disable();
 begin
   Self.state := TBlkDiscBasicState.disabled;
-  Self.RozpStav.rcsFailed := false;
+  Self.m_state.rcsFailed := false;
   Self.Change(true);
 end;
 
 function TBlkDisconnector.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
-  Result := ((portType = TRCSIOType.output) and (Self.RozpSettings.RCSAddrs.Contains(addr)));
+  Result := ((portType = TRCSIOType.output) and (Self.m_settings.RCSAddrs.Contains(addr)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkDisconnector.Update();
 begin
-  if ((Self.state <> TBlkDiscBasicState.disabled) and (not RCSi.IsNonFailedModule(Self.RozpSettings.RCSAddrs[0].board)))
+  if ((Self.state <> TBlkDiscBasicState.disabled) and (not RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].board)))
   then
   begin
     Self.state := TBlkDiscBasicState.disabled;
-    Self.RozpStav.rcsFailed := true;
+    Self.m_state.rcsFailed := true;
   end;
 
   case (Self.state) of
     TBlkDiscBasicState.disabled:
       begin
-        if ((Self.RozpStav.rcsFailed) and (RCSi.IsNonFailedModule(Self.RozpSettings.RCSAddrs[0].board))) then
+        if ((Self.m_state.rcsFailed) and (RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].board))) then
         begin
-          Self.RozpStav.rcsFailed := false;
+          Self.m_state.rcsFailed := false;
           Self.state := TBlkDiscBasicState.not_selected;
         end;
       end;
     TBlkDiscBasicState.mounting:
       begin
-        if (Now > Self.RozpStav.finish) then
+        if (Now > Self.m_state.finish) then
         begin
-          Self.RozpStav.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
+          Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
                                                    Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
           Self.state := TBlkDiscBasicState.active;
         end;
       end;
     TBlkDiscBasicState.active:
-      if (Now > Self.RozpStav.finish) then
+      if (Now > Self.m_state.finish) then
         Self.state := TBlkDiscBasicState.not_selected;
   end; // case
 
@@ -195,15 +195,15 @@ end;
 
 function TBlkDisconnector.GetSettings(): TBlkDiscSettings;
 begin
-  Result := Self.RozpSettings;
+  Result := Self.m_settings;
 end;
 
 procedure TBlkDisconnector.SetSettings(data: TBlkDiscSettings);
 begin
-  if (Self.RozpSettings.RCSAddrs <> data.RCSAddrs) then
-    Self.RozpSettings.RCSAddrs.Free();
+  if (Self.m_settings.RCSAddrs <> data.RCSAddrs) then
+    Self.m_settings.RCSAddrs.Free();
 
-  Self.RozpSettings := data;
+  Self.m_settings := data;
   Self.Change();
 end;
 
@@ -270,7 +270,7 @@ procedure TBlkDisconnector.SetState(status: TBlkDiscBasicState);
 begin
   if (Self.state <> status) then
   begin
-    Self.RozpStav.state := status;
+    Self.m_state.state := status;
     Self.UpdateOutput();
     Self.Change();
   end;
@@ -282,11 +282,11 @@ procedure TBlkDisconnector.UpdateOutput();
 begin
   try
     if (Self.state = TBlkDiscBasicState.active) then
-      RCSi.SetOutputs(Self.RozpSettings.RCSAddrs, 1)
+      RCSi.SetOutputs(Self.m_settings.RCSAddrs, 1)
     else
-      RCSi.SetOutputs(Self.RozpSettings.RCSAddrs, 0);
+      RCSi.SetOutputs(Self.m_settings.RCSAddrs, 0);
   except
-    Self.RozpStav.rcsFailed := true;
+    Self.m_state.rcsFailed := true;
     Self.state := TBlkDiscBasicState.disabled;
   end;
 end;
@@ -322,20 +322,20 @@ end;
 
 procedure TBlkDisconnector.Mount();
 begin
-  Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._MOUNT_TO_ACTIVE_TIME_SEC, 0);
+  Self.m_state.finish := Now + EncodeTime(0, 0, Self._MOUNT_TO_ACTIVE_TIME_SEC, 0);
   Self.state := TBlkDiscBasicState.mounting;
 end;
 
 procedure TBlkDisconnector.Activate();
 begin
-  Self.RozpStav.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
+  Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
                                            Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
   Self.state := TBlkDiscBasicState.active;
 end;
 
 procedure TBlkDisconnector.Prolong();
 begin
-  Self.RozpStav.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
+  Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
                                            Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
 end;
 
@@ -344,7 +344,7 @@ end;
 procedure TBlkDisconnector.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
   inherited;
-  TBlk.RCStoJSON(Self.RozpSettings.RCSAddrs[0], json['rcs']);
+  TBlk.RCStoJSON(Self.m_settings.RCSAddrs[0], json['rcs']);
   if (includeState) then
     Self.GetPtState(json['blockState']);
 end;
@@ -389,7 +389,7 @@ end;
 
 procedure TBlkDisconnector.SetNote(note: string);
 begin
-  Self.RozpStav.note := note;
+  Self.m_state.note := note;
   Self.Change();
 end;
 
