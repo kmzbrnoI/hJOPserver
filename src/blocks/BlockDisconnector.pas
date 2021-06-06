@@ -8,7 +8,7 @@ uses IniFiles, Block, Classes, AreaDb, SysUtils, JsonDataObjects,
   IdContext, Area, TechnologieRCS;
 
 type
-  TBlkDiscBasicState = (disabled = -5, not_selected = 0, mounting = 1, active = 2);
+  TBlkDiscBasicState = (disabled = -5, not_selected = 0, mounting = 1, active = 2, shortTimeRemaining = 3);
 
   TBlkDiscSettings = record
     RCSAddrs: TRCSAddrs; // only 1 address
@@ -17,6 +17,7 @@ type
   TBlkDiscState = record
     state: TBlkDiscBasicState;
     finish: TDateTime;
+    warning: TDateTime;
     rcsFailed: Boolean;
     note: string;
   end;
@@ -28,6 +29,7 @@ type
   private const
     _MOUNT_TO_ACTIVE_TIME_SEC = 3;
     _ACTIVE_TO_DISABLE_TIME_SEC = 60;
+    _WARNING_TIME_SEC = 15;
 
   private
     m_settings: TBlkDiscSettings;
@@ -45,6 +47,8 @@ type
     procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+
+    function IsActive(): Boolean;
 
   public
     constructor Create(index: Integer);
@@ -74,6 +78,7 @@ type
     property fullState: TBlkDiscState read m_state;
     property state: TBlkDiscBasicState read m_state.state write SetState;
     property note: string read m_state.note write SetNote;
+    property active: Boolean read IsActive;
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
@@ -85,7 +90,7 @@ type
 
 implementation
 
-uses TCPServerPanel, ownConvert, Graphics, PTUtils;
+uses TCPServerPanel, ownConvert, Graphics, PTUtils, IfThenElse;
 
 constructor TBlkDisconnector.Create(index: Integer);
 begin
@@ -177,15 +182,15 @@ begin
     TBlkDiscBasicState.mounting:
       begin
         if (Now > Self.m_state.finish) then
-        begin
-          Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
-                                                   Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
-          Self.state := TBlkDiscBasicState.active;
-        end;
+          Self.Activate();
       end;
-    TBlkDiscBasicState.active:
-      if (Now > Self.m_state.finish) then
-        Self.state := TBlkDiscBasicState.not_selected;
+    TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
+      begin
+        if (Now > Self.m_state.finish) then
+          Self.state := TBlkDiscBasicState.not_selected
+        else if ((Now > Self.m_state.warning) and (Self.state = TBlkDiscBasicState.active)) then
+          Self.state := TBlkDiscBasicState.shortTimeRemaining;
+      end;
   end; // case
 
   inherited Update();
@@ -225,7 +230,7 @@ begin
             Self.Mount();
           TBlkDiscBasicState.mounting:
             Self.Activate();
-          TBlkDiscBasicState.active:
+          TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
             Self.Prolong();
         end;
       end;
@@ -235,7 +240,7 @@ begin
         case (Self.state) of
           TBlkDiscBasicState.mounting:
             Self.state := TBlkDiscBasicState.not_selected;
-          TBlkDiscBasicState.active:
+          TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
             Self.state := TBlkDiscBasicState.not_selected;
         end;
       end;
@@ -247,7 +252,7 @@ end;
 function TBlkDisconnector.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
   Result := inherited;
-  if (Self.state = TBlkDiscBasicState.active) then
+  if (Self.active) then
     Result := Result + 'AKTIV<,'
   else if (Self.state <> TBlkDiscBasicState.disabled) then
     Result := Result + 'AKTIV>,';
@@ -281,10 +286,7 @@ end;
 procedure TBlkDisconnector.UpdateOutput();
 begin
   try
-    if (Self.state = TBlkDiscBasicState.active) then
-      RCSi.SetOutputs(Self.m_settings.RCSAddrs, 1)
-    else
-      RCSi.SetOutputs(Self.m_settings.RCSAddrs, 0);
+    RCSi.SetOutputs(Self.m_settings.RCSAddrs, ite(Self.active, 1, 0));
   except
     Self.m_state.rcsFailed := true;
     Self.state := TBlkDiscBasicState.disabled;
@@ -295,6 +297,7 @@ end;
 
 function TBlkDisconnector.PanelStateString(): string;
 var fg, bg: TColor;
+    flicker: Boolean;
 begin
   Result := inherited;
 
@@ -306,7 +309,7 @@ begin
       fg := $A0A0A0;
     TBlkDiscBasicState.mounting:
       fg := clYellow;
-    TBlkDiscBasicState.active:
+    TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
       fg := clLime;
   else
     fg := clFuchsia;
@@ -315,7 +318,10 @@ begin
   if (Self.note <> '') then
     bg := clTeal;
 
-  Result := Result + ownConvert.ColorToStr(fg) + ';' + ownConvert.ColorToStr(bg) + ';0;';
+  flicker := (Self.state = TBlkDiscBasicState.shortTimeRemaining);
+
+  Result := Result + ownConvert.ColorToStr(fg) + ';' + ownConvert.ColorToStr(bg) +
+            ';' + IntToStr(BoolToInt(flicker)) + ';';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -330,6 +336,8 @@ procedure TBlkDisconnector.Activate();
 begin
   Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
                                            Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
+  Self.m_state.warning := Now + EncodeTime(0, (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) div 60,
+                                           (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) mod 60, 0);
   Self.state := TBlkDiscBasicState.active;
 end;
 
@@ -337,6 +345,9 @@ procedure TBlkDisconnector.Prolong();
 begin
   Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
                                            Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
+  Self.m_state.warning := Now + EncodeTime(0, (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) div 60,
+                                           (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) mod 60, 0);
+  Self.state := TBlkDiscBasicState.active;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -360,6 +371,8 @@ begin
       json['state'] := 'mounting';
     TBlkDiscBasicState.active:
       json['state'] := 'active';
+    TBlkDiscBasicState.shortTimeRemaining:
+      json['state'] := 'shortTimeRemaining';
   end;
 end;
 
@@ -408,6 +421,13 @@ begin
   Self.state := TBlkDiscBasicState.not_selected;
 end;
 
-/// /////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+function TBlkDisconnector.IsActive(): Boolean;
+begin
+  Result := ((Self.state = TBlkDiscBasicState.active) or (Self.state = TBlkDiscBasicState.shortTimeRemaining));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 end.// unit
