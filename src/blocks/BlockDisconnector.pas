@@ -27,7 +27,7 @@ type
 
   private const
     _MOUNT_TO_ACTIVE_TIME_SEC = 3;
-    _ACTIVE_TO_DISABLE_TIME_SEC = 30;
+    _ACTIVE_TO_DISABLE_TIME_SEC = 60;
 
   private
     RozpSettings: TBlkDiscSettings;
@@ -178,7 +178,8 @@ begin
       begin
         if (Now > Self.RozpStav.finish) then
         begin
-          Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._ACTIVE_TO_DISABLE_TIME_SEC, 0);
+          Self.RozpStav.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
+                                                   Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
           Self.state := TBlkDiscBasicState.active;
         end;
       end;
@@ -327,13 +328,15 @@ end;
 
 procedure TBlkDisconnector.Activate();
 begin
-  Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._ACTIVE_TO_DISABLE_TIME_SEC, 0);
+  Self.RozpStav.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
+                                           Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
   Self.state := TBlkDiscBasicState.active;
 end;
 
 procedure TBlkDisconnector.Prolong();
 begin
-  Self.RozpStav.finish := Now + EncodeTime(0, 0, Self._ACTIVE_TO_DISABLE_TIME_SEC, 0);
+  Self.RozpStav.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
+                                           Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
