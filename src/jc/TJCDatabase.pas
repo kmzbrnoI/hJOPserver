@@ -608,8 +608,9 @@ begin
     for var JC: TJC in JCs do
     begin
       Blocks.GetBlkByID(JC.data.signalId, tmpblk);
-      if ((TBlkSignal(tmpblk).DNjc = JC) and ((TBlkSignal(tmpblk).IsGoSignal()) or (TBlkSignal(tmpblk).ZAM) or
-        (JC.waitForLastTrackOrRailwayOccupy))) then
+      if ((TBlkSignal(tmpblk).DNjc = JC) and
+          ((TBlkSignal(tmpblk).IsGoSignal(TJCType.train) or (TBlkSignal(tmpblk).IsGoSignal(TJCType.shunt))) or (TBlkSignal(tmpblk).ZAM) or
+          (JC.waitForLastTrackOrRailwayOccupy))) then
       begin
         JC.CancelWithoutTrackRelease();
         for var area: TArea in (tmpblk as TBlkSignal).areas do
