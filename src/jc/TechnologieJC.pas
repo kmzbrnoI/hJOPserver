@@ -841,11 +841,11 @@ begin
     if (coupling <> nil) then
     begin
       // kontrola vyluky vyhybky:
-      if (refugee.lockout <> '') then
+      if (coupling.lockout <> '') then
         barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_VYLUKA, coupling));
 
       // kontrola stitku vyhybky:
-      if (refugee.note <> '') then
+      if (coupling.note <> '') then
         barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, coupling));
 
       // kontrola zamceni odvratu
