@@ -8,7 +8,7 @@ uses
 
 type
   TF_BlkDisconnector = class(TForm)
-    E_Nazev: TEdit;
+    E_name: TEdit;
     SE_ID: TSpinEdit;
     L_IR02: TLabel;
     L_IR01: TLabel;
@@ -20,7 +20,9 @@ type
     B_Save: TButton;
     SE_module: TSpinEdit;
     L_Usek03: TLabel;
-    LB_Stanice: TListBox;
+    LB_areas: TListBox;
+    CB_outputType: TComboBox;
+    Label1: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -45,7 +47,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area;
+uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area, RCS;
 
 {$R *.dfm}
 
@@ -56,11 +58,10 @@ begin
   HlavniOpenForm;
 
   if (NewBlk) then
-  begin
-    NewBlkOpenForm;
-  end else begin
-    NormalOpenForm;
-  end;
+    Self.NewBlkOpenForm()
+  else
+    Self.NormalOpenForm();
+
   Self.ShowModal();
 end;
 
@@ -69,28 +70,29 @@ begin
   Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
-procedure TF_BlkDisconnector.NewBlkOpenForm;
+procedure TF_BlkDisconnector.NewBlkOpenForm();
 begin
-  Self.E_Nazev.Text := '';
+  Self.E_name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
   Self.SE_module.Value := 1;
   Self.SE_port.Value := 0;
   Self.SE_moduleExit(Self);
+  Self.CB_outputType.ItemIndex := 1;
 
-  Self.Caption := 'Nový ropojovač';
-  Self.ActiveControl := E_Nazev;
+  Self.Caption := 'Nový rozpojovač';
+  Self.ActiveControl := Self.E_name;
 end;
 
-procedure TF_BlkDisconnector.NormalOpenForm;
+procedure TF_BlkDisconnector.NormalOpenForm();
 var glob: TBlkSettings;
   settings: TBlkDiscSettings;
-  Area: TArea;
+  area: TArea;
 begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  for Area in Self.Blk.areas do
-    Self.LB_Stanice.Items.Add(Area.name);
+  for area in Self.Blk.areas do
+    Self.LB_areas.Items.Add(area.name);
 
   if (settings.RCSAddrs.count > 0) then
   begin
@@ -107,8 +109,22 @@ begin
 
   Self.SE_moduleExit(Self);
 
-  Self.E_Nazev.Text := glob.name;
+  Self.E_name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
+
+  case (settings.outputType) of
+    osEnabled: Self.CB_outputType.ItemIndex := 0;
+    osf60: Self.CB_outputType.ItemIndex := 1;
+    osf120: Self.CB_outputType.ItemIndex := 2;
+    osf180: Self.CB_outputType.ItemIndex := 3;
+    osf240: Self.CB_outputType.ItemIndex := 4;
+    osf300: Self.CB_outputType.ItemIndex := 5;
+    osf600: Self.CB_outputType.ItemIndex := 6;
+    osf33: Self.CB_outputType.ItemIndex := 7;
+    osf66: Self.CB_outputType.ItemIndex := 8;
+  else
+    Self.CB_outputType.ItemIndex := -1;
+  end;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (rozpojovač)';
   Self.ActiveControl := B_Save;
@@ -116,13 +132,13 @@ end;
 
 procedure TF_BlkDisconnector.HlavniOpenForm;
 begin
-  Self.LB_Stanice.Clear();
+  Self.LB_areas.Clear();
   Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
 end;
 
 procedure TF_BlkDisconnector.NewBlkCreate;
 begin
-  NewBlk := true;
+  Self.NewBlk := true;
   OpenForm(Blocks.count);
 end;
 
@@ -136,14 +152,19 @@ var glob: TBlkSettings;
   settings: TBlkDiscSettings;
   another: TBlk;
 begin
-  if (E_Nazev.Text = '') then
+  if (Self.E_name.Text = '') then
   begin
-    Application.MessageBox('Vyplnte nazev bloku !', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
   begin
-    Application.MessageBox('ID jiz bylo definovano na jinem bloku !', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+  if (Self.CB_outputType.ItemIndex < 0) then
+  begin
+    Application.MessageBox('Je třeba vybrat typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -156,7 +177,7 @@ begin
       Exit();
   end;
 
-  glob.name := Self.E_Nazev.Text;
+  glob.name := Self.E_name.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btDisconnector;
 
@@ -180,6 +201,20 @@ begin
 
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value));
+
+  case (Self.CB_outputType.ItemIndex) of
+    0: settings.outputType := osEnabled;
+    1: settings.outputType := osf60;
+    2: settings.outputType := osf120;
+    3: settings.outputType := osf180;
+    4: settings.outputType := osf240;
+    5: settings.outputType := osf300;
+    6: settings.outputType := osf600;
+    7: settings.outputType := osf33;
+    8: settings.outputType := osf66;
+  else
+    settings.outputType := osEnabled;
+  end;
 
   Self.Blk.SetSettings(settings);
 

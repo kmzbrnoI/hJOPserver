@@ -96,7 +96,9 @@ type
     procedure SaveToFile(ini: TMemIniFile);
 
     procedure SetOutput(addr: TRCSAddr; state: Integer); overload;
+    procedure SetOutput(addr: TRCSAddr; state: TRCSOutputState); overload;
     procedure SetOutputs(addrs: TList<TRCSAddr>; state: Integer); overload;
+    procedure SetOutputs(addrs: TList<TRCSAddr>; state: TRCSOutputState); overload;
     function GetInput(addr: TRCSAddr): TRCSInputState; overload;
     procedure SetInput(addr: TRCSAddr; state: Integer); overload;
     procedure SetInputs(addrs: TList<TRCSAddr>; state: Integer); overload;
@@ -496,7 +498,18 @@ begin
   Self.SetOutput(addr.board, addr.port, state);
 end;
 
+procedure TRCS.SetOutput(addr: TRCSAddr; state: TRCSOutputState);
+begin
+  Self.SetOutput(addr.board, addr.port, state);
+end;
+
 procedure TRCS.SetOutputs(addrs: TList<TRCSAddr>; state: Integer);
+begin
+  for var addr: TRCSAddr in addrs do
+    Self.SetOutput(addr, state);
+end;
+
+procedure TRCS.SetOutputs(addrs: TList<TRCSAddr>; state: TRCSOutputState);
 begin
   for var addr: TRCSAddr in addrs do
     Self.SetOutput(addr, state);

@@ -1,17 +1,18 @@
 unit BlockDisconnector;
 
-{ DISCONNECTOR technological blokc definition }
+{ DISCONNECTOR technological block definition }
 
 interface
 
 uses IniFiles, Block, Classes, AreaDb, SysUtils, JsonDataObjects,
-  IdContext, Area, TechnologieRCS;
+  IdContext, Area, TechnologieRCS, RCS;
 
 type
   TBlkDiscBasicState = (disabled = -5, not_selected = 0, mounting = 1, active = 2, shortTimeRemaining = 3);
 
   TBlkDiscSettings = record
     RCSAddrs: TRCSAddrs; // only 1 address
+    outputType: TRCSOutputState;
   end;
 
   TBlkDiscState = record
@@ -109,6 +110,7 @@ begin
   Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
   Self.LoadORs(ini_rel, 'R').Free();
   PushRCSToArea(Self.m_areas, Self.m_settings.RCSAddrs);
+  Self.m_settings.outputType := TRCSOutputState(ini_tech.ReadInteger(section, 'outputType', 1));
 
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
 end;
@@ -118,6 +120,9 @@ begin
   inherited SaveData(ini_tech, section);
 
   Self.SaveRCS(ini_tech, section, Self.m_settings.RCSAddrs);
+
+  if (Self.m_settings.outputType <> osEnabled) then
+    ini_tech.WriteInteger(section, 'outputType', Integer(Self.m_settings.outputType));
 end;
 
 procedure TBlkDisconnector.SaveStatus(ini_stat: TMemIniFile; const section: string);
@@ -286,7 +291,10 @@ end;
 procedure TBlkDisconnector.UpdateOutput();
 begin
   try
-    RCSi.SetOutputs(Self.m_settings.RCSAddrs, ite(Self.active, 1, 0));
+    if (Self.active) then
+      RCSi.SetOutputs(Self.m_settings.RCSAddrs, Self.m_settings.outputType)
+    else
+      RCSi.SetOutputs(Self.m_settings.RCSAddrs, 0);
   except
     Self.m_state.rcsFailed := true;
     Self.state := TBlkDiscBasicState.disabled;

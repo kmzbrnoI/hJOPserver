@@ -4,7 +4,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (rozpojova'#269')'
-  ClientHeight = 233
+  ClientHeight = 261
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -51,7 +51,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Margins.Bottom = 2
     Caption = 'Stanice :'
   end
-  object E_Nazev: TEdit
+  object E_name: TEdit
     Left = 120
     Top = 8
     Width = 193
@@ -81,7 +81,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Left = 7
     Top = 109
     Width = 307
-    Height = 79
+    Height = 108
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -109,6 +109,13 @@ object F_BlkDisconnector: TF_BlkDisconnector
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'RCS port :'
+    end
+    object Label1: TLabel
+      Left = 16
+      Top = 72
+      Width = 74
+      Height = 13
+      Caption = 'V'#253'stupn'#237' sign'#225'l:'
     end
     object SE_port: TSpinEdit
       Left = 216
@@ -139,10 +146,28 @@ object F_BlkDisconnector: TF_BlkDisconnector
       Value = 1
       OnExit = SE_moduleExit
     end
+    object CB_outputType: TComboBox
+      Left = 144
+      Top = 70
+      Width = 145
+      Height = 21
+      Style = csDropDownList
+      TabOrder = 2
+      Items.Strings = (
+        'Trvale sepnut'#253
+        'Kmit'#225'n'#237' 1 Hz'
+        'Kmit'#225'n'#237' 2 Hz'
+        'Kmit'#225'n'#237' 3 Hz'
+        'Kmit'#225'n'#237' 4 Hz'
+        'Kmit'#225'n'#237' 5 Hz'
+        'Kmit'#225'n'#237' 10 Hz'
+        'Kmit'#225'n'#237' 33 tick/min'
+        'Kmit'#225'n'#237' 66 tick/min')
+    end
   end
   object B_Storno: TButton
     Left = 151
-    Top = 200
+    Top = 229
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -155,7 +180,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
   end
   object B_Save: TButton
     Left = 240
-    Top = 200
+    Top = 229
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -167,7 +192,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
     TabOrder = 4
     OnClick = B_SaveClick
   end
-  object LB_Stanice: TListBox
+  object LB_areas: TListBox
     Left = 120
     Top = 59
     Width = 194
