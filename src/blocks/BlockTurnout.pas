@@ -198,6 +198,8 @@ type
     function GetRCSOutPlus(): TRCSAddr;
     function GetRCSOutMinus(): TRCSAddr;
 
+    procedure ShowIndication();
+
   public
     constructor Create(index: Integer);
     destructor Destroy(); override;
@@ -458,6 +460,7 @@ begin
   Self.m_state.movingMinus := false;
   Self.m_state.positionLock := TTurnoutPosition.none;
   Self.m_state.locks := 0;
+  Self.ShowIndication();
 end;
 
 function TBlkTurnout.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
@@ -1307,6 +1310,8 @@ begin
     changed := true;
   end;
 
+  Self.ShowIndication();
+
   if (not changed) then
     inherited Change(now);
 end;
@@ -1870,5 +1875,25 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTurnout.ShowIndication();
+begin
+  if ((not Self.m_settings.indication.enabled) or (not RCSi.Started)) then
+    Exit();
+
+  try
+    if (Self.movingPlus) then
+      RCSi.SetOutput(Self.m_settings.indication.rcsPlus, osf180)
+    else
+      RCSi.SetOutput(Self.m_settings.indication.rcsPlus, ite(Self.position = TTurnoutPosition.plus, 1, 0));
+
+    if (Self.movingMinus) then
+      RCSi.SetOutput(Self.m_settings.indication.rcsMinus, osf180)
+    else
+      RCSi.SetOutput(Self.m_settings.indication.rcsMinus, ite(Self.position = TTurnoutPosition.minus, 1, 0));
+  except
+
+  end;
+end;
 
 end.// unit
