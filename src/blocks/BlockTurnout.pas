@@ -9,13 +9,14 @@ uses IniFiles, Block, SysUtils, BlockTrack, Menus, AreaDb,
   Area, TechnologieRCS;
 
 {
-  Jak funguje intentionalLock:
-  Tohle se uplatnuje jen u vyhybek odvratu. Tyto vyhybky nemusi byt v usecich JC,
-  takze nemaji zadnou informaci o tom, kdy maji byt drzeny a kdy se ma drzeni
-  zrusit. Jedna vyhybka muze byt v odvratech vice postavenych JC, proto se pocita,
-  kolikrat je vyhybka drzena (VyhStav.intentionalLocks), jakmile je hodnota 0,
-  dojde k odblokovaniv vyhybky. Pri odblokovani pozor na to, ze muse byt nenulove
-  intentionalLocks vyhybky ve spojce, v takovem pripade vyhybku neodblokovavat.
+  intentionalLock:
+  intentionalLock is used only on refugees. These turnouts do not have to be directly
+  in path of a train so they don't know they should be locked (based on zaver
+  of tracks). So we must lock them manually - intentionalLock.
+  One turnout can be locked from multiple train paths thus turnout remebers
+  number of paths which lock the turnout. When value decrements to 0, turnout
+  is unlocked. While unlocking the turnout beware that turnout in coupling can
+  have different (> 0) intentionalLock!
 }
 
 type
@@ -23,6 +24,22 @@ type
   TTurnoutSetError = (vseInvalidPos, vseInvalidRCSConfig, vseLocked, vseOccupied, vseRCS, vseTimeout);
   ECoupling = class(Exception);
   TTurnoutSetPosErrCb = procedure(Sender: TObject; error: TTurnoutSetError) of object;
+
+  TBlkTurnoutIndication = record
+    // Pst / control panel indication
+    enabled: Boolean;
+    rcsPlus: TRCSAddr;
+    rcsMinus: TRCSAddr;
+    pstOnly: Boolean;
+  end;
+
+  TBlkTurnoutControllers = record
+    // Pst / control panel buttons
+    enabled: Boolean;
+    rcsPlus: TRCSAddr;
+    rcsMinus: TRCSAddr;
+    pstOnly: Boolean;
+  end;
 
   TBlkTurnoutSettings = record
     RCSAddrs: TRCSAddrs; // order: in+, in-, out+, out-
@@ -32,19 +49,23 @@ type
     npPlus: Integer; // id of non-profile block for position +
     npMinus: Integer; // id of non-profile block for position -
     posDetection: Boolean;
+    indication: TBlkTurnoutIndication;
+    controllers: TBlkTurnoutControllers;
   end;
 
   TBlkTurnoutState = record
     position, positionOld, positionReal, positionSave, positionLock: TTurnoutPosition;
-    // position = current reporting
-    // old = last position
-    // real = state based only on current state of RCS inputs
-    // save = position to save to file in case of posDetection = false
-    // lock = in which position to lock turnout in case of lock
+    {
+       position = current reporting
+       old = last position
+       real = state based only on current state of RCS inputs
+       save = position to save to file in case of posDetection = false
+       lock = in which position to lock turnout in case of lock
+    }
     note, lockout: string;
     movingPlus, movingMinus: Boolean;
     intentionalLocks: Integer;
-    locks: Cardinal; // n.o. blocks who gave emergency lock
+    locks: Cardinal; // number of blocks which gave emergency lock
 
     movingOKCallback: TNotifyEvent;
     movingErrCallback: TTurnoutSetPosErrCb;
@@ -66,9 +87,23 @@ type
   TBlkTurnout = class(TBlk)
   const
     _def_vyh_stav: TBlkTurnoutState = ( // default state
-      position: disabled; positionOld: disabled; positionReal: disabled; positionSave: none; positionLock: none;
-      note: ''; lockout: ''; movingPlus: false; movingMinus: false; intentionalLocks: 0; locks: 0;
-      movingOKCallback: nil; movingErrCallback: nil; movingStart: 0; movingPanel: nil; movingOR: nil;);
+      position: disabled;
+      positionOld: disabled;
+      positionReal: disabled;
+      positionSave: none;
+      positionLock: none;
+      note: '';
+      lockout: '';
+      movingPlus: false;
+      movingMinus: false;
+      intentionalLocks: 0;
+      locks: 0;
+      movingOKCallback: nil;
+      movingErrCallback: nil;
+      movingStart: 0;
+      movingPanel: nil;
+      movingOR: nil;
+    );
 
     _T_MOVING_TIMEOUT_SEC = 10;
     _T_MOVING_MOCK_SEC = 2;
@@ -258,12 +293,12 @@ begin
   Self.m_parent := nil;
   Self.m_npPlus := nil;
   Self.m_npMinus := nil;
-end; // ctor
+end;
 
 destructor TBlkTurnout.Destroy();
 begin
-  inherited Destroy();
-end; // dtor
+  inherited;
+end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -295,6 +330,22 @@ begin
     strs.Free();
   end;
 
+  Self.m_settings.indication.enabled := (ini_tech.ReadString(section, 'indRcsPlus', '') <> '');
+  if (Self.m_settings.indication.enabled) then
+   begin
+    Self.m_settings.indication.rcsPlus.Load(ini_tech.ReadString(section, 'indRcsPlus', '0:0'));
+    Self.m_settings.indication.rcsMinus.Load(ini_tech.ReadString(section, 'indRcsMinus', '0:0'));
+    Self.m_settings.indication.pstOnly := ini_tech.ReadBool(section, 'indPstOnly', false);
+   end;
+
+  Self.m_settings.controllers.enabled := (ini_tech.ReadString(section, 'contRcsPlus', '') <> '');
+  if (Self.m_settings.controllers.enabled) then
+   begin
+    Self.m_settings.controllers.rcsPlus.Load(ini_tech.ReadString(section, 'contRcsPlus', '0:0'));
+    Self.m_settings.controllers.rcsMinus.Load(ini_tech.ReadString(section, 'contRcsMinus', '0:0'));
+    Self.m_settings.controllers.pstOnly := ini_tech.ReadBool(section, 'contPstOnly', false);
+   end;
+
   PushRCSToArea(Self.m_areas, Self.m_settings.RCSAddrs);
 end;
 
@@ -321,6 +372,20 @@ begin
 
   if (not Self.posDetection) then
     ini_tech.WriteBool(section, 'detekcePolohy', false);
+
+  if (Self.m_settings.indication.enabled) then
+   begin
+    ini_tech.WriteString(section, 'indRcsPlus', Self.m_settings.indication.rcsPlus.ToString());
+    ini_tech.ReadString(section, 'indRcsMinus', Self.m_settings.indication.rcsMinus.ToString());
+    ini_tech.WriteBool(section, 'indPstOnly', Self.m_settings.indication.pstOnly);
+   end;
+
+  if (Self.m_settings.controllers.enabled) then
+   begin
+    ini_tech.WriteString(section, 'contRcsPlus', Self.m_settings.controllers.rcsPlus.ToString());
+    ini_tech.ReadString(section, 'contRcsMinus', Self.m_settings.controllers.rcsMinus.ToString());
+    ini_tech.WriteBool(section, 'contPstOnly', Self.m_settings.controllers.pstOnly);
+   end;
 end;
 
 procedure TBlkTurnout.SaveStatus(ini_stat: TMemIniFile; const section: string);

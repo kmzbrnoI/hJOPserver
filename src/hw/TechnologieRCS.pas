@@ -30,6 +30,7 @@ type
     board: Cardinal; // cislo desky
     port: Byte; // cislo portu
     class operator Equal(a, b: TRCSAddr): Boolean;
+    procedure Load(str: string);
     function ToString(): string;
   end;
 
@@ -278,7 +279,7 @@ begin
   Self.fGeneralError := false;
   if (Assigned(Self.fAfterClose)) then
     Self.fAfterClose(Self);
-end; // procdure
+end;
 
 procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg: PChar);
 begin
@@ -530,6 +531,21 @@ end;
 function TRCSAddr.ToString(): string;
 begin
   Result := IntToStr(board) + ':' + IntToStr(port);
+end;
+
+procedure TRCSAddr.Load(str: string);
+var strs: TStrings;
+begin
+  strs := TStringList.Create();
+  try
+    ExtractStrings([':'], [], PChar(str), strs);
+    if (strs.Count <> 2) then
+      raise Exception.Create('Unable to load RCS: '+str);
+    board := StrToInt(strs[0]);
+    port := StrToInt(strs[1]);
+  finally
+    strs.Free();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
