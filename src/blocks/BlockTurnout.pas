@@ -199,6 +199,7 @@ type
     function GetRCSOutMinus(): TRCSAddr;
 
     procedure ShowIndication();
+    procedure ReadContollers();
 
   public
     constructor Create(index: Integer);
@@ -284,7 +285,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
-  IfThenElse;
+  IfThenElse, RCSErrors;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin
@@ -492,6 +493,7 @@ begin
   Self.UpdatePosition();
   Self.UpdateMovingTimeout();
   Self.UpdateLock();
+  Self.ReadContollers();
 
   if (Self.m_state.position <> Self.m_state.positionOld) then
   begin
@@ -1896,4 +1898,32 @@ begin
   end;
 end;
 
+procedure TBlkTurnout.ReadContollers();
+var plus, minus: Boolean;
+begin
+  if ((not Self.m_settings.controllers.enabled) or (not RCSi.Started)) then
+    Exit();
+
+  try
+    if ((RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) and
+        (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) = TRCSInputState.isOn)) then
+      Exit();
+
+    if (RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) then
+      if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.plus)) then
+        Self.SetPosition(TTurnoutPosition.plus, false, true);
+
+    if (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) = TRCSInputState.isOn) then
+      if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.minus)) then
+        Self.SetPosition(TTurnoutPosition.minus, false, true);
+
+  except
+    on E: RCSException do Exit();
+    on E: Exception do raise;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
 end.// unit
+
