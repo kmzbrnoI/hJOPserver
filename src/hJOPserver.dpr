@@ -156,7 +156,8 @@ uses
   fBlkGroupSignal in 'blocks\forms\data\fBlkGroupSignal.pas' {F_BlkGroupSignal},
   PTEndpointUsers in 'pt\PTEndpointUsers.pas',
   PTEndpointUser in 'pt\PTEndpointUser.pas',
-  BlockPst in 'blocks\BlockPst.pas';
+  BlockPst in 'blocks\BlockPst.pas',
+  fBlkPst in 'blocks\forms\data\fBlkPst.pas' {F_BlkPst};
 
 {$R *.res}
 
@@ -178,6 +179,7 @@ var
   Application.CreateForm(TF_Splash, F_Splash);
   Application.CreateForm(TF_BlkAC, F_BlkAC);
   Application.CreateForm(TF_BlkGroupSignal, F_BlkGroupSignal);
+  Application.CreateForm(TF_BlkPst, F_BlkPst);
   F_Splash.AddStav('Vytvářím okna...');
 
   Application.CreateForm(TF_Console, F_Console);

@@ -136,7 +136,7 @@ uses BlockTurnout, BlockTrack, BlockIR, BlockSignal, fMain, BlockCrossing,
   BlockLock, TJCDatabase, Logging, BlockRailway, BlockLinker, BlockAC,
   DataBloky, TrainDb, TechnologieJC, AreaStack, GetSystems, BlockDisconnector,
   BlockRailwayTrack, appEv, BlockIO, PTUtils, BlockSummary,
-  TechnologieAB, ACBlocks, BlockGroupSignal;
+  TechnologieAB, ACBlocks, BlockGroupSignal, BlockPst;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -266,8 +266,10 @@ begin
             Blk := TBlkAC.Create(-1);
           Integer(btGroupSignal):
             Blk := TBlkGroupSignal.Create(-1);
+          Integer(btPst):
+            Blk := TBlkPst.Create(-1);
         else
-          writelog('Nenacitam blok ' + section + ' - neznamy typ', WR_ERROR);
+          writelog('Nenačítám blok ' + section + ' - neznámý typ', WR_ERROR);
           continue;
         end;
 
@@ -400,6 +402,8 @@ begin
       Blk := TBlkAC.Create(index);
     btGroupSignal:
       Blk := TBlkGroupSignal.Create(index);
+    btPst:
+      Blk := TBlkPst.Create(index);
   else
     Exit(nil);
   end;
