@@ -5,8 +5,8 @@ object F_BlkTurnout: TF_BlkTurnout
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (vyhybka)'
-  ClientHeight = 362
-  ClientWidth = 641
+  ClientHeight = 520
+  ClientWidth = 631
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -52,7 +52,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Margins.Bottom = 2
     Caption = 'Stanice :'
   end
-  object E_Nazev: TEdit
+  object E_Name: TEdit
     Left = 118
     Top = 7
     Width = 195
@@ -155,7 +155,7 @@ object F_BlkTurnout: TF_BlkTurnout
       Margins.Bottom = 2
       Caption = 'Port'
     end
-    object SE_VystPlus_port: TSpinEdit
+    object SE_Out_Plus_port: TSpinEdit
       Left = 230
       Top = 40
       Width = 67
@@ -169,7 +169,7 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 1
       Value = 0
     end
-    object SE_VystMinus_port: TSpinEdit
+    object SE_Out_Minus_port: TSpinEdit
       Left = 230
       Top = 72
       Width = 67
@@ -183,7 +183,7 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 3
       Value = 0
     end
-    object SE_VstPlus_port: TSpinEdit
+    object SE_In_Plus_port: TSpinEdit
       Left = 230
       Top = 104
       Width = 67
@@ -197,7 +197,7 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 5
       Value = 0
     end
-    object SE_VstMinus_port: TSpinEdit
+    object SE_In_Minus_port: TSpinEdit
       Left = 230
       Top = 136
       Width = 67
@@ -211,7 +211,7 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 7
       Value = 0
     end
-    object SE_VystPlus_module: TSpinEdit
+    object SE_Out_Plus_module: TSpinEdit
       Left = 151
       Top = 40
       Width = 67
@@ -226,7 +226,7 @@ object F_BlkTurnout: TF_BlkTurnout
       Value = 1
       OnExit = SE_moduleExit
     end
-    object SE_VystMinus_module: TSpinEdit
+    object SE_Out_Minus_module: TSpinEdit
       Left = 151
       Top = 72
       Width = 67
@@ -241,7 +241,7 @@ object F_BlkTurnout: TF_BlkTurnout
       Value = 1
       OnExit = SE_moduleExit
     end
-    object SE_VstPlus_module: TSpinEdit
+    object SE_In_Plus_module: TSpinEdit
       Left = 151
       Top = 104
       Width = 67
@@ -256,7 +256,7 @@ object F_BlkTurnout: TF_BlkTurnout
       Value = 1
       OnExit = SE_moduleExit
     end
-    object SE_VstMinus_module: TSpinEdit
+    object SE_In_Minus_module: TSpinEdit
       Left = 151
       Top = 136
       Width = 67
@@ -282,8 +282,8 @@ object F_BlkTurnout: TF_BlkTurnout
     end
   end
   object B_Storno: TButton
-    Left = 479
-    Top = 330
+    Left = 470
+    Top = 487
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -291,12 +291,12 @@ object F_BlkTurnout: TF_BlkTurnout
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 5
+    TabOrder = 10
     OnClick = B_StornoClick
   end
   object B_Save: TButton
-    Left = 558
-    Top = 330
+    Left = 549
+    Top = 487
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -305,7 +305,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 4
+    TabOrder = 9
     OnClick = B_SaveClick
   end
   object LB_Stanice: TListBox
@@ -321,7 +321,7 @@ object F_BlkTurnout: TF_BlkTurnout
     TabOrder = 2
   end
   object GB_Zamek: TGroupBox
-    Left = 329
+    Left = 318
     Top = 87
     Width = 304
     Height = 83
@@ -338,7 +338,7 @@ object F_BlkTurnout: TF_BlkTurnout
       Margins.Bottom = 2
       Caption = 'Poloha v'#253'hybky pro zamknut'#237':'
     end
-    object CB_Zamek: TComboBox
+    object CB_Lock: TComboBox
       Left = 107
       Top = 20
       Width = 189
@@ -346,16 +346,16 @@ object F_BlkTurnout: TF_BlkTurnout
       Style = csDropDownList
       TabOrder = 0
     end
-    object CHB_Zamek: TCheckBox
+    object CHB_Lock: TCheckBox
       Left = 12
       Top = 24
       Width = 64
       Height = 17
       Caption = 'Z'#225'mek'
       TabOrder = 1
-      OnClick = CHB_ZamekClick
+      OnClick = CHB_LockClick
     end
-    object CB_Zamek_Poloha: TComboBox
+    object CB_Lock_Pos: TComboBox
       Left = 184
       Top = 47
       Width = 112
@@ -368,7 +368,7 @@ object F_BlkTurnout: TF_BlkTurnout
     end
   end
   object GB_Neprofil: TGroupBox
-    Left = 329
+    Left = 318
     Top = 182
     Width = 304
     Height = 138
@@ -409,23 +409,23 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 3
     end
   end
-  object GB_Spojka: TGroupBox
-    Left = 329
+  object GB_Coupling: TGroupBox
+    Left = 318
     Top = 8
     Width = 304
     Height = 73
     Caption = ' Spojka '
-    TabOrder = 8
-    object CHB_Spojka: TCheckBox
+    TabOrder = 5
+    object CHB_Coupling: TCheckBox
       Left = 16
       Top = 22
       Width = 64
       Height = 17
       Caption = 'Spojka'
       TabOrder = 0
-      OnClick = CHB_SpojkaClick
+      OnClick = CHB_CouplingClick
     end
-    object CB_Spojka: TComboBox
+    object CB_Coupling: TComboBox
       Left = 107
       Top = 18
       Width = 187
@@ -433,7 +433,7 @@ object F_BlkTurnout: TF_BlkTurnout
       Style = csDropDownList
       TabOrder = 1
     end
-    object CHB_Spojka_Common_In: TCheckBox
+    object CHB_Coupling_Common_In: TCheckBox
       Left = 138
       Top = 46
       Width = 81
@@ -441,13 +441,267 @@ object F_BlkTurnout: TF_BlkTurnout
       Caption = 'Stejn'#233' vstupy'
       TabOrder = 2
     end
-    object CHB_Spojka_Common_Out: TCheckBox
+    object CHB_Coupling_Common_Out: TCheckBox
       Left = 16
       Top = 46
       Width = 97
       Height = 17
       Caption = 'Stejn'#233' v'#253'stupy'
       TabOrder = 3
+    end
+  end
+  object GB_Indications: TGroupBox
+    Left = 8
+    Top = 325
+    Width = 302
+    Height = 156
+    Caption = ' Indikace polohy (v pultu) '
+    TabOrder = 4
+    object Label3: TLabel
+      Left = 7
+      Top = 88
+      Width = 42
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Poloha +'
+    end
+    object Label4: TLabel
+      Left = 7
+      Top = 120
+      Width = 39
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Poloha -'
+    end
+    object Label5: TLabel
+      Left = 150
+      Top = 64
+      Width = 29
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Modul'
+    end
+    object Label6: TLabel
+      Left = 229
+      Top = 64
+      Width = 19
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Port'
+    end
+    object SE_Ind_Minus_Module: TSpinEdit
+      Left = 150
+      Top = 120
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 4
+      Value = 1
+      OnExit = SE_Ind_Minus_ModuleExit
+    end
+    object SE_Ind_Plus_Module: TSpinEdit
+      Left = 150
+      Top = 88
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 1
+      OnExit = SE_Ind_Plus_ModuleExit
+    end
+    object SE_Ind_Plus_Port: TSpinEdit
+      Left = 226
+      Top = 88
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 3
+      Value = 0
+    end
+    object SE_Ind_Minus_Port: TSpinEdit
+      Left = 226
+      Top = 120
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 5
+      Value = 0
+    end
+    object CHB_Indication: TCheckBox
+      Left = 7
+      Top = 19
+      Width = 186
+      Height = 17
+      Caption = 'Indikovat polohu v'#253'hybky (v pultu)'
+      TabOrder = 0
+      OnClick = CHB_IndicationClick
+    end
+    object CHB_Indication_Pst: TCheckBox
+      Left = 7
+      Top = 42
+      Width = 286
+      Height = 17
+      Caption = 'Indikace aktivn'#237' pouze p'#345'i aktivn'#237'm pomocn'#233'm stav'#283'dle'
+      TabOrder = 1
+    end
+  end
+  object GB_Controllers: TGroupBox
+    Left = 320
+    Top = 326
+    Width = 302
+    Height = 156
+    Caption = ' Voli'#269'e pro p'#345'estaven'#237' (v pultu) '
+    TabOrder = 8
+    object Label7: TLabel
+      Left = 7
+      Top = 88
+      Width = 42
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Poloha +'
+    end
+    object Label8: TLabel
+      Left = 7
+      Top = 120
+      Width = 39
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Poloha -'
+    end
+    object Label9: TLabel
+      Left = 150
+      Top = 64
+      Width = 29
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Modul'
+    end
+    object Label10: TLabel
+      Left = 229
+      Top = 64
+      Width = 19
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Port'
+    end
+    object SE_Cont_Minus_Module: TSpinEdit
+      Left = 150
+      Top = 120
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 4
+      Value = 1
+      OnExit = SE_Cont_Minus_ModuleExit
+    end
+    object SE_Cont_Plus_Module: TSpinEdit
+      Left = 150
+      Top = 88
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 1
+      OnExit = SE_Cont_Plus_ModuleExit
+    end
+    object SE_Cont_Plus_Port: TSpinEdit
+      Left = 226
+      Top = 88
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 3
+      Value = 0
+    end
+    object SE_Cont_Minus_Port: TSpinEdit
+      Left = 226
+      Top = 120
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 5
+      Value = 0
+    end
+    object CHB_Controllers: TCheckBox
+      Left = 7
+      Top = 19
+      Width = 186
+      Height = 17
+      Caption = 'Povolit voli'#269'e pro nastaven'#237' polohy'
+      TabOrder = 0
+      OnClick = CHB_ControllersClick
+    end
+    object CHB_Controllers_Pst: TCheckBox
+      Left = 7
+      Top = 42
+      Width = 286
+      Height = 17
+      Caption = 'Voli'#269'e aktivn'#237' pouze p'#345'i aktivn'#237'm pomocn'#233'm stav'#283'dle'
+      TabOrder = 1
     end
   end
 end

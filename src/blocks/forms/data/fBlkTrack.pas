@@ -346,8 +346,7 @@ begin
   begin
     another := Blocks.AnotherBlockUsesRCS(addr, Self.Blk, TRCSIOType.input);
     if (another <> nil) then
-      Application.MessageBox(PChar('Varování: blok ' + another.name + ' využívá také RCS adresu ' + IntToStr(addr.board)
-        + ':' + IntToStr(addr.port)), 'Varování', MB_OK OR MB_ICONWARNING);
+      Application.MessageBox(PChar('Varování: blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString()), 'Varování', MB_OK OR MB_ICONWARNING);
   end;
 
   F_BlkTrack.Close();

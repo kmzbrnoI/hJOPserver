@@ -244,8 +244,7 @@ begin
 
       another := Blocks.AnotherBlockUsesRCS(addrs[i], Self.Blk, typ);
       if (another <> nil) then
-        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + IntToStr(addrs[i].board) + ':' +
-          IntToStr(addrs[i].port) + '.' + #13#10;
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addrs[i].board.ToString() + '.' + #13#10;
     end;
 
     if (messages <> '') then

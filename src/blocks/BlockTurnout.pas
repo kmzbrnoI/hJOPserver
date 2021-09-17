@@ -376,14 +376,14 @@ begin
   if (Self.m_settings.indication.enabled) then
    begin
     ini_tech.WriteString(section, 'indRcsPlus', Self.m_settings.indication.rcsPlus.ToString());
-    ini_tech.ReadString(section, 'indRcsMinus', Self.m_settings.indication.rcsMinus.ToString());
+    ini_tech.WriteString(section, 'indRcsMinus', Self.m_settings.indication.rcsMinus.ToString());
     ini_tech.WriteBool(section, 'indPstOnly', Self.m_settings.indication.pstOnly);
    end;
 
   if (Self.m_settings.controllers.enabled) then
    begin
     ini_tech.WriteString(section, 'contRcsPlus', Self.m_settings.controllers.rcsPlus.ToString());
-    ini_tech.ReadString(section, 'contRcsMinus', Self.m_settings.controllers.rcsMinus.ToString());
+    ini_tech.WriteString(section, 'contRcsMinus', Self.m_settings.controllers.rcsMinus.ToString());
     ini_tech.WriteBool(section, 'contPstOnly', Self.m_settings.controllers.pstOnly);
    end;
 end;
@@ -468,6 +468,14 @@ begin
 
   if ((portType = TRCSIOType.output) and (Self.m_settings.RCSAddrs.Count >= 4) and
     ((Self.rcsOutPlus = addr) or (Self.rcsOutMinus = addr))) then
+    Exit(true);
+
+  if ((portType = TRCSIOType.input) and (Self.m_settings.controllers.enabled) and
+      ((addr = Self.m_settings.controllers.rcsPlus) or (addr = Self.m_settings.controllers.rcsMinus))) then
+    Exit(true);
+
+  if ((portType = TRCSIOType.output) and (Self.m_settings.indication.enabled) and
+      ((addr = Self.m_settings.indication.rcsPlus) or (addr = Self.m_settings.indication.rcsMinus))) then
     Exit(true);
 
   Result := false;
