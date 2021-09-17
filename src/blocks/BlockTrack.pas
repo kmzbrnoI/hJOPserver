@@ -370,7 +370,7 @@ begin
     strs.free();
   end;
 
-  strs := Self.LoadORs(ini_rel, 'U');
+  strs := Self.LoadAreas(ini_rel, 'U');
   try
     if (strs.Count >= 2) then
     begin

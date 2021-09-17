@@ -227,7 +227,7 @@ begin
 
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
 
-  Self.LoadORs(ini_rel, 'PRJ').Free();
+  Self.LoadAreas(ini_rel, 'PRJ').Free();
 
   Self.FillRCSModules();
   for var module: Cardinal in Self.m_state.rcsModules do

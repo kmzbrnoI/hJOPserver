@@ -124,7 +124,7 @@ begin
   Self.m_settings.parent := ini_tech.ReadInteger(section, 'parent', -1);
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
 
-  Self.LoadORs(ini_rel, 'Uv').Free();
+  Self.LoadAreas(ini_rel, 'Uv').Free();
 end;
 
 procedure TBlkLinker.SaveData(ini_tech: TMemIniFile; const section: string);

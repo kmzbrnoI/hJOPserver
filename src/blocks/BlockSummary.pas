@@ -105,7 +105,7 @@ begin
     for str in data do
       Self.m_settings.crossings.Add(StrToInt(str));
 
-    Self.LoadORs(ini_rel, 'T').Free();
+    Self.LoadAreas(ini_rel, 'T').Free();
   finally
     data.Free();
   end;

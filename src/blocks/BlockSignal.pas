@@ -307,7 +307,7 @@ begin
   Self.m_settings.outputType := TBlkSignalOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
   Self.m_settings.fallDelay := ini_tech.ReadInteger(section, 'zpoz', _SIG_DEFAULT_DELAY);
 
-  var strs: TStrings := Self.LoadORs(ini_rel, 'N');
+  var strs: TStrings := Self.LoadAreas(ini_rel, 'N');
   try
     if (strs.Count >= 3) then
     begin
@@ -1607,7 +1607,7 @@ begin
       btLock:
         begin
           if (TBlkLock(Blk).emLock) then
-            TBlkLock(Blk).DecreaseNouzZaver(toRnz[blkId]);
+            TBlkLock(Blk).DecreaseEmLock(toRnz[blkId]);
         end;
     end;
   end;

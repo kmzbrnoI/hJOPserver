@@ -56,7 +56,7 @@ type
     class procedure PushRCSToArea(areas: TList<TArea>; RCS: TRCSAddr); overload;
 
     procedure CallChangeEvents(var events: TChangeEvents);
-    function LoadORs(ini: TMemIniFile; section: string): TStrings; // user must free result!
+    function LoadAreas(ini: TMemIniFile; section: string): TStrings; // user must free result!
 
   public
 
@@ -488,7 +488,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlk.LoadORs(ini: TMemIniFile; section: string): TStrings;
+function TBlk.LoadAreas(ini: TMemIniFile; section: string): TStrings;
 begin
   if (ini = nil) then
   begin

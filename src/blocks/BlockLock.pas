@@ -22,8 +22,14 @@ type
 
   TBlkLock = class(TBlk)
   const
-    _def_zamek_stav: TBlkLockState = ( // default state
-      enabled: false; keyReleased: false; emLock: 0; zaver: 0; note: ''; error: false;);
+    _def_lock_state: TBlkLockState = ( // default state
+      enabled: false;
+      keyReleased: false;
+      emLock: 0;
+      zaver: 0;
+      note: '';
+      error: false;
+    );
 
   private
     m_state: TBlkLockState;
@@ -37,7 +43,7 @@ type
 
     function GetZaver(): Boolean;
     function GetEmLock(): Boolean;
-    function IsRightPoloha(): Boolean; // vraci true, pokud jsou vyhybky s timto zamkem v poloze pro zamknuti
+    function IsRightPosition(): Boolean; // vraci true, pokud jsou vyhybky s timto zamkem v poloze pro zamknuti
 
     procedure SetEmLock(new: Boolean);
     procedure SetNote(note: string);
@@ -66,7 +72,7 @@ type
 
     // ----- lock own functions -----
 
-    procedure DecreaseNouzZaver(amount: Cardinal);
+    procedure DecreaseEmLock(amount: Cardinal);
 
     property state: TBlkLockState read m_state;
 
@@ -99,9 +105,9 @@ begin
   inherited Create(index);
 
   Self.m_globSettings.typ := btLock;
-  Self.m_state := _def_zamek_stav;
+  Self.m_state := _def_lock_state;
   Self.last_zaver := false;
-end; // ctor
+end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -109,7 +115,7 @@ procedure TBlkLock.LoadData(ini_tech: TMemIniFile; const section: string; ini_re
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
-  Self.LoadORs(ini_rel, 'Z').Free();
+  Self.LoadAreas(ini_rel, 'Z').Free();
 end;
 
 procedure TBlkLock.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -207,7 +213,7 @@ function TBlkLock.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights
 begin
   Result := inherited;
 
-  if ((Self.keyReleased) and (Self.IsRightPoloha())) then
+  if ((Self.keyReleased) and (Self.IsRightPosition())) then
     Result := Result + 'ZUK,';
 
   if ((not Self.zaver) and (not Self.emLock)) then
@@ -300,7 +306,7 @@ begin
     if (Self.m_state.emLock = 0) then
     begin
       // pokud vyhybky nejsou ve spravne poloze, automaticky uvolnujeme klic
-      if (not Self.IsRightPoloha()) then
+      if (not Self.IsRightPosition()) then
         Self.keyReleased := true
       else
       begin
@@ -362,7 +368,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkLock.IsRightPoloha(): Boolean;
+function TBlkLock.IsRightPosition(): Boolean;
 var list: TBlksList;
 begin
   list := Blocks.GetTurnoutWithLock(Self.id);
@@ -380,7 +386,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkLock.DecreaseNouzZaver(amount: Cardinal);
+procedure TBlkLock.DecreaseEmLock(amount: Cardinal);
 begin
   if (Self.m_state.emLock = 0) then
     Exit();

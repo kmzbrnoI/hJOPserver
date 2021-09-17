@@ -326,7 +326,7 @@ begin
   then
     Self.m_state.positionSave := TTurnoutPosition.plus;
 
-  var strs: TStrings := Self.LoadORs(ini_rel, 'V');
+  var strs: TStrings := Self.LoadAreas(ini_rel, 'V');
   try
     Self.m_spnl.track := ite(strs.Count >= 2, StrToInt(strs[1]), -1);
   finally

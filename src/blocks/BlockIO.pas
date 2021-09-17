@@ -144,7 +144,7 @@ begin
     strs.Free();
   end;
 
-  Self.LoadORs(ini_rel, 'POM').Free();
+  Self.LoadAreas(ini_rel, 'POM').Free();
   Self.m_settings.setOutputOnStart := ini_tech.ReadBool(section, 'activateOnStart', false);
   Self.m_settings.nullAfterSec := ini_tech.ReadInteger(section, 'nullTime', 0);
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
