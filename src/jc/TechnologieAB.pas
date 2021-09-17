@@ -31,7 +31,7 @@ type
 
     procedure Update();
 
-    function IsUsekInAnyABJC(usekid: Integer): Boolean;
+    function IsTrackInAnyABJC(trackId: Integer): Boolean;
 
     property Items[index: Integer]: TJC read GetItem; default;
   end;
@@ -145,11 +145,11 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TABlist.IsUsekInAnyABJC(usekid: Integer): Boolean;
+function TABlist.IsTrackInAnyABJC(trackId: Integer): Boolean;
 begin
   for var jc: TJC in Self.JCs do
     for var id: Integer in jc.data.tracks do
-      if (id = usekid) then
+      if (id = trackId) then
         Exit(true);
 
   Result := false;

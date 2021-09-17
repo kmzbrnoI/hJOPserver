@@ -18,7 +18,7 @@ object F_BlkLock: TF_BlkLock
   OnClose = FormClose
   PixelsPerInch = 96
   TextHeight = 13
-  object L_IR02: TLabel
+  object Label2: TLabel
     Left = 8
     Top = 40
     Width = 11
@@ -29,7 +29,7 @@ object F_BlkLock: TF_BlkLock
     Margins.Bottom = 2
     Caption = 'ID'
   end
-  object L_IR01: TLabel
+  object Label1: TLabel
     Left = 8
     Top = 8
     Width = 37
@@ -40,7 +40,7 @@ object F_BlkLock: TF_BlkLock
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
   end
-  object L_Usek03: TLabel
+  object Label3: TLabel
     Left = 7
     Top = 72
     Width = 42
@@ -51,7 +51,7 @@ object F_BlkLock: TF_BlkLock
     Margins.Bottom = 2
     Caption = 'Stanice :'
   end
-  object E_Nazev: TEdit
+  object E_Name: TEdit
     Left = 120
     Top = 8
     Width = 193
@@ -104,7 +104,7 @@ object F_BlkLock: TF_BlkLock
     TabOrder = 3
     OnClick = B_SaveClick
   end
-  object LB_Stanice: TListBox
+  object LB_Areas: TListBox
     Left = 119
     Top = 72
     Width = 192

@@ -8,15 +8,15 @@ uses
 
 type
   TF_BlkAC = class(TForm)
-    E_Nazev: TEdit;
+    E_Name: TEdit;
     SE_ID: TSpinEdit;
-    L_IR02: TLabel;
-    L_IR01: TLabel;
+    Label2: TLabel;
+    Label1: TLabel;
     B_Storno: TButton;
     B_Save: TButton;
-    L_Usek03: TLabel;
-    LB_Stanice: TListBox;
-    Label1: TLabel;
+    Label3: TLabel;
+    LB_Areas: TListBox;
+    Label4: TLabel;
     E_AccessToken: TEdit;
     B_GenToken: TButton;
     procedure B_StornoClick(Sender: TObject);
@@ -25,16 +25,16 @@ type
     procedure B_GenTokenClick(Sender: TObject);
 
   private
-    NewBlk: Boolean;
-    Blk: TBlkAC;
+    newBlk: Boolean;
+    blk: TBlkAC;
 
   public
-    OpenIndex: Integer;
+    openIndex: Integer;
 
-    procedure OpenForm(BlokIndex: Integer);
+    procedure OpenForm(blockIndex: Integer);
     procedure NewBlkOpenForm();
     procedure NormalOpenForm();
-    procedure HlavniOpenForm();
+    procedure CommonOpenForm();
     procedure NewBlkCreate();
   end;
 
@@ -43,47 +43,45 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area,
-  ownStrUtils;
+uses BlockDb, Block, DataBloky, ownStrUtils;
 
 {$R *.dfm}
 
-procedure TF_BlkAC.OpenForm(BlokIndex: Integer);
+procedure TF_BlkAC.OpenForm(blockIndex: Integer);
 begin
-  OpenIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  HlavniOpenForm();
+  Self.openIndex := blockIndex;
+  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.Blk));
+  Self.CommonOpenForm();
 
   if (NewBlk) then
-    NewBlkOpenForm()
+    Self.NewBlkOpenForm()
   else
-    NormalOpenForm();
+    Self.NormalOpenForm();
 
   Self.ShowModal();
 end;
 
 procedure TF_BlkAC.NewBlkOpenForm();
 begin
-  Self.E_Nazev.Text := '';
+  Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
   Self.E_AccessToken.Text := '';
 
   Self.Caption := 'Nový blok AC';
-  Self.ActiveControl := Self.E_Nazev;
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkAC.NormalOpenForm();
 var glob: TBlkSettings;
   settings: TBlkACSettings;
-  Area: TArea;
 begin
   glob := Self.Blk.GetGlobalSettings();
   settings := Self.Blk.GetSettings();
 
-  for Area in Self.Blk.areas do
-    Self.LB_Stanice.Items.Add(Area.name);
+  for var area in Self.Blk.areas do
+    Self.LB_Areas.Items.Add(Area.name);
 
-  Self.E_Nazev.Text := glob.name;
+  Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
   Self.E_AccessToken.Text := settings.accessToken;
 
@@ -91,15 +89,15 @@ begin
   Self.ActiveControl := Self.B_Save;
 end;
 
-procedure TF_BlkAC.HlavniOpenForm();
+procedure TF_BlkAC.CommonOpenForm();
 begin
-  Self.LB_Stanice.Clear();
+  Self.LB_Areas.Clear();
 end;
 
 procedure TF_BlkAC.NewBlkCreate();
 begin
-  NewBlk := true;
-  OpenForm(Blocks.count);
+  Self.newBlk := true;
+  Self.OpenForm(Blocks.count);
 end;
 
 procedure TF_BlkAC.B_StornoClick(Sender: TObject);
@@ -116,18 +114,18 @@ procedure TF_BlkAC.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
   settings: TBlkACSettings;
 begin
-  if (E_Nazev.Text = '') then
+  if (Self.E_Name.Text = '') then
   begin
     Application.MessageBox('Vyplňte název bloku !', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlock(SE_ID.Value, OpenIndex)) then
   begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
-  glob.name := Self.E_Nazev.Text;
+  glob.name := Self.E_Name.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btAC;
   settings.accessToken := Self.E_AccessToken.Text;
@@ -146,19 +144,19 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.Blk.note;
-    Self.Blk.SetGlobalSettings(glob);
+    glob.note := Self.blk.note;
+    Self.blk.SetGlobalSettings(glob);
   end;
 
-  Self.Blk.SetSettings(settings);
+  Self.blk.SetSettings(settings);
   Self.Close();
 end;
 
 procedure TF_BlkAC.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  NewBlk := false;
-  OpenIndex := -1;
+  Self.newBlk := false;
+  Self.openIndex := -1;
   BlokyTableData.UpdateTable();
 end;
 
-end.// unit
+end.

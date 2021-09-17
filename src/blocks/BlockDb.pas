@@ -1,15 +1,16 @@
 ﻿unit BlockDb;
 
-{ Database of all technological blocks. }
+{
+  Database of all technological blocks.
 
-// Zakladni principy:
-// - trida TBlocks udrzuje databazi existujicich technologickych bloku
-// - tyto bloky jsou odvozeny ze spolecne abstraktni tridy TBlk
-// - tridu TBlocks vytvari main
-// - event OnChange je odesilan do prislusnych oblasti rizeni a tam se zpracovava dal (odesila se jednotlivym panelum)
+  - TBlock class holds database of all existing technological blocks.
+  - TBlk is an abstract parent type of all block types; it holds common information
+    (name etc.)
+  - TBlocks in created as a shred variable.
+  - OnChange event from block is passed to areas. Areas send this event to panels (clients).
 
-// Update ve verzi 4.3.7:
-// Bloky jsou serazeny podle ID a vyhledava se v nich binarne.
+  v4.3.7 update: all blocks are sorted according to id, search is O(log n) - binary search.
+}
 
 interface
 
@@ -39,7 +40,7 @@ type
     function GetCount(): Integer;
 
     function FindPlaceForNewBlk(id: Integer): Integer;
-    procedure UpdateBlkIndexes(); // aktualizuje indexy vsech bloku, pouziva se pri nacitani dat
+    procedure UpdateBlkIndexes(); // update indexes of all blocks
     function GetItem(i: Integer): TBlk;
 
   public
@@ -74,18 +75,18 @@ type
 
     function GetNavPrivol(Area: TArea): TBlksList;
 
-    // ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
+    // send state of all blocks in area 'areaId' to 'conn'
     procedure GetAreaBlk(areaId: string; conn: TIdContext);
 
-    // kontroluje, zda-li blok s timto ID uz nahadou existuje
-    // pri hledani vynechava blok s indexem index
-    // true = existuje, false = neexistuje
-    function IsBlok(id: Integer; ignore_index: Integer = -1): Boolean;
+    // Check if block with id 'id' already exists.
+    // Ignore block 'ignore_index'.
+    function IsBlock(id: Integer; ignore_index: Integer = -1): Boolean;
 
     procedure OnBoosterChange(booster: string);
 
-    procedure NUZ(or_id: string; state: Boolean = true);
-    // pokud true, aplikuji NUZ, pokud false, zrusim NUZ vsech bloku v OR
+    // state = true: apply NUZ for all nuz-selected blocks in 'areaId'
+    // state = false: cancel NUZ for all nuz-selected blocks in 'areaId'
+    procedure NUZ(areaId: string; state: Boolean = true);
 
     procedure FillCB(CB: TComboBox; items: PTArI; ignore: PTArI; orid: TArStr; blkType: TBlkType; blkId: Integer = -1;
       blkType2: TBlkType = btAny);
@@ -96,24 +97,18 @@ type
     function GetBlkWithTrain(Train: TTrain): TBlksList;
     function GetTurnoutWithLock(zamekID: Integer): TBlksList;
 
-    // zavola change na vsechny useky, ktere obsahuji zadanou soupravu
-    // pouziva se napriklad pro oznameni ukradeni LOKO
+    // call 'Change' on all tracks with train 'Train'
     procedure ChangeTrackWithTrain(Train: TTrain);
 
-    // zavola Change vsech trati, ktere obsahuji danou soupravu
-    // pouziva se pri zmene vlastnosti soupravy -> musi se aktualizovat seznam LOKO v trati
+    // call 'Change' on all railways with train 'Train'
     procedure ChangeTrainToRailway(Train: TTrain);
 
-    // volano pri zmene ID bloku na indexu \index
-    // -> je potreba zmenit poradi bloku
     procedure BlkIDChanged(index: Integer);
-
     procedure ClearPOdj();
 
     class function GetBlksList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TBlksList;
     class function SEPortMaxValue(addr: Integer; currentValue: Integer): Integer;
 
-    // vrati vsechny bloky do JSON objektu PTserveru
     procedure GetPtData(json: TJsonObject; includeState: Boolean; Area: TArea = nil; typ: TBlkType = btAny);
 
     procedure NouzZaverZrusen(Sender: TBlk);
@@ -177,14 +172,14 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// pri zmene stavu jakehokoliv bloku je vyvolana tato metoda
-// tady se resi veskere provazanosti bloku a odesilani eventu do oblasti rizeni
+// This event is called on change of any block.
+// This implementation solves all connections of blocks (e.g. track change causes on-track turnouts change etc.)
+// Send event to areas.
 procedure TBlocks.BlkChange(Sender: TObject);
 begin
   if (((Sender as TBlk).typ = btTrack) or ((Sender as TBlk).typ = btRT)) then
   begin
-    // pri jakekoliv zmene useku dojde k Change() na vyhybce
-    // navaznost: usek -> vyhybka
+    // track change -> on-track turnouts change
     var blkset: TBlkSettings := (Sender as TBlk).GetGlobalSettings();
     for var blk: TBlk in Self.data do
       if (blk.typ = btTurnout) then
@@ -192,7 +187,7 @@ begin
           blk.Change();
   end;
 
-  // zavolame OnChange vsech OR daneho bloku
+  // call 'BlkChange' to areas
   var areas: TList<TArea> := (Sender as TBlk).areas;
   if (areas.count > 0) then
     for var area: TArea in areas do
@@ -204,8 +199,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // load all blocks from file
-// Pri vytvareni dostavaji vsechny bloky table_index -1, pak je hromadne
-// oindexujeme metodou UpdateBlkIndexes
+// Use default index '-1' when loading, index propely later ('UpdateBlkIndexes')
 procedure TBlocks.LoadFromFile(const tech_filename, rel_filename, stat_filename: string);
 var ini_tech, ini_rel, ini_stat: TMemIniFile;
   Blk: TBlk;
@@ -231,13 +225,13 @@ begin
         var id: Integer := StrToIntDef(section, -1);
         if (id < 0) then
         begin
-          writelog('Nenacitam blok ' + section + ' - id neni validni', WR_ERROR);
+          writelog('Nenačítám blok ' + section + ' - id není validní', WR_ERROR);
           continue;
         end;
 
-        if (Self.IsBlok(id)) then
+        if (Self.IsBlock(id)) then
         begin
-          writelog('Nenacitam blok ' + section + ' - blok s timto id jiz existuje', WR_ERROR);
+          writelog('Nenačítám blok ' + section + ' - blok s tímto id již existuje', WR_ERROR);
           continue;
         end;
 
@@ -287,10 +281,10 @@ begin
         begin
           if (Assigned(Blk)) then
             Blk.Free();
-          AppEvents.LogException(E, 'Nacitani bloku ' + section);
+          AppEvents.LogException(E, 'Načítání bloku ' + section);
         end;
       end;
-    end; // for i
+    end;
 
     Self.UpdateBlkIndexes();
   finally
@@ -306,11 +300,10 @@ begin
   writelog('Načteno bloků: ' + IntToStr(Self.count), WR_DATA);
 end;
 
-// save all blocks to the file
 procedure TBlocks.SaveToFile(const tech_filename: string);
 var ini: TMemIniFile;
 begin
-  writelog('Ukladam bloky...', WR_DATA);
+  writelog('Ukládám bloky...', WR_DATA);
 
   try
     DeleteFile(PChar(tech_filename)); // all data will be rewrited
@@ -318,7 +311,7 @@ begin
   except
     on E: Exception do
     begin
-      AppEvents.LogException(E, 'Ukladam bloky: nelze otevrit vystupni soubor');
+      AppEvents.LogException(E, 'Ukládám bloky: nelze zapsat výstupni soubor');
       Exit();
     end;
   end;
@@ -345,7 +338,7 @@ begin
   except
     on E: Exception do
     begin
-      AppEvents.LogException(E, 'Ukladam stavy bloku: nelze otevrit vystupni soubor');
+      AppEvents.LogException(E, 'Ukládám stavy bloků: nelze zapsat výstupní soubor');
       Exit();
     end;
   end;
@@ -363,7 +356,7 @@ begin
   ini.UpdateFile();
   FreeAndNil(ini);
 
-  writelog('Uložen stav bloků: ' + IntToStr(Self.count), WR_DATA);
+  writelog('Uložen stav ' + IntToStr(Self.count) + ' bloků', WR_DATA);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -373,8 +366,7 @@ function TBlocks.Add(glob: TBlkSettings): TBlk;
 var Blk: TBlk;
   index: Integer;
 begin
-  // kontrola existence bloku stejneho ID
-  if (Self.IsBlok(glob.id)) then
+  if (Self.IsBlock(glob.id)) then
     raise Exception.Create('Blok tohoto ID již existuje!');
 
   index := Self.FindPlaceForNewBlk(glob.id);
@@ -418,12 +410,11 @@ begin
   BlokyTableData.BlkAdd(index);
   Result := Blk;
 
-  // indexy prislusnych bloku na konci seznamu posuneme o 1 nahoru
+  // move indexes
   for var i: Integer := index + 1 to Self.data.count - 1 do
     Self.data[i].table_index := Self.data[i].table_index + 1;
 end;
 
-// Smazat blok z databaze
 procedure TBlocks.Delete(index: Integer);
 var tmp, Blk: TBlk;
 begin
@@ -439,11 +430,11 @@ begin
 
   Self.data.Delete(index);
 
-  // aktulizujeme indexy bloku (dekrementujeme)
+  // update indexes (decrement)
   for var i: Integer := index to Self.data.count - 1 do
     Self.data[i].table_index := Self.data[i].table_index - 1;
 
-  // pokud mazeme trat, je potreba smazat i uvazky
+  // railway deletion -> linker deletion
   if (tmp.typ = btRailway) then
   begin
     Self.Delete(Blocks.GetBlkIndex((tmp as TBlkRailway).GetSettings().linkerA));
@@ -531,7 +522,6 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-// Hledame blok se zadanym ID v seznamu bloku pomoci binarniho vyhledavani.
 
 function TBlocks.GetBlkIndex(id: Integer): Integer;
 var left, right, mid: Integer;
@@ -573,15 +563,12 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// ziskani stavu vsech bloku na danem OR, slouzi k ziskani dat pri prvnim pripojeni OR
 procedure TBlocks.GetAreaBlk(areaId: string; conn: TIdContext);
 begin
   for var blk: TBlk in Self.data do
   begin
-    // ziskame vsechny oblasti rizeni prislusnych bloku
     var areas: TList<TArea> := Blk.areas;
 
-    // tyto OR porovname na "OblRizeni: PTOR"
     for var area: TArea in areas do
     begin
       if (area.id = areaId) then
@@ -590,15 +577,12 @@ begin
         Break;
       end;
     end;
-  end; // for i
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// kontroluje, zda-li blok s timto ID uz nahodou existuje
-// pri hledani vynechava blok s indexem index
-// true = existuje, false = neexistuje
-function TBlocks.IsBlok(id: Integer; ignore_index: Integer = -1): Boolean;
+function TBlocks.IsBlock(id: Integer; ignore_index: Integer = -1): Boolean;
 var index: Integer;
 begin
   index := Self.GetBlkIndex(id);
@@ -635,8 +619,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBlocks.GetBlkSignalSelected(obl: string): TBlk;
-var j: Integer;
-  orindex: Integer;
+var orindex: Integer;
 begin
   for var blk: TBlk in Self.data do
   begin
@@ -644,7 +627,7 @@ begin
       continue;
 
     orindex := -1;
-    for j := 0 to (Blk as TBlkSignal).areas.count - 1 do
+    for var j := 0 to (Blk as TBlkSignal).areas.count - 1 do
       if ((Blk as TBlkSignal).areas[j].id = obl) then
         orindex := j;
 
@@ -696,8 +679,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// pozn.: NUZ maze soupravy z bloku
-procedure TBlocks.NUZ(or_id: string; state: Boolean = true);
+procedure TBlocks.NUZ(areaId: string; state: Boolean = true);
 begin
   for var blk: TBlk in Self.data do
   begin
@@ -709,7 +691,7 @@ begin
 
     for var area: TArea in track.areas do
     begin
-      if (area.id = or_id) then
+      if (area.id = areaId) then
       begin
         if (state) then
         begin
@@ -717,7 +699,7 @@ begin
             if (Self.GetBlkWithTrain(trains[traini]).count = 1) then
               trains.Remove(traini);
 
-          if (ABlist.IsUsekInAnyABJC(track.id)) then
+          if (ABlist.IsTrackInAnyABJC(track.id)) then
             track.Zaver := TZaver.ab
           else
             track.Zaver := TZaver.no;
@@ -728,7 +710,7 @@ begin
           track.NUZ := false;
       end;
     end;
-  end; // for usek
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -844,7 +826,6 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-// predpovidani soupravy na bloky v jizdni ceste
 
 procedure TBlocks.TrainPrediction(signal: TBlk);
 var track, startTrack: TBlkTrack;
@@ -853,7 +834,7 @@ var track, startTrack: TBlkTrack;
   JC: TJC;
 begin
   try
-    // zjistime soupravu pred navestidlem
+    // get train on track before signal
     track := TBlkTrack(TBlkSignal(signal).track);
     startTrack := track;
     Train := TBlkSignal(signal).GeTTrain(track);
@@ -867,15 +848,15 @@ begin
       Train := nil;
     JC := TBlkSignal(signal).DNjc;
 
-    // predpovidame, dokud existuji jizdni cesty
+    // predict while paths exist
     while ((JC <> nil) and (JC.typ = TJCType.Train) and (JC.state.destroyBlock <= 0)) do
     begin
-      // kontrola povolujici navesti
+      // signal is go?
       Blocks.GetBlkByID(JC.data.signalId, signal);
       if ((signal = nil) or (signal.typ <> btSignal) or (not TBlkSignal(signal).IsGoSignal())) then
         Train := nil;
 
-      // zjistime posledni usek jizdni cesty
+      // get last track of the path
       Blocks.GetBlkByID(JC.data.tracks[JC.data.tracks.count - 1], TBlk(track));
 
       if (track = startTrack) then
@@ -883,7 +864,7 @@ begin
 
       if ((track.typ = btRT) and (TBlkRT(track).inRailway > -1)) then
       begin
-        // pokud je usek v trati, zmenime usek na usek na druhem konci trati
+        // last track in railway -> continue on the other side of railway
         Blocks.GetBlkByID(TBlkRT(track).inRailway, TBlk(railway));
         if (Train <> nil) then
         begin
@@ -894,7 +875,7 @@ begin
             railway.trainPredict := nil;
         end;
 
-        // v trati jsou jiz soupravy -> konec predpovidani
+        // railway contains other trains -> exit
         if (railway.state.trains.count > 0) then
           Exit();
         railway.UpdateTrainPredict(false);
@@ -904,17 +885,16 @@ begin
             Blocks.GetBlkByID(railway.GetSettings().trackIds[railway.GetSettings().trackIds.count - 1], TBlk(track));
           TRailwayDirection.BtoA:
             Blocks.GetBlkByID(railway.GetSettings().trackIds[0], TBlk(track));
-        end; // case
+        end;
 
-        // souprava nebyla v trati propagovana az na konec (napr kvuli navestidlu autobloku zamknutemu na STUJ) -> konec predpovidani
+        // train was not propagated tot end of railway -> exit (maybe some signal in autoblock locked? etc.)
         if ((track.trainPredict <> Train) or (track = startTrack)) then
           Exit();
       end;
 
-      // do useku vlozime predpovidnou soupravu
       track.trainPredict := Train;
 
-      // zjistime, jeslti je nejake navestidlo u tohoto useku postaveno na volno
+      // is any next path active?
       if (track.signalJCRef.count = 0) then
         JC := nil
       else
@@ -924,7 +904,7 @@ begin
     on E: Exception do
     begin
       if (track <> nil) then
-        AppEvents.LogException(E, 'Vyjímka při předpovídání soupravy - Usek ' + track.name)
+        AppEvents.LogException(E, 'Vyjímka při předpovídání soupravy - úsek ' + track.name)
       else
         AppEvents.LogException(E, 'Vyjímka při předpovídání soupravy');
     end;
@@ -1008,8 +988,6 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// najde index pro novy blok
-// casova narocnost: linearni
 function TBlocks.FindPlaceForNewBlk(id: Integer): Integer;
 var i: Integer;
 begin
@@ -1039,10 +1017,10 @@ begin
 
   Self.data.Insert(new_index, tmp);
   if (index = new_index) then
-    Exit(); // pozice bloku se nemeni -> koncime
+    Exit(); // position of block is not changed
 
-  // od nejmensiho prohazovaneho indexu aktualizujeme indexy
-  // aktualizjeme dokud indexy nesedi
+  // update indexes from lowest-changed index
+  // update while index mismatch
   min_index := Min(new_index, index);
   for i := min_index to Self.data.count - 1 do
     if (Self.data[i].table_index = i) then

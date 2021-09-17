@@ -508,7 +508,7 @@ begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlok(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlock(SE_ID.Value, OpenIndex)) then
   begin
     Application.MessageBox('ID již bylo definováno na jiním bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();

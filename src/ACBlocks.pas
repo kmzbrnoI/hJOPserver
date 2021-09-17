@@ -93,7 +93,7 @@ begin
         begin
           try
             blkid := StrToInt(blk);
-            if (not Blocks.IsBlok(blkid)) then
+            if (not Blocks.IsBlock(blkid)) then
               raise Exception.Create('Blok ' + blk + ' neexistuje');
             Self.ClientAddBlock(Sender, blkid);
             PanelServer.SendLn(Sender, '-;AC;-;BLOCKS;REGISTER;' + blk + ';OK');

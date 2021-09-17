@@ -254,19 +254,19 @@ begin
     Application.MessageBox('Vyplnte nazev bloku !', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlok(Self.SE_Trat_ID.Value, railway)) then
+  if (Blocks.IsBlock(Self.SE_Trat_ID.Value, railway)) then
   begin
     Application.MessageBox('ID trati jiz bylo definovano na jinem bloku !', 'Nelze ulozit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlok(Self.SE_UA_id.Value, linkerA)) then
+  if (Blocks.IsBlock(Self.SE_UA_id.Value, linkerA)) then
   begin
     Application.MessageBox('ID úvazky A jiz bylo definovano na jinem bloku !', 'Nelze ulozit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlok(Self.SE_UB_id.Value, linkerB)) then
+  if (Blocks.IsBlock(Self.SE_UB_id.Value, linkerB)) then
   begin
     Application.MessageBox('ID úvazky B jiz bylo definovano na jinem bloku !', 'Nelze ulozit data',
       MB_OK OR MB_ICONWARNING);

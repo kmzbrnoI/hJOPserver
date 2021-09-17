@@ -56,7 +56,7 @@ begin
       end;
    end;
 
-   if (not Blocks.IsBlok(blokId)) then
+   if (not Blocks.IsBlock(blokId)) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Blok neexistuje', 'Blok s id '+IntToStr(blokId)+' neexistuje');
      Exit();
@@ -93,7 +93,7 @@ begin
       end;
    end;
 
-   if (not Blocks.IsBlok(blokId)) then
+   if (not Blocks.IsBlock(blokId)) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Blok neexistuje', 'Blok s id '+IntToStr(blokId)+' neexistuje');
      Exit();

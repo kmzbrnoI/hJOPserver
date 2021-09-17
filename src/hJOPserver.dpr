@@ -1,8 +1,8 @@
 ﻿// Project begin: september 2008
 
-// JCL_DEBUG_EXPERT_INSERTJDBG ON
+// JCL_DEBUG_EXPERT_INSERTJDBG OFF
 // JCL_DEBUG_EXPERT_DELETEMAPFILE ON
-// JCL_DEBUG_EXPERT_GENERATEJDBG OFF
+// JCL_DEBUG_EXPERT_GENERATEJDBG ON
 program hJOPserver;
 
 uses
@@ -155,7 +155,8 @@ uses
   BlockGroupSignal in 'blocks\BlockGroupSignal.pas',
   fBlkGroupSignal in 'blocks\forms\data\fBlkGroupSignal.pas' {F_BlkGroupSignal},
   PTEndpointUsers in 'pt\PTEndpointUsers.pas',
-  PTEndpointUser in 'pt\PTEndpointUser.pas';
+  PTEndpointUser in 'pt\PTEndpointUser.pas',
+  BlockPst in 'blocks\BlockPst.pas';
 
 {$R *.res}
 
