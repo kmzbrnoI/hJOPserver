@@ -102,9 +102,7 @@ end;
 
 procedure TF_BlkSummary.B_RemoveClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané přejezdy ze součtové hlásky?'), 'Mazání přejezdů',
-    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-    Self.LV_Crossings.DeleteSelected();
+  Self.LV_Crossings.DeleteSelected();
 end;
 
 procedure TF_BlkSummary.B_save_PClick(Sender: TObject);

@@ -179,6 +179,7 @@ object F_BlkPst: TF_BlkPst
       MinValue = 0
       TabOrder = 0
       Value = 1
+      OnExit = SE_RCS_Take_ModuleExit
     end
     object SE_RCS_Indication_Module: TSpinEdit
       Left = 150
@@ -193,6 +194,7 @@ object F_BlkPst: TF_BlkPst
       MinValue = 0
       TabOrder = 4
       Value = 1
+      OnExit = SE_RCS_Indication_ModuleExit
     end
     object SE_RCS_Indication_Port: TSpinEdit
       Left = 226
@@ -235,6 +237,7 @@ object F_BlkPst: TF_BlkPst
       MinValue = 0
       TabOrder = 2
       Value = 1
+      OnExit = SE_RCS_Release_ModuleExit
     end
     object SE_RCS_Release_Port: TSpinEdit
       Left = 226
@@ -277,6 +280,7 @@ object F_BlkPst: TF_BlkPst
       MinValue = 0
       TabOrder = 6
       Value = 1
+      OnExit = SE_RCS_Horn_ModuleExit
     end
   end
   object GB_Tracks: TGroupBox

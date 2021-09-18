@@ -63,6 +63,7 @@ type
   public
 
     constructor Create(index: Integer);
+    destructor Destroy(); override;
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
@@ -113,6 +114,20 @@ begin
 
   Self.m_globSettings.typ := btPst;
   Self.m_state := _def_pst_state;
+
+  Self.m_settings.tracks := TList<Integer>.Create();
+  Self.m_settings.turnouts := TList<Integer>.Create();
+  Self.m_settings.signals := TList<Integer>.Create();
+  Self.m_settings.refugees := TList<TPstRefugeeZav>.Create();
+end;
+
+destructor TBlkPst.Destroy();
+begin
+  Self.m_settings.tracks.Free();
+  Self.m_settings.turnouts.Free();
+  Self.m_settings.signals.Free();
+  Self.m_settings.refugees.Free();
+  inherited;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -161,7 +176,7 @@ begin
     var strs: TStrings := TStringList.Create();
     var refugee: TStrings := TStringList.Create();
     try
-      ExtractStringsEx(['('], [')'], ini_tech.ReadString(section, 'refugees', ''), strs);
+      ExtractStringsEx([')'], ['('], ini_tech.ReadString(section, 'refugees', ''), strs);
       Self.m_settings.tracks.Clear();
       for var str in strs do
       begin

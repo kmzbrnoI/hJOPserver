@@ -521,7 +521,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_BlkSignal.OnTabClose(Sender: TObject);
-var i: Integer;
 begin
   if (Self.eventTabSheets.count <= 1) then
   begin
@@ -531,7 +530,7 @@ begin
       Exit();
   end;
 
-  for i := 0 to Self.eventTabSheets.count - 1 do
+  for var i := 0 to Self.eventTabSheets.count - 1 do
   begin
     if (Self.eventTabSheets[i] = Sender) then
     begin

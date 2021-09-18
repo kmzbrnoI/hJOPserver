@@ -78,6 +78,10 @@ type
     procedure B_Ref_OkClick(Sender: TObject);
     procedure B_Ref_DelClick(Sender: TObject);
     procedure B_Signal_DelClick(Sender: TObject);
+    procedure SE_RCS_Take_ModuleExit(Sender: TObject);
+    procedure SE_RCS_Release_ModuleExit(Sender: TObject);
+    procedure SE_RCS_Indication_ModuleExit(Sender: TObject);
+    procedure SE_RCS_Horn_ModuleExit(Sender: TObject);
   private
     isNewBlock: Boolean;
     block: TBlkPst;
@@ -107,7 +111,7 @@ var
 
 implementation
 
-uses BlockDb, Block, Area, DataBloky, IfThenElse, BlockTurnout;
+uses BlockDb, Block, Area, DataBloky, IfThenElse, BlockTurnout, TechnologieRCS;
 
 {$R *.dfm}
 
@@ -178,16 +182,64 @@ begin
   Blocks.FillCB(Self.CB_Ref_Block, Self.CB_RefugeeItems, nil, Self.block.areas, btTurnout);
   Self.B_Ref_Ok.Enabled := Self.CB_Ref_Block.Enabled;
 
-  for var i := 0 to pstSettings.turnouts.Count-1 do
+  for var i := 0 to pstSettings.signals.Count-1 do
   begin
-    var LI := Self.LV_Turnouts.Items.Add();
-    Self.FillBlockLI(LI, pstSettings.turnouts[i]);
+    var LI := Self.LV_Signals.Items.Add();
+    Self.FillBlockLI(LI, pstSettings.signals[i]);
   end;
   Blocks.FillCB(Self.CB_Signal, Self.CB_SignalItems, nil, Self.block.areas, btSignal);
   Self.B_Signal_Ok.Enabled := Self.CB_Signal.Enabled;
 
+  if (pstSettings.rcsInTake.board > Cardinal(Self.SE_RCS_Take_Module.MaxValue)) then
+    Self.SE_RCS_Take_Module.MaxValue := 0;
+  Self.SE_RCS_Take_Port.MaxValue := 0;
+  Self.SE_RCS_Take_Module.Value := pstSettings.rcsInTake.board;
+  Self.SE_RCS_Take_Port.Value := pstSettings.rcsInTake.port;
+
+  if (pstSettings.rcsInRelease.board > Cardinal(Self.SE_RCS_Release_Module.MaxValue)) then
+    Self.SE_RCS_Release_Module.MaxValue := 0;
+  Self.SE_RCS_Release_Port.MaxValue := 0;
+  Self.SE_RCS_Release_Module.Value := pstSettings.rcsInRelease.board;
+  Self.SE_RCS_Release_Port.Value := pstSettings.rcsInRelease.port;
+
+  if (pstSettings.rcsOutTaken.board > Cardinal(Self.SE_RCS_Indication_Module.MaxValue)) then
+    Self.SE_RCS_Indication_Module.MaxValue := 0;
+  Self.SE_RCS_Indication_Port.MaxValue := 0;
+  Self.SE_RCS_Indication_Module.Value := pstSettings.rcsOutTaken.board;
+  Self.SE_RCS_Indication_Port.Value := pstSettings.rcsOutTaken.port;
+
+  if (pstSettings.rcsOutHorn.board > Cardinal(Self.SE_RCS_Horn_Module.MaxValue)) then
+    Self.SE_RCS_Horn_Module.MaxValue := 0;
+  Self.SE_RCS_Horn_Port.MaxValue := 0;
+  Self.SE_RCS_Horn_Module.Value := pstSettings.rcsOutHorn.board;
+  Self.SE_RCS_Horn_Port.Value := pstSettings.rcsOutHorn.port;
+
   Self.Caption := 'Upravit blok ' + glob.name + ' (pomocné stavědlo)';
   Self.ActiveControl := Self.B_Apply;
+end;
+
+procedure TF_BlkPst.SE_RCS_Horn_ModuleExit(Sender: TObject);
+begin
+  Self.SE_RCS_Horn_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Horn_Module.Value,
+    Self.SE_RCS_Horn_Port.Value);
+end;
+
+procedure TF_BlkPst.SE_RCS_Indication_ModuleExit(Sender: TObject);
+begin
+  Self.SE_RCS_Indication_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Indication_Module.Value,
+    Self.SE_RCS_Indication_Port.Value);
+end;
+
+procedure TF_BlkPst.SE_RCS_Release_ModuleExit(Sender: TObject);
+begin
+  Self.SE_RCS_Release_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Release_Module.Value,
+    Self.SE_RCS_Release_Port.Value);
+end;
+
+procedure TF_BlkPst.SE_RCS_Take_ModuleExit(Sender: TObject);
+begin
+  Self.SE_RCS_Take_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Take_Module.Value,
+    Self.SE_RCS_Take_Port.Value);
 end;
 
 procedure TF_BlkPst.CommonOpenForm();
@@ -201,6 +253,11 @@ begin
   Self.B_Turnout_Del.Enabled := false;
   Self.B_Ref_Del.Enabled := false;
   Self.B_Signal_Del.Enabled := false;
+
+  Self.SE_RCS_Take_Module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_RCS_Indication_Module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_RCS_Release_Module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_RCS_Horn_Module.MaxValue := RCSi.maxModuleAddrSafe;
 end;
 
 procedure TF_BlkPst.NewBlock();
@@ -280,15 +337,15 @@ begin
   pstSettings.rcsOutHorn.board := Self.SE_RCS_Horn_Module.Value;
   pstSettings.rcsOutHorn.port := Self.SE_RCS_Horn_Port.Value;
 
+  Self.block.SetSettings(pstSettings);
+
   Self.Close();
   Self.block.Change();
 end;
 
 procedure TF_BlkPst.B_Ref_DelClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané odvraty z pomocného stavědla?'), 'Mazání odvratů',
-    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-    Self.LV_Refugees.DeleteSelected();
+  Self.LV_Refugees.DeleteSelected();
 end;
 
 procedure TF_BlkPst.B_Ref_OkClick(Sender: TObject);
@@ -332,9 +389,7 @@ end;
 
 procedure TF_BlkPst.B_Signal_DelClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybraná návěstidla z pomocného stavědla?'), 'Mazání návěstidel',
-    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-    Self.LV_Signals.DeleteSelected();
+  Self.LV_Signals.DeleteSelected();
 end;
 
 procedure TF_BlkPst.B_Signal_OkClick(Sender: TObject);
@@ -371,9 +426,7 @@ end;
 
 procedure TF_BlkPst.B_Track_DelClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané úseky z pomocného stavědla?'), 'Mazání úseků',
-    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-    Self.LV_Tracks.DeleteSelected();
+  Self.LV_Tracks.DeleteSelected();
 end;
 
 procedure TF_BlkPst.B_Track_OkClick(Sender: TObject);
@@ -405,9 +458,7 @@ end;
 
 procedure TF_BlkPst.B_Turnout_DelClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané výhybky z pomocného stavědla?'), 'Mazání výhybek',
-    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-    Self.LV_Turnouts.DeleteSelected();
+  Self.LV_Turnouts.DeleteSelected();
 end;
 
 procedure TF_BlkPst.B_Turnout_OkClick(Sender: TObject);

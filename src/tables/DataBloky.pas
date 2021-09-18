@@ -37,7 +37,7 @@ implementation
 
 uses BlockDb, Block, BlockTurnout, BlockTrack, BlockSignal, BlockIR, BlockCrossing,
   fMain, BlockRailway, BlockLinker, TrainDb, BlockLock, BlockDisconnector, BlockIO,
-  BlockSummary, BlockAC, ownConvert;
+  BlockSummary, BlockAC, ownConvert, BlockPst;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -443,6 +443,25 @@ begin
         Self.LV.Items[line].SubItems[5] := '---';
         Self.LV.Items[line].SubItems[7] := '---';
       end;
+
+    btPst:
+      begin
+        Self.LV.Items[line].ImageIndex := -1;
+        Self.LV.Items[line].SubItems[0] := 'Pomocné stavědlo';
+        Self.LV.Items[line].SubItems[2] := '---';
+
+        case (TBlkPst(blk).status) of
+          pstDisabled: Self.LV.Items[line].SubItems[3] := 'disabled';
+          pstOff: Self.LV.Items[line].SubItems[3] := 'základní stav';
+          pstTakeReady: Self.LV.Items[line].SubItems[3] := 'připraveno k převzetí';
+          pstRefuging: Self.LV.Items[line].SubItems[3] := 'nastavování boční ochrany...';
+          pstTaken: Self.LV.Items[line].SubItems[3] := 'aktivní';
+        end;
+
+        Self.LV.Items[line].SubItems[5] := '---';
+        Self.LV.Items[line].SubItems[7] := '---';
+      end;
+
   end;
 end;
 

@@ -1,4 +1,4 @@
-unit frrEv;
+﻿unit frrEv;
 
 {
   Okno TF_RREv umoznuje definovat udalost ve smyslu tridy TRREv (Railroad event).
