@@ -155,7 +155,7 @@ uses fMain, BlockTrack, BlockTurnout, BlockSignal, AreaDb, BlockLinker,
   BlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
   BlockLock, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
   UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks,
-  BlockDisconnector, BlockIO, ownConvert, THVDatabase;
+  BlockDisconnector, BlockIO, ownConvert, THVDatabase, BlockPst;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -623,6 +623,8 @@ begin
         (orRef.Note as TBlkDisconnector).Note := note;
       btIO:
         (orRef.Note as TBlkIO).Note := note;
+      btPst:
+        (orRef.note as TBlkPst).Note := note;
     end; // case
     orRef.Note := nil;
   end
