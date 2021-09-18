@@ -245,6 +245,43 @@ begin
     Self.blk.SetGlobalSettings(glob);
   end;
 
+  var pstSettings: TBlkPstSettings;
+  pstSettings.tracks := TList<Integer>.Create();
+  for var LI: TListItem in Self.LV_Tracks.Items do
+    pstSettings.tracks.Add(StrToInt(LI.SubItems[0]));
+
+  pstSettings.turnouts := TList<Integer>.Create();
+  for var LI: TListItem in Self.LV_Turnouts.Items do
+    pstSettings.turnouts.Add(StrToInt(LI.SubItems[0]));
+
+  pstSettings.signals := TList<Integer>.Create();
+  for var LI: TListItem in Self.LV_Signals.Items do
+    pstSettings.signals.Add(StrToInt(LI.SubItems[0]));
+
+  pstSettings.refugees := TList<TPstRefugeeZav>.Create();
+  for var LI: TListItem in Self.LV_Refugees.Items do
+  begin
+    var zav : TPstRefugeeZav;
+    zav.block := StrToInt(LI.SubItems[0]);
+    if (LI.SubItems[2] = '-') then
+      zav.position := TTurnoutPosition.minus
+    else
+      zav.position := TTurnoutPosition.plus;
+    pstSettings.refugees.Add(zav);
+  end;
+
+  pstSettings.rcsInTake.board := Self.SE_RCS_Take_Module.Value;
+  pstSettings.rcsInTake.port := Self.SE_RCS_Take_Port.Value;
+
+  pstSettings.rcsInRelease.board := Self.SE_RCS_Release_Module.Value;
+  pstSettings.rcsInRelease.port := Self.SE_RCS_Release_Port.Value;
+
+  pstSettings.rcsOutTaken.board := Self.SE_RCS_Indication_Module.Value;
+  pstSettings.rcsOutTaken.port := Self.SE_RCS_Indication_Port.Value;
+
+  pstSettings.rcsOutHorn.board := Self.SE_RCS_Horn_Module.Value;
+  pstSettings.rcsOutHorn.port := Self.SE_RCS_Horn_Port.Value;
+
   Self.Close();
   Self.blk.Change();
 end;
