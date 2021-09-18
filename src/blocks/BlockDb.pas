@@ -186,7 +186,7 @@ begin
     for var blk: TBlk in Self.data do
       if (blk.typ = btTurnout) then
         if ((blk as TBlkTurnout).trackID = blkset.id) then
-          blk.Change();
+          blk.Change(true);
   end;
 
   // call 'BlkChange' to areas
