@@ -418,6 +418,7 @@ object F_BlkPst: TF_BlkPst
       RowSelect = True
       TabOrder = 0
       ViewStyle = vsReport
+      OnChange = LV_TurnoutsChange
       ExplicitTop = 52
       ExplicitWidth = 326
       ExplicitHeight = 134
@@ -459,6 +460,7 @@ object F_BlkPst: TF_BlkPst
         Margins.Bottom = 2
         Caption = 'Ok'
         TabOrder = 1
+        OnClick = B_Turnout_OkClick
       end
       object B_Turnout_Del: TButton
         Left = 210
@@ -472,6 +474,7 @@ object F_BlkPst: TF_BlkPst
         Caption = 'Smazat v'#253'hybku/y'
         Enabled = False
         TabOrder = 2
+        OnClick = B_Turnout_DelClick
       end
     end
   end
@@ -479,7 +482,7 @@ object F_BlkPst: TF_BlkPst
     Left = 650
     Top = 7
     Width = 329
-    Height = 223
+    Height = 225
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -490,7 +493,7 @@ object F_BlkPst: TF_BlkPst
       Left = 2
       Top = 15
       Width = 325
-      Height = 135
+      Height = 137
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -518,13 +521,14 @@ object F_BlkPst: TF_BlkPst
       RowSelect = True
       TabOrder = 0
       ViewStyle = vsReport
+      OnChange = LV_RefugeesChange
       ExplicitTop = 54
       ExplicitWidth = 261
       ExplicitHeight = 134
     end
     object GB_RefEdit: TGroupBox
       Left = 2
-      Top = 150
+      Top = 152
       Width = 325
       Height = 71
       Margins.Left = 2
@@ -580,9 +584,7 @@ object F_BlkPst: TF_BlkPst
         Margins.Right = 2
         Margins.Bottom = 2
         Style = csDropDownList
-        ItemIndex = 0
         TabOrder = 1
-        Text = '+'
         Items.Strings = (
           '+'
           '-')
@@ -598,6 +600,7 @@ object F_BlkPst: TF_BlkPst
         Margins.Bottom = 2
         Caption = 'Ok'
         TabOrder = 2
+        OnClick = B_Ref_OkClick
       end
       object B_Ref_Del: TButton
         Left = 213
@@ -611,6 +614,7 @@ object F_BlkPst: TF_BlkPst
         Caption = 'Smazat odvrat/y'
         Enabled = False
         TabOrder = 3
+        OnClick = B_Ref_DelClick
       end
     end
   end
@@ -664,8 +668,9 @@ object F_BlkPst: TF_BlkPst
         Margins.Bottom = 2
         Caption = 'Ok'
         TabOrder = 1
+        OnClick = B_Signal_OkClick
       end
-      object B_Signal_Delete: TButton
+      object B_Signal_Del: TButton
         Left = 256
         Top = 15
         Width = 62
@@ -677,6 +682,7 @@ object F_BlkPst: TF_BlkPst
         Caption = 'Smazat'
         Enabled = False
         TabOrder = 2
+        OnClick = B_Signal_DelClick
       end
     end
     object LV_Signals: TListView
@@ -707,6 +713,7 @@ object F_BlkPst: TF_BlkPst
       RowSelect = True
       TabOrder = 0
       ViewStyle = vsReport
+      OnChange = LV_SignalsChange
       ExplicitTop = 53
     end
   end
