@@ -4,9 +4,9 @@ object F_BlkRailway: TF_BlkRailway
   ActiveControl = B_Save
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Editace trate'
-  ClientHeight = 426
-  ClientWidth = 706
+  Caption = 'F_BlkRailway'
+  ClientHeight = 341
+  ClientWidth = 671
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,11 +17,13 @@ object F_BlkRailway: TF_BlkRailway
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object B_Save: TButton
-    Left = 624
-    Top = 394
+    Left = 589
+    Top = 309
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -30,12 +32,12 @@ object F_BlkRailway: TF_BlkRailway
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 3
+    TabOrder = 4
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
-    Left = 547
-    Top = 394
+    Left = 512
+    Top = 309
     Width = 73
     Height = 25
     Margins.Left = 2
@@ -43,14 +45,14 @@ object F_BlkRailway: TF_BlkRailway
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 4
+    TabOrder = 5
     OnClick = B_StornoClick
   end
-  object GB_UvazkaA: TGroupBox
-    Left = 360
-    Top = 7
+  object GB_LinkerA: TGroupBox
+    Left = 8
+    Top = 150
     Width = 337
-    Height = 144
+    Height = 90
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -58,39 +60,28 @@ object F_BlkRailway: TF_BlkRailway
     Caption = ' '#218'vazka bl'#237#382'e po'#269#225'tku trati  '
     TabOrder = 1
     object Label1: TLabel
-      Left = 23
+      Left = 22
       Top = 24
-      Width = 66
+      Width = 71
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'N'#225'zev bloku :'
-    end
-    object Label2: TLabel
-      Left = 23
-      Top = 75
-      Width = 42
-      Height = 13
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'Stanice :'
+      Caption = 'N'#225'zev '#250'vazky:'
     end
     object Label3: TLabel
       Left = 22
       Top = 49
-      Width = 11
+      Width = 14
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'ID'
+      Caption = 'ID:'
     end
-    object E_UA_name: TEdit
+    object E_LA_Name: TEdit
       Left = 104
       Top = 24
       Width = 209
@@ -102,7 +93,7 @@ object F_BlkRailway: TF_BlkRailway
       MaxLength = 32
       TabOrder = 0
     end
-    object SE_UA_id: TSpinEdit
+    object SE_LA_Id: TSpinEdit
       Left = 104
       Top = 49
       Width = 209
@@ -116,24 +107,12 @@ object F_BlkRailway: TF_BlkRailway
       TabOrder = 1
       Value = 1
     end
-    object LB_UA_St: TListBox
-      Left = 104
-      Top = 75
-      Width = 209
-      Height = 46
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      ItemHeight = 13
-      TabOrder = 2
-    end
   end
-  object GB_UvazkaB: TGroupBox
-    Left = 360
-    Top = 159
+  object GB_LinkerB: TGroupBox
+    Left = 7
+    Top = 244
     Width = 337
-    Height = 144
+    Height = 90
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -141,51 +120,28 @@ object F_BlkRailway: TF_BlkRailway
     Caption = ' '#218'vazka bl'#237#382'e konci trati  '
     TabOrder = 2
     object Label4: TLabel
-      Left = 23
+      Left = 22
       Top = 24
-      Width = 66
+      Width = 71
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'N'#225'zev bloku :'
+      Caption = 'N'#225'zev '#250'vazky:'
     end
     object Label5: TLabel
       Left = 22
       Top = 49
-      Width = 11
+      Width = 14
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'ID'
+      Caption = 'ID:'
     end
-    object Label6: TLabel
-      Left = 23
-      Top = 75
-      Width = 42
-      Height = 13
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'Stanice :'
-    end
-    object LB_UB_St: TListBox
-      Left = 104
-      Top = 75
-      Width = 209
-      Height = 46
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      ItemHeight = 13
-      TabOrder = 2
-    end
-    object SE_UB_id: TSpinEdit
+    object SE_LB_Id: TSpinEdit
       Left = 104
       Top = 49
       Width = 209
@@ -199,7 +155,7 @@ object F_BlkRailway: TF_BlkRailway
       TabOrder = 1
       Value = 1
     end
-    object E_UB_name: TEdit
+    object E_LB_Name: TEdit
       Left = 104
       Top = 24
       Width = 209
@@ -216,7 +172,7 @@ object F_BlkRailway: TF_BlkRailway
     Left = 8
     Top = 8
     Width = 337
-    Height = 410
+    Height = 137
     Caption = ' Tra'#357' '
     TabOrder = 0
     object L_Name: TLabel
@@ -233,24 +189,24 @@ object F_BlkRailway: TF_BlkRailway
     object L_ID: TLabel
       Left = 18
       Top = 48
-      Width = 11
+      Width = 14
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'ID'
+      Caption = 'ID:'
     end
     object Label7: TLabel
       Left = 17
       Top = 76
-      Width = 68
+      Width = 65
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Typ zab. za'#345'. :'
+      Caption = 'Typ zab. za'#345'.:'
     end
     object Label8: TLabel
       Left = 17
@@ -263,7 +219,7 @@ object F_BlkRailway: TF_BlkRailway
       Margins.Bottom = 2
       Caption = 'N'#225'v'#283'stidla:'
     end
-    object SE_Trat_ID: TSpinEdit
+    object SE_Railway_ID: TSpinEdit
       Left = 104
       Top = 49
       Width = 216
@@ -277,7 +233,7 @@ object F_BlkRailway: TF_BlkRailway
       TabOrder = 1
       Value = 1
     end
-    object E_Trat_Name: TEdit
+    object E_Railway_Name: TEdit
       Left = 104
       Top = 24
       Width = 216
@@ -289,92 +245,7 @@ object F_BlkRailway: TF_BlkRailway
       MaxLength = 32
       TabOrder = 0
     end
-    object GB_TratBlk: TGroupBox
-      Left = 17
-      Top = 132
-      Width = 306
-      Height = 269
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = ' Tra'#357'ov'#233' bloky (ve sm'#283'ru trati) '
-      TabOrder = 4
-      object B_Blk_Delete: TButton
-        Left = 113
-        Top = 21
-        Width = 75
-        Height = 25
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Caption = 'Smazat T'#218
-        Enabled = False
-        TabOrder = 1
-        OnClick = B_Blk_DeleteClick
-      end
-      object GB_NewBlk: TGroupBox
-        Left = 2
-        Top = 217
-        Width = 302
-        Height = 50
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Align = alBottom
-        Caption = ' P'#345'idat nov'#253' tra'#357'ov'#253' '#250'sek  '
-        TabOrder = 0
-        object B_blk_Add: TButton
-          Left = 216
-          Top = 14
-          Width = 75
-          Height = 25
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          Caption = 'P'#345'idat T'#218
-          TabOrder = 1
-          OnClick = B_blk_AddClick
-        end
-        object CB_NewTratBlok: TComboBox
-          Left = 8
-          Top = 16
-          Width = 193
-          Height = 21
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          Style = csDropDownList
-          TabOrder = 0
-        end
-      end
-      object LV_Useky: TListView
-        Left = 2
-        Top = 55
-        Width = 302
-        Height = 162
-        Align = alBottom
-        Columns = <
-          item
-            Caption = 'ID'
-          end
-          item
-            Caption = 'N'#225'zev'
-            Width = 200
-          end>
-        MultiSelect = True
-        ReadOnly = True
-        RowSelect = True
-        TabOrder = 2
-        ViewStyle = vsReport
-        OnChange = LV_UsekyChange
-      end
-    end
-    object CB_Trat_ZabZar: TComboBox
+    object CB_Type: TComboBox
       Left = 104
       Top = 75
       Width = 216
@@ -389,7 +260,7 @@ object F_BlkRailway: TF_BlkRailway
         'pouze souhlasov'#253' stav'
         'bezsouhlasov'#253' stav s nab'#237'dkou')
     end
-    object CB_Navestidla: TComboBox
+    object CB_Signals: TComboBox
       Left = 104
       Top = 100
       Width = 216
@@ -403,6 +274,103 @@ object F_BlkRailway: TF_BlkRailway
       Items.Strings = (
         'autoblok'
         'hradlo')
+    end
+  end
+  object GB_TratBlk: TGroupBox
+    Left = 358
+    Top = 7
+    Width = 306
+    Height = 282
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = ' Tra'#357'ov'#233' '#250'seky (ve sm'#283'ru trati) '
+    TabOrder = 3
+    object GB_Track: TGroupBox
+      Left = 2
+      Top = 230
+      Width = 302
+      Height = 50
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alBottom
+      Caption = ' P'#345'idat/upravit/smazat tra'#357'ov'#253' '#250'sek  '
+      TabOrder = 0
+      ExplicitTop = 217
+      object B_Track_Add: TButton
+        Left = 176
+        Top = 15
+        Width = 54
+        Height = 23
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'P'#345'idat'
+        TabOrder = 1
+        OnClick = B_Track_AddClick
+      end
+      object CB_Track: TComboBox
+        Left = 8
+        Top = 16
+        Width = 164
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 0
+      end
+      object B_Track_Del: TButton
+        Left = 232
+        Top = 15
+        Width = 64
+        Height = 23
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Smazat'
+        Enabled = False
+        TabOrder = 2
+        OnClick = B_Track_DelClick
+      end
+    end
+    object LV_Tracks: TListView
+      Left = 2
+      Top = 15
+      Width = 302
+      Height = 215
+      Align = alClient
+      Columns = <
+        item
+          Caption = '#'
+          Width = 30
+        end
+        item
+          Caption = 'ID'
+        end
+        item
+          Caption = 'N'#225'zev'
+          Width = 180
+        end>
+      DragMode = dmAutomatic
+      FullDrag = True
+      GridLines = True
+      MultiSelect = True
+      ReadOnly = True
+      RowSelect = True
+      TabOrder = 1
+      ViewStyle = vsReport
+      OnChange = LV_TracksChange
+      OnDragDrop = LV_TracksDragDrop
+      OnDragOver = LV_TracksDragOver
+      ExplicitTop = 55
+      ExplicitHeight = 162
     end
   end
 end

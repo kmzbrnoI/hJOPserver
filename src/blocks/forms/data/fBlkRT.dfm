@@ -4,7 +4,7 @@ object F_BlkRT: TF_BlkRT
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (tratovy usek)'
-  ClientHeight = 569
+  ClientHeight = 512
   ClientWidth = 697
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -23,50 +23,39 @@ object F_BlkRT: TF_BlkRT
   object L_Usek02: TLabel
     Left = 7
     Top = 40
-    Width = 17
+    Width = 14
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'ID :'
-  end
-  object L_Usek03: TLabel
-    Left = 7
-    Top = 72
-    Width = 42
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice :'
+    Caption = 'ID:'
   end
   object L_Usek01: TLabel
     Left = 7
     Top = 7
-    Width = 37
+    Width = 34
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'N'#225'zev :'
+    Caption = 'N'#225'zev:'
   end
   object L_Usek15: TLabel
-    Left = 8
-    Top = 128
-    Width = 89
+    Left = 7
+    Top = 72
+    Width = 86
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'D'#233'lka '#250'seku (cm) :'
+    Caption = 'D'#233'lka '#250'seku (cm):'
   end
   object Label1: TLabel
-    Left = 8
-    Top = 157
+    Left = 7
+    Top = 101
     Width = 49
     Height = 13
     Margins.Left = 2
@@ -77,7 +66,7 @@ object F_BlkRT: TF_BlkRT
   end
   object L_Usek33: TLabel
     Left = 8
-    Top = 182
+    Top = 126
     Width = 78
     Height = 13
     Margins.Left = 2
@@ -88,7 +77,7 @@ object F_BlkRT: TF_BlkRT
   end
   object B_OK: TButton
     Left = 615
-    Top = 537
+    Top = 479
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -97,12 +86,12 @@ object F_BlkRT: TF_BlkRT
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 10
+    TabOrder = 9
     OnClick = B_OKClick
   end
   object B_Storno: TButton
     Left = 536
-    Top = 537
+    Top = 479
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -110,7 +99,7 @@ object F_BlkRT: TF_BlkRT
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 11
+    TabOrder = 10
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
@@ -127,7 +116,7 @@ object F_BlkRT: TF_BlkRT
     TabOrder = 1
     Value = 1
   end
-  object E_Nazev: TEdit
+  object E_Name: TEdit
     Left = 119
     Top = 7
     Width = 192
@@ -141,15 +130,15 @@ object F_BlkRT: TF_BlkRT
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 203
+    Top = 147
     Width = 305
     Height = 129
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Technologick'#233' vstupy - RCS  '
-    TabOrder = 6
+    Caption = ' Detekce obsazen'#237' - vstupy - RCS  '
+    TabOrder = 5
     object L_Usek04: TLabel
       Left = 12
       Top = 19
@@ -372,9 +361,9 @@ object F_BlkRT: TF_BlkRT
       Value = 0
     end
   end
-  object E_Delka: TEdit
+  object E_Length: TEdit
     Left = 119
-    Top = 128
+    Top = 72
     Width = 193
     Height = 21
     Margins.Left = 2
@@ -383,24 +372,12 @@ object F_BlkRT: TF_BlkRT
     Margins.Bottom = 2
     MaxLength = 6
     NumbersOnly = True
-    TabOrder = 3
+    TabOrder = 2
     Text = '0'
   end
-  object LB_Stanice: TListBox
+  object CB_Booster: TComboBox
     Left = 119
-    Top = 72
-    Width = 193
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 2
-  end
-  object CB_Zesil: TComboBox
-    Left = 119
-    Top = 157
+    Top = 101
     Width = 194
     Height = 21
     Margins.Left = 2
@@ -408,15 +385,15 @@ object F_BlkRT: TF_BlkRT
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    TabOrder = 4
+    TabOrder = 3
   end
-  object GB_Zastavka: TGroupBox
+  object GB_Stop: TGroupBox
     Left = 324
     Top = 8
     Width = 365
     Height = 433
     Caption = ' Zast'#225'vka '
-    TabOrder = 9
+    TabOrder = 8
     object Label5: TLabel
       Left = 16
       Top = 40
@@ -438,24 +415,24 @@ object F_BlkRT: TF_BlkRT
       Height = 13
       Caption = #268'as '#269'ek'#225'n'#237' v zast'#225'vce (mm:ss):'
     end
-    object CHB_Zastavka_Lichy: TCheckBox
+    object CHB_Stop_Odd: TCheckBox
       Left = 16
       Top = 17
       Width = 113
       Height = 17
       Caption = 'Zast'#225'vka lich'#253' sm'#283'r'
       TabOrder = 0
-      OnClick = CHB_Zastavka_LichyClick
+      OnClick = CHB_Stop_OddClick
     end
-    object E_Zast_Spr: TEdit
+    object E_Stop_Trains: TEdit
       Left = 16
       Top = 59
       Width = 337
       Height = 21
       TabOrder = 2
-      Text = 'E_Zast_Spr'
+      Text = 'E_Stop_Trains'
     end
-    object SE_Zast_DelkaSpr: TSpinEdit
+    object SE_Stop_Length: TSpinEdit
       Left = 288
       Top = 91
       Width = 65
@@ -465,7 +442,7 @@ object F_BlkRT: TF_BlkRT
       TabOrder = 3
       Value = 0
     end
-    object ME_Zast_Delay: TMaskEdit
+    object ME_Stop_Delay: TMaskEdit
       Left = 288
       Top = 123
       Width = 65
@@ -482,7 +459,7 @@ object F_BlkRT: TF_BlkRT
       TabOrder = 4
       Text = '00:00'
     end
-    object PC_Zastavka: TPageControl
+    object PC_Stop: TPageControl
       Left = 2
       Top = 149
       Width = 361
@@ -498,34 +475,34 @@ object F_BlkRT: TF_BlkRT
         ImageIndex = 1
       end
     end
-    object CHB_Zastavka_Sudy: TCheckBox
+    object CHB_Stop_Even: TCheckBox
       Left = 212
       Top = 17
       Width = 113
       Height = 17
       Caption = 'Zast'#225'vka sud'#253' sm'#283'r'
       TabOrder = 1
-      OnClick = CHB_Zastavka_LichyClick
+      OnClick = CHB_Stop_OddClick
     end
   end
-  object CHB_SmycBlok: TCheckBox
+  object CHB_loop: TCheckBox
     Left = 119
-    Top = 182
+    Top = 126
     Width = 17
     Height = 17
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    TabOrder = 5
+    TabOrder = 4
   end
   object GB_Autoblok: TGroupBox
     Left = 8
-    Top = 337
+    Top = 281
     Width = 304
     Height = 112
     Caption = ' Autoblok '
-    TabOrder = 7
+    TabOrder = 6
     object Label10: TLabel
       Left = 16
       Top = 16
@@ -540,15 +517,15 @@ object F_BlkRT: TF_BlkRT
       Height = 13
       Caption = #218'sek je kryt'#253' n'#225'v'#283'stidlem v sud'#233'm sm'#283'ru:'
     end
-    object CHB_NavL: TCheckBox
+    object CHB_SignalL: TCheckBox
       Left = 279
       Top = 14
       Width = 17
       Height = 17
       TabOrder = 0
-      OnClick = CHB_NavLClick
+      OnClick = CHB_SignalLClick
     end
-    object CB_NavL: TComboBox
+    object CB_SignalL: TComboBox
       Left = 16
       Top = 35
       Width = 280
@@ -556,15 +533,15 @@ object F_BlkRT: TF_BlkRT
       Style = csDropDownList
       TabOrder = 1
     end
-    object CHB_NavS: TCheckBox
+    object CHB_SignalS: TCheckBox
       Left = 279
       Top = 62
       Width = 17
       Height = 17
       TabOrder = 2
-      OnClick = CHB_NavSClick
+      OnClick = CHB_SignalSClick
     end
-    object CB_NavS: TComboBox
+    object CB_SignalS: TComboBox
       Left = 16
       Top = 83
       Width = 280
@@ -575,11 +552,11 @@ object F_BlkRT: TF_BlkRT
   end
   object GB_Speed: TGroupBox
     Left = 8
-    Top = 455
+    Top = 399
     Width = 304
     Height = 105
     Caption = ' Rychlosti '
-    TabOrder = 8
+    TabOrder = 7
     object LV_Speeds: TListView
       Left = 2
       Top = 15
@@ -602,7 +579,7 @@ object F_BlkRT: TF_BlkRT
       ViewStyle = vsReport
       OnChange = LV_SpeedsChange
     end
-    object SE_prechodnost: TSpinEdit
+    object SE_transience: TSpinEdit
       Left = 208
       Top = 17
       Width = 85

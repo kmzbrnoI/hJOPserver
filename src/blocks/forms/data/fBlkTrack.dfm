@@ -3,8 +3,8 @@ object F_BlkTrack: TF_BlkTrack
   Top = 212
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
-  Caption = 'Editovat data bloku : [blok] (usek)'
-  ClientHeight = 418
+  Caption = 'F_BlkTrack'
+  ClientHeight = 383
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,64 +18,53 @@ object F_BlkTrack: TF_BlkTrack
   OnClose = FormClose
   PixelsPerInch = 96
   TextHeight = 13
-  object L_Usek02: TLabel
-    Left = 7
-    Top = 40
-    Width = 17
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'ID :'
-  end
-  object L_Usek03: TLabel
-    Left = 7
-    Top = 72
-    Width = 42
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice :'
-  end
-  object L_Usek01: TLabel
-    Left = 7
-    Top = 7
-    Width = 37
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'N'#225'zev :'
-  end
-  object L_Usek15: TLabel
+  object Label2: TLabel
     Left = 8
-    Top = 128
-    Width = 89
+    Top = 40
+    Width = 14
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'D'#233'lka '#250'seku (cm) :'
-  end
-  object L_Usek33: TLabel
-    Left = 7
-    Top = 182
-    Width = 78
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Smy'#269'kov'#253' blok :'
+    Caption = 'ID:'
   end
   object Label1: TLabel
     Left = 8
-    Top = 157
+    Top = 7
+    Width = 34
+    Height = 13
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'N'#225'zev:'
+  end
+  object Label3: TLabel
+    Left = 8
+    Top = 72
+    Width = 86
+    Height = 13
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'D'#233'lka '#250'seku (cm):'
+  end
+  object Label5: TLabel
+    Left = 7
+    Top = 139
+    Width = 75
+    Height = 13
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'Smy'#269'kov'#253' blok:'
+  end
+  object Label4: TLabel
+    Left = 8
+    Top = 106
     Width = 49
     Height = 13
     Margins.Left = 2
@@ -84,9 +73,9 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Bottom = 2
     Caption = 'Zesilova'#269':'
   end
-  object Label5: TLabel
+  object Label6: TLabel
     Left = 8
-    Top = 206
+    Top = 171
     Width = 97
     Height = 13
     Margins.Left = 2
@@ -94,10 +83,12 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Max. po'#269'et souprav:'
+    Color = clBtnFace
+    ParentColor = False
   end
   object B_OK: TButton
     Left = 239
-    Top = 386
+    Top = 351
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -106,12 +97,12 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 8
+    TabOrder = 7
     OnClick = B_OKClick
   end
   object B_Storno: TButton
     Left = 160
-    Top = 386
+    Top = 351
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -119,7 +110,7 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 9
+    TabOrder = 8
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
@@ -136,7 +127,7 @@ object F_BlkTrack: TF_BlkTrack
     TabOrder = 1
     Value = 1
   end
-  object E_Nazev: TEdit
+  object E_Name: TEdit
     Left = 119
     Top = 7
     Width = 192
@@ -150,16 +141,16 @@ object F_BlkTrack: TF_BlkTrack
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 243
+    Top = 208
     Width = 305
     Height = 129
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Technologick'#233' vstupy - RCS  '
-    TabOrder = 7
-    object L_Usek04: TLabel
+    Caption = ' Detekce obsazen'#237' - vstupy - RCS  '
+    TabOrder = 6
+    object L_det1: TLabel
       Left = 12
       Top = 19
       Width = 54
@@ -170,7 +161,7 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Bottom = 2
       Caption = '1. detektor:'
     end
-    object Label2: TLabel
+    object L_det2: TLabel
       Left = 12
       Top = 45
       Width = 54
@@ -181,7 +172,7 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Bottom = 2
       Caption = '2. detektor:'
     end
-    object Label3: TLabel
+    object L_det3: TLabel
       Left = 12
       Top = 71
       Width = 54
@@ -192,7 +183,7 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Bottom = 2
       Caption = '3. detektor:'
     end
-    object Label4: TLabel
+    object L_det4: TLabel
       Left = 12
       Top = 97
       Width = 54
@@ -380,9 +371,9 @@ object F_BlkTrack: TF_BlkTrack
       Value = 0
     end
   end
-  object E_Delka: TEdit
+  object E_Length: TEdit
     Left = 119
-    Top = 128
+    Top = 72
     Width = 192
     Height = 21
     Margins.Left = 2
@@ -391,35 +382,23 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Bottom = 2
     MaxLength = 8
     NumbersOnly = True
-    TabOrder = 3
+    TabOrder = 2
     Text = '0'
   end
-  object CHB_SmycBlok: TCheckBox
+  object CHB_Loop: TCheckBox
     Left = 119
-    Top = 182
+    Top = 139
     Width = 17
     Height = 17
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    TabOrder = 5
+    TabOrder = 4
   end
-  object LB_Stanice: TListBox
+  object CB_Booster: TComboBox
     Left = 119
-    Top = 72
-    Width = 192
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 2
-  end
-  object CB_Zesil: TComboBox
-    Left = 119
-    Top = 157
+    Top = 106
     Width = 194
     Height = 21
     Margins.Left = 2
@@ -427,11 +406,11 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    TabOrder = 4
+    TabOrder = 3
   end
-  object SE_SprCnt: TSpinEdit
+  object SE_Max_Trains: TSpinEdit
     Left = 119
-    Top = 206
+    Top = 171
     Width = 192
     Height = 22
     Margins.Left = 2
@@ -440,7 +419,7 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Bottom = 2
     MaxValue = 4
     MinValue = 1
-    TabOrder = 6
+    TabOrder = 5
     Value = 1
   end
 end

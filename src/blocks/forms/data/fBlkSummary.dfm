@@ -3,8 +3,8 @@ object F_BlkSummary: TF_BlkSummary
   Top = 209
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Sou'#269'tov'#225' hl'#225'ska : [sh]'
-  ClientHeight = 369
+  Caption = 'F_BlkSummary'
+  ClientHeight = 329
   ClientWidth = 337
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,38 +20,27 @@ object F_BlkSummary: TF_BlkSummary
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
-  object L_P02: TLabel
+  object Label1: TLabel
     Left = 8
     Top = 8
-    Width = 66
+    Width = 34
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'N'#225'zev bloku :'
+    Caption = 'N'#225'zev:'
   end
-  object L_ID: TLabel
+  object Label2: TLabel
     Left = 9
     Top = 33
-    Width = 11
+    Width = 14
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'ID'
-  end
-  object L_Usek03: TLabel
-    Left = 7
-    Top = 59
-    Width = 42
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice :'
+    Caption = 'ID:'
   end
   object E_Name: TEdit
     Left = 120
@@ -67,7 +56,7 @@ object F_BlkSummary: TF_BlkSummary
   end
   object B_save_P: TButton
     Left = 248
-    Top = 334
+    Top = 294
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -76,12 +65,12 @@ object F_BlkSummary: TF_BlkSummary
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 4
+    TabOrder = 3
     OnClick = B_save_PClick
   end
   object B_Storno: TButton
     Left = 152
-    Top = 334
+    Top = 294
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -89,7 +78,7 @@ object F_BlkSummary: TF_BlkSummary
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 5
+    TabOrder = 4
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
@@ -106,66 +95,64 @@ object F_BlkSummary: TF_BlkSummary
     TabOrder = 1
     Value = 1
   end
-  object LB_Stanice: TListBox
-    Left = 120
-    Top = 59
-    Width = 209
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 2
-  end
   object GB_Prejezdy: TGroupBox
     Left = 7
-    Top = 110
+    Top = 70
     Width = 322
     Height = 211
     Caption = ' P'#345'ejezdy '
-    TabOrder = 3
-    object LV_Prejezdy: TListView
-      Left = 1
-      Top = 55
+    TabOrder = 2
+    object LV_Crossings: TListView
+      Left = 2
+      Top = 15
       Width = 318
-      Height = 114
+      Height = 154
+      Align = alTop
       Columns = <
         item
-          Caption = 'N'#225'zev p'#345'ejezdu'
-          Width = 280
+          Caption = '#'
+          Width = 30
+        end
+        item
+          Caption = 'ID'
+        end
+        item
+          Caption = 'N'#225'zev'
+          Width = 200
         end>
+      GridLines = True
+      MultiSelect = True
       ReadOnly = True
       RowSelect = True
       TabOrder = 0
       ViewStyle = vsReport
-      OnChange = LV_PrejezdyChange
+      OnChange = LV_CrossingsChange
     end
-    object B_Remove: TButton
-      Left = 113
-      Top = 16
-      Width = 96
-      Height = 25
-      Caption = 'Smazat p'#345'ejezd'
-      TabOrder = 3
-      OnClick = B_RemoveClick
-    end
-    object CB_Prj_Add: TComboBox
+    object CB_Crossing: TComboBox
       Left = 6
       Top = 177
-      Width = 232
+      Width = 178
       Height = 21
       Style = csDropDownList
       TabOrder = 1
     end
     object B_Add: TButton
-      Left = 241
+      Left = 190
       Top = 175
-      Width = 75
+      Width = 60
       Height = 25
-      Caption = 'P'#345'idat p'#345'ejezd'
+      Caption = 'P'#345'idat'
       TabOrder = 2
       OnClick = B_AddClick
+    end
+    object B_Remove: TButton
+      Left = 256
+      Top = 175
+      Width = 57
+      Height = 25
+      Caption = 'Smazat'
+      TabOrder = 3
+      OnClick = B_RemoveClick
     end
   end
 end

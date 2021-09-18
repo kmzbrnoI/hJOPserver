@@ -3,8 +3,8 @@ object F_BlkDisconnector: TF_BlkDisconnector
   Top = 145
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Editovat data bloku [blok] (rozpojova'#269')'
-  ClientHeight = 261
+  Caption = 'F_BlkDisconnector'
+  ClientHeight = 209
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,38 +18,27 @@ object F_BlkDisconnector: TF_BlkDisconnector
   OnClose = FormClose
   PixelsPerInch = 96
   TextHeight = 13
-  object L_IR02: TLabel
+  object Label2: TLabel
     Left = 8
     Top = 33
-    Width = 11
+    Width = 14
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'ID'
+    Caption = 'ID:'
   end
-  object L_IR01: TLabel
+  object Label1: TLabel
     Left = 8
     Top = 8
-    Width = 37
+    Width = 34
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'N'#225'zev :'
-  end
-  object L_Usek03: TLabel
-    Left = 8
-    Top = 59
-    Width = 42
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice :'
+    Caption = 'N'#225'zev:'
   end
   object E_name: TEdit
     Left = 120
@@ -79,7 +68,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 109
+    Top = 59
     Width = 307
     Height = 108
     Margins.Left = 2
@@ -88,29 +77,29 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' rozpojova'#269'e  '
     TabOrder = 2
-    object L_IR04: TLabel
+    object Label3: TLabel
       Left = 16
       Top = 16
-      Width = 63
+      Width = 60
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS adresa :'
+      Caption = 'RCS adresa:'
     end
-    object L_IR05: TLabel
+    object Label4: TLabel
       Left = 16
       Top = 44
-      Width = 49
+      Width = 46
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS port :'
+      Caption = 'RCS port:'
     end
-    object Label1: TLabel
+    object Label5: TLabel
       Left = 16
       Top = 72
       Width = 74
@@ -167,7 +156,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
   end
   object B_Storno: TButton
     Left = 151
-    Top = 229
+    Top = 179
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -180,7 +169,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
   end
   object B_Save: TButton
     Left = 240
-    Top = 229
+    Top = 179
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -191,17 +180,5 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Default = True
     TabOrder = 4
     OnClick = B_SaveClick
-  end
-  object LB_areas: TListBox
-    Left = 120
-    Top = 59
-    Width = 194
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 5
   end
 end

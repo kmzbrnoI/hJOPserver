@@ -9,46 +9,43 @@ uses
 
 type
   TF_BlkSummary = class(TForm)
-    L_P02: TLabel;
+    Label1: TLabel;
     E_Name: TEdit;
     B_save_P: TButton;
     B_Storno: TButton;
-    L_ID: TLabel;
+    Label2: TLabel;
     SE_ID: TSpinEdit;
-    L_Usek03: TLabel;
-    LB_Stanice: TListBox;
     GB_Prejezdy: TGroupBox;
-    LV_Prejezdy: TListView;
-    B_Remove: TButton;
-    CB_Prj_Add: TComboBox;
+    LV_Crossings: TListView;
+    CB_Crossing: TComboBox;
     B_Add: TButton;
+    B_Remove: TButton;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure B_AddClick(Sender: TObject);
-    procedure LV_PrejezdyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+    procedure LV_CrossingsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure B_RemoveClick(Sender: TObject);
   private
-    OpenIndex: Integer;
-    Blk: TBlkSummary;
-    NewBlk: Boolean;
-    areas: TArstr; // oblasti rizeni, ve kterych se blok nachazi
+    openIndex: Integer;
+    block: TBlkSummary;
+    isNewBlock: Boolean;
+    CB_CrossingId: TList<Integer>;
 
-    prejezdy: TList<Integer>;
-    CB_PrjAddData: TArI;
-
-    procedure NormalOpenForm();
-    procedure MainOpenForm();
+    procedure CommonOpenForm();
+    procedure EditOpenForm();
     procedure NewOpenForm();
 
-    procedure FillNewPrjCB();
+    function BlockPresent(id: Integer; LV: TListView): Boolean;
+    procedure FillBlockLI(var LI: TListItem; blockId: Integer);
 
   public
 
-    procedure OpenForm(BlokIndex: Integer);
-    procedure NewBlkCreate();
+    procedure EditBlock(BlokIndex: Integer);
+    procedure NewBlock();
+
   end;
 
 var
@@ -61,51 +58,53 @@ uses GetSystems, TechnologieRCS, AreaDb, Area, Block, FileSystem,
 
 {$R *.dfm}
 
-procedure TF_BlkSummary.OpenForm(BlokIndex: Integer);
+procedure TF_BlkSummary.EditBlock(BlokIndex: Integer);
 begin
-  OpenIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  Self.MainOpenForm();
+  Self.openIndex := BlokIndex;
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.block));
+  Self.CommonOpenForm();
 
-  if (NewBlk) then
+  if (isNewBlock) then
     Self.NewOpenForm()
   else
-    Self.NormalOpenForm();
+    Self.EditOpenForm();
 
-  Self.FillNewPrjCB();
   Self.ShowModal();
 end;
 
 procedure TF_BlkSummary.B_AddClick(Sender: TObject);
-var LI: TListItem;
-  Blk: TBlk;
+var blk: TBlk;
 begin
-  if (Self.CB_Prj_Add.ItemIndex = -1) then
+  if (not Self.CB_Crossing.Enabled) then
+    Exit();
+
+  if (Self.CB_Crossing.ItemIndex = -1) then
   begin
-    Application.MessageBox('Je třeba vybrat přejezd k přidání!', 'Nelze přidat přejezd', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyberte přejezd!', 'Nelze přidat/upravit přejezd', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
-  Blocks.GetBlkByIndex(Self.CB_PrjAddData[Self.CB_Prj_Add.ItemIndex], Blk);
-  if ((Blk <> nil) and (Blk.typ = btCrossing)) then
+  var id := Self.CB_CrossingId[Self.CB_Crossing.ItemIndex];
+  if ((Self.LV_Crossings.Selected = nil) and (Self.BlockPresent(id, Self.LV_Crossings))) then
   begin
-    Self.prejezdy.Add(Blk.id);
-
-    LI := Self.LV_Prejezdy.Items.Add();
-    LI.Caption := Blk.name;
+    Application.MessageBox('Nelze přidat duplicitní přejezd!', 'Nelze přidat/upravit přejezd', MB_OK OR MB_ICONWARNING);
+    Exit();
   end;
 
-  Self.FillNewPrjCB();
+  var LI: TListItem;
+  if (Self.LV_Crossings.Selected = nil) then
+    LI := Self.LV_Crossings.Items.Add()
+  else
+    LI := Self.LV_Crossings.Selected;
+
+  Self.FillBlockLI(LI, id);
 end;
 
 procedure TF_BlkSummary.B_RemoveClick(Sender: TObject);
 begin
-  if (Self.LV_Prejezdy.Selected <> nil) then
-  begin
-    Self.prejezdy.Delete(Self.LV_Prejezdy.ItemIndex);
-    Self.LV_Prejezdy.DeleteSelected();
-    Self.FillNewPrjCB();
-  end;
+  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané přejezdy ze součtové hlásky?'), 'Mazání přejezdů',
+    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+    Self.LV_Crossings.DeleteSelected();
 end;
 
 procedure TF_BlkSummary.B_save_PClick(Sender: TObject);
@@ -117,7 +116,7 @@ begin
     Application.MessageBox('Vyplňte název součtové hlásky!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlock(SE_ID.Value, openIndex)) then
   begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -127,11 +126,11 @@ begin
   glob.id := Self.SE_ID.Value;
   glob.typ := btSummary;
 
-  if (NewBlk) then
+  if (isNewBlock) then
   begin
     glob.note := '';
     try
-      Blk := Blocks.Add(glob) as TBlkSummary;
+      block := Blocks.Add(glob) as TBlkSummary;
     except
       on E: Exception do
       begin
@@ -141,15 +140,17 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.Blk.note;
-    Self.Blk.SetGlobalSettings(glob);
+    glob.note := Self.block.note;
+    Self.block.SetGlobalSettings(glob);
   end;
 
-  settings.crossings := TList<Integer>.Create(Self.prejezdy);
-  Self.Blk.SetSettings(settings);
+  settings.crossings := TList<Integer>.Create();
+  for var LI: TListItem in Self.LV_Crossings.Items do
+    settings.crossings.Add(StrToInt(LI.SubItems[0]));
+  Self.block.SetSettings(settings);
 
   Self.Close();
-  Self.Blk.Change();
+  Self.block.Change();
 end;
 
 procedure TF_BlkSummary.B_StornoClick(Sender: TObject);
@@ -157,43 +158,29 @@ begin
   Self.Close();
 end;
 
-procedure TF_BlkSummary.MainOpenForm();
+procedure TF_BlkSummary.CommonOpenForm();
 begin
-  SetLength(Self.areas, 0);
-
-  Self.LB_Stanice.Clear();
-  Self.prejezdy.Clear();
-  Self.LV_Prejezdy.Clear();
-
+  Self.LV_Crossings.Clear();
   Self.B_Remove.Enabled := false;
 end;
 
-procedure TF_BlkSummary.NormalOpenForm();
+procedure TF_BlkSummary.EditOpenForm();
 var glob: TBlkSettings;
   settings: TBlkSummarySettings;
-  i, prjid: Integer;
-  LI: TListItem;
-  Area: TArea;
 begin
-  glob := Self.Blk.GetGlobalSettings();
-  settings := Self.Blk.GetSettings();
+  glob := Self.block.GetGlobalSettings();
+  settings := Self.block.GetSettings();
 
-  for Area in Self.Blk.areas do
-    Self.LB_Stanice.Items.Add(Area.name);
+  Self.E_Name.Text := glob.name;
+  Self.SE_ID.Value := glob.id;
 
-  SetLength(areas, Self.Blk.areas.Count);
-  for i := 0 to Self.Blk.areas.Count - 1 do
-    areas[i] := Self.Blk.areas[i].id;
-
-  E_Name.Text := glob.name;
-  SE_ID.Value := glob.id;
-
-  for prjid in settings.crossings do
+  for var crossid in settings.crossings do
   begin
-    Self.prejezdy.Add(prjid);
-    LI := Self.LV_Prejezdy.Items.Add();
-    LI.Caption := Blocks.GetBlkName(prjid);
+    var LI: TListItem := Self.LV_Crossings.Items.Add();
+    Self.FillBlockLI(LI, crossid);
   end;
+
+  Blocks.FillCB(Self.CB_Crossing, Self.CB_CrossingId, nil, Self.block.areas, btCrossing);
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (součtová hláska)';
   Self.ActiveControl := Self.B_save_P;
@@ -201,8 +188,9 @@ end;
 
 procedure TF_BlkSummary.NewOpenForm();
 begin
-  E_Name.Text := '';
-  SE_ID.Value := Blocks.GetBlkID(Blocks.Count - 1) + 1;
+  Self.E_Name.Text := '';
+  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.Count - 1) + 1;
+  Blocks.FillCB(Self.CB_Crossing, Self.CB_CrossingId, nil, nil, btCrossing);
 
   Self.Caption := 'Nový blok Součtová hláska';
   Self.ActiveControl := Self.E_Name;
@@ -210,41 +198,58 @@ end;
 
 procedure TF_BlkSummary.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  NewBlk := false;
-  OpenIndex := -1;
+  Self.isNewBlock := false;
+  Self.openIndex := -1;
   BlocksTablePainter.UpdateTable();
 end;
 
 procedure TF_BlkSummary.FormCreate(Sender: TObject);
 begin
-  Self.prejezdy := TList<Integer>.Create();
+  Self.CB_CrossingId := TList<Integer>.Create();
 end;
 
 procedure TF_BlkSummary.FormDestroy(Sender: TObject);
 begin
-  Self.prejezdy.Free();
+  Self.CB_CrossingId.Free();
 end;
 
-procedure TF_BlkSummary.LV_PrejezdyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_BlkSummary.LV_CrossingsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  Self.B_Remove.Enabled := (Self.LV_Prejezdy.Selected <> nil);
+  Self.B_Remove.Enabled := (Self.LV_Crossings.Selected <> nil);
+
+  if (Self.CB_Crossing.Enabled) then
+  begin
+    Self.CB_Crossing.ItemIndex := -1;
+    if (Self.LV_Crossings.Selected <> nil) then
+    begin
+      var id := StrToInt(Self.LV_Crossings.Selected.SubItems[0]);
+      for var i := 0 to Self.CB_CrossingId.Count-1 do
+        if (Self.CB_CrossingId[i] = id) then
+          Self.CB_Crossing.ItemIndex := i;
+    end;
+  end;
 end;
 
-procedure TF_BlkSummary.NewBlkCreate();
+procedure TF_BlkSummary.NewBlock();
 begin
-  Self.NewBlk := true;
-  OpenForm(Blocks.Count);
+  Self.isNewBlock := true;
+  Self.EditBlock(Blocks.Count);
 end;
 
-procedure TF_BlkSummary.FillNewPrjCB();
-var ignore: TArI;
-  i: Integer;
+function TF_BlkSummary.BlockPresent(id: Integer; LV: TListView): Boolean;
 begin
-  SetLength(ignore, Self.prejezdy.Count);
-  for i := 0 to Self.prejezdy.Count - 1 do
-    ignore[i] := Self.prejezdy[i];
-
-  Blocks.FillCB(Self.CB_Prj_Add, @Self.CB_PrjAddData, @ignore, nil, btCrossing);
+  for var item: TListItem in LV.Items do
+    if (IntToStr(id) = item.SubItems[0]) then
+      Exit(true);
+  Result := false;
 end;
 
-end.// unit
+procedure TF_BlkSummary.FillBlockLI(var LI: TListItem; blockId: Integer);
+begin
+  LI.Caption := IntToStr(LI.Index+1);
+  LI.SubItems.Clear();
+  LI.SubItems.Add(IntToStr(blockId));
+  LI.SubItems.Add(Blocks.GetBlkName(blockId));
+end;
+
+end.

@@ -5,7 +5,7 @@ object F_BlkTurnout: TF_BlkTurnout
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (vyhybka)'
-  ClientHeight = 520
+  ClientHeight = 490
   ClientWidth = 631
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -17,6 +17,8 @@ object F_BlkTurnout: TF_BlkTurnout
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object L_Vyh01: TLabel
@@ -40,17 +42,6 @@ object F_BlkTurnout: TF_BlkTurnout
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'ID :'
-  end
-  object L_Usek03: TLabel
-    Left = 7
-    Top = 72
-    Width = 42
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice :'
   end
   object E_Name: TEdit
     Left = 118
@@ -80,7 +71,7 @@ object F_BlkTurnout: TF_BlkTurnout
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 127
+    Top = 66
     Width = 304
     Height = 193
     Margins.Left = 2
@@ -88,7 +79,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' v'#253'hybky - RCS '
-    TabOrder = 3
+    TabOrder = 2
     object L_Vyh05: TLabel
       Left = 151
       Top = 16
@@ -282,8 +273,8 @@ object F_BlkTurnout: TF_BlkTurnout
     end
   end
   object B_Storno: TButton
-    Left = 470
-    Top = 487
+    Left = 94
+    Top = 457
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -291,12 +282,12 @@ object F_BlkTurnout: TF_BlkTurnout
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 10
+    TabOrder = 9
     OnClick = B_StornoClick
   end
   object B_Save: TButton
-    Left = 549
-    Top = 487
+    Left = 7
+    Top = 457
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -305,28 +296,16 @@ object F_BlkTurnout: TF_BlkTurnout
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 9
+    TabOrder = 8
     OnClick = B_SaveClick
   end
-  object LB_Stanice: TListBox
-    Left = 118
-    Top = 72
-    Width = 192
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 2
-  end
-  object GB_Zamek: TGroupBox
+  object GB_Lock: TGroupBox
     Left = 318
     Top = 87
     Width = 304
     Height = 83
     Caption = ' Z'#225'mek '
-    TabOrder = 6
+    TabOrder = 5
     object Label2: TLabel
       Left = 12
       Top = 46
@@ -373,7 +352,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Width = 304
     Height = 138
     Caption = ' Neprofilov'#233' styky '
-    TabOrder = 7
+    TabOrder = 6
     object CHB_npPlus: TCheckBox
       Left = 12
       Top = 24
@@ -415,7 +394,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Width = 304
     Height = 73
     Caption = ' Spojka '
-    TabOrder = 5
+    TabOrder = 4
     object CHB_Coupling: TCheckBox
       Left = 16
       Top = 22
@@ -452,11 +431,11 @@ object F_BlkTurnout: TF_BlkTurnout
   end
   object GB_Indications: TGroupBox
     Left = 8
-    Top = 325
+    Top = 264
     Width = 302
     Height = 156
     Caption = ' Indikace polohy (v pultu) '
-    TabOrder = 4
+    TabOrder = 3
     object Label3: TLabel
       Left = 7
       Top = 88
@@ -583,7 +562,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Width = 302
     Height = 156
     Caption = ' Voli'#269'e pro p'#345'estaven'#237' (v pultu) '
-    TabOrder = 8
+    TabOrder = 7
     object Label7: TLabel
       Left = 7
       Top = 88

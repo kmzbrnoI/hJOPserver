@@ -3,8 +3,8 @@ object F_BlkLock: TF_BlkLock
   Top = 145
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Editovat data bloku [blok] (z'#225'mek)'
-  ClientHeight = 171
+  Caption = 'F_BlkLock'
+  ClientHeight = 112
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -40,17 +40,6 @@ object F_BlkLock: TF_BlkLock
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
   end
-  object Label3: TLabel
-    Left = 7
-    Top = 72
-    Width = 42
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice :'
-  end
   object E_Name: TEdit
     Left = 120
     Top = 8
@@ -79,7 +68,7 @@ object F_BlkLock: TF_BlkLock
   end
   object B_Storno: TButton
     Left = 151
-    Top = 134
+    Top = 78
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -92,7 +81,7 @@ object F_BlkLock: TF_BlkLock
   end
   object B_Save: TButton
     Left = 240
-    Top = 134
+    Top = 78
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -103,17 +92,5 @@ object F_BlkLock: TF_BlkLock
     Default = True
     TabOrder = 3
     OnClick = B_SaveClick
-  end
-  object LB_Areas: TListBox
-    Left = 119
-    Top = 72
-    Width = 192
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 4
   end
 end

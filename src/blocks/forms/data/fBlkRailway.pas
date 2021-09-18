@@ -10,59 +10,61 @@ type
   TF_BlkRailway = class(TForm)
     B_Save: TButton;
     B_Storno: TButton;
-    GB_UvazkaA: TGroupBox;
-    GB_UvazkaB: TGroupBox;
+    GB_LinkerA: TGroupBox;
+    GB_LinkerB: TGroupBox;
     GB_Trat: TGroupBox;
-    SE_Trat_ID: TSpinEdit;
-    E_Trat_Name: TEdit;
+    SE_Railway_ID: TSpinEdit;
+    E_Railway_Name: TEdit;
     L_Name: TLabel;
     L_ID: TLabel;
-    GB_TratBlk: TGroupBox;
-    B_Blk_Delete: TButton;
-    GB_NewBlk: TGroupBox;
-    B_blk_Add: TButton;
-    CB_NewTratBlok: TComboBox;
     Label1: TLabel;
-    E_UA_name: TEdit;
-    SE_UA_id: TSpinEdit;
-    LB_UA_St: TListBox;
-    Label2: TLabel;
+    E_LA_Name: TEdit;
+    SE_LA_Id: TSpinEdit;
     Label3: TLabel;
-    LB_UB_St: TListBox;
-    SE_UB_id: TSpinEdit;
-    E_UB_name: TEdit;
+    SE_LB_Id: TSpinEdit;
+    E_LB_Name: TEdit;
     Label4: TLabel;
     Label5: TLabel;
-    Label6: TLabel;
-    CB_Trat_ZabZar: TComboBox;
+    CB_Type: TComboBox;
     Label7: TLabel;
-    LV_Useky: TListView;
     Label8: TLabel;
-    CB_Navestidla: TComboBox;
+    CB_Signals: TComboBox;
+    GB_TratBlk: TGroupBox;
+    GB_Track: TGroupBox;
+    B_Track_Add: TButton;
+    CB_Track: TComboBox;
+    LV_Tracks: TListView;
+    B_Track_Del: TButton;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_StornoClick(Sender: TObject);
-    procedure LV_UsekyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
-    procedure B_blk_AddClick(Sender: TObject);
+    procedure LV_TracksChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+    procedure B_Track_AddClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
-    procedure B_Blk_DeleteClick(Sender: TObject);
+    procedure B_Track_DelClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure LV_TracksDragOver(Sender, Source: TObject; X, Y: Integer;
+      State: TDragState; var Accept: Boolean);
+    procedure LV_TracksDragDrop(Sender, Source: TObject; X, Y: Integer);
 
   private
-    new: Boolean;
+    isNewBlock: Boolean;
     railway: TBlkRailway;
     linkerA: TBlkLinker;
     linkerB: TBlkLinker;
     blkIndex: Integer;
-    CB_NewTratBlokData: TArI;
+    CB_TrackIds: TList<Integer>;
 
-    procedure NewBlkOpenForm();
-    procedure EditBlkOpenForm();
     procedure CommonOpenForm();
+    procedure EditOpenForm();
+    procedure NewOpenForm();
 
-    procedure FillCBNewTratBlok();
+    procedure FillBlockLI(var LI: TListItem; blockId: Integer);
+    function BlockPresent(id: Integer; LV: TListView): Boolean;
 
   public
-    procedure EditBlk(BlokIndex: Integer);
-    procedure NewBlk();
+    procedure EditBlock(blockIndex: Integer);
+    procedure NewBlock();
 
   end;
 
@@ -75,16 +77,25 @@ uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, Block, Area;
 
 {$R *.dfm}
 
-procedure TF_BlkRailway.EditBlk(BlokIndex: Integer);
-var Blk: TBlk;
+procedure TF_BlkRailway.FormCreate(Sender: TObject);
 begin
-  Self.blkIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Blk));
+  Self.CB_TrackIds := TList<Integer>.Create();
+end;
 
-  if (Blk <> nil) then
+procedure TF_BlkRailway.FormDestroy(Sender: TObject);
+begin
+  Self.CB_TrackIds.Free();
+end;
+
+procedure TF_BlkRailway.EditBlock(blockIndex: Integer);
+var blk: TBlk;
+begin
+  Self.blkIndex := blockIndex;
+  Blocks.GetBlkByIndex(blockIndex, blk);
+
+  if (blk <> nil) then
   begin
-    // tato situace nastava v pripade tvorby noveho bloku
-    case (Blk.typ) of
+    case (blk.typ) of
       btRailway:
         Self.railway := Blk as TBlkRailway;
       btLinker:
@@ -95,140 +106,167 @@ begin
   end;
 
   Self.CommonOpenForm();
-  if (new) then
-    Self.NewBlkOpenForm()
+  if (isNewBlock) then
+    Self.NewOpenForm()
   else
-    Self.EditBlkOpenForm();
+    Self.EditOpenForm();
 
   Self.ShowModal();
 end;
 
-procedure TF_BlkRailway.NewBlk();
+procedure TF_BlkRailway.NewBlock();
 begin
-  Self.new := true;
-  Self.EditBlk(Blocks.count);
+  Self.isNewBlock := true;
+  Self.EditBlock(Blocks.count);
 end;
 
-procedure TF_BlkRailway.NewBlkOpenForm();
+procedure TF_BlkRailway.NewOpenForm();
 begin
-  Self.E_Trat_Name.Text := '';
-  Self.E_UA_name.Text := '';
-  Self.E_UB_name.Text := '';
+  Self.E_Railway_Name.Text := '';
+  Self.E_LA_Name.Text := '';
+  Self.E_LB_Name.Text := '';
 
-  Self.SE_Trat_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
-  Self.SE_UA_id.Value := Blocks.GetBlkID(Blocks.count - 1) + 2;
-  Self.SE_UB_id.Value := Blocks.GetBlkID(Blocks.count - 1) + 3;
+  Self.SE_Railway_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
+  Self.SE_LA_Id.Value := Blocks.GetBlkID(Blocks.count - 1) + 2;
+  Self.SE_LB_Id.Value := Blocks.GetBlkID(Blocks.count - 1) + 3;
 
-  Self.CB_Trat_ZabZar.ItemIndex := -1;
-  Self.CB_Navestidla.ItemIndex := -1;
+  Self.CB_Type.ItemIndex := -1;
+  Self.CB_Signals.ItemIndex := -1;
 
-  Blocks.FillCB(Self.CB_NewTratBlok, @CB_NewTratBlokData, nil, nil, btRT, -1);
+  Blocks.FillCB(Self.CB_Track, Self.CB_TrackIds, nil, nil, btRT);
 
   Self.Caption := 'Nový blok Trať';
-  Self.ActiveControl := Self.E_Trat_Name;
+  Self.ActiveControl := Self.E_Railway_Name;
 end;
 
-procedure TF_BlkRailway.EditBlkOpenForm();
-var glob: TBlkSettings;
-  settings: TBlkRailwaySettings;
-  id: Integer;
-  LI: TListItem;
-  Area: TArea;
+procedure TF_BlkRailway.EditOpenForm();
 begin
-  glob := Self.railway.GetGlobalSettings();
-  Self.E_Trat_Name.Text := glob.name;
-  Self.SE_Trat_ID.Value := glob.id;
+  begin
+    var glob := Self.railway.GetGlobalSettings();
+    Self.E_Railway_Name.Text := glob.name;
+    Self.SE_Railway_ID.Value := glob.id;
+  end;
 
-  glob := Self.linkerA.GetGlobalSettings();
-  Self.E_UA_name.Text := glob.name;
-  Self.SE_UA_id.Value := glob.id;
-  for Area in Self.linkerA.areas do
-    Self.LB_UA_St.Items.Add(Area.name);
+  begin
+    var glob := Self.linkerA.GetGlobalSettings();
+    Self.E_LA_Name.Text := glob.name;
+    Self.SE_LA_Id.Value := glob.id;
+  end;
 
-  glob := Self.linkerB.GetGlobalSettings();
-  Self.E_UB_name.Text := glob.name;
-  Self.SE_UB_id.Value := glob.id;
-  for Area in Self.linkerB.areas do
-    Self.LB_UB_St.Items.Add(Area.name);
+  begin
+    var glob := Self.linkerB.GetGlobalSettings();
+    Self.E_LB_Name.Text := glob.name;
+    Self.SE_LB_Id.Value := glob.id;
+  end;
 
-  settings := Self.railway.GetSettings();
+  var settings := Self.railway.GetSettings();
 
   case (settings.rType) of
     TRailwayType.permanent:
-      Self.CB_Trat_ZabZar.ItemIndex := 0;
+      Self.CB_Type.ItemIndex := 0;
     TRailwayType.request:
-      Self.CB_Trat_ZabZar.ItemIndex := 1;
+      Self.CB_Type.ItemIndex := 1;
   end;
 
-  Self.CB_Navestidla.ItemIndex := Integer(settings.signals);
+  Self.CB_Signals.ItemIndex := Integer(settings.signals);
 
-  for id in settings.trackIds do
+  for var id in settings.trackIds do
   begin
-    LI := Self.LV_Useky.Items.Add;
-    LI.Caption := IntToStr(id);
-    LI.SubItems.Add(Blocks.GetBlkName(id));
+    var LI: TListItem := Self.LV_Tracks.Items.Add();
+    Self.FillBlockLI(LI, id);
   end;
 
-  Self.FillCBNewTratBlok();
+  var areas := TList<TArea>.Create();
+  try
+    areas.AddRange(Self.linkerA.areas);
+    areas.AddRange(Self.linkerB.areas);
+
+    Blocks.FillCB(Self.CB_Track, Self.CB_TrackIds, nil, areas, btRT);
+  finally
+    areas.Free();
+  end;
 
   Self.Caption := 'Upravit blok ' + Self.railway.name + ' (trať)';
   Self.ActiveControl := Self.B_Save;
 end;
 
-procedure TF_BlkRailway.FillCBNewTratBlok();
-var trackIgnore: TArI;
-  areas: TArStr;
-  i: Integer;
-begin
-  SetLength(trackIgnore, Self.LV_Useky.Items.count);
-  for i := 0 to Self.LV_Useky.Items.count - 1 do
-    trackIgnore[i] := StrToInt(Self.LV_Useky.Items.Item[i].Caption);
-
-  if ((Self.linkerA <> nil) and (Self.linkerB <> nil)) then
-  begin
-    SetLength(areas, Self.linkerA.areas.count + Self.linkerB.areas.count);
-    for i := 0 to Self.linkerA.areas.count - 1 do
-      areas[i] := Self.linkerA.areas[i].id;
-    for i := 0 to Self.linkerB.areas.count - 1 do
-      areas[i + Self.linkerA.areas.count] := Self.linkerB.areas[i].id;
-  end;
-
-  Blocks.FillCB(Self.CB_NewTratBlok, @Self.CB_NewTratBlokData, @trackIgnore, areas, btRT, -1);
-end;
-
 procedure TF_BlkRailway.CommonOpenForm();
 begin
-  Self.LV_Useky.Clear();
-  Self.LB_UA_St.Clear();
-  Self.LB_UB_St.Clear();
-  Self.B_Blk_Delete.Enabled := false;
+  Self.LV_Tracks.Clear();
+  Self.B_Track_Del.Enabled := false;
 end;
 
-procedure TF_BlkRailway.LV_UsekyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_BlkRailway.LV_TracksChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  Self.B_Blk_Delete.Enabled := (Self.LV_Useky.ItemIndex > -1);
-end;
+  Self.B_Track_Del.Enabled := (Self.LV_Tracks.Selected <> nil);
 
-procedure TF_BlkRailway.B_blk_AddClick(Sender: TObject);
-var LI: TListItem;
-begin
-  if (F_BlkRailway.CB_NewTratBlok.ItemIndex < 0) then
+  if (Self.CB_Track.Enabled) then
   begin
-    Application.MessageBox('Vyberte blok!', 'Nelze pokračovat', MB_OK OR MB_ICONWARNING);
+    Self.CB_Track.ItemIndex := -1;
+    if (Self.LV_Tracks.Selected <> nil) then
+    begin
+      var id := StrToInt(Self.LV_Tracks.Selected.SubItems[0]);
+      for var i := 0 to Self.CB_TrackIds.Count-1 do
+        if (Self.CB_TrackIds[i] = id) then
+          Self.CB_Track.ItemIndex := i;
+    end;
+  end;
+
+end;
+
+procedure TF_BlkRailway.LV_TracksDragDrop(Sender, Source: TObject; X,
+  Y: Integer);
+begin
+  if (Source = Self.LV_Tracks) then
+  begin
+    if (Self.LV_Tracks.GetItemAt(X,Y) <> nil) then
+    begin
+      var myItem := Self.LV_Tracks.Items.Insert(Self.LV_Tracks.GetItemAt(X,Y).Index);
+      myItem.Assign(Self.LV_Tracks.Selected);
+      Self.LV_Tracks.Selected.Delete();
+
+      for var i: Integer := 0 to Self.LV_Tracks.Items.Count-1 do
+        Self.LV_Tracks.Items[i].Caption := IntToStr(i+1);
+    end;
+  end;
+end;
+
+procedure TF_BlkRailway.LV_TracksDragOver(Sender, Source: TObject; X,
+  Y: Integer; State: TDragState; var Accept: Boolean);
+begin
+  Accept := (Source = Self.LV_Tracks);
+end;
+
+procedure TF_BlkRailway.B_Track_AddClick(Sender: TObject);
+begin
+  if (not Self.CB_Track.Enabled) then
+    Exit();
+
+  if (Self.CB_Track.ItemIndex = -1) then
+  begin
+    Application.MessageBox('Vyberte úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
-  LI := Self.LV_Useky.Items.Add();
-  LI.Caption := IntToStr(Blocks.GetBlkID(CB_NewTratBlokData[Self.CB_NewTratBlok.ItemIndex]));
-  LI.SubItems.Add(Blocks.GetBlkName(Blocks.GetBlkID(CB_NewTratBlokData[Self.CB_NewTratBlok.ItemIndex])));
+  var id := Self.CB_TrackIds[Self.CB_Track.ItemIndex];
+  if ((Self.LV_Tracks.Selected = nil) and (Self.BlockPresent(id, Self.LV_Tracks))) then
+  begin
+    Application.MessageBox('Nelze přidat duplicitní úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
 
-  Self.FillCBNewTratBlok();
+  var LI: TListItem;
+  if (Self.LV_Tracks.Selected = nil) then
+    LI := Self.LV_Tracks.Items.Add()
+  else
+    LI := Self.LV_Tracks.Selected;
+
+  Self.FillBlockLI(LI, id);
 end;
 
-procedure TF_BlkRailway.B_Blk_DeleteClick(Sender: TObject);
+procedure TF_BlkRailway.B_Track_DelClick(Sender: TObject);
 begin
-  Self.LV_Useky.DeleteSelected();
-  Self.FillCBNewTratBlok();
+  Self.LV_Tracks.DeleteSelected();
 end;
 
 procedure TF_BlkRailway.B_SaveClick(Sender: TObject);
@@ -236,9 +274,8 @@ var globRailway, globLinkerA, globLinkerB: TBlkSettings;
   rSettings: TBlkRailwaySettings;
   linkerSettings: TBlkLinkerSettings;
   railway, linkerA, linkerB: Integer;
-  LI: TListItem;
 begin
-  if (Self.new) then
+  if (Self.isNewBlock) then
   begin
     railway := -1;
     linkerA := -1;
@@ -249,59 +286,56 @@ begin
     linkerB := Blocks.GetBlkIndex(Self.linkerB.id);
   end;
 
-  if ((Self.E_Trat_Name.Text = '') or (Self.E_UA_name.Text = '') or (Self.E_UB_name.Text = '')) then
+  if ((Self.E_Railway_Name.Text = '') or (Self.E_LA_name.Text = '') or (Self.E_LB_name.Text = '')) then
   begin
-    Application.MessageBox('Vyplnte nazev bloku !', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+    Application.MessageBox('Vyplňte názvy bloků!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(Self.SE_Trat_ID.Value, railway)) then
+  if (Blocks.IsBlock(Self.SE_Railway_ID.Value, railway)) then
   begin
-    Application.MessageBox('ID trati jiz bylo definovano na jinem bloku !', 'Nelze ulozit data',
+    Application.MessageBox('ID trati jiz bylo definovano na jinem bloku !', 'Nelze uložit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(Self.SE_UA_id.Value, linkerA)) then
+  if (Blocks.IsBlock(Self.SE_LA_Id.Value, linkerA)) then
   begin
-    Application.MessageBox('ID úvazky A jiz bylo definovano na jinem bloku !', 'Nelze ulozit data',
+    Application.MessageBox('ID úvazky A jiz bylo definovano na jinem bloku !', 'Nelze uložit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(Self.SE_UB_id.Value, linkerB)) then
+  if (Blocks.IsBlock(Self.SE_LB_Id.Value, linkerB)) then
   begin
     Application.MessageBox('ID úvazky B jiz bylo definovano na jinem bloku !', 'Nelze ulozit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Self.CB_Trat_ZabZar.ItemIndex < 0) then
+  if (Self.CB_Type.ItemIndex < 0) then
   begin
     Application.MessageBox('Vyberte typ zabezpečovacího zařízení trati !', 'Nelze ulozit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Self.CB_Navestidla.ItemIndex < 0) then
+  if (Self.CB_Signals.ItemIndex < 0) then
   begin
     Application.MessageBox('Vyberte chování návěstidel trati !', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
-  // trat
-  globRailway.name := Self.E_Trat_Name.Text;
-  globRailway.id := Self.SE_Trat_ID.Value;
+  globRailway.name := Self.E_Railway_Name.Text;
+  globRailway.id := Self.SE_Railway_ID.Value;
   globRailway.typ := btRailway;
 
-  // uvazka A
-  globLinkerA.name := Self.E_UA_name.Text;
-  globLinkerA.id := Self.SE_UA_id.Value;
+  globLinkerA.name := Self.E_LA_Name.Text;
+  globLinkerA.id := Self.SE_LA_Id.Value;
   globLinkerA.typ := btLinker;
 
-  // uvazka B
-  globLinkerB.name := Self.E_UB_name.Text;
-  globLinkerB.id := Self.SE_UB_id.Value;
+  globLinkerB.name := Self.E_LB_Name.Text;
+  globLinkerB.id := Self.SE_LB_Id.Value;
   globLinkerB.typ := btLinker;
 
   rSettings.trackIds := TList<Integer>.Create();
 
-  if (new) then
+  if (isNewBlock) then
   begin
     try
       Self.railway := Blocks.Add(globRailway) as TBlkRailway;
@@ -325,27 +359,25 @@ begin
     Self.linkerB.SetGlobalSettings(globLinkerB);
   end;
 
-  rSettings.linkerA := Self.SE_UA_id.Value;
-  rSettings.linkerB := Self.SE_UB_id.Value;
+  rSettings.linkerA := Self.SE_LA_Id.Value;
+  rSettings.linkerB := Self.SE_LB_Id.Value;
 
-  case (Self.CB_Trat_ZabZar.ItemIndex) of
-    0:
-      rSettings.rType := TRailwayType.permanent;
-    1:
-      rSettings.rType := TRailwayType.request;
+  case (Self.CB_Type.ItemIndex) of
+    0: rSettings.rType := TRailwayType.permanent;
+    1: rSettings.rType := TRailwayType.request;
   end;
 
-  rSettings.signals := TRailwaySignals(Self.CB_Navestidla.ItemIndex);
+  rSettings.signals := TRailwaySignals(Self.CB_Signals.ItemIndex);
 
   rSettings.trackIds.Clear();
-  for LI in Self.LV_Useky.Items do
-    rSettings.trackIds.Add(StrToInt(LI.Caption));
+  for var LI in Self.LV_Tracks.Items do
+    rSettings.trackIds.Add(StrToInt(LI.SubItems[0]));
   Self.railway.SetSettings(rSettings);
 
-  linkerSettings.parent := Self.SE_Trat_ID.Value;
+  linkerSettings.parent := Self.SE_Railway_ID.Value;
   Self.linkerA.SetSettings(linkerSettings);
 
-  linkerSettings.parent := Self.SE_Trat_ID.Value;
+  linkerSettings.parent := Self.SE_Railway_ID.Value;
   Self.linkerB.SetSettings(linkerSettings);
 
   Self.Close();
@@ -360,8 +392,24 @@ end;
 procedure TF_BlkRailway.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Self.blkIndex := -1;
-  Self.new := false;
+  Self.isNewBlock := false;
   BlocksTablePainter.UpdateTable();
 end;
 
-end.// unit
+procedure TF_BlkRailway.FillBlockLI(var LI: TListItem; blockId: Integer);
+begin
+  LI.Caption := IntToStr(LI.Index+1);
+  LI.SubItems.Clear();
+  LI.SubItems.Add(IntToStr(blockId));
+  LI.SubItems.Add(Blocks.GetBlkName(blockId));
+end;
+
+function TF_BlkRailway.BlockPresent(id: Integer; LV: TListView): Boolean;
+begin
+  for var item: TListItem in LV.Items do
+    if (IntToStr(id) = item.SubItems[0]) then
+      Exit(true);
+  Result := false;
+end;
+
+end.

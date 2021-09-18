@@ -3163,31 +3163,31 @@ begin
 
   case (blk.typ) of
     btTurnout:
-      F_BlkTurnout.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkTurnout.EditBlock(Self.LV_Blocks.ItemIndex);
     btTrack:
-      F_BlkTrack.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkTrack.EditBlock(Self.LV_Blocks.ItemIndex);
     btIR:
-      F_BlkIR.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkIR.EditBlock(Self.LV_Blocks.ItemIndex);
     btSignal:
-      F_BlkSignal.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkSignal.EditBlock(Self.LV_Blocks.ItemIndex);
     btCrossing:
-      F_BlkCrossing.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkCrossing.EditBlock(Self.LV_Blocks.ItemIndex);
     btRailway, btLinker:
-      F_BlkRailway.EditBlk(Self.LV_Blocks.ItemIndex);
+      F_BlkRailway.EditBlock(Self.LV_Blocks.ItemIndex);
     btLock:
-      F_BlkLock.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkLock.EditBlock(Self.LV_Blocks.ItemIndex);
     btDisconnector:
-      F_BlkDisconnector.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkDisconnector.EditBlock(Self.LV_Blocks.ItemIndex);
     btRT:
-      F_BlkRT.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkRT.EditBlock(Self.LV_Blocks.ItemIndex);
     btIO:
-      F_BlkIO.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkIO.EditBlock(Self.LV_Blocks.ItemIndex);
     btSummary:
-      F_BlkSummary.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkSummary.EditBlock(Self.LV_Blocks.ItemIndex);
     btAC:
-      F_BlkAC.OpenForm(Self.LV_Blocks.ItemIndex);
+      F_BlkAC.EditBlock(Self.LV_Blocks.ItemIndex);
     btGroupSignal:
-      F_BlkGroupSignal.EditBlk(Self.LV_Blocks.ItemIndex);
+      F_BlkGroupSignal.EditBlock(Self.LV_Blocks.ItemIndex);
     btPst:
       F_BlkPst.EditBlock(Self.LV_Blocks.ItemIndex);
   end;

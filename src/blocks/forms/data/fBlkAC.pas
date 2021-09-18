@@ -14,8 +14,6 @@ type
     Label1: TLabel;
     B_Storno: TButton;
     B_Save: TButton;
-    Label3: TLabel;
-    LB_Areas: TListBox;
     Label4: TLabel;
     E_AccessToken: TEdit;
     B_GenToken: TButton;
@@ -25,17 +23,18 @@ type
     procedure B_GenTokenClick(Sender: TObject);
 
   private
-    newBlk: Boolean;
-    blk: TBlkAC;
-
-  public
+    isNewBlock: Boolean;
+    block: TBlkAC;
     openIndex: Integer;
 
-    procedure OpenForm(blockIndex: Integer);
-    procedure NewBlkOpenForm();
-    procedure NormalOpenForm();
     procedure CommonOpenForm();
-    procedure NewBlkCreate();
+    procedure EditOpenForm();
+    procedure NewOpenForm();
+
+  public
+
+    procedure EditBlock(blockIndex: Integer);
+    procedure NewBlock();
   end;
 
 var
@@ -47,21 +46,21 @@ uses BlockDb, Block, DataBloky, ownStrUtils;
 
 {$R *.dfm}
 
-procedure TF_BlkAC.OpenForm(blockIndex: Integer);
+procedure TF_BlkAC.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
   Self.CommonOpenForm();
 
-  if (NewBlk) then
-    Self.NewBlkOpenForm()
+  if (isNewBlock) then
+    Self.NewOpenForm()
   else
-    Self.NormalOpenForm();
+    Self.EditOpenForm();
 
   Self.ShowModal();
 end;
 
-procedure TF_BlkAC.NewBlkOpenForm();
+procedure TF_BlkAC.NewOpenForm();
 begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
@@ -71,15 +70,12 @@ begin
   Self.ActiveControl := Self.E_Name;
 end;
 
-procedure TF_BlkAC.NormalOpenForm();
+procedure TF_BlkAC.EditOpenForm();
 var glob: TBlkSettings;
   settings: TBlkACSettings;
 begin
-  glob := Self.Blk.GetGlobalSettings();
-  settings := Self.Blk.GetSettings();
-
-  for var area in Self.Blk.areas do
-    Self.LB_Areas.Items.Add(Area.name);
+  glob := Self.block.GetGlobalSettings();
+  settings := Self.block.GetSettings();
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
@@ -91,13 +87,13 @@ end;
 
 procedure TF_BlkAC.CommonOpenForm();
 begin
-  Self.LB_Areas.Clear();
+
 end;
 
-procedure TF_BlkAC.NewBlkCreate();
+procedure TF_BlkAC.NewBlock();
 begin
-  Self.newBlk := true;
-  Self.OpenForm(Blocks.count);
+  Self.isNewBlock := true;
+  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkAC.B_StornoClick(Sender: TObject);
@@ -111,8 +107,6 @@ begin
 end;
 
 procedure TF_BlkAC.B_SaveClick(Sender: TObject);
-var glob: TBlkSettings;
-  settings: TBlkACSettings;
 begin
   if (Self.E_Name.Text = '') then
   begin
@@ -125,16 +119,19 @@ begin
     Exit();
   end;
 
+  var glob: TBlkSettings;
   glob.name := Self.E_Name.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btAC;
+
+  var settings: TBlkACSettings;
   settings.accessToken := Self.E_AccessToken.Text;
 
-  if (NewBlk) then
+  if (Self.isNewBlock) then
   begin
     glob.note := '';
     try
-      Blk := Blocks.Add(glob) as TBlkAC;
+      Self.block := Blocks.Add(glob) as TBlkAC;
     except
       on E: Exception do
       begin
@@ -144,17 +141,17 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.blk.note;
-    Self.blk.SetGlobalSettings(glob);
+    glob.note := Self.block.note;
+    Self.block.SetGlobalSettings(glob);
   end;
 
-  Self.blk.SetSettings(settings);
+  Self.block.SetSettings(settings);
   Self.Close();
 end;
 
 procedure TF_BlkAC.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.newBlk := false;
+  Self.isNewBlock := false;
   Self.openIndex := -1;
   BlocksTablePainter.UpdateTable();
 end;

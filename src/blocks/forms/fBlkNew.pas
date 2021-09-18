@@ -46,31 +46,31 @@ begin
 
   case RG_NewTyp.ItemIndex of
     0:
-      F_BlkTurnout.NewBlkCreate();
+      F_BlkTurnout.NewBlock();
     1:
-      F_BlkTrack.NewBlkCreate();
+      F_BlkTrack.NewBlock();
     2:
-      F_BlkIR.NewBlkCreate();
+      F_BlkIR.NewBlock();
     3:
-      F_BlkSignal.NewBlkCreate();
+      F_BlkSignal.NewBlock();
     4:
-      F_BlkGroupSignal.NewBlk();
+      F_BlkGroupSignal.NewBlock();
     5:
-      F_BlkCrossing.NewBlkCreate();
+      F_BlkCrossing.NewBlock();
     6:
-      F_BlkRailway.NewBlk();
+      F_BlkRailway.NewBlock();
     7:
-      F_BlkLock.NewBlkCreate();
+      F_BlkLock.NewBlock();
     8:
-      F_BlkDisconnector.NewBlkCreate();
+      F_BlkDisconnector.NewBlock();
     9:
-      F_BlkRT.NewBlkCreate();
+      F_BlkRT.NewBlock();
     10:
-      F_BlkIO.NewBlkCreate();
+      F_BlkIO.NewBlock();
     11:
-      F_BlkSummary.NewBlkCreate();
+      F_BlkSummary.NewBlock();
     12:
-      F_BlkAC.NewBlkCreate();
+      F_BlkAC.NewBlock();
     13:
       F_BlkPst.NewBlock();
   end;

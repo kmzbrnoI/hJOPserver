@@ -13,8 +13,6 @@ type
     E_Name: TEdit;
     SE_ID: TSpinEdit;
     L_IR02: TLabel;
-    L_Usek03: TLabel;
-    LB_Stations: TListBox;
     B_Storno: TButton;
     B_Apply: TButton;
     GB_Signals: TGroupBox;
@@ -45,22 +43,24 @@ type
     procedure SE_RCSmodule2Exit(Sender: TObject);
     procedure CHB_RCS_Second_OutputClick(Sender: TObject);
     procedure CHB_RCS_OutputClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
 
   private
-    new: Boolean;
-    blk: TBlkGroupSignal;
-    CB_NewSignalData: TArI;
+    isNewBlock: Boolean;
+    block: TBlkGroupSignal;
+    CB_SignalId: TList<Integer>;
+    openIndex: Integer;
 
-    procedure NewBlkOpenForm();
-    procedure EditBlkOpenForm();
+    procedure NewOpenForm();
+    procedure EditOpenForm();
 
     procedure FillCBNewSignal();
 
   public
-    blkIndex: Integer;
 
-    procedure EditBlk(blockIndex: Integer);
-    procedure NewBlk();
+    procedure EditBlock(blockIndex: Integer);
+    procedure NewBlock();
 
   end;
 
@@ -74,22 +74,32 @@ uses Block, Area, DataBloky, TechnologieRCS, BlockSignal;
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkGroupSignal.EditBlk(blockIndex: Integer);
+procedure TF_BlkGroupSignal.FormCreate(Sender: TObject);
 begin
-  Self.blkIndex := blockIndex;
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.blk));
-  Self.LB_Stations.Clear();
+  Self.CB_SignalId := TList<Integer>.Create();
+end;
 
-  if (Self.new) then
-    Self.NewBlkOpenForm()
+procedure TF_BlkGroupSignal.FormDestroy(Sender: TObject);
+begin
+  Self.CB_SignalId.Free();
+end;
+
+procedure TF_BlkGroupSignal.EditBlock(blockIndex: Integer);
+begin
+  Self.openIndex := blockIndex;
+  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
+
+  if (Self.isNewBlock) then
+    Self.NewOpenForm()
   else
-    Self.EditBlkOpenForm();
+    Self.EditOpenForm();
 
   Self.ShowModal();
 end;
 
-procedure TF_BlkGroupSignal.NewBlkOpenForm();
+procedure TF_BlkGroupSignal.NewOpenForm();
 begin
+  Self.block := nil;
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
 
@@ -105,7 +115,7 @@ begin
   Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
 
   Self.LV_Signals.Clear();
-  Blocks.FillCB(Self.CB_NewSignal, @Self.CB_NewSignalData, nil, nil, btSignal, -1);
+  Blocks.FillCB(Self.CB_NewSignal, Self.CB_SignalId, nil, nil, btSignal);
 
   Self.Caption := 'Nový blok Skupinové návìstidlo';
   Self.ActiveControl := Self.E_Name;
@@ -121,20 +131,14 @@ begin
   Self.SE_RCSport2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
 end;
 
-procedure TF_BlkGroupSignal.EditBlkOpenForm();
+procedure TF_BlkGroupSignal.EditOpenForm();
 var glob: TBlkSettings;
   settings: TBlkGSSettings;
   signalSettings: TBlkSignalSettings;
-  Area: TArea;
-  LI: TListItem;
-  id: Integer;
 begin
-  glob := Self.blk.GetGlobalSettings();
-  settings := Self.blk.GetSettings();
-  signalSettings := TBlkSignal(Self.blk).GetSettings();
-
-  for Area in Self.blk.areas do
-    Self.LB_Stations.Items.Add(Area.name);
+  glob := Self.block.GetGlobalSettings();
+  settings := Self.block.GetSettings();
+  signalSettings := TBlkSignal(Self.block).GetSettings();
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
@@ -166,9 +170,9 @@ begin
   Self.SE_RCSmodule1Exit(Self);
 
   Self.LV_Signals.Clear();
-  for id in settings.signalIds do
+  for var id in settings.signalIds do
   begin
-    LI := Self.LV_Signals.Items.Add;
+    var LI: TListItem := Self.LV_Signals.Items.Add;
     LI.Caption := IntToStr(id);
     LI.SubItems.Add(Blocks.GetBlkName(id));
   end;
@@ -179,14 +183,13 @@ begin
   Self.ActiveControl := Self.B_Apply;
 end;
 
-procedure TF_BlkGroupSignal.NewBlk();
+procedure TF_BlkGroupSignal.NewBlock();
 begin
-  Self.new := true;
-  Self.EditBlk(Blocks.count);
+  Self.isNewBlock := true;
+  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkGroupSignal.B_BlkAddClick(Sender: TObject);
-var LI: TListItem;
 begin
   if (Self.CB_NewSignal.ItemIndex < 0) then
   begin
@@ -194,9 +197,9 @@ begin
     Exit();
   end;
 
-  LI := Self.LV_Signals.Items.Add();
-  LI.Caption := IntToStr(Blocks.GetBlkID(Self.CB_NewSignalData[Self.CB_NewSignal.ItemIndex]));
-  LI.SubItems.Add(Blocks.GetBlkName(Blocks.GetBlkID(CB_NewSignalData[Self.CB_NewSignal.ItemIndex])));
+  var LI: TListItem := Self.LV_Signals.Items.Add();
+  LI.Caption := IntToStr(Self.CB_SignalId[Self.CB_NewSignal.ItemIndex]);
+  LI.SubItems.Add(Blocks.GetBlkName(CB_SignalId[Self.CB_NewSignal.ItemIndex]));
 
   Self.FillCBNewSignal();
 end;
@@ -241,18 +244,13 @@ begin
 end;
 
 procedure TF_BlkGroupSignal.B_ApplyClick(Sender: TObject);
-var glob: TBlkSettings;
-  settings: TBlkGSSettings;
-  signalSettings: TBlkSignalSettings;
-  LI: TListItem;
-  another: TBlk;
 begin
   if (Self.E_Name.Text = '') then
   begin
     Application.MessageBox('Vyplòte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(SE_ID.Value, Self.blkIndex)) then
+  if (Blocks.IsBlock(SE_ID.Value, Self.openIndex)) then
   begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -266,7 +264,7 @@ begin
       Exit();
     end;
 
-    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value), Self.blk,
+    var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value), Self.block,
       TRCSIOType.output);
     if (another <> nil) then
     begin
@@ -277,7 +275,7 @@ begin
   end;
   if (Self.CHB_RCS_Second_Output.Checked) then
   begin
-    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value), Self.blk,
+    var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value), Self.block,
       TRCSIOType.output);
     if (another <> nil) then
     begin
@@ -287,15 +285,16 @@ begin
     end;
   end;
 
+  var glob: TBlkSettings;
   glob.name := Self.E_Name.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btGroupSignal;
 
-  if (Self.new) then
+  if (Self.isNewBlock) then
   begin
     glob.note := '';
     try
-      blk := Blocks.Add(glob) as TBlkGroupSignal;
+      Self.block := Blocks.Add(glob) as TBlkGroupSignal;
     except
       on E: Exception do
       begin
@@ -305,16 +304,18 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.blk.note;
-    Self.blk.SetGlobalSettings(glob);
+    glob.note := Self.block.note;
+    Self.block.SetGlobalSettings(glob);
   end;
 
+  var settings: TBlkGSSettings;
   settings.signalIds := TList<Integer>.Create();
   settings.signalIds.Clear();
-  for LI in Self.LV_Signals.Items do
+  for var LI: TListItem in Self.LV_Signals.Items do
     settings.signalIds.Add(StrToInt(LI.Caption));
-  Self.blk.SetSettings(settings);
+  Self.block.SetSettings(settings);
 
+  var signalSettings: TBlkSignalSettings;
   signalSettings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   if (Self.CHB_RCS_Output.Checked) then
   begin
@@ -328,15 +329,16 @@ begin
   signalSettings.locked := false;
   signalSettings.events := TObjectList<TBlkSignalTrainEvent>.Create();
 
-  TBlkSignal(Self.blk).SetSettings(signalSettings);
+  TBlkSignal(Self.block).SetSettings(signalSettings);
 
   Self.Close();
 end;
 
 procedure TF_BlkGroupSignal.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.new := false;
-  Self.blkIndex := -1;
+  Self.isNewBlock := false;
+  Self.openIndex := -1;
+  Self.block := nil;
   BlocksTablePainter.UpdateTable();
 end;
 
@@ -346,22 +348,20 @@ begin
 end;
 
 procedure TF_BlkGroupSignal.FillCBNewSignal();
-var signalIgnore: TArI;
-  areas: TArStr;
-  i: Integer;
+var ignore: TList<Integer>;
 begin
-  SetLength(signalIgnore, Self.LV_Signals.Items.count);
-  for i := 0 to Self.LV_Signals.Items.count - 1 do
-    signalIgnore[i] := StrToInt(Self.LV_Signals.Items.Item[i].Caption);
+  ignore := TList<Integer>.Create();
+  try
+    for var LI: TListItem in Self.LV_Signals.Items do
+      ignore.Add(StrToInt(LI.Caption));
 
-  if (Self.blk <> nil) then
-  begin
-    SetLength(areas, Self.blk.areas.count);
-    for i := 0 to Self.blk.areas.count - 1 do
-      areas[i] := Self.blk.areas[i].id;
+    if (Self.block <> nil) then
+      Blocks.FillCB(Self.CB_NewSignal, Self.CB_SignalId, ignore, Self.block.areas, btSignal)
+    else
+      Blocks.FillCB(Self.CB_NewSignal, Self.CB_SignalId, ignore, nil, btSignal);
+  finally
+    ignore.Free();
   end;
-
-  Blocks.FillCB(Self.CB_NewSignal, @Self.CB_NewSignalData, @signalIgnore, areas, btSignal, -1);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -21,17 +21,17 @@ object F_BlkCrossing: TF_BlkCrossing
   object L_Name: TLabel
     Left = 8
     Top = 8
-    Width = 81
+    Width = 34
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'N'#225'zev p'#345'ejezdu :'
+    Caption = 'N'#225'zev:'
   end
   object L_ID: TLabel
     Left = 9
-    Top = 36
+    Top = 40
     Width = 11
     Height = 13
     Margins.Left = 2
@@ -40,18 +40,7 @@ object F_BlkCrossing: TF_BlkCrossing
     Margins.Bottom = 2
     Caption = 'ID'
   end
-  object L_Station: TLabel
-    Left = 7
-    Top = 59
-    Width = 42
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice :'
-  end
-  object E_Prj_Nazev: TEdit
+  object E_Name: TEdit
     Left = 120
     Top = 8
     Width = 211
@@ -74,7 +63,7 @@ object F_BlkCrossing: TF_BlkCrossing
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 5
+    TabOrder = 4
     OnClick = B_save_PClick
   end
   object B_Storno: TButton
@@ -87,12 +76,12 @@ object F_BlkCrossing: TF_BlkCrossing
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
     Left = 120
-    Top = 33
+    Top = 37
     Width = 211
     Height = 22
     Margins.Left = 2
@@ -104,25 +93,13 @@ object F_BlkCrossing: TF_BlkCrossing
     TabOrder = 1
     Value = 1
   end
-  object LB_Stanice: TListBox
-    Left = 120
-    Top = 59
-    Width = 209
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 2
-  end
   object GB_RCS: TGroupBox
     Left = 8
-    Top = 110
+    Top = 64
     Width = 321
     Height = 285
     Caption = ' RCS '
-    TabOrder = 3
+    TabOrder = 2
     object L_P01: TLabel
       Left = 144
       Top = 15
@@ -145,7 +122,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Margins.Bottom = 2
       Caption = 'Port'
     end
-    object GB_Prj_vyst: TGroupBox
+    object GB_RCS_Out: TGroupBox
       Left = 14
       Top = 32
       Width = 291
@@ -189,7 +166,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Bottom = 2
         Caption = 'Blokov'#225'n'#237' pozitivy:'
       end
-      object SE_vyst_open_port: TSpinEdit
+      object SE_out_open_port: TSpinEdit
         Left = 208
         Top = 47
         Width = 65
@@ -203,7 +180,7 @@ object F_BlkCrossing: TF_BlkCrossing
         TabOrder = 4
         Value = 0
       end
-      object SE_vyst_close_port: TSpinEdit
+      object SE_out_close_port: TSpinEdit
         Left = 208
         Top = 21
         Width = 65
@@ -217,7 +194,7 @@ object F_BlkCrossing: TF_BlkCrossing
         TabOrder = 1
         Value = 0
       end
-      object SE_vyst_open_board: TSpinEdit
+      object SE_out_open_board: TSpinEdit
         Left = 128
         Top = 47
         Width = 65
@@ -232,7 +209,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
         OnExit = SE_RCS_boardExit
       end
-      object SE_vyst_close_board: TSpinEdit
+      object SE_out_close_board: TSpinEdit
         Left = 128
         Top = 21
         Width = 65
@@ -263,7 +240,7 @@ object F_BlkCrossing: TF_BlkCrossing
         TabOrder = 5
         OnClick = CHB_RCS_BPClick
       end
-      object SE_vyst_bp_board: TSpinEdit
+      object SE_out_bp_board: TSpinEdit
         Left = 128
         Top = 73
         Width = 65
@@ -278,7 +255,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
         OnExit = SE_RCS_boardExit
       end
-      object SE_vyst_bp_port: TSpinEdit
+      object SE_out_bp_port: TSpinEdit
         Left = 208
         Top = 73
         Width = 65
@@ -293,7 +270,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
       end
     end
-    object GB_Prj_vst: TGroupBox
+    object GB_RCS_In: TGroupBox
       Left = 14
       Top = 143
       Width = 291
@@ -348,7 +325,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Bottom = 2
         Caption = 'Anulace:'
       end
-      object SE_vst_close_port: TSpinEdit
+      object SE_in_close_port: TSpinEdit
         Left = 208
         Top = 24
         Width = 65
@@ -362,7 +339,7 @@ object F_BlkCrossing: TF_BlkCrossing
         TabOrder = 1
         Value = 0
       end
-      object SE_vst_open_port: TSpinEdit
+      object SE_in_open_port: TSpinEdit
         Left = 208
         Top = 50
         Width = 65
@@ -376,7 +353,7 @@ object F_BlkCrossing: TF_BlkCrossing
         TabOrder = 3
         Value = 0
       end
-      object SE_vst_vystraha_port: TSpinEdit
+      object SE_in_caution_port: TSpinEdit
         Left = 208
         Top = 76
         Width = 65
@@ -390,7 +367,7 @@ object F_BlkCrossing: TF_BlkCrossing
         TabOrder = 5
         Value = 0
       end
-      object SE_vst_anulace_port: TSpinEdit
+      object SE_in_annulation_port: TSpinEdit
         Left = 208
         Top = 102
         Width = 65
@@ -404,7 +381,7 @@ object F_BlkCrossing: TF_BlkCrossing
         TabOrder = 8
         Value = 0
       end
-      object SE_vst_close_board: TSpinEdit
+      object SE_in_close_board: TSpinEdit
         Left = 128
         Top = 24
         Width = 65
@@ -419,7 +396,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
         OnExit = SE_RCS_boardExit
       end
-      object SE_vst_open_board: TSpinEdit
+      object SE_in_open_board: TSpinEdit
         Left = 128
         Top = 50
         Width = 65
@@ -434,7 +411,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
         OnExit = SE_RCS_boardExit
       end
-      object SE_vst_vystraha_board: TSpinEdit
+      object SE_in_caution_board: TSpinEdit
         Left = 128
         Top = 76
         Width = 65
@@ -449,7 +426,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
         OnExit = SE_RCS_boardExit
       end
-      object SE_vst_anulace_board: TSpinEdit
+      object SE_in_annulation_board: TSpinEdit
         Left = 128
         Top = 102
         Width = 65
@@ -476,11 +453,11 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object GB_JOP_control: TGroupBox
     Left = 336
-    Top = 8
+    Top = 9
     Width = 307
     Height = 417
     Caption = ' P'#345'ejezd '#345#237'zen'#253' pouze z hJOP '
-    TabOrder = 4
+    TabOrder = 3
     object Label2: TLabel
       Left = 16
       Top = 42

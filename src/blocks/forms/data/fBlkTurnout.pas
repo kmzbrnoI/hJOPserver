@@ -25,14 +25,12 @@ type
     L_Vyh09: TLabel;
     B_Storno: TButton;
     B_Save: TButton;
-    L_Usek03: TLabel;
-    LB_Stanice: TListBox;
     SE_Out_Plus_module: TSpinEdit;
     SE_Out_Minus_module: TSpinEdit;
     SE_In_Plus_module: TSpinEdit;
     SE_In_Minus_module: TSpinEdit;
     Label1: TLabel;
-    GB_Zamek: TGroupBox;
+    GB_Lock: TGroupBox;
     CB_Lock: TComboBox;
     CHB_Lock: TCheckBox;
     Label2: TLabel;
@@ -85,20 +83,23 @@ type
     procedure SE_Cont_Minus_ModuleExit(Sender: TObject);
     procedure CHB_IndicationClick(Sender: TObject);
     procedure CHB_ControllersClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     openIndex: Integer;
-    Blk: TBlkTurnout;
-    newBlock: Boolean;
-    CB_CouplingData: TArI;
-    CB_LockData: TArI;
-    CB_NeprofilData: TArI;
+    blk: TBlkTurnout;
+    isNewBlock: Boolean;
+    CB_CouplingIds: TList<Integer>;
+    CB_LockIds: TList<Integer>;
+    CB_NeprofilIds: TList<Integer>;
 
-    procedure NewBlkOpenForm();
-    procedure NormalOpenForm();
     procedure CommonOpenForm();
+    procedure EditOpenForm();
+    procedure NewOpenForm();
   public
-    procedure OpenForm(BlokIndex: Integer);
-    procedure NewBlkCreate;
+
+    procedure EditBlock(blockIndex: Integer);
+    procedure NewBlock();
   end;
 
 var
@@ -106,20 +107,34 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, Block, DataBloky, Area;
+uses GetSystems, FileSystem, TechnologieRCS, Block, DataBloky, Area, ifThenElse;
 
 {$R *.dfm}
 
-procedure TF_BlkTurnout.OpenForm(BlokIndex: Integer);
+procedure TF_BlkTurnout.FormCreate(Sender: TObject);
 begin
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  Self.openIndex := BlokIndex;
+  Self.CB_CouplingIds := TList<Integer>.Create();
+  Self.CB_LockIds := TList<Integer>.Create();
+  Self.CB_NeprofilIds := TList<Integer>.Create();
+end;
+
+procedure TF_BlkTurnout.FormDestroy(Sender: TObject);
+begin
+  Self.CB_CouplingIds.Free();
+  Self.CB_LockIds.Free();
+  Self.CB_NeprofilIds.Free();
+end;
+
+procedure TF_BlkTurnout.EditBlock(blockIndex: Integer);
+begin
+  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.Blk));
+  Self.openIndex := blockIndex;
 
   Self.CommonOpenForm();
-  if (Self.newBlock) then
-    Self.NewBlkOpenForm()
+  if (Self.isNewBlock) then
+    Self.NewOpenForm()
   else
-    Self.NormalOpenForm();
+    Self.EditOpenForm();
 
   Self.ShowModal();
 end;
@@ -153,7 +168,7 @@ begin
   Self.SE_In_Minus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_In_Minus_module.Value, Self.SE_In_Minus_port.Value);
 end;
 
-procedure TF_BlkTurnout.NewBlkOpenForm();
+procedure TF_BlkTurnout.NewOpenForm();
 begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
@@ -195,28 +210,24 @@ begin
   Self.ActiveControl := Self.E_Name;
 end;
 
-procedure TF_BlkTurnout.NormalOpenForm();
+procedure TF_BlkTurnout.EditOpenForm();
 var glob: TBlkSettings;
-  turnoutSettings, settings: TBlkTurnoutSettings;
-  turnout: TBlkTurnout;
 begin
   glob := Self.Blk.GetGlobalSettings();
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
 
-  for var area in Self.Blk.areas do
-    Self.LB_Stanice.Items.Add(area.name);
-
-  settings := Blk.GetSettings();
+  var settings := Blk.GetSettings();
 
   Self.CHB_Coupling.Checked := (settings.coupling > -1);
   Self.CHB_CouplingClick(Self.CHB_Coupling);
 
+  var turnout: TBlkTurnout;
   Blocks.GetBlkByID(settings.coupling, TBlk(turnout));
   if ((turnout <> nil) and (turnout.typ = btTurnout)) then
   begin
-    turnoutSettings := turnout.GetSettings();
+    var turnoutSettings := turnout.GetSettings();
 
     Self.CHB_Coupling_Common_In.Checked := (turnoutSettings.RCSAddrs.count >= 2) and (settings.RCSAddrs.count >= 2) and
       (turnoutSettings.RCSAddrs[0] = settings.RCSAddrs[0]) and (turnoutSettings.RCSAddrs[1] = settings.RCSAddrs[1]);
@@ -349,60 +360,57 @@ end;
 
 procedure TF_BlkTurnout.CommonOpenForm();
 begin
-  Self.LB_Stanice.Clear();
-
   Self.SE_Out_Plus_module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_Out_Minus_module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_In_Plus_module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_In_Minus_module.MaxValue := RCSi.maxModuleAddrSafe;
 
-  if (Self.Blk <> nil) then
+  if (Self.blk <> nil) then
   begin
-    var areas: TArStr;
-    var Coupling_vypust: TArI;
-    SetLength(areas, Self.Blk.areas.count);
-    for var i := 0 to Self.Blk.areas.count - 1 do
-      areas[i] := Self.Blk.areas[i].id;
-    SetLength(Coupling_vypust, 1);
-    Coupling_vypust[0] := Self.Blk.id;
+    var couplingIgnore: TList<Integer> := TList<Integer>.Create();
+    try
+      couplingIgnore.Add(Self.blk.id);
+    finally
+      couplingIgnore.Free();
+    end;
 
-    // Coupling
-    Blocks.FillCB(Self.CB_Coupling, @Self.CB_CouplingData, @Coupling_vypust, areas, btTurnout,
+    // coupling
+    Blocks.FillCB(Self.CB_Coupling, Self.CB_CouplingIds, couplingIgnore, Self.blk.areas, btTurnout, btAny,
       Self.Blk.GetSettings().coupling);
-    Self.CHB_Coupling.Enabled := (Length(Self.CB_CouplingData) > 0) or (Self.Blk.GetSettings.coupling > -1);
+    Self.CHB_Coupling.Enabled := (Self.CB_CouplingIds.Count > 0) or (Self.Blk.GetSettings.coupling > -1);
 
-    // Lock
-    Blocks.FillCB(Self.CB_Lock, @Self.CB_LockData, nil, areas, btLock, Self.Blk.GetSettings().lock);
-    Self.CHB_Lock.Enabled := (Length(Self.CB_LockData) > 0) or (Self.Blk.GetSettings.lock > -1);
+    // lock
+    Blocks.FillCB(Self.CB_Lock, Self.CB_LockIds, nil, Self.blk.areas, btLock, btAny, Self.Blk.GetSettings().lock);
+    Self.CHB_Lock.Enabled := (Self.CB_LockIds.Count > 0) or (Self.Blk.GetSettings.lock > -1);
 
-    // neprofilove styky +
-    Blocks.FillCB(Self.CB_npPlus, @Self.CB_NeprofilData, nil, areas, btTrack, Self.Blk.GetSettings().npPlus, btRT);
-    Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npPlus > -1);
+    // non-profile +
+    Blocks.FillCB(Self.CB_npPlus, Self.CB_NeprofilIds, nil, Self.blk.areas, btTrack, btRT, Self.Blk.GetSettings().npPlus);
+    Self.CHB_npPlus.Enabled := (Self.CB_NeprofilIds.Count > 0) or (Self.Blk.GetSettings.npPlus > -1);
 
-    // neprofilove styky -
-    Blocks.FillCB(Self.CB_npMinus, @Self.CB_NeprofilData, nil, areas, btTrack, Self.Blk.GetSettings().npMinus, btRT);
-    Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0) or (Self.Blk.GetSettings.npMinus > -1);
+    // non-profile -
+    Blocks.FillCB(Self.CB_npMinus, Self.CB_NeprofilIds, nil, Self.blk.areas, btTrack, btRT, Self.Blk.GetSettings().npMinus);
+    Self.CHB_npMinus.Enabled := (Self.CB_NeprofilIds.Count > 0) or (Self.Blk.GetSettings.npMinus > -1);
 
   end else begin
-    Blocks.FillCB(Self.CB_Coupling, @Self.CB_CouplingData, nil, nil, btTurnout, -1);
-    Self.CHB_Coupling.Enabled := (Length(Self.CB_CouplingData) > 0);
+    Blocks.FillCB(Self.CB_Coupling, Self.CB_CouplingIds, nil, nil, btTurnout);
+    Self.CHB_Coupling.Enabled := (Self.CB_CouplingIds.Count > 0);
 
-    Blocks.FillCB(Self.CB_Lock, @Self.CB_LockData, nil, nil, btLock, -1);
-    Self.CHB_Lock.Enabled := (Length(Self.CB_LockData) > 0);
+    Blocks.FillCB(Self.CB_Lock, Self.CB_LockIds, nil, nil, btLock);
+    Self.CHB_Lock.Enabled := (Self.CB_LockIds.Count > 0);
 
-    Blocks.FillCB(Self.CB_npPlus, @Self.CB_NeprofilData, nil, nil, btTrack, -1, btRT);
-    Self.CHB_npPlus.Enabled := (Length(Self.CB_NeprofilData) > 0);
+    Blocks.FillCB(Self.CB_npPlus, Self.CB_NeprofilIds, nil, nil, btTrack, btRT);
+    Self.CHB_npPlus.Enabled := (Self.CB_NeprofilIds.Count > 0);
 
-    Blocks.FillCB(Self.CB_npMinus, @Self.CB_NeprofilData, nil, nil, btTrack, -1, btRT);
-    Self.CHB_npMinus.Enabled := (Length(Self.CB_NeprofilData) > 0);
+    Blocks.FillCB(Self.CB_npMinus, Self.CB_NeprofilIds, nil, nil, btTrack, btRT);
+    Self.CHB_npMinus.Enabled := (Self.CB_NeprofilIds.Count > 0);
   end;
 
 end;
 
-procedure TF_BlkTurnout.NewBlkCreate;
+procedure TF_BlkTurnout.NewBlock();
 begin
-  Self.newBlock := true;
-  OpenForm(Blocks.count);
+  Self.isNewBlock := true;
+  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkTurnout.B_StornoClick(Sender: TObject);
@@ -500,15 +508,13 @@ begin
 end;
 
 procedure TF_BlkTurnout.B_SaveClick(Sender: TObject);
-var glob: TBlkSettings;
-  settings: TBlkTurnoutSettings;
 begin
-  if (E_Name.Text = '') then
+  if (Self.E_Name.Text = '') then
   begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(SE_ID.Value, Self.openIndex)) then
+  if (Blocks.IsBlock(Self.SE_ID.Value, Self.openIndex)) then
   begin
     Application.MessageBox('ID již bylo definováno na jiním bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -545,11 +551,12 @@ begin
     Exit();
   end;
 
+  var glob: TBlkSettings;
   glob.name := Self.E_Name.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btTurnout;
 
-  if (Self.newBlock) then
+  if (Self.isNewBlock) then
   begin
     try
       Blk := Blocks.Add(glob) as TBlkTurnout;
@@ -566,6 +573,7 @@ begin
     Self.Blk.SetGlobalSettings(glob);
   end;
 
+  var settings: TBlkTurnoutSettings;
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   settings.RCSAddrs.Add(TRCS.RCSAddr(SE_In_Plus_module.Value, SE_In_Plus_port.Value));
   settings.RCSAddrs.Add(TRCS.RCSAddr(SE_In_Minus_module.Value, SE_In_Minus_port.Value));
@@ -588,7 +596,7 @@ begin
 
   if (Self.CHB_Coupling.Checked) then
   begin
-    settings.coupling := Blocks.GetBlkID(Self.CB_CouplingData[Self.CB_Coupling.ItemIndex]);
+    settings.coupling := Self.CB_CouplingIds[Self.CB_Coupling.ItemIndex];
 
     var turnout: TBlkTurnout;
     Blocks.GetBlkByID(settings.coupling, TBlk(turnout));
@@ -627,22 +635,15 @@ begin
 
   if (Self.CHB_Lock.Checked) then
   begin
-    settings.lock := Blocks.GetBlkID(Self.CB_LockData[Self.CB_Lock.ItemIndex]);
+    settings.lock := Self.CB_LockIds[Self.CB_Lock.ItemIndex];
     settings.lockPosition := TTurnoutPosition(Self.CB_Lock_Pos.ItemIndex);
   end else begin
     settings.lock := -1;
     settings.lockPosition := TTurnoutPosition.none;
   end;
 
-  if (Self.CHB_npPlus.Checked) then
-    settings.npPlus := Blocks.GetBlkID(Self.CB_NeprofilData[Self.CB_npPlus.ItemIndex])
-  else
-    settings.npPlus := -1;
-
-  if (Self.CHB_npMinus.Checked) then
-    settings.npMinus := Blocks.GetBlkID(Self.CB_NeprofilData[Self.CB_npMinus.ItemIndex])
-  else
-    settings.npMinus := -1;
+  settings.npPlus := ite(Self.CHB_npPlus.Checked, Self.CB_NeprofilIds[Self.CB_npPlus.ItemIndex], -1);
+  settings.npMinus := ite(Self.CHB_npMinus.Checked, Self.CB_NeprofilIds[Self.CB_npMinus.ItemIndex], -1);
 
   settings.posDetection := Self.CHB_Feedback.Checked;
 
@@ -701,7 +702,7 @@ end;
 
 procedure TF_BlkTurnout.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.newBlock := false;
+  Self.isNewBlock := false;
   Self.openIndex := -1;
   BlocksTablePainter.UpdateTable();
 end;

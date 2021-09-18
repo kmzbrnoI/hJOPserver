@@ -4,7 +4,7 @@ object F_BlkSignal: TF_BlkSignal
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (n'#225'v'#283'stidlo)'
-  ClientHeight = 393
+  ClientHeight = 346
   ClientWidth = 681
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -22,39 +22,28 @@ object F_BlkSignal: TF_BlkSignal
   object L_Name: TLabel
     Left = 8
     Top = 8
-    Width = 37
+    Width = 34
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'N'#225'zev :'
+    Caption = 'N'#225'zev:'
   end
   object L_ID: TLabel
     Left = 8
     Top = 40
-    Width = 11
+    Width = 14
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'ID'
-  end
-  object L_Station: TLabel
-    Left = 7
-    Top = 72
-    Width = 42
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice :'
+    Caption = 'ID:'
   end
   object Label1: TLabel
     Left = 7
-    Top = 131
+    Top = 75
     Width = 112
     Height = 13
     Margins.Left = 2
@@ -63,9 +52,9 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Bottom = 2
     Caption = #218'sek p'#345'ed n'#225'v'#283'stidlem:'
   end
-  object L_UsekID: TLabel
+  object L_Track_Id: TLabel
     Left = 291
-    Top = 131
+    Top = 75
     Width = 20
     Height = 13
     Margins.Left = 2
@@ -77,7 +66,7 @@ object F_BlkSignal: TF_BlkSignal
   end
   object Label2: TLabel
     Left = 7
-    Top = 160
+    Top = 104
     Width = 170
     Height = 13
     Margins.Left = 2
@@ -86,7 +75,7 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Bottom = 2
     Caption = 'Zpo'#382'd'#283'n'#237' p'#225'du n'#225'v'#283'stidla [sekund]:'
   end
-  object E_Nazev: TEdit
+  object E_Name: TEdit
     Left = 119
     Top = 7
     Width = 192
@@ -114,7 +103,7 @@ object F_BlkSignal: TF_BlkSignal
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 187
+    Top = 131
     Width = 304
     Height = 147
     Margins.Left = 2
@@ -122,7 +111,7 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' n'#225'v'#283'stidla '
-    TabOrder = 4
+    TabOrder = 3
     object Label3: TLabel
       Left = 131
       Top = 38
@@ -257,7 +246,7 @@ object F_BlkSignal: TF_BlkSignal
   end
   object B_Storno: TButton
     Left = 85
-    Top = 361
+    Top = 312
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -265,12 +254,12 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = B_StornoClick
   end
   object B_Save: TButton
     Left = 7
-    Top = 361
+    Top = 312
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -279,38 +268,26 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 6
+    TabOrder = 5
     OnClick = B_SaveClick
-  end
-  object LB_Stanice: TListBox
-    Left = 119
-    Top = 72
-    Width = 192
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 2
   end
   object SE_Delay: TSpinEdit
     Left = 224
-    Top = 160
+    Top = 104
     Width = 87
     Height = 22
     MaxValue = 60
     MinValue = 0
-    TabOrder = 3
+    TabOrder = 2
     Value = 0
   end
-  object CHB_Zamknuto: TCheckBox
+  object CHB_Locked: TCheckBox
     Left = 8
-    Top = 339
+    Top = 283
     Width = 201
     Height = 17
     Caption = 'N'#225'v'#283'stidlo trvale zamknuto do ST'#366'J'
-    TabOrder = 5
+    TabOrder = 4
   end
   object PC_Events: TPageControl
     Left = 317
@@ -319,7 +296,7 @@ object F_BlkSignal: TF_BlkSignal
     Height = 329
     MultiLine = True
     OwnerDraw = True
-    TabOrder = 8
+    TabOrder = 7
     OnDrawTab = PageControlCloseButtonDrawTab
     OnMouseDown = PageControlCloseButtonMouseDown
     OnMouseLeave = PageControlCloseButtonMouseLeave
@@ -358,7 +335,7 @@ object F_BlkSignal: TF_BlkSignal
       FFFFFFFFFFFFFFFFFFFFFFFF000000000000000000AAAAAAFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF09090900
       0000000000B3B3B3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-    TabOrder = 9
+    TabOrder = 8
     OnClick = BB_Event_AddClick
   end
 end

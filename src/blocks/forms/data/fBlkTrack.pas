@@ -11,53 +11,51 @@ type
   TF_BlkTrack = class(TForm)
     B_OK: TButton;
     B_Storno: TButton;
-    L_Usek02: TLabel;
+    Label2: TLabel;
     SE_ID: TSpinEdit;
-    L_Usek03: TLabel;
-    E_Nazev: TEdit;
-    L_Usek01: TLabel;
-    GB_RCS: TGroupBox;
-    L_Usek04: TLabel;
-    SE_Port1: TSpinEdit;
-    L_Usek15: TLabel;
-    E_Delka: TEdit;
-    CHB_SmycBlok: TCheckBox;
-    L_Usek33: TLabel;
-    LB_Stanice: TListBox;
+    E_Name: TEdit;
     Label1: TLabel;
-    CB_Zesil: TComboBox;
+    GB_RCS: TGroupBox;
+    L_det1: TLabel;
+    SE_Port1: TSpinEdit;
+    Label3: TLabel;
+    E_Length: TEdit;
+    CHB_Loop: TCheckBox;
+    Label5: TLabel;
+    Label4: TLabel;
+    CB_Booster: TComboBox;
     SE_Board1: TSpinEdit;
     CHB_D1: TCheckBox;
-    Label2: TLabel;
+    L_det2: TLabel;
     CHB_D2: TCheckBox;
     SE_Board2: TSpinEdit;
     SE_Port2: TSpinEdit;
-    Label3: TLabel;
+    L_det3: TLabel;
     CHB_D3: TCheckBox;
     SE_Board3: TSpinEdit;
     SE_Port3: TSpinEdit;
-    Label4: TLabel;
+    L_det4: TLabel;
     CHB_D4: TCheckBox;
     SE_Board4: TSpinEdit;
     SE_Port4: TSpinEdit;
-    SE_SprCnt: TSpinEdit;
-    Label5: TLabel;
+    SE_Max_Trains: TSpinEdit;
+    Label6: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_D1Click(Sender: TObject);
     procedure SE_RCS_BoardExit(Sender: TObject);
   private
-    NewBlk: Boolean;
-    Blk: TBlkTrack;
-    OpenIndex: Integer;
+    isNewBlock: Boolean;
+    block: TBlkTrack;
+    openIndex: Integer;
 
-    procedure NewBlkOpenForm();
-    procedure NormalOpenForm();
-    procedure HlavniOpenForm();
+    procedure CommonOpenForm();
+    procedure EditOpenForm();
+    procedure NewOpenForm();
   public
-    procedure OpenForm(BlokIndex: Integer);
-    procedure NewBlkCreate;
+    procedure EditBlock(blockIndex: Integer);
+    procedure NewBlock();
   end;
 
 var
@@ -70,18 +68,18 @@ uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky,
 
 {$R *.dfm}
 
-procedure TF_BlkTrack.OpenForm(BlokIndex: Integer);
+procedure TF_BlkTrack.EditBlock(blockIndex: Integer);
 begin
-  Self.OpenIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  Self.HlavniOpenForm();
+  Self.openIndex := blockIndex;
+  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
+  Self.CommonOpenForm();
 
-  if (NewBlk) then
-    Self.NewBlkOpenForm()
+  if (isNewBlock) then
+    Self.NewOpenForm()
   else
-    Self.NormalOpenForm();
+    Self.EditOpenForm();
 
-  F_BlkTrack.ShowModal();
+  Self.ShowModal();
 end;
 
 procedure TF_BlkTrack.SE_RCS_BoardExit(Sender: TObject);
@@ -92,21 +90,21 @@ begin
   Self.SE_Port4.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port4.Value);
 end;
 
-procedure TF_BlkTrack.NewBlkCreate;
+procedure TF_BlkTrack.NewBlock;
 begin
-  Self.NewBlk := true;
-  Self.OpenForm(Blocks.count);
+  Self.isNewBlock := true;
+  Self.EditBlock(Blocks.count);
 end;
 
-procedure TF_BlkTrack.NewBlkOpenForm();
+procedure TF_BlkTrack.NewOpenForm();
 begin
-  E_Nazev.Text := '';
-  SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
-  E_Delka.Text := '0';
-  CHB_SmycBlok.Checked := false;
-  Self.CB_Zesil.ItemIndex := -1;
-  Self.SE_SprCnt.Enabled := true;
-  Self.SE_SprCnt.Value := 1;
+  Self.E_Name.Text := '';
+  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
+  Self.E_Length.Text := '0';
+  Self.CHB_Loop.Checked := false;
+  Self.CB_Booster.ItemIndex := -1;
+  Self.SE_Max_Trains.Enabled := true;
+  Self.SE_Max_Trains.Value := 1;
 
   Self.SE_Port1.Value := 0;
   Self.SE_Board1.Value := 1;
@@ -122,33 +120,21 @@ begin
   Self.CHB_D1Click(Self.CHB_D1);
 
   Self.Caption := 'Nový blok Úsek';
-  Self.ActiveControl := Self.E_Nazev;
+  Self.ActiveControl := Self.E_Name;
 end;
 
-procedure TF_BlkTrack.NormalOpenForm();
+procedure TF_BlkTrack.EditOpenForm();
 var glob: TBlkSettings;
   settings: TBlkTrackSettings;
-  i: Integer;
-  areas: TArstr;
-  Area: TArea;
 begin
-  if (Assigned(Self.Blk)) then
-    glob := Self.Blk.GetGlobalSettings();
-  Self.E_Nazev.Text := glob.name;
+  glob := Self.block.GetGlobalSettings();
+  settings := Self.block.GetSettings();
+
+  Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
 
-  for Area in Self.Blk.areas do
-    Self.LB_Stanice.Items.Add(Area.name);
-
-  SetLength(areas, Self.Blk.areas.count);
-  for i := 0 to Self.Blk.areas.count - 1 do
-    areas[i] := Self.Blk.areas[i].id;
-
-  if (Assigned(Self.Blk)) then
-    settings := Self.Blk.GetSettings();
-
-  Self.SE_SprCnt.Value := settings.maxTrains;
-  Self.SE_SprCnt.Enabled := Self.Blk.spnl.stationTrack or Self.Blk.spnl.trainPos;
+  Self.SE_Max_Trains.Value := settings.maxTrains;
+  Self.SE_Max_Trains.Enabled := Self.block.spnl.stationTrack or Self.block.spnl.trainPos;
 
   Self.CHB_D1.Checked := false;
   Self.CHB_D2.Checked := false;
@@ -235,39 +221,35 @@ begin
     Self.SE_Board4.Value := 0;
   end;
 
-  Self.CB_Zesil.ItemIndex := -1;
-  for i := 0 to Boosters.sorted.count - 1 do
+  Self.CB_Booster.ItemIndex := -1;
+  for var i := 0 to Boosters.sorted.count - 1 do
   begin
     if (Boosters.sorted[i].id = settings.boosterId) then
     begin
-      Self.CB_Zesil.ItemIndex := i;
+      Self.CB_Booster.ItemIndex := i;
       break;
     end;
   end;
 
   Self.SE_RCS_BoardExit(Self);
 
-  Self.E_Delka.Text := FloatToStr(settings.lenght);
-  Self.CHB_SmycBlok.Checked := settings.loop;
+  Self.E_Length.Text := FloatToStr(settings.lenght);
+  Self.CHB_Loop.Checked := settings.loop;
 
-  F_BlkTrack.Caption := 'Upravit blok ' + glob.name + ' (úsek)';
-  F_BlkTrack.ActiveControl := B_OK;
+  Self.Caption := 'Upravit blok ' + glob.name + ' (úsek)';
+  Self.ActiveControl := Self.B_OK;
 end;
 
-procedure TF_BlkTrack.HlavniOpenForm();
-var Booster: TBooster;
+procedure TF_BlkTrack.CommonOpenForm();
 begin
-  Self.LB_Stanice.Clear();
-
   Self.SE_Board1.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_Board2.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_Board3.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_Board4.MaxValue := RCSi.maxModuleAddrSafe;
 
-  // nacteni zesilovacu
-  Self.CB_Zesil.Clear();
-  for Booster in Boosters.sorted do
-    Self.CB_Zesil.Items.Add(Booster.name + ' (' + Booster.id + ')');
+  Self.CB_Booster.Clear();
+  for var booster in Boosters.sorted do
+    Self.CB_Booster.Items.Add(booster.name + ' (' + booster.id + ')');
 end;
 
 procedure TF_BlkTrack.B_StornoClick(Sender: TObject);
@@ -276,37 +258,34 @@ begin
 end;
 
 procedure TF_BlkTrack.B_OKClick(Sender: TObject);
-var glob: TBlkSettings;
-  settings: TBlkTrackSettings;
-  addr: TRCSAddr;
-  another: TBlk;
 begin
-  if (E_Nazev.Text = '') then
+  if (Self.E_Name.Text = '') then
   begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlock(SE_ID.Value, openIndex)) then
   begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Self.CB_Zesil.ItemIndex = -1) then
+  if (Self.CB_Booster.ItemIndex = -1) then
   begin
     Application.MessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
-  glob.name := Self.E_Nazev.Text;
+  var glob: TBlkSettings;
+  glob.name := Self.E_Name.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btTrack;
 
-  if (NewBlk) then
+  if (isNewBlock) then
   begin
     glob.note := '';
 
     try
-      Blk := Blocks.Add(glob) as TBlkTrack;
+      Self.block := Blocks.Add(glob) as TBlkTrack;
     except
       on E: Exception do
       begin
@@ -316,11 +295,12 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.Blk.note;
-    Self.Blk.SetGlobalSettings(glob);
+    glob.note := Self.block.note;
+    Self.block.SetGlobalSettings(glob);
   end;
 
-  // ukladani dat
+  // save block-specific data
+  var settings: TBlkTrackSettings;
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   if (Self.CHB_D1.Checked) then
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board1.Value, Self.SE_Port1.Value));
@@ -331,32 +311,32 @@ begin
   if (Self.CHB_D4.Checked) then
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board4.Value, Self.SE_Port4.Value));
 
-  settings.lenght := StrToFloatDef(Self.E_Delka.Text, 0);
-  settings.loop := Self.CHB_SmycBlok.Checked;
-  settings.boosterId := Boosters.sorted[Self.CB_Zesil.ItemIndex].id;
+  settings.lenght := StrToFloatDef(Self.E_Length.Text, 0);
+  settings.loop := Self.CHB_Loop.Checked;
+  settings.boosterId := Boosters.sorted[Self.CB_Booster.ItemIndex].id;
 
-  settings.houkEvL := Self.Blk.GetSettings().houkEvL;
-  settings.houkEvS := Self.Blk.GetSettings().houkEvS;
+  settings.houkEvL := Self.block.GetSettings().houkEvL;
+  settings.houkEvS := Self.block.GetSettings().houkEvS;
 
-  settings.maxTrains := Self.SE_SprCnt.Value;
+  settings.maxTrains := Self.SE_Max_Trains.Value;
 
-  Self.Blk.SetSettings(settings);
+  Self.block.SetSettings(settings);
 
-  for addr in settings.RCSAddrs do
+  for var addr in settings.RCSAddrs do
   begin
-    another := Blocks.AnotherBlockUsesRCS(addr, Self.Blk, TRCSIOType.input);
+    var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.input);
     if (another <> nil) then
       Application.MessageBox(PChar('Varování: blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString()), 'Varování', MB_OK OR MB_ICONWARNING);
   end;
 
-  F_BlkTrack.Close();
-  Self.Blk.Change();
+  Self.Close();
+  Self.block.Change();
 end;
 
 procedure TF_BlkTrack.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.OpenIndex := -1;
-  Self.NewBlk := false;
+  Self.openIndex := -1;
+  Self.isNewBlock := false;
   BlocksTablePainter.UpdateTable();
 end;
 

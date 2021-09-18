@@ -10,36 +10,35 @@ type
   TF_BlkDisconnector = class(TForm)
     E_name: TEdit;
     SE_ID: TSpinEdit;
-    L_IR02: TLabel;
-    L_IR01: TLabel;
+    Label2: TLabel;
+    Label1: TLabel;
     GB_RCS: TGroupBox;
-    L_IR04: TLabel;
-    L_IR05: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
     SE_port: TSpinEdit;
     B_Storno: TButton;
     B_Save: TButton;
     SE_module: TSpinEdit;
-    L_Usek03: TLabel;
-    LB_areas: TListBox;
     CB_outputType: TComboBox;
-    Label1: TLabel;
+    Label5: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SE_moduleExit(Sender: TObject);
   private
-    NewBlk: Boolean;
-    Blk: TBlkDisconnector;
+    isNewBlock: Boolean;
+    block: TBlkDisconnector;
+    openIndex: Integer;
+
+    procedure CommonOpenForm();
+    procedure EditOpenForm();
+    procedure NewOpenForm();
 
   public
 
-    OpenIndex: Integer;
+    procedure EditBlock(BlokIndex: Integer);
+    procedure NewBlock();
 
-    procedure OpenForm(BlokIndex: Integer);
-    procedure NewBlkOpenForm;
-    procedure NormalOpenForm;
-    procedure HlavniOpenForm;
-    procedure NewBlkCreate;
   end;
 
 var
@@ -51,16 +50,16 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area, RC
 
 {$R *.dfm}
 
-procedure TF_BlkDisconnector.OpenForm(BlokIndex: Integer);
+procedure TF_BlkDisconnector.EditBlock(BlokIndex: Integer);
 begin
-  OpenIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  HlavniOpenForm;
+  Self.openIndex := BlokIndex;
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.block));
+  Self.CommonOpenForm();
 
-  if (NewBlk) then
-    Self.NewBlkOpenForm()
+  if (isNewBlock) then
+    Self.NewOpenForm()
   else
-    Self.NormalOpenForm();
+    Self.EditOpenForm();
 
   Self.ShowModal();
 end;
@@ -70,7 +69,7 @@ begin
   Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
-procedure TF_BlkDisconnector.NewBlkOpenForm();
+procedure TF_BlkDisconnector.NewOpenForm();
 begin
   Self.E_name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
@@ -83,16 +82,12 @@ begin
   Self.ActiveControl := Self.E_name;
 end;
 
-procedure TF_BlkDisconnector.NormalOpenForm();
+procedure TF_BlkDisconnector.EditOpenForm();
 var glob: TBlkSettings;
   settings: TBlkDiscSettings;
-  area: TArea;
 begin
-  glob := Self.Blk.GetGlobalSettings();
-  settings := Self.Blk.GetSettings();
-
-  for area in Self.Blk.areas do
-    Self.LB_areas.Items.Add(area.name);
+  glob := Self.block.GetGlobalSettings();
+  settings := Self.block.GetSettings();
 
   if (settings.RCSAddrs.count > 0) then
   begin
@@ -130,16 +125,15 @@ begin
   Self.ActiveControl := B_Save;
 end;
 
-procedure TF_BlkDisconnector.HlavniOpenForm;
+procedure TF_BlkDisconnector.CommonOpenForm;
 begin
-  Self.LB_areas.Clear();
   Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
 end;
 
-procedure TF_BlkDisconnector.NewBlkCreate;
+procedure TF_BlkDisconnector.NewBlock;
 begin
-  Self.NewBlk := true;
-  OpenForm(Blocks.count);
+  Self.isNewBlock := true;
+  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkDisconnector.B_StornoClick(Sender: TObject);
@@ -150,14 +144,13 @@ end;
 procedure TF_BlkDisconnector.B_SaveClick(Sender: TObject);
 var glob: TBlkSettings;
   settings: TBlkDiscSettings;
-  another: TBlk;
 begin
   if (Self.E_name.Text = '') then
   begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlock(SE_ID.Value, openIndex)) then
   begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -168,7 +161,7 @@ begin
     Exit();
   end;
 
-  another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value), Self.Blk,
+  var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value), Self.block,
     TRCSIOType.output);
   if (another <> nil) then
   begin
@@ -181,11 +174,11 @@ begin
   glob.id := Self.SE_ID.Value;
   glob.typ := btDisconnector;
 
-  if (NewBlk) then
+  if (isNewBlock) then
   begin
     glob.note := '';
     try
-      Blk := Blocks.Add(glob) as TBlkDisconnector;
+      block := Blocks.Add(glob) as TBlkDisconnector;
     except
       on E: Exception do
       begin
@@ -195,8 +188,8 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.Blk.note;
-    Self.Blk.SetGlobalSettings(glob);
+    glob.note := Self.block.note;
+    Self.block.SetGlobalSettings(glob);
   end;
 
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
@@ -216,17 +209,17 @@ begin
     settings.outputType := osEnabled;
   end;
 
-  Self.Blk.SetSettings(settings);
+  Self.block.SetSettings(settings);
 
   Self.Close();
-  Self.Blk.Change();
+  Self.block.Change();
 end;
 
 procedure TF_BlkDisconnector.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  NewBlk := false;
-  OpenIndex := -1;
-  BlocksTablePainter.UpdateTable;
+  Self.isNewBlock := false;
+  Self.openIndex := -1;
+  BlocksTablePainter.UpdateTable();
 end;
 
-end.// unit
+end.

@@ -21,26 +21,26 @@ object F_BlkIR: TF_BlkIR
   object L_IR02: TLabel
     Left = 8
     Top = 40
-    Width = 11
+    Width = 14
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'ID'
+    Caption = 'ID:'
   end
   object L_IR01: TLabel
     Left = 8
     Top = 8
-    Width = 37
+    Width = 34
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'N'#225'zev :'
+    Caption = 'N'#225'zev:'
   end
-  object E_Nazev: TEdit
+  object E_Name: TEdit
     Left = 120
     Top = 8
     Width = 193

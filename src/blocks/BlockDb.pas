@@ -821,7 +821,7 @@ begin
       continue;
 
     var assign: Boolean;
-    if (Assigned(areas)) then
+    if ((Assigned(areas)) and (areas.Count > 0)) then
     begin
       assign := false;
 

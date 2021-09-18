@@ -11,7 +11,7 @@ uses
 type
   TF_BlkSignal = class(TForm)
     L_Name: TLabel;
-    E_Nazev: TEdit;
+    E_Name: TEdit;
     SE_ID: TSpinEdit;
     L_ID: TLabel;
     GB_RCS: TGroupBox;
@@ -20,16 +20,14 @@ type
     SE_RCSport1: TSpinEdit;
     B_Storno: TButton;
     B_Save: TButton;
-    LB_Stanice: TListBox;
-    L_Station: TLabel;
     Label5: TLabel;
     CB_Typ: TComboBox;
     Label1: TLabel;
-    L_UsekID: TLabel;
+    L_Track_Id: TLabel;
     SE_RCSmodule1: TSpinEdit;
     Label2: TLabel;
     SE_Delay: TSpinEdit;
-    CHB_Zamknuto: TCheckBox;
+    CHB_Locked: TCheckBox;
     PC_Events: TPageControl;
     BB_Event_Add: TBitBtn;
     CHB_RCS_Output: TCheckBox;
@@ -55,10 +53,9 @@ type
     procedure CHB_RCS_Second_OutputClick(Sender: TObject);
 
   private
-    OpenIndex: Integer;
-    Blk: TBlkSignal;
-    NewBlk: Boolean;
-    areas: TArstr; // oblasti rizeni, ve kterych se navestidlo nachazi
+    openIndex: Integer;
+    block: TBlkSignal;
+    isNewBlock: Boolean;
 
     eventForms: TObjectList<TF_BlkSignalEvent>;
     eventTabSheets: TObjectList<TTabSheet>;
@@ -66,14 +63,16 @@ type
     FCloseButtonMouseDownTab: TCloseTabSheet;
     FCloseButtonShowPushed: Boolean;
 
-    procedure NormalOpenForm();
-    procedure HlavniOpenForm();
-    procedure NewBlkOpenForm();
+    procedure CommonOpenForm();
+    procedure EditOpenForm();
+    procedure NewOpenForm();
 
     procedure OnTabClose(Sender: TObject);
+
   public
-    procedure OpenForm(BlokIndex: Integer);
-    procedure NewBlkCreate;
+    procedure EditBlock(BlokIndex: Integer);
+    procedure NewBlock();
+
   end;
 
 var
@@ -85,27 +84,27 @@ uses GetSystems, FileSystem, TechnologieRCS, Block, Area, DataBloky;
 
 {$R *.dfm}
 
-procedure TF_BlkSignal.OpenForm(BlokIndex: Integer);
+procedure TF_BlkSignal.EditBlock(BlokIndex: Integer);
 begin
-  Self.OpenIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  Self.HlavniOpenForm();
+  Self.openIndex := BlokIndex;
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.block));
+  Self.CommonOpenForm();
 
-  if (Self.NewBlk) then
-    Self.NewBlkOpenForm()
+  if (Self.isNewBlock) then
+    Self.NewOpenForm()
   else
-    Self.NormalOpenForm();
+    Self.EditOpenForm();
 
   Self.ShowModal();
 end;
 
-procedure TF_BlkSignal.NewBlkOpenForm();
+procedure TF_BlkSignal.NewOpenForm();
 begin
-  E_Nazev.Text := '';
-  SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
-  SE_Delay.Value := TBlkSignal._SIG_DEFAULT_DELAY;
-  CHB_Zamknuto.Checked := false;
-  Self.L_UsekID.Caption := 'bude zobrazen příště';
+  Self.E_Name.Text := '';
+  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
+  Self.SE_Delay.Value := TBlkSignal._SIG_DEFAULT_DELAY;
+  Self.CHB_Locked.Checked := false;
+  Self.L_Track_Id.Caption := 'bude zobrazen příště';
 
   Self.SE_RCSmodule1.Value := 1;
   Self.SE_RCSmodule1Exit(Self);
@@ -122,29 +121,18 @@ begin
   // ktere ji nepotrebuje
 
   Self.Caption := 'Nový blok Návěstidlo';
-  Self.ActiveControl := Self.E_Nazev;
+  Self.ActiveControl := Self.E_Name;
 end;
 
-procedure TF_BlkSignal.NormalOpenForm();
+procedure TF_BlkSignal.EditOpenForm();
 var glob: TBlkSettings;
   settings: TBlkSignalSettings;
-  i: Integer;
-  eventForm: TF_BlkSignalEvent;
-  ts: TCloseTabSheet;
-  Area: TArea;
 begin
-  glob := Self.Blk.GetGlobalSettings();
-  settings := Self.Blk.GetSettings();
+  glob := Self.block.GetGlobalSettings();
+  settings := Self.block.GetSettings();
 
-  Self.E_Nazev.Text := glob.name;
+  Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
-
-  for Area in Self.Blk.areas do
-    Self.LB_Stanice.Items.Add(Area.name);
-
-  SetLength(areas, Self.Blk.areas.count);
-  for i := 0 to Self.Blk.areas.count - 1 do
-    areas[i] := Self.Blk.areas[i].id;
 
   Self.SE_Delay.Value := settings.fallDelay;
 
@@ -174,20 +162,20 @@ begin
   end;
   Self.SE_RCSmodule1Exit(Self);
 
-  Self.CHB_Zamknuto.Checked := settings.locked;
+  Self.CHB_Locked.Checked := settings.locked;
 
-  for i := 0 to settings.events.count - 1 do
+  for var i := 0 to settings.events.count - 1 do
   begin
-    ts := TCloseTabSheet.Create(Self.PC_Events);
+    var ts := TCloseTabSheet.Create(Self.PC_Events);
     ts.PageControl := Self.PC_Events;
     ts.OnClose := Self.OnTabClose;
     if (i = 0) then
       ts.Caption := 'globální'
     else
       ts.Caption := IntToStr(settings.events[i].length.min) + '-' + IntToStr(settings.events[i].length.max) + '      ';
-    eventForm := TF_BlkSignalEvent.Create(ts);
+    var eventForm := TF_BlkSignalEvent.Create(ts);
 
-    eventForm.OpenForm(settings.events[i], (i = 0), Self.areas);
+    eventForm.OpenForm(settings.events[i], (i = 0));
     eventForm.Parent := ts;
     eventForm.Show();
 
@@ -195,24 +183,22 @@ begin
     Self.eventTabSheets.Add(ts);
   end;
 
-  Self.L_UsekID.Caption := Blocks.GetBlkName((Self.Blk as TBlkSignal).trackId);
+  Self.L_Track_Id.Caption := Blocks.GetBlkName((Self.block as TBlkSignal).trackId);
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (návěstidlo)';
-  Self.ActiveControl := B_Save;
+  Self.ActiveControl := Self.B_Save;
 end;
 
-procedure TF_BlkSignal.HlavniOpenForm();
+procedure TF_BlkSignal.CommonOpenForm();
 begin
-  SetLength(Self.areas, 0);
-  Self.LB_Stanice.Clear();
   Self.SE_RCSmodule1.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCSmodule2.MaxValue := RCSi.maxModuleAddrSafe;
 end;
 
-procedure TF_BlkSignal.NewBlkCreate();
+procedure TF_BlkSignal.NewBlock();
 begin
-  NewBlk := true;
-  OpenForm(Blocks.count);
+  Self.isNewBlock := true;
+  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkSignal.B_StornoClick(Sender: TObject);
@@ -249,8 +235,7 @@ begin
 end;
 
 procedure TF_BlkSignal.BB_Event_AddClick(Sender: TObject);
-var eventForm: TF_BlkSignalEvent;
-  ts: TCloseTabSheet;
+var ts: TCloseTabSheet;
 begin
   ts := TCloseTabSheet.Create(Self.PC_Events);
   if (Self.eventForms.count = 0) then
@@ -260,10 +245,10 @@ begin
 
   ts.PageControl := Self.PC_Events;
   ts.OnClose := Self.OnTabClose;
-  eventForm := TF_BlkSignalEvent.Create(ts);
+  var eventForm := TF_BlkSignalEvent.Create(ts);
   Self.PC_Events.ActivePage := ts;
 
-  eventForm.OpenEmptyForm((Self.eventForms.count = 0), Self.areas);
+  eventForm.OpenEmptyForm((Self.eventForms.count = 0));
   eventForm.Parent := ts;
   eventForm.Show();
 
@@ -272,18 +257,13 @@ begin
 end;
 
 procedure TF_BlkSignal.B_SaveClick(Sender: TObject);
-var glob: TBlkSettings;
-  settings: TBlkSignalSettings;
-  str: string;
-  another: TBlk;
-  fBlkNavEvent: TF_BlkSignalEvent;
 begin
-  if (E_Nazev.Text = '') then
+  if (Self.E_Name.Text = '') then
   begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlock(SE_ID.Value, openIndex)) then
   begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -296,7 +276,7 @@ begin
       Exit();
     end;
 
-    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value), Self.Blk,
+    var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value), Self.block,
       TRCSIOType.output);
     if (another <> nil) then
     begin
@@ -307,7 +287,7 @@ begin
   end;
   if (Self.CHB_RCS_Second_Output.Checked) then
   begin
-    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value), Self.Blk,
+    var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value), Self.block,
       TRCSIOType.output);
     if (another <> nil) then
     begin
@@ -317,9 +297,9 @@ begin
     end;
   end;
 
-  for fBlkNavEvent in Self.eventForms do
+  for var fBlkNavEvent in Self.eventForms do
   begin
-    str := fBlkNavEvent.Check();
+    var str := fBlkNavEvent.Check();
     if (str <> '') then
     begin
       Application.MessageBox(PChar(str), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
@@ -327,15 +307,16 @@ begin
     end;
   end;
 
-  glob.name := Self.E_Nazev.Text;
+  var glob: TBlkSettings;
+  glob.name := Self.E_Name.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btSignal;
 
-  if (NewBlk) then
+  if (Self.isNewBlock) then
   begin
     glob.note := '';
     try
-      Blk := Blocks.Add(glob) as TBlkSignal;
+      Self.block := Blocks.Add(glob) as TBlkSignal;
     except
       on E: Exception do
       begin
@@ -345,10 +326,11 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.Blk.note;
-    Self.Blk.SetGlobalSettings(glob);
+    glob.note := Self.block.note;
+    Self.block.SetGlobalSettings(glob);
   end;
 
+  var settings: TBlkSignalSettings;
   settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
   if (Self.CHB_RCS_Output.Checked) then
   begin
@@ -360,21 +342,21 @@ begin
 
   settings.fallDelay := Self.SE_Delay.Value;
 
-  settings.locked := CHB_Zamknuto.Checked;
+  settings.locked := Self.CHB_Locked.Checked;
   settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
-  for fBlkNavEvent in Self.eventForms do
+  for var fBlkNavEvent in Self.eventForms do
     settings.events.Add(fBlkNavEvent.GetEvent());
 
-  Self.Blk.SetSettings(settings);
+  Self.block.SetSettings(settings);
 
   Self.Close();
-  Self.Blk.Change();
+  Self.block.Change();
 end;
 
 procedure TF_BlkSignal.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.NewBlk := false;
-  Self.OpenIndex := -1;
+  Self.isNewBlock := false;
+  Self.openIndex := -1;
   BlocksTablePainter.UpdateTable();
 
   Self.eventForms.Clear();

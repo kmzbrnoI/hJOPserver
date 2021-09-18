@@ -8,7 +8,7 @@ uses
 
 type
   TF_BlkIO = class(TForm)
-    E_Nazev: TEdit;
+    E_Name: TEdit;
     SE_ID: TSpinEdit;
     L_IR02: TLabel;
     L_IR01: TLabel;
@@ -40,17 +40,19 @@ type
     procedure CHB_RCS_OutputClick(Sender: TObject);
     procedure CHB_NullableClick(Sender: TObject);
   private
-    NewBlk: Boolean;
-    Blk: TBlkIO;
+    isNewBlock: Boolean;
+    block: TBlkIO;
+    openIndex: Integer;
+
+    procedure CommonOpenForm();
+    procedure EditOpenForm();
+    procedure NewOpenForm();
 
   public
-    OpenIndex: Integer;
 
-    procedure OpenForm(BlokIndex: Integer);
-    procedure NewBlkOpenForm();
-    procedure NormalOpenForm();
-    procedure HlavniOpenForm();
-    procedure NewBlkCreate();
+    procedure EditBlock(BlokIndex: Integer);
+    procedure NewBlock();
+
   end;
 
 var
@@ -62,18 +64,17 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky;
 
 {$R *.dfm}
 
-procedure TF_BlkIO.OpenForm(BlokIndex: Integer);
+procedure TF_BlkIO.EditBlock(BlokIndex: Integer);
 begin
-  OpenIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  HlavniOpenForm();
+  Self.openIndex := BlokIndex;
+  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.block));
+  Self.CommonOpenForm();
 
-  if (NewBlk) then
-  begin
-    NewBlkOpenForm();
-  end else begin
-    NormalOpenForm();
-  end;
+  if (Self.isNewBlock) then
+    Self.NewOpenForm()
+  else
+    Self.EditOpenForm();
+
   Self.ShowModal();
 end;
 
@@ -89,10 +90,10 @@ begin
     Self.SE_RCS_Output_Port.Value);
 end;
 
-procedure TF_BlkIO.NewBlkOpenForm();
+procedure TF_BlkIO.NewOpenForm();
 begin
-  E_Nazev.Text := '';
-  SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
+  Self.E_Name.Text := '';
+  Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
 
   Self.SE_RCS_Input_Module.Value := 1;
   Self.SE_RCS_Input_Port.Value := 0;
@@ -114,15 +115,15 @@ begin
   Self.SE_Null_Time.Value := 0;
 
   Self.Caption := 'Nový blok Výstup';
-  Self.ActiveControl := Self.E_Nazev;
+  Self.ActiveControl := Self.E_Name;
 end;
 
-procedure TF_BlkIO.NormalOpenForm();
+procedure TF_BlkIO.EditOpenForm();
 var glob: TBlkSettings;
   settings: TBlkIOsettings;
 begin
-  glob := Self.Blk.GetGlobalSettings();
-  settings := Self.Blk.GetSettings();
+  glob := Self.block.GetGlobalSettings();
+  settings := Self.block.GetSettings();
 
   Self.CHB_RCS_Input.Checked := settings.isRCSinput;
   Self.CHB_RCS_InputClick(Self);
@@ -158,10 +159,10 @@ begin
   end;
   Self.SE_RCS_Output_ModuleExit(Self);
 
-  Self.E_Nazev.Text := glob.name;
+  Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
   Self.CHB_Activate_On_Start.Checked := settings.setOutputOnStart;
-  Self.CHB_Nullable.Checked := Self.Blk.nullable;
+  Self.CHB_Nullable.Checked := Self.block.nullable;
   Self.SE_Null_Time.Value := settings.nullAfterSec;
   Self.CHB_NullableClick(Self);
 
@@ -169,16 +170,16 @@ begin
   Self.ActiveControl := Self.B_Save;
 end;
 
-procedure TF_BlkIO.HlavniOpenForm();
+procedure TF_BlkIO.CommonOpenForm();
 begin
   Self.SE_RCS_Input_Module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCS_Output_Module.MaxValue := RCSi.maxModuleAddrSafe;
 end;
 
-procedure TF_BlkIO.NewBlkCreate();
+procedure TF_BlkIO.NewBlock();
 begin
-  NewBlk := true;
-  Self.OpenForm(Blocks.count);
+  Self.isNewBlock := true;
+  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkIO.B_StornoClick(Sender: TObject);
@@ -206,16 +207,13 @@ begin
 end;
 
 procedure TF_BlkIO.B_SaveClick(Sender: TObject);
-var glob: TBlkSettings;
-  settings: TBlkIOsettings;
-  another: TBlk;
 begin
-  if (E_Nazev.Text = '') then
+  if (Self.E_Name.Text = '') then
   begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlock(SE_ID.Value, openIndex)) then
   begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -223,8 +221,8 @@ begin
 
   if (Self.CHB_RCS_Input.Checked) then
   begin
-    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value),
-      Self.Blk, TRCSIOType.input);
+    var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value),
+      Self.block, TRCSIOType.input);
     if (another <> nil) then
     begin
       if (Application.MessageBox(PChar('RCS adresa vstupu se již používá na bloku ' + another.name +
@@ -235,8 +233,8 @@ begin
 
   if (Self.CHB_RCS_Output.Checked) then
   begin
-    another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value),
-      Self.Blk, TRCSIOType.output);
+    var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value),
+      Self.block, TRCSIOType.output);
     if (another <> nil) then
     begin
       if (Application.MessageBox(PChar('RCS adresa výstupu se již používá na bloku ' + another.name +
@@ -245,15 +243,16 @@ begin
     end;
   end;
 
-  glob.name := Self.E_Nazev.Text;
+  var glob: TBlkSettings;
+  glob.name := Self.E_Name.Text;
   glob.id := Self.SE_ID.Value;
   glob.typ := btIO;
 
-  if (NewBlk) then
+  if (isNewBlock) then
   begin
     glob.note := '';
     try
-      Blk := Blocks.Add(glob) as TBlkIO;
+      block := Blocks.Add(glob) as TBlkIO;
     except
       on E: Exception do
       begin
@@ -263,12 +262,12 @@ begin
       end;
     end;
   end else begin
-    glob.note := Blk.note;
-    Self.Blk.SetGlobalSettings(glob);
+    glob.note := block.note;
+    Self.block.SetGlobalSettings(glob);
   end;
 
-  // ukladani dat
 
+  var settings: TBlkIOsettings;
   settings.isRCSOutput := Self.CHB_RCS_Output.Checked;
   if (Self.CHB_RCS_Output.Checked) then
   begin
@@ -289,16 +288,16 @@ begin
   else
     settings.nullAfterSec := 0;
 
-  Self.Blk.SetSettings(settings);
+  Self.block.SetSettings(settings);
   Self.Close();
-  Self.Blk.Change();
+  Self.block.Change();
 end;
 
 procedure TF_BlkIO.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.NewBlk := false;
-  Self.OpenIndex := -1;
+  Self.isNewBlock := false;
+  Self.openIndex := -1;
   BlocksTablePainter.UpdateTable();
 end;
 
-end.// unit
+end.

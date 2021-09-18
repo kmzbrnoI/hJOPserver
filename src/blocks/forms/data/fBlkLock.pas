@@ -14,8 +14,6 @@ type
     Label1: TLabel;
     B_Storno: TButton;
     B_Save: TButton;
-    Label3: TLabel;
-    LB_Areas: TListBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -23,15 +21,16 @@ type
   private
     newBlk: Boolean;
     blk: TBlkLock;
-
-  public
     openIndex: Integer;
 
-    procedure OpenForm(blockIndex: Integer);
-    procedure NewBlkOpenForm();
-    procedure NormalOpenForm();
     procedure CommonOpenForm();
-    procedure NewBlkCreate();
+    procedure EditForm();
+    procedure NewOpenForm();
+
+  public
+
+    procedure EditBlock(blockIndex: Integer);
+    procedure NewBlock();
   end;
 
 var
@@ -43,21 +42,21 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area;
 
 {$R *.dfm}
 
-procedure TF_BlkLock.OpenForm(blockIndex: Integer);
+procedure TF_BlkLock.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
   Blocks.GetBlkByIndex(blockIndex, TBlk(Self.Blk));
   Self.CommonOpenForm();
 
   if (NewBlk) then
-    Self.NewBlkOpenForm()
+    Self.NewOpenForm()
   else
-    Self.NormalOpenForm();
+    Self.EditForm();
 
   Self.ShowModal();
 end;
 
-procedure TF_BlkLock.NewBlkOpenForm();
+procedure TF_BlkLock.NewOpenForm();
 begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
@@ -66,13 +65,10 @@ begin
   Self.ActiveControl := Self.E_Name;
 end;
 
-procedure TF_BlkLock.NormalOpenForm();
+procedure TF_BlkLock.EditForm();
 var glob: TBlkSettings;
 begin
   glob := Self.Blk.GetGlobalSettings();
-
-  for var area in Self.Blk.areas do
-    Self.LB_Areas.Items.Add(Area.name);
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
@@ -83,13 +79,13 @@ end;
 
 procedure TF_BlkLock.CommonOpenForm();
 begin
-  Self.LB_Areas.Clear();
+
 end;
 
-procedure TF_BlkLock.NewBlkCreate();
+procedure TF_BlkLock.NewBlock();
 begin
   Self.newBlk := true;
-  OpenForm(Blocks.count);
+  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkLock.B_StornoClick(Sender: TObject);

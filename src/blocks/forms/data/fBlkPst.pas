@@ -290,11 +290,7 @@ procedure TF_BlkPst.B_Ref_DelClick(Sender: TObject);
 begin
   if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané odvraty z pomocného stavědla?'), 'Mazání odvratů',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-  begin
-    for var i := Self.LV_Refugees.Items.Count - 1 downto 0 do
-      if (Self.LV_Refugees.Items[i].Selected) then
-        Self.LV_Refugees.Items.Delete(i);
-  end;
+    Self.LV_Refugees.DeleteSelected();
 end;
 
 procedure TF_BlkPst.B_Ref_OkClick(Sender: TObject);
@@ -340,11 +336,7 @@ procedure TF_BlkPst.B_Signal_DelClick(Sender: TObject);
 begin
   if (Application.MessageBox(PChar('Opravdu chcete smazat vybraná návěstidla z pomocného stavědla?'), 'Mazání návěstidel',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-  begin
-    for var i := Self.LV_Signals.Items.Count - 1 downto 0 do
-      if (Self.LV_Signals.Items[i].Selected) then
-        Self.LV_Signals.Items.Delete(i);
-  end;
+    Self.LV_Signals.DeleteSelected();
 end;
 
 procedure TF_BlkPst.B_Signal_OkClick(Sender: TObject);
@@ -383,11 +375,7 @@ procedure TF_BlkPst.B_Track_DelClick(Sender: TObject);
 begin
   if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané úseky z pomocného stavědla?'), 'Mazání úseků',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-  begin
-    for var i := Self.LV_Tracks.Items.Count - 1 downto 0 do
-      if (Self.LV_Tracks.Items[i].Selected) then
-        Self.LV_Tracks.Items.Delete(i);
-  end;
+    Self.LV_Tracks.DeleteSelected();
 end;
 
 procedure TF_BlkPst.B_Track_OkClick(Sender: TObject);
@@ -421,11 +409,7 @@ procedure TF_BlkPst.B_Turnout_DelClick(Sender: TObject);
 begin
   if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané výhybky z pomocného stavědla?'), 'Mazání výhybek',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-  begin
-    for var i := Self.LV_Turnouts.Items.Count - 1 downto 0 do
-      if (Self.LV_Turnouts.Items[i].Selected) then
-        Self.LV_Turnouts.Items.Delete(i);
-  end;
+    Self.LV_Turnouts.DeleteSelected();
 end;
 
 procedure TF_BlkPst.B_Turnout_OkClick(Sender: TObject);

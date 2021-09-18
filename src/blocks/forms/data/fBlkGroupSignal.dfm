@@ -4,7 +4,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkGroupSignal'
-  ClientHeight = 297
+  ClientHeight = 254
   ClientWidth = 625
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -15,6 +15,8 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
   OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object L_IR01: TLabel
@@ -38,17 +40,6 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'ID'
-  end
-  object L_Usek03: TLabel
-    Left = 7
-    Top = 72
-    Width = 42
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice :'
   end
   object E_Name: TEdit
     Left = 120
@@ -76,21 +67,9 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
     TabOrder = 1
     Value = 1
   end
-  object LB_Stations: TListBox
-    Left = 119
-    Top = 72
-    Width = 192
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 2
-  end
   object B_Storno: TButton
-    Left = 455
-    Top = 261
+    Left = 85
+    Top = 222
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -98,12 +77,12 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = B_StornoClick
   end
   object B_Apply: TButton
-    Left = 544
-    Top = 261
+    Left = 7
+    Top = 222
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -112,7 +91,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 5
+    TabOrder = 4
     OnClick = B_ApplyClick
   end
   object GB_Signals: TGroupBox
@@ -121,7 +100,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
     Width = 302
     Height = 238
     Caption = ' N'#225'v'#283'stidla '
-    TabOrder = 4
+    TabOrder = 3
     object LV_Signals: TListView
       Left = 2
       Top = 59
@@ -198,7 +177,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 122
+    Top = 66
     Width = 304
     Height = 147
     Margins.Left = 2
@@ -206,7 +185,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' n'#225'v'#283'stidla '
-    TabOrder = 3
+    TabOrder = 2
     object Label3: TLabel
       Left = 131
       Top = 38

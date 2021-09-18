@@ -4,7 +4,7 @@ object F_BlkAC: TF_BlkAC
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Upravit blok [blok] (AC)'
-  ClientHeight = 216
+  ClientHeight = 168
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -40,20 +40,9 @@ object F_BlkAC: TF_BlkAC
     Margins.Bottom = 2
     Caption = 'N'#225'zev :'
   end
-  object Label3: TLabel
-    Left = 7
-    Top = 72
-    Width = 42
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice :'
-  end
   object Label4: TLabel
     Left = 7
-    Top = 128
+    Top = 80
     Width = 84
     Height = 13
     Margins.Left = 2
@@ -90,7 +79,7 @@ object F_BlkAC: TF_BlkAC
   end
   object B_Storno: TButton
     Left = 151
-    Top = 182
+    Top = 134
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -98,12 +87,12 @@ object F_BlkAC: TF_BlkAC
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 5
+    TabOrder = 4
     OnClick = B_StornoClick
   end
   object B_Save: TButton
     Left = 240
-    Top = 182
+    Top = 134
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -112,35 +101,23 @@ object F_BlkAC: TF_BlkAC
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 4
+    TabOrder = 3
     OnClick = B_SaveClick
-  end
-  object LB_Areas: TListBox
-    Left = 119
-    Top = 72
-    Width = 192
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 2
   end
   object E_AccessToken: TEdit
     Left = 8
-    Top = 146
+    Top = 98
     Width = 305
     Height = 21
-    TabOrder = 3
+    TabOrder = 2
   end
   object B_GenToken: TButton
     Left = 238
-    Top = 123
+    Top = 75
     Width = 75
     Height = 20
     Caption = 'Vygenerovat'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = B_GenTokenClick
   end
 end
