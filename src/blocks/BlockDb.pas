@@ -413,7 +413,7 @@ begin
   Blk.SetGlobalSettings(glob);
   Blk.OnChange := Self.BlkChange;
   Self.data.Insert(index, Blk);
-  BlokyTableData.BlkAdd(index);
+  BlocksTablePainter.BlkAdd(index);
   Result := Blk;
 
   // move indexes
@@ -454,7 +454,7 @@ begin
   end;
 
   FreeAndNil(tmp);
-  BlokyTableData.BlkRemove(index);
+  BlocksTablePainter.BlkRemove(index);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -484,8 +484,8 @@ begin
   for var blk: TBlk in Self.data do
     blk.Enable();
   Self.fenabled := true;
-  BlokyTableData.reload := true;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.reload := true;
+  BlocksTablePainter.UpdateTable();
 end;
 
 procedure TBlocks.Disable();
@@ -493,8 +493,8 @@ begin
   for var blk: TBlk in Self.data do
     blk.Disable();
   Self.fenabled := false;
-  BlokyTableData.reload := true;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.reload := true;
+  BlocksTablePainter.UpdateTable();
 end;
 
 procedure TBlocks.Reset();
@@ -502,8 +502,8 @@ var Blk: TBlk;
 begin
   for Blk in Self.data do
     Blk.Reset();
-  BlokyTableData.reload := true;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.reload := true;
+  BlocksTablePainter.UpdateTable();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1091,7 +1091,7 @@ begin
     else
       Self.data[i].table_index := i;
 
-  BlokyTableData.BlkMove(index, new_index);
+  BlocksTablePainter.BlkMove(index, new_index);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -156,7 +156,7 @@ procedure TF_BlkAC.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Self.newBlk := false;
   Self.openIndex := -1;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.UpdateTable();
 end;
 
 end.

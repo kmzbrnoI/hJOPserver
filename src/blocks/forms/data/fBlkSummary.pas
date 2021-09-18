@@ -212,7 +212,7 @@ procedure TF_BlkSummary.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   NewBlk := false;
   OpenIndex := -1;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.UpdateTable();
 end;
 
 procedure TF_BlkSummary.FormCreate(Sender: TObject);

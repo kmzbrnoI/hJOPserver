@@ -571,7 +571,7 @@ procedure TF_BlkRT.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   OpenIndex := -1;
   NewBlk := false;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.UpdateTable();
 end;
 
 procedure TF_BlkRT.FormCreate(Sender: TObject);

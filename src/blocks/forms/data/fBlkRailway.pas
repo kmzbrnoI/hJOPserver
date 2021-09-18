@@ -361,7 +361,7 @@ procedure TF_BlkRailway.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Self.blkIndex := -1;
   Self.new := false;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.UpdateTable();
 end;
 
 end.// unit

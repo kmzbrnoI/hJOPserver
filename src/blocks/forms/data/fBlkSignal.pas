@@ -375,7 +375,7 @@ procedure TF_BlkSignal.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Self.NewBlk := false;
   Self.OpenIndex := -1;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.UpdateTable();
 
   Self.eventForms.Clear();
   Self.eventTabSheets.Clear();

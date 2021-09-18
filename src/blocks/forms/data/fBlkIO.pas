@@ -298,7 +298,7 @@ procedure TF_BlkIO.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Self.NewBlk := false;
   Self.OpenIndex := -1;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.UpdateTable();
 end;
 
 end.// unit

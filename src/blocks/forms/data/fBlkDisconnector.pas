@@ -226,7 +226,7 @@ procedure TF_BlkDisconnector.FormClose(Sender: TObject; var Action: TCloseAction
 begin
   NewBlk := false;
   OpenIndex := -1;
-  BlokyTableData.UpdateTable;
+  BlocksTablePainter.UpdateTable;
 end;
 
 end.// unit

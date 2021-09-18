@@ -3506,7 +3506,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_log
+    ActivePage = TS_Bloky
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3802,7 +3802,7 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'Bloky'
       ImageIndex = 10
-      object LV_Bloky: TListView
+      object LV_Blocks: TListView
         Left = 0
         Top = 40
         Width = 1289
@@ -3868,10 +3868,10 @@ object F_Main: TF_Main
         SmallImages = IL_Bloky
         TabOrder = 0
         ViewStyle = vsReport
-        OnChange = LV_BlokyChange
-        OnCustomDrawItem = LV_BlokyCustomDrawItem
-        OnDblClick = LV_BlokyDblClick
-        OnKeyPress = LV_BlokyKeyPress
+        OnChange = LV_BlocksChange
+        OnCustomDrawItem = LV_BlocksCustomDrawItem
+        OnDblClick = LV_BlocksDblClick
+        OnKeyPress = LV_BlocksKeyPress
       end
       object P_BlkPozadi: TPanel
         Left = 0

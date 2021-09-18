@@ -162,7 +162,7 @@ begin
       AppEvents.LogException(e);
   end;
   F_Main.E_dataload_block.Text := read;
-  BlokyTableData := TBlokyTableData.Create(F_Main.LV_Bloky);
+  BlocksTablePainter := TBlocksTablePainter.Create(F_Main.LV_Blocks);
 
   Trains.UpdateFront();
 

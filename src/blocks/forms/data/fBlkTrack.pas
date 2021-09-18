@@ -357,7 +357,7 @@ procedure TF_BlkTrack.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Self.OpenIndex := -1;
   Self.NewBlk := false;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.UpdateTable();
 end;
 
 procedure TF_BlkTrack.CHB_D1Click(Sender: TObject);

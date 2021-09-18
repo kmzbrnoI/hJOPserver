@@ -243,7 +243,7 @@ begin
   else
     Self.changed := true;
 
-  BlokyTableData.BlkChange(Self.table_index);
+  BlocksTablePainter.BlkChange(Self.table_index);
 end;
 
 procedure TBlk.Freeze();

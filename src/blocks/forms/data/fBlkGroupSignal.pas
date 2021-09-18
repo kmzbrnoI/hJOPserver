@@ -337,7 +337,7 @@ procedure TF_BlkGroupSignal.FormClose(Sender: TObject; var Action: TCloseAction)
 begin
   Self.new := false;
   Self.blkIndex := -1;
-  BlokyTableData.UpdateTable();
+  BlocksTablePainter.UpdateTable();
 end;
 
 procedure TF_BlkGroupSignal.LV_SignalsChange(Sender: TObject; Item: TListItem; Change: TItemChange);

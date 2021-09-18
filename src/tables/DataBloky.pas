@@ -7,7 +7,7 @@ interface
 uses ComCtrls, SysUtils, StrUtils, Classes;
 
 type
-  TBlokyTableData = class
+  TBlocksTablePainter = class
   private
     LV: TListView;
 
@@ -31,7 +31,7 @@ type
   end;
 
 var
-  BlokyTableData: TBlokyTableData;
+  BlocksTablePainter: TBlocksTablePainter;
 
 implementation
 
@@ -41,28 +41,26 @@ uses BlockDb, Block, BlockTurnout, BlockTrack, BlockSignal, BlockIR, BlockCrossi
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-constructor TBlokyTableData.Create(LV: TListView);
+constructor TBlocksTablePainter.Create(LV: TListView);
 begin
   inherited Create();
   Self.LV := LV;
   SetLength(Self.changed, Blocks.count);
-end; // ctor
+end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlokyTableData.LoadTable();
-var i, j: Integer;
-  LI: TListItem;
+procedure TBlocksTablePainter.LoadTable();
 begin
   Self.LV.Clear();
 
-  for i := 0 to Blocks.count - 1 do
+  for var i := 0 to Blocks.count - 1 do
   begin
-    LI := Self.LV.Items.Add;
+    var LI: TListItem := Self.LV.Items.Add;
     LI.Caption := '---';
-    for j := 0 to Self.LV.Columns.count - 2 do
+    for var j := 0 to Self.LV.Columns.count - 2 do
       LI.SubItems.Add('---');
-  end; // for i
+  end;
 
   Self.reload := true;
   Self.UpdateTable();
@@ -70,12 +68,11 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlokyTableData.UpdateTable();
-var i: Integer;
+procedure TBlocksTablePainter.UpdateTable();
 begin
   F_Main.L_BlkPocet.Caption := 'Celkem ' + IntToStr(Blocks.count) + ' bloků';
 
-  for i := 0 to Blocks.count - 1 do
+  for var i := 0 to Blocks.count - 1 do
     if ((Self.changed[i]) or (Self.reload)) then
     begin
       Self.UpdateLine(i);
@@ -84,41 +81,39 @@ begin
     end;
 
   Self.reload := false;
-end; // procedyre
+end;
 
-procedure TBlokyTableData.UpdateLine(line: Integer);
-var j, train: Integer;
-  Blk: TBlk;
-  glob: TBlkSettings;
-  s_vyh: TBlkTurnoutSettings;
-  s_signal: TBlkSignalSettings;
-  str: string;
+procedure TBlocksTablePainter.UpdateLine(line: Integer);
+var blk: TBlk;
+    glob: TBlkSettings;
 begin
-  Blocks.GetBlkByIndex(line, Blk);
-  if (Blk = nil) then
+  Blocks.GetBlkByIndex(line, blk);
+  if (blk = nil) then
     Exit();
 
-  glob := Blk.GetGlobalSettings();
+  glob := blk.GetGlobalSettings();
 
   Self.LV.Items[line].Caption := glob.name;
   Self.LV.Items[line].SubItems.Strings[1] := IntToStr(glob.id);
 
-  str := '';
-  if (Blk.areas.count > 1) then
-    for j := 0 to Blk.areas.count - 2 do
-      str := str + Blk.areas[j].name + ', ';
-  if (Blk.areas.count > 0) then
-    str := str + Blk.areas[Blk.areas.count - 1].name;
-  Self.LV.Items[line].SubItems.Strings[4] := str;
+  begin
+    var str := '';
+    if (blk.areas.count > 1) then
+      for var j := 0 to blk.areas.count - 2 do
+        str := str + blk.areas[j].name + ', ';
+    if (blk.areas.count > 0) then
+      str := str + blk.areas[blk.areas.count - 1].name;
+    Self.LV.Items[line].SubItems.Strings[4] := str;
+  end;
 
   case (glob.typ) of
     btTurnout:
       begin
         Self.LV.Items[line].ImageIndex := 0;
-        s_vyh := (Blk as TBlkTurnout).GetSettings();
+        var s_vyh := (blk as TBlkTurnout).GetSettings();
         Self.LV.Items[line].SubItems.Strings[0] := 'Výhybka';
 
-        case ((Blk as TBlkTurnout).position) of
+        case ((blk as TBlkTurnout).position) of
           TTurnoutPosition.disabled:
             Self.LV.Items[line].SubItems[3] := 'disabled';
           TTurnoutPosition.none:
@@ -129,29 +124,29 @@ begin
             Self.LV.Items[line].SubItems[3] := '-';
           TTurnoutPosition.both:
             Self.LV.Items[line].SubItems[3] := '+-';
-        end; // case poloha
+        end;
 
-        Self.LV.Items[line].SubItems[5] := (Blk as TBlkTurnout).note;
-        Self.LV.Items[line].SubItems[6] := (Blk as TBlkTurnout).lockout;
+        Self.LV.Items[line].SubItems[5] := (blk as TBlkTurnout).note;
+        Self.LV.Items[line].SubItems[6] := (blk as TBlkTurnout).lockout;
         Self.LV.Items[line].SubItems[7] := '---';
       end;
 
     /// //////////////////////////////////////////////////
     btTrack:
       begin
-        if ((Blk as TBlkTrack).spnl.trackName <> '') then
+        if ((blk as TBlkTrack).spnl.trackName <> '') then
           Self.LV.Items[line].ImageIndex := 1
         else
           Self.LV.Items[line].ImageIndex := 3;
 
         Self.LV.Items[line].SubItems[0] := 'Úsek';
 
-        str := '';
-        for train in (Blk as TBlkTrack).trains do
+        var str := '';
+        for var train in (blk as TBlkTrack).trains do
           str := str + trains.GetTrainNameByIndex(train) + ', ';
         Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str) - 2);
 
-        case ((Blk as TBlkTrack).occupied) of
+        case ((blk as TBlkTrack).occupied) of
           TTrackState.disabled:
             Self.LV.Items[line].SubItems[3] := 'disabled';
           TTrackState.none:
@@ -162,11 +157,11 @@ begin
             Self.LV.Items[line].SubItems[3] := '+++';
         end; // case obsazeno
 
-        Self.LV.Items[line].SubItems[5] := (Blk as TBlkTrack).note;
-        Self.LV.Items[line].SubItems[6] := (Blk as TBlkTrack).lockout;
+        Self.LV.Items[line].SubItems[5] := (blk as TBlkTrack).note;
+        Self.LV.Items[line].SubItems[6] := (blk as TBlkTrack).lockout;
 
-        if ((Blk as TBlkTrack).trainPredict <> nil) then
-          Self.LV.Items[line].SubItems[7] := (Blk as TBlkTrack).trainPredict.name
+        if ((blk as TBlkTrack).trainPredict <> nil) then
+          Self.LV.Items[line].SubItems[7] := (blk as TBlkTrack).trainPredict.name
         else
           Self.LV.Items[line].SubItems[7] := '--#--';
       end;
@@ -179,7 +174,7 @@ begin
 
         Self.LV.Items[line].SubItems[2] := '---';
 
-        case ((Blk as TBlkIR).occupied) of
+        case ((blk as TBlkIR).occupied) of
           TIROccupationState.disabled:
             Self.LV.Items[line].SubItems[3] := 'disabled';
           TIROccupationState.none:
@@ -200,7 +195,7 @@ begin
     btSignal, btGroupSignal:
       begin
         Self.LV.Items[line].ImageIndex := 5;
-        s_signal := (Blk as TBlkSignal).GetSettings();
+        var s_signal := (blk as TBlkSignal).GetSettings();
         if (glob.typ = btGroupSignal) then
           Self.LV.Items[line].SubItems[0] := 'Návěstidlo skupinové'
         else
@@ -208,7 +203,7 @@ begin
 
         Self.LV.Items[line].SubItems[2] := '---';
 
-        Self.LV.Items[line].SubItems[3] := TBlkSignal.SignalToString((Blk as TBlkSignal).signal);
+        Self.LV.Items[line].SubItems[3] := TBlkSignal.SignalToString((blk as TBlkSignal).signal);
 
         Self.LV.Items[line].SubItems[5] := '---';
         Self.LV.Items[line].SubItems[6] := '---';
@@ -223,7 +218,7 @@ begin
 
         Self.LV.Items[line].SubItems[2] := '---';
 
-        case ((Blk as TBlkCrossing).state) of
+        case ((blk as TBlkCrossing).state) of
           TBlkCrossingBasicState.disabled:
             Self.LV.Items[line].SubItems[3] := 'disabled';
           TBlkCrossingBasicState.none:
@@ -250,23 +245,23 @@ begin
 
         Self.LV.Items[line].SubItems[2] := '---';
 
-        if ((Blk as TBlkRailway).occupied) then
+        if ((blk as TBlkRailway).occupied) then
         begin
           Self.LV.Items[line].SubItems[3] := 'obsazeno';
         end else begin
-          if ((Blk as TBlkRailway).Zaver) then
+          if ((blk as TBlkRailway).Zaver) then
           begin
             Self.LV.Items[line].SubItems[3] := 'závěr'
           end else begin
-            if ((Blk as TBlkRailway).departureForbidden) then
+            if ((blk as TBlkRailway).departureForbidden) then
             begin
               Self.LV.Items[line].SubItems[3] := 'ZAK'
             end else begin
 
-              if ((Blk as TBlkRailway).request) then
+              if ((blk as TBlkRailway).request) then
                 Self.LV.Items[line].SubItems[3] := 'žádost'
               else
-                case ((Blk as TBlkRailway).direction) of
+                case ((blk as TBlkRailway).direction) of
                   TRailwayDirection.disabled:
                     Self.LV.Items[line].SubItems[3] := 'disabled';
                   TRailwayDirection.AtoB:
@@ -283,8 +278,8 @@ begin
         Self.LV.Items[line].SubItems[5] := '';
         Self.LV.Items[line].SubItems[6] := '';
 
-        if (Assigned((Blk as TBlkRailway).trainPredict)) then
-          Self.LV.Items[line].SubItems[7] := (Blk as TBlkRailway).trainPredict.train.name
+        if (Assigned((blk as TBlkRailway).trainPredict)) then
+          Self.LV.Items[line].SubItems[7] := (blk as TBlkRailway).trainPredict.train.name
         else
           Self.LV.Items[line].SubItems[7] := '--#--';
       end;
@@ -297,12 +292,12 @@ begin
 
         Self.LV.Items[line].SubItems[2] := '---';
 
-        if ((Blk as TBlkLinker).enabled) then
+        if ((blk as TBlkLinker).enabled) then
           Self.LV.Items[line].SubItems[3] := 'enabled'
         else
           Self.LV.Items[line].SubItems[3] := 'disabled';
 
-        Self.LV.Items[line].SubItems[5] := (Blk as TBlkLinker).note;
+        Self.LV.Items[line].SubItems[5] := (blk as TBlkLinker).note;
         Self.LV.Items[line].SubItems[7] := '---';
       end;
 
@@ -314,9 +309,9 @@ begin
 
         Self.LV.Items[line].SubItems[2] := '---';
 
-        if ((Blk as TBlkLock).state.enabled) then
+        if ((blk as TBlkLock).state.enabled) then
         begin
-          if ((Blk as TBlkLock).keyReleased) then
+          if ((blk as TBlkLock).keyReleased) then
             Self.LV.Items[line].SubItems[3] := 'klíč uvolněn'
           else
             Self.LV.Items[line].SubItems[3] := 'klíč zamknut';
@@ -324,7 +319,7 @@ begin
         else
           Self.LV.Items[line].SubItems[3] := 'disabled';
 
-        Self.LV.Items[line].SubItems[5] := (Blk as TBlkLock).note;
+        Self.LV.Items[line].SubItems[5] := (blk as TBlkLock).note;
         Self.LV.Items[line].SubItems[7] := '---';
       end;
 
@@ -336,7 +331,7 @@ begin
 
         Self.LV.Items[line].SubItems[2] := '---';
 
-        case ((Blk as TBlkDisconnector).state) of
+        case ((blk as TBlkDisconnector).state) of
           TBlkDiscBasicState.disabled:
             Self.LV.Items[line].SubItems[3] := 'disabled';
           TBlkDiscBasicState.not_selected:
@@ -347,7 +342,7 @@ begin
             Self.LV.Items[line].SubItems[3] := 'active';
         end; // case
 
-        Self.LV.Items[line].SubItems[5] := (Blk as TBlkDisconnector).note;
+        Self.LV.Items[line].SubItems[5] := (blk as TBlkDisconnector).note;
         Self.LV.Items[line].SubItems[7] := '---';
       end;
 
@@ -357,12 +352,12 @@ begin
         Self.LV.Items[line].ImageIndex := 2;
         Self.LV.Items[line].SubItems[0] := 'Traťový úsek';
 
-        str := '';
-        for train in (Blk as TBlkTrack).trains do
+        var str := '';
+        for var train in (blk as TBlkTrack).trains do
           str := str + trains.GetTrainNameByIndex(train) + ', ';
         Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str) - 2);
 
-        case ((Blk as TBlkTrack).occupied) of
+        case ((blk as TBlkTrack).occupied) of
           TTrackState.disabled:
             Self.LV.Items[line].SubItems[3] := 'disabled';
           TTrackState.none:
@@ -373,11 +368,11 @@ begin
             Self.LV.Items[line].SubItems[3] := '+++';
         end; // case obsazeno
 
-        Self.LV.Items[line].SubItems[5] := (Blk as TBlkTrack).note;
-        Self.LV.Items[line].SubItems[6] := (Blk as TBlkTrack).lockout;
+        Self.LV.Items[line].SubItems[5] := (blk as TBlkTrack).note;
+        Self.LV.Items[line].SubItems[6] := (blk as TBlkTrack).lockout;
 
-        if ((Blk as TBlkTrack).trainPredict <> nil) then
-          Self.LV.Items[line].SubItems[7] := (Blk as TBlkTrack).trainPredict.name
+        if ((blk as TBlkTrack).trainPredict <> nil) then
+          Self.LV.Items[line].SubItems[7] := (blk as TBlkTrack).trainPredict.name
         else
           Self.LV.Items[line].SubItems[7] := '--#--';
       end;
@@ -392,11 +387,11 @@ begin
 
         if (TBlkIO(Blk).enabled) then
           Self.LV.Items[line].SubItems[3] := 'I: ' + ownConvert.BoolToYesNo(TBlkIO(Blk).activeInput) + ', O: ' +
-            ownConvert.BoolToYesNo(TBlkIO(Blk).activeOutput)
+            ownConvert.BoolToYesNo(TBlkIO(blk).activeOutput)
         else
           Self.LV.Items[line].SubItems[3] := 'disabled';
 
-        Self.LV.Items[line].SubItems[5] := (Blk as TBlkIO).note;
+        Self.LV.Items[line].SubItems[5] := (blk as TBlkIO).note;
         Self.LV.Items[line].SubItems[6] := '---';
         Self.LV.Items[line].SubItems[7] := '---';
       end;
@@ -409,7 +404,7 @@ begin
 
         Self.LV.Items[line].SubItems[2] := '---';
 
-        if ((Blk as TBlkSummary).enabled) then
+        if ((blk as TBlkSummary).enabled) then
           Self.LV.Items[line].SubItems[3] := 'ok'
         else
           Self.LV.Items[line].SubItems[3] := 'disabled';
@@ -426,12 +421,12 @@ begin
 
         Self.LV.Items[line].SubItems[2] := '---';
 
-        if (TBlkAC(Blk).enabled) then
+        if (TBlkAC(blk).enabled) then
         begin
-          case (TBlkAC(Blk).acState) of
+          case (TBlkAC(blk).acState) of
             TACState.stopped:
               begin
-                if (TBlkAC(Blk).clientConnected) then
+                if (TBlkAC(blk).clientConnected) then
                   Self.LV.Items[line].SubItems[3] := 'zastaven'
                 else
                   Self.LV.Items[line].SubItems[3] := 'klient nepřipojen';
@@ -448,14 +443,12 @@ begin
         Self.LV.Items[line].SubItems[5] := '---';
         Self.LV.Items[line].SubItems[7] := '---';
       end;
-
-  end; // case BLOK_VYSTUP
-
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlokyTableData.BlkChange(line: Integer);
+procedure TBlocksTablePainter.BlkChange(line: Integer);
 begin
   if ((line > -1) and (line < Blocks.count)) then
     Self.changed[line] := true;
@@ -463,22 +456,20 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlokyTableData.BlkRemove(line: Integer);
+procedure TBlocksTablePainter.BlkRemove(line: Integer);
 begin
   Self.LV.Items.Delete(line);
   Self.reload := true;
   Self.UpdateTable();
 end;
 
-procedure TBlokyTableData.BlkAdd(index: Integer);
-var LI: TListItem;
-  j: Integer;
+procedure TBlocksTablePainter.BlkAdd(index: Integer);
 begin
   SetLength(changed, Length(changed) + 1);
 
-  LI := Self.LV.Items.Insert(index);
+  var LI: TListItem := Self.LV.Items.Insert(index);
   LI.Caption := '---';
-  for j := 0 to Self.LV.Columns.count - 2 do
+  for var j := 0 to Self.LV.Columns.count - 2 do
     LI.SubItems.Add('---');
   Self.UpdateLine(index);
 
@@ -487,13 +478,11 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlokyTableData.BlkMove(source, target: Integer);
-var LI: TListItem;
-  i: Integer;
+procedure TBlocksTablePainter.BlkMove(source, target: Integer);
 begin
   Self.LV.Items.Delete(source);
-  LI := Self.LV.Items.Insert(target);
-  for i := 0 to Self.LV.Columns.count - 2 do
+  var LI: TListItem := Self.LV.Items.Insert(target);
+  for var i := 0 to Self.LV.Columns.count - 2 do
     LI.SubItems.Add('');
   Self.UpdateLine(target);
 end;
@@ -504,6 +493,6 @@ initialization
 
 finalization
 
-BlokyTableData.free();
+BlocksTablePainter.Free();
 
-end.// unit
+end.

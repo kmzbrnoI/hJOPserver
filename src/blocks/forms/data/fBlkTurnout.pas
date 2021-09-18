@@ -86,9 +86,9 @@ type
     procedure CHB_IndicationClick(Sender: TObject);
     procedure CHB_ControllersClick(Sender: TObject);
   private
-    OpenIndex: Integer;
+    openIndex: Integer;
     Blk: TBlkTurnout;
-    NewBlk: Boolean;
+    newBlock: Boolean;
     CB_CouplingData: TArI;
     CB_LockData: TArI;
     CB_NeprofilData: TArI;
@@ -113,10 +113,10 @@ uses GetSystems, FileSystem, TechnologieRCS, Block, DataBloky, Area;
 procedure TF_BlkTurnout.OpenForm(BlokIndex: Integer);
 begin
   Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.Blk));
-  OpenIndex := BlokIndex;
+  Self.openIndex := BlokIndex;
 
   Self.CommonOpenForm();
-  if (NewBlk) then
+  if (Self.newBlock) then
     Self.NewBlkOpenForm()
   else
     Self.NormalOpenForm();
@@ -401,7 +401,7 @@ end;
 
 procedure TF_BlkTurnout.NewBlkCreate;
 begin
-  Self.NewBlk := true;
+  Self.newBlock := true;
   OpenForm(Blocks.count);
 end;
 
@@ -508,7 +508,7 @@ begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(SE_ID.Value, OpenIndex)) then
+  if (Blocks.IsBlock(SE_ID.Value, Self.openIndex)) then
   begin
     Application.MessageBox('ID již bylo definováno na jiním bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -549,7 +549,7 @@ begin
   glob.id := Self.SE_ID.Value;
   glob.typ := btTurnout;
 
-  if (NewBlk) then
+  if (Self.newBlock) then
   begin
     try
       Blk := Blocks.Add(glob) as TBlkTurnout;
@@ -701,9 +701,9 @@ end;
 
 procedure TF_BlkTurnout.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.NewBlk := false;
-  Self.OpenIndex := -1;
-  BlokyTableData.UpdateTable();
+  Self.newBlock := false;
+  Self.openIndex := -1;
+  BlocksTablePainter.UpdateTable();
 end;
 
 end.

@@ -502,7 +502,7 @@ procedure TF_BlkCrossing.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   NewBlk := false;
   OpenIndex := -1;
-  BlokyTableData.UpdateTable;
+  BlocksTablePainter.UpdateTable;
 end;
 
 procedure TF_BlkCrossing.NewBlkCreate();

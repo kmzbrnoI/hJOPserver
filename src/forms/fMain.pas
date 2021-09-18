@@ -123,7 +123,7 @@ type
     PC_1: TPageControl;
     TS_Technologie: TTabSheet;
     TS_Bloky: TTabSheet;
-    LV_Bloky: TListView;
+    LV_Blocks: TListView;
     P_BlkPozadi: TPanel;
     P_Blk_Ostatni: TPanel;
     L_BlkPocet: TLabel;
@@ -316,11 +316,11 @@ type
     procedure LV_HVDblClick(Sender: TObject);
     procedure B_HV_AddClick(Sender: TObject);
     procedure B_HV_DeleteClick(Sender: TObject);
-    procedure LV_BlokyCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+    procedure LV_BlocksCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
-    procedure LV_BlokyDblClick(Sender: TObject);
+    procedure LV_BlocksDblClick(Sender: TObject);
     procedure B_BlkAddClick(Sender: TObject);
-    procedure LV_BlokyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+    procedure LV_BlocksChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure B_BlkDeleteClick(Sender: TObject);
     procedure B_VC_AddClick(Sender: TObject);
     procedure LV_JCDblClick(Sender: TObject);
@@ -368,7 +368,7 @@ type
     procedure MI_DisconnectClick(Sender: TObject);
     procedure A_FuncsSetExecute(Sender: TObject);
     procedure B_ChangeClick(Sender: TObject);
-    procedure LV_BlokyKeyPress(Sender: TObject; var Key: Char);
+    procedure LV_BlocksKeyPress(Sender: TObject; var Key: Char);
     procedure LV_JCKeyPress(Sender: TObject; var Key: Char);
     procedure LV_MultiJCKeyPress(Sender: TObject; var Key: Char);
     procedure LV_UsersKeyPress(Sender: TObject; var Key: Char);
@@ -489,7 +489,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
   BlockLock, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
   fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
   AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB,
-  Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal;
+  Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal, fBlkPst, BlockPst;
 
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
@@ -798,7 +798,7 @@ begin
   RCSTableData.UpdateTable();
 
   if ((F_Main.Showing) and (F_Main.PC_1.ActivePage = F_Main.TS_Bloky)) then
-    BlokyTableData.UpdateTable();
+    BlocksTablePainter.UpdateTable();
 
   PanelServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
 
@@ -1520,7 +1520,7 @@ begin
   if (PC_1.ActivePage = TS_Users) then
     UsersTableData.UpdateTable;
   if (PC_1.ActivePage = TS_Bloky) then
-    BlokyTableData.UpdateTable();
+    BlocksTablePainter.UpdateTable();
   if (PC_1.ActivePage = TS_Zesilovace) then
     ZesTableData.UpdateTable();
   if (PC_1.ActivePage = TS_Soupravy) then
@@ -1534,14 +1534,13 @@ begin
 end;
 
 procedure TF_Main.PM_BlokyPopup(Sender: TObject);
-var i: Integer;
 begin
-  if (Self.LV_Bloky.Selected = nil) then
+  if (Self.LV_Blocks.Selected = nil) then
   begin
-    for i := 0 to (Sender as TPopupMenu).Items.Count - 1 do
+    for var i := 0 to (Sender as TPopupMenu).Items.Count - 1 do
       (Sender as TPopupMenu).Items.Items[i].Enabled := false;
   end else begin
-    for i := 0 to (Sender as TPopupMenu).Items.Count - 1 do
+    for var i := 0 to (Sender as TPopupMenu).Items.Count - 1 do
       (Sender as TPopupMenu).Items.Items[i].Enabled := true;
   end;
 end;
@@ -2091,9 +2090,8 @@ begin
 end;
 
 procedure TF_Main.B_BlkDeleteClick(Sender: TObject);
-var i: Integer;
 begin
-  i := LV_Bloky.ItemIndex;
+  var i := LV_Blocks.ItemIndex;
 
   Beep;
   if Application.MessageBox(PChar('Opravdu chcete smazazat blok ' + Blocks.GetBlkIndexName(i) + '?'), 'Mazání bloku',
@@ -2397,7 +2395,7 @@ begin
     if (Self.Showing) then
     begin
       if (F_Main.PC_1.ActivePage = F_Main.TS_Bloky) then
-        BlokyTableData.UpdateTable();
+        BlocksTablePainter.UpdateTable();
       if (F_Main.PC_1.ActivePage = F_Main.TS_Soupravy) then
         TrainTableData.UpdateTable();
       if (F_Main.PC_1.ActivePage = F_Main.TS_Zesilovace) then
@@ -2516,9 +2514,9 @@ end;
 procedure TF_Main.MI_HoukClick(Sender: TObject);
 var blk: TBlk;
 begin
-  if (Self.LV_Bloky.Selected = nil) then
+  if (Self.LV_Blocks.Selected = nil) then
     Exit();
-  if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, blk) <> 0) then
+  if (Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex, blk) <> 0) then
     Exit();
   if ((blk.typ <> btTrack) and (blk.typ <> btRT)) then
     Exit();
@@ -2528,8 +2526,8 @@ end;
 
 procedure TF_Main.MI_PropClick(Sender: TObject);
 begin
-  if (Self.LV_Bloky.Selected <> nil) then
-    Self.LV_BlokyDblClick(Self.LV_Bloky);
+  if (Self.LV_Blocks.Selected <> nil) then
+    Self.LV_BlocksDblClick(Self.LV_Blocks);
 end;
 
 procedure TF_Main.MI_RCS_UpdateClick(Sender: TObject);
@@ -2572,9 +2570,9 @@ end;
 procedure TF_Main.MI_TechPropClick(Sender: TObject);
 var blk: TBlk;
 begin
-  if (LV_Bloky.Selected = nil) then
+  if (LV_Blocks.Selected = nil) then
     Exit();
-  if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, blk) <> 0) then
+  if (Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex, blk) <> 0) then
     Exit();
 
   case (blk.typ) of
@@ -2683,7 +2681,7 @@ begin
   F_splash.PB_Prubeh.Position := F_splash.PB_Prubeh.Max;
   F_splash.AddStav('Téměř spuštěno...');
 
-  BlokyTableData.LoadTable();
+  BlocksTablePainter.LoadTable();
   JCTableData.LoadToTable();
   RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
   UsersTableData.LoadToTable();
@@ -2815,7 +2813,7 @@ end;
 procedure TF_Main.LV_JCKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
-    Self.LV_JCDblClick(LV_Bloky);
+    Self.LV_JCDblClick(LV_Blocks);
 end;
 
 procedure TF_Main.LV_logCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -2889,7 +2887,7 @@ end;
 procedure TF_Main.LV_MultiJCKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
-    Self.LV_MultiJCDblClick(LV_Bloky);
+    Self.LV_MultiJCDblClick(LV_Blocks);
 end;
 
 procedure TF_Main.LV_SoupravyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -2940,7 +2938,7 @@ end;
 procedure TF_Main.LV_UsersKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
-    Self.LV_UsersDblClick(LV_Bloky);
+    Self.LV_UsersDblClick(LV_Blocks);
 end;
 
 procedure TF_Main.LV_ZesilovaceChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -2966,12 +2964,12 @@ begin
   Self.B_AB_Delete.Enabled := (Self.LV_AB.Selected <> nil);
 end;
 
-procedure TF_Main.LV_BlokyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_Main.LV_BlocksChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  B_BlkDelete.Enabled := (LV_Bloky.Selected <> nil);
+  B_BlkDelete.Enabled := (LV_Blocks.Selected <> nil);
 end;
 
-procedure TF_Main.LV_BlokyCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+procedure TF_Main.LV_BlocksCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 var blk: TBlk;
 begin
@@ -2983,15 +2981,15 @@ begin
       begin
         case ((blk as TBlkTurnout).Position) of
           TTurnoutPosition.disabled:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
           TTurnoutPosition.none:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
           TTurnoutPosition.plus:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
           TTurnoutPosition.minus:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
           TTurnoutPosition.both:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_RED;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_RED;
         end;
       end;
 
@@ -3000,13 +2998,13 @@ begin
       begin
         case ((blk as TBlkTrack).occupied) of
           TTrackState.disabled:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
           TTrackState.none:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
           TTrackState.Free:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
           TTrackState.occupied:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
         end;
       end;
 
@@ -3015,13 +3013,13 @@ begin
       begin
         case ((blk as TBlkIR).occupied) of
           TIROccupationState.disabled:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
           TIROccupationState.none:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
           TIROccupationState.Free:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
           TIROccupationState.occupied:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
         end;
       end;
 
@@ -3029,11 +3027,11 @@ begin
     btSignal, btGroupSignal:
       begin
         if ((blk as TBlkSignal).signal < ncStuj) then
-          LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY // disabled
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY // disabled
         else if ((blk as TBlkSignal).signal = ncStuj) then
-          LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN
         else
-          LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
       end;
 
     /// ///////////////////
@@ -3041,15 +3039,15 @@ begin
       begin
         case ((blk as TBlkCrossing).State) of
           TBlkCrossingBasicState.disabled:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
           TBlkCrossingBasicState.none:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
           TBlkCrossingBasicState.Open:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
           TBlkCrossingBasicState.caution:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
           TBlkCrossingBasicState.closed:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
         end;
       end;
 
@@ -3057,18 +3055,18 @@ begin
     btLinker:
       begin
         if (not(blk as TBlkLinker).Enabled) then
-          LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY
         else
-          LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
       end;
 
     /// ///////////////////
     btRailway:
       begin
         if ((blk as TBlkRailway).State.direction = TRailwayDirection.disabled) then
-          LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY
         else
-          LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
       end;
 
     /// ///////////////////
@@ -3077,12 +3075,12 @@ begin
         if ((blk as TBlkLock).State.Enabled) then
         begin
           if ((blk as TBlkLock).keyReleased) then
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY
           else
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
         end
         else
-          LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY
       end;
 
     /// ///////////////////
@@ -3090,13 +3088,13 @@ begin
       begin
         case ((blk as TBlkDisconnector).State) of
           TBlkDiscBasicState.disabled:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
           TBlkDiscBasicState.not_selected:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
           TBlkDiscBasicState.mounting:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
           TBlkDiscBasicState.active:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
         end;
       end;
 
@@ -3106,12 +3104,12 @@ begin
         if (TBlkIO(blk).Enabled) then
         begin
           if ((TBlkIO(blk).activeOutput) or (TBlkIO(blk).activeInput)) then
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
           else if (TBlkAC(blk).clientConnected) then
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_WHITE
         end
         else
-          LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
       end;
 
     /// ///////////////////
@@ -3119,9 +3117,9 @@ begin
       begin
         case ((blk as TBlkSummary).Enabled) of
           false:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
           true:
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
         end;
       end;
 
@@ -3131,61 +3129,74 @@ begin
         if (TBlkAC(blk).Enabled) then
         begin
           if (not TBlkAC(blk).stopped) then
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
           else if (TBlkAC(blk).clientConnected) then
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GREEN
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN
           else
-            LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
         end
         else
-          LV_Bloky.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
       end;
 
+    /// ///////////////////
+    btPst:
+      begin
+        case (TBlkPst(blk).status) of
+          pstDisabled: LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+          pstOff: LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+          pstTakeReady: LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+          pstRefuging: LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_RED;
+          pstTaken: LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_BLUE;
+        end;
+      end;
   end; // case
 end;
 
-procedure TF_Main.LV_BlokyDblClick(Sender: TObject);
+procedure TF_Main.LV_BlocksDblClick(Sender: TObject);
 var blk: TBlk;
 begin
-  if (LV_Bloky.Selected = nil) then
+  if (LV_Blocks.Selected = nil) then
     Exit();
-  if (Blocks.GetBlkByIndex(Self.LV_Bloky.ItemIndex, blk) <> 0) then
+  if (Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex, blk) <> 0) then
     Exit();
 
   case (blk.typ) of
     btTurnout:
-      F_BlkTurnout.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkTurnout.OpenForm(Self.LV_Blocks.ItemIndex);
     btTrack:
-      F_BlkTrack.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkTrack.OpenForm(Self.LV_Blocks.ItemIndex);
     btIR:
-      F_BlkIR.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkIR.OpenForm(Self.LV_Blocks.ItemIndex);
     btSignal:
-      F_BlkSignal.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkSignal.OpenForm(Self.LV_Blocks.ItemIndex);
     btCrossing:
-      F_BlkCrossing.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkCrossing.OpenForm(Self.LV_Blocks.ItemIndex);
     btRailway, btLinker:
-      F_BlkRailway.EditBlk(Self.LV_Bloky.ItemIndex);
+      F_BlkRailway.EditBlk(Self.LV_Blocks.ItemIndex);
     btLock:
-      F_BlkLock.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkLock.OpenForm(Self.LV_Blocks.ItemIndex);
     btDisconnector:
-      F_BlkDisconnector.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkDisconnector.OpenForm(Self.LV_Blocks.ItemIndex);
     btRT:
-      F_BlkRT.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkRT.OpenForm(Self.LV_Blocks.ItemIndex);
     btIO:
-      F_BlkIO.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkIO.OpenForm(Self.LV_Blocks.ItemIndex);
     btSummary:
-      F_BlkSummary.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkSummary.OpenForm(Self.LV_Blocks.ItemIndex);
     btAC:
-      F_BlkAC.OpenForm(Self.LV_Bloky.ItemIndex);
+      F_BlkAC.OpenForm(Self.LV_Blocks.ItemIndex);
     btGroupSignal:
-      F_BlkGroupSignal.EditBlk(Self.LV_Bloky.ItemIndex);
+      F_BlkGroupSignal.EditBlk(Self.LV_Blocks.ItemIndex);
+    btPst:
+      F_BlkPst.EditBlock(Self.LV_Blocks.ItemIndex);
   end;
 end;
 
-procedure TF_Main.LV_BlokyKeyPress(Sender: TObject; var Key: Char);
+procedure TF_Main.LV_BlocksKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
-    Self.LV_BlokyDblClick(LV_Bloky);
+    Self.LV_BlocksDblClick(LV_Blocks);
 end;
 
 procedure TF_Main.LV_ClientsCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -3249,7 +3260,7 @@ end;
 procedure TF_Main.LV_HVKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
-    Self.LV_HVDblClick(LV_Bloky);
+    Self.LV_HVDblClick(LV_Blocks);
 end;
 
 procedure TF_Main.LV_ZesilovaceCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -3282,7 +3293,7 @@ end;
 procedure TF_Main.LV_ZesilovaceKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
-    Self.LV_ZesilovaceDblClick(LV_Bloky);
+    Self.LV_ZesilovaceDblClick(LV_Blocks);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
