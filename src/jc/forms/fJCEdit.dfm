@@ -328,7 +328,7 @@ object F_JCEdit: TF_JCEdit
     end
     object B_Usek_Del: TButton
       Left = 112
-      Top = 18
+      Top = 15
       Width = 105
       Height = 25
       Margins.Left = 2

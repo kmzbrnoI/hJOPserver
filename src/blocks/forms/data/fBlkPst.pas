@@ -5,18 +5,16 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Samples.Spin, BlockPst,
-  Vcl.ComCtrls;
+  Vcl.ComCtrls, Generics.Collections;
 
 type
   TF_BlkPst = class(TForm)
     Label2: TLabel;
     Label1: TLabel;
-    Label3: TLabel;
     E_Name: TEdit;
     SE_ID: TSpinEdit;
     B_Storno: TButton;
     B_Apply: TButton;
-    LB_Areas: TListBox;
     GB_RCS: TGroupBox;
     Label4: TLabel;
     Label5: TLabel;
@@ -62,18 +60,29 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
+    procedure LV_TracksChange(Sender: TObject; Item: TListItem;
+      Change: TItemChange);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure B_Track_OkClick(Sender: TObject);
+    procedure B_Track_DelClick(Sender: TObject);
   private
     newBlk: Boolean;
     blk: TBlkPst;
-
-  public
+    CB_TrackItems: TList<Integer>;
     openIndex: Integer;
 
-    procedure OpenForm(blockIndex: Integer);
     procedure NewBlkOpenForm();
     procedure NormalOpenForm();
     procedure CommonOpenForm();
-    procedure NewBlkCreate();
+
+    procedure FillTrackLI(var LI: TListItem; blockId: Integer);
+    function TrackPresent(id: Integer): Boolean;
+
+  public
+
+    procedure EditBlock(blockIndex: Integer);
+    procedure NewBlock();
   end;
 
 
@@ -86,7 +95,7 @@ uses BlockDb, Block, Area, DataBloky;
 
 {$R *.dfm}
 
-procedure TF_BlkPst.OpenForm(blockIndex: Integer);
+procedure TF_BlkPst.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
   Blocks.GetBlkByIndex(blockIndex, TBlk(Self.blk));
@@ -105,20 +114,27 @@ begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
 
+  Blocks.FillCB(Self.CB_Track, Self.CB_TrackItems, nil, nil, btTrack, btRT, -1);
+
   Self.Caption := 'Nový blok Pomocné stavědlo';
   Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkPst.NormalOpenForm();
-var glob: TBlkSettings;
 begin
-  glob := Self.blk.GetGlobalSettings();
-
-  for var area in Self.blk.areas do
-    Self.LB_Areas.Items.Add(Area.name);
+  var glob := Self.blk.GetGlobalSettings();
+  var pstSettings := Self.blk.GetSettings();
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
+
+  for var i := 0 to pstSettings.tracks.Count-1 do
+  begin
+    var LI := Self.LV_Tracks.Items.Add();
+    Self.FillTrackLI(LI, pstSettings.tracks[i]);
+  end;
+
+  Blocks.FillCB(Self.CB_Track, Self.CB_TrackItems, nil, Self.blk.areas, btTrack, btRT, -1);
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (pomocné stavědlo)';
   Self.ActiveControl := Self.B_Apply;
@@ -126,13 +142,16 @@ end;
 
 procedure TF_BlkPst.CommonOpenForm();
 begin
-  Self.LB_Areas.Clear();
+  Self.LV_Tracks.Clear();
+  Self.LV_Turnouts.Clear();
+  Self.LV_Refugees.Clear();
+  Self.LV_Signals.Clear();
 end;
 
-procedure TF_BlkPst.NewBlkCreate();
+procedure TF_BlkPst.NewBlock();
 begin
   Self.newBlk := true;
-  Self.OpenForm(Blocks.count);
+  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkPst.B_ApplyClick(Sender: TObject);
@@ -180,11 +199,93 @@ begin
   Self.Close();
 end;
 
+procedure TF_BlkPst.B_Track_DelClick(Sender: TObject);
+begin
+  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané úseky z pomocného stavědla?'), 'Mazání úseků',
+    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+    for var i := Self.LV_Tracks.Items.Count - 1 downto 0 do
+      if (Self.LV_Tracks.Items[i].Selected) then
+        Self.LV_Tracks.Items.Delete(i);
+  end;
+end;
+
+procedure TF_BlkPst.B_Track_OkClick(Sender: TObject);
+begin
+  if (not Self.CB_Track.Enabled) then
+    Exit();
+
+  if (Self.CB_Track.ItemIndex = -1) then
+  begin
+    Application.MessageBox('Vyberte úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+
+  var id := Self.CB_TrackItems[Self.CB_Track.ItemIndex];
+  if ((Self.LV_Tracks.Selected = nil) and (Self.TrackPresent(id))) then
+  begin
+    Application.MessageBox('Nelze přidat duplicitní úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+
+  var LI: TListItem;
+  if (Self.LV_Tracks.Selected = nil) then
+    LI := Self.LV_Tracks.Items.Add()
+  else
+    LI := Self.LV_Tracks.Selected;
+
+  Self.FillTrackLI(LI, id);
+end;
+
 procedure TF_BlkPst.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Self.newBlk := false;
   Self.openIndex := -1;
   BlokyTableData.UpdateTable();
+end;
+
+procedure TF_BlkPst.FormCreate(Sender: TObject);
+begin
+  Self.CB_TrackItems := TList<Integer>.Create();
+end;
+
+procedure TF_BlkPst.FormDestroy(Sender: TObject);
+begin
+  Self.CB_TrackItems.Free();
+end;
+
+procedure TF_BlkPst.LV_TracksChange(Sender: TObject; Item: TListItem;
+  Change: TItemChange);
+begin
+  Self.B_Track_Del.Enabled := (Self.LV_Tracks.Selected <> nil);
+
+  if (Self.CB_Track.Enabled) then
+  begin
+    Self.CB_Track.ItemIndex := -1;
+    if (Self.LV_Tracks.Selected <> nil) then
+    begin
+      var id := StrToInt(Self.LV_Tracks.Selected.SubItems[0]);
+      for var i := 0 to Self.CB_TrackItems.Count-1 do
+        if (Self.CB_TrackItems[i] = id) then
+          Self.CB_Track.ItemIndex := i;
+    end;
+  end;
+end;
+
+function TF_BlkPst.TrackPresent(id: Integer): Boolean;
+begin
+  for var item: TListItem in Self.LV_Tracks.Items do
+    if (IntToStr(id) = item.SubItems[0]) then
+      Exit(true);
+  Result := false;
+end;
+
+procedure TF_BlkPst.FillTrackLI(var LI: TListItem; blockId: Integer);
+begin
+  LI.Caption := IntToStr(LI.Index+1);
+  LI.SubItems.Clear();
+  LI.SubItems.Add(IntToStr(blockId));
+  LI.SubItems.Add(Blocks.GetBlkName(blockId));
 end;
 
 end.

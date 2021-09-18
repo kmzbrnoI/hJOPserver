@@ -1899,7 +1899,6 @@ begin
 end;
 
 procedure TBlkTurnout.ReadContollers();
-var plus, minus: Boolean;
 begin
   if ((not Self.m_settings.controllers.enabled) or (not RCSi.Started)) then
     Exit();

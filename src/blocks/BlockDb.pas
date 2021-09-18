@@ -89,7 +89,9 @@ type
     procedure NUZ(areaId: string; state: Boolean = true);
 
     procedure FillCB(CB: TComboBox; items: PTArI; ignore: PTArI; orid: TArStr; blkType: TBlkType; blkId: Integer = -1;
-      blkType2: TBlkType = btAny);
+      blkType2: TBlkType = btAny); overload;
+    procedure FillCB(var cb: TComboBox; var items: TList<Integer>; const ignore: TList<Integer>;
+      const areas: TList<TArea>; blkType: TBlkType; blkType2: TBlkType = btAny; blockId: Integer = -1); overload;
 
     procedure RemoveTrain(Train: TTrain);
     procedure TrainPrediction(signal: TBlk);
@@ -798,6 +800,64 @@ begin
     CB.items.Add('Bloky nenalezeny');
     CB.enabled := false;
   end;
+end;
+
+procedure TBlocks.FillCB(var cb: TComboBox; var items: TList<Integer>; const ignore: TList<Integer>;
+  const areas: TList<TArea>; blkType: TBlkType; blkType2: TBlkType = btAny; blockId: Integer = -1);
+begin
+  if (Assigned(items)) then
+    items.Clear();
+  cb.Clear();
+
+  for var blocki: Integer := 0 to Blocks.count - 1 do
+  begin
+    var blk: TBlk := Blocks[blocki];
+    var glob: TBlkSettings := Blk.GetGlobalSettings();
+
+    if ((glob.typ <> blkType) and (glob.typ <> blkType2)) then
+      continue;
+
+    if ((Assigned(ignore)) and (ignore.Contains(glob.id))) then
+      continue;
+
+    var assign: Boolean;
+    if (Assigned(areas)) then
+    begin
+      assign := false;
+      var blockAreas: TList<TArea> := Blk.areas;
+
+      if ((glob.typ = btRailway) or (glob.typ = btIR)) then
+        assign := true
+      else if (Blk.areas.Count = 0) then
+        assign := true
+      else begin
+        for var area in areas do
+        begin
+          if (Blk.areas.Contains(area)) then
+          begin
+            assign := true;
+            Break;
+          end;
+        end;
+      end;
+    end else begin
+      assign := true;
+    end;
+
+    if (not assign) then
+      continue;
+
+    if (Assigned(items)) then
+      items.Add(glob.id);
+
+    cb.items.Add(glob.name);
+    if (glob.id = blockId) then
+      cb.ItemIndex := cb.Items.Count-1;
+  end;
+
+  cb.enabled := (cb.items.count > 0);
+  if (cb.items.count = 0) then
+    CB.items.Add('Bloky nenalezeny');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

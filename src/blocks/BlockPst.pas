@@ -5,16 +5,21 @@
 interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, IdContext,
-  Generics.Collections, Area, JsonDataObjects, TechnologieRCS;
+  Generics.Collections, Area, JsonDataObjects, TechnologieRCS, BlockTurnout;
 
 type
   TBlkPstStatus = (pstDisabled, pstOff, pstTakeReady, pstRefuging, pstTaken);
+
+  TPstRefugeeZav = record
+    block: Integer;
+    position: TTurnoutPosition;
+  end;
 
   TBlkPstSettings = record
     tracks: TList<Integer>;
     turnouts: TList<Integer>;
     signals: TList<Integer>;
-    refugees: TList<Integer>;
+    refugees: TList<TPstRefugeeZav>;
     rcsInTake: TRCSAddr;
     rcsInRelease: TRCSAddr;
     rcsOutTaken: TRCSAddr;
@@ -71,6 +76,9 @@ type
 
     // ----- pst own functions -----
 
+    function GetSettings(): TBlkPstSettings;
+    procedure SetSettings(settings: TBlkPstSettings);
+
     procedure DecreaseEmLock(amount: Cardinal);
 
     property state: TBlkPstState read m_state;
@@ -97,7 +105,7 @@ type
 implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert,
-  TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout;
+  TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -240,6 +248,7 @@ function TBlkPst.GetZaver(): Boolean;
 begin
 //  Result := (Self.m_state.zaver > 0);
 // TODO
+  Result := false;
 end;
 
 function TBlkPst.GetEmLock(): Boolean;
@@ -346,6 +355,19 @@ end;
 procedure TBlkPst.GetPtState(json: TJsonObject);
 begin
   // TODO
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkPst.GetSettings(): TBlkPstSettings;
+begin
+  Result := Self.m_settings;
+end;
+
+procedure TBlkPst.SetSettings(settings: TBlkPstSettings);
+begin
+  Self.m_settings := settings;
+  Self.Change();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

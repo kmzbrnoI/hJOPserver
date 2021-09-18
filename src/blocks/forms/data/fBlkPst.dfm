@@ -12,7 +12,10 @@ object F_BlkPst: TF_BlkPst
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poScreenCenter
   OnClose = FormClose
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object Label2: TLabel
@@ -36,17 +39,6 @@ object F_BlkPst: TF_BlkPst
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'N'#225'zev:'
-  end
-  object Label3: TLabel
-    Left = 7
-    Top = 72
-    Width = 39
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Stanice:'
   end
   object E_Name: TEdit
     Left = 120
@@ -84,7 +76,7 @@ object F_BlkPst: TF_BlkPst
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 8
+    TabOrder = 7
     OnClick = B_StornoClick
   end
   object B_Apply: TButton
@@ -98,28 +90,16 @@ object F_BlkPst: TF_BlkPst
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 9
+    TabOrder = 8
     OnClick = B_ApplyClick
-  end
-  object LB_Areas: TListBox
-    Left = 119
-    Top = 72
-    Width = 192
-    Height = 46
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    ItemHeight = 13
-    TabOrder = 2
   end
   object GB_RCS: TGroupBox
     Left = 8
-    Top = 123
+    Top = 67
     Width = 303
     Height = 182
     Caption = ' RCS '
-    TabOrder = 3
+    TabOrder = 2
     object Label4: TLabel
       Left = 7
       Top = 104
@@ -312,7 +292,7 @@ object F_BlkPst: TF_BlkPst
     Caption = ' '#218'seky '
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 4
+    TabOrder = 3
     object GB_TrackEdit: TGroupBox
       Left = 2
       Top = 174
@@ -349,6 +329,7 @@ object F_BlkPst: TF_BlkPst
         Margins.Bottom = 2
         Caption = 'Ok'
         TabOrder = 1
+        OnClick = B_Track_OkClick
       end
       object B_Track_Del: TButton
         Left = 230
@@ -362,6 +343,7 @@ object F_BlkPst: TF_BlkPst
         Caption = 'Smazat '#250'sek/y'
         Enabled = False
         TabOrder = 2
+        OnClick = B_Track_DelClick
       end
     end
     object LV_Tracks: TListView
@@ -392,6 +374,7 @@ object F_BlkPst: TF_BlkPst
       RowSelect = True
       TabOrder = 0
       ViewStyle = vsReport
+      OnChange = LV_TracksChange
       ExplicitTop = 53
       ExplicitHeight = 139
     end
@@ -406,7 +389,7 @@ object F_BlkPst: TF_BlkPst
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' V'#253'hybky '
-    TabOrder = 5
+    TabOrder = 4
     object LV_Turnouts: TListView
       Left = 2
       Top = 15
@@ -502,7 +485,7 @@ object F_BlkPst: TF_BlkPst
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Odvraty '
-    TabOrder = 6
+    TabOrder = 5
     object LV_Refugees: TListView
       Left = 2
       Top = 15
@@ -641,10 +624,10 @@ object F_BlkPst: TF_BlkPst
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' '#218'seky '
+    Caption = ' N'#225'v'#283'stidla '
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 7
+    TabOrder = 6
     object GB_Signal_Edit: TGroupBox
       Left = 2
       Top = 154

@@ -24,7 +24,7 @@ implementation
 
 uses fBlkTurnout, fBlkTrack, fBlkIR, fBlkSignal, fMain, fBlkSummary, fBlkAC,
   BlockDb, fBlkCrossing, fBlkRailway, fBlkLock, fBlkDisconnector, fBlkRT,
-  fBlkIO, fBlkGroupSignal;
+  fBlkIO, fBlkGroupSignal, fBlkPst;
 
 {$R *.dfm}
 
@@ -71,6 +71,8 @@ begin
       F_BlkSummary.NewBlkCreate();
     12:
       F_BlkAC.NewBlkCreate();
+    13:
+      F_BlkPst.NewBlock();
   end;
 end;
 
