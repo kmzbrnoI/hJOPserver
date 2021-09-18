@@ -163,9 +163,12 @@ type
     procedure UPONSMinusClick(Sender: TObject);
 
     procedure MenuAdminREDUKClick(SenderPnl: TIDContext; SenderOR: TObject);
-    procedure MenuAdminPolPlusCLick(SenderPnl: TIDContext; SenderOR: TObject);
-    procedure MenuAdminPolMinusCLick(SenderPnl: TIDContext; SenderOR: TObject);
-    procedure MenuAdminNepolCLick(SenderPnl: TIDContext; SenderOR: TObject);
+    procedure MenuAdminPolPlusClick(SenderPnl: TIDContext; SenderOR: TObject);
+    procedure MenuAdminPolMinusClick(SenderPnl: TIDContext; SenderOR: TObject);
+    procedure MenuAdminNepolClick(SenderPnl: TIDContext; SenderOR: TObject);
+    procedure MenuAdminRadPlusClick(SenderPnl: TIDContext; SenderOR: TObject);
+    procedure MenuAdminRadMinusClick(SenderPnl: TIDContext; SenderOR: TObject);
+    procedure MenuAdminRadNepolClick(SenderPnl: TIDContext; SenderOR: TObject);
 
     procedure PanelPotvrSekvNSPlus(Sender: TIDContext; success: Boolean);
     procedure PanelPotvrSekvNSMinus(Sender: TIDContext; success: Boolean);
@@ -1168,6 +1171,48 @@ begin
   end;
 end;
 
+procedure TBlkTurnout.MenuAdminRadPlusCLick(SenderPnl: TIDContext; SenderOR: TObject);
+begin
+  if (not Self.m_settings.controllers.enabled) then
+    Exit();
+
+  try
+    RCSi.SetInput(Self.m_settings.controllers.rcsPlus, 1);
+    RCSi.SetInput(Self.m_settings.controllers.rcsMinus, 0);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
+procedure TBlkTurnout.MenuAdminRadMinusCLick(SenderPnl: TIDContext; SenderOR: TObject);
+begin
+  if (not Self.m_settings.controllers.enabled) then
+    Exit();
+
+  try
+    RCSi.SetInput(Self.m_settings.controllers.rcsPlus, 0);
+    RCSi.SetInput(Self.m_settings.controllers.rcsMinus, 1);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
+procedure TBlkTurnout.MenuAdminRadNepolCLick(SenderPnl: TIDContext; SenderOR: TObject);
+begin
+  if (not Self.m_settings.controllers.enabled) then
+    Exit();
+
+  try
+    RCSi.SetInput(Self.m_settings.controllers.rcsPlus, 0);
+    RCSi.SetInput(Self.m_settings.controllers.rcsMinus, 0);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkTurnout.ShowPanelMenu(SenderPnl: TIDContext; SenderOR: TObject; rights: TAreaRights): string;
@@ -1214,15 +1259,36 @@ begin
       Result := Result + '*ZRUŠ REDUKCI,';
   end;
 
-  if ((RCSi.simulation) and (Self.posDetection)) then
+  if (RCSi.simulation) then
   begin
     Result := Result + '-,';
-    if (Self.position <> TTurnoutPosition.plus) then
-      Result := Result + '*POL+,';
-    if (Self.position <> TTurnoutPosition.minus) then
-      Result := Result + '*POL-,';
-    if (Self.position <> TTurnoutPosition.none) then
-      Result := Result + '*NEPOL,';
+
+    if (Self.posDetection) then
+    begin
+      if (Self.position <> TTurnoutPosition.plus) then
+        Result := Result + '*POL+,';
+      if (Self.position <> TTurnoutPosition.minus) then
+        Result := Result + '*POL-,';
+      if (Self.position <> TTurnoutPosition.none) then
+        Result := Result + '*NEPOL,';
+    end;
+
+    if (Self.m_settings.controllers.enabled) then
+    begin
+      try
+        var plus := (RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = isOn);
+        var minus := (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) = isOn);
+
+        if (not plus) then
+          Result := Result + '*RAD+,';
+        if (not minus) then
+          Result := Result + '*RAD-,';
+        if (plus or minus) then
+          Result := Result + '*RAD?,';
+      except
+        on E: RCSException do begin end;
+      end;
+    end;
   end;
 end;
 
@@ -1265,7 +1331,13 @@ begin
   else if (item = 'POL-') then
     Self.MenuAdminPolMinusCLick(SenderPnl, SenderOR)
   else if (item = 'NEPOL') then
-    Self.MenuAdminNepolCLick(SenderPnl, SenderOR);
+    Self.MenuAdminNepolCLick(SenderPnl, SenderOR)
+  else if (item = 'RAD+') then
+    Self.MenuAdminRadPlusClick(SenderPnl, SenderOR)
+  else if (item = 'RAD-') then
+    Self.MenuAdminRadMinusClick(SenderPnl, SenderOR)
+  else if (item = 'RAD?') then
+    Self.MenuAdminRadNepolClick(SenderPnl, SenderOR);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
