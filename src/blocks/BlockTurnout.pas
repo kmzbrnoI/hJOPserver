@@ -1793,7 +1793,7 @@ begin
       begin
         if (TBlkTrack(Blk).IsNeprofilJC) then
           fg := clYellow;
-        if (TBlkTrack(Blk).PstIsActive()) then
+        if (TBlkTrack(Blk).PstIs()) then
           fg := clBlue;
       end;
     end;

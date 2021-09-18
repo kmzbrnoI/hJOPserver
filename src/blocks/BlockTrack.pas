@@ -2372,14 +2372,14 @@ begin
     TTrackState.disabled:
       fg := clFuchsia;
     TTrackState.none, TTrackState.free:
-      fg := ite(Self.PstIsActive(), clBlue, $A0A0A0);
+      fg := ite(Self.PstIs(), clBlue, $A0A0A0);
     TTrackState.occupied:
       fg := clRed;
   else
     fg := clFuchsia;
   end;
 
-  if (Self.PstIsActive()) then
+  if (Self.PstIs()) then
     nebarVetve := clBlue;
 
   // zobrazeni zakazu odjezdu do trati
