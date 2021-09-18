@@ -193,6 +193,7 @@ type
     _JCB_USEK_STITEK = 24;
     _JCB_USEK_AB = 25;
     _JCB_USEK_LAST_OBSAZENO = 26; // povoleno postaveni JC
+    _JCB_USEK_PST = 27;
 
     _JCB_VYHYBKA_KONC_POLOHA = 30;
     _JCB_VYHYBKA_VYLUKA = 31;
@@ -200,6 +201,7 @@ type
     _JCB_VYHYBKA_ZAMCENA = 33;
     _JCB_VYHYBKA_NOUZ_ZAVER = 34;
     _JCB_VYHYBKA_NESPAVNA_POLOHA = 35;
+    _JCB_VYHYBKA_PST = 36;
 
     _JCB_PREJEZD_NOUZOVE_OTEVREN = 40;
     _JCB_PREJEZD_PORUCHA = 41;
@@ -209,6 +211,7 @@ type
     _JCB_ODVRAT_ZAMCENA = 60;
     _JCB_ODVRAT_OBSAZENA = 61;
     _JCB_ODVRAT_KONC_POLOHA = 62;
+    _JCB_ODVRAT_PST = 63;
 
     _JCB_TRAT_NEPRIPRAVENA = 69;
     _JCB_TRAT_ZAK = 70;
@@ -718,6 +721,9 @@ begin
 
     if (track.note <> '') then
       barriers.Add(Self.JCBarrier(_JCB_USEK_STITEK, track));
+
+    if (track.PstIs()) then
+      barriers.Add(Self.JCBarrier(_JCB_USEK_PST, track));
   end;
 
   // turnouts
@@ -753,6 +759,9 @@ begin
     if (turnout.note <> '') then
       barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, turnout));
 
+    if (turnout.PstIs()) then
+      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_PST, turnout));
+
     // kontrola nouzoveho zaveru a redukce menu:
     if (turnout.position <> turnoutZav.position) then
     begin
@@ -776,6 +785,9 @@ begin
       if (coupling.occupied = TTrackState.occupied) then
         barriers.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, coupling));
     end;
+
+    if ((coupling <> nil) and (coupling.PstIs())) then
+      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_PST, coupling));
 
     // kontrola neprofiloveho styku pro polohu +
     if ((turnoutZav.position = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil) and
@@ -836,6 +848,9 @@ begin
         barriers.Add(Self.JCBarrier(_JCB_ODVRAT_OBSAZENA, refugee));
     end;
 
+    if (refugee.PstIs()) then
+      barriers.Add(Self.JCBarrier(_JCB_ODVRAT_PST, refugee));
+
     // kontrola spojky odvratu
     var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugee.GetSettings.coupling));
     if (coupling <> nil) then
@@ -847,6 +862,9 @@ begin
       // kontrola stitku vyhybky:
       if (coupling.note <> '') then
         barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, coupling));
+
+      if (coupling.PstIs()) then
+        barriers.Add(Self.JCBarrier(_JCB_ODVRAT_PST, coupling));
 
       // kontrola zamceni odvratu
       if (refugee.position <> refugeeZav.position) then
@@ -1025,6 +1043,9 @@ begin
 
     if (track.note <> '') then
       barriers.Add(Self.JCBarrier(_JCB_USEK_STITEK, track));
+
+    if (track.PstIs()) then
+      barriers.Add(Self.JCBarrier(_JCB_USEK_PST, track));
   end;
 
   // turnouts
@@ -1037,6 +1058,9 @@ begin
 
     if (turnout.note <> '') then
       barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, turnout));
+
+    if (turnout.PstIs()) then
+      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_PST, turnout));
 
     if (turnout.position <> turnoutZav.position) then
     begin
@@ -1057,6 +1081,9 @@ begin
       else if (TBlkTurnout(coupling).outputLocked) then
         barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_ZAMCENA, coupling));
     end;
+
+    if ((coupling <> nil) and (coupling.PstIs())) then
+      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_PST, coupling));
   end;
 
   // crossings
@@ -1087,6 +1114,9 @@ begin
         barriers.Add(Self.JCBarrier(_JCB_ODVRAT_ZAMCENA, refugee));
     end;
 
+    if (refugee.PstIs()) then
+      barriers.Add(Self.JCBarrier(_JCB_ODVRAT_PST, refugee));
+
     // refugee's coupling
     var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugee.GetSettings.coupling));
     if (coupling <> nil) then
@@ -1096,6 +1126,9 @@ begin
 
       if (coupling.note <> '') then
         barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, coupling));
+
+      if (coupling.PstIs()) then
+        barriers.Add(Self.JCBarrier(_JCB_ODVRAT_PST, coupling));
 
       if (refugee.position <> refugeeZav.position) then
       begin
@@ -3119,7 +3152,8 @@ begin
       _JCB_USEK_ZAVER, _JCB_USEK_AB, _JCB_USEK_SOUPRAVA, _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_ZAMCENA,
       _JCB_VYHYBKA_NOUZ_ZAVER, _JCB_PREJEZD_NOUZOVE_OTEVREN, _JCB_PREJEZD_PORUCHA, _JCB_ODVRAT_ZAMCENA,
       _JCB_ODVRAT_OBSAZENA, _JCB_ODVRAT_KONC_POLOHA, _JCB_TRAT_ZAVER, _JCB_TRAT_NEPRIPRAVENA, _JCB_TRAT_ZADOST,
-      _JCB_TRAT_NESOUHLAS, _JCB_TRAT_ZAK, _JCB_ZAMEK_NEUZAMCEN, _JCB_VYHYBKA_NESPAVNA_POLOHA:
+      _JCB_TRAT_NESOUHLAS, _JCB_TRAT_ZAK, _JCB_ZAMEK_NEUZAMCEN, _JCB_VYHYBKA_NESPAVNA_POLOHA,
+      _JCB_USEK_PST, _JCB_VYHYBKA_PST, _JCB_ODVRAT_PST:
       begin
         result[0] := GetUPOLine('NEPŘÍPUSTNÉ', taCenter, clRed, clWhite);
         if (Assigned(barrier.Block)) then
@@ -3328,6 +3362,9 @@ begin
         result[1] := GetUPOLine('Jízda proti směru soupravy');
         result[2] := GetUPOLine('Soprava ' + trains[barrier.param].name);
       end;
+
+    _JCB_USEK_PST, _JCB_VYHYBKA_PST, _JCB_ODVRAT_PST:
+      result[1] := GetUPOLine('Prvek pod pom. stavědlem');
 
   else
     result[0] := GetUPOLine('Neznámá bariéra ve stavění JC', taCenter, clRed, clWhite);
@@ -3917,7 +3954,8 @@ begin
         _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_EXIST, _JCB_BLOK_NOT_TYP, _JCB_NAV_NOT_USEK, _JCB_USEK_OBSAZENO,
           _JCB_USEK_SOUPRAVA, _JCB_USEK_AB, _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_NESPAVNA_POLOHA,
           _JCB_PREJEZD_NOUZOVE_OTEVREN, _JCB_PREJEZD_PORUCHA, _JCB_ODVRAT_KONC_POLOHA, _JCB_TRAT_NEPRIPRAVENA,
-          _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS, _JCB_TRAT_NO_BP, _JCB_ZAMEK_NEUZAMCEN:
+          _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS, _JCB_TRAT_NO_BP, _JCB_ZAMEK_NEUZAMCEN,
+          _JCB_USEK_PST, _JCB_VYHYBKA_PST, _JCB_ODVRAT_PST:
           Exit(true);
 
         _JCB_TRAT_ZAK:
