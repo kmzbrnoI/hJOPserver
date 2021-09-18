@@ -641,8 +641,15 @@ begin
     settings.lockPosition := TTurnoutPosition.none;
   end;
 
-  settings.npPlus := ite(Self.CHB_npPlus.Checked, Self.CB_NeprofilIds[Self.CB_npPlus.ItemIndex], -1);
-  settings.npMinus := ite(Self.CHB_npMinus.Checked, Self.CB_NeprofilIds[Self.CB_npMinus.ItemIndex], -1);
+  if (Self.CHB_npPlus.Checked) then
+    settings.npPlus := Self.CB_NeprofilIds[Self.CB_npPlus.ItemIndex]
+  else
+    settings.npPlus := -1;
+
+  if (Self.CHB_npMinus.Checked) then
+    settings.npMinus := Self.CB_NeprofilIds[Self.CB_npMinus.ItemIndex]
+  else
+    settings.npMinus := -1;
 
   settings.posDetection := Self.CHB_Feedback.Checked;
 
