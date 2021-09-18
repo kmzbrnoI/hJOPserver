@@ -8,7 +8,7 @@ uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, IdContext,
   Generics.Collections, Area, JsonDataObjects, TechnologieRCS, BlockTurnout;
 
 type
-  TBlkPstStatus = (pstDisabled, pstOff, pstTakeReady, pstRefuging, pstTaken);
+  TBlkPstStatus = (pstDisabled, pstOff, pstRefuging, pstTakeReady, pstActive);
 
   TPstRefugeeZav = record
     block: Integer;
@@ -53,12 +53,18 @@ type
     procedure MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 
+    procedure MenuAdminPoOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuAdminPoOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+
     function GetZaver(): Boolean;
     function GetEmLock(): Boolean;
     function GetEnabled(): Boolean;
 
     procedure SetEmLock(new: Boolean);
     procedure SetNote(note: string);
+
+    procedure CheckInputs();
+    procedure ShowIndication();
 
   public
 
@@ -71,6 +77,7 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
+    procedure SetStatus(new: TBlkPstStatus);
 
     procedure Update(); override;
     procedure Change(now: Boolean = false); override;
@@ -83,7 +90,7 @@ type
     procedure DecreaseEmLock(amount: Cardinal);
 
     property state: TBlkPstState read m_state;
-    property status: TBLKPstStatus read m_state.status;
+    property status: TBlkPstStatus read m_state.status write SetStatus;
 
     property zaver: Boolean read GetZaver;
     property emLock: Boolean read GetEmLock write SetEmLock;
@@ -106,7 +113,8 @@ type
 implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
-  TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase;
+  TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
+  RCSErrors, RCS;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -141,7 +149,7 @@ begin
     try
       ExtractStringsEx([','], [], ini_tech.ReadString(section, 'tracks', ''), strs);
       Self.m_settings.tracks.Clear();
-      for var str in strs do
+      for var str: string in strs do
         Self.m_settings.tracks.Add(StrToInt(str));
     finally
       strs.Free();
@@ -177,7 +185,7 @@ begin
     var refugee: TStrings := TStringList.Create();
     try
       ExtractStringsEx([')'], ['('], ini_tech.ReadString(section, 'refugees', ''), strs);
-      Self.m_settings.tracks.Clear();
+      Self.m_settings.refugees.Clear();
       for var str in strs do
       begin
         refugee.Clear();
@@ -246,11 +254,82 @@ begin
   Self.Change(true);
 end;
 
+procedure TBlkPst.SetStatus(new: TBlkPstStatus);
+begin
+  if (new = Self.m_state.status) then
+    Exit();
+
+  var old := Self.m_state.status;
+  Self.m_state.status := new;
+  Self.Change();
+
+  if ((old = pstOff) and (new > pstOff)) then
+  begin
+    // add pst to all blocks
+    for var trackId in Self.m_settings.tracks do
+    begin
+      var blk := Blocks.GetBlkByID(trackId);
+      if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT))) then
+        TBlkTrack(blk).PstAdd(Self);
+    end;
+
+  end else if ((old > pstOff) and (new = pstOff)) then
+  begin
+    // remove pst from all blocks
+    for var trackId in Self.m_settings.tracks do
+    begin
+      var blk := Blocks.GetBlkByID(trackId);
+      if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT))) then
+        TBlkTrack(blk).PstRemove(Self);
+    end;
+
+  end else begin
+    // call change to all blocks
+    for var trackId in Self.m_settings.tracks do
+    begin
+      var blk := Blocks.GetBlkByID(trackId);
+      if (blk <> nil) then
+        blk.Change();
+    end;
+  end;
+
+  Self.ShowIndication();
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkPst.Update();
 begin
   inherited Update();
+  Self.CheckInputs();
+end;
+
+procedure TBlkPst.CheckInputs();
+var take, release: Boolean;
+begin
+  if (not RCSi.Started) then
+    Exit();
+
+  take := false;
+  release := false;
+  try
+    take := (RCSi.GetInput(Self.m_settings.rcsInTake) = TRCSInputState.isOn);
+    release := (RCSi.GetInput(Self.m_settings.rcsInRelease) = TRCSInputState.isOn);
+  except
+    on E: RCSException do begin end;
+  end;
+
+  if ((Self.status = pstTakeReady) and (take) and (not release)) then
+  begin
+    // take pst
+    Self.status := pstActive;
+  end;
+
+  if ((Self.status = pstActive) and (release) and (not take)) then
+  begin
+    // release pst
+    Self.status := pstTakeReady;
+  end;
 end;
 
 // change je volan z vyhybky pri zmene zaveru
@@ -263,14 +342,17 @@ end;
 
 procedure TBlkPst.MenuPstEnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
+  Self.status := pstTakeReady;
 end;
 
 procedure TBlkPst.MenuPstDisClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
+  Self.status := pstOff;
 end;
 
 procedure TBlkPst.MenuNPstClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
+  Self.status := pstOff;
 end;
 
 procedure TBlkPst.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -286,6 +368,28 @@ procedure TBlkPst.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
 end;
 
+procedure TBlkPst.MenuAdminPoOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  try
+    RCSi.SetInput(Self.m_settings.rcsInRelease, 0);
+    RCSi.SetInput(Self.m_settings.rcsInTake, 1);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
+procedure TBlkPst.MenuAdminPoOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  try
+    RCSi.SetInput(Self.m_settings.rcsInRelease, 1);
+    RCSi.SetInput(Self.m_settings.rcsInTake, 0);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 // vytvoreni menu pro potreby konkretniho bloku:
@@ -297,10 +401,20 @@ begin
     Result := Result + 'PST>,'
   else if (Self.status = pstTakeReady) then
     Result := Result + 'PST<,'
-  else if (Self.status = pstTaken) then
+  else if (Self.status = pstActive) then
     Result := Result + '!NPST,';
 
   Result := Result + 'STIT,';
+
+  if (RCSi.simulation) then
+  begin
+    Result := Result + '-,';
+
+    if (Self.status = pstTakeReady) then
+      Result := Result + '*PO>,'
+    else if (Self.status = pstActive) then
+      Result := Result + '*PO<,';
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -331,7 +445,11 @@ begin
   else if (item = 'ZAV>') then
     Self.MenuZAVEnableClick(SenderPnl, SenderOR)
   else if (item = 'ZAV<') then
-    Self.MenuZAVDisableClick(SenderPnl, SenderOR);
+    Self.MenuZAVDisableClick(SenderPnl, SenderOR)
+  else if (item = 'PO>') then
+    Self.MenuAdminPoOnClick(SenderPnl, SenderOR)
+  else if (item = 'PO<') then
+    Self.MenuAdminPoOffClick(SenderPnl, SenderOR);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -428,7 +546,7 @@ begin
   case (Self.status) of
     pstOff: fg := $A0A0A0;
     pstTakeReady: fg := clWhite;
-    pstTaken: fg := clBlue;
+    pstActive: fg := clBlue;
   else
     fg := clFuchsia;
   end;
@@ -474,6 +592,24 @@ begin
 
   Self.m_settings := settings;
   Self.Change();
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPst.ShowIndication();
+begin
+  if (not RCSi.Started) then
+    Exit();
+
+  try
+    case (Self.status) of
+      pstDisabled, pstOff, pstRefuging: RCSi.SetOutput(Self.m_settings.rcsOutTaken, 0);
+      pstTakeReady: RCSi.SetOutput(Self.m_settings.rcsOutTaken, TRCSOutputState.osf180);
+      pstActive: RCSi.SetOutput(Self.m_settings.rcsOutTaken, 1);
+    end;
+  except
+    on E: RCSException do begin end;
+  end
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

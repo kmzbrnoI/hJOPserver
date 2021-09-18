@@ -455,7 +455,7 @@ begin
           pstOff: Self.LV.Items[line].SubItems[3] := 'základní stav';
           pstTakeReady: Self.LV.Items[line].SubItems[3] := 'připraveno k převzetí';
           pstRefuging: Self.LV.Items[line].SubItems[3] := 'nastavování boční ochrany...';
-          pstTaken: Self.LV.Items[line].SubItems[3] := 'aktivní';
+          pstActive: Self.LV.Items[line].SubItems[3] := 'aktivní';
         end;
 
         Self.LV.Items[line].SubItems[5] := '---';

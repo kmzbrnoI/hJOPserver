@@ -1773,11 +1773,15 @@ begin
           fg := $707070;
       end; // case
 
-      // je soucasti vybarveneho neprofiloveho useku
+      // je soucasti vybarveneho neprofiloveho useku / pst
       Blocks.GetBlkByID(Self.trackID, Blk);
-      if ((Blk <> nil) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and (fg = $A0A0A0) and
-        (TBlkTrack(Blk).IsNeprofilJC)) then
-        fg := clYellow;
+      if ((Blk <> nil) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and (fg = $A0A0A0)) then
+      begin
+        if (TBlkTrack(Blk).IsNeprofilJC) then
+          fg := clYellow;
+        if (TBlkTrack(Blk).PstIsActive()) then
+          fg := clBlue;
+      end;
     end;
 
     // do profilu vyhybky zasahuje obsazeny usek

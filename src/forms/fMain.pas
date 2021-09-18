@@ -3147,7 +3147,7 @@ begin
           pstOff: LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
           pstTakeReady: LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
           pstRefuging: LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_RED;
-          pstTaken: LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_BLUE;
+          pstActive: LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_BLUE;
         end;
       end;
   end; // case

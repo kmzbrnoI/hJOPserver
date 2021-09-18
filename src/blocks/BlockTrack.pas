@@ -60,6 +60,7 @@ type
     currentHoukEv: Integer; // index aktualni houkaci udalosti
     neprofilJCcheck: TList<Integer>; // seznam id jizdnich cest, ktere na usek uvalily podminku neprofiloveho styku
     trains: TList<Integer>; // seznam souprav na useku ve smeru L --> S
+    psts: TList<TBlk>;
   end;
 
   TBlkTrackSpnl = record
@@ -158,6 +159,8 @@ type
     function GetSignalL(): TBlk;
     function GetSignalS(): TBlk;
 
+    procedure PstCheckActive();
+
   protected
     m_settings: TBlkTrackSettings;
 
@@ -220,6 +223,11 @@ type
 
     procedure MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer);
 
+    procedure PstAdd(pst: TBlk);
+    procedure PstRemove(pst: TBlk);
+    function PstIsActive(): Boolean;
+    function PstIs(): Boolean;
+
     property state: TBlkTrackState read m_state;
     property spnl: TBlkTrackSpnl read m_spnl;
 
@@ -278,7 +286,7 @@ uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, THVDatabase, Math,
   Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils,
   announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef,
-  Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase;
+  Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase, BlockPst, IfThenElse;
 
 constructor TBlkTrack.Create(index: Integer);
 begin
@@ -300,6 +308,7 @@ begin
   Self.m_state.trains := TList<Integer>.Create();
   Self.m_state.signalJCRef := TList<TBlk>.Create();
   Self.m_state.sectionsOccupied := TList<TTrackState>.Create();
+  Self.m_state.psts := TList<TBlk>.Create();
 end;
 
 destructor TBlkTrack.Destroy();
@@ -318,6 +327,7 @@ begin
   Self.m_state.trains.free();
   Self.m_state.signalJCRef.free();
   Self.m_state.sectionsOccupied.free();
+  Self.m_state.psts.Free();
 
   inherited;
 end;
@@ -474,6 +484,7 @@ begin
   Self.OnBoosterChange();
   Self.m_state.sectionsOccupied.Clear();
   Self.m_state.neprofilJCcheck.Clear();
+  Self.m_state.psts.Clear();
 
   Self.Update();
   // change event will be called in Update();
@@ -498,8 +509,8 @@ begin
   Self.m_state.power := TBoosterSignal.undef;
   Self.m_state.DCC := false;
   Self.m_state.sectionsOccupied.Clear();
-
   Self.m_state.neprofilJCcheck.Clear();
+  Self.m_state.psts.Clear();
 
   Self.Change(true);
 end;
@@ -510,6 +521,7 @@ begin
   Self.eventsOnFree.Clear();
   Self.eventsOnZaverReleaseOrAB.Clear();
   Self.zaver := TZaver.no;
+  Self.m_state.psts.Clear();
 end;
 
 function TBlkTrack.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
@@ -2354,20 +2366,21 @@ begin
 
   nebarVetve := $A0A0A0;
 
-  // --- Popredi ---
+  // --- Foreground ---
 
   case (Self.occupied) of
     TTrackState.disabled:
       fg := clFuchsia;
-    TTrackState.none:
-      fg := $A0A0A0;
-    TTrackState.free:
-      fg := $A0A0A0;
+    TTrackState.none, TTrackState.free:
+      fg := ite(Self.PstIsActive(), clBlue, $A0A0A0);
     TTrackState.occupied:
       fg := clRed;
   else
     fg := clFuchsia;
   end;
+
+  if (Self.PstIsActive()) then
+    nebarVetve := clBlue;
 
   // zobrazeni zakazu odjezdu do trati
   if ((fg = $A0A0A0) and (Self.typ = btRT) and (TBlkRT(Self).inRailway > -1)) then
@@ -2412,7 +2425,7 @@ begin
 
   Result := Result + ownConvert.ColorToStr(fg) + ';';
 
-  // --- Pozadi ---
+  // --- Background ---
 
   bg := clBlack;
   if (Self.note <> '') then
@@ -2542,6 +2555,48 @@ begin
     then
       Exit(blk);
   Result := nil;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTrack.PstAdd(pst: TBlk);
+begin
+  if (Self.m_state.psts.Contains(pst)) then
+    Exit();
+
+  Self.m_state.psts.Add(pst);
+  Self.Change();
+end;
+
+procedure TBlkTrack.PstRemove(pst: TBlk);
+begin
+  if (not Self.m_state.psts.Contains(pst)) then
+    Exit();
+
+  Self.m_state.psts.Remove(pst);
+  Self.Change();
+end;
+
+function TBlkTrack.PstIsActive(): Boolean;
+begin
+  Self.PstCheckActive();
+  for var blk: TBlk in Self.m_state.psts do
+    if (TBlkPst(blk).status = pstActive) then
+      Exit(true);
+  Result := false;
+end;
+
+function TBlkTrack.PstIs(): Boolean;
+begin
+  Self.PstCheckActive();
+  Result := (Self.m_state.psts.Count > 0);
+end;
+
+procedure TBlkTrack.PstCheckActive();
+begin
+  for var i := Self.m_state.psts.Count-1 downto 0 do
+    if (TBlkPst(Self.m_state.psts[i]).status <= pstOff) then
+      Self.PstRemove(self.m_state.psts[i]);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
