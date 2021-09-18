@@ -174,9 +174,8 @@ begin
   glob.id := Self.SE_ID.Value;
   glob.typ := btDisconnector;
 
-  if (isNewBlock) then
+  if (Self.isNewBlock) then
   begin
-    glob.note := '';
     try
       block := Blocks.Add(glob) as TBlkDisconnector;
     except
@@ -188,7 +187,6 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.block.note;
     Self.block.SetGlobalSettings(glob);
   end;
 

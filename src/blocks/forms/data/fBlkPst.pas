@@ -79,8 +79,8 @@ type
     procedure B_Ref_DelClick(Sender: TObject);
     procedure B_Signal_DelClick(Sender: TObject);
   private
-    newBlk: Boolean;
-    blk: TBlkPst;
+    isNewBlock: Boolean;
+    block: TBlkPst;
     CB_TrackItems: TList<Integer>;
     CB_TurnoutItems: TList<Integer>;
     CB_RefugeeItems: TList<Integer>;
@@ -114,10 +114,10 @@ uses BlockDb, Block, Area, DataBloky, IfThenElse, BlockTurnout;
 procedure TF_BlkPst.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.blk));
+  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
   Self.CommonOpenForm();
 
-  if (Self.newBlk) then
+  if (Self.isNewBlock) then
     Self.NewBlkOpenForm()
   else
     Self.NormalOpenForm();
@@ -145,8 +145,8 @@ end;
 
 procedure TF_BlkPst.NormalOpenForm();
 begin
-  var glob := Self.blk.GetGlobalSettings();
-  var pstSettings := Self.blk.GetSettings();
+  var glob := Self.block.GetGlobalSettings();
+  var pstSettings := Self.block.GetSettings();
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
@@ -156,7 +156,7 @@ begin
     var LI := Self.LV_Tracks.Items.Add();
     Self.FillBlockLI(LI, pstSettings.tracks[i]);
   end;
-  Blocks.FillCB(Self.CB_Track, Self.CB_TrackItems, nil, Self.blk.areas, btTrack, btRT);
+  Blocks.FillCB(Self.CB_Track, Self.CB_TrackItems, nil, Self.block.areas, btTrack, btRT);
   Self.B_Track_Ok.Enabled := Self.CB_Track.Enabled;
 
   for var i := 0 to pstSettings.turnouts.Count-1 do
@@ -164,7 +164,7 @@ begin
     var LI := Self.LV_Turnouts.Items.Add();
     Self.FillBlockLI(LI, pstSettings.turnouts[i]);
   end;
-  Blocks.FillCB(Self.CB_Turnout, Self.CB_TurnoutItems, nil, Self.blk.areas, btTurnout);
+  Blocks.FillCB(Self.CB_Turnout, Self.CB_TurnoutItems, nil, Self.block.areas, btTurnout);
   Self.B_Turnout_Ok.Enabled := Self.CB_Turnout.Enabled;
 
   for var i := 0 to pstSettings.refugees.Count-1 do
@@ -175,7 +175,7 @@ begin
       TTurnoutPosition.minus: Self.FillRefugeeLI(LI, pstSettings.refugees[i].block, '-');
     end;
   end;
-  Blocks.FillCB(Self.CB_Ref_Block, Self.CB_RefugeeItems, nil, Self.blk.areas, btTurnout);
+  Blocks.FillCB(Self.CB_Ref_Block, Self.CB_RefugeeItems, nil, Self.block.areas, btTurnout);
   Self.B_Ref_Ok.Enabled := Self.CB_Ref_Block.Enabled;
 
   for var i := 0 to pstSettings.turnouts.Count-1 do
@@ -183,7 +183,7 @@ begin
     var LI := Self.LV_Turnouts.Items.Add();
     Self.FillBlockLI(LI, pstSettings.turnouts[i]);
   end;
-  Blocks.FillCB(Self.CB_Signal, Self.CB_SignalItems, nil, Self.blk.areas, btSignal);
+  Blocks.FillCB(Self.CB_Signal, Self.CB_SignalItems, nil, Self.block.areas, btSignal);
   Self.B_Signal_Ok.Enabled := Self.CB_Signal.Enabled;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (pomocné stavědlo)';
@@ -205,7 +205,7 @@ end;
 
 procedure TF_BlkPst.NewBlock();
 begin
-  Self.newBlk := true;
+  Self.isNewBlock := true;
   Self.EditBlock(Blocks.count);
 end;
 
@@ -227,11 +227,10 @@ begin
   glob.id := Self.SE_ID.Value;
   glob.typ := btPst;
 
-  if (NewBlk) then
+  if (Self.isNewBlock) then
   begin
-    glob.note := '';
     try
-      Blk := Blocks.Add(glob) as TBlkPst;
+      Self.block := Blocks.Add(glob) as TBlkPst;
     except
       on E: Exception do
       begin
@@ -241,8 +240,7 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.blk.note;
-    Self.blk.SetGlobalSettings(glob);
+    Self.block.SetGlobalSettings(glob);
   end;
 
   var pstSettings: TBlkPstSettings;
@@ -283,7 +281,7 @@ begin
   pstSettings.rcsOutHorn.port := Self.SE_RCS_Horn_Port.Value;
 
   Self.Close();
-  Self.blk.Change();
+  Self.block.Change();
 end;
 
 procedure TF_BlkPst.B_Ref_DelClick(Sender: TObject);
@@ -447,7 +445,7 @@ end;
 
 procedure TF_BlkPst.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.newBlk := false;
+  Self.isNewBlock := false;
   Self.openIndex := -1;
   BlocksTablePainter.UpdateTable();
 end;

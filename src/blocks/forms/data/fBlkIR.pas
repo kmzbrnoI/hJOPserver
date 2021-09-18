@@ -151,7 +151,6 @@ begin
 
   if (Self.isNewBlock) then
   begin
-    glob.note := '';
     try
       Self.block := Blocks.Add(glob) as TBlkIR;
     except
@@ -163,7 +162,6 @@ begin
       end;
     end;
   end else begin
-    glob.note := block.note;
     Self.block.SetGlobalSettings(glob);
   end;
 

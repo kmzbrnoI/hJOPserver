@@ -30,7 +30,6 @@ type
     name: string;
     id: Integer;
     typ: TBlkType;
-    note: string;
   end;
 
   TOnBlkChange = procedure(Sender: TObject) of object;
@@ -39,7 +38,7 @@ type
 
   TBlk = class(TObject)
   private const
-    _def_glob_settings: TBlkSettings = (name: ''; id: - 1; note: '';);
+    _def_glob_settings: TBlkSettings = (name: ''; id: - 1;);
   private
     changed: Boolean;
 
@@ -122,7 +121,6 @@ type
     property id: Integer read m_globSettings.id;
     property name: string read m_globSettings.name;
     property typ: TBlkType read m_globSettings.typ;
-    property note: string read m_globSettings.note;
   end;
 
 implementation
@@ -173,16 +171,12 @@ begin
   Self.m_globSettings.name := ini_tech.ReadString(section, 'nazev', '');
   Self.m_globSettings.id := StrToInt(section);
   Self.m_globSettings.typ := TBlkType(ini_tech.ReadInteger(section, 'typ', -1));
-  Self.m_globSettings.note := ini_tech.ReadString(section, 'pozn', '');
 end;
 
 procedure TBlk.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
   ini_tech.WriteString(section, 'nazev', Self.m_globSettings.name);
   ini_tech.WriteInteger(section, 'typ', Integer(Self.m_globSettings.typ));
-
-  if (Self.m_globSettings.note <> '') then
-    ini_tech.WriteString(section, 'pozn', Self.m_globSettings.note);
 end;
 
 procedure TBlk.SaveStatus(ini_stat: TMemIniFile; const section: string);

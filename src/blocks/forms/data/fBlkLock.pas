@@ -19,8 +19,8 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
 
   private
-    newBlk: Boolean;
-    blk: TBlkLock;
+    isNewBlock: Boolean;
+    block: TBlkLock;
     openIndex: Integer;
 
     procedure CommonOpenForm();
@@ -45,10 +45,10 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area;
 procedure TF_BlkLock.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
   Self.CommonOpenForm();
 
-  if (NewBlk) then
+  if (isNewBlock) then
     Self.NewOpenForm()
   else
     Self.EditForm();
@@ -68,7 +68,7 @@ end;
 procedure TF_BlkLock.EditForm();
 var glob: TBlkSettings;
 begin
-  glob := Self.Blk.GetGlobalSettings();
+  glob := Self.block.GetGlobalSettings();
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
@@ -84,7 +84,7 @@ end;
 
 procedure TF_BlkLock.NewBlock();
 begin
-  Self.newBlk := true;
+  Self.isNewBlock := true;
   Self.EditBlock(Blocks.count);
 end;
 
@@ -111,11 +111,10 @@ begin
   glob.id := Self.SE_ID.Value;
   glob.typ := btLock;
 
-  if (NewBlk) then
+  if (Self.isNewBlock) then
   begin
-    glob.note := '';
     try
-      Blk := Blocks.Add(glob) as TBlkLock;
+      block := Blocks.Add(glob) as TBlkLock;
     except
       on E: Exception do
       begin
@@ -125,17 +124,16 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.blk.note;
-    Self.blk.SetGlobalSettings(glob);
+    Self.block.SetGlobalSettings(glob);
   end;
 
   Self.Close();
-  Self.blk.Change();
+  Self.block.Change();
 end;
 
 procedure TF_BlkLock.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.newBlk := false;
+  Self.isNewBlock := false;
   Self.openIndex := -1;
   BlocksTablePainter.UpdateTable();
 end;

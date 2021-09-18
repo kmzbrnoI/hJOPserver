@@ -350,10 +350,6 @@ begin
       end;
     end;
   end else begin
-    globRailway.note := Self.railway.note;
-    globLinkerA.note := Self.linkerA.note;
-    globLinkerB.note := Self.linkerB.note;
-
     Self.railway.SetGlobalSettings(globRailway);
     Self.linkerA.SetGlobalSettings(globLinkerA);
     Self.linkerB.SetGlobalSettings(globLinkerB);

@@ -128,7 +128,6 @@ begin
 
   if (isNewBlock) then
   begin
-    glob.note := '';
     try
       block := Blocks.Add(glob) as TBlkSummary;
     except
@@ -140,7 +139,6 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.block.note;
     Self.block.SetGlobalSettings(glob);
   end;
 

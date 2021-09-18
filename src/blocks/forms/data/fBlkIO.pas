@@ -248,11 +248,10 @@ begin
   glob.id := Self.SE_ID.Value;
   glob.typ := btIO;
 
-  if (isNewBlock) then
+  if (Self.isNewBlock) then
   begin
-    glob.note := '';
     try
-      block := Blocks.Add(glob) as TBlkIO;
+      Self.block := Blocks.Add(glob) as TBlkIO;
     except
       on E: Exception do
       begin
@@ -262,7 +261,6 @@ begin
       end;
     end;
   end else begin
-    glob.note := block.note;
     Self.block.SetGlobalSettings(glob);
   end;
 

@@ -87,7 +87,7 @@ type
     procedure FormDestroy(Sender: TObject);
   private
     openIndex: Integer;
-    blk: TBlkTurnout;
+    block: TBlkTurnout;
     isNewBlock: Boolean;
     CB_CouplingIds: TList<Integer>;
     CB_LockIds: TList<Integer>;
@@ -127,7 +127,7 @@ end;
 
 procedure TF_BlkTurnout.EditBlock(blockIndex: Integer);
 begin
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.Blk));
+  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
   Self.openIndex := blockIndex;
 
   Self.CommonOpenForm();
@@ -213,12 +213,12 @@ end;
 procedure TF_BlkTurnout.EditOpenForm();
 var glob: TBlkSettings;
 begin
-  glob := Self.Blk.GetGlobalSettings();
+  glob := Self.block.GetGlobalSettings();
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
 
-  var settings := Blk.GetSettings();
+  var settings := Self.block.GetSettings();
 
   Self.CHB_Coupling.Checked := (settings.coupling > -1);
   Self.CHB_CouplingClick(Self.CHB_Coupling);
@@ -242,12 +242,12 @@ begin
 
   if (settings.RCSAddrs.count > 0) then
   begin
-    if (Self.Blk.rcsInPlus.board > Cardinal(Self.SE_In_Plus_module.MaxValue)) then
+    if (Self.block.rcsInPlus.board > Cardinal(Self.SE_In_Plus_module.MaxValue)) then
       Self.SE_In_Plus_module.MaxValue := 0;
     Self.SE_In_Plus_port.MaxValue := 0;
 
-    Self.SE_In_Plus_module.Value := Self.Blk.rcsInPlus.board;
-    Self.SE_In_Plus_port.Value := Self.Blk.rcsInPlus.port;
+    Self.SE_In_Plus_module.Value := Self.block.rcsInPlus.board;
+    Self.SE_In_Plus_port.Value := Self.block.rcsInPlus.port;
   end else begin
     Self.SE_In_Plus_module.Value := 0;
     Self.SE_In_Plus_port.Value := 0;
@@ -255,12 +255,12 @@ begin
 
   if (settings.RCSAddrs.count > 1) then
   begin
-    if (Self.Blk.rcsInMinus.board > Cardinal(Self.SE_In_Minus_module.MaxValue)) then
+    if (Self.block.rcsInMinus.board > Cardinal(Self.SE_In_Minus_module.MaxValue)) then
       Self.SE_In_Minus_module.MaxValue := 0;
     Self.SE_In_Minus_port.MaxValue := 0;
 
-    Self.SE_In_Minus_module.Value := Self.Blk.rcsInMinus.board;
-    Self.SE_In_Minus_port.Value := Self.Blk.rcsInMinus.port;
+    Self.SE_In_Minus_module.Value := Self.block.rcsInMinus.board;
+    Self.SE_In_Minus_port.Value := Self.block.rcsInMinus.port;
   end else begin
     Self.SE_In_Minus_module.Value := 0;
     Self.SE_In_Minus_port.Value := 0;
@@ -268,12 +268,12 @@ begin
 
   if (settings.RCSAddrs.count > 2) then
   begin
-    if (Self.Blk.rcsOutPlus.board > Cardinal(Self.SE_Out_Plus_module.MaxValue)) then
+    if (Self.block.rcsOutPlus.board > Cardinal(Self.SE_Out_Plus_module.MaxValue)) then
       Self.SE_Out_Plus_module.MaxValue := 0;
     Self.SE_Out_Plus_port.MaxValue := 0;
 
-    Self.SE_Out_Plus_module.Value := Self.Blk.rcsOutPlus.board;
-    Self.SE_Out_Plus_port.Value := Self.Blk.rcsOutPlus.port;
+    Self.SE_Out_Plus_module.Value := Self.block.rcsOutPlus.board;
+    Self.SE_Out_Plus_port.Value := Self.block.rcsOutPlus.port;
   end else begin
     Self.SE_Out_Plus_module.Value := 0;
     Self.SE_Out_Plus_port.Value := 0;
@@ -281,12 +281,12 @@ begin
 
   if (settings.RCSAddrs.count > 3) then
   begin
-    if (Self.Blk.rcsOutMinus.board > Cardinal(Self.SE_Out_Minus_module.MaxValue)) then
+    if (Self.block.rcsOutMinus.board > Cardinal(Self.SE_Out_Minus_module.MaxValue)) then
       Self.SE_Out_Minus_module.MaxValue := 0;
     Self.SE_Out_Minus_port.MaxValue := 0;
 
-    Self.SE_Out_Minus_module.Value := Self.Blk.rcsOutMinus.board;
-    Self.SE_Out_Minus_port.Value := Self.Blk.rcsOutMinus.port;
+    Self.SE_Out_Minus_module.Value := Self.block.rcsOutMinus.board;
+    Self.SE_Out_Minus_port.Value := Self.block.rcsOutMinus.port;
   end else begin
     Self.SE_Out_Minus_module.Value := 0;
     Self.SE_Out_Minus_port.Value := 0;
@@ -305,9 +305,9 @@ begin
 
   begin
     var areas: TArStr;
-    SetLength(areas, Self.Blk.areas.count);
-    for var i := 0 to Self.Blk.areas.count - 1 do
-      areas[i] := Self.Blk.areas[i].id;
+    SetLength(areas, Self.block.areas.count);
+    for var i := 0 to Self.block.areas.count - 1 do
+      areas[i] := Self.block.areas[i].id;
   end;
 
   begin
@@ -365,31 +365,31 @@ begin
   Self.SE_In_Plus_module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_In_Minus_module.MaxValue := RCSi.maxModuleAddrSafe;
 
-  if (Self.blk <> nil) then
+  if (Self.block <> nil) then
   begin
     var couplingIgnore: TList<Integer> := TList<Integer>.Create();
     try
-      couplingIgnore.Add(Self.blk.id);
+      couplingIgnore.Add(Self.block.id);
     finally
       couplingIgnore.Free();
     end;
 
     // coupling
-    Blocks.FillCB(Self.CB_Coupling, Self.CB_CouplingIds, couplingIgnore, Self.blk.areas, btTurnout, btAny,
-      Self.Blk.GetSettings().coupling);
-    Self.CHB_Coupling.Enabled := (Self.CB_CouplingIds.Count > 0) or (Self.Blk.GetSettings.coupling > -1);
+    Blocks.FillCB(Self.CB_Coupling, Self.CB_CouplingIds, couplingIgnore, Self.block.areas, btTurnout, btAny,
+      Self.block.GetSettings().coupling);
+    Self.CHB_Coupling.Enabled := (Self.CB_CouplingIds.Count > 0) or (Self.block.GetSettings.coupling > -1);
 
     // lock
-    Blocks.FillCB(Self.CB_Lock, Self.CB_LockIds, nil, Self.blk.areas, btLock, btAny, Self.Blk.GetSettings().lock);
-    Self.CHB_Lock.Enabled := (Self.CB_LockIds.Count > 0) or (Self.Blk.GetSettings.lock > -1);
+    Blocks.FillCB(Self.CB_Lock, Self.CB_LockIds, nil, Self.block.areas, btLock, btAny, Self.block.GetSettings().lock);
+    Self.CHB_Lock.Enabled := (Self.CB_LockIds.Count > 0) or (Self.block.GetSettings.lock > -1);
 
     // non-profile +
-    Blocks.FillCB(Self.CB_npPlus, Self.CB_NeprofilIds, nil, Self.blk.areas, btTrack, btRT, Self.Blk.GetSettings().npPlus);
-    Self.CHB_npPlus.Enabled := (Self.CB_NeprofilIds.Count > 0) or (Self.Blk.GetSettings.npPlus > -1);
+    Blocks.FillCB(Self.CB_npPlus, Self.CB_NeprofilIds, nil, Self.block.areas, btTrack, btRT, Self.block.GetSettings().npPlus);
+    Self.CHB_npPlus.Enabled := (Self.CB_NeprofilIds.Count > 0) or (Self.block.GetSettings.npPlus > -1);
 
     // non-profile -
-    Blocks.FillCB(Self.CB_npMinus, Self.CB_NeprofilIds, nil, Self.blk.areas, btTrack, btRT, Self.Blk.GetSettings().npMinus);
-    Self.CHB_npMinus.Enabled := (Self.CB_NeprofilIds.Count > 0) or (Self.Blk.GetSettings.npMinus > -1);
+    Blocks.FillCB(Self.CB_npMinus, Self.CB_NeprofilIds, nil, Self.block.areas, btTrack, btRT, Self.block.GetSettings().npMinus);
+    Self.CHB_npMinus.Enabled := (Self.CB_NeprofilIds.Count > 0) or (Self.block.GetSettings.npMinus > -1);
 
   end else begin
     Blocks.FillCB(Self.CB_Coupling, Self.CB_CouplingIds, nil, nil, btTurnout);
@@ -559,7 +559,7 @@ begin
   if (Self.isNewBlock) then
   begin
     try
-      Blk := Blocks.Add(glob) as TBlkTurnout;
+      Self.block := Blocks.Add(glob) as TBlkTurnout;
     except
       on E: Exception do
       begin
@@ -569,8 +569,7 @@ begin
       end;
     end;
   end else begin
-    glob.note := Self.Blk.note;
-    Self.Blk.SetGlobalSettings(glob);
+    Self.block.SetGlobalSettings(glob);
   end;
 
   var settings: TBlkTurnoutSettings;
@@ -589,7 +588,7 @@ begin
     else
       typ := TRCSIOType.output;
 
-    var another := Blocks.AnotherBlockUsesRCS(settings.RCSAddrs[i], Self.Blk, typ);
+    var another := Blocks.AnotherBlockUsesRCS(settings.RCSAddrs[i], Self.block, typ);
     if (another <> nil) then
       messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.RCSAddrs[i].ToString() + '.' + #13#10;
   end;
@@ -600,7 +599,7 @@ begin
 
     var turnout: TBlkTurnout;
     Blocks.GetBlkByID(settings.coupling, TBlk(turnout));
-    if ((Blk = nil) or (Blk.typ <> btTurnout)) then
+    if ((Self.block = nil) or (Self.block.typ <> btTurnout)) then
     begin
       Application.MessageBox('Blok spojky neexistuje nebo není výhybka', 'Chyba', MB_OK OR MB_ICONWARNING);
       Exit();
@@ -656,11 +655,11 @@ begin
     settings.indication.rcsMinus.port := Self.SE_Ind_Minus_Port.Value;
     settings.indication.pstOnly := Self.CHB_Indication_Pst.Checked;
 
-    var another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsPlus, Self.Blk, TRCSIOType.output);
+    var another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsPlus, Self.block, TRCSIOType.output);
     if (another <> nil) then
       messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.indication.rcsPlus.ToString() + '.' + #13#10;
 
-    another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsMinus, Self.Blk, TRCSIOType.output);
+    another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsMinus, Self.block, TRCSIOType.output);
     if (another <> nil) then
       messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.indication.rcsMinus.ToString() + '.' + #13#10;
   end;
@@ -674,17 +673,17 @@ begin
     settings.controllers.rcsMinus.port := Self.SE_Cont_Minus_Port.Value;
     settings.controllers.pstOnly := Self.CHB_Controllers_Pst.Checked;
 
-    var another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsPlus, Self.Blk, TRCSIOType.input);
+    var another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsPlus, Self.block, TRCSIOType.input);
     if (another <> nil) then
       messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.controllers.rcsPlus.ToString() + '.' + #13#10;
 
-    another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsMinus, Self.Blk, TRCSIOType.input);
+    another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsMinus, Self.block, TRCSIOType.input);
     if (another <> nil) then
       messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.controllers.rcsMinus.ToString() + '.' + #13#10;
   end;
 
   try
-    Self.Blk.SetSettings(settings);
+    Self.block.SetSettings(settings);
   except
     on E: Exception do
     begin
@@ -697,7 +696,7 @@ begin
     Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
 
   Self.Close();
-  Self.Blk.Change();
+  Self.block.Change();
 end;
 
 procedure TF_BlkTurnout.FormClose(Sender: TObject; var Action: TCloseAction);
