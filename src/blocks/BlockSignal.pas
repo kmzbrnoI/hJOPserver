@@ -103,7 +103,7 @@ type
 
   TBlkSignal = class(TBlk)
   const
-    _def_Nav_stav: TBlkSignalState = (signal: ncDisabled; selected: none; beginAB: false; targetSignal: ncDisabled;
+    _def_signal_state: TBlkSignalState = (signal: ncDisabled; selected: none; beginAB: false; targetSignal: ncDisabled;
       ABJC: nil; ZAM: false; dnJC: nil; privolJC: nil; privolTimerId: 0; autoblok: false; RCtimer: - 1;
       changeCallbackOk: nil; changeCallbackErr: nil;);
 
@@ -279,7 +279,7 @@ begin
   inherited Create(index);
 
   Self.m_globSettings.typ := btSignal;
-  Self.m_state := Self._def_Nav_stav;
+  Self.m_state := Self._def_signal_state;
   Self.m_state.toRnz := TDictionary<Integer, Cardinal>.Create();
   Self.m_settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
   Self.m_trackId := nil;
@@ -960,7 +960,7 @@ begin
     var blk: TBlk;
     Blocks.GetBlkByID(blkId, blk);
     if (blk <> nil) then
-      conditions.Add(TArea.GetPSPodminka(blk, 'Rušení NZ'));
+      conditions.Add(TArea.GetCSCondition(blk, 'Rušení NZ'));
   end;
 
   PanelServer.ConfirmationSequence(SenderPnl, Self.RNZPotvrSekv, SenderOR as TArea,

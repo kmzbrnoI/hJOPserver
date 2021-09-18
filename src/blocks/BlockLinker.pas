@@ -21,7 +21,7 @@ type
 
   TBlkLinker = class(TBlk)
   const
-    _def_uvazka_stav: TBlkLinkerState = (enabled: false; departureForbidden: false; note: ''; emLock: false;);
+    _def_linker_state: TBlkLinkerState = (enabled: false; departureForbidden: false; note: ''; emLock: false;);
 
   private
     m_settings: TBlkLinkerSettings;
@@ -110,7 +110,7 @@ begin
   inherited Create(index);
 
   Self.m_globSettings.typ := btLinker;
-  Self.m_state := _def_uvazka_stav;
+  Self.m_state := _def_linker_state;
   Self.m_parent := nil;
   Self.m_request := false;
 end;

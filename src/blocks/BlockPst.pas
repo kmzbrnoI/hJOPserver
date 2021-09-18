@@ -104,7 +104,7 @@ type
 
 implementation
 
-uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert,
+uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase;
 
 constructor TBlkPst.Create(index: Integer);
@@ -120,6 +120,72 @@ end;
 procedure TBlkPst.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
+
+  begin
+    var strs: TStrings := TStringList.Create();
+    try
+      ExtractStringsEx([','], [], ini_tech.ReadString(section, 'tracks', ''), strs);
+      Self.m_settings.tracks.Clear();
+      for var str in strs do
+        Self.m_settings.tracks.Add(StrToInt(str));
+    finally
+      strs.Free();
+    end;
+  end;
+
+  begin
+    var strs: TStrings := TStringList.Create();
+    try
+      ExtractStringsEx([','], [], ini_tech.ReadString(section, 'turnouts', ''), strs);
+      Self.m_settings.turnouts.Clear();
+      for var str in strs do
+        Self.m_settings.turnouts.Add(StrToInt(str));
+    finally
+      strs.Free();
+    end;
+  end;
+
+  begin
+    var strs: TStrings := TStringList.Create();
+    try
+      ExtractStringsEx([','], [], ini_tech.ReadString(section, 'signals', ''), strs);
+      Self.m_settings.signals.Clear();
+      for var str in strs do
+        Self.m_settings.signals.Add(StrToInt(str));
+    finally
+      strs.Free();
+    end;
+  end;
+
+  begin
+    var strs: TStrings := TStringList.Create();
+    var refugee: TStrings := TStringList.Create();
+    try
+      ExtractStringsEx(['('], [')'], ini_tech.ReadString(section, 'refugees', ''), strs);
+      Self.m_settings.tracks.Clear();
+      for var str in strs do
+      begin
+        refugee.Clear();
+        ExtractStringsEx([','], [], str, refugee);
+        var zav: TPstRefugeeZav;
+        zav.block := StrToInt(refugee[0]);
+        if (refugee[1] = '-') then
+          zav.position := TTurnoutPosition.minus
+        else
+          zav.position := TTurnoutPosition.plus;
+        Self.m_settings.refugees.Add(zav);
+      end;
+    finally
+      strs.Free();
+      refugee.Free();
+    end;
+  end;
+
+  Self.m_settings.rcsInTake.Load(ini_tech.ReadString(section, 'rcsInTake', '0:0'));
+  Self.m_settings.rcsInRelease.Load(ini_tech.ReadString(section, 'rcsInRelease', '0:0'));
+  Self.m_settings.rcsOutTaken.Load(ini_tech.ReadString(section, 'rcsOutTaken', '0:0'));
+  Self.m_settings.rcsOutHorn.Load(ini_tech.ReadString(section, 'rcsOutHorn', '0:0'));
+
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
   Self.LoadAreas(ini_rel, 'Pst').Free();
 end;
@@ -127,6 +193,22 @@ end;
 procedure TBlkPst.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
   inherited SaveData(ini_tech, section);
+
+  ini_tech.WriteString(section, 'tracks', SerializeIntList(Self.m_settings.tracks));
+  ini_tech.WriteString(section, 'turnouts', SerializeIntList(Self.m_settings.turnouts));
+  ini_tech.WriteString(section, 'signals', SerializeIntList(Self.m_settings.signals));
+
+  begin
+    var str := '';
+    for var zav: TPstRefugeeZav in Self.m_settings.refugees do
+      str := str + '(' + IntToStr(zav.block) + ',' + TBlkTurnout.PositionToStr(zav.position) + ')';
+    ini_tech.WriteString(section, 'refugees', str);
+  end;
+
+  ini_tech.WriteString(section, 'rcsInTake', Self.m_settings.rcsInTake.ToString());
+  ini_tech.WriteString(section, 'rcsInRelease', Self.m_settings.rcsInRelease.ToString());
+  ini_tech.WriteString(section, 'rcsOutTaken', Self.m_settings.rcsOutTaken.ToString());
+  ini_tech.WriteString(section, 'rcsOutHorn', Self.m_settings.rcsOutHorn.ToString());
 end;
 
 procedure TBlkPst.SaveStatus(ini_stat: TMemIniFile; const section: string);
@@ -366,6 +448,15 @@ end;
 
 procedure TBlkPst.SetSettings(settings: TBlkPstSettings);
 begin
+  if (Self.m_settings.tracks <> settings.tracks) then
+    Self.m_settings.tracks.Free();
+  if (Self.m_settings.turnouts <> settings.turnouts) then
+    Self.m_settings.turnouts.Free();
+  if (Self.m_settings.signals <> settings.signals) then
+    Self.m_settings.signals.Free();
+  if (Self.m_settings.refugees <> settings.refugees) then
+    Self.m_settings.refugees.Free();
+
   Self.m_settings := settings;
   Self.Change();
 end;

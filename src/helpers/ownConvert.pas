@@ -2,7 +2,7 @@
 
 interface
 
-uses Windows, SysUtils, Graphics, StrUtils;
+uses Windows, SysUtils, Graphics, StrUtils, Generics.Collections;
 
 function BoolToYesNo(bool: Boolean): string;
 function BoolToTick(bool: Boolean): string;
@@ -12,6 +12,8 @@ function StrToBool(str: string): Boolean;
 
 function StrToColor(str: string): TColor;
 function ColorToStr(color: TColor): string;
+
+function SerializeIntList(l: TList<Integer>): string;
 
 
 implementation
@@ -58,6 +60,15 @@ end;
 function ColorToStr(color: TColor): string;
 begin
  Result := IntToHex(GetRValue(Color), 2) + IntToHex(GetGValue(Color), 2) + IntToHex(GetBValue(Color), 2);
+end;
+
+function SerializeIntList(l: TList<Integer>): string;
+begin
+  Result := '';
+  for var i := 0 to l.Count-2 do
+    Result := Result + IntToStr(l[i]) + ',';
+  if (l.Count > 0) then
+    Result := Result + IntToStr(l[l.Count-1]);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

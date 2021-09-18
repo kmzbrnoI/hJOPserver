@@ -48,7 +48,7 @@ type
 
   TBlkCrossing = class(TBlk)
   const
-    _def_prj_state: TBlkCrossingState = (basicState: disabled; note: ''; lockout: ''; pcEmOpen: false; pcClosed: false;
+    _def_crossing_state: TBlkCrossingState = (basicState: disabled; note: ''; lockout: ''; pcEmOpen: false; pcClosed: false;
       zaver: 0;);
 
     _UZ_UPOZ_MIN = 4; // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
@@ -156,7 +156,7 @@ begin
   inherited;
 
   Self.m_globSettings.typ := btCrossing;
-  Self.m_state := Self._def_prj_state;
+  Self.m_state := Self._def_crossing_state;
   Self.m_state.shs := TList<TBlk>.Create();
   Self.m_state.rcsModules := TList<Cardinal>.Create();
   Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
@@ -428,10 +428,11 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkCrossing.UpdateInputs(): TBlkCrossingBasicState;
-var tmpInputs: record closed: Boolean;
-  open: Boolean;
-  caution: Boolean;
-end;
+var tmpInputs: record
+      closed: Boolean;
+      open: Boolean;
+      caution: Boolean;
+    end;
 begin
   // get data from RCS
   try

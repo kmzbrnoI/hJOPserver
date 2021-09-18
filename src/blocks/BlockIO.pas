@@ -38,7 +38,7 @@ type
 
   TBlkIO = class(TBlk)
   const
-    _def_IO_stav: TBlkIOstate = (enabled: false; activeOutput: false; inputState: TRCSInputState.isOff; nullTime: 0;);
+    _def_io_state: TBlkIOstate = (enabled: false; activeOutput: false; inputState: TRCSInputState.isOff; nullTime: 0;);
 
   private
     m_settings: TBlkIOsettings;
@@ -106,7 +106,7 @@ uses AreaDb, TCPServerPanel, ownConvert;
 constructor TBlkIO.Create(index: Integer);
 begin
   inherited;
-  Self.m_state := _def_IO_stav;
+  Self.m_state := _def_io_state;
   Self.m_globSettings.typ := btIO;
 end;
 
@@ -114,7 +114,6 @@ end;
 
 procedure TBlkIO.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 var strs: TStrings;
-  str: string;
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -124,7 +123,7 @@ begin
   strs := TStringList.Create();
   try
     ini_tech.ReadSection(section, strs);
-    for str in strs do
+    for var str in strs do
     begin
       if (str = 'RCSb0') then
       begin

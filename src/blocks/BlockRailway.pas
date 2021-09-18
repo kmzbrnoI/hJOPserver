@@ -232,9 +232,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkRailway.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
-var strs: TStrings;
-  index: Integer;
-  str: string;
+var index: Integer;
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
@@ -249,11 +247,11 @@ begin
   Self.file_direction := TRailwayDirection(ini_stat.ReadInteger(section, 'smer', 1));
   Self.m_state.BP := ini_stat.ReadBool(section, 'BP', false);
 
-  strs := TStringList.Create();
+  var strs: TStrings := TStringList.Create();
   try
     ExtractStrings([',', ';'], [], PChar(ini_stat.ReadString(section, 'spr', '')), strs);
     Self.m_state.trains.Clear();
-    for str in strs do
+    for var str in strs do
     begin
       index := trains.GetTrainIndexByName(str);
       if (index > -1) then
@@ -267,7 +265,7 @@ begin
   try
     ExtractStrings([';', ','], [], PChar(ini_tech.ReadString(section, 'useky', '')), strs);
     Self.m_settings.trackIds.Clear();
-    for str in strs do
+    for var str in strs do
     begin
       try
         Self.m_settings.trackIds.Add(StrToInt(str));
@@ -288,11 +286,7 @@ begin
   ini_tech.WriteInteger(section, 'uvazkaB', Self.m_settings.linkerB);
   ini_tech.WriteInteger(section, 'zabzar', Integer(Self.m_settings.rType));
   ini_tech.WriteInteger(section, 'navestidla', Integer(Self.m_settings.signals));
-
-  var str: string := '';
-  for var id: Integer in Self.m_settings.trackIds do
-    str := str + IntToStr(id) + ',';
-  ini_tech.WriteString(section, 'useky', str)
+  ini_tech.WriteString(section, 'useky', SerializeIntList(Self.m_settings.trackIds));
 end;
 
 procedure TBlkRailway.SaveStatus(ini_stat: TMemIniFile; const section: string);
@@ -856,7 +850,6 @@ begin
 
   for blk in Self.tracks do
     blk.CreateNavRefs();
-
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

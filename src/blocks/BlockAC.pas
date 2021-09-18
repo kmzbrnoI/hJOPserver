@@ -504,29 +504,28 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkAC.PanelShowState(pnl: TIdContext; Area: TArea);
-var podm: TList<TConfSeqItem>;
-  str: string;
+var conds: TList<TConfSeqItem>;
 begin
-  podm := TList<TConfSeqItem>.Create();
+  conds := TList<TConfSeqItem>.Create();
   if (Self.clientConnected) then
-    podm.Add(TArea.GetPSPodminka('Klient: pøipojen', ''))
+    conds.Add(TArea.GetCSCondition('Klient: pøipojen', ''))
   else
-    podm.Add(TArea.GetPSPodminka('Klient: nepøipojen', ''));
+    conds.Add(TArea.GetCSCondition('Klient: nepøipojen', ''));
   case (Self.acState) of
     TACState.stopped:
-      podm.Add(TArea.GetPSPodminka('AC: zastaven', ''));
+      conds.Add(TArea.GetCSCondition('AC: zastaven', ''));
     TACState.running:
-      podm.Add(TArea.GetPSPodminka('AC: bìží', ''));
+      conds.Add(TArea.GetCSCondition('AC: bìží', ''));
     TACState.paused:
-      podm.Add(TArea.GetPSPodminka('AC: pozastaven', ''))
+      conds.Add(TArea.GetCSCondition('AC: pozastaven', ''))
   end;
 
-  for str in Self.m_state.lines do
-    podm.Add(TArea.GetPSPodminka(str, ''));
+  for var str in Self.m_state.lines do
+    conds.Add(TArea.GetCSCondition(str, ''));
 
   if (not Self.m_state.panelsShowingState.Contains(pnl)) then
     Self.m_state.panelsShowingState.Add(pnl);
-  PanelServer.CSWindow(pnl, 'IS', Self.PanelSTAVClosed, Area, 'Zobrazení stavu AC', TBlocks.GetBlksList(Self), podm)
+  PanelServer.CSWindow(pnl, 'IS', Self.PanelSTAVClosed, Area, 'Zobrazení stavu AC', TBlocks.GetBlksList(Self), conds)
 end;
 
 procedure TBlkAC.PanelSTAVClosed(Sender: TIdContext; success: Boolean);

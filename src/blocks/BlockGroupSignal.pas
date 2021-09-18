@@ -53,7 +53,7 @@ type
 
 implementation
 
-uses Classes, ownStrUtils, SysUtils, BlockDb;
+uses Classes, ownStrUtils, SysUtils, BlockDb, ownConvert;
 
 constructor TBlkGroupSignal.Create(index: Integer);
 begin
@@ -73,18 +73,16 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkGroupSignal.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
-var strs: TStrings;
-  str: string;
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
   Self.m_spnl.trackId := -1;
 
   Self.m_gs_settings.signalIds.Clear();
 
-  strs := TStringList.Create();
+  var strs: TStrings := TStringList.Create();
   try
     ExtractStringsEx([','], [], ini_tech.ReadString(section, 'navestidla', ''), strs);
-    for str in strs do
+    for var str in strs do
       Self.m_gs_settings.signalIds.Add(StrToInt(str));
   finally
     strs.Free();
@@ -92,15 +90,9 @@ begin
 end;
 
 procedure TBlkGroupSignal.SaveData(ini_tech: TMemIniFile; const section: string);
-var str: string;
-  id: Integer;
 begin
   inherited SaveData(ini_tech, section);
-
-  str := '';
-  for id in Self.m_gs_settings.signalIds do
-    str := str + IntToStr(id) + ',';
-  ini_tech.WriteString(section, 'navestidla', str);
+  ini_tech.WriteString(section, 'navestidla', SerializeIntList(Self.m_gs_settings.signalIds));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -147,12 +139,11 @@ begin
 end;
 
 procedure TBlkGroupSignal.RefillSignals();
-var sigId: Integer;
-  blk: TBlk;
 begin
   Self.m_signals.Clear();
-  for sigId in Self.m_gs_settings.signalIds do
+  for var sigId in Self.m_gs_settings.signalIds do
   begin
+    var blk: TBlk;
     Blocks.GetBlkByID(sigId, blk);
     if ((blk <> nil) and (blk.typ = TBlkType.btSignal)) then
       Self.m_signals.Add(TBlkSignal(blk));
@@ -184,12 +175,11 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkGroupSignal.GetPtData(json: TJsonObject; includeState: Boolean);
-var sigId: Integer;
 begin
   inherited;
 
   json.A['signals'];
-  for sigId in Self.m_gs_settings.signalIds do
+  for var sigId in Self.m_gs_settings.signalIds do
     json.A['signals'].Add(sigId);
 end;
 
@@ -203,9 +193,8 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkGroupSignal.SendGroupMasters();
-var signal: TBlkSignal;
 begin
-  for signal in Self.signals do
+  for var signal in Self.signals do
     signal.groupMaster := Self;
 end;
 

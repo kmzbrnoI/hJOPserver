@@ -945,7 +945,7 @@ begin
 
   podm := TConfSeqItems.Create();
   for blk in Blocks.GetBlkWithTrain(TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]) do
-    podm.Add(TArea.GetPSPodminka(blk, 'Smazání soupravy z úseku'));
+    podm.Add(TArea.GetCSCondition(blk, 'Smazání soupravy z úseku'));
   PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrDeleteLok, SenderOR as TArea,
     'Smazání soupravy ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name,
     TBlocks.GetBlksList(Self), podm);
@@ -1045,7 +1045,7 @@ begin
   var podm: TConfSeqItems := TConfSeqItems.Create();
   for var hvaddr: Integer in Train.HVs do
     if (HVDb[hvaddr] <> nil) then
-      podm.Add(TArea.GetPSPodminka(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
+      podm.Add(TArea.GetCSCondition(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
 
   PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrRegVezmiLok, SenderOR as TArea,
     'Nouzové převzetí hnacích vozidel do automatického řízení', TBlocks.GetBlksList(Self), podm);

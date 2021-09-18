@@ -816,11 +816,11 @@ begin
   podm := TConfSeqItems.Create();
   if (Self.IsTrain()) then
   begin
-    podm.Add(TArea.GetPSPodminka(Self, 'Smazání soupravy ' + Self.Train.name + ' z úseku'));
+    podm.Add(TArea.GetCSCondition(Self, 'Smazání soupravy ' + Self.Train.name + ' z úseku'));
     if ((Self.railway <> nil) and (not TBlkRailway(Self.railway).IsTrainInMoreTUs(Self.Train))) then
-      podm.Add(TArea.GetPSPodminka(Self.railway, 'Smazání soupravy ' + Self.Train.name + ' z tratě'));
+      podm.Add(TArea.GetCSCondition(Self.railway, 'Smazání soupravy ' + Self.Train.name + ' z tratě'));
     if (Blocks.GetBlkWithTrain(Self.Train).Count = 1) then
-      podm.Add(TArea.GetPSPodminka(Self, 'Smazání soupravy ' + Self.Train.name + ' z kolejiště'));
+      podm.Add(TArea.GetCSCondition(Self, 'Smazání soupravy ' + Self.Train.name + ' z kolejiště'));
   end;
 
   PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TArea,

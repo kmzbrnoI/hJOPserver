@@ -1085,7 +1085,7 @@ begin
   Blocks.GetBlkByID(Self.trackID, Blk);
   PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelPotvrSekvNSPlus,
     (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy plus',
-    TBlocks.GetBlksList(Self), TArea.GetPSPodminky(TArea.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
+    TBlocks.GetBlksList(Self), TArea.GetPSPodminky(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek')));
 end;
 
 procedure TBlkTurnout.UPONSMinusClick(Sender: TObject);
@@ -1097,7 +1097,7 @@ begin
   Blocks.GetBlkByID(Self.trackID, Blk);
   PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelPotvrSekvNSMinus,
     (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy mínus',
-    TBlocks.GetBlksList(Self), TArea.GetPSPodminky(TArea.GetPSPodminka(Blk, 'Obsazený kolejový úsek')));
+    TBlocks.GetBlksList(Self), TArea.GetPSPodminky(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek')));
 end;
 
 procedure TBlkTurnout.MenuStitClick(SenderPnl: TIDContext; SenderOR: TObject);

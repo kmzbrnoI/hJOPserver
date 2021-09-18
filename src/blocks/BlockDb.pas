@@ -824,7 +824,6 @@ begin
     if (Assigned(areas)) then
     begin
       assign := false;
-      var blockAreas: TList<TArea> := Blk.areas;
 
       if ((glob.typ = btRailway) or (glob.typ = btIR)) then
         assign := true

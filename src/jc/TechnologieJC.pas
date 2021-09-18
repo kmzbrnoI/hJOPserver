@@ -367,7 +367,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
-  BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper,
+  BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1327,7 +1327,7 @@ begin
   for var i: Integer := 0 to barriers.Count - 1 do
   begin
     if (Self.PotvrSekvBarrier(barriers[i].typ)) then
-      conditions.Add(TArea.GetPSPodminka(barriers[i].Block, TJC.PotvrSekvBarrierToReason(barriers[i].typ)));
+      conditions.Add(TArea.GetCSCondition(barriers[i].Block, TJC.PotvrSekvBarrierToReason(barriers[i].typ)));
   end; // for i
 
   if (conditions.Count > 0) then
@@ -2554,7 +2554,7 @@ begin
     (blk as TBlkTrack).Train.ChangeDirection();
     Self.Log('Obsazen smyckovy usek ' + blk.name + ' - menim smer loko v souprave ' + (blk as TBlkTrack).Train.name,
       WR_SPRPREDAT);
-  end; // if
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2805,10 +2805,8 @@ begin
     ini.WriteInteger(section, 'tratSmer', Integer(Self.m_data.railwayDir));
   end;
 
-  // tracs
-  var tracksStr: string := '';
-  for var i: Integer := 0 to Self.m_data.tracks.Count - 1 do
-    tracksStr := tracksStr + IntToStr(Self.m_data.tracks[i]) + ',';
+  // tracks
+  var tracksStr: string := SerializeIntList(Self.m_data.tracks);
   if (tracksStr <> '') then
     ini.WriteString(section, 'useky', tracksStr);
 
@@ -2820,7 +2818,7 @@ begin
   if (turnoutsStr <> '') then
     ini.WriteString(section, 'vyhybky', turnoutsStr);
 
-  // odvraty
+  // refugees
   var refugeesStr: string := '';
   for var i: Integer := 0 to Self.m_data.refuges.Count - 1 do
     refugeesStr := refugeesStr + '(' + IntToStr(Self.m_data.refuges[i].Block) + ',' +
@@ -2828,7 +2826,7 @@ begin
   if (refugeesStr <> '') then
     ini.WriteString(section, 'odvraty', refugeesStr);
 
-  // prejezdy
+  // crossings
   var crossingsStr: string := '';
   for var i: Integer := 0 to Self.m_data.crossings.Count - 1 do
   begin
@@ -2857,9 +2855,7 @@ begin
     ini.WriteString(section, 'podm-zamky', locksStr);
 
   // Variant points
-  var vpsStr: string := '';
-  for var i: Integer := 0 to Self.m_data.vb.Count - 1 do
-    vpsStr := vpsStr + IntToStr(Self.m_data.vb[i]) + ';';
+  var vpsStr: string := SerializeIntList(Self.m_data.vb);
   if (vpsStr <> '') then
     ini.WriteString(section, 'vb', vpsStr);
 end;
@@ -3801,50 +3797,50 @@ begin
   begin
     case (barriers[i].typ) of
       _JCB_BLOK_DISABLED:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Blok neaktivní'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Blok neaktivní'));
 
       _JCB_USEK_OBSAZENO:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Úsek obsazen'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Úsek obsazen'));
       _JCB_USEK_SOUPRAVA:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Úsek obsahuje soupravu'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Úsek obsahuje soupravu'));
 
       _JCB_PREJEZD_NOUZOVE_OTEVREN:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Nouzově otevřen'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nouzově otevřen'));
       _JCB_PREJEZD_PORUCHA:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Porucha'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Porucha'));
       _JCB_PREJEZD_NEUZAVREN:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Neuzavřen'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Neuzavřen'));
 
       _JCB_VYHYBKA_KONC_POLOHA:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Není správná poloha'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není správná poloha'));
       _JCB_VYHYBKA_NOUZ_ZAVER:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Není zaveden nouzový závěr'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
       _JCB_VYHYBKA_NESPAVNA_POLOHA:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Není správná poloha'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není správná poloha'));
 
       _JCB_TRAT_ZAK:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Zákaz odjezdu'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Zákaz odjezdu'));
       _JCB_TRAT_NOT_ZAK:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Nezaveden zákaz odjezdu'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nezaveden zákaz odjezdu'));
       _JCB_TRAT_ZAVER:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Závěr'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Závěr'));
       _JCB_TRAT_NEPRIPRAVENA:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Nepovoluje odjezd'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nepovoluje odjezd'));
       _JCB_TRAT_ZADOST:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Probíhá žádost'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Probíhá žádost'));
       _JCB_TRAT_NESOUHLAS:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Nesouhlas'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nesouhlas'));
       _JCB_TRAT_NO_BP:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Bloková podmínka nezavedena'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Bloková podmínka nezavedena'));
       _JCB_TRAT_NEPRENOS:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Nedojde k přenosu čísla vlaku'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nedojde k přenosu čísla vlaku'));
       _JCB_TRAT_PRENOS_NAKONEC:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Vlak bude přenesen až na konec trati'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Vlak bude přenesen až na konec trati'));
 
       _JCB_ZAMEK_NEUZAMCEN:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Neuzamčen'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Neuzamčen'));
       _JCB_ZAMEK_NOUZ_ZAVER:
-        result.Add(TArea.GetPSPodminka(barriers[i].Block, 'Není zaveden nouzový závěr'));
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
     end;
   end;
 end;

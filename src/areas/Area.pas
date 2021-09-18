@@ -248,8 +248,8 @@ type
     procedure GetPtData(json: TJsonObject);
 
     class function ORRightsToString(rights: TAreaRights): string;
-    class function GetPSPodminka(blok: TObject; podminka: string): TConfSeqItem; overload;
-    class function GetPSPodminka(cil: string; podminka: string): TConfSeqItem; overload;
+    class function GetCSCondition(blok: TObject; podminka: string): TConfSeqItem; overload;
+    class function GetCSCondition(cil: string; podminka: string): TConfSeqItem; overload;
     class function GetPSPodminky(podm: TConfSeqItem): TConfSeqItems;
 
     class function NameComparer(): IComparer<TArea>;
@@ -751,7 +751,7 @@ begin
 
     for var area: TArea in (Blk as TBlkTrack).areas do
       if (area = Self) then
-        conditions.Add(GetPSPodminka(Blk, 'Nouzové vybavování'));
+        conditions.Add(GetCSCondition(Blk, 'Nouzové vybavování'));
   end;
 
   PanelServer.ConfirmationSequence(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků',
@@ -1888,13 +1888,13 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class function TArea.GetPSPodminka(blok: TObject; podminka: string): TConfSeqItem;
+class function TArea.GetCSCondition(blok: TObject; podminka: string): TConfSeqItem;
 begin
   Result.block := TBlk(blok).name;
   Result.note := podminka;
 end;
 
-class function TArea.GetPSPodminka(cil: string; podminka: string): TConfSeqItem;
+class function TArea.GetCSCondition(cil: string; podminka: string): TConfSeqItem;
 begin
   Result.block := cil;
   Result.note := podminka;
