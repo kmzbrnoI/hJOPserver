@@ -72,6 +72,7 @@ type
     movingStart: TDateTime;
     movingPanel: TIDContext;
     movingOR: TObject;
+    psts: TList<TBlk>;
   end;
 
   TBlkTurnoutSpnl = record
@@ -204,6 +205,8 @@ type
     procedure ShowIndication();
     procedure ReadContollers();
 
+    procedure PstCheckActive();
+
   public
     constructor Create(index: Integer);
     destructor Destroy(); override;
@@ -238,6 +241,11 @@ type
     function GetInputs(): TBlkTurnoutInputs;
 
     class function SetErrorToMsg(error: TTurnoutSetError): string;
+
+    procedure PstAdd(pst: TBlk);
+    procedure PstRemove(pst: TBlk);
+    function PstIsActive(): Boolean;
+    function PstIs(): Boolean;
 
     property state: TBlkTurnoutState read m_state;
 
@@ -288,7 +296,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
-  IfThenElse, RCSErrors;
+  IfThenElse, RCSErrors, BlockPst;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin
@@ -299,10 +307,12 @@ begin
   Self.m_parent := nil;
   Self.m_npPlus := nil;
   Self.m_npMinus := nil;
+  Self.m_state.psts := TList<TBlk>.Create();
 end;
 
 destructor TBlkTurnout.Destroy();
 begin
+  Self.m_state.psts.Free();
   inherited;
 end;
 
@@ -440,6 +450,8 @@ begin
       Self.m_state.position := Self.m_state.positionSave;
   end;
 
+  Self.m_state.psts.Clear();
+
   Self.MapNpEvents();
   Self.Update(); // update will call Change()
 end;
@@ -454,6 +466,7 @@ begin
     Self.m_state.positionSave := Self.m_state.position;
 
   Self.m_state.position := disabled;
+  Self.m_state.psts.Clear();
   Self.Change(true);
 end;
 
@@ -464,6 +477,7 @@ begin
   Self.m_state.movingMinus := false;
   Self.m_state.positionLock := TTurnoutPosition.none;
   Self.m_state.locks := 0;
+  Self.m_state.psts.Clear();
   Self.ShowIndication();
 end;
 
@@ -1960,6 +1974,13 @@ begin
     Exit();
 
   try
+    if ((Self.m_settings.indication.pstOnly) and (not Self.PstIsActive())) then
+    begin
+      RCSi.SetOutput(Self.m_settings.indication.rcsPlus, 0);
+      RCSi.SetOutput(Self.m_settings.indication.rcsMinus, 0);
+      Exit();
+    end;
+
     if (Self.movingPlus) then
       RCSi.SetOutput(Self.m_settings.indication.rcsPlus, osf180)
     else
@@ -1977,6 +1998,8 @@ end;
 procedure TBlkTurnout.ReadContollers();
 begin
   if ((not Self.m_settings.controllers.enabled) or (not RCSi.Started)) then
+    Exit();
+  if ((Self.m_settings.controllers.pstOnly) and (not Self.PstIsActive())) then
     Exit();
 
   try
@@ -1996,6 +2019,48 @@ begin
     on E: RCSException do Exit();
     on E: Exception do raise;
   end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTurnout.PstAdd(pst: TBlk);
+begin
+  if (Self.m_state.psts.Contains(pst)) then
+    Exit();
+
+  Self.m_state.psts.Add(pst);
+  Self.Change();
+end;
+
+procedure TBlkTurnout.PstRemove(pst: TBlk);
+begin
+  if (not Self.m_state.psts.Contains(pst)) then
+    Exit();
+
+  Self.m_state.psts.Remove(pst);
+  Self.Change();
+end;
+
+function TBlkTurnout.PstIsActive(): Boolean;
+begin
+  Self.PstCheckActive();
+  for var blk: TBlk in Self.m_state.psts do
+    if (TBlkPst(blk).status = pstActive) then
+      Exit(true);
+  Result := false;
+end;
+
+function TBlkTurnout.PstIs(): Boolean;
+begin
+  Self.PstCheckActive();
+  Result := (Self.m_state.psts.Count > 0);
+end;
+
+procedure TBlkTurnout.PstCheckActive();
+begin
+  for var i := Self.m_state.psts.Count-1 downto 0 do
+    if (TBlkPst(Self.m_state.psts[i]).status <= pstOff) then
+      Self.PstRemove(self.m_state.psts[i]);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

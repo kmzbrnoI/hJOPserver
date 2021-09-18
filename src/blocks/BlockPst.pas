@@ -272,6 +272,12 @@ begin
       if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT))) then
         TBlkTrack(blk).PstAdd(Self);
     end;
+    for var turnoutId in Self.m_settings.turnouts do
+    begin
+      var blk := Blocks.GetBlkByID(turnoutId);
+      if ((blk <> nil) and (blk.typ = btTurnout)) then
+        TBlkTurnout(blk).PstAdd(Self);
+    end;
 
   end else if ((old > pstOff) and (new = pstOff)) then
   begin
@@ -282,6 +288,12 @@ begin
       if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT))) then
         TBlkTrack(blk).PstRemove(Self);
     end;
+    for var turnoutId in Self.m_settings.turnouts do
+    begin
+      var blk := Blocks.GetBlkByID(turnoutId);
+      if ((blk <> nil) and (blk.typ = btTurnout)) then
+        TBlkTurnout(blk).PstRemove(Self);
+    end;
 
   end else begin
     // call change to all blocks
@@ -291,6 +303,13 @@ begin
       if (blk <> nil) then
         blk.Change();
     end;
+    for var turnoutId in Self.m_settings.turnouts do
+    begin
+      var blk := Blocks.GetBlkByID(turnoutId);
+      if (blk <> nil) then
+        blk.Change();
+    end;
+
   end;
 
   Self.ShowIndication();
