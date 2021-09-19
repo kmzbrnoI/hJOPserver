@@ -1046,7 +1046,7 @@ end;
 
 procedure TJC.Log(msg: string; typ: Integer = WR_VC);
 begin
-  writelog('JC ' + Self.name + ': ' + msg, typ);
+  Logging.Log('JC ' + Self.name + ': ' + msg, typ);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -91,7 +91,7 @@ begin
   Self.ffilenameStat := statefn;
   Self.users.Clear();
 
-  writelog('Načítám uživatele...', WR_USERS);
+  Log('Načítám uživatele...', WR_USERS);
 
   try
     iniData := TMemIniFile.Create(datafn, TEncoding.UTF8);
@@ -125,13 +125,13 @@ begin
   end;
 
   Self.users.Sort(TUser.NameComparer());
-  writelog('Načteno ' + IntToStr(Self.users.count) + ' uživatelů', WR_USERS);
+  Log('Načteno ' + IntToStr(Self.users.count) + ' uživatelů', WR_USERS);
 end;
 
 procedure TUsrDb.SaveData(const filename: string);
 var ini: TMemIniFile;
 begin
-  writelog('Ukládám uživatele...', WR_USERS);
+  Log('Ukládám uživatele...', WR_USERS);
 
   try
     DeleteFile(PChar(filename));
@@ -153,7 +153,7 @@ begin
     ini.Free();
   end;
 
-  writelog('Uživatelé uloženi', WR_USERS);
+  Log('Uživatelé uloženi', WR_USERS);
 end;
 
 procedure TUsrDb.SaveStat(const filename: string);

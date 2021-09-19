@@ -1193,7 +1193,7 @@ begin
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
-    writelog('LOKO ' + Self.name + ' ukradena, nenastavuji rychlost', WR_MESSAGE);
+    Log('LOKO ' + Self.name + ' ukradena, nenastavuji rychlost', WR_MESSAGE);
     if (Assigned(err.Callback)) then
       err.Callback(Self, err.data);
     Exit();
@@ -1245,7 +1245,7 @@ begin
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
-    writelog('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', WR_MESSAGE);
+    Log('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', WR_MESSAGE);
     if (Assigned(err.Callback)) then
       err.Callback(Self, err.data);
     Exit();
@@ -1286,7 +1286,7 @@ begin
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
-    writelog('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', WR_MESSAGE);
+    Log('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', WR_MESSAGE);
     if (Assigned(err.Callback)) then
       err.Callback(Self, err.data);
     Exit();

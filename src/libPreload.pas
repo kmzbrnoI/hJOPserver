@@ -57,23 +57,22 @@ begin
   handle := LoadLibrary(PChar(path));
   if (handle = 0) then
   begin
-    writeLog('Nelze naèíst preload knihovnu: ' + path, WR_ERROR);
+    Log('Nelze naèíst preload knihovnu: ' + path, WR_ERROR);
   end else begin
-    writeLog('Naètena preload knihovna: ' + path, WR_MESSAGE);
+    Log('Naètena preload knihovna: ' + path, WR_MESSAGE);
     Self.preloaded.Add(handle);
   end;
 end;
 
 procedure TLibPreload.Preload(ini: TMemIniFile; section: string);
 var keys: TStrings;
-  key, path: string;
 begin
   keys := TStringList.Create();
   try
     ini.ReadSection(section, keys);
-    for key in keys do
+    for var key in keys do
     begin
-      path := ini.ReadString(section, key, '');
+      var path := ini.ReadString(section, key, '');
       Self.Preload(path);
     end;
   finally

@@ -59,7 +59,7 @@ begin
   for i := 0 to JclLastExceptStackList.Count-1 do
     if (GetLocationInfo(JclLastExceptStackList.Items[i].CallerAddr).LineNumber <> 0) then
       Self.str.Add(GetLocationInfoStr(JclLastExceptStackList.Items[i].CallerAddr));
-  writeLog(Self.str, WR_ERROR);
+  Log(Self.str, WR_ERROR);
  except
 
  end;

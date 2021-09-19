@@ -169,7 +169,7 @@ begin
     end;
   except
     on e: Exception do
-      writelog('Server: stack data parse error : ' + e.Message, WR_ERROR);
+      Log('Server: stack data parse error : ' + e.Message, WR_ERROR);
   end;
 end;
 
@@ -294,7 +294,7 @@ procedure TORStack.AddCmd(cmd: TORStackCmd);
 begin
   if (Self.m_stack.count >= _MAX_STACK_JC) then
   begin
-    writelog('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - zásobník je plný, nelze přidat další příkaz', WR_STACK);
+    Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - zásobník je plný, nelze přidat další příkaz', WR_STACK);
     raise Exception.Create('Zásobník je plný');
   end;
 
@@ -308,7 +308,7 @@ begin
   var description: string := Self.GetStackString(cmd);
   Self.m_stack.Add(cmd);
   (Self.m_area as TArea).BroadcastData('ZAS;ADD;' + IntToStr(cmd.id) + '|' + description);
-  writelog('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - : přidán příkaz ' + description + ', id = ' +
+  Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - : přidán příkaz ' + description + ', id = ' +
     IntToStr(cmd.id), WR_STACK);
   (Self.m_area as TArea).changed := true;
 end;
@@ -377,12 +377,12 @@ begin
       begin
         (Self.m_area as TArea).BroadcastData('ZAS;PV');
         Self.UPOenabled := false;
-        writelog('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - PV', WR_STACK);
+        Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - PV', WR_STACK);
       end;
     TORStackMode.VZ:
       begin
         (Self.m_area as TArea).BroadcastData('ZAS;VZ');
-        writelog('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - VZ', WR_STACK);
+        Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - VZ', WR_STACK);
       end;
   end; // case
 
@@ -482,7 +482,7 @@ begin
 
   // zadne bariery -> stavim jizdni cestu
 
-  writelog('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + JC.name + ' : podmínky splněny, stavím', WR_STACK);
+  Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + JC.name + ' : podmínky splněny, stavím', WR_STACK);
 
   // pokud nejsou zadne bariery, stavime jizdni cestu
   (Self.m_area as TArea).BroadcastData('ZAS;FIRST;0');
@@ -606,7 +606,7 @@ begin
   for var i: Integer := 0 to Self.m_stack.count - 1 do
     if ((Self.m_stack[i].ClassType = TORStackCmdJC) and ((Self.m_stack[i] as TORStackCmdJC).JC = JC)) then
     begin
-      writelog('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + ((Self.m_stack[i] as TORStackCmdJC).JC as TJC)
+      Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + ((Self.m_stack[i] as TORStackCmdJC).JC as TJC)
         .name + ' : smazána ze zásobníku, id = ' + IntToStr(Self.m_stack[i].id), WR_STACK);
       Self.RemoveFromStack(i);
       Exit();

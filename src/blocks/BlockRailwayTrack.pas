@@ -318,7 +318,7 @@ begin
   Self.bpInBlk := ini_stat.ReadBool(section, 'bpInBlk', false);
 
   if ((not Self.m_tuSettings.speeds.ContainsKey(0)) or (Self.m_tuSettings.speeds[0] < 10)) then
-    writelog('WARNING: traťový úsek ' + Self.name + ' (' + IntToStr(Self.id) +
+    Log('WARNING: traťový úsek ' + Self.name + ' (' + IntToStr(Self.id) +
       ') nemá korektně zadanou traťovou rychlost', WR_ERROR);
 
   if ((ini_tech.ReadString(section, 'zast_ev_lichy_zast', '') <> '') or

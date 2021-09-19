@@ -75,6 +75,7 @@ type
     procedure CSNPStDone(Sender: TIDContext; success: Boolean);
 
     procedure ActivationBarriers(var barriers: TList<TJCBarrier>);
+    procedure Activate(senderPnl: TIdContext; senderOR: TObject);
 
   public
 
@@ -893,6 +894,83 @@ begin
     if (signal.signal <> ncStuj) then
       barriers.Add(JCBarrier(barSignalActive, signal));
   end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPst.Activate(senderPnl: TIdContext; senderOR: TObject);
+begin
+  {Self.m_state.senderOR := senderOR;
+  Self.m_state.senderPnl := senderPnl;
+
+  Self.Log('Požadavek na aktivaci Pst, kontroluji podmínky...');
+
+  var barriers: TJCBarriers := Self.barriers(Self.m_state.nc);
+  var UPO: TUPOItems := TList<TUPOItem>.Create;
+  try
+    // ignorujeme AB zaver pokud je staveno z AB seznamu
+    if (fromAB) then
+      for var i: Integer := barriers.Count - 1 downto 0 do
+        if (barriers[i].typ = barTrackAB) then
+          barriers.Delete(i);
+
+    // existuji kriticke bariery?
+    var critical: Boolean := false;
+    for var barrier: TJCBarrier in barriers do
+    begin
+      if ((barrier.typ = barTrackLastOccupied) or (barrier.typ = barRailwayOccupied)) then
+        Self.m_state.lastTrackOrRailwayOccupied := true;
+
+      if ((JCBarriers.CriticalBarrier(barrier.typ)) or (not Self.WarningBarrier(barrier.typ))) then
+      begin
+        critical := true;
+        UPO.Add(JCBarrierToMessage(barrier));
+      end;
+    end;
+
+    if (critical) then
+    begin
+      // kriticke bariey existuji -> oznamim je
+      Self.Log('Celkem ' + IntToStr(barriers.Count) + ' bariér, ukončuji stavění');
+      if (senderPnl <> nil) then
+      begin
+        Self.step := stepCritBarriers;
+        PanelServer.UPO(Self.m_state.senderPnl, UPO, true, nil, Self.CritBarieraEsc, Self);
+      end;
+      Exit(1);
+    end else begin
+      // bariery k potvrzeni
+      if (((barriers.Count > 0) or ((nc) and (from_stack <> nil))) and (senderPnl <> nil)) then
+      begin
+        Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...');
+        for var i: Integer := 0 to barriers.Count - 1 do
+          UPO.Add(JCBarrierToMessage(barriers[i]));
+
+        // pokud se jedna o NC ze zasobniku, zobrazuji jeste upozorneni na NC
+        if ((nc) and (from_stack <> nil)) then
+        begin
+          var item: TUPOItem;
+          item[0] := GetUPOLine('Pozor !', taCenter, clYellow, $A0A0A0);
+          item[1] := GetUPOLine('Stavění nouzové cesty.');
+          item[2] := GetUPOLine('');
+          UPO.Add(item);
+        end;
+
+        PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
+        Self.step := stepConfBarriers;
+        Exit(0);
+      end;
+    end;
+
+    // v jzdni ceste nejsou zadne bariery -> stavim
+    Self.Log('Žádné bariéry, stavím');
+    Self.SetInitStep();
+  finally
+    barriers.Free();
+    UPO.Free();
+  end;
+
+  result := 0;}
 end;
 
 

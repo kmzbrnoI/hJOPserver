@@ -27,8 +27,8 @@ const
 
 procedure logInit();
 
-procedure writeLog(Text: string; Typ: Integer); overload;
-procedure writeLog(Text: TStrings; Typ: Integer); overload;
+procedure Log(Text: string; Typ: Integer); overload;
+procedure Log(Text: TStrings; Typ: Integer); overload;
 
 procedure authLog(system, operation, user, Text: string);
 
@@ -47,18 +47,18 @@ begin
   try
     if not DirectoryExists(_MAIN_LOG_PATH) then
       if not SysUtils.ForceDirectories(ExpandFileName(_MAIN_LOG_PATH)) then
-        writeLog('ERR: Nelze vytvořit složku ' + _MAIN_LOG_PATH, WR_ERROR);
+        Log('ERR: Nelze vytvořit složku ' + _MAIN_LOG_PATH, WR_ERROR);
     if not DirectoryExists(_AUTH_LOG_PATH) then
       if not SysUtils.ForceDirectories(ExpandFileName(_AUTH_LOG_PATH)) then
-        writeLog('ERR: Nelze vytvořit složku ' + _AUTH_LOG_PATH, WR_ERROR);
+        Log('ERR: Nelze vytvořit složku ' + _AUTH_LOG_PATH, WR_ERROR);
   except
     on e: Exception do
       AppEvents.LogException(e);
   end;
 
-  writeLog('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$', WR_MESSAGE);
-  writeLog('Datum ' + FormatDateTime('dd.mm.yyyy', Now), WR_MESSAGE);
-  writeLog('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', WR_MESSAGE);
+  Log('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$', WR_MESSAGE);
+  Log('Datum ' + FormatDateTime('dd.mm.yyyy', Now), WR_MESSAGE);
+  Log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', WR_MESSAGE);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ begin
   end;
 end;
 
-function GetWriteLogTyp(Typ: Integer): string;
+function GetLogTyp(Typ: Integer): string;
 begin
   case Typ of
     WR_MESSAGE:
@@ -127,12 +127,9 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure intWriteLog(Text: string; Typ: Integer; multiline: Boolean = false);
-var LV: TListItem;
-  f: TextFile;
+procedure intLog(Text: string; Typ: Integer; multiline: Boolean = false);
+var f: TextFile;
   xTime, xDate: string;
-  b: Byte;
-  output: string;
 begin
   if (F_Main = nil) then
     Exit();
@@ -149,11 +146,11 @@ begin
   try
     if (F_Main.CHB_mainlog_table.Checked) then
     begin
-      LV := F_Main.LV_log.Items.Insert(0);
-      LV.Data := Pointer(GetLogColor(Typ));
-      LV.Caption := xTime;
-      LV.SubItems.Add(GetWriteLogTyp(Typ));
-      LV.SubItems.Add(Text);
+      var LI: TListItem := F_Main.LV_log.Items.Insert(0);
+      LI.Data := Pointer(GetLogColor(Typ));
+      LI.Caption := xTime;
+      LI.SubItems.Add(GetLogTyp(Typ));
+      LI.SubItems.Add(Text);
     end;
     if (not multiline) then
     begin
@@ -173,8 +170,8 @@ begin
       else
         Rewrite(f);
 
-      output := xTime + ' [' + GetWriteLogTyp(Typ) + '] ' + Text + #13#10;
-      for b in TEncoding.UTF8.GetBytes(output) do
+      var output := xTime + ' [' + GetLogTyp(Typ) + '] ' + Text + #13#10;
+      for var b in TEncoding.UTF8.GetBytes(output) do
         Write(f, AnsiChar(b));
 
       CloseFile(f);
@@ -186,20 +183,19 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure writeLog(Text: string; Typ: Integer); overload;
+procedure Log(Text: string; Typ: Integer); overload;
 begin
-  intWriteLog(Text, Typ, false);
+  intLog(Text, Typ, false);
 end;
 
-procedure writeLog(Text: TStrings; Typ: Integer); overload;
-var i: Integer;
+procedure Log(Text: TStrings; Typ: Integer); overload;
 begin
   if (Text.Count = 0) then
     Exit();
 
-  intWriteLog(Text[0], Typ, false);
-  for i := 1 to Text.Count - 1 do
-    intWriteLog(' -> ' + Text[i], Typ, true);
+  intLog(Text[0], Typ, false);
+  for var i := 1 to Text.Count - 1 do
+    intLog(' -> ' + Text[i], Typ, true);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -207,8 +203,6 @@ end;
 procedure authLog(system, operation, user, Text: string);
 var f: TextFile;
   time, date: string;
-  line: string;
-  b: Byte;
 begin
   if (not auth_logging) then
     Exit();
@@ -223,11 +217,11 @@ begin
     else
       Rewrite(f);
 
-    line := time + ' {' + UpperCase(system) + '} [' + UpperCase(operation) + '] ';
+    var line := time + ' {' + UpperCase(system) + '} [' + UpperCase(operation) + '] ';
     if (user <> '') then
       line := line + '<' + user + '> ';
     line := line + Text + #13#10;
-    for b in TEncoding.UTF8.GetBytes(line) do
+    for var b in TEncoding.UTF8.GetBytes(line) do
       Write(f, AnsiChar(b));
 
     CloseFile(f);
@@ -242,4 +236,4 @@ initialization
 
 auth_logging := false;
 
-end.// unit
+end.

@@ -68,7 +68,7 @@ uses TechnologieRCS, Logging, RCS, BlockSignal, RCSErrors;
 
 procedure TF_Tester.FormShow(Sender: TObject);
 begin
-  writelog('Zobrazeno okno Testeru', WR_MESSAGE);
+  Log('Zobrazeno okno Testeru', WR_MESSAGE);
 end;
 
 procedure TF_Tester.UpdateOut();
@@ -235,7 +235,7 @@ end;
 
 procedure TF_Tester.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  writelog('Skryto okno Testeru', WR_MESSAGE);
+  Log('Skryto okno Testeru', WR_MESSAGE);
 end;
 
 procedure TF_Tester.CreateSInput();

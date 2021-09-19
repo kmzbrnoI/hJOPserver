@@ -165,7 +165,7 @@ begin
 end;
 
 procedure TRCS.LoadLib(filename: string);
-var str, tmp, libName: string;
+var libName: string;
 begin
   libName := ExtractFileName(filename);
 
@@ -184,7 +184,7 @@ begin
 
   TRCSIFace(Self).LoadLib(filename, Self.configDir + '\' + ChangeFileExt(libName, '.ini'));
 
-  writelog('Načtena knihovna ' + libName + ', RCS API v'+Self.apiVersionStr(), WR_RCS);
+  Logging.Log('Načtena knihovna ' + libName + ', RCS API v'+Self.apiVersionStr(), WR_RCS);
 
   // kontrola bindnuti vsech eventu
 
@@ -198,8 +198,8 @@ begin
     if (Assigned(Self.OnReady)) then
       Self.OnReady(Self, Self.aReady);
   end else begin
-    str := '';
-    for tmp in Self.unbound do
+    var str := '';
+    for var tmp in Self.unbound do
       str := str + tmp + ', ';
     str := LeftStr(str, Length(str) - 2);
     F_Main.LogStatus('ERR: RCS: nepodařilo se svázat následující funkce : ' + str);
@@ -263,7 +263,7 @@ begin
     on E: Exception do
     begin
       F_Main.LogStatus('ERR: RCS: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message);
-      writelog('Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message, WR_ERROR);
+      Logging.Log('Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message, WR_ERROR);
     end;
   end;
 end;
@@ -283,7 +283,7 @@ end;
 
 procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg: PChar);
 begin
-  writelog('RCS ERR: ' + errMsg + ' (' + IntToStr(errValue) + ':' + IntToStr(errAddr) + ')', WR_RCS);
+  Logging.Log('RCS ERR: ' + errMsg + ' (' + IntToStr(errValue) + ':' + IntToStr(errAddr) + ')', WR_RCS);
 
   if (SystemData.Status = TSystemStatus.starting) then
     SystemData.Status := TSystemStatus.null;
@@ -303,9 +303,9 @@ begin
     Exit();
 
   if (logLevel = TRCSLogLevel.llErrors) then
-    writelog(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, WR_ERROR)
+    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, WR_ERROR)
   else
-    writelog(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, WR_RCS);
+    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, WR_RCS);
 end;
 
 procedure TRCS.DllOnInputChanged(Sender: TObject; module: Cardinal);

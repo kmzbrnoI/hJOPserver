@@ -94,7 +94,7 @@ begin
     Areas.LoadData(read, read2);
   except
     on e: EFileNotFound do
-      writelog(e.Message, WR_ERROR);
+      Log(e.Message, WR_ERROR);
     on e: Exception do
       AppEvents.LogException(e);
   end;
@@ -103,34 +103,34 @@ begin
   F_Splash.AddStav('Načítám hnací vozidla...');
   F_Main.E_dataload_HV_dir.Text := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'lok', 'lok');
   F_Main.E_dataload_HV_state.Text := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'lok', 'stav\lok.ini');
-  writelog('Načítám hnací vozidla - ' + F_Main.E_dataload_HV_dir.Text + '\*', WR_DATA);
+  Log('Načítám hnací vozidla - ' + F_Main.E_dataload_HV_dir.Text + '\*', WR_DATA);
   try
     HVDb.LoadFromDir(F_Main.E_dataload_HV_dir.Text, F_Main.E_dataload_HV_state.Text);
   except
     on e: Exception do
       AppEvents.LogException(e);
   end;
-  writelog('Načteno ' + IntToStr(HVDb.cnt) + ' hnacích vozidel', WR_DATA);
+  Log('Načteno ' + IntToStr(HVDb.cnt) + ' hnacích vozidel', WR_DATA);
 
   F_Splash.AddStav('Načítám RCS...');
-  writelog('Načítám RCS...', WR_DATA);
+  Log('Načítám RCS...', WR_DATA);
   try
     RCSi.LoadFromFile(inidata);
   except
     on e: Exception do
       AppEvents.LogException(e);
   end;
-  writelog('RCS načteno', WR_DATA);
+  Log('RCS načteno', WR_DATA);
 
   F_Splash.AddStav('Načítám trakci...');
-  writelog('Načítám trakci...', WR_DATA);
+  Log('Načítám trakci...', WR_DATA);
   try
     TrakceI.LoadFromFile(inidata);
   except
     on e: Exception do
       AppEvents.LogException(e);
   end;
-  writelog('Trakce načtena', WR_DATA);
+  Log('Trakce načtena', WR_DATA);
 
   F_Splash.AddStav('Načítám databázi zesilovačů...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', 'data\zesilovace.ini');
@@ -203,7 +203,7 @@ var tmpStr: string;
 begin
   inidata.EraseSection(_INIDATA_PATHS_DATA_SECTION);
   inidata.EraseSection(_INIDATA_PATHS_STATE_SECTION);
-  writelog('Probíha kompletní ukládání dat', WR_DATA);
+  Log('Probíha kompletní ukládání dat', WR_DATA);
 
   try
     Blocks.SaveToFile(F_Main.E_dataload_block.Text);
@@ -298,7 +298,7 @@ begin
       AppEvents.LogException(e);
   end;
 
-  writelog('Kompletní ukládání dat dokončeno', WR_DATA);
+  Log('Kompletní ukládání dat dokončeno', WR_DATA);
 
   try
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Options.E_dataload.Text);
@@ -335,7 +335,7 @@ procedure TGlobalConfig.LoadCfgFromFile(filename: string);
 var str: string;
   ini: TMemIniFile;
 begin
-  writelog('Načítám globální konfiguraci: ' + filename, WR_DATA);
+  Log('Načítám globální konfiguraci: ' + filename, WR_DATA);
   F_Options.E_dataload.Text := filename;
 
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -390,7 +390,7 @@ begin
         AppEvents.LogException(e);
     end;
 
-    writelog('Globální konfigurace načtena', WR_DATA);
+    Log('Globální konfigurace načtena', WR_DATA);
   finally
     ini.Free();
   end;
@@ -405,7 +405,7 @@ begin
     PtServer.port := ini.ReadInteger(_SECTION, 'port', _PT_DEFAULT_PORT);
   except
     on e: EPTActive do
-      writelog('PT ERR: ' + e.Message, WR_PT);
+      Log('PT ERR: ' + e.Message, WR_PT);
   end;
 
   PtServer.compact := ini.ReadBool(_SECTION, 'compact', _PT_COMPACT_RESPONSE);
@@ -422,7 +422,7 @@ begin
           PtServer.AccessTokenAdd(key, str);
       except
         on e: Exception do
-          writelog('PTserver: nepodařilo se přidat token ' + str + ' (' + e.Message + ')', WR_ERROR);
+          Log('PTserver: nepodařilo se přidat token ' + str + ' (' + e.Message + ')', WR_ERROR);
       end;
     end;
   finally
@@ -458,26 +458,23 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TFormData.LoadFormData(filename: String);
-var j: Integer;
-  objs: TStrings;
-  obj, rawObj: String;
-  aComponent: TComponent;
+var objs: TStrings;
   ini: TMemIniFile;
 begin
-  writelog('Načítám FormData: ' + filename, WR_DATA);
+  Log('Načítám FormData: ' + filename, WR_DATA);
 
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
   FormData.aFile := filename;
   objs := TStringList.Create();
   try
     ini.GetStrings(objs); // "[LV_xy]" (must cut "[]")
-    for obj in objs do
+    for var obj in objs do
     begin
-      j := 0;
-      rawObj := Copy(obj, 2, Length(obj) - 2);
+      var j := 0;
+      var rawObj := Copy(obj, 2, Length(obj) - 2);
       while (ini.ReadInteger(rawObj, IntToStr(j), -1) > -1) do
       begin
-        aComponent := F_Options.FindComponent(rawObj);
+        var aComponent := F_Options.FindComponent(rawObj);
         if (aComponent = nil) then
           aComponent := F_Main.FindComponent(rawObj);
 
@@ -492,7 +489,7 @@ begin
     objs.Free();
     ini.Free();
   end;
-  writelog('FormData úspěšně načtena', WR_DATA);
+  Log('FormData úspěšně načtena', WR_DATA);
 end;
 
 procedure TFormData.SaveFormData(filename: String);

@@ -90,10 +90,8 @@ end;
 procedure TBoosterDb.LoadFromFile(inifilename: string);
 var ini: TMemIniFile;
   sections: TStrings;
-  id: string;
-  Booster: TBooster;
 begin
-  writelog('Načítám zesilovače: ' + inifilename, WR_DATA);
+  Log('Načítám zesilovače: ' + inifilename, WR_DATA);
 
   Self.Clear();
 
@@ -110,20 +108,20 @@ begin
 
   ini.ReadSections(sections);
 
-  for id in sections do
+  for var id in sections do
   begin
     if (id = '') then
     begin
-      writelog('WARNING: prázdný primární klíč zesilovače - přeskakuji', WR_ERROR);
+      Log('WARNING: prázdný primární klíč zesilovače - přeskakuji', WR_ERROR);
       continue;
     end;
     if (Self.db.ContainsKey(id)) then
     begin
-      writelog('WARNING: duplicita primárního klíče zesilovače (' + id + ') - přeskakuji', WR_ERROR);
+      Log('WARNING: duplicita primárního klíče zesilovače (' + id + ') - přeskakuji', WR_ERROR);
       continue;
     end;
 
-    Booster := nil;
+    var Booster: TBooster := nil;
 
     try
       Booster := TBooster.Create(ini, id);
@@ -153,13 +151,13 @@ begin
 
   ZesTableData.LoadToTable();
 
-  writelog('Načteno ' + IntToStr(Self.Count) + ' zesilovačů', WR_DATA);
+  Log('Načteno ' + IntToStr(Self.Count) + ' zesilovačů', WR_DATA);
 end;
 
 procedure TBoosterDb.SaveToFile(inifilename: string);
 var ini: TMemIniFile;
 begin
-  writelog('Ukládám zesilovače...', WR_DATA);
+  Log('Ukládám zesilovače...', WR_DATA);
 
   try
     DeleteFile(PChar(inifilename));
@@ -178,7 +176,7 @@ begin
   ini.UpdateFile();
   ini.Free();
 
-  writelog('Uloženo zesilovačů: ' + IntToStr(Self.Count), WR_DATA);
+  Log('Uloženo zesilovačů: ' + IntToStr(Self.Count), WR_DATA);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

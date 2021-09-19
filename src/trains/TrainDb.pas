@@ -90,10 +90,9 @@ end;
 
 procedure TTrainDb.LoadData(const filename: string);
 var ini: TMemIniFile;
-    i: Integer;
     sections: TStrings;
 begin
- writelog('Načítám soupravy: '+filename, WR_DATA);
+ Log('Načítám soupravy: '+filename, WR_DATA);
  Self.ffilename := filename;
 
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -104,10 +103,10 @@ begin
 
    Self.FreeTrains();
 
-   for i := 0 to sections.Count-1 do
+   for var i := 0 to sections.Count-1 do
      Self.trains[i] := TTrain.Create(ini, sections[i], i);
 
-   writelog('Načteno '+IntToStr(sections.Count)+' souprav', WR_DATA);
+   Log('Načteno '+IntToStr(sections.Count)+' souprav', WR_DATA);
  finally
    FreeAndNil(ini);
    FreeAndNil(sections);
@@ -119,15 +118,14 @@ end;
 
 procedure TTrainDb.SaveData(const filename: string);
 var ini: TMemIniFile;
-    i: Integer;
 begin
- writelog('Ukládám soupravy: '+filename, WR_DATA);
+ Log('Ukládám soupravy: '+filename, WR_DATA);
 
  if (FileExists(filename)) then
    DeleteFile(PChar(filename));
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
  try
-   for i := 0 to _MAX_TRAIN-1 do
+   for var i := 0 to _MAX_TRAIN-1 do
      if (Assigned(Self.trains[i])) then
        Self.trains[i].SaveToFile(ini, IntToStr(i));
    ini.UpdateFile();
@@ -135,7 +133,7 @@ begin
    FreeAndNil(ini);
  end;
 
- writelog('Uloženo '+IntToStr(Self.Count)+' souprav', WR_DATA);
+ Log('Uloženo '+IntToStr(Self.Count)+' souprav', WR_DATA);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

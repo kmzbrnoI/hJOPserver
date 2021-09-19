@@ -48,7 +48,7 @@ uses version, TechnologieRCS, Logging, appEv;
 
 procedure TF_About.FormShow(Sender: TObject);
 begin
-  writelog('Zobrazeno okno O programu', WR_MESSAGE);
+  Log('Zobrazeno okno O programu', WR_MESSAGE);
   Self.ST_about5.Font.Color := clBlue;
   Self.ST_about3.Font.Color := clBlue;
 
@@ -95,7 +95,7 @@ end;
 
 procedure TF_About.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  writelog('Skryto okno O programu', WR_MESSAGE);
+  Log('Skryto okno O programu', WR_MESSAGE);
 end;
 
 procedure TF_About.ST_about3Click(Sender: TObject);
