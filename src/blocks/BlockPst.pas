@@ -66,6 +66,12 @@ type
     procedure CheckInputs();
     procedure ShowIndication();
 
+    procedure NoteUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
+        UPO_EscCallback: TNotifyEvent);
+
+    procedure UPOPstDisDone(Sender: TObject);
+    procedure UPONPstDone(Sender: TObject);
+
   public
 
     constructor Create(index: Integer);
@@ -114,7 +120,7 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
-  RCSErrors, RCS;
+  RCSErrors, RCS, UPO;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -366,10 +372,26 @@ end;
 
 procedure TBlkPst.MenuPstDisClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.status := pstOff;
+  if (Self.note <> '') then
+    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOPstDisDone, nil)
+  else
+    Self.UPOPstDisDone(SenderPnl);
 end;
 
 procedure TBlkPst.MenuNPstClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  if (Self.note <> '') then
+    Self.NoteUPO(SenderPnl, SenderOR, Self.UPONPstDone, nil)
+  else
+    Self.UPONPstDone(SenderPnl);
+end;
+
+procedure TBlkPst.UPOPstDisDone(Sender: TObject);
+begin
+  Self.status := pstOff;
+end;
+
+procedure TBlkPst.UPONPstDone(Sender: TObject);
 begin
   Self.status := pstOff;
 end;
@@ -629,6 +651,33 @@ begin
   except
     on E: RCSException do begin end;
   end
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPst.NoteUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
+  UPO_EscCallback: TNotifyEvent);
+var UPO: TUPOItems;
+  item: TUPOItem;
+begin
+  UPO := TList<TUPOItem>.Create();
+  try
+    item[0] := GetUPOLine('ŠTÍTEK ' + Self.m_globSettings.name, taCenter, clBlack, clTeal);
+    var lines: TStrings := GetLines(Self.note, _UPO_LINE_LEN);
+
+    try
+      item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
+
+    UPO.Add(item);
+    PanelServer.UPO(SenderPnl, UPO, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+  finally
+    UPO.Free();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

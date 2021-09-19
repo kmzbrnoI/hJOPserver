@@ -73,7 +73,6 @@ begin
 end;
 
 procedure TF_BlkSummary.B_AddClick(Sender: TObject);
-var blk: TBlk;
 begin
   if (not Self.CB_Crossing.Enabled) then
     Exit();
