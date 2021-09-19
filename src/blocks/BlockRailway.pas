@@ -566,7 +566,7 @@ begin
   if (not Train.IsTimeDefined()) then
     Train.time := timeHelper.hJOPnow();
 
-  Log('Trať ' + Self.m_globSettings.name + ' : přidána souprava ' + Train.Train.name, WR_SPRPREDAT);
+  Log('Trať ' + Self.m_globSettings.name + ' : přidána souprava ' + Train.Train.name, ltTrainMove);
 
   Self.Change();
 end;
@@ -585,7 +585,7 @@ begin
   if (Self.IsTrain(Train)) then
   begin
     Self.m_state.trains.Delete(Self.GetTrainIndex(Train));
-    Log('Trať ' + Self.m_globSettings.name + ' : smazána souprava ' + Train.name, WR_SPRPREDAT);
+    Log('Trať ' + Self.m_globSettings.name + ' : smazána souprava ' + Train.name, ltTrainMove);
     toChange := true;
   end;
 
@@ -633,7 +633,7 @@ begin
   end; // case
 
   Log('Trať ' + Self.m_globSettings.name + ' : souprava ' + Train.name + ' : stanice změněna na ' +
-    (Train.station as TArea).name, WR_SPRPREDAT);
+    (Train.station as TArea).name, ltTrainMove);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -738,14 +738,14 @@ begin
     if ((blk = nil) or (blk.typ <> btRT)) then
     begin
       Log('Trat ' + Self.name + ' obsahuje referenci na TU ID ' + IntToStr(Self.m_settings.trackIds[i]) +
-        ', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', WR_ERROR);
+        ', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', ltError);
       Self.m_settings.trackIds.Delete(i);
       continue;
     end;
     if (((blk as TBlkRT).inRailway <> -1) and ((blk as TBlkRT).inRailway <> Self.id)) then
     begin
       Log('Trat ' + Self.name + ': TU ID ' + IntToStr(Self.m_settings.trackIds[i]) + ' jiz referuje na trat ID ' +
-        IntToStr((blk as TBlkRT).inRailway) + ', odstranuji referenci', WR_ERROR);
+        IntToStr((blk as TBlkRT).inRailway) + ', odstranuji referenci', ltError);
       Self.m_settings.trackIds.Delete(i);
     end;
   end;

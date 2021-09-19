@@ -64,7 +64,7 @@ begin
       E_console.Text;
 
     if (F_Options.CHB_Log_console.Checked) then
-      Log('Console: ' + E_console.Text, WR_CONSOLE);
+      Log('Console: ' + E_console.Text, ltConsole);
 
     if (strings.Count <> 0) then
     begin

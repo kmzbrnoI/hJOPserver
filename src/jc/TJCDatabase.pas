@@ -117,7 +117,7 @@ procedure TJCDb.LoadData(const filename: string);
 var ini: TMemIniFile;
   sections: TStrings;
 begin
-  Log('Načítám JC - ' + filename, WR_DATA);
+  Log('Načítám JC - ' + filename, ltData);
 
   Self.ffilename := filename;
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -152,14 +152,14 @@ begin
   end;
 
   Self.FillJCsStartSignal();
-  Log('Načteno ' + IntToStr(Self.JCs.Count) + ' JC', WR_DATA);
+  Log('Načteno ' + IntToStr(Self.JCs.Count) + ' JC', ltData);
 end;
 
 // save data to ini file:
 procedure TJCDb.SaveData(const filename: string);
 var ini: TMemIniFile;
 begin
-  Log('Ukládám JC - ' + filename, WR_DATA);
+  Log('Ukládám JC - ' + filename, ltData);
 
   DeleteFile(PChar(filename));
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -172,7 +172,7 @@ begin
     ini.Free();
   end;
 
-  Log('JC uloženy', WR_DATA);
+  Log('JC uloženy', ltData);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -300,7 +300,7 @@ begin
 
     (EndBlk as TBlkTrack).jcEnd := TZaver.no;
     PanelServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závěrové tabulce');
-    Log('Nelze postavit JC -  nenalezena v zaverove tabulce', WR_VC);
+    Log('Nelze postavit JC -  nenalezena v zaverove tabulce', ltJC);
   end;
 end;
 

@@ -66,7 +66,7 @@ begin
 
   Self.JCs.Add(jc);
   ABTableData.AddJC(jc);
-  Log('AB: JC ' + jc.name + ' přidána do seznamu AB JC', WR_VC);
+  Log('AB: JC ' + jc.name + ' přidána do seznamu AB JC', ltJC);
 end;
 
 procedure TABlist.Remove(jc: TJC);
@@ -83,7 +83,7 @@ begin
   end;
 
   var i: Integer := Self.JCs.IndexOf(jc);
-  Log('AB: JC ' + Self.JCs[i].name + ' odstraněna ze seznamu AB JC', WR_VC);
+  Log('AB: JC ' + Self.JCs[i].name + ' odstraněna ze seznamu AB JC', ltJC);
   Self.JCs.Delete(i);
   ABTableData.DeleteJC(i);
 end;
@@ -112,7 +112,7 @@ begin
     // (KontrolaPodminek() zarucuje, ze tyto typy barier jsou na zacatku seznamu).
     // Upozornovaci bariery ignorujeme a stavime JC.
 
-    Log('DN JC ' + jc.name + ' : podmínky splněny, stavím', WR_STACK);
+    Log('DN JC ' + jc.name + ' : podmínky splněny, stavím', ltStack);
 
     var blk: TBlk;
     Blocks.GetBlkByID(jc.data.signalId, blk);

@@ -689,12 +689,12 @@ begin
 
    if (HVDb[addr].ruc) then
     begin
-     Log('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', WR_MESSAGE);
+     Log('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', ltData);
      continue;
     end;
    if (HVDb[addr].stolen) then
     begin
-     Log('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE);
+     Log('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', ltMessage);
      continue;
     end;
 
@@ -714,7 +714,7 @@ begin
       ((Self.front as TBlkTrack).trains[(Self.front as TBlkTrack).trainMoving] = Self.index)) then
   (Self.front as TBlkTrack).trainMoving := -1;
 
- Log('Souprava ' + Self.name + ' : rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), WR_MESSAGE);
+ Log('Souprava ' + Self.name + ' : rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), ltMessage);
  Self.changed := true;
 end;
 
@@ -832,7 +832,7 @@ end;
 // zmena smeru pri naslapu na smyckovy blok
 procedure TTrain.ChangeDirection();
 begin
- Log('Souprava '+ Self.name + ' : změna směru', WR_SPRPREDAT);
+ Log('Souprava '+ Self.name + ' : změna směru', ltTrainMove);
 
  // zmenit orintaci stanoviste A hnacich vozidel
  for var addr in Self.HVs do
@@ -908,7 +908,7 @@ end;
 
 procedure TTrain.ToggleHouk(desc: string);
 begin
- Log('Souprava ' + Self.name + ' : aktivuji houkání ' + desc, WR_MESSAGE);
+ Log('Souprava ' + Self.name + ' : aktivuji houkání ' + desc, ltMessage);
 
  for var addr in Self.HVs do
   begin
@@ -921,9 +921,9 @@ end;
 procedure TTrain.SetHoukState(desc: string; state: Boolean);
 begin
  if (state) then
-   Log('Souprava ' + Self.name + ' : aktivuji funkci ' + desc, WR_MESSAGE)
+   Log('Souprava ' + Self.name + ' : aktivuji funkci ' + desc, ltMessage)
  else
-   Log('Souprava ' + Self.name + ' : deaktivuji funkci ' + desc, WR_MESSAGE);
+   Log('Souprava ' + Self.name + ' : deaktivuji funkci ' + desc, ltMessage);
 
  for var addr in Self.HVs do
   begin

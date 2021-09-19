@@ -7,28 +7,30 @@ interface
 uses ComCtrls, SysUtils, Graphics, Windows, Classes;
 
 const
-  // General log types
-  WR_MESSAGE = 0;
-  WR_ERROR = 1;
-  WR_VC = 4;
-  WR_DATA = 6;
-  WR_RCS = 7;
-  WR_SYSTEM = 8;
-  WR_CONSOLE = 10;
-  WR_SPRPREDAT = 11;
-  WR_USERS = 12;
-  WR_STACK = 13;
-  WR_TRAT = 16;
-  WR_PT = 17;
-
   _MAX_LOGTABLE_ITEMS = 500;
   _MAIN_LOG_PATH = 'log\program';
   _AUTH_LOG_PATH = 'log\auth';
 
+type
+  LogType = (
+    ltMessage,
+    ltError,
+    ltJC,
+    ltData,
+    ltRCS,
+    ltSystem,
+    ltConsole,
+    ltTrainMove,
+    ltUsers,
+    ltStack,
+    ltRailway,
+    ltPT
+  );
+
 procedure logInit();
 
-procedure Log(Text: string; Typ: Integer); overload;
-procedure Log(Text: TStrings; Typ: Integer); overload;
+procedure Log(text: string; typ: LogType); overload;
+procedure Log(text: TStrings; typ: LogType); overload;
 
 procedure authLog(system, operation, user, Text: string);
 
@@ -47,87 +49,87 @@ begin
   try
     if not DirectoryExists(_MAIN_LOG_PATH) then
       if not SysUtils.ForceDirectories(ExpandFileName(_MAIN_LOG_PATH)) then
-        Log('ERR: Nelze vytvořit složku ' + _MAIN_LOG_PATH, WR_ERROR);
+        Log('ERR: Nelze vytvořit složku ' + _MAIN_LOG_PATH, ltError);
     if not DirectoryExists(_AUTH_LOG_PATH) then
       if not SysUtils.ForceDirectories(ExpandFileName(_AUTH_LOG_PATH)) then
-        Log('ERR: Nelze vytvořit složku ' + _AUTH_LOG_PATH, WR_ERROR);
+        Log('ERR: Nelze vytvořit složku ' + _AUTH_LOG_PATH, ltError);
   except
     on e: Exception do
       AppEvents.LogException(e);
   end;
 
-  Log('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$', WR_MESSAGE);
-  Log('Datum ' + FormatDateTime('dd.mm.yyyy', Now), WR_MESSAGE);
-  Log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', WR_MESSAGE);
+  Log('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$', ltMessage);
+  Log('Datum ' + FormatDateTime('dd.mm.yyyy', Now), ltMessage);
+  Log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', ltMessage);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function GetLogColor(LogTyp: Integer): TColor;
+function GetLogColor(typ: LogType): TColor;
 begin
-  case (LogTyp) of
-    WR_MESSAGE:
+  case (typ) of
+    ltMessage:
       Result := clWhite;
-    WR_ERROR:
+    ltError:
       Result := fMain._TABLE_COLOR_RED;
-    WR_VC:
+    ltJC:
       Result := RGB($FF, $FF, $D0);
-    WR_DATA:
+    ltData:
       Result := fMain._TABLE_COLOR_BLUE;
-    WR_RCS:
+    ltRCS:
       Result := fMain._TABLE_COLOR_GREEN;
-    WR_SYSTEM:
+    ltSystem:
       Result := RGB($FF, $FF, $D0);
-    WR_CONSOLE:
+    ltConsole:
       Result := RGB($C0, $C0, $FF);
-    WR_SPRPREDAT:
+    ltTrainMove:
       Result := RGB($CA, $FF, $CA);
-    WR_USERS:
+    ltUsers:
       Result := RGB($F0, $F0, $D0);
-    WR_TRAT:
+    ltRailway:
       Result := clHotLight;
-    WR_PT:
+    ltPT:
       Result := RGB($F0, $FF, $F0);
   else
     Result := clWhite;
   end;
 end;
 
-function GetLogTyp(Typ: Integer): string;
+function GetLogTyp(Typ: LogType): string;
 begin
   case Typ of
-    WR_MESSAGE:
+    ltMessage:
       Result := 'Zpráva';
-    WR_ERROR:
+    ltError:
       Result := 'Chyba';
-    WR_VC:
+    ltJC:
       Result := 'Jízdní cesty';
-    WR_DATA:
+    ltData:
       Result := 'Data';
-    WR_RCS:
+    ltRCS:
       Result := 'RCS';
-    WR_SYSTEM:
+    ltSystem:
       Result := 'SYSTEM';
-    WR_CONSOLE:
+    ltConsole:
       Result := 'Konzole';
-    WR_SPRPREDAT:
+    ltTrainMove:
       Result := 'Předávání souprav';
-    WR_USERS:
+    ltUsers:
       Result := 'Uživatelé';
-    WR_TRAT:
+    ltRailway:
       Result := 'Trať';
-    WR_STACK:
+    ltStack:
       Result := 'Zásobník JC';
-    WR_PT:
+    ltPT:
       Result := 'PT server';
-  else // case
+  else
     Result := 'Neznámý typ';
-  end; // else case
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure intLog(Text: string; Typ: Integer; multiline: Boolean = false);
+procedure intLog(text: string; typ: LogType; multiline: Boolean = false);
 var f: TextFile;
   xTime, xDate: string;
 begin
@@ -138,7 +140,7 @@ begin
   DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
   if (multiline) then
     xTime := '';
-  log_err_flag := (Typ = WR_ERROR);
+  log_err_flag := (Typ = ltError);
 
   if (F_Main.LV_log.Items.Count > _MAX_LOGTABLE_ITEMS) then
     F_Main.LV_log.Clear();
@@ -183,24 +185,24 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure Log(Text: string; Typ: Integer); overload;
+procedure Log(text: string; typ: LogType); overload;
 begin
-  intLog(Text, Typ, false);
+  intLog(text, typ, false);
 end;
 
-procedure Log(Text: TStrings; Typ: Integer); overload;
+procedure Log(text: TStrings; typ: LogType); overload;
 begin
   if (Text.Count = 0) then
     Exit();
 
-  intLog(Text[0], Typ, false);
+  intLog(text[0], typ, false);
   for var i := 1 to Text.Count - 1 do
-    intLog(' -> ' + Text[i], Typ, true);
+    intLog(' -> ' + text[i], typ, true);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure authLog(system, operation, user, Text: string);
+procedure authLog(system, operation, user, text: string);
 var f: TextFile;
   time, date: string;
 begin

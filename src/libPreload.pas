@@ -57,9 +57,9 @@ begin
   handle := LoadLibrary(PChar(path));
   if (handle = 0) then
   begin
-    Log('Nelze naèíst preload knihovnu: ' + path, WR_ERROR);
+    Log('Nelze naèíst preload knihovnu: ' + path, ltError);
   end else begin
-    Log('Naètena preload knihovna: ' + path, WR_MESSAGE);
+    Log('Naètena preload knihovna: ' + path, ltMessage);
     Self.preloaded.Add(handle);
   end;
 end;

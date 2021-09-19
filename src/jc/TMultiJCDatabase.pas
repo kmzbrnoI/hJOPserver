@@ -92,7 +92,7 @@ var ini: TMemIniFile;
     mJC: TMultiJC;
     sections: TStrings;
 begin
- Log('Načítám složené JC - '+filename, WR_DATA);
+ Log('Načítám složené JC - '+filename, ltData);
 
  Self.ffilename := filename;
 
@@ -137,7 +137,7 @@ begin
   begin
    if (Self.JCs[i].id = Self.JCs[i+1].id) then
     begin
-     Log('WARNING: duplicita primárního klíče mJC ('+IntToStr(Self.JCs[i].id)+') - přeskakuji', WR_ERROR);
+     Log('WARNING: duplicita primárního klíče mJC ('+IntToStr(Self.JCs[i].id)+') - přeskakuji', ltError);
      Self.JCs.Delete(i+1);
     end;
    Inc(i);
@@ -145,7 +145,7 @@ begin
 
  ini.Free();
  sections.Free();
- Log('Načteno '+IntToStr(Self.JCs.Count)+' složených JC', WR_DATA);
+ Log('Načteno '+IntToStr(Self.JCs.Count)+' složených JC', ltData);
 
  MultiJCTableData.LoadToTable();
  Self.FillJCsStartSignal();
@@ -156,7 +156,7 @@ procedure TMultiJCDb.SaveData(const filename: string);
 var ini: TMemIniFile;
     i: Integer;
 begin
- Log('Ukládám složené JC - '+filename, WR_DATA);
+ Log('Ukládám složené JC - '+filename, ltData);
 
  try
    DeleteFile(PChar(filename));
@@ -175,7 +175,7 @@ begin
  ini.UpdateFile();
  ini.Free();
 
- Log('Složené JC uloženy', WR_DATA);
+ Log('Složené JC uloženy', ltData);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

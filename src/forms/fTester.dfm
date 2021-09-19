@@ -40,10 +40,8 @@ object F_Tester: TF_Tester
     000000000000000000000000000000000001FFFFFFFFFFFFFFFFFFFFFFFF}
   OldCreateOrder = False
   Position = poScreenCenter
-  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object L_1: TLabel

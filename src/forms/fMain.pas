@@ -502,7 +502,7 @@ begin
   fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
 
   Screen.Cursor := crHourGlass;
-  Log('RCS -> ' + fn, WR_RCS);
+  Log('RCS -> ' + fn, ltRCS);
   try
     RCSi.LoadLib(RCSi.libDir + '\' + fn);
     Self.LogStatus('RCS: načteno ' + fn);
@@ -568,7 +568,7 @@ begin
     end;
   end;
   Screen.Cursor := crDefault;
-  Log('Zobrazen ConfigDialog knihovny', WR_RCS);
+  Log('Zobrazen ConfigDialog knihovny', ltRCS);
 end;
 
 procedure TF_Main.A_RCS_CloseExecute(Sender: TObject);
@@ -584,7 +584,7 @@ begin
   F_Main.S_RCS_open.Brush.Color := clBlue;
   Self.LogStatus('RCS: uzavírám zařízení...');
 
-  Log('----- RCS CLOSING -----', WR_RCS);
+  Log('----- RCS CLOSING -----', ltRCS);
 
   with (F_Main) do
   begin
@@ -631,7 +631,7 @@ begin
   Self.LogStatus('RCS: Spouštím komunikaci...');
   F_Main.S_RCS_start.Brush.Color := clBlue;
 
-  Log('----- RCS STARTING -----', WR_RCS);
+  Log('----- RCS STARTING -----', ltRCS);
 
   try
     RCSi.Start();
@@ -673,7 +673,7 @@ begin
   Self.LogStatus('RCS: Otevírám zařízení, hledám moduly...');
   F_Main.S_RCS_open.Brush.Color := clBlue;
 
-  Log('----- RCS OPENING -----', WR_RCS);
+  Log('----- RCS OPENING -----', ltRCS);
 
   try
     RCSi.logActionInProgress := true;
@@ -700,7 +700,7 @@ begin
   F_Main.S_RCS_start.Brush.Color := clGray;
   Self.LogStatus('RCS: zastavuji komunikaci...');
 
-  Log('----- RCS STOPPING -----', WR_RCS);
+  Log('----- RCS STOPPING -----', ltRCS);
 
   with (F_Main) do
   begin
@@ -740,7 +740,7 @@ begin
     UpdateSystemButtons();
   end; // with F_Main do
 
-  Log('----- RCS START OK -----', WR_RCS);
+  Log('----- RCS START OK -----', ltRCS);
 
   Self.LogStatus('RCS: komunikace spuštěna, čekám na první sken všech modulů...');
   RCSTableData.UpdateTable();
@@ -751,7 +751,7 @@ begin
   F_Main.S_RCS_start.Brush.Color := clLime;
   RCSTableData.UpdateTable();
 
-  Log('----- RCS SCANNED -----', WR_RCS);
+  Log('----- RCS SCANNED -----', ltRCS);
   Self.LogStatus('RCS: moduly naskenovány');
 
   // inicialziace osvetleni
@@ -791,7 +791,7 @@ begin
     SB1.Panels.Items[_SB_RCS].Text := 'RCS otevřeno';
   end; // with F_Main do
 
-  Log('----- RCS STOP OK -----', WR_RCS);
+  Log('----- RCS STOP OK -----', ltRCS);
 
   Self.LogStatus('RCS: komunikace zastavena');
 
@@ -822,9 +822,9 @@ begin
   F_Main.S_RCS_open.Brush.Color := clLime;
 
   try
-    Log('----- RCS OPEN OK : ' + IntToStr(RCSi.GetModuleCount) + ' modules -----', WR_RCS);
+    Log('----- RCS OPEN OK : ' + IntToStr(RCSi.GetModuleCount) + ' modules -----', ltRCS);
   except
-    Log('----- RCS OPEN OK : unknown amount of modules -----', WR_RCS);
+    Log('----- RCS OPEN OK : unknown amount of modules -----', ltRCS);
   end;
 
   Self.LogStatus('RCS: otevřeno');
@@ -847,7 +847,7 @@ begin
       end;
     if (str <> '') then
     begin
-      Log('Chybí RCS moduly ' + str, WR_RCS);
+      Log('Chybí RCS moduly ' + str, ltRCS);
       Self.LogStatus('WARN: Chybí RCS moduly ' + str);
     end;
 
@@ -877,7 +877,7 @@ begin
   F_Main.S_RCS_open.Brush.Color := clRed;
   F_Main.S_RCS_start.Brush.Color := clRed;
 
-  Log('----- RCS CLOSE OK -----', WR_RCS);
+  Log('----- RCS CLOSE OK -----', ltRCS);
 
   Self.LogStatus('RCS: uzavřeno');
   SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
@@ -908,7 +908,7 @@ begin
   SystemData.Status := TSystemStatus.null;
 
   Self.LogStatus('ERR: RCS OPEN FAIL: ' + errMsg);
-  Log('----- RCS OPEN FAIL - ' + errMsg + ' -----', WR_ERROR);
+  Log('----- RCS OPEN FAIL - ' + errMsg + ' -----', ltError);
   SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
   Application.MessageBox(PChar('Při otevírání RCS nastala chyba:' + #13#10 + errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
@@ -930,7 +930,7 @@ begin
   SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
   Application.MessageBox(PChar('Při uzavírání RCS nastala chyba:' + #13#10 + errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
-  Log('----- RCS CLOSE FAIL - ' + errMsg + ' -----', WR_ERROR);
+  Log('----- RCS CLOSE FAIL - ' + errMsg + ' -----', ltError);
 end;
 
 procedure TF_Main.OnRCSErrStart(Sender: TObject; errMsg: string);
@@ -947,7 +947,7 @@ begin
   SystemData.Status := TSystemStatus.null;
 
   Self.LogStatus('ERR: RCS START FAIL: ' + errMsg);
-  Log('----- RCS START FAIL - ' + errMsg + ' -----', WR_ERROR);
+  Log('----- RCS START FAIL - ' + errMsg + ' -----', ltError);
 
   Application.MessageBox(PChar('Při zapínání komunikace nastala chyba:' + #13#10 + errMsg), 'Chyba',
     MB_OK OR MB_ICONWARNING);
@@ -970,7 +970,7 @@ begin
 
   Application.MessageBox(PChar('Při vypínání komunikace nastala chyba:' + #13#10 + errMsg + #13#10), 'Chyba',
     MB_OK OR MB_ICONWARNING);
-  Log('----- RCS STOP FAIL - ' + errMsg + ' -----', WR_ERROR);
+  Log('----- RCS STOP FAIL - ' + errMsg + ' -----', ltError);
 end;
 
 procedure TF_Main.OnRCSReady(Sender: TObject; ready: Boolean);
@@ -998,7 +998,7 @@ begin
       RCSi.InputSim();
   except
     on E: Exception do
-      Log('Nelze provést inputSim : ' + E.Message, WR_ERROR);
+      Log('Nelze provést inputSim : ' + E.Message, ltError);
   end;
 end;
 
@@ -1552,7 +1552,7 @@ begin
     MB_YESNO OR MB_ICONWARNING OR MB_DEFBUTTON2) = mrYes) then
   begin
     Blocks.MoveTurnoutBasicPosition();
-    Log('Vyhýbky přestaveny do základní polohy', WR_MESSAGE);
+    Log('Vyhýbky přestaveny do základní polohy', ltMessage);
     Application.MessageBox('Výhybky přestaveny do záklaních poloh.', 'Informace', MB_OK OR MB_ICONINFORMATION);
   end;
 end;
@@ -1588,7 +1588,7 @@ begin
   case (ci) of
     TCloseInfo.ci_system_changing:
       begin
-        Log('Pokus o zavření okna při zapínání nebo vypínání systémů', WR_ERROR);
+        Log('Pokus o zavření okna při zapínání nebo vypínání systémů', ltError);
         Application.MessageBox(PChar('Technologie právě zapíná nebo vypíná systémy, aplikaci nelze momentálně zavřít.' +
           #13#10 + 'Nouzové ukončení programu lze provést spuštěním příkazu "app-exit" v konzoli'),
           'Nelze ukončit program', MB_OK OR MB_ICONWARNING);
@@ -1596,7 +1596,7 @@ begin
 
     TCloseInfo.ci_system_started:
       begin
-        Log('Pokus o zavření okna bez ukončení komunikace se systémy', WR_ERROR);
+        Log('Pokus o zavření okna bez ukončení komunikace se systémy', ltError);
         if (Application.MessageBox('Program není odpojen od systémů, odpojit od systémů?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
           F_Main.A_System_StopExecute(Self);
@@ -1604,7 +1604,7 @@ begin
 
     TCloseInfo.ci_rcs:
       begin
-        Log('Pokus o zavření okna bez uzavření RCS', WR_ERROR);
+        Log('Pokus o zavření okna bez uzavření RCS', ltError);
         if (Application.MessageBox('Program není odpojen od RCS, odpojit?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
         begin
@@ -1622,7 +1622,7 @@ begin
 
     TCloseInfo.ci_server:
       begin
-        Log('Pokus o zavření okna bez vypnutí panel serveru', WR_ERROR);
+        Log('Pokus o zavření okna bez vypnutí panel serveru', ltError);
         if (Application.MessageBox('PanelServer stále běží, vypnout?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
           PanelServer.Stop();
@@ -1630,7 +1630,7 @@ begin
 
     TCloseInfo.ci_trakce:
       begin
-        Log('Pokus o zavření okna bez odpojení od centrály', WR_ERROR);
+        Log('Pokus o zavření okna bez odpojení od centrály', ltError);
         if (Application.MessageBox('Program není odpojen od centrály, odpojit?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
           TrakceI.Disconnect();
@@ -2381,9 +2381,9 @@ procedure TF_Main.PM_SB1Click(Sender: TObject);
 begin
   SB1.Visible := PM_SB1.Checked;
   if (PM_SB1.Checked) then
-    Log('Zobrazeno SB1', WR_MESSAGE)
+    Log('Zobrazeno SB1', ltMessage)
   else
-    Log('Skryto SB1', WR_MESSAGE);
+    Log('Skryto SB1', ltMessage);
 end;
 
 procedure TF_Main.T_GUI_refreshTimer(Sender: TObject);
@@ -2452,7 +2452,7 @@ end;
 
 procedure TF_Main.CloseForm();
 begin
-  Log('########## Probíhá ukončování hJOPserver ##########', WR_MESSAGE);
+  Log('########## Probíhá ukončování hJOPserver ##########', ltMessage);
 
   Self.T_Main.Enabled := false;
   Self.T_GUI_refresh.Enabled := false;
@@ -2464,7 +2464,7 @@ begin
   Self.A_SaveStavExecute(Self);
   TrakceI.LogObj := nil;
 
-  Log('###############################################', WR_MESSAGE);
+  Log('###############################################', ltMessage);
 end;
 
 procedure TF_Main.RepaintObjects();
@@ -2639,7 +2639,7 @@ begin
       F_AutoStartSystems.L_Cas.Caption := FormatDateTime('ss', Now - KomunikaceGo);
       if (not F_AutoStartSystems.Showing) then
       begin
-        Log('Probiha automaticke pripojovani k systemum - t=6s', WR_MESSAGE);
+        Log('Probiha automaticke pripojovani k systemum - t=6s', ltMessage);
         F_AutoStartSystems.Show;
       end;
       if (KomunikacePocitani = 1) then
@@ -2649,7 +2649,7 @@ begin
       end else begin
         if (Round((Now - KomunikaceGo) * 24 * 3600) = 0) then
         begin
-          Log('Automaticke pripojovani k systemum - t=0 - zapinam systemy', WR_MESSAGE);
+          Log('Automaticke pripojovani k systemum - t=0 - zapinam systemy', ltMessage);
           F_AutoStartSystems.Close;
           KomunikacePocitani := 0;
           F_Main.A_System_StartExecute(nil);
@@ -2669,8 +2669,8 @@ procedure TF_Main.OnStart();
 begin
   mCpuLoad.CreateCPUGauge();
 
-  Log('Spuštěn hJOPserver v' + VersionStr(Application.ExeName), WR_MESSAGE);
-  Log('----------------------------------------------------------------', WR_MESSAGE);
+  Log('Spuštěn hJOPserver v' + VersionStr(Application.ExeName), ltMessage);
+  Log('----------------------------------------------------------------', ltMessage);
 
   if (not Self.CloseMessage) then
   begin
@@ -2714,7 +2714,7 @@ begin
       RCSi.InputSim();
   except
     on E: Exception do
-      Log('Nelze provést inputSim : ' + E.Message, WR_ERROR);
+      Log('Nelze provést inputSim : ' + E.Message, ltError);
   end;
 
   Self.S_PTServer.Visible := (GlobalConfig.ptAutoStart);
@@ -2956,7 +2956,7 @@ begin
       Self.LB_Log.Clear();
     Self.LB_Log.Items.Insert(0, FormatDateTime('hh:nn:ss', Now) + ' : ' + str);
   end;
-  Log(str, WR_SYSTEM);
+  Log(str, ltSystem);
 end;
 
 procedure TF_Main.LV_ABChange(Sender: TObject; Item: TListItem; Change: TItemChange);

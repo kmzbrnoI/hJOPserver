@@ -17,10 +17,8 @@ type
     LB_Changes: TListBox;
     B_Clear: TButton;
     GB_vystupy: TGroupBox;
-    procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CB_RCSAdrChange(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_ClearClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
 
@@ -66,18 +64,13 @@ uses TechnologieRCS, Logging, RCS, BlockSignal, RCSErrors;
 
 {$R *.dfm}
 
-procedure TF_Tester.FormShow(Sender: TObject);
-begin
-  Log('Zobrazeno okno Testeru', WR_MESSAGE);
-end;
-
 procedure TF_Tester.UpdateOut();
-var i, val: Integer;
+var val: Integer;
   outCnt: Cardinal;
 begin
   if ((not RCSi.NoExStarted()) or (RCSAddr < 0) or (RCSi.IsModuleFailure(RCSAddr))) then
   begin
-    for i := 0 to _NO_OUTPUTS - 1 do
+    for var i := 0 to _NO_OUTPUTS - 1 do
     begin
       SOutput[i].Brush.Color := clGray;
       SOutput[i].Visible := true;
@@ -91,7 +84,7 @@ begin
     outCnt := _NO_OUTPUTS;
   end;
 
-  for i := 0 to _NO_OUTPUTS - 1 do
+  for var i := 0 to _NO_OUTPUTS - 1 do
   begin
     SOutput[i].Visible := (i < Integer(outCnt));
     LOutput[i].Visible := (i < Integer(outCnt));
@@ -233,19 +226,12 @@ begin
   Self.UpdateIn();
 end;
 
-procedure TF_Tester.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  Log('Skryto okno Testeru', WR_MESSAGE);
-end;
-
 procedure TF_Tester.CreateSInput();
-var i: Integer;
-  aTop: Integer;
-  L: TLabel;
+var aTop: Integer;
 begin
   aTop := _S_TOP;
 
-  for i := 0 to _NO_INPUTS - 1 do
+  for var i := 0 to _NO_INPUTS - 1 do
   begin
     SInput[i] := TShape.Create(F_Tester.GB_vstupy);
 
@@ -258,7 +244,7 @@ begin
     SInput[i].Tag := i;
     SInput[i].Brush.Color := clRed;
 
-    L := TLabel.Create(F_Tester.GB_vstupy);
+    var L := TLabel.Create(F_Tester.GB_vstupy);
     L.Parent := Self.GB_vstupy;
     L.Caption := IntToStr(i);
     L.Left := _L_LEFT;
@@ -266,17 +252,15 @@ begin
     LInput[i] := L;
 
     aTop := aTop + _S_INCR;
-  end; // for i
+  end;
 end;
 
 procedure TF_Tester.CreateSOutput();
-var i: Integer;
-  aTop: Integer;
-  L: TLabel;
+var aTop: Integer;
 begin
   aTop := _S_TOP;
 
-  for i := 0 to _NO_OUTPUTS - 1 do
+  for var i := 0 to _NO_OUTPUTS - 1 do
   begin
     SOutput[i] := TShape.Create(F_Tester.GB_vystupy);
 
@@ -290,7 +274,7 @@ begin
     SOutput[i].Brush.Color := clRed;
     SOutput[i].OnMouseUp := SOutputMouseUp;
 
-    L := TLabel.Create(F_Tester.GB_vystupy);
+    var L := TLabel.Create(F_Tester.GB_vystupy);
     L.Parent := Self.GB_vystupy;
     L.Caption := IntToStr(i);
     L.Left := _L_LEFT;
@@ -331,12 +315,11 @@ begin
 end;
 
 procedure TF_Tester.FillRCSAddrs();
-var i: Integer;
 begin
   Self.CB_RCSAdrData.Clear();
   Self.CB_RCSAdr.Clear();
 
-  for i := 0 to RCSi.maxModuleAddr do
+  for var i := 0 to RCSi.maxModuleAddr do
   begin
     try
       if (not RCSi.IsModule(i)) then
@@ -352,7 +335,7 @@ begin
     except
       Self.CB_RCSAdr.Items.Add(IntToStr(i) + ': -');
     end;
-  end; // for i
+  end;
 
   Self.CB_RCSAdr.ItemIndex := -1;
   Self.CB_RCSAdrChange(Self);
@@ -364,7 +347,6 @@ begin
 end;
 
 procedure TF_Tester.RCSModuleChanged(addr: Cardinal);
-var i: Integer;
 begin
   if (Integer(addr) = Self.RCSAddr) then
   begin
@@ -372,6 +354,7 @@ begin
     Self.UpdateIn();
   end;
 
+  var i: Integer;
   if (not Self.CB_RCSAdrData.BinarySearch(addr, i)) then
   begin
     // address not in addrs list -> add
@@ -385,4 +368,4 @@ begin
   end;
 end;
 
-end.// unit
+end.

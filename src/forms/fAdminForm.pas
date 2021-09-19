@@ -138,7 +138,7 @@ begin
   begin
     try
       RCSi.InputSim();
-      Log('Proveden InputSim', WR_RCS);
+      Log('Proveden InputSim', ltRCS);
     except
       on E: Exception do
         Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);

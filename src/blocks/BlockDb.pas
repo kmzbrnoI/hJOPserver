@@ -207,7 +207,7 @@ var ini_tech, ini_rel, ini_stat: TMemIniFile;
   Blk: TBlk;
   str: TStrings;
 begin
-  Log('Načítám bloky: ' + tech_filename + '; ' + rel_filename, WR_DATA);
+  Log('Načítám bloky: ' + tech_filename + '; ' + rel_filename, ltData);
   Self.ffile := tech_filename;
   Self.ffstatus := stat_filename;
 
@@ -227,13 +227,13 @@ begin
         var id: Integer := StrToIntDef(section, -1);
         if (id < 0) then
         begin
-          Log('Nenačítám blok ' + section + ' - id není validní', WR_ERROR);
+          Log('Nenačítám blok ' + section + ' - id není validní', ltError);
           continue;
         end;
 
         if (Self.IsBlock(id)) then
         begin
-          Log('Nenačítám blok ' + section + ' - blok s tímto id již existuje', WR_ERROR);
+          Log('Nenačítám blok ' + section + ' - blok s tímto id již existuje', ltError);
           continue;
         end;
 
@@ -271,7 +271,7 @@ begin
           Integer(btPst):
             Blk := TBlkPst.Create(-1);
         else
-          Log('Nenačítám blok ' + section + ' - neznámý typ', WR_ERROR);
+          Log('Nenačítám blok ' + section + ' - neznámý typ', ltError);
           continue;
         end;
 
@@ -301,13 +301,13 @@ begin
   for blk in Self.data do
     blk.AfterLoad();
 
-  Log('Načteno bloků: ' + IntToStr(Self.count), WR_DATA);
+  Log('Načteno bloků: ' + IntToStr(Self.count), ltData);
 end;
 
 procedure TBlocks.SaveToFile(const tech_filename: string);
 var ini: TMemIniFile;
 begin
-  Log('Ukládám bloky...', WR_DATA);
+  Log('Ukládám bloky...', ltData);
 
   try
     DeleteFile(PChar(tech_filename)); // all data will be rewrited
@@ -326,7 +326,7 @@ begin
   ini.UpdateFile();
   FreeAndNil(ini);
 
-  Log('Uloženo bloků: ' + IntToStr(Self.count), WR_DATA);
+  Log('Uloženo bloků: ' + IntToStr(Self.count), ltData);
 
   Self.SaveStatToFile(Self.fstatus);
 end;
@@ -334,7 +334,7 @@ end;
 procedure TBlocks.SaveStatToFile(const stat_filename: string);
 var ini: TMemIniFile;
 begin
-  Log('Ukládám stavy bloků...', WR_DATA);
+  Log('Ukládám stavy bloků...', ltData);
 
   try
     DeleteFile(PChar(stat_filename));
@@ -360,7 +360,7 @@ begin
   ini.UpdateFile();
   FreeAndNil(ini);
 
-  Log('Uložen stav ' + IntToStr(Self.count) + ' bloků', WR_DATA);
+  Log('Uložen stav ' + IntToStr(Self.count) + ' bloků', ltData);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

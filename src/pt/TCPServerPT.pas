@@ -232,7 +232,7 @@ begin
  except
   on E:Exception do
    begin
-    Log('ERR: Cannot start server : '+E.Message, WR_PT);
+    Log('ERR: Cannot start server : '+E.Message, ltPT);
     F_Main.S_PTServer.Brush.Color := clRed;
     raise;
    end;
@@ -244,7 +244,7 @@ begin
  Self.httpServer.Active := false;
  Self.receiveTimer.Enabled := false;
 
- Log('PT server zastaven', WR_PT);
+ Log('PT server zastaven', ltPT);
 
  with (F_Main) do
   begin
@@ -395,7 +395,7 @@ end;
 procedure TPtServer.httpError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   AResponseInfo: TIdHTTPResponseInfo; AException: Exception);
 begin
- Log('ERROR:'+ARequestInfo.Document, WR_PT);
+ Log('ERROR:'+ARequestInfo.Document, ltPT);
 end;
 
 procedure TPtServer.httpException(AContext: TIdContext; AException: Exception);
@@ -426,7 +426,7 @@ end;
 
 procedure TPtServer.httpAfterBind(Sender: TObject);
 begin
- Log('PT server spuštěn', WR_PT);
+ Log('PT server spuštěn', ltPT);
 
  with (F_Main) do
   begin
@@ -439,7 +439,7 @@ end;
 procedure TPtServer.httpStatus(ASender: TObject; const AStatus: TIdStatus;
   const AStatusText: string);
 begin
- Log('PT status: '+AStatusText, WR_PT);
+ Log('PT status: '+AStatusText, ltPT);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

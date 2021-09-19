@@ -28,7 +28,6 @@ type
     procedure FormShow(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure ST_about5Click(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure ST_about3Click(Sender: TObject);
     procedure B_RegistraceClick(Sender: TObject);
   private
@@ -48,7 +47,6 @@ uses version, TechnologieRCS, Logging, appEv;
 
 procedure TF_About.FormShow(Sender: TObject);
 begin
-  Log('Zobrazeno okno O programu', WR_MESSAGE);
   Self.ST_about5.Font.Color := clBlue;
   Self.ST_about3.Font.Color := clBlue;
 
@@ -91,11 +89,6 @@ begin
   ShellExecute(0, nil, PChar(ST_about5.Caption), nil, nil, 0);
   Screen.Cursor := crDefault;
   ST_about5.Font.Color := clPurple;
-end;
-
-procedure TF_About.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  Log('Skryto okno O programu', WR_MESSAGE);
 end;
 
 procedure TF_About.ST_about3Click(Sender: TObject);

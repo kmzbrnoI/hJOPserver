@@ -79,7 +79,7 @@ end;
 procedure TAreas.LoadData(const filename: string; const stat_filename: string);
 var ini, ini_stat: TMemIniFile;
 begin
-  Log('Načítám stanice - ' + filename, WR_DATA);
+  Log('Načítám stanice - ' + filename, ltData);
   Self.fstat_filename := stat_filename;
 
   if (not FileExists(filename)) then
@@ -118,7 +118,7 @@ begin
     ini_stat.Free();
   end;
 
-  Log('Načteno ' + IntToStr(Self.db.Count) + ' stanic', WR_DATA);
+  Log('Načteno ' + IntToStr(Self.db.Count) + ' stanic', ltData);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

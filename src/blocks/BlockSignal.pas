@@ -1244,7 +1244,7 @@ begin
     Self.m_state.falling := true;
     Self.m_state.fallingStart := now;
     Log('Návěstidlo ' + Self.m_globSettings.name + ': spoždění pádu ' + IntToStr(Self.m_settings.fallDelay) +
-      ' s', WR_VC);
+      ' s', ltJC);
   end else begin
     Self.signal := ncStuj;
   end;

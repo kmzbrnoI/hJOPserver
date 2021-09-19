@@ -47,7 +47,6 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TAppEvents.LogException(E: Exception; prefix: string = '');
-var i: Integer;
 begin
  try
   Self.str.Clear();
@@ -56,10 +55,10 @@ begin
   else
     Self.str.Add(E.Message);
 
-  for i := 0 to JclLastExceptStackList.Count-1 do
+  for var i := 0 to JclLastExceptStackList.Count-1 do
     if (GetLocationInfo(JclLastExceptStackList.Items[i].CallerAddr).LineNumber <> 0) then
       Self.str.Add(GetLocationInfoStr(JclLastExceptStackList.Items[i].CallerAddr));
-  Log(Self.str, WR_ERROR);
+  Log(Self.str, ltError);
  except
 
  end;

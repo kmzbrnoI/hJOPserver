@@ -92,7 +92,7 @@ procedure TTrainDb.LoadData(const filename: string);
 var ini: TMemIniFile;
     sections: TStrings;
 begin
- Log('Načítám soupravy: '+filename, WR_DATA);
+ Log('Načítám soupravy: '+filename, ltData);
  Self.ffilename := filename;
 
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -106,7 +106,7 @@ begin
    for var i := 0 to sections.Count-1 do
      Self.trains[i] := TTrain.Create(ini, sections[i], i);
 
-   Log('Načteno '+IntToStr(sections.Count)+' souprav', WR_DATA);
+   Log('Načteno '+IntToStr(sections.Count)+' souprav', ltData);
  finally
    FreeAndNil(ini);
    FreeAndNil(sections);
@@ -119,7 +119,7 @@ end;
 procedure TTrainDb.SaveData(const filename: string);
 var ini: TMemIniFile;
 begin
- Log('Ukládám soupravy: '+filename, WR_DATA);
+ Log('Ukládám soupravy: '+filename, ltData);
 
  if (FileExists(filename)) then
    DeleteFile(PChar(filename));
@@ -133,18 +133,17 @@ begin
    FreeAndNil(ini);
  end;
 
- Log('Uloženo '+IntToStr(Self.Count)+' souprav', WR_DATA);
+ Log('Uloženo '+IntToStr(Self.Count)+' souprav', ltData);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrainDb.GetCount(): Integer;
-var i: Integer;
 begin
  Result := 0;
- for i := 0 to _MAX_TRAIN do
-  if (Assigned(Self.trains[i])) then
-   Inc(Result);
+ for var i := 0 to _MAX_TRAIN do
+   if (Assigned(Self.trains[i])) then
+     Inc(Result);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,11 +161,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrainDb.GetTrainIndexByName(name: string): Integer;
-var i: Integer;
 begin
- for i := 0 to _MAX_TRAIN-1 do
-  if ((Assigned(Self.trains[i])) and (Self.trains[i].name = name)) then
-   Exit(i);
+ for var i := 0 to _MAX_TRAIN-1 do
+   if ((Assigned(Self.trains[i])) and (Self.trains[i].name = name)) then
+     Exit(i);
  Exit(-1);
 end;
 
@@ -245,11 +243,10 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrainDb.UpdateFront();
-var i: Integer;
 begin
- for i := 0 to _MAX_TRAIN-1 do
-  if (Self.trains[i] <> nil) then
-    Self.trains[i].UpdateFront();
+ for var i := 0 to _MAX_TRAIN-1 do
+   if (Self.trains[i] <> nil) then
+      Self.trains[i].UpdateFront();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,9 +254,8 @@ end;
 // Tato funkce predpoklada vysokou zatez sbernice do centraly ->
 // schvalne ceka.
 procedure TTrainDb.StopAllTrains();
-var i: Integer;
 begin
- for i := 0 to _MAX_TRAIN-1 do
+ for var i := 0 to _MAX_TRAIN-1 do
   if ((Self.trains[i] <> nil) and (Self.trains[i].wantedSpeed <> 0)) then
    begin
     Self.trains[i].speed := 0;
@@ -277,19 +273,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrainDb.ClearPOdj();
-var i: Integer;
 begin
- for i := 0 to _MAX_TRAIN-1 do
-  if (Self.trains[i] <> nil) then
-    Self.trains[i].ClearPOdj();
+  for var i := 0 to _MAX_TRAIN-1 do
+    if (Self.trains[i] <> nil) then
+      Self.trains[i].ClearPOdj();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrainDb.GetEmptySpaceForTrain(): Integer;
-var i: Integer;
 begin
- for i := 0 to _MAX_TRAIN do
+ for var i := 0 to _MAX_TRAIN do
    if (Self.trains[i] = nil) then
      Exit(i);
  raise Exception.Create('Založen maximální počet souprav!');
@@ -298,17 +292,16 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrainDb.GetPtData(json: TJsonObject);
-var spr: TTrain;
 begin
- for spr in Self.trains do
+ for var train in Self.trains do
   begin
    try
-     if (spr <> nil) then
-       spr.GetPtData(json.A['trains'].AddObject);
+     if (train <> nil) then
+       train.GetPtData(json.A['trains'].AddObject);
    except
      on E: Exception do
        PTUtils.PtErrorToJson(json.A['errors'].AddObject,
-        '500', 'Chyba pri nacitani soupravy '+spr.name,
+        '500', 'Chyba pri nacitani soupravy '+train.name,
         E.Message);
    end;
   end;
@@ -321,4 +314,4 @@ initialization
 finalization
   FreeAndNil(Trains);
 
-end.//unit
+end.

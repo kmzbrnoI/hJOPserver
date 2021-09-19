@@ -319,7 +319,7 @@ begin
 
   if ((not Self.m_tuSettings.speeds.ContainsKey(0)) or (Self.m_tuSettings.speeds[0] < 10)) then
     Log('WARNING: traťový úsek ' + Self.name + ' (' + IntToStr(Self.id) +
-      ') nemá korektně zadanou traťovou rychlost', WR_ERROR);
+      ') nemá korektně zadanou traťovou rychlost', ltError);
 
   if ((ini_tech.ReadString(section, 'zast_ev_lichy_zast', '') <> '') or
     (ini_tech.ReadString(section, 'zast_ev_sudy_zast', '') <> '')) then
