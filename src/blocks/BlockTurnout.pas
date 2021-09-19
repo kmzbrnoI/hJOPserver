@@ -171,11 +171,11 @@ type
     procedure MenuAdminRadMinusClick(SenderPnl: TIDContext; SenderOR: TObject);
     procedure MenuAdminRadNepolClick(SenderPnl: TIDContext; SenderOR: TObject);
 
-    procedure PanelPotvrSekvNSPlus(Sender: TIDContext; success: Boolean);
-    procedure PanelPotvrSekvNSMinus(Sender: TIDContext; success: Boolean);
-    procedure PanelPotvrSekvZAV(Sender: TIDContext; success: Boolean);
+    procedure PanelCSNSPlus(Sender: TIDContext; success: Boolean);
+    procedure PanelCSNSMinus(Sender: TIDContext; success: Boolean);
+    procedure PanelCSZAV(Sender: TIDContext; success: Boolean);
 
-    procedure ORVylukaNull(Sender: TIDContext; success: Boolean);
+    procedure AreaNullLockout(Sender: TIDContext; success: Boolean);
 
     function IsEmergencyLock(): Boolean;
     procedure SetEmergencyLock(zaver: Boolean);
@@ -648,7 +648,7 @@ begin
   Self.Change();
 end;
 
-procedure TBlkTurnout.ORVylukaNull(Sender: TIDContext; success: Boolean);
+procedure TBlkTurnout.AreaNullLockout(Sender: TIDContext; success: Boolean);
 begin
   if (success) then
     Self.lockout := '';
@@ -657,7 +657,7 @@ end;
 procedure TBlkTurnout.SetLockout(Sender: TIDContext; lockout: string);
 begin
   if ((Self.m_state.lockout <> '') and (lockout = '')) then
-    PanelServer.ConfirmationSequence(Sender, Self.ORVylukaNull, Self.m_areas[0], 'Zrušení výluky',
+    PanelServer.ConfirmationSequence(Sender, Self.AreaNullLockout, Self.m_areas[0], 'Zrušení výluky',
       TBlocks.GetBlksList(Self), nil)
   else
     Self.lockout := lockout;
@@ -1094,27 +1094,25 @@ begin
 end;
 
 procedure TBlkTurnout.UPONSPlusClick(Sender: TObject);
-var Blk: TBlk;
 begin
   Self.m_state.movingPanel := TIDContext(Sender);
   Self.m_state.movingOR := TPanelConnData(TIDContext(Sender).data).UPO_ref;
 
-  Blocks.GetBlkByID(Self.trackID, Blk);
-  PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelPotvrSekvNSPlus,
+  var blk := Blocks.GetBlkByID(Self.trackID);
+  PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSPlus,
     (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy plus',
-    TBlocks.GetBlksList(Self), TArea.GetPSPodminky(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek')));
+    TBlocks.GetBlksList(Self), TArea.GetCSConditions(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek')));
 end;
 
 procedure TBlkTurnout.UPONSMinusClick(Sender: TObject);
-var Blk: TBlk;
 begin
   Self.m_state.movingPanel := TIDContext(Sender);
   Self.m_state.movingOR := TPanelConnData(TIDContext(Sender).data).UPO_ref;
 
-  Blocks.GetBlkByID(Self.trackID, Blk);
-  PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelPotvrSekvNSMinus,
+  var blk := Blocks.GetBlkByID(Self.trackID);
+  PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSMinus,
     (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy mínus',
-    TBlocks.GetBlksList(Self), TArea.GetPSPodminky(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek')));
+    TBlocks.GetBlksList(Self), TArea.GetCSConditions(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek')));
 end;
 
 procedure TBlkTurnout.MenuStitClick(SenderPnl: TIDContext; SenderOR: TObject);
@@ -1136,11 +1134,11 @@ end;
 
 procedure TBlkTurnout.MenuZAVDisableClick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TArea), 'Zrušení nouzového závěru',
+  PanelServer.ConfirmationSequence(SenderPnl, Self.PanelCSZAV, (SenderOR as TArea), 'Zrušení nouzového závěru',
     TBlocks.GetBlksList(Self), nil);
 end;
 
-procedure TBlkTurnout.PanelPotvrSekvZAV(Sender: TIDContext; success: Boolean);
+procedure TBlkTurnout.PanelCSZAV(Sender: TIDContext; success: Boolean);
 begin
   if (success) then
     Self.ResetEmLocks();
@@ -1356,14 +1354,14 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.PanelPotvrSekvNSPlus(Sender: TIDContext; success: Boolean);
+procedure TBlkTurnout.PanelCSNSPlus(Sender: TIDContext; success: Boolean);
 begin
   if (not success) then
     Exit();
   Self.SetPosition(plus, false, true, nil, Self.PanelMovingErr);
 end;
 
-procedure TBlkTurnout.PanelPotvrSekvNSMinus(Sender: TIDContext; success: Boolean);
+procedure TBlkTurnout.PanelCSNSMinus(Sender: TIDContext; success: Boolean);
 begin
   if (not success) then
     Exit();

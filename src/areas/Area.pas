@@ -248,9 +248,9 @@ type
     procedure GetPtData(json: TJsonObject);
 
     class function ORRightsToString(rights: TAreaRights): string;
-    class function GetCSCondition(blok: TObject; podminka: string): TConfSeqItem; overload;
-    class function GetCSCondition(cil: string; podminka: string): TConfSeqItem; overload;
-    class function GetPSPodminky(podm: TConfSeqItem): TConfSeqItems;
+    class function GetCSCondition(block: TObject; condition: string): TConfSeqItem; overload;
+    class function GetCSCondition(target: string; condition: string): TConfSeqItem; overload;
+    class function GetCSConditions(condition: TConfSeqItem): TConfSeqItems;
 
     class function NameComparer(): IComparer<TArea>;
     class function IdComparer(): IComparer<TArea>;
@@ -1888,22 +1888,22 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class function TArea.GetCSCondition(blok: TObject; podminka: string): TConfSeqItem;
+class function TArea.GetCSCondition(block: TObject; condition: string): TConfSeqItem;
 begin
-  Result.block := TBlk(blok).name;
-  Result.note := podminka;
+  Result.block := TBlk(block).name;
+  Result.note := condition;
 end;
 
-class function TArea.GetCSCondition(cil: string; podminka: string): TConfSeqItem;
+class function TArea.GetCSCondition(target: string; condition: string): TConfSeqItem;
 begin
-  Result.block := cil;
-  Result.note := podminka;
+  Result.block := target;
+  Result.note := condition;
 end;
 
-class function TArea.GetPSPodminky(podm: TConfSeqItem): TConfSeqItems;
+class function TArea.GetCSConditions(condition: TConfSeqItem): TConfSeqItems;
 begin
   Result := TList<TConfSeqItem>.Create();
-  Result.Add(podm);
+  Result.Add(condition);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
