@@ -24,26 +24,6 @@ const
   _NC_TIMEOUT_MIN = 1; // timeout pro staveni nouzove cesty (vlakove i posunove) v minutach
   _JC_MAX_VYH_STAVENI = 4; // kolik vyhybek se muze stavit zaroven v JC
 
-  _STEP_DEFAULT = 0;
-  _STEP_KRIT_BARIERY = 1;
-  _STEP_POTVR_BARIERY = 5;
-  _STEP_POTVR_SEKV = 6;
-
-  _JC_STEP_INIT = 10;
-  _JC_STEP_CEKANI_VYHYBKA_POLOHA = 11;
-  _JC_STEP_ZAVRIT_PREJEZDY = 12;
-  _JC_STEP_CEKANI_PREJEZDY = 13;
-  _JC_STEP_FINALNI_ZAVER = 14;
-  _JC_STEP_CEKANI_NAVESTIDLO = 15;
-  _JC_STEP_FINISH = 16;
-  _JC_STEP_CEKANI_POSLEDNI_USEK = 20;
-
-  _NC_STEP_INIT = 100;
-  _NC_STEP_BARIERA_UPDATE = 101;
-  _NC_STEP_BARIERY_POTVRZENY = 102;
-  _NC_STEP_CEKANI_NAVESTIDLO = 103;
-  _NC_STEP_FINISH = 104;
-
   _JC_DESTROY_NC = -6;
   _JC_DESTROY_NONE = -5;
   _JC_DESTROY_SIGNAL_STUJ = -2;
@@ -52,6 +32,29 @@ const
 type
   TJCType = (train = 1, shunt = 2, emergency = 3);
   TJCNextSignalType = (no = 0, railway = 1, signal = 2);
+
+  JCStep = (
+    stepDefault = 0,
+    stepCritBarriers = 1,
+    stepConfBarriers = 5,
+    stepConfSeq = 6,
+
+    stepJcInit = 10,
+    stepJcTurnoutsMoving = 11,
+    stepJcCloseCross = 12,
+    stepJcWaitCross = 13,
+    stepJcFinalZaver = 14,
+    stepJcSignalWait = 15,
+    stepJcFinish = 16,
+    stepJcLastTrackWait = 20,
+
+    stepNcInit = 100,
+    stepNcBarrierUpdate = 101,
+    stepNcBarrierConfirmed = 102,
+    stepNcSignalWait = 103,
+    stepNcFinish = 104
+  );
+
 
   // zaver vyhybky v jizdni ceste
   TJCTurnoutZav = record
@@ -110,7 +113,7 @@ type
   // staveni jizdni cesty:
   // staveni jizdni cesty probiha krokove, viz \UpdateStaveni
   TJCstate = record
-    step: Integer; // aktualni krok staveni jizdni cesty
+    step: JCStep; // aktualni krok staveni jizdni cesty
     timeOut: TDateTime; // cas, pri jehoz prekroceni dojde k timeoutu JC
     // oblast rizeni, ktera vyvolala staveni JC, do teto OR jsou typicky odesilany notifikacni a chybove hlasky (napr. upozorneni vlevo dole panelu, potvrzovaci sekvence)
     senderOR: TObject;
@@ -135,7 +138,7 @@ type
 
   TJC = class
   private const
-    _def_jc_staveni: TJCstate = (step: _STEP_DEFAULT; destroyBlock: _JC_DESTROY_NONE; destroyEndBlock: _JC_DESTROY_NONE;
+    _def_jc_staveni: TJCstate = (step: stepDefault; destroyBlock: _JC_DESTROY_NONE; destroyEndBlock: _JC_DESTROY_NONE;
       ab: false; crossingWasClosed: false;);
 
   private
@@ -167,7 +170,7 @@ type
 
     procedure SetDestroyBlock(destroyBlock: Integer);
     procedure SetDestroyEndBlock(destroyEndBlock: Integer);
-    procedure SetStep(step: Integer);
+    procedure SetStep(step: JCStep);
     procedure CritBarieraEsc(Sender: TObject);
 
     // callbacky ne/nastaveni polohy vyhybek:
@@ -253,7 +256,7 @@ type
 
     property destroyBlock: Integer read m_state.destroyBlock write SetDestroyBlock;
     property destroyEndBlock: Integer read m_state.destroyEndBlock write SetDestroyEndBlock;
-    property step: Integer read m_state.step write SetStep;
+    property step: JCStep read m_state.step write SetStep;
     property signal: TBlk read GetSignal;
 
     property OnIdChanged: TNotifyEvent read fOnIdChanged write fOnIdChanged;
@@ -1095,7 +1098,7 @@ begin
       Self.Log('Celkem ' + IntToStr(barriers.Count) + ' bariér, ukončuji stavění');
       if (senderPnl <> nil) then
       begin
-        Self.step := _STEP_KRIT_BARIERY;
+        Self.step := stepCritBarriers;
         PanelServer.UPO(Self.m_state.senderPnl, UPO, true, nil, Self.CritBarieraEsc, Self);
       end;
       Exit(1);
@@ -1118,7 +1121,7 @@ begin
         end;
 
         PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
-        Self.step := _STEP_POTVR_BARIERY;
+        Self.step := stepConfBarriers;
         Exit(0);
       end;
     end;
@@ -1147,7 +1150,7 @@ end;
 procedure TJC.PS_vylCallback(Sender: TIdContext; success: Boolean);
 begin
   // pro potvrzovaci sekvenci vyluky by mel byt krok '6'
-  if (Self.step <> _STEP_POTVR_SEKV) then
+  if (Self.step <> stepConfSeq) then
     Exit();
 
   if (not success) then
@@ -1189,7 +1192,7 @@ end;
 
 procedure TJC.UPO_OKCallback(Sender: TObject);
 begin
-  if (Self.step <> _STEP_POTVR_BARIERY) then
+  if (Self.step <> stepConfBarriers) then
     Exit();
 
   Self.Log('Krok 1 : upozornění schválena, kontroluji znovu bariéry');
@@ -1235,7 +1238,7 @@ begin
       PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TArea),
         'Jízdní cesta s potvrzením', TBlocks.GetBlksList(Self.signal, Self.lastTrack), conditions);
 
-    Self.step := _STEP_POTVR_SEKV;
+    Self.step := stepConfSeq;
   end else begin
     // ne, takoveto bariery neexistuji -> stavim jizdni cestu
     Self.SetInitStep();
@@ -1244,10 +1247,10 @@ end; // proceudre
 
 procedure TJC.UPO_EscCallback(Sender: TObject);
 begin
-  if (Self.step = _STEP_POTVR_BARIERY) then
+  if (Self.step = stepConfBarriers) then
   begin
     Self.CancelActivating();
-    Self.step := _STEP_DEFAULT;
+    Self.step := stepDefault;
   end;
 end;
 
@@ -1260,7 +1263,7 @@ var
   npCall: ^TNPCallerData;
   remEvDataPtr: ^TRemoveEventData;
 begin
-  if ((not Self.activating) and (Self.step <> _JC_STEP_CEKANI_POSLEDNI_USEK)) then
+  if ((not Self.activating) and (Self.step <> stepJcLastTrackWait)) then
     Exit();
 
   var signal: TBlkSignal := TBlkSignal(Self.signal);
@@ -1269,7 +1272,7 @@ begin
   // staveni vlakovych a posunovych cest:
 
   case (Self.step) of
-    _JC_STEP_INIT:
+    stepJcInit:
       begin
         // nejprve priradime uvolneni zaveru posledniho bloku uvolneni zaveru predposledniho bloku
         if (Self.m_data.tracks.Count > 1) then
@@ -1373,11 +1376,11 @@ begin
           lock.zaver := true;
         end;
 
-        Self.step := _JC_STEP_CEKANI_VYHYBKA_POLOHA;
+        Self.step := stepJcTurnoutsMoving;
         Self.Log('Vyhybky: poloha: detekce');
       end; // case 0
 
-    _JC_STEP_CEKANI_VYHYBKA_POLOHA:
+    stepJcTurnoutsMoving:
       begin
         for var turnoutZav: TJCturnoutZav in Self.m_data.turnouts do
         begin
@@ -1438,12 +1441,12 @@ begin
         end;
 
         if ((signal.ZAM) or (Self.m_state.lastTrackOrRailwayOccupied)) then
-          Self.step := _JC_STEP_FINALNI_ZAVER
+          Self.step := stepJcFinalZaver
         else
-          Self.step := _JC_STEP_ZAVRIT_PREJEZDY;
+          Self.step := stepJcCloseCross;
       end; // case 1
 
-    _JC_STEP_ZAVRIT_PREJEZDY:
+    stepJcCloseCross:
       begin
         // crossings
         Self.m_state.crossingWasClosed := true;
@@ -1519,15 +1522,15 @@ begin
 
         if (anyClosed) then
         begin
-          Self.step := _JC_STEP_CEKANI_PREJEZDY;
+          Self.step := stepJcWaitCross;
           Self.m_state.timeOut := Now + EncodeTime(0, _JC_PRJ_TIMEOUT_SEC div 60, _JC_PRJ_TIMEOUT_SEC mod 60, 0);
         end
         else
-          Self.step := _JC_STEP_FINALNI_ZAVER;
+          Self.step := stepJcFinalZaver;
 
       end;
 
-    _JC_STEP_CEKANI_PREJEZDY:
+    stepJcWaitCross:
       begin
         // kontrola stavu prejezdu
         for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
@@ -1542,10 +1545,10 @@ begin
           Self.Log('Krok 13 : prejezd ' + crossing.name + ' uzavren');
         end; // for i
 
-        Self.step := _JC_STEP_FINALNI_ZAVER;
+        Self.step := stepJcFinalZaver;
       end;
 
-    _JC_STEP_FINALNI_ZAVER:
+    stepJcFinalZaver:
       begin
         Self.Log('Krok 14 : useky: nastavit validni zaver');
 
@@ -1561,31 +1564,31 @@ begin
         if (Self.IsCriticalBarrier()) then
         begin
           // Nepostavit navestidlo!
-          Self.step := _JC_STEP_FINISH;
+          Self.step := stepJcFinish;
           Exit();
         end;
 
         if ((signal.ZAM) or (Self.m_state.lastTrackOrRailwayOccupied)) then
         begin
           Self.Log('Krok 14 : navestidlo: nestavim');
-          Self.step := _JC_STEP_FINISH;
+          Self.step := stepJcFinish;
         end else begin
           Self.Log('Krok 14 : navestidlo: stavim...');
           Self.SetSignalSignal();
-          Self.step := _JC_STEP_CEKANI_NAVESTIDLO;
+          Self.step := stepJcSignalWait;
         end;
       end; // case 14
 
-    _JC_STEP_CEKANI_NAVESTIDLO:
+    stepJcSignalWait:
       begin
         if (signal.signal > ncStuj) then
         begin
           Self.Log('Krok 15 : navestidlo postaveno');
-          Self.step := _JC_STEP_FINISH;
+          Self.step := stepJcFinish;
         end;
       end;
 
-    _JC_STEP_FINISH:
+    stepJcFinish:
       begin
         Self.CancelSignalBegin();
         Self.CancelVBs();
@@ -1602,9 +1605,9 @@ begin
         signal.DNjc := Self;
 
         if (Self.m_state.lastTrackOrRailwayOccupied) then
-          Self.step := _JC_STEP_CEKANI_POSLEDNI_USEK
+          Self.step := stepJcLastTrackWait
         else
-          Self.step := _STEP_DEFAULT;
+          Self.step := stepDefault;
 
         // kdyby nastala nize chyba, musi byt moznost JC smazat ze zasobniku
         if (Self.m_state.from_stack <> nil) then
@@ -1675,7 +1678,7 @@ begin
         Self.Log('Postavena JC ' + Self.name);
       end;
 
-    _JC_STEP_CEKANI_POSLEDNI_USEK:
+    stepJcLastTrackWait:
       begin
         var lastTrack: TBlkRT := TBlkRT(Self.lastTrack);
 
@@ -1698,7 +1701,7 @@ begin
     /// ////////////////////////////////////////////////////////////////////////
     // staveni nouzovych cest:
 
-    _NC_STEP_INIT:
+    stepNcInit:
       begin
         // vsem usekum nastavime staveci zaver:
         Self.Log('Krok 100: useky: nastavuji staveci zavery');
@@ -1768,10 +1771,10 @@ begin
 
         Self.m_state.ncBarieryCntLast := -1; // tady je potreba mit cislo < 0
 
-        Self.step := _NC_STEP_BARIERA_UPDATE;
+        Self.step := stepNcBarrierUpdate;
       end; // case 100
 
-    _NC_STEP_BARIERA_UPDATE:
+    stepNcBarrierUpdate:
       begin
         // prubezne kontroluji podminky a zobrazuji potvrzovaci sekvenci
 
@@ -1820,7 +1823,7 @@ begin
         end;
       end;
 
-    _NC_STEP_BARIERY_POTVRZENY:
+    stepNcBarrierConfirmed:
       begin
         // potrvzovaci sekvence potvrzena -> stavim navestidlo, ...
 
@@ -1839,28 +1842,28 @@ begin
         begin
           Self.SetSignalSignal();
           Self.Log('Krok 102 : navestidlo: nastavuji na privolavaci navest...');
-          Self.step := _NC_STEP_CEKANI_NAVESTIDLO;
+          Self.step := stepNcSignalWait;
         end
         else
-          Self.step := _NC_STEP_FINISH;
+          Self.step := stepNcFinish;
       end;
 
-    _NC_STEP_CEKANI_NAVESTIDLO:
+    stepNcSignalWait:
       begin
         if (signal.signal = ncPrivol) then
         begin
           Self.Log('Krok 103 : navestidlo postaveno');
-          Self.step := _NC_STEP_FINISH;
+          Self.step := stepNcFinish;
         end;
       end;
 
-    _NC_STEP_FINISH:
+    stepNcFinish:
       begin
         Self.CancelSignalBegin();
         Self.CancelVBs();
         Self.CancelTrackEnd();
 
-        Self.step := _STEP_DEFAULT;
+        Self.step := stepDefault;
 
         // pokud je cesta ze zasobniku, smazeme ji odtam
         if (Self.m_state.from_stack <> nil) then
@@ -1969,7 +1972,7 @@ begin
   end;
 
   case (Self.step) of
-    _NC_STEP_BARIERA_UPDATE:
+    stepNcBarrierUpdate:
       begin
         if (Self.m_state.senderPnl <> nil) then
           PanelServer.CSClose(Self.m_state.senderPnl, reason);
@@ -1985,7 +1988,7 @@ begin
   end;
 
   Self.m_state.nextTurnout := -1;
-  Self.step := _STEP_DEFAULT;
+  Self.step := stepDefault;
   Self.m_state.nc := false;
   Self.m_state.ab := false;
   Self.m_state.crossingWasClosed := false;
@@ -2077,7 +2080,7 @@ begin
     end;
   end;
 
-  Self.step := _STEP_DEFAULT;
+  Self.step := stepDefault;
   Self.destroyBlock := _JC_DESTROY_NONE;
   Self.destroyEndBlock := _JC_DESTROY_NONE;
 end;
@@ -2767,12 +2770,12 @@ begin
   if (Now > Self.m_state.timeOut) then
   begin
     case (Self.step) of
-      _STEP_POTVR_SEKV:
+      stepConfSeq:
         begin
           if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
             PanelServer.CSClose(Self.m_state.senderPnl);
         end;
-      _JC_STEP_CEKANI_PREJEZDY:
+      stepJcWaitCross:
         begin
           // prejezd(y) neuzavren
           for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
@@ -2800,7 +2803,7 @@ end;
 
 function TJC.IsActivating(): Boolean;
 begin
-  result := ((Self.step > _STEP_DEFAULT) and (Self.step <> _JC_STEP_CEKANI_POSLEDNI_USEK));
+  result := ((Self.step > stepDefault) and (Self.step <> stepJcLastTrackWait));
 end;
 
 function TJC.IsActive(): Boolean;
@@ -2924,9 +2927,9 @@ begin
   Self.m_state.timeOut := Now + EncodeTime(0, _JC_TIMEOUT_SEC div 60, _JC_TIMEOUT_SEC mod 60, 0);
 
   if (Self.m_state.crossingWasClosed) then
-    Self.step := _JC_STEP_FINALNI_ZAVER
+    Self.step := stepJcFinalZaver
   else
-    Self.step := _JC_STEP_ZAVRIT_PREJEZDY;
+    Self.step := stepJcCloseCross;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2979,7 +2982,7 @@ begin
   Self.changed := true;
 end;
 
-procedure TJC.SetStep(step: Integer);
+procedure TJC.SetStep(step: JCStep);
 begin
   Self.m_state.step := step;
   Self.changed := true;
@@ -3319,7 +3322,7 @@ var signal, coupling: TBlk;
   blk: TBlk;
   refugeeId: Integer;
 begin
-  if ((Self.m_state.step <> _NC_STEP_INIT) and (Self.m_state.step <> _NC_STEP_BARIERA_UPDATE)) then
+  if ((Self.m_state.step <> stepNcInit) and (Self.m_state.step <> stepNcBarrierUpdate)) then
     Exit();
 
   TBlkTurnout(Sender).emLock := true;
@@ -3585,8 +3588,8 @@ var trackID: Integer;
 begin
   if (success) then
   begin
-    if (Self.step = _NC_STEP_BARIERA_UPDATE) then
-      Self.step := _NC_STEP_BARIERY_POTVRZENY;
+    if (Self.step = stepNcBarrierUpdate) then
+      Self.step := stepNcBarrierConfirmed;
   end else begin
     Self.CancelActivating();
 
@@ -3708,10 +3711,10 @@ procedure TJC.SetInitStep();
 begin
   if (Self.m_state.nc) then
   begin
-    Self.step := _NC_STEP_INIT;
+    Self.step := stepNcInit;
     Self.m_state.timeOut := Now + EncodeTime(0, _NC_TIMEOUT_MIN, 0, 0);
   end else begin
-    Self.step := _JC_STEP_INIT;
+    Self.step := stepJcInit;
     Self.m_state.timeOut := Now + EncodeTime(0, _JC_TIMEOUT_SEC div 60, _JC_TIMEOUT_SEC mod 60, 0);
   end;
 end;
@@ -3720,7 +3723,7 @@ end;
 
 function TJC.GetWaitFroLastTrackOrRailwayOccupied(): Boolean;
 begin
-  result := (Self.step = _JC_STEP_CEKANI_POSLEDNI_USEK);
+  result := (Self.step = stepJcLastTrackWait);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

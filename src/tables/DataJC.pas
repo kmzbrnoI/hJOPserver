@@ -98,7 +98,7 @@ begin
   // stav:
   Self.LV.Items[line].SubItems[1] := IntToStr(JC.state.destroyBlock);
   Self.LV.Items[line].SubItems[2] := IntToStr(JC.state.destroyEndBlock);
-  Self.LV.Items[line].SubItems[3] := IntToStr(JC.state.step);
+  Self.LV.Items[line].SubItems[3] := IntToStr(Integer(JC.state.step));
 
   case (JCData.typ) of
     TJCType.train:

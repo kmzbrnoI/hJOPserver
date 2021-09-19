@@ -187,7 +187,7 @@ begin
       if (JC.state.destroyBlock = -6) then
         JC.DynamicCancelingNC();
 
-      if ((JC.activating) or (JC.step = _JC_STEP_CEKANI_POSLEDNI_USEK)) then
+      if ((JC.activating) or (JC.step = stepJcLastTrackWait)) then
       begin
         JC.UpdateActivating();
         JC.UpdateTimeOut();
