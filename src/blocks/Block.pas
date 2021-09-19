@@ -5,7 +5,7 @@
 
 interface
 
-uses IniFiles, TechnologieRCS, SysUtils, AreaDb, Generics.Collections,
+uses IniFiles, TechnologieRCS, SysUtils, AreaDb, Generics.Collections, Logging,
   IdContext, JsonDataObjects, Area, changeEvent, Classes;
 
 const
@@ -48,6 +48,8 @@ type
     FOnChange: TOnBlkChange; // childs can call the event
     ftable_index: Integer;
     ffrozen: Boolean;
+
+    procedure Log(text: string; typ: LogType);
 
     class function LoadRCS(ini: TMemIniFile; section: string): TRCSAddrs;
     class procedure SaveRCS(ini: TMemIniFile; section: string; data: TRCSAddrs);
@@ -507,6 +509,14 @@ begin
   end;
   Result := strs;
 end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
-end.// unit
+procedure TBlk.Log(text: string; typ: LogType);
+begin
+  Logging.Log(Self.name + ': ' + text, typ);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+end.
