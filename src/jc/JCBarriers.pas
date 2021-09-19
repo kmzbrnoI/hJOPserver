@@ -68,7 +68,8 @@ type
     barRefugeePst,
 
     barRailwayNotReady,
-    barRailwayZAK,
+    barRailwayZAKVC,
+    barRailwayZAKPC,
     barRailwayZaver,
     barRailwayOccupied,
     barRailwayRequesting,
@@ -135,7 +136,7 @@ begin
       barTurnoutWrongPos:
         result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není správná poloha'));
 
-      barRailwayZAK:
+      barRailwayZAKVC, barRailwayZAKPC:
         result.Add(TArea.GetCSCondition(barriers[i].Block, 'Zákaz odjezdu'));
       barRailwayNoZAK:
         result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nezaveden zákaz odjezdu'));
@@ -175,7 +176,7 @@ end;
 function IsCSBarrier(typ: TJCBarType): Boolean;
 begin
   case (typ) of
-    barBlockLockout, barRailwayZAK:
+    barBlockLockout, barRailwayZAKPC:
       result := true;
   else
     result := false;
@@ -189,7 +190,7 @@ begin
   case (typ) of
     barBlockLockout:
       result := 'Výluka bloku';
-    barRailwayZAK:
+    barRailwayZAKPC:
       result := 'Zákaz odjezdu na trať';
   else
     result := '';

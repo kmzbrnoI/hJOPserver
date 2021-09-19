@@ -766,7 +766,22 @@ begin
 
     var cont: Boolean := true;
     if (railway.departureForbidden) then
-      barriers.Add(JCBarrier(barRailwayZAK, railway));
+    begin
+      var warn: Boolean := false;
+      case (railway.direction) of
+        TRailwayDirection.AtoB:
+          warn := (Self.typ = TJCType.shunt) and (TBlkLinker(railway.linkerA).departureForbidden) and
+                  (not TBlkLinker(railway.linkerB).departureForbidden);
+        TRailwayDirection.BtoA:
+          warn := (Self.typ = TJCType.shunt) and (TBlkLinker(railway.linkerB).departureForbidden) and
+                  (not (TBlkLinker(railway.linkerA).departureForbidden));
+      end;
+
+      if (warn) then
+        barriers.Add(JCBarrier(barRailwayZAKPC, railway))
+      else
+        barriers.Add(JCBarrier(barRailwayZAKVC, railway));
+    end;
     if (railway.request) then
       barriers.Add(JCBarrier(barRailwayRequesting, railway));
     if (((TBlkRailway(railway).Zaver) or (TBlkRailway(railway).emLock)) and
@@ -3010,12 +3025,8 @@ begin
 end;
 
 function TJC.JCBarrierToMessage(barrier: TJCBarrier): TUPOItem;
-var i: Integer;
-  lines: TStrings;
-  canZAK: Boolean;
-  blk: TBlk;
 begin
-  for i := 0 to _UPO_LINES - 1 do
+  for var i := 0 to _UPO_LINES - 1 do
   begin
     result[i].str := '';
     result[i].fg := clNone;
@@ -3027,7 +3038,7 @@ begin
       barTrackZaver, barTrackAB, barTrackTrain, barTurnoutNoPos, barTurnoutLocked,
       barTurnoutEmLock, barCrosEmOpen, barCrosError, barRefugeeLocked,
       barRefugeeOccupied, barRefugeeNoPosition, barRailwayZaver, barRailwayNotReady, barRailwayRequesting,
-      barRailwayWrongDir, barRailwayZAK, barLockNotLocked, barTurnoutWrongPos,
+      barRailwayWrongDir, barRailwayZAKVC, barLockNotLocked, barTurnoutWrongPos,
       barTrackPSt, barTurnoutPst, barRefugeePst:
       begin
         result[0] := GetUPOLine('NEPŘÍPUSTNÉ', taCenter, clRed, clWhite);
@@ -3100,6 +3111,8 @@ begin
         result[1] := GetUPOLine('Trať obsazena');
         result[2] := GetUPOLine(barrier.Block.name);
       end;
+    barRailwayZAKVC:
+      result[1] := GetUPOLine('Zaveden zákaz odjezdu');
 
     barLockNotLocked:
       result[1] := GetUPOLine('Neuzamčen');
@@ -3117,7 +3130,7 @@ begin
           btCrossing: lockout := TBlkCrossing(barrier.block).lockout;
         end;
 
-        lines := GetLines(lockout, _UPO_LINE_LEN);
+        var lines := GetLines(lockout, _UPO_LINE_LEN);
         try
           result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
           if (lines.Count > 1) then
@@ -3142,7 +3155,7 @@ begin
           btPst: note := TBlkPst(barrier.block).note;
         end;
 
-        lines := GetLines(note, _UPO_LINE_LEN);
+        var lines := GetLines(note, _UPO_LINE_LEN);
         try
           result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
           if (lines.Count > 1) then
@@ -3180,26 +3193,11 @@ begin
         result[2] := GetUPOLine('');
       end;
 
-    barRailwayZAK:
+    barRailwayZAKPC:
       begin
-        Blocks.GetBlkByID(Self.m_data.railwayId, blk);
-        case (Self.m_data.railwayDir) of
-          TRailwayDirection.AtoB:
-            canZAK := TBlkLinker(TBlkRailway(blk).linkerA).departureForbidden;
-          TRailwayDirection.BtoA:
-            canZAK := TBlkLinker(TBlkRailway(blk).linkerB).departureForbidden;
-        else
-          canZAK := true;
-        end;
-
-        if ((Self.typ = TJCType.shunt) and (canZAK)) then
-        begin
-          result[0] := GetUPOLine('ZAVEDEN ZÁKAZ ODJEZDU', taCenter, clRed, clWhite);
-          result[1] := GetUPOLine(barrier.Block.name);
-          result[2] := GetUPOLine('');
-        end else begin
-          result[1] := GetUPOLine('Zákaz odjezdu');
-        end;
+        result[0] := GetUPOLine('ZAVEDEN ZÁKAZ ODJEZDU', taCenter, clRed, clWhite);
+        result[1] := GetUPOLine(barrier.Block.name);
+        result[2] := GetUPOLine('');
       end;
 
     barTrainWrongDir:
@@ -3213,7 +3211,7 @@ begin
       result[1] := GetUPOLine('Prvek pod pom. stavědlem');
 
   else
-    result[0] := GetUPOLine('Neznámá bariéra ve stavění JC', taCenter, clRed, clWhite);
+    result[0] := GetUPOLine('Neznámá bariéra', taCenter, clRed, clWhite);
   end;
 end;
 
@@ -3222,21 +3220,8 @@ end;
 function TJC.WarningBarrier(typ: TJCBarType): Boolean;
 begin
   case (typ) of
-    barRailwayZAK:
-      begin
-        var blk: TBlk;
-        Blocks.GetBlkByID(Self.m_data.railwayId, blk);
-        case (Self.m_data.railwayDir) of
-          TRailwayDirection.AtoB:
-            result := (Self.typ = TJCType.shunt) and (TBlkLinker(TBlkRailway(blk).linkerA).departureForbidden);
-          TRailwayDirection.BtoA:
-            result := (Self.typ = TJCType.shunt) and (TBlkLinker(TBlkRailway(blk).linkerB).departureForbidden);
-        else
-          result := false;
-        end;
-      end;
     barBlockNote, barBlockLockout, barPrivol, barHVManual, barHVNotAllManual,
-    barTrainWrongDir, barTrackLastOccupied, barRailwayOccupied:
+    barTrainWrongDir, barTrackLastOccupied, barRailwayOccupied, barRailwayZAKPC:
       result := true;
   else
     result := false;
@@ -3554,7 +3539,7 @@ begin
     glob := railway.GetGlobalSettings();
 
     if ((railway.departureForbidden) and (Self.typ = TJCType.Train)) then
-      bariery.Add(JCBarrier(barRailwayZAK, blk, Self.m_data.railwayId));
+      bariery.Add(JCBarrier(barRailwayZAKVC, blk, Self.m_data.railwayId));
     if ((not railway.departureForbidden) and (Self.typ = TJCType.shunt)) then
       bariery.Add(JCBarrier(barRailwayNoZAK, blk, Self.m_data.railwayId));
     if (railway.Zaver) then
@@ -3699,11 +3684,8 @@ begin
           barTrackTrain, barTrackAB, barTurnoutNoPos, barTurnoutWrongPos,
           barCrosEmOpen, barCrosError, barRefugeeNoPosition, barRailwayNotReady,
           barRailwayRequesting, barRailwayWrongDir, barRailwayNoBp, barLockNotLocked,
-          barTrackPSt, barTurnoutPst, barRefugeePst:
+          barTrackPSt, barTurnoutPst, barRefugeePst, barRailwayZAKVC:
           Exit(true);
-
-        barRailwayZAK:
-          Exit(Self.typ = TJCType.Train);
       end;
     end;
   finally
