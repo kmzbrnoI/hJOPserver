@@ -460,7 +460,7 @@ begin
     // nyni oznamime nekriticke bariery ktere nemaji upozorneni
     for var i: Integer := 0 to barriers.count - 1 do
     begin
-      if (not JC.WarningBarrier(barriers[i].typ)) then
+      if (not JCBarriers.JCWarningBarrier(barriers[i].typ)) then
       begin
         // tyto bariery nelze rozkliknout pomoci UPO
         Self.hint := barriers[i].Block.name;

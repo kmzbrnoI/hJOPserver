@@ -104,7 +104,7 @@ begin
     for var barrier: TJCBarrier in barriers do
     begin
       if ((barrier.typ <> barTrackAB) and ((JCBarriers.CriticalBarrier(barrier.typ)) or
-        (not jc.WarningBarrier(barrier.typ)))) then
+        (not JCBarriers.JCWarningBarrier(barrier.typ)))) then
         Exit();
     end;
 

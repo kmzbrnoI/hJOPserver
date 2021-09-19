@@ -192,17 +192,12 @@ type
     function GetWaitFroLastTrackOrRailwayOccupied(): Boolean;
     function GetLastTrack(): TBlk;
 
-    procedure BarrierToJson(const barrier: TJCBarrier; result: TJsonObject);
     procedure Log(msg: string; typ: LogType = ltJC);
 
   public
 
     index: Integer; // index v tabulce jizdni cest ve F_Main
     changed: Boolean; // JC zmenana -> akualizuje se v tabulce ve F_Main
-
-    // jednoduche genreovani berier jako navratove funkce teto funkce
-    function JCBarrierToMessage(barrier: TJCBarrier): TUPOItem; // prevod bariery na spravu upozorneni vlevo dole
-    function WarningBarrier(typ: TJCBarType): Boolean; // je bariera hodna zobrazeni upozorneni?
 
     constructor Create(); overload;
     constructor Create(data: TJCdata); overload;
@@ -1101,7 +1096,7 @@ begin
       if ((barrier.typ = barTrackLastOccupied) or (barrier.typ = barRailwayOccupied)) then
         Self.m_state.lastTrackOrRailwayOccupied := true;
 
-      if ((JCBarriers.CriticalBarrier(barrier.typ)) or (not Self.WarningBarrier(barrier.typ))) then
+      if ((JCBarriers.CriticalBarrier(barrier.typ)) or (not JCBarriers.JCWarningBarrier(barrier.typ))) then
       begin
         critical := true;
         UPO.Add(JCBarrierToMessage(barrier));
@@ -1182,7 +1177,7 @@ begin
   var critical: Boolean := false;
   for var i: Integer := 0 to barriers.Count - 1 do
     if ((barriers[i].typ <> barProcessing) and ((JCBarriers.CriticalBarrier(barriers[i].typ)) or
-      (not Self.WarningBarrier(barriers[i].typ)))) then
+      (not JCBarriers.JCWarningBarrier(barriers[i].typ)))) then
     begin
       critical := true;
       break;
@@ -1220,7 +1215,7 @@ begin
   var critical: Boolean := false;
   for var i: Integer := 0 to barriers.Count - 1 do
     if ((barriers[i].typ <> barProcessing) and ((JCBarriers.CriticalBarrier(barriers[i].typ)) or
-      (not Self.WarningBarrier(barriers[i].typ)))) then
+      (not JCBarriers.JCWarningBarrier(barriers[i].typ)))) then
     begin
       critical := true;
       break;
@@ -3006,230 +3001,6 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.BarrierToJson(const barrier: TJCBarrier; result: TJsonObject);
-var upoItem: TUPOItem;
-begin
-  result['typ'] := barrier.typ;
-  if (barrier.Block <> nil) then
-    result['blok'] := barrier.Block.id;
-  result['param'] := barrier.param;
-  if (CriticalBarrier(barrier.typ)) then
-    result['type'] := 'critical'
-  else if (WarningBarrier(barrier.typ)) then
-    result['type'] := 'warning'
-  else
-    result['type'] := 'standard';
-
-  upoItem := JCBarrierToMessage(barrier);
-  result['description'] := upoItem[0].str + ' ' + upoItem[1].str + ' ' + upoItem[2].str;
-end;
-
-function TJC.JCBarrierToMessage(barrier: TJCBarrier): TUPOItem;
-begin
-  for var i := 0 to _UPO_LINES - 1 do
-  begin
-    result[i].str := '';
-    result[i].fg := clNone;
-    result[i].bg := clNone;
-  end;
-
-  case (barrier.typ) of
-    barBlockDisabled, barBlockWrongType, barSignalNoTrack, barSignalActive, barBlockNotExists, barTrackOccupied,
-      barTrackZaver, barTrackAB, barTrackTrain, barTurnoutNoPos, barTurnoutLocked,
-      barTurnoutEmLock, barCrosEmOpen, barCrosError, barRefugeeLocked,
-      barRefugeeOccupied, barRefugeeNoPosition, barRailwayZaver, barRailwayNotReady, barRailwayRequesting,
-      barRailwayWrongDir, barRailwayZAKVC, barLockNotLocked, barTurnoutWrongPos,
-      barTrackPSt, barTurnoutPst, barRefugeePst:
-      begin
-        result[0] := GetUPOLine('NEPŘÍPUSTNÉ', taCenter, clRed, clWhite);
-        if (Assigned(barrier.Block)) then
-          result[2] := GetUPOLine(barrier.Block.name)
-        else
-          result[2] := GetUPOLine('ID ' + IntToStr(barrier.param));
-      end;
-  end;
-
-  case (barrier.typ) of
-    barOk:
-      result[0] := GetUPOLine('OK', taCenter, clBlue, $A0A0A0);
-    barProcessing:
-      result[0] := GetUPOLine('Již se staví', taCenter, clBlue, $A0A0A0);
-
-    barBlockDisabled:
-      result[1] := GetUPOLine('Blok neaktivní');
-    barBlockNotExists:
-      result[1] := GetUPOLine('Blok neexistuje');
-    barBlockWrongType:
-      result[1] := GetUPOLine('Blok není správného typu');
-
-    barSignalNoTrack:
-      result[1] := GetUPOLine('Není úsek před návěstidlem');
-    barSignalActive:
-      result[1] := GetUPOLine('Není základní návěst');
-
-    barTrackOccupied:
-      result[1] := GetUPOLine('Úsek obsazen');
-    barTrackZaver:
-      result[1] := GetUPOLine('Úsek zapevněn');
-    barTrackTrain:
-      result[1] := GetUPOLine('Souprava');
-    barTrackAB:
-      result[1] := GetUPOLine('Blokováno automatickou JC');
-
-    barTurnoutNoPos:
-      result[1] := GetUPOLine('Není koncová poloha');
-    barTurnoutLocked:
-      result[1] := GetUPOLine('Zamčena');
-    barTurnoutEmLock:
-      result[1] := GetUPOLine('Nouzový závěr');
-    barTurnoutWrongPos:
-      result[1] := GetUPOLine('Nesprávná poloha');
-
-    barCrosEmOpen:
-      result[1] := GetUPOLine('Nouzově otevřen');
-    barCrosError:
-      result[1] := GetUPOLine('Poruchový stav');
-
-    barRefugeeLocked:
-      result[1] := GetUPOLine('Zamčena');
-    barRefugeeOccupied:
-      result[1] := GetUPOLine('Obsazena');
-    barRefugeeNoPosition:
-      result[1] := GetUPOLine('Není koncová poloha');
-
-    barRailwayZaver:
-      result[1] := GetUPOLine('Závěr');
-    barRailwayRequesting:
-      result[1] := GetUPOLine('Probíhá žádost');
-    barRailwayWrongDir:
-      result[1] := GetUPOLine('Nesouhlas');
-    barRailwayNotReady:
-      result[1] := GetUPOLine('Nepovoluje odjezd');
-    barRailwayOccupied:
-      begin
-        result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, clBlack, clYellow);
-        result[1] := GetUPOLine('Trať obsazena');
-        result[2] := GetUPOLine(barrier.Block.name);
-      end;
-    barRailwayZAKVC:
-      result[1] := GetUPOLine('Zaveden zákaz odjezdu');
-
-    barLockNotLocked:
-      result[1] := GetUPOLine('Neuzamčen');
-    barLockEmLock:
-      result[1] := GetUPOLine('Není nouzový závěr');
-
-    barBlockLockout:
-      begin
-        result[0] := GetUPOLine('VÝLUKA ' + barrier.Block.name, taCenter, clBlack, clOlive);
-
-        var lockout: string := '-';
-        case (barrier.block.typ) of
-          btTurnout: lockout := TBlkTurnout(barrier.block).lockout;
-          btTrack, btRT: lockout := TBlkTrack(barrier.block).lockout;
-          btCrossing: lockout := TBlkCrossing(barrier.block).lockout;
-        end;
-
-        var lines := GetLines(lockout, _UPO_LINE_LEN);
-        try
-          result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-          if (lines.Count > 1) then
-            result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-        finally
-          lines.Free();
-        end;
-      end;
-
-    barBlockNote:
-      begin
-        result[0] := GetUPOLine('ŠTÍTEK ' + barrier.Block.name, taCenter, clBlack, clTeal);
-
-        var note: string := '-';
-        case (barrier.block.typ) of
-          btTurnout: note := TBlkTurnout(barrier.block).note;
-          btTrack, btRT: note := TBlkTrack(barrier.block).note;
-          btCrossing: note := TBlkCrossing(barrier.block).note;
-          btLinker: note := TBlkLinker(barrier.block).note;
-          btLock: note := TBlkLock(barrier.block).note;
-          btDisconnector: note := TBlkDisconnector(barrier.block).note;
-          btPst: note := TBlkPst(barrier.block).note;
-        end;
-
-        var lines := GetLines(note, _UPO_LINE_LEN);
-        try
-          result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-          if (lines.Count > 1) then
-            result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-        finally
-          lines.Free();
-        end;
-      end;
-
-    barTrackLastOccupied:
-      begin
-        result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, clBlack, clYellow);
-        result[1] := GetUPOLine('Kolejový úsek obsazen');
-        result[2] := GetUPOLine(barrier.Block.name);
-      end;
-
-    barPrivol:
-      begin
-        result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
-        result[1] := GetUPOLine('Svítí přivolávací návěst');
-        result[2] := GetUPOLine(barrier.Block.name);
-      end;
-
-    barHVManual:
-      begin
-        result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
-        result[1] := GetUPOLine('Hnací vozidlo v ručním řízení');
-        result[2] := GetUPOLine(IntToStr(barrier.param) + ' : ' + HVDb[barrier.param].name);
-      end;
-
-    barHVNotAllManual:
-      begin
-        result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
-        result[1] := GetUPOLine('Ne všechna HV v ručním řízení');
-        result[2] := GetUPOLine('');
-      end;
-
-    barRailwayZAKPC:
-      begin
-        result[0] := GetUPOLine('ZAVEDEN ZÁKAZ ODJEZDU', taCenter, clRed, clWhite);
-        result[1] := GetUPOLine(barrier.Block.name);
-        result[2] := GetUPOLine('');
-      end;
-
-    barTrainWrongDir:
-      begin
-        result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
-        result[1] := GetUPOLine('Jízda proti směru soupravy');
-        result[2] := GetUPOLine('Soprava ' + trains[barrier.param].name);
-      end;
-
-    barTrackPSt, barTurnoutPst, barRefugeePst:
-      result[1] := GetUPOLine('Prvek pod pom. stavědlem');
-
-  else
-    result[0] := GetUPOLine('Neznámá bariéra', taCenter, clRed, clWhite);
-  end;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-function TJC.WarningBarrier(typ: TJCBarType): Boolean;
-begin
-  case (typ) of
-    barBlockNote, barBlockLockout, barPrivol, barHVManual, barHVNotAllManual,
-    barTrainWrongDir, barTrackLastOccupied, barRailwayOccupied, barRailwayZAKPC:
-      result := true;
-  else
-    result := false;
-  end;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
 procedure TJC.CritBarieraEsc(Sender: TObject);
 begin
   Self.CancelActivating('', true);
@@ -3840,7 +3611,7 @@ begin
     var ok := Self.Activate(nil, TBlkSignal(Self.signal).areas[0], barriers, nil, false, false, ab);
     respJson['success'] := (ok = 0);
     for var barrier in barriers do
-      Self.BarrierToJson(barrier, respJson.A['barriers'].AddObject());
+      JCBarriers.BarrierToJson(barrier, respJson.A['barriers'].AddObject());
   finally
     barriers.Free();
   end;
