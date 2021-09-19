@@ -267,7 +267,8 @@ implementation
 
 uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
-  THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack;
+  THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
+  BlockPSt;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -3108,7 +3109,15 @@ begin
     barBlockLockout:
       begin
         result[0] := GetUPOLine('VÝLUKA ' + barrier.Block.name, taCenter, clBlack, clOlive);
-        lines := GetLines((barrier.Block as TBlkTrack).lockout, _UPO_LINE_LEN);
+
+        var lockout: string := '-';
+        case (barrier.block.typ) of
+          btTurnout: lockout := TBlkTurnout(barrier.block).lockout;
+          btTrack, btRT: lockout := TBlkTrack(barrier.block).lockout;
+          btCrossing: lockout := TBlkCrossing(barrier.block).lockout;
+        end;
+
+        lines := GetLines(lockout, _UPO_LINE_LEN);
         try
           result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
           if (lines.Count > 1) then
@@ -3121,7 +3130,19 @@ begin
     barBlockNote:
       begin
         result[0] := GetUPOLine('ŠTÍTEK ' + barrier.Block.name, taCenter, clBlack, clTeal);
-        lines := GetLines(TBlkTrack(barrier.Block).note, _UPO_LINE_LEN);
+
+        var note: string := '-';
+        case (barrier.block.typ) of
+          btTurnout: note := TBlkTurnout(barrier.block).note;
+          btTrack, btRT: note := TBlkTrack(barrier.block).note;
+          btCrossing: note := TBlkCrossing(barrier.block).note;
+          btLinker: note := TBlkLinker(barrier.block).note;
+          btLock: note := TBlkLock(barrier.block).note;
+          btDisconnector: note := TBlkDisconnector(barrier.block).note;
+          btPst: note := TBlkPst(barrier.block).note;
+        end;
+
+        lines := GetLines(note, _UPO_LINE_LEN);
         try
           result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
           if (lines.Count > 1) then
