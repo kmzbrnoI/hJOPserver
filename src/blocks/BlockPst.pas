@@ -83,6 +83,11 @@ type
     procedure BarriersUPOOKCallback(Sender: TObject);
     procedure BarriersCSCallback(Sender: TIdContext; success: Boolean);
 
+    procedure MoveRefugees();
+    procedure RefugeeMoved(Sender: TObject);
+    procedure RefugeeNotMoved(Sender: TObject; error: TTurnoutSetError);
+    function AllRefugeesInPosition(): Boolean;
+
   public
 
     constructor Create(index: Integer);
@@ -317,6 +322,12 @@ begin
       var blk := Blocks.GetBlkByID(turnoutId);
       if ((blk <> nil) and (blk.typ = btTurnout)) then
         TBlkTurnout(blk).PstRemove(Self);
+    end;
+    // unlock all refugees
+    for var refugeeZav in Self.m_settings.refugees do
+    begin
+      var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
+      refugee.IntentionalUnlock();
     end;
 
   end else begin
@@ -613,7 +624,7 @@ begin
     bg := clGreen;
 
   case (Self.status) of
-    pstOff: fg := $A0A0A0;
+    pstOff, pstRefuging: fg := $A0A0A0;
     pstTakeReady: fg := clWhite;
     pstActive: fg := clBlue;
   else
@@ -953,8 +964,7 @@ begin
       end;
     end;
 
-    Self.Log('Žádné bariéry, PSt předáno.', ltMessage);
-    Self.status := pstTakeReady;
+    Self.MoveRefugees();
   finally
     barriers.Free();
     UPO.Free();
@@ -1019,8 +1029,7 @@ begin
         PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.BarriersCSCallback, (Self.m_state.senderOR as TArea),
           'Předání obsluhy na PSt', TBlocks.GetBlksList(Self), conditions);
     end else begin
-      Self.Log('Žádné další bariéry, PSt předáno.', ltMessage);
-      Self.status := pstTakeReady;
+      Self.MoveRefugees();
     end;
 
   finally
@@ -1061,11 +1070,56 @@ begin
       Exit();
     end;
 
-    Self.Log('Povrzovaci sekvence OK, PSt předáno.', ltMessage);
-    Self.status := pstTakeReady;
+    Self.MoveRefugees();
   finally
     barriers.Free();
   end;
+end;
+
+procedure TBlkPst.MoveRefugees();
+begin
+  Self.status := pstRefuging;
+  Self.Log('Pst připraveno, nastavuji odvraty...', ltMessage);
+
+  // Move all refugees at once, we suppose there is not many of them...
+  // In case of many refugees one could implement window refuging in future...
+  for var refugeeZav in Self.m_settings.refugees do
+  begin
+    var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
+    refugee.IntentionalLock();
+    // Warning: this may call callback directly
+    refugee.SetPosition(TTurnoutPosition(refugeeZav.position), true, false, Self.RefugeeMoved, Self.RefugeeNotMoved);
+  end;
+end;
+
+procedure TBlkPst.RefugeeMoved(Sender: TObject);
+begin
+  if (Self.AllRefugeesInPosition()) then
+  begin
+    Self.Log('Všechny odvraty nastaveny, PSt připraveno na převzetí.', ltMessage);
+    Self.status := pstTakeReady;
+  end;
+end;
+
+procedure TBlkPst.RefugeeNotMoved(Sender: TObject; error: TTurnoutSetError);
+begin
+  Self.Log('Nepřestavena '+(Sender as TBlkTurnout).name, ltMessage);
+  if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+    PanelServer.BottomError(Self.m_state.senderPnl, 'Nepřestavena ' + (Sender as TBlkTurnout).name + ': ' +
+      TBlkTurnout.SetErrorToMsg(error), (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+
+  Self.status := pstOff;
+end;
+
+function TBlkPst.AllRefugeesInPosition(): Boolean;
+begin
+  for var refugeeZav in Self.m_settings.refugees do
+  begin
+    var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
+    if (refugee.position <> refugeeZav.position) then
+      Exit(false);
+  end;
+  Result := true;
 end;
 
 end.
