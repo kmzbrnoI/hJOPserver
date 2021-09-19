@@ -70,7 +70,8 @@ type
         UPO_EscCallback: TNotifyEvent);
 
     procedure UPOPstDisDone(Sender: TObject);
-    procedure UPONPstDone(Sender: TObject);
+    procedure UPONPStDone(Sender: TObject);
+    procedure CSNPStDone(Sender: TIDContext; success: Boolean);
 
   public
 
@@ -120,7 +121,7 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
-  RCSErrors, RCS, UPO;
+  RCSErrors, RCS, UPO, TCPAreasRef;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -382,8 +383,10 @@ procedure TBlkPst.MenuNPstClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if (Self.note <> '') then
     Self.NoteUPO(SenderPnl, SenderOR, Self.UPONPstDone, nil)
-  else
+  else begin
+    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
     Self.UPONPstDone(SenderPnl);
+  end;
 end;
 
 procedure TBlkPst.UPOPstDisDone(Sender: TObject);
@@ -393,7 +396,15 @@ end;
 
 procedure TBlkPst.UPONPstDone(Sender: TObject);
 begin
-  Self.status := pstOff;
+  PanelServer.ConfirmationSequence(TIDContext(Sender), Self.CSNPStDone,
+    (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové zrušení obsluhy PSt',
+    TBlocks.GetBlksList(Self), TArea.GetCSConditions(TArea.GetCSCondition(Self, 'Není základní poloha prvku PSt')));
+end;
+
+procedure TBlkPst.CSNPStDone(Sender: TIDContext; success: Boolean);
+begin
+  if (success) then
+    Self.status := pstOff;
 end;
 
 procedure TBlkPst.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
