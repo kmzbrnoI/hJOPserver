@@ -1173,29 +1173,33 @@ begin
   // znovu zkontrolujeme bariery (behem potvrzovani se mohly vyskytnout)
   var barriers: TJCBarriers := Self.barriers(Self.m_state.nc);
 
-  // existuji kriticke bariery?
-  var critical: Boolean := false;
-  for var i: Integer := 0 to barriers.Count - 1 do
-    if ((barriers[i].typ <> barProcessing) and ((JCBarriers.CriticalBarrier(barriers[i].typ)) or
-      (not JCBarriers.JCWarningBarrier(barriers[i].typ)))) then
+  try
+    // existuji kriticke bariery?
+    var critical: Boolean := false;
+    for var barrier in barriers do
+      if ((barrier.typ <> barProcessing) and ((JCBarriers.CriticalBarrier(barrier.typ)) or
+        (not JCBarriers.JCWarningBarrier(barrier.typ)))) then
+      begin
+        critical := true;
+        break;
+      end;
+
+    // behem potvrzovani se mohly vyskytnout
+    if (critical) then
     begin
-      critical := true;
-      break;
+      Self.CancelActivating('Nelze postavit - kritické bariéry');
+      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+        PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
+          (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+      barriers.Free();
+      Exit();
     end;
 
-  // behem potvrzovani se mohly vyskytnout
-  if (critical) then
-  begin
-    Self.CancelActivating('Nelze postavit - kritické bariéry');
-    if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-      PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
-        (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+    Self.Log('Krok 2 : povrzovaci sekvence OK');
+    Self.SetInitStep();
+  finally
     barriers.Free();
-    Exit();
   end;
-
-  Self.Log('Krok 2 : povrzovaci sekvence OK');
-  Self.SetInitStep();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1210,51 +1214,55 @@ begin
 
   // znovu zkontrolujeme bariery (behem potvrzovani se mohly vyskytnout)
   var barriers: TJCBarriers := Self.barriers(Self.m_state.nc);
+  try
+    // existuji kriticke bariery?
+    var critical: Boolean := false;
+    for var barrier in barriers do
+      if ((barrier.typ <> barProcessing) and ((JCBarriers.CriticalBarrier(barrier.typ)) or
+        (not JCBarriers.JCWarningBarrier(barrier.typ)))) then
+      begin
+        critical := true;
+        break;
+      end;
 
-  // existuji kriticke bariery?
-  var critical: Boolean := false;
-  for var i: Integer := 0 to barriers.Count - 1 do
-    if ((barriers[i].typ <> barProcessing) and ((JCBarriers.CriticalBarrier(barriers[i].typ)) or
-      (not JCBarriers.JCWarningBarrier(barriers[i].typ)))) then
+    // behem potvrzovani se mohly vyskytnout
+    if (critical) then
     begin
-      critical := true;
-      break;
+      Self.CancelActivating('Nelze postavit - kritické bariéry');
+      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+        PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
+          (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+      barriers.Free();
+      Exit();
     end;
 
-  // behem potvrzovani se mohly vyskytnout
-  if (critical) then
-  begin
-    Self.CancelActivating('Nelze postavit - kritické bariéry');
-    if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-      PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
-        (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+    // existuji bariery na potvrzeni potvrzovaci sekvenci ?
+    var conditions: TList<TConfSeqItem> := TList<TConfSeqItem>.Create;
+    for var barrier in barriers do
+    begin
+      if (JCBarriers.IsCSBarrier(barrier.typ)) then
+        conditions.Add(TArea.GetCSCondition(barrier.Block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+    end;
+
+    if (conditions.Count > 0) then
+    begin
+      // ano, takoveto bariery existuji -> potvrzovaci sekvence
+      Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...');
+
+      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+        PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TArea),
+          'Jízdní cesta s potvrzením', TBlocks.GetBlksList(Self.signal, Self.lastTrack), conditions);
+
+      Self.step := stepConfSeq;
+    end else begin
+      // ne, takoveto bariery neexistuji -> stavim jizdni cestu
+      Self.SetInitStep();
+    end;
+
+  finally
     barriers.Free();
-    Exit();
   end;
-
-  // existuji bariery na potvrzeni potvrzovaci sekvenci ?
-  var conditions: TList<TConfSeqItem> := TList<TConfSeqItem>.Create;
-  for var i: Integer := 0 to barriers.Count - 1 do
-  begin
-    if (JCBarriers.IsCSBarrier(barriers[i].typ)) then
-      conditions.Add(TArea.GetCSCondition(barriers[i].Block, JCBarriers.BarrierGetCSNote(barriers[i].typ)));
-  end; // for i
-
-  if (conditions.Count > 0) then
-  begin
-    // ano, takoveto bariery existuji -> potvrzovaci sekvence
-    Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...');
-
-    if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-      PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TArea),
-        'Jízdní cesta s potvrzením', TBlocks.GetBlksList(Self.signal, Self.lastTrack), conditions);
-
-    Self.step := stepConfSeq;
-  end else begin
-    // ne, takoveto bariery neexistuji -> stavim jizdni cestu
-    Self.SetInitStep();
-  end;
-end; // proceudre
+end;
 
 procedure TJC.UPO_EscCallback(Sender: TObject);
 begin
