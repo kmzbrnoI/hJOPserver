@@ -113,7 +113,7 @@ type
 implementation
 
 uses area, TCPServerPanel, Logging, TechnologieJC, Block, BlockDb,
-  BlockLinker, BlockRailway, appEv;
+  BlockLinker, BlockRailway, appEv, JCBarriers;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -446,7 +446,7 @@ begin
   if ((barriers.count > 0) or (cmd.nouz)) then
   begin
     // v jizdni ceste jsou bariery
-    if ((barriers.count > 0) and (TJC.CriticalBarrier(barriers[0].typ))) then
+    if ((barriers.count > 0) and (JCBarriers.CriticalBarrier(barriers[0].typ))) then
     begin
       // kriticka bariera -> hint := CRIT, kritickou barieru na pozadani zobrazim dispecerovi (pres klik na UPO zasobniku)
       Self.hint := 'CRIT';

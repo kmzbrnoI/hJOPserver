@@ -5,7 +5,8 @@
 interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, IdContext,
-  Generics.Collections, Area, JsonDataObjects, TechnologieRCS, BlockTurnout;
+  Generics.Collections, Area, JsonDataObjects, TechnologieRCS, BlockTurnout,
+  TechnologieJC, JCBarriers;
 
 type
   TBlkPstStatus = (pstDisabled, pstOff, pstRefuging, pstTakeReady, pstActive);
@@ -73,6 +74,8 @@ type
     procedure UPONPStDone(Sender: TObject);
     procedure CSNPStDone(Sender: TIDContext; success: Boolean);
 
+    procedure ActivationBarriers(var barriers: TList<TJCBarrier>);
+
   public
 
     constructor Create(index: Integer);
@@ -121,7 +124,7 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
-  RCSErrors, RCS, UPO, TCPAreasRef;
+  RCSErrors, RCS, UPO, TCPAreasRef, BlockSignal;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -692,5 +695,205 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkPst.ActivationBarriers(var barriers: TList<TJCBarrier>);
+begin
+  // tracks
+  for var trackId in Self.m_settings.tracks do
+  begin
+    var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackId));
+
+    if (track = nil) then
+    begin
+      barriers.Add(JCBarrier(barBlockNotExists, nil, trackId));
+      Exit();
+    end;
+
+    if ((track.typ <> btTrack) and (track.typ <> btRT)) then
+    begin
+      barriers.Add(JCBarrier(barBlockWrongType, track, trackId));
+      Exit();
+    end;
+
+    if (track.occupied = TTrackState.disabled) then
+      barriers.Add(JCBarrier(barBlockDisabled, track));
+
+    if (track.occupied <> TTrackState.Free) then
+      barriers.Add(JCBarrier(barTrackOccupied, track));
+
+    if (track.IsTrain()) then
+      barriers.Add(JCBarrier(barTrackTrain, track));
+
+    if (track.Zaver <> TZaver.no) then
+    begin
+      if (track.Zaver = TZaver.ab) then
+        barriers.Add(JCBarrier(barTrackAB, track))
+      else
+        barriers.Add(JCBarrier(barTrackZaver, track));
+    end;
+
+    if (track.lockout <> '') then
+      barriers.Add(JCBarrier(barBlockLockout, track));
+
+    if (track.note <> '') then
+      barriers.Add(JCBarrier(barBlockNote, track));
+  end;
+
+  // turnouts
+  for var turnoutId in Self.m_settings.turnouts do
+  begin
+    var turnout: TBlkTurnout := TBlkturnout(Blocks.GetBlkByID(turnoutId));
+
+    if (turnout = nil) then
+    begin
+      barriers.Add(JCBarrier(barBlockNotExists, nil, turnoutId));
+      Exit();
+    end;
+
+    if (turnout.typ <> btTurnout) then
+    begin
+      barriers.Add(JCBarrier(barBlockWrongType, turnout, turnoutId));
+      Exit();
+    end;
+
+    if (turnout.position = TTurnoutPosition.disabled) then
+      barriers.Add(JCBarrier(barBlockDisabled, turnout));
+
+    if ((turnout.position = TTurnoutPosition.none) or (turnout.position = TTurnoutPosition.both)) then
+      barriers.Add(JCBarrier(barTurnoutNoPos, turnout));
+
+    if (turnout.zaver <> TZaver.no) then
+      barriers.Add(JCBarrier(barTrackZaver, turnout));
+
+    if (turnout.lockout <> '') then
+      barriers.Add(JCBarrier(barBlockLockout, turnout));
+
+    if (turnout.note <> '') then
+      barriers.Add(JCBarrier(barBlockNote, turnout));
+
+    if (turnout.PstIs()) then
+      barriers.Add(JCBarrier(barTurnoutPst, turnout));
+
+    if (turnout.emLock) then
+      barriers.Add(JCBarrier(barTurnoutEmLock, turnout))
+    else if (turnout.outputLocked) then
+      barriers.Add(JCBarrier(barTurnoutLocked, turnout));
+
+    // coupling
+    var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnout.GetSettings.coupling));
+    if (coupling <> nil) then
+    begin
+      if (coupling.emLock) then
+        barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
+      else if (coupling.outputLocked) then
+        barriers.Add(JCBarrier(barTurnoutLocked, coupling));
+
+      if (coupling.occupied = TTrackState.occupied) then
+        barriers.Add(JCBarrier(barTrackOccupied, coupling));
+    end;
+
+    if ((coupling <> nil) and (coupling.PstIs())) then
+      barriers.Add(JCBarrier(barTurnoutPst, coupling));
+  end;
+
+  // refugees
+  for var refugeeZav: TPstRefugeeZav in Self.m_settings.refugees do
+  begin
+    var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.Block));
+
+    if (refugee = nil) then
+    begin
+      barriers.Add(JCBarrier(barBlockNotExists, nil, refugeeZav.block));
+      Exit();
+    end;
+
+    if (refugee.typ <> btTurnout) then
+    begin
+      barriers.Add(JCBarrier(barBlockWrongType, refugee, refugeeZav.block));
+      Exit();
+    end;
+
+    if (refugee.position = TTurnoutPosition.disabled) then
+      barriers.Add(JCBarrier(barBlockDisabled, refugee));
+
+    if ((refugee.position = TTurnoutPosition.none) or (refugee.position = TTurnoutPosition.both)) then
+      barriers.Add(JCBarrier(barTurnoutNoPos, refugee));
+
+    if (refugee.lockout <> '') then
+      barriers.Add(JCBarrier(barBlockLockout, refugee));
+
+    if (refugee.note <> '') then
+      barriers.Add(JCBarrier(barBlockNote, refugee));
+
+    if (refugee.position <> refugeeZav.position) then
+    begin
+      if (refugee.emLock) then
+        barriers.Add(JCBarrier(barTurnoutEmLock, refugee))
+
+      else if (refugee.outputLocked) then
+        barriers.Add(JCBarrier(barRefugeeLocked, refugee));
+
+      if (refugee.occupied = TTrackState.occupied) then
+        barriers.Add(JCBarrier(barRefugeeOccupied, refugee));
+    end;
+
+    if (refugee.PstIs()) then
+      barriers.Add(JCBarrier(barRefugeePst, refugee));
+
+    var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugee.GetSettings.coupling));
+    if (coupling <> nil) then
+    begin
+      if (coupling.lockout <> '') then
+        barriers.Add(JCBarrier(barBlockLockout, coupling));
+
+      if (coupling.note <> '') then
+        barriers.Add(JCBarrier(barBlockNote, coupling));
+
+      if (coupling.PstIs()) then
+        barriers.Add(JCBarrier(barRefugeePst, coupling));
+
+      if (refugee.position <> refugeeZav.position) then
+      begin
+        if (TBlkTurnout(coupling).Zaver > TZaver.no) then
+        begin
+          if (TBlkTurnout(coupling).Zaver = TZaver.ab) then
+            barriers.Add(JCBarrier(barTrackAB, coupling))
+          else
+            barriers.Add(JCBarrier(barTrackZaver, coupling));
+        end;
+
+        if (TBlkTurnout(coupling).emLock) then
+          barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
+        else if (TBlkTurnout(coupling).outputLocked) then
+          barriers.Add(JCBarrier(barTurnoutLocked, coupling));
+
+        if (TBlkTurnout(coupling).occupied = TTrackState.occupied) then
+          barriers.Add(JCBarrier(barTrackOccupied, coupling));
+      end;
+    end;
+  end;
+
+  // signals
+  for var signalId in Self.m_settings.signals do
+  begin
+    var signal: TBlkSignal := TBlkSignal(Blocks.GetBlkByID(signalId));
+
+    if (signal = nil) then
+    begin
+      barriers.Add(JCBarrier(barBlockNotExists, nil, signalId));
+      Exit();
+    end;
+
+    if (signal.typ <> btSignal) then
+    begin
+      barriers.Add(JCBarrier(barBlockWrongType, signal, signalId));
+      Exit();
+    end;
+
+    if (signal.signal <> ncStuj) then
+      barriers.Add(JCBarrier(barSignalActive, signal));
+  end;
+end;
+
 
 end.

@@ -7,7 +7,7 @@
 
 interface
 
-uses SysUtils, Generics.Collections, TechnologieJC;
+uses SysUtils, Generics.Collections, TechnologieJC, JCBarriers;
 
 type
   EABJCAlreadyInList = class(Exception);
@@ -103,7 +103,7 @@ begin
     // v jizdni ceste jsou urcite bariery (musi tam byt minimalne zavery AB cesty)
     for var barrier: TJCBarrier in barriers do
     begin
-      if ((barrier.typ <> TJC._JCB_USEK_AB) and ((TJC.CriticalBarrier(barrier.typ)) or
+      if ((barrier.typ <> barTrackAB) and ((JCBarriers.CriticalBarrier(barrier.typ)) or
         (not jc.WarningBarrier(barrier.typ)))) then
         Exit();
     end;

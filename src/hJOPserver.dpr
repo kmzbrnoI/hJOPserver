@@ -157,7 +157,8 @@ uses
   PTEndpointUsers in 'pt\PTEndpointUsers.pas',
   PTEndpointUser in 'pt\PTEndpointUser.pas',
   BlockPst in 'blocks\BlockPst.pas',
-  fBlkPst in 'blocks\forms\data\fBlkPst.pas' {F_BlkPst};
+  fBlkPst in 'blocks\forms\data\fBlkPst.pas' {F_BlkPst},
+  JCBarriers in 'jc\JCBarriers.pas';
 
 {$R *.res}
 

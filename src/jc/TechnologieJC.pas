@@ -9,40 +9,13 @@
   potvrzovacich sekvenci pri staveni az po spravne ruseni jizdni cesty.
 }
 
-{
-  Co je to BARIERA JIZDNI CESTY?
-  > Bariera jizdni cesty je prekazka branici jejimu postaveni, ktere se lze
-  > zbavit napr. jen pouhym potvrzenim (napr. jizdni cesta pres blok se stitkem),
-  > potvrzenim pres potvrzovaci sekvenci, nebo se ji nelze zbavit vubec a jizdni
-  > cestu jendnoduse nelze postavit.
-
-  Technologie jizdnch cest rozeznava nekolik druhu berier:
-  1) KRITICKE BARIERY
-    jsou takove bariery, ktere dispecer nemuze odstranit (v ceste napriklad
-    chybi tecnologicky blok).
-    > Kriticka bariera se pozna tak, ze \CriticalBariera vrati true.
-  2) STANDARDNI BARIERY
-    jsou takove bariery, ktere se odstrani "samy" - napriklad usek pod
-    zaverem, obsazney usek.
-    > Standardni bariera typicky neni kriticka, ani neni varovna, tudiz
-    > se pozna tak, ze nesplnuje podminky kriticke ani varovne bariery.
-  3) VAROVNE BARIERY
-    jsou takove bariery, ktere primo nebrani jizdni ceste ve staveni, ale je
-    potreba si je uvedmit a potvrdit je (napr. na useku je stitek, ci vyluka).
-    Tyto bariery je vzdy nutne potvrdit upozorneni v levem dolnim rohu panelu,
-    nektere z nich mohou vyzadovat i potvrzeni potvrzovaci sekvenci.
-    > Varovna bariera se pozna tak, ze \WarningBariera vrati true
-    > Bariera nutna potvrzeni potvrzovaci sekvenci se pozna tak, ze
-    >  \PotvrSekvBariera vrati true.
-}
-
 interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Logging,
   Dialogs, Menus, Buttons, ComCtrls, fMain, BlockDb, Block, Train,
   IniFiles, IdContext, BlockRailway, Generics.Collections, UPO, BlockTurnout,
-  Area, changeEvent, changeEventCaller, JsonDataObjects, PTUtils;
+  Area, changeEvent, changeEventCaller, JsonDataObjects, PTUtils, JCBarriers;
 
 const
   _JC_INITPOTVR_TIMEOUT_SEC = 60; // timeout UPO a potvrzeni na zacatku staveni JC
@@ -79,17 +52,6 @@ const
 type
   TJCType = (train = 1, shunt = 2, emergency = 3);
   TJCNextSignalType = (no = 0, railway = 1, signal = 2);
-
-  // jedna bariera ve staveni jizdni cesty:
-  TJCBarrier = record
-    typ: Integer; // typ bariery, odkazuje na konstanty _JCB_*, viz nize
-    // blok, na ktery se bariera vztahuje; nektere bariery nemusi byt prirazeny bloku, platnost tohoto parametru je potreba overit pro kazdou barieru samostatne
-    Block: TBlk;
-    // parametr bariery, typicky napr. ID bloku, ktery neexistuje; v takovem pripade samozrejme nemuze existovat \blok
-    param: Integer;
-  end;
-
-  TJCBarriers = TList<TJCBarrier>;
 
   // zaver vyhybky v jizdni ceste
   TJCTurnoutZav = record
@@ -172,67 +134,6 @@ type
   /// ////////////////////////////////////////////////////////////////////////
 
   TJC = class
-  public const
-
-    // bariery ve staveni jizdni cesty:
-
-    _JCB_OK = 0;
-    _JCB_STAVENI = 1;
-    _JCB_BLOK_DISABLED = 2;
-    _JCB_BLOK_NOT_EXIST = 3;
-    _JCB_BLOK_NOT_TYP = 4;
-    _JCB_PRIVOLAVACKA = 5;
-
-    _JCB_NAV_NOT_USEK = 10;
-    _JCB_NAV_NAVEST = 11;
-
-    _JCB_USEK_OBSAZENO = 20;
-    _JCB_USEK_ZAVER = 21;
-    _JCB_USEK_VYLUKA = 22;
-    _JCB_USEK_SOUPRAVA = 23;
-    _JCB_USEK_STITEK = 24;
-    _JCB_USEK_AB = 25;
-    _JCB_USEK_LAST_OBSAZENO = 26; // povoleno postaveni JC
-    _JCB_USEK_PST = 27;
-
-    _JCB_VYHYBKA_KONC_POLOHA = 30;
-    _JCB_VYHYBKA_VYLUKA = 31;
-    _JCB_VYHYBKA_STITEK = 32;
-    _JCB_VYHYBKA_ZAMCENA = 33;
-    _JCB_VYHYBKA_NOUZ_ZAVER = 34;
-    _JCB_VYHYBKA_NESPAVNA_POLOHA = 35;
-    _JCB_VYHYBKA_PST = 36;
-
-    _JCB_PREJEZD_NOUZOVE_OTEVREN = 40;
-    _JCB_PREJEZD_PORUCHA = 41;
-    _JCB_PREJEZD_STITEK = 42;
-    _JCB_PREJEZD_NEUZAVREN = 43;
-
-    _JCB_ODVRAT_ZAMCENA = 60;
-    _JCB_ODVRAT_OBSAZENA = 61;
-    _JCB_ODVRAT_KONC_POLOHA = 62;
-    _JCB_ODVRAT_PST = 63;
-
-    _JCB_TRAT_NEPRIPRAVENA = 69;
-    _JCB_TRAT_ZAK = 70;
-    _JCB_TRAT_ZAVER = 71;
-    _JCB_TRAT_OBSAZENO = 72; // povoleno postaveni JC
-    _JCB_TRAT_ZADOST = 73;
-    _JCB_TRAT_NESOUHLAS = 74;
-    _JCB_TRAT_NO_BP = 75;
-    _JCB_TRAT_NOT_ZAK = 76;
-    _JCB_TRAT_STITEK = 77;
-    _JCB_TRAT_NEPRENOS = 78;
-    _JCB_TRAT_PRENOS_NAKONEC = 79;
-
-    _JCB_ZAMEK_NEUZAMCEN = 80;
-    _JCB_ZAMEK_NOUZ_ZAVER = 81;
-
-    _JCB_HV_RUC = 100;
-    _JCB_HV_NOT_ALL_RUC = 101;
-
-    _JCB_SPR_SMER = 120;
-
   private const
     _def_jc_staveni: TJCstate = (step: _STEP_DEFAULT; destroyBlock: _JC_DESTROY_NONE; destroyEndBlock: _JC_DESTROY_NONE;
       ab: false; crossingWasClosed: false;);
@@ -280,9 +181,6 @@ type
     procedure BarriersNC(var barriers: TList<TJCBarrier>);
     procedure BarriersNCToAccept(var bariery: TList<TJCBarrier>);
 
-    // seznam barier nouzve cesty prevede na potvrzovaci sekvence pro klienta
-    function BarriersToPotvrSekv(barriers: TJCBarriers): TConfSeqItems;
-
     function GetTrain(signal: TBlk = nil; track: TBlk = nil): TTrain; // vraci cislo soupravy na useku pred navestidlem
 
     function GetAB(): Boolean;
@@ -299,14 +197,9 @@ type
     index: Integer; // index v tabulce jizdni cest ve F_Main
     changed: Boolean; // JC zmenana -> akualizuje se v tabulce ve F_Main
 
-    class function JCBarrier(typ: Integer; Block: TBlk = nil; param: Integer = 0): TJCBarrier;
     // jednoduche genreovani berier jako navratove funkce teto funkce
     function JCBarrierToMessage(barrier: TJCBarrier): TUPOItem; // prevod bariery na spravu upozorneni vlevo dole
-    class function CriticalBarrier(typ: Integer): Boolean; // je bariera kriticka?
-    class function PotvrSekvBarrier(typ: Integer): Boolean; // je bariera hodna potvrzovaci sekvence?
-    function WarningBarrier(typ: Integer): Boolean; // je bariera hodna zobrazeni upozorneni?
-
-    class function PotvrSekvBarrierToReason(typ: Integer): string;
+    function WarningBarrier(typ: TJCBarType): Boolean; // je bariera hodna zobrazeni upozorneni?
 
     constructor Create(); overload;
     constructor Create(data: TJCdata); overload;
@@ -417,7 +310,6 @@ begin
 end;
 
 destructor TJC.Destroy();
-var i: Integer;
 begin
   if (Assigned(Self.m_state.ncBariery)) then
     FreeAndNil(Self.m_state.ncBariery);
@@ -432,7 +324,7 @@ begin
     Self.m_data.tracks.Free();
   if (Assigned(Self.m_data.refuges)) then
     Self.m_data.refuges.Free();
-  for i := 0 to Self.m_data.crossings.Count - 1 do
+  for var i := 0 to Self.m_data.crossings.Count - 1 do
     Self.m_data.crossings[i].closeTracks.Free();
   if (Assigned(Self.m_data.crossings)) then
     Self.m_data.crossings.Free();
@@ -450,233 +342,220 @@ begin
   result := TList<TJCBarrier>.Create();
 
   if (Self.activating) then
-    result.Add(Self.JCBarrier(_JCB_STAVENI));
+    result.Add(JCBarrier(barProcessing));
 
+  // signal
   begin
     var signal: TBlk;
 
-    // kontrola useku navestidla:
     if (Blocks.GetBlkByID(Self.m_data.signalId, signal) <> 0) then
     begin
-      // blok navestidla neexistuje
-      result.Add(Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, Self.m_data.signalId));
+      result.Add(JCBarrier(barBlockNotExists, nil, Self.m_data.signalId));
       Exit();
     end;
 
     if (Self.lastTrack = nil) then
     begin
-      // neexistuje ani jeden usek nebo je posledni usek nevalidni
-      result.Add(Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, 0));
+      result.Add(JCBarrier(barBlockNotExists, nil, 0));
       Exit();
     end;
 
     if (signal.typ <> btSignal) then
     begin
-      // blok navestidla neni typu navestidlo
-      result.Add(Self.JCBarrier(_JCB_BLOK_NOT_TYP, signal, Self.m_data.signalId));
+      result.Add(JCBarrier(barBlockWrongType, signal, Self.m_data.signalId));
       Exit();
     end;
 
     if ((signal as TBlkSignal).track = nil) then
     begin
-      // blok navestidla pred sebou nema zadny usek
-      result.Add(Self.JCBarrier(_JCB_NAV_NOT_USEK, signal, Self.m_data.signalId));
+      result.Add(JCBarrier(barSignalNoTrack, signal, Self.m_data.signalId));
       Exit();
     end;
   end;
 
-  // vyhybky:
-  // kontrolujeme, jestli vyhybky existuji a jestli jsou to vyhybky
+  // turnouts
   for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
   begin
     var turnout: TBlk;
     if (Blocks.GetBlkByID(turnoutZav.Block, turnout) <> 0) then
     begin
-      result.Add(Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, turnoutZav.Block));
+      result.Add(JCBarrier(barBlockNotExists, nil, turnoutZav.Block));
       Exit();
     end;
 
     if (turnout.typ <> btTurnout) then
     begin
-      result.Add(Self.JCBarrier(_JCB_BLOK_NOT_TYP, turnout, turnoutZav.Block));
+      result.Add(JCBarrier(barBlockWrongType, turnout, turnoutZav.Block));
       Exit();
     end;
   end;
 
-  // useky:
+  // tracks
   for var trackZav: Integer in Self.m_data.tracks do
   begin
-    // zkontrolujeme, jestli useky existuji a jestli jsou to useky
     var track: TBlk;
     if (Blocks.GetBlkByID(trackZav, track) <> 0) then
     begin
-      result.Add(Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, trackZav));
+      result.Add(JCBarrier(barBlockNotExists, nil, trackZav));
       Exit();
     end;
 
     if ((track.typ <> btTrack) and (track.typ <> btRT)) then
     begin
-      result.Add(Self.JCBarrier(_JCB_BLOK_NOT_TYP, track, trackZav));
+      result.Add(JCBarrier(barBlockWrongType, track, trackZav));
       Exit();
     end;
   end;
 
-  // kontrola prejezdu
+  // crossings
   for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
   begin
-    // kontrola existence bloku prejezdu
     var crossing: TBlk;
     if (Blocks.GetBlkByID(crossingZav.crossingId, crossing) <> 0) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, crossingZav.crossingId));
+      result.Insert(0, JCBarrier(barBlockNotExists, nil, crossingZav.crossingId));
       Exit();
     end;
 
-    // kontrola typu bloku prejezdu
     if (crossing.typ <> btCrossing) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, crossing, crossingZav.crossingId));
+      result.Insert(0, JCBarrier(barBlockWrongType, crossing, crossingZav.crossingId));
       Exit();
     end;
 
-    // pokud se ma prejezd zavirat
+    // if track should be closed by path
     if (crossingZav.closeTracks.Count > 0) then
     begin
-      // kontrola existence oteviraciho bloku
       var openTrack: TBlk;
       if (Blocks.GetBlkByID(crossingZav.openTrack, openTrack) <> 0) then
       begin
-        result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, crossing, crossingZav.openTrack));
+        result.Insert(0, JCBarrier(barBlockNotExists, crossing, crossingZav.openTrack));
         Exit();
       end;
 
-      // kontrola typu oteviraciho bloku
       if ((openTrack.typ <> btTrack) and (openTrack.typ <> btRT)) then
       begin
-        result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, crossing, crossingZav.openTrack));
+        result.Insert(0, JCBarrier(barBlockWrongType, crossing, crossingZav.openTrack));
         Exit();
       end;
 
-      // kontrola existence uzaviracich bloku a jejich typu
       for var trackZav: Integer in crossingZav.closeTracks do
       begin
         var closeTrack: TBlk;
         if (Blocks.GetBlkByID(trackZav, closeTrack) <> 0) then
         begin
-          result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, crossing, trackZav));
+          result.Insert(0, JCBarrier(barBlockNotExists, crossing, trackZav));
           Exit();
         end;
         if ((closeTrack.typ <> btTrack) and (closeTrack.typ <> btRT)) then
         begin
-          result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, crossing, trackZav));
+          result.Insert(0, JCBarrier(barBlockWrongType, crossing, trackZav));
           Exit();
         end;
       end;
     end;
   end;
 
-  // kontrola odvratu
+  // refugees
   for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
   begin
     var refugeeRef: TBlk;
     if (Blocks.GetBlkByID(refugeeZav.ref_blk, refugeeRef) <> 0) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, refugeeZav.ref_blk));
+      result.Insert(0, JCBarrier(barBlockNotExists, nil, refugeeZav.ref_blk));
       Exit();
     end;
     if ((refugeeRef.typ <> btTrack) and (refugeeRef.typ <> btRT)) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, refugeeRef, refugeeZav.ref_blk));
+      result.Insert(0, JCBarrier(barBlockWrongType, refugeeRef, refugeeZav.ref_blk));
       Exit();
     end;
     var refugee: TBlk;
     if (Blocks.GetBlkByID(refugeeZav.Block, refugee) <> 0) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, refugeeZav.Block));
+      result.Insert(0, JCBarrier(barBlockNotExists, nil, refugeeZav.Block));
       Exit();
     end;
     if (refugee.typ <> btTurnout) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, refugee, refugeeZav.Block));
+      result.Insert(0, JCBarrier(barBlockWrongType, refugee, refugeeZav.Block));
       Exit();
     end;
   end;
 
-  // trat
+  // railway
   if (Self.m_data.railwayId > -1) then
   begin
     var railway: TBlk;
     if (Self.lastTrack.typ <> btRT) then
     begin
-      result.Add(Self.JCBarrier(_JCB_BLOK_NOT_TYP, Self.lastTrack, Self.lastTrack.id));
+      result.Add(JCBarrier(barBlockWrongType, Self.lastTrack, Self.lastTrack.id));
       Exit();
     end;
     if (Blocks.GetBlkByID(Self.m_data.railwayId, railway) <> 0) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, Self.m_data.railwayId));
+      result.Insert(0, JCBarrier(barBlockNotExists, nil, Self.m_data.railwayId));
       Exit();
     end;
     if (railway.typ <> btRailway) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, railway, Self.m_data.railwayId));
+      result.Insert(0, JCBarrier(barBlockWrongType, railway, Self.m_data.railwayId));
       Exit();
     end;
   end;
 
-  // kontrola podminkovych bloku zamku
+  // locks
   for var refZaver: TJCRefZav in Self.m_data.locks do
   begin
     var lock: TBlk;
     if (Blocks.GetBlkByID(refZaver.Block, lock) <> 0) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, refZaver.Block));
+      result.Insert(0, JCBarrier(barBlockNotExists, nil, refZaver.Block));
       Exit();
     end;
     if (lock.typ <> btLock) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, lock, lock.id));
+      result.Insert(0, JCBarrier(barBlockWrongType, lock, lock.id));
       Exit();
     end;
     var lockRef: TBlk;
     if (Blocks.GetBlkByID(refZaver.ref_blk, lockRef) <> 0) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_EXIST, nil, refZaver.ref_blk));
+      result.Insert(0, JCBarrier(barBlockNotExists, nil, refZaver.ref_blk));
       Exit();
     end;
     if ((lockRef.typ <> btTrack) and (lockRef.typ <> btRT)) then
     begin
-      result.Insert(0, Self.JCBarrier(_JCB_BLOK_NOT_TYP, lockRef, lockRef.id));
+      result.Insert(0, JCBarrier(barBlockWrongType, lockRef, lockRef.id));
       Exit();
     end;
-  end; // for i
+  end;
 
   if (nc) then
     Self.BarriersNC(result)
   else
     Self.BarriersVCPC(result);
 
-  // kontrola zaplych privolavacich navesti
   var privol: TBlksList := Blocks.GetNavPrivol(Self.m_state.senderOR as TArea);
 
   for var i: Integer := 0 to privol.Count - 1 do
-    result.Add(Self.JCBarrier(_JCB_PRIVOLAVACKA, privol[i] as TBlk, (privol[i] as TBlk).id));
+    result.Add(JCBarrier(barPrivol, privol[i] as TBlk, (privol[i] as TBlk).id));
 
   if (Assigned(privol)) then
     privol.Free();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-// kontrola podminek vlakove a posunove cesty
 
 procedure TJC.BarriersVCPC(var barriers: TList<TJCBarrier>);
 begin
   // signal
   var signal: TBlkSignal := TBlkSignal(Blocks.GetBlkByID(Self.m_data.signalId));
   if (not signal.enabled) then
-    barriers.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, signal));
+    barriers.Add(JCBarrier(barBlockDisabled, signal));
 
   if (signal.signal <> ncStuj) then
-    barriers.Add(Self.JCBarrier(_JCB_NAV_NAVEST, signal));
+    barriers.Add(JCBarrier(barSignalActive, signal));
 
   // tracks
   var tracksCount: Integer;
@@ -690,40 +569,39 @@ begin
     var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[i]));
 
     if (track.occupied = TTrackState.disabled) then
-      barriers.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, track));
+      barriers.Add(JCBarrier(barBlockDisabled, track));
 
     // occupancy
     if ((i <> Self.m_data.tracks.Count-1) or (Self.typ <> TJCType.shunt)) then
     begin
-      // kontrola disabled jiz probehla
       if (track.occupied <> TTrackState.Free) then
       begin
         if ((i = Self.m_data.tracks.Count - 1) and (Self.m_data.tracks.Count > 1)) then
-          barriers.Add(Self.JCBarrier(_JCB_USEK_LAST_OBSAZENO, track))
+          barriers.Add(JCBarrier(barTrackLastOccupied, track))
         else
-          barriers.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, track));
+          barriers.Add(JCBarrier(barTrackOccupied, track));
       end else begin
         if (track.IsTrain()) then
-          barriers.Add(Self.JCBarrier(_JCB_USEK_SOUPRAVA, track));
+          barriers.Add(JCBarrier(barTrackTrain, track));
       end;
     end;
 
     if (track.Zaver <> TZaver.no) then
     begin
       if (track.Zaver = TZaver.ab) then
-        barriers.Add(Self.JCBarrier(_JCB_USEK_AB, track))
+        barriers.Add(JCBarrier(barTrackAB, track))
       else
-        barriers.Add(Self.JCBarrier(_JCB_USEK_ZAVER, track));
+        barriers.Add(JCBarrier(barTrackZaver, track));
     end;
 
     if (track.lockout <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_USEK_VYLUKA, track));
+      barriers.Add(JCBarrier(barBlockLockout, track));
 
     if (track.note <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_USEK_STITEK, track));
+      barriers.Add(JCBarrier(barBlockNote, track));
 
     if (track.PstIs()) then
-      barriers.Add(Self.JCBarrier(_JCB_USEK_PST, track));
+      barriers.Add(JCBarrier(barTrackPSt, track));
   end;
 
   // turnouts
@@ -732,72 +610,61 @@ begin
     var turnout: TBlkTurnout := TBlkturnout(Blocks.GetBlkByID(turnoutZav.Block));
 
     if (turnout.position = TTurnoutPosition.disabled) then
-      barriers.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, turnout));
+      barriers.Add(JCBarrier(barBlockDisabled, turnout));
 
-    // kontrola neprofilovych useku vyhybek pro polohu +
     if ((turnoutZav.position = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil) and
       (TBlkTrack(turnout.npBlokPlus).occupied = TTrackState.disabled)) then
-      barriers.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, turnout.npBlokPlus));
+      barriers.Add(JCBarrier(barBlockDisabled, turnout.npBlokPlus));
 
-    // kontrola neprofilovych useku vyhybek pro polohu -
     if ((turnoutZav.position = TTurnoutPosition.minus) and (turnout.npBlokMinus <> nil) and
       (TBlkTrack(turnout.npBlokMinus).occupied = TTrackState.disabled)) then
-      barriers.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, turnout.npBlokMinus));
+      barriers.Add(JCBarrier(barBlockDisabled, turnout.npBlokMinus));
 
-    // kontrola koncove polohy:
     if ((turnout.position = TTurnoutPosition.none) or (turnout.position = TTurnoutPosition.both)) then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_KONC_POLOHA, turnout));
+      barriers.Add(JCBarrier(barTurnoutNoPos, turnout));
 
-    // zaver nema smysl kontrolovat - zaver vyhybek je prakticky zaver useku
-    // proto ho staci zkontrolovat jen u useku
+    // we don't need to check 'zaver' because is was checked on tracks
 
-    // kontrola vyluky vyhybky:
     if (turnout.lockout <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_VYLUKA, turnout));
+      barriers.Add(JCBarrier(barBlockLockout, turnout));
 
-    // kontrola stitku vyhybky:
     if (turnout.note <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, turnout));
+      barriers.Add(JCBarrier(barBlockNote, turnout));
 
     if (turnout.PstIs()) then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_PST, turnout));
+      barriers.Add(JCBarrier(barTurnoutPst, turnout));
 
-    // kontrola nouzoveho zaveru a redukce menu:
     if (turnout.position <> turnoutZav.position) then
     begin
       if (turnout.emLock) then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, turnout))
+        barriers.Add(JCBarrier(barTurnoutEmLock, turnout))
       else if (turnout.outputLocked) then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_ZAMCENA, turnout));
+        barriers.Add(JCBarrier(barTurnoutLocked, turnout));
     end;
 
     // coupling
     var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnout.GetSettings.coupling));
-    // pokud nemam ja polohu, predpokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
-    // kontrolovat zaver z useku neni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
     if ((coupling <> nil) and (turnout.position <> turnoutZav.position)) then
     begin
       if (coupling.emLock) then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, coupling))
+        barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
       else if (coupling.outputLocked) then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_ZAMCENA, coupling));
+        barriers.Add(JCBarrier(barTurnoutLocked, coupling));
 
       if (coupling.occupied = TTrackState.occupied) then
-        barriers.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, coupling));
+        barriers.Add(JCBarrier(barTrackOccupied, coupling));
     end;
 
     if ((coupling <> nil) and (coupling.PstIs())) then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_PST, coupling));
+      barriers.Add(JCBarrier(barTurnoutPst, coupling));
 
-    // kontrola neprofiloveho styku pro polohu +
     if ((turnoutZav.position = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil) and
       (TBlkTrack(turnout.npBlokPlus).occupied <> TTrackState.Free)) then
-      barriers.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, turnout.npBlokPlus));
+      barriers.Add(JCBarrier(barTrackOccupied, turnout.npBlokPlus));
 
-    // kontrola neprofiloveho styku pro polohu -
     if ((turnoutZav.position = TTurnoutPosition.minus) and (turnout.npBlokMinus <> nil) and
       (TBlkTrack(turnout.npBlokMinus).occupied <> TTrackState.Free)) then
-      barriers.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, turnout.npBlokMinus));
+      barriers.Add(JCBarrier(barTrackOccupied, turnout.npBlokMinus));
   end;
 
   // crossings
@@ -806,84 +673,81 @@ begin
     var crossing: TBlkCrossing := TBlkCrossing(Blocks.GetBlkByID(crossingZav.crossingId));
 
     if (crossing.state = TBlkCrossingBasicState.disabled) then
-      barriers.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, crossing));
+      barriers.Add(JCBarrier(barBlockDisabled, crossing));
 
     if (crossing.state <> TBlkCrossingBasicState.none) then
     begin
       if (crossing.pcEmOpen) then
-        barriers.Add(Self.JCBarrier(_JCB_PREJEZD_NOUZOVE_OTEVREN, crossing));
+        barriers.Add(JCBarrier(barCrosEmOpen, crossing));
     end else
-      barriers.Add(Self.JCBarrier(_JCB_PREJEZD_PORUCHA, crossing));
+      barriers.Add(JCBarrier(barCrosError, crossing));
 
     if (crossing.note <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_PREJEZD_STITEK, crossing));
+      barriers.Add(JCBarrier(barBlockNote, crossing));
   end;
 
-  // kontrola odvratu
+  // refugees
   for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
   begin
     var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.Block));
 
     if (refugee.position = TTurnoutPosition.disabled) then
-      barriers.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, refugee));
+      barriers.Add(JCBarrier(barBlockDisabled, refugee));
 
     if ((refugee.position = TTurnoutPosition.none) or (refugee.position = TTurnoutPosition.both)) then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_KONC_POLOHA, refugee));
+      barriers.Add(JCBarrier(barTurnoutNoPos, refugee));
 
     if (refugee.lockout <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_VYLUKA, refugee));
+      barriers.Add(JCBarrier(barBlockLockout, refugee));
 
     if (refugee.note <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, refugee));
+      barriers.Add(JCBarrier(barBlockNote, refugee));
 
     if (refugee.position <> refugeeZav.position) then
     begin
       if (refugee.emLock) then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, refugee))
+        barriers.Add(JCBarrier(barTurnoutEmLock, refugee))
 
       else if (refugee.outputLocked) then
-        barriers.Add(Self.JCBarrier(_JCB_ODVRAT_ZAMCENA, refugee));
+        barriers.Add(JCBarrier(barRefugeeLocked, refugee));
 
       if (refugee.occupied = TTrackState.occupied) then
-        barriers.Add(Self.JCBarrier(_JCB_ODVRAT_OBSAZENA, refugee));
+        barriers.Add(JCBarrier(barRefugeeOccupied, refugee));
     end;
 
     if (refugee.PstIs()) then
-      barriers.Add(Self.JCBarrier(_JCB_ODVRAT_PST, refugee));
+      barriers.Add(JCBarrier(barRefugeePst, refugee));
 
-    // kontrola spojky odvratu
+    // refugee's coupling
     var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugee.GetSettings.coupling));
     if (coupling <> nil) then
     begin
-      // kontrola vyluky vyhybky:
       if (coupling.lockout <> '') then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_VYLUKA, coupling));
+        barriers.Add(JCBarrier(barBlockLockout, coupling));
 
-      // kontrola stitku vyhybky:
       if (coupling.note <> '') then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, coupling));
+        barriers.Add(JCBarrier(barBlockNote, coupling));
 
       if (coupling.PstIs()) then
-        barriers.Add(Self.JCBarrier(_JCB_ODVRAT_PST, coupling));
+        barriers.Add(JCBarrier(barRefugeePst, coupling));
 
-      // kontrola zamceni odvratu
       if (refugee.position <> refugeeZav.position) then
       begin
         if (TBlkTurnout(coupling).Zaver > TZaver.no) then
         begin
           if (TBlkTurnout(coupling).Zaver = TZaver.ab) then
-            barriers.Add(Self.JCBarrier(_JCB_USEK_AB, coupling))
+            barriers.Add(JCBarrier(barTrackAB, coupling))
           else
-            barriers.Add(Self.JCBarrier(_JCB_USEK_ZAVER, coupling));
+            barriers.Add(JCBarrier(barTrackZaver, coupling));
         end;
 
         if (TBlkTurnout(coupling).emLock) then
-          barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, coupling))
+          barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
         else if (TBlkTurnout(coupling).outputLocked) then
-          barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_ZAMCENA, coupling));
+          barriers.Add(JCBarrier(barTurnoutLocked, coupling));
 
         if (TBlkTurnout(coupling).occupied = TTrackState.occupied) then
-          barriers.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, coupling));
+          barriers.Add(JCBarrier(barTrackOccupied, coupling));
       end;
     end;
   end;
@@ -894,28 +758,28 @@ begin
     var railway: TBlkRailway := TBlkRailway(Blocks.GetBlkByID(Self.m_data.railwayId));
 
     if (railway.direction = TRailwayDirection.disabled) then
-      barriers.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, railway));
+      barriers.Add(JCBarrier(barBlockDisabled, railway));
 
     var cont: Boolean := true;
     if (railway.departureForbidden) then
-      barriers.Add(Self.JCBarrier(_JCB_TRAT_ZAK, railway));
+      barriers.Add(JCBarrier(barRailwayZAK, railway));
     if (railway.request) then
-      barriers.Add(Self.JCBarrier(_JCB_TRAT_ZADOST, railway));
+      barriers.Add(JCBarrier(barRailwayRequesting, railway));
     if (((TBlkRailway(railway).Zaver) or (TBlkRailway(railway).emLock)) and
       (Self.m_data.railwayDir <> TBlkRailway(railway).direction)) then
     begin
-      barriers.Add(Self.JCBarrier(_JCB_TRAT_NESOUHLAS, railway));
+      barriers.Add(JCBarrier(barRailwayWrongDir, railway));
       cont := false;
     end;
     if ((cont) and (railway.Zaver)) then
-      barriers.Add(Self.JCBarrier(_JCB_TRAT_ZAVER, railway));
+      barriers.Add(JCBarrier(barRailwayZaver, railway));
 
     if (cont) and ((not railway.SameUserBothLinkers()) or (railway.emLock)) then
       if (((railway.GetSettings().rType = TRailwayType.permanent) or
         (railway.GetSettings().rType = TRailwayType.request)) and
         (Self.m_data.railwayDir <> railway.direction)) then
       begin
-        barriers.Add(Self.JCBarrier(_JCB_TRAT_NESOUHLAS, railway));
+        barriers.Add(JCBarrier(barRailwayWrongDir, railway));
         cont := false;
       end;
 
@@ -925,7 +789,7 @@ begin
       // -> kontrola volnosti vsech useku trati (protoze nastane zmena smeru)
       if (not railway.ready) then
       begin
-        barriers.Add(Self.JCBarrier(_JCB_TRAT_NESOUHLAS, railway));
+        barriers.Add(JCBarrier(barRailwayWrongDir, railway));
         cont := false;
       end;
     end;
@@ -933,21 +797,21 @@ begin
     if ((cont) and (Self.typ = TJCType.Train)) then
     begin
       if (TBlkRT(Self.lastTrack).sectOccupied = TTrackState.occupied) then
-        barriers.Add(Self.JCBarrier(_JCB_TRAT_OBSAZENO, railway))
+        barriers.Add(JCBarrier(barRailwayOccupied, railway))
       else if (not TBlkRT(Self.lastTrack).sectReady) then
-        barriers.Add(Self.JCBarrier(_JCB_TRAT_NEPRIPRAVENA, railway));
+        barriers.Add(JCBarrier(barRailwayNotReady, railway));
     end;
 
     // kontrola stitku uvazky v nasi OR:
     if ((TBlkLinker(railway.linkerA).areas.Count > 0) and
       (TBlkLinker(railway.linkerA).areas[0] = Self.m_state.senderOR) and
       (TBlkLinker(railway.linkerA).note <> '')) then
-      barriers.Add(Self.JCBarrier(_JCB_TRAT_STITEK, TBlkLinker(railway.linkerA)));
+      barriers.Add(JCBarrier(barBlockNote, TBlkLinker(railway.linkerA)));
 
     if ((TBlkLinker(railway.linkerB).areas.Count > 0) and
       (TBlkLinker(railway.linkerB).areas[0] = Self.m_state.senderOR) and
       (TBlkLinker(railway.linkerB).note <> '')) then
-      barriers.Add(Self.JCBarrier(_JCB_TRAT_STITEK, TBlkLinker(railway.linkerB)));
+      barriers.Add(JCBarrier(barBlockNote, TBlkLinker(railway.linkerB)));
 
     // stitky a vyluky na tratovych usecich
     for var trackId: Integer in railway.GetSettings().trackIds do
@@ -955,21 +819,21 @@ begin
       var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackId));
 
       if (track.lockout <> '') then
-        barriers.Add(Self.JCBarrier(_JCB_USEK_VYLUKA, track));
+        barriers.Add(JCBarrier(barBlockLockout, track));
       if (track.note <> '') then
-        barriers.Add(Self.JCBarrier(_JCB_USEK_STITEK, track));
+        barriers.Add(JCBarrier(barBlockNote, track));
     end;
   end;
 
-  // kontrola uzamceni podminkovych zamku:
+  // locks
   for var refZaver: TJCRefZav in Self.m_data.locks do
   begin
     var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZaver.Block));
     if (lock.keyReleased) then
-      barriers.Add(Self.JCBarrier(_JCB_ZAMEK_NEUZAMCEN, lock));
+      barriers.Add(JCBarrier(barLockNotLocked, lock));
   end;
 
-  // kontrola ukradene loko v souprave pred navestidlem
+  // stolen engine
   var signalTrack: TBlkTrack;
   signalTrack := TBlkTrack(signal.track);
 
@@ -978,38 +842,37 @@ begin
     var someHVsRuc := false;
     var train: TTrain := Self.GetTrain(signal, signalTrack);
 
-    // kontrola rucniho rizeni lokomotiv
+    // manual-controlled engline
     if (Self.typ = TJCType.Train) then
       for var addr: Integer in train.HVs do
         if ((HVDb[addr].data.typ <> THVType.car) and ((HVDb[addr].stolen) or (HVDb[addr].ruc))) then
         begin
-          barriers.Add(Self.JCBarrier(_JCB_HV_RUC, nil, addr));
+          barriers.Add(JCBarrier(barHVManual, nil, addr));
           someHVsRuc := true;
         end;
 
-    // pokud jsou jen nektere lokomotivy rizene rucne
+    // only some manual-controlled englines
     if (someHVsRuc) then
       for var addr: Integer in train.HVs do
         if ((HVDb[addr].data.typ <> THVType.car) and (not HVDb[addr].stolen) and (not HVDb[addr].ruc)) then
         begin
-          barriers.Add(Self.JCBarrier(_JCB_HV_NOT_ALL_RUC));
+          barriers.Add(JCBarrier(barHVNotAllManual));
           break;
         end;
 
-    // kontrola smeru soupravy
+    // direction of a train
     if (Self.typ = TJCType.Train) then
     begin
       if (Train.sdata.dir_L or Train.sdata.dir_S) then
         if (((signal.direction = THVSite.odd) and (not Train.sdata.dir_L)) or
           ((signal.direction = THVSite.even) and (not Train.sdata.dir_S))) then
-          barriers.Add(Self.JCBarrier(_JCB_SPR_SMER, nil, train.index));
+          barriers.Add(JCBarrier(barTrainWrongDir, nil, train.index));
     end;
 
   end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-// kontrola podminek nouzove cesty:
 
 procedure TJC.BarriersNC(var barriers: TList<TJCBarrier>);
 begin
@@ -1033,19 +896,19 @@ begin
     if (track.Zaver <> TZaver.no) then
     begin
       if (track.Zaver = TZaver.ab) then
-        barriers.Add(Self.JCBarrier(_JCB_USEK_AB, track))
+        barriers.Add(JCBarrier(barTrackAB, track))
       else
-        barriers.Add(Self.JCBarrier(_JCB_USEK_ZAVER, track));
+        barriers.Add(JCBarrier(barTrackZaver, track));
     end;
 
     if (track.lockout <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_USEK_VYLUKA, track));
+      barriers.Add(JCBarrier(barBlockLockout, track));
 
     if (track.note <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_USEK_STITEK, track));
+      barriers.Add(JCBarrier(barBlockNote, track));
 
     if (track.PstIs()) then
-      barriers.Add(Self.JCBarrier(_JCB_USEK_PST, track));
+      barriers.Add(JCBarrier(barTrackPSt, track));
   end;
 
   // turnouts
@@ -1054,20 +917,20 @@ begin
     var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.Block));
 
     if (turnout.lockout <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_VYLUKA, turnout));
+      barriers.Add(JCBarrier(barBlockLockout, turnout));
 
     if (turnout.note <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, turnout));
+      barriers.Add(JCBarrier(barBlockNote, turnout));
 
     if (turnout.PstIs()) then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_PST, turnout));
+      barriers.Add(JCBarrier(barTurnoutPst, turnout));
 
     if (turnout.position <> turnoutZav.position) then
     begin
       if (turnout.emLock) then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, turnout))
+        barriers.Add(JCBarrier(barTurnoutEmLock, turnout))
       else if (turnout.outputLocked) then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_ZAMCENA, turnout));
+        barriers.Add(JCBarrier(barTurnoutLocked, turnout));
     end;
 
     // turnout's refugee
@@ -1077,13 +940,13 @@ begin
     if ((coupling <> nil) and (turnout.position <> turnoutZav.position)) then
     begin
       if (TBlkTurnout(coupling).emLock) then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, coupling))
+        barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
       else if (TBlkTurnout(coupling).outputLocked) then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_ZAMCENA, coupling));
+        barriers.Add(JCBarrier(barTurnoutLocked, coupling));
     end;
 
     if ((coupling <> nil) and (coupling.PstIs())) then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_PST, coupling));
+      barriers.Add(JCBarrier(barTurnoutPst, coupling));
   end;
 
   // crossings
@@ -1091,7 +954,7 @@ begin
   begin
     var crossing: TBlkCrossing := TBlkCrossing(Blocks.GetBlkByID(crossingZav.crossingId));
     if (crossing.note <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_PREJEZD_STITEK, crossing));
+      barriers.Add(JCBarrier(barBlockNote, crossing));
   end;
 
   // refugees
@@ -1100,50 +963,50 @@ begin
     var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.Block));
 
     if (refugee.lockout <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_VYLUKA, refugee));
+      barriers.Add(JCBarrier(barBlockLockout, refugee));
 
     if (refugee.note <> '') then
-      barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, refugee));
+      barriers.Add(JCBarrier(barBlockNote, refugee));
 
     if (refugee.position <> refugeeZav.position) then
     begin
       if (refugee.emLock) then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, refugee))
+        barriers.Add(JCBarrier(barTurnoutEmLock, refugee))
 
       else if ((refugee.Zaver <> TZaver.no) or (refugee.outputLocked)) then
-        barriers.Add(Self.JCBarrier(_JCB_ODVRAT_ZAMCENA, refugee));
+        barriers.Add(JCBarrier(barRefugeeLocked, refugee));
     end;
 
     if (refugee.PstIs()) then
-      barriers.Add(Self.JCBarrier(_JCB_ODVRAT_PST, refugee));
+      barriers.Add(JCBarrier(barRefugeePst, refugee));
 
     // refugee's coupling
     var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugee.GetSettings.coupling));
     if (coupling <> nil) then
     begin
       if (coupling.lockout <> '') then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_VYLUKA, coupling));
+        barriers.Add(JCBarrier(barBlockLockout, coupling));
 
       if (coupling.note <> '') then
-        barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_STITEK, coupling));
+        barriers.Add(JCBarrier(barBlockNote, coupling));
 
       if (coupling.PstIs()) then
-        barriers.Add(Self.JCBarrier(_JCB_ODVRAT_PST, coupling));
+        barriers.Add(JCBarrier(barRefugeePst, coupling));
 
       if (refugee.position <> refugeeZav.position) then
       begin
         if (coupling.Zaver > TZaver.no) then
         begin
           if (coupling.Zaver = TZaver.ab) then
-            barriers.Add(Self.JCBarrier(_JCB_USEK_AB, coupling))
+            barriers.Add(JCBarrier(barTrackAB, coupling))
           else
-            barriers.Add(Self.JCBarrier(_JCB_USEK_ZAVER, coupling));
+            barriers.Add(JCBarrier(barTrackZaver, coupling));
         end;
 
         if (coupling.emLock) then
-          barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, coupling))
+          barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
         else if (coupling.outputLocked) then
-          barriers.Add(Self.JCBarrier(_JCB_VYHYBKA_ZAMCENA, coupling))
+          barriers.Add(JCBarrier(barTurnoutLocked, coupling))
       end;
     end;
   end;
@@ -1158,21 +1021,21 @@ begin
       var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackId));
 
       if (track.lockout <> '') then
-        barriers.Add(Self.JCBarrier(_JCB_USEK_VYLUKA, track));
+        barriers.Add(JCBarrier(barBlockLockout, track));
       if (track.note <> '') then
-        barriers.Add(Self.JCBarrier(_JCB_USEK_STITEK, track));
+        barriers.Add(JCBarrier(barBlockNote, track));
     end;
 
     // kontrola stitku uvazky v nasi OR:
     if ((TBlkLinker(railway.linkerA).areas.Count > 0) and
       (TBlkLinker(railway.linkerA).areas[0] = Self.m_state.senderOR) and
       (TBlkLinker(railway.linkerA).note <> '')) then
-      barriers.Add(Self.JCBarrier(_JCB_TRAT_STITEK, TBlkLinker(railway.linkerA)));
+      barriers.Add(JCBarrier(barBlockNote, TBlkLinker(railway.linkerA)));
 
     if ((TBlkLinker(railway.linkerB).areas.Count > 0) and
       (TBlkLinker(railway.linkerB).areas[0] = Self.m_state.senderOR) and
       (TBlkLinker(railway.linkerB).note <> '')) then
-      barriers.Add(Self.JCBarrier(_JCB_TRAT_STITEK, TBlkLinker(railway.linkerB)));
+      barriers.Add(JCBarrier(barBlockNote, TBlkLinker(railway.linkerB)));
   end;
 end;
 
@@ -1209,20 +1072,20 @@ begin
     // ignorujeme AB zaver pokud je staveno z AB seznamu
     if (fromAB) then
       for var i: Integer := barriers.Count - 1 downto 0 do
-        if (barriers[i].typ = _JCB_USEK_AB) then
+        if (barriers[i].typ = barTrackAB) then
           barriers.Delete(i);
 
     // existuji kriticke bariery?
     var critical: Boolean := false;
     for var barrier: TJCBarrier in barriers do
     begin
-      if ((barrier.typ = _JCB_USEK_LAST_OBSAZENO) or (barrier.typ = _JCB_TRAT_OBSAZENO)) then
+      if ((barrier.typ = barTrackLastOccupied) or (barrier.typ = barRailwayOccupied)) then
         Self.m_state.lastTrackOrRailwayOccupied := true;
 
-      if ((Self.CriticalBarrier(barrier.typ)) or (not Self.WarningBarrier(barrier.typ))) then
+      if ((JCBarriers.CriticalBarrier(barrier.typ)) or (not Self.WarningBarrier(barrier.typ))) then
       begin
         critical := true;
-        UPO.Add(Self.JCBarrierToMessage(barrier));
+        UPO.Add(JCBarrierToMessage(barrier));
       end;
     end;
 
@@ -1242,7 +1105,7 @@ begin
       begin
         Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...');
         for var i: Integer := 0 to barriers.Count - 1 do
-          UPO.Add(Self.JCBarrierToMessage(barriers[i]));
+          UPO.Add(JCBarrierToMessage(barriers[i]));
 
         // pokud se jedna o NC ze zasobniku, zobrazuji jeste upozorneni na NC
         if ((nc) and (from_stack <> nil)) then
@@ -1299,7 +1162,7 @@ begin
   // existuji kriticke bariery?
   var critical: Boolean := false;
   for var i: Integer := 0 to barriers.Count - 1 do
-    if ((barriers[i].typ <> _JCB_STAVENI) and ((Self.CriticalBarrier(barriers[i].typ)) or
+    if ((barriers[i].typ <> barProcessing) and ((JCBarriers.CriticalBarrier(barriers[i].typ)) or
       (not Self.WarningBarrier(barriers[i].typ)))) then
     begin
       critical := true;
@@ -1337,7 +1200,7 @@ begin
   // existuji kriticke bariery?
   var critical: Boolean := false;
   for var i: Integer := 0 to barriers.Count - 1 do
-    if ((barriers[i].typ <> _JCB_STAVENI) and ((Self.CriticalBarrier(barriers[i].typ)) or
+    if ((barriers[i].typ <> barProcessing) and ((JCBarriers.CriticalBarrier(barriers[i].typ)) or
       (not Self.WarningBarrier(barriers[i].typ)))) then
     begin
       critical := true;
@@ -1359,8 +1222,8 @@ begin
   var conditions: TList<TConfSeqItem> := TList<TConfSeqItem>.Create;
   for var i: Integer := 0 to barriers.Count - 1 do
   begin
-    if (Self.PotvrSekvBarrier(barriers[i].typ)) then
-      conditions.Add(TArea.GetCSCondition(barriers[i].Block, TJC.PotvrSekvBarrierToReason(barriers[i].typ)));
+    if (JCBarriers.IsCSBarrier(barriers[i].typ)) then
+      conditions.Add(TArea.GetCSCondition(barriers[i].Block, JCBarriers.BarrierGetCSNote(barriers[i].typ)));
   end; // for i
 
   if (conditions.Count > 0) then
@@ -1929,7 +1792,7 @@ begin
           if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
             PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.NC_PS_Callback,
               Self.m_state.senderOR as TArea, str, TBlocks.GetBlksList(signal, lastTrack),
-              Self.BarriersToPotvrSekv(Self.m_state.ncBariery));
+              JCBarriers.BarriersToConfSeq(Self.m_state.ncBariery));
         end;
         Self.m_state.ncBarieryCntLast := Self.m_state.ncBariery.Count;
 
@@ -2178,7 +2041,6 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// ruseni jizdni cesty
 procedure TJC.Cancel(Sender: TObject = nil);
 begin
   Self.CancelWithoutTrackRelease();
@@ -3125,14 +2987,23 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class function TJC.JCBarrier(typ: Integer; Block: TBlk = nil; param: Integer = 0): TJCBarrier;
+procedure TJC.BarrierToJson(const barrier: TJCBarrier; result: TJsonObject);
+var upoItem: TUPOItem;
 begin
-  result.typ := typ;
-  result.Block := Block;
-  result.param := param;
-end;
+  result['typ'] := barrier.typ;
+  if (barrier.Block <> nil) then
+    result['blok'] := barrier.Block.id;
+  result['param'] := barrier.param;
+  if (CriticalBarrier(barrier.typ)) then
+    result['type'] := 'critical'
+  else if (WarningBarrier(barrier.typ)) then
+    result['type'] := 'warning'
+  else
+    result['type'] := 'standard';
 
-/// /////////////////////////////////////////////////////////////////////////////
+  upoItem := JCBarrierToMessage(barrier);
+  result['description'] := upoItem[0].str + ' ' + upoItem[1].str + ' ' + upoItem[2].str;
+end;
 
 function TJC.JCBarrierToMessage(barrier: TJCBarrier): TUPOItem;
 var i: Integer;
@@ -3148,12 +3019,12 @@ begin
   end;
 
   case (barrier.typ) of
-    _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_TYP, _JCB_NAV_NOT_USEK, _JCB_NAV_NAVEST, _JCB_BLOK_NOT_EXIST, _JCB_USEK_OBSAZENO,
-      _JCB_USEK_ZAVER, _JCB_USEK_AB, _JCB_USEK_SOUPRAVA, _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_ZAMCENA,
-      _JCB_VYHYBKA_NOUZ_ZAVER, _JCB_PREJEZD_NOUZOVE_OTEVREN, _JCB_PREJEZD_PORUCHA, _JCB_ODVRAT_ZAMCENA,
-      _JCB_ODVRAT_OBSAZENA, _JCB_ODVRAT_KONC_POLOHA, _JCB_TRAT_ZAVER, _JCB_TRAT_NEPRIPRAVENA, _JCB_TRAT_ZADOST,
-      _JCB_TRAT_NESOUHLAS, _JCB_TRAT_ZAK, _JCB_ZAMEK_NEUZAMCEN, _JCB_VYHYBKA_NESPAVNA_POLOHA,
-      _JCB_USEK_PST, _JCB_VYHYBKA_PST, _JCB_ODVRAT_PST:
+    barBlockDisabled, barBlockWrongType, barSignalNoTrack, barSignalActive, barBlockNotExists, barTrackOccupied,
+      barTrackZaver, barTrackAB, barTrackTrain, barTurnoutNoPos, barTurnoutLocked,
+      barTurnoutEmLock, barCrosEmOpen, barCrosError, barRefugeeLocked,
+      barRefugeeOccupied, barRefugeeNoPosition, barRailwayZaver, barRailwayNotReady, barRailwayRequesting,
+      barRailwayWrongDir, barRailwayZAK, barLockNotLocked, barTurnoutWrongPos,
+      barTrackPSt, barTurnoutPst, barRefugeePst:
       begin
         result[0] := GetUPOLine('NEPŘÍPUSTNÉ', taCenter, clRed, clWhite);
         if (Assigned(barrier.Block)) then
@@ -3164,74 +3035,74 @@ begin
   end;
 
   case (barrier.typ) of
-    _JCB_OK:
+    barOk:
       result[0] := GetUPOLine('OK', taCenter, clBlue, $A0A0A0);
-    _JCB_STAVENI:
+    barProcessing:
       result[0] := GetUPOLine('Již se staví', taCenter, clBlue, $A0A0A0);
 
-    _JCB_BLOK_DISABLED:
+    barBlockDisabled:
       result[1] := GetUPOLine('Blok neaktivní');
-    _JCB_BLOK_NOT_EXIST:
+    barBlockNotExists:
       result[1] := GetUPOLine('Blok neexistuje');
-    _JCB_BLOK_NOT_TYP:
+    barBlockWrongType:
       result[1] := GetUPOLine('Blok není správného typu');
 
-    _JCB_NAV_NOT_USEK:
+    barSignalNoTrack:
       result[1] := GetUPOLine('Není úsek před návěstidlem');
-    _JCB_NAV_NAVEST:
+    barSignalActive:
       result[1] := GetUPOLine('Není základní návěst');
 
-    _JCB_USEK_OBSAZENO:
+    barTrackOccupied:
       result[1] := GetUPOLine('Úsek obsazen');
-    _JCB_USEK_ZAVER:
+    barTrackZaver:
       result[1] := GetUPOLine('Úsek zapevněn');
-    _JCB_USEK_SOUPRAVA:
+    barTrackTrain:
       result[1] := GetUPOLine('Souprava');
-    _JCB_USEK_AB:
+    barTrackAB:
       result[1] := GetUPOLine('Blokováno automatickou JC');
 
-    _JCB_VYHYBKA_KONC_POLOHA:
+    barTurnoutNoPos:
       result[1] := GetUPOLine('Není koncová poloha');
-    _JCB_VYHYBKA_ZAMCENA:
+    barTurnoutLocked:
       result[1] := GetUPOLine('Zamčena');
-    _JCB_VYHYBKA_NOUZ_ZAVER:
+    barTurnoutEmLock:
       result[1] := GetUPOLine('Nouzový závěr');
-    _JCB_VYHYBKA_NESPAVNA_POLOHA:
+    barTurnoutWrongPos:
       result[1] := GetUPOLine('Nesprávná poloha');
 
-    _JCB_PREJEZD_NOUZOVE_OTEVREN:
+    barCrosEmOpen:
       result[1] := GetUPOLine('Nouzově otevřen');
-    _JCB_PREJEZD_PORUCHA:
+    barCrosError:
       result[1] := GetUPOLine('Poruchový stav');
 
-    _JCB_ODVRAT_ZAMCENA:
+    barRefugeeLocked:
       result[1] := GetUPOLine('Zamčena');
-    _JCB_ODVRAT_OBSAZENA:
+    barRefugeeOccupied:
       result[1] := GetUPOLine('Obsazena');
-    _JCB_ODVRAT_KONC_POLOHA:
+    barRefugeeNoPosition:
       result[1] := GetUPOLine('Není koncová poloha');
 
-    _JCB_TRAT_ZAVER:
+    barRailwayZaver:
       result[1] := GetUPOLine('Závěr');
-    _JCB_TRAT_ZADOST:
+    barRailwayRequesting:
       result[1] := GetUPOLine('Probíhá žádost');
-    _JCB_TRAT_NESOUHLAS:
+    barRailwayWrongDir:
       result[1] := GetUPOLine('Nesouhlas');
-    _JCB_TRAT_NEPRIPRAVENA:
+    barRailwayNotReady:
       result[1] := GetUPOLine('Nepovoluje odjezd');
-    _JCB_TRAT_OBSAZENO:
+    barRailwayOccupied:
       begin
         result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, clBlack, clYellow);
         result[1] := GetUPOLine('Trať obsazena');
         result[2] := GetUPOLine(barrier.Block.name);
       end;
 
-    _JCB_ZAMEK_NEUZAMCEN:
+    barLockNotLocked:
       result[1] := GetUPOLine('Neuzamčen');
-    _JCB_ZAMEK_NOUZ_ZAVER:
+    barLockEmLock:
       result[1] := GetUPOLine('Není nouzový závěr');
 
-    _JCB_USEK_VYLUKA:
+    barBlockLockout:
       begin
         result[0] := GetUPOLine('VÝLUKA ' + barrier.Block.name, taCenter, clBlack, clOlive);
         lines := GetLines((barrier.Block as TBlkTrack).lockout, _UPO_LINE_LEN);
@@ -3244,7 +3115,7 @@ begin
         end;
       end;
 
-    _JCB_USEK_STITEK:
+    barBlockNote:
       begin
         result[0] := GetUPOLine('ŠTÍTEK ' + barrier.Block.name, taCenter, clBlack, clTeal);
         lines := GetLines(TBlkTrack(barrier.Block).note, _UPO_LINE_LEN);
@@ -3257,74 +3128,35 @@ begin
         end;
       end;
 
-    _JCB_VYHYBKA_VYLUKA:
-      begin
-        result[0] := GetUPOLine('VÝLUKA ' + barrier.Block.name, taCenter, clBlack, clOlive);
-        lines := GetLines(TBlkTurnout(barrier.Block).lockout, _UPO_LINE_LEN);
-        try
-          result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-          if (lines.Count > 1) then
-            result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-        finally
-          lines.Free();
-        end;
-      end;
-
-    _JCB_VYHYBKA_STITEK:
-      begin
-        result[0] := GetUPOLine('ŠTÍTEK ' + barrier.Block.name, taCenter, clBlack, clTeal);
-        lines := GetLines(TBlkTurnout(barrier.Block).note, _UPO_LINE_LEN);
-        try
-          result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-          if (lines.Count > 1) then
-            result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-        finally
-          lines.Free();
-        end;
-      end;
-
-    _JCB_PREJEZD_STITEK:
-      begin
-        result[0] := GetUPOLine('ŠTÍTEK ' + barrier.Block.name, taCenter, clBlack, clTeal);
-        lines := GetLines(TBlkCrossing(barrier.Block).note, _UPO_LINE_LEN);
-        try
-          result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-          if (lines.Count > 1) then
-            result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-        finally
-          lines.Free();
-        end;
-      end;
-
-    _JCB_USEK_LAST_OBSAZENO:
+    barTrackLastOccupied:
       begin
         result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, clBlack, clYellow);
         result[1] := GetUPOLine('Kolejový úsek obsazen');
         result[2] := GetUPOLine(barrier.Block.name);
       end;
 
-    _JCB_PRIVOLAVACKA:
+    barPrivol:
       begin
         result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
         result[1] := GetUPOLine('Svítí přivolávací návěst');
         result[2] := GetUPOLine(barrier.Block.name);
       end;
 
-    _JCB_HV_RUC:
+    barHVManual:
       begin
         result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
         result[1] := GetUPOLine('Hnací vozidlo v ručním řízení');
         result[2] := GetUPOLine(IntToStr(barrier.param) + ' : ' + HVDb[barrier.param].name);
       end;
 
-    _JCB_HV_NOT_ALL_RUC:
+    barHVNotAllManual:
       begin
         result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
         result[1] := GetUPOLine('Ne všechna HV v ručním řízení');
         result[2] := GetUPOLine('');
       end;
 
-    _JCB_TRAT_ZAK:
+    barRailwayZAK:
       begin
         Blocks.GetBlkByID(Self.m_data.railwayId, blk);
         case (Self.m_data.railwayDir) of
@@ -3346,24 +3178,14 @@ begin
         end;
       end;
 
-    _JCB_TRAT_STITEK:
-      begin
-        result[0] := GetUPOLine('ŠTÍTEK ' + barrier.Block.name, taCenter, clBlack, clTeal);
-        lines := GetLines((barrier.Block as TBlkLinker).note, _UPO_LINE_LEN);
-        result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-        if (lines.Count > 1) then
-          result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-        lines.Free();
-      end;
-
-    _JCB_SPR_SMER:
+    barTrainWrongDir:
       begin
         result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
         result[1] := GetUPOLine('Jízda proti směru soupravy');
         result[2] := GetUPOLine('Soprava ' + trains[barrier.param].name);
       end;
 
-    _JCB_USEK_PST, _JCB_VYHYBKA_PST, _JCB_ODVRAT_PST:
+    barTrackPSt, barTurnoutPst, barRefugeePst:
       result[1] := GetUPOLine('Prvek pod pom. stavědlem');
 
   else
@@ -3373,25 +3195,10 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// vraci true, pokud je zadana bariera tzv. kriticka, jinak false
-// kriticka bariera je takova bariera, jejiz odstraneni neni bezny uzivatel schopen
-// napr. absence existence urcitych bloku v jizdni ceste apod.
-class function TJC.CriticalBarrier(typ: Integer): Boolean;
+function TJC.WarningBarrier(typ: TJCBarType): Boolean;
 begin
   case (typ) of
-    _JCB_STAVENI, _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_EXIST, _JCB_BLOK_NOT_TYP:
-      result := true;
-  else
-    result := false;
-  end;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-function TJC.WarningBarrier(typ: Integer): Boolean;
-begin
-  case (typ) of
-    _JCB_TRAT_ZAK:
+    barRailwayZAK:
       begin
         var blk: TBlk;
         Blocks.GetBlkByID(Self.m_data.railwayId, blk);
@@ -3404,40 +3211,11 @@ begin
           result := false;
         end;
       end;
-    _JCB_USEK_STITEK, _JCB_USEK_VYLUKA, _JCB_VYHYBKA_STITEK, _JCB_VYHYBKA_VYLUKA, _JCB_PREJEZD_STITEK,
-      _JCB_PRIVOLAVACKA, _JCB_HV_RUC, _JCB_HV_NOT_ALL_RUC, _JCB_SPR_SMER, _JCB_TRAT_STITEK, _JCB_USEK_LAST_OBSAZENO,
-      _JCB_TRAT_OBSAZENO:
+    barBlockNote, barBlockLockout, barPrivol, barHVManual, barHVNotAllManual,
+    barTrainWrongDir, barTrackLastOccupied, barRailwayOccupied:
       result := true;
   else
     result := false;
-  end;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-class function TJC.PotvrSekvBarrier(typ: Integer): Boolean;
-begin
-  case (typ) of
-    _JCB_VYHYBKA_VYLUKA, _JCB_USEK_VYLUKA, _JCB_TRAT_ZAK:
-      result := true;
-  else
-    result := false;
-  end;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-class function TJC.PotvrSekvBarrierToReason(typ: Integer): string;
-begin
-  case (typ) of
-    _JCB_VYHYBKA_VYLUKA:
-      result := 'Výluka výhybkového bloku';
-    _JCB_USEK_VYLUKA:
-      result := 'Výluka kolejového úseku';
-    _JCB_TRAT_ZAK:
-      result := 'Zákaz odjezdu na trať';
-  else
-    result := '';
   end;
 end;
 
@@ -3624,7 +3402,7 @@ begin
   // kontrola navestidla
   Blocks.GetBlkByID(Self.m_data.signalId, blk);
   if (not(blk as TBlkSignal).enabled) then
-    bariery.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, blk, blk.id));
+    bariery.Add(JCBarrier(barBlockDisabled, blk, blk.id));
 
   // kontrola useku
   for var i := 0 to Self.m_data.tracks.Count - 1 do
@@ -3635,17 +3413,17 @@ begin
 
     // disabled
     if ((blk as TBlkTrack).occupied = TTrackState.disabled) then
-      bariery.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, blk, blk.id))
+      bariery.Add(JCBarrier(barBlockDisabled, blk, blk.id))
 
     else if ((i <> Self.m_data.tracks.Count - 1) or (Self.typ <> TJCType.shunt)) then
     begin
       if ((blk as TBlkTrack).occupied <> TTrackState.Free) then
-        bariery.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, blk, blk.id));
+        bariery.Add(JCBarrier(barTrackOccupied, blk, blk.id));
     end;
 
     // souprava
     if (((blk as TBlkTrack).IsTrain()) and (Self.typ = TJCType.Train)) then
-      bariery.Add(Self.JCBarrier(_JCB_USEK_SOUPRAVA, blk, blk.id));
+      bariery.Add(JCBarrier(barTrackTrain, blk, blk.id));
   end;
 
   // kontrola vyhybek:
@@ -3656,39 +3434,39 @@ begin
 
     // kontrola polohy:
     if (TBlkTurnout(blk).position <> turnoutZav.position) then
-      bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_KONC_POLOHA, blk, blk.id));
+      bariery.Add(JCBarrier(barTurnoutNoPos, blk, blk.id));
 
     // kontrola nouzoveho zaveru:
     if (not TBlkTurnout(blk).emLock) then
-      bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, blk, blk.id));
+      bariery.Add(JCBarrier(barTurnoutEmLock, blk, blk.id));
 
     // kontrola spojky
     Blocks.GetBlkByID(TBlkTurnout(blk).GetSettings.coupling, blk2);
     if ((blk2 <> nil) and (TBlkTurnout(blk).position <> turnoutZav.position)) then
     begin
       if (not TBlkTurnout(blk2).emLock) then
-        bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, blk2, blk2.id));
+        bariery.Add(JCBarrier(barTurnoutEmLock, blk2, blk2.id));
 
       if (TBlkTurnout(blk2).occupied = TTrackState.occupied) then
-        bariery.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, blk2, blk2.id));
+        bariery.Add(JCBarrier(barTrackOccupied, blk2, blk2.id));
     end;
 
     // kontrola neprofiloveho styku pro polohu +
     if ((turnoutZav.position = TTurnoutPosition.plus) and (TBlkTurnout(blk).npBlokPlus <> nil)) then
     begin
       if (TBlkTrack(TBlkTurnout(blk).npBlokPlus).occupied = TTrackState.disabled) then
-        bariery.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, TBlkTurnout(blk).npBlokPlus, TBlkTurnout(blk).npBlokPlus.id))
+        bariery.Add(JCBarrier(barBlockDisabled, TBlkTurnout(blk).npBlokPlus, TBlkTurnout(blk).npBlokPlus.id))
       else if (TBlkTrack(TBlkTurnout(blk).npBlokPlus).occupied <> TTrackState.Free) then
-        bariery.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, TBlkTurnout(blk).npBlokPlus, TBlkTurnout(blk).npBlokPlus.id));
+        bariery.Add(JCBarrier(barTrackOccupied, TBlkTurnout(blk).npBlokPlus, TBlkTurnout(blk).npBlokPlus.id));
     end;
 
     // kontrola neprofiloveho styku pro polohu -
     if ((turnoutZav.position = TTurnoutPosition.minus) and (TBlkTurnout(blk).npBlokMinus <> nil)) then
     begin
       if (TBlkTrack(TBlkTurnout(blk).npBlokMinus).occupied = TTrackState.disabled) then
-        bariery.Add(Self.JCBarrier(_JCB_BLOK_DISABLED, TBlkTurnout(blk).npBlokMinus, TBlkTurnout(blk).npBlokMinus.id))
+        bariery.Add(JCBarrier(barBlockDisabled, TBlkTurnout(blk).npBlokMinus, TBlkTurnout(blk).npBlokMinus.id))
       else if (TBlkTrack(TBlkTurnout(blk).npBlokMinus).occupied <> TTrackState.Free) then
-        bariery.Add(Self.JCBarrier(_JCB_USEK_OBSAZENO, TBlkTurnout(blk).npBlokMinus, TBlkTurnout(blk).npBlokMinus.id));
+        bariery.Add(JCBarrier(barTrackOccupied, TBlkTurnout(blk).npBlokMinus, TBlkTurnout(blk).npBlokMinus.id));
     end;
   end;
 
@@ -3701,14 +3479,14 @@ begin
     begin
       if ((blk as TBlkCrossing).pcEmOpen) then
       begin
-        bariery.Add(Self.JCBarrier(_JCB_PREJEZD_NOUZOVE_OTEVREN, blk, crossingZav.crossingId));
+        bariery.Add(JCBarrier(barCrosEmOpen, blk, crossingZav.crossingId));
       end else begin
         if ((blk as TBlkCrossing).state <> TBlkCrossingBasicState.closed) then
-          bariery.Add(Self.JCBarrier(_JCB_PREJEZD_NEUZAVREN, blk, crossingZav.crossingId));
+          bariery.Add(JCBarrier(barCrosNotClosed, blk, crossingZav.crossingId));
       end;
     end
     else
-      bariery.Add(Self.JCBarrier(_JCB_PREJEZD_PORUCHA, blk, crossingZav.crossingId));
+      bariery.Add(JCBarrier(barCrosError, blk, crossingZav.crossingId));
   end;
 
   // kontrola odvratu
@@ -3719,11 +3497,11 @@ begin
 
     // kontrola polohy:
     if (TBlkTurnout(blk).position <> refugeeZav.position) then
-      bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_KONC_POLOHA, blk, blk.id));
+      bariery.Add(JCBarrier(barTurnoutNoPos, blk, blk.id));
 
     // kontrola nouzoveho zaveru:
     if (not TBlkTurnout(blk).emLock) then
-      bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, blk, blk.id));
+      bariery.Add(JCBarrier(barTurnoutEmLock, blk, blk.id));
 
     // kontrola spojky odvratu
     Blocks.GetBlkByID(TBlkTurnout(blk).GetSettings.coupling, blk2);
@@ -3732,7 +3510,7 @@ begin
       // kontrola spravneho uzamceni odvratu
       if (TBlkTurnout(blk).position <> refugeeZav.position) then
         if (not TBlkTurnout(blk2).emLock) then
-          bariery.Add(Self.JCBarrier(_JCB_VYHYBKA_NOUZ_ZAVER, blk2, blk2.id));
+          bariery.Add(JCBarrier(barTurnoutEmLock, blk2, blk2.id));
     end;
   end;
 
@@ -3744,7 +3522,7 @@ begin
       if (not TBlkRT(blk).sectReady) then
       begin
         Blocks.GetBlkByID(Self.m_data.railwayId, blk);
-        bariery.Add(Self.JCBarrier(_JCB_TRAT_NEPRIPRAVENA, blk, Self.m_data.railwayId));
+        bariery.Add(JCBarrier(barRailwayNotReady, blk, Self.m_data.railwayId));
       end;
     end;
 
@@ -3752,17 +3530,17 @@ begin
     glob := railway.GetGlobalSettings();
 
     if ((railway.departureForbidden) and (Self.typ = TJCType.Train)) then
-      bariery.Add(Self.JCBarrier(_JCB_TRAT_ZAK, blk, Self.m_data.railwayId));
+      bariery.Add(JCBarrier(barRailwayZAK, blk, Self.m_data.railwayId));
     if ((not railway.departureForbidden) and (Self.typ = TJCType.shunt)) then
-      bariery.Add(Self.JCBarrier(_JCB_TRAT_NOT_ZAK, blk, Self.m_data.railwayId));
+      bariery.Add(JCBarrier(barRailwayNoZAK, blk, Self.m_data.railwayId));
     if (railway.Zaver) then
-      bariery.Add(Self.JCBarrier(_JCB_TRAT_ZAVER, blk, Self.m_data.railwayId));
+      bariery.Add(JCBarrier(barRailwayZaver, blk, Self.m_data.railwayId));
     if (railway.request) then
-      bariery.Add(Self.JCBarrier(_JCB_TRAT_ZADOST, blk, Self.m_data.railwayId));
+      bariery.Add(JCBarrier(barRailwayRequesting, blk, Self.m_data.railwayId));
     if (Self.m_data.railwayDir <> railway.direction) then
-      bariery.Add(Self.JCBarrier(_JCB_TRAT_NESOUHLAS, blk, Self.m_data.railwayId));
+      bariery.Add(JCBarrier(barRailwayWrongDir, blk, Self.m_data.railwayId));
     if ((not railway.BP) and (Self.typ = TJCType.Train)) then
-      bariery.Add(Self.JCBarrier(_JCB_TRAT_NO_BP, blk, Self.m_data.railwayId));
+      bariery.Add(JCBarrier(barRailwayNoBp, blk, Self.m_data.railwayId));
 
     track := (Self.signal as TBlkSignal).track as TBlkTrack;
     lastTrack := TBlkTrack(Self.lastTrack);
@@ -3773,12 +3551,12 @@ begin
       begin
         if ((railway.state.trains.Count > 0) or ((railway.GetLastTrack(Self.data.railwayDir) as TBlkRT).Zaver <>
           TZaver.no)) then
-          bariery.Add(Self.JCBarrier(_JCB_TRAT_NEPRENOS, railway, Self.m_data.railwayId))
+          bariery.Add(JCBarrier(barRailwayNoTrainMove, railway, Self.m_data.railwayId))
         else
-          bariery.Add(Self.JCBarrier(_JCB_TRAT_PRENOS_NAKONEC, railway, Self.m_data.railwayId));
+          bariery.Add(JCBarrier(barRailwayMoveEnd, railway, Self.m_data.railwayId));
       end else begin
         if ((lastTrack.IsTrain()) or (not railway.BP) or (railway.direction <> Self.data.railwayDir)) then
-          bariery.Add(Self.JCBarrier(_JCB_TRAT_NEPRENOS, railway, Self.m_data.railwayId));
+          bariery.Add(JCBarrier(barRailwayNoTrainMove, railway, Self.m_data.railwayId));
       end;
     end;
   end;
@@ -3791,11 +3569,11 @@ begin
 
     // kontrola uzamceni
     if ((blk as TBlkLock).keyReleased) then
-      bariery.Add(Self.JCBarrier(_JCB_ZAMEK_NEUZAMCEN, blk, blk.id));
+      bariery.Add(JCBarrier(barLockNotLocked, blk, blk.id));
 
     // kontrola uzamceni
     if (not(blk as TBlkLock).emLock) then
-      bariery.Add(Self.JCBarrier(_JCB_ZAMEK_NOUZ_ZAVER, blk, blk.id));
+      bariery.Add(JCBarrier(barLockEmLock, blk, blk.id));
   end;
 end;
 
@@ -3820,64 +3598,6 @@ begin
     begin
       Blocks.GetBlkByID(trackID, blk);
       (blk as TBlkTrack).Zaver := TZaver.no;
-    end;
-  end;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-function TJC.BarriersToPotvrSekv(barriers: TJCBarriers): TConfSeqItems;
-begin
-  result := TList<TConfSeqItem>.Create();
-
-  for var i: Integer := 0 to barriers.Count - 1 do
-  begin
-    case (barriers[i].typ) of
-      _JCB_BLOK_DISABLED:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Blok neaktivní'));
-
-      _JCB_USEK_OBSAZENO:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Úsek obsazen'));
-      _JCB_USEK_SOUPRAVA:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Úsek obsahuje soupravu'));
-
-      _JCB_PREJEZD_NOUZOVE_OTEVREN:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nouzově otevřen'));
-      _JCB_PREJEZD_PORUCHA:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Porucha'));
-      _JCB_PREJEZD_NEUZAVREN:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Neuzavřen'));
-
-      _JCB_VYHYBKA_KONC_POLOHA:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není správná poloha'));
-      _JCB_VYHYBKA_NOUZ_ZAVER:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
-      _JCB_VYHYBKA_NESPAVNA_POLOHA:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není správná poloha'));
-
-      _JCB_TRAT_ZAK:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Zákaz odjezdu'));
-      _JCB_TRAT_NOT_ZAK:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nezaveden zákaz odjezdu'));
-      _JCB_TRAT_ZAVER:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Závěr'));
-      _JCB_TRAT_NEPRIPRAVENA:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nepovoluje odjezd'));
-      _JCB_TRAT_ZADOST:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Probíhá žádost'));
-      _JCB_TRAT_NESOUHLAS:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nesouhlas'));
-      _JCB_TRAT_NO_BP:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Bloková podmínka nezavedena'));
-      _JCB_TRAT_NEPRENOS:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nedojde k přenosu čísla vlaku'));
-      _JCB_TRAT_PRENOS_NAKONEC:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Vlak bude přenesen až na konec trati'));
-
-      _JCB_ZAMEK_NEUZAMCEN:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Neuzamčen'));
-      _JCB_ZAMEK_NOUZ_ZAVER:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
     end;
   end;
 end;
@@ -3951,14 +3671,14 @@ begin
     for barrier in barriers do
     begin
       case (barrier.typ) of
-        _JCB_BLOK_DISABLED, _JCB_BLOK_NOT_EXIST, _JCB_BLOK_NOT_TYP, _JCB_NAV_NOT_USEK, _JCB_USEK_OBSAZENO,
-          _JCB_USEK_SOUPRAVA, _JCB_USEK_AB, _JCB_VYHYBKA_KONC_POLOHA, _JCB_VYHYBKA_NESPAVNA_POLOHA,
-          _JCB_PREJEZD_NOUZOVE_OTEVREN, _JCB_PREJEZD_PORUCHA, _JCB_ODVRAT_KONC_POLOHA, _JCB_TRAT_NEPRIPRAVENA,
-          _JCB_TRAT_ZADOST, _JCB_TRAT_NESOUHLAS, _JCB_TRAT_NO_BP, _JCB_ZAMEK_NEUZAMCEN,
-          _JCB_USEK_PST, _JCB_VYHYBKA_PST, _JCB_ODVRAT_PST:
+        barBlockDisabled, barBlockNotExists, barBlockWrongType, barSignalNoTrack, barTrackOccupied,
+          barTrackTrain, barTrackAB, barTurnoutNoPos, barTurnoutWrongPos,
+          barCrosEmOpen, barCrosError, barRefugeeNoPosition, barRailwayNotReady,
+          barRailwayRequesting, barRailwayWrongDir, barRailwayNoBp, barLockNotLocked,
+          barTrackPSt, barTurnoutPst, barRefugeePst:
           Exit(true);
 
-        _JCB_TRAT_ZAK:
+        barRailwayZAK:
           Exit(Self.typ = TJCType.Train);
       end;
     end;
@@ -4006,12 +3726,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.GetPtData(json: TJsonObject; includeStaveni: Boolean);
-var turnoutZav: TJCTurnoutZav;
-  refugeeZav: TJCRefugeeZav;
-  newObj: TJsonObject;
-  usek: Integer;
-  crossingZav: TJCCrossingZav;
-  refZav: TJCRefZav;
 begin
   json['name'] := Self.m_data.name;
   json['id'] := Self.m_data.id;
@@ -4034,9 +3748,9 @@ begin
       end;
   end;
 
-  for turnoutZav in Self.m_data.turnouts do
+  for var turnoutZav in Self.m_data.turnouts do
   begin
-    newObj := json.A['turnouts'].AddObject();
+    var newObj := json.A['turnouts'].AddObject();
     newObj['block'] := turnoutZav.Block;
     case (turnoutZav.position) of
       TTurnoutPosition.plus:
@@ -4046,12 +3760,12 @@ begin
     end;
   end;
 
-  for usek in Self.m_data.tracks do
-    json.A['tracks'].Add(usek);
+  for var trackId in Self.m_data.tracks do
+    json.A['tracks'].Add(trackId);
 
-  for refugeeZav in Self.m_data.refuges do
+  for var refugeeZav in Self.m_data.refuges do
   begin
-    newObj := json.A['refuges'].AddObject();
+    var newObj := json.A['refuges'].AddObject();
     newObj['block'] := refugeeZav.Block;
     case (refugeeZav.position) of
       TTurnoutPosition.plus:
@@ -4062,24 +3776,24 @@ begin
     newObj['refBlock'] := refugeeZav.ref_blk;
   end;
 
-  for crossingZav in Self.m_data.crossings do
+  for var crossingZav in Self.m_data.crossings do
   begin
-    newObj := json.A['crossings'].AddObject();
+    var newObj := json.A['crossings'].AddObject();
     newObj['crossing'] := crossingZav.crossingId;
     newObj['open'] := crossingZav.openTrack;
-    for usek in crossingZav.closeTracks do
-      newObj.A['close'].Add(usek);
+    for var trackId in crossingZav.closeTracks do
+      newObj.A['close'].Add(trackId);
   end;
 
-  for refZav in Self.m_data.locks do
+  for var refZav in Self.m_data.locks do
   begin
-    newObj := json.A['locks'].AddObject();
+    var newObj := json.A['locks'].AddObject();
     newObj['lock'] := refZav.Block;
     newObj['refTrack'] := refZav.ref_blk;
   end;
 
-  for usek in Self.m_data.vb do
-    json.A['vb'].Add(usek);
+  for var trackId in Self.m_data.vb do
+    json.A['vb'].Add(trackId);
 
   if (Self.m_data.railwayId <> -1) then
   begin
@@ -4106,10 +3820,6 @@ begin
 end;
 
 procedure TJC.PostPtActivate(reqJson: TJsonObject; respJson: TJsonObject);
-var barriers: TJCBarriers;
-  barrier: TJCBarrier;
-  ok: Integer;
-  ab: Boolean;
 begin
   if ((Self.signal = nil) or (TBlkSignal(Self.signal).areas.Count = 0)) then
   begin
@@ -4117,13 +3827,13 @@ begin
     Exit();
   end;
 
-  ab := (reqJson.Contains('ab') and reqJson.B['ab']);
+  var ab := (reqJson.Contains('ab') and reqJson.B['ab']);
 
-  barriers := TJCBarriers.Create();
+  var barriers := TJCBarriers.Create();
   try
-    ok := Self.Activate(nil, TBlkSignal(Self.signal).areas[0], barriers, nil, false, false, ab);
+    var ok := Self.Activate(nil, TBlkSignal(Self.signal).areas[0], barriers, nil, false, false, ab);
     respJson['success'] := (ok = 0);
-    for barrier in barriers do
+    for var barrier in barriers do
       Self.BarrierToJson(barrier, respJson.A['barriers'].AddObject());
   finally
     barriers.Free();
@@ -4131,24 +3841,6 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-
-procedure TJC.BarrierToJson(const barrier: TJCBarrier; result: TJsonObject);
-var upoItem: TUPOItem;
-begin
-  result['typ'] := barrier.typ;
-  if (barrier.Block <> nil) then
-    result['blok'] := barrier.Block.id;
-  result['param'] := barrier.param;
-  if (CriticalBarrier(barrier.typ)) then
-    result['type'] := 'critical'
-  else if (WarningBarrier(barrier.typ)) then
-    result['type'] := 'warning'
-  else
-    result['type'] := 'standard';
-
-  upoItem := JCBarrierToMessage(barrier);
-  result['description'] := upoItem[0].str + ' ' + upoItem[1].str + ' ' + upoItem[2].str;
-end;
 
 function TJC.GetLastTrack(): TBlk;
 begin
