@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, IdContext,
   Generics.Collections, Area, JsonDataObjects, TechnologieRCS, BlockTurnout,
-  TechnologieJC, JCBarriers;
+  TechnologieJC, JCBarriers, UPO;
 
 type
   TBlkPstStatus = (pstDisabled, pstOff, pstRefuging, pstTakeReady, pstActive);
@@ -31,6 +31,8 @@ type
     status: TBlkPstStatus;
     emLock: Cardinal; // n.o. blocks who gave emergency lock
     note: string;
+    senderOR: TObject;
+    senderPnl: TIdContext;
   end;
 
   // Pst has zaver if any track in pst has zaver
@@ -76,6 +78,10 @@ type
 
     procedure ActivationBarriers(var barriers: TList<TJCBarrier>);
     procedure Activate(senderPnl: TIdContext; senderOR: TObject);
+    class function WarningBarrier(typ: TJCBarType): Boolean;
+    class function BarrierToMessage(barrier: TJCBarrier): TUPOItem;
+    procedure BarriersUPOOKCallback(Sender: TObject);
+    procedure BarriersCSCallback(Sender: TIdContext; success: Boolean);
 
   public
 
@@ -88,6 +94,7 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
+    procedure Reset(); override;
     procedure SetStatus(new: TBlkPstStatus);
 
     procedure Update(); override;
@@ -125,7 +132,7 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
-  RCSErrors, RCS, UPO, TCPAreasRef, BlockSignal;
+  RCSErrors, RCS, TCPAreasRef, BlockSignal, Logging;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -265,6 +272,12 @@ begin
   Self.Change(true);
 end;
 
+procedure TBlkPst.Reset();
+begin
+  Self.m_state.senderOR := nil;
+  Self.m_state.senderPnl := nil;
+end;
+
 procedure TBlkPst.SetStatus(new: TBlkPstStatus);
 begin
   if (new = Self.m_state.status) then
@@ -372,7 +385,7 @@ end;
 
 procedure TBlkPst.MenuPstEnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.status := pstTakeReady;
+  Self.Activate(SenderPnl, SenderOR);
 end;
 
 procedure TBlkPst.MenuPstDisClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -699,6 +712,9 @@ end;
 
 procedure TBlkPst.ActivationBarriers(var barriers: TList<TJCBarrier>);
 begin
+  if (Self.note <> '') then
+    barriers.Add(JCBarrier(barBlockNote, Self));
+
   // tracks
   for var trackId in Self.m_settings.tracks do
   begin
@@ -721,9 +737,6 @@ begin
 
     if (track.occupied <> TTrackState.Free) then
       barriers.Add(JCBarrier(barTrackOccupied, track));
-
-    if (track.IsTrain()) then
-      barriers.Add(JCBarrier(barTrackTrain, track));
 
     if (track.Zaver <> TZaver.no) then
     begin
@@ -900,78 +913,159 @@ end;
 
 procedure TBlkPst.Activate(senderPnl: TIdContext; senderOR: TObject);
 begin
-  {Self.m_state.senderOR := senderOR;
+  Self.m_state.senderOR := senderOR;
   Self.m_state.senderPnl := senderPnl;
 
-  Self.Log('Požadavek na aktivaci Pst, kontroluji podmínky...');
+  Self.Log('Požadavek na aktivaci Pst, kontroluji podmínky...', ltMessage);
 
-  var barriers: TJCBarriers := Self.barriers(Self.m_state.nc);
+  var barriers: TJCBarriers := TJCBarriers.Create();
   var UPO: TUPOItems := TList<TUPOItem>.Create;
   try
-    // ignorujeme AB zaver pokud je staveno z AB seznamu
-    if (fromAB) then
-      for var i: Integer := barriers.Count - 1 downto 0 do
-        if (barriers[i].typ = barTrackAB) then
-          barriers.Delete(i);
+    Self.ActivationBarriers(barriers);
 
-    // existuji kriticke bariery?
     var critical: Boolean := false;
     for var barrier: TJCBarrier in barriers do
     begin
-      if ((barrier.typ = barTrackLastOccupied) or (barrier.typ = barRailwayOccupied)) then
-        Self.m_state.lastTrackOrRailwayOccupied := true;
-
       if ((JCBarriers.CriticalBarrier(barrier.typ)) or (not Self.WarningBarrier(barrier.typ))) then
       begin
         critical := true;
-        UPO.Add(JCBarrierToMessage(barrier));
+        UPO.Add(Self.BarrierToMessage(barrier));
       end;
     end;
 
     if (critical) then
     begin
-      // kriticke bariey existuji -> oznamim je
-      Self.Log('Celkem ' + IntToStr(barriers.Count) + ' bariér, ukončuji stavění');
+      Self.Log('Celkem ' + IntToStr(barriers.Count) + ' bariér, ukončuji přebírání PSt', ltMessage);
       if (senderPnl <> nil) then
-      begin
-        Self.step := stepCritBarriers;
-        PanelServer.UPO(Self.m_state.senderPnl, UPO, true, nil, Self.CritBarieraEsc, Self);
-      end;
-      Exit(1);
+        PanelServer.UPO(Self.m_state.senderPnl, UPO, true, nil, nil, Self);
+      Exit();
+
     end else begin
-      // bariery k potvrzeni
-      if (((barriers.Count > 0) or ((nc) and (from_stack <> nil))) and (senderPnl <> nil)) then
+      // barriers to confirm
+      if ((barriers.Count > 0) and (senderPnl <> nil)) then
       begin
-        Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...');
+        Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...', ltMessage);
         for var i: Integer := 0 to barriers.Count - 1 do
-          UPO.Add(JCBarrierToMessage(barriers[i]));
+          UPO.Add(Self.BarrierToMessage(barriers[i]));
 
-        // pokud se jedna o NC ze zasobniku, zobrazuji jeste upozorneni na NC
-        if ((nc) and (from_stack <> nil)) then
-        begin
-          var item: TUPOItem;
-          item[0] := GetUPOLine('Pozor !', taCenter, clYellow, $A0A0A0);
-          item[1] := GetUPOLine('Stavění nouzové cesty.');
-          item[2] := GetUPOLine('');
-          UPO.Add(item);
-        end;
-
-        PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
-        Self.step := stepConfBarriers;
-        Exit(0);
+        PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.BarriersUPOOKCallback, nil, Self);
+        Exit();
       end;
     end;
 
-    // v jzdni ceste nejsou zadne bariery -> stavim
-    Self.Log('Žádné bariéry, stavím');
-    Self.SetInitStep();
+    Self.Log('Žádné bariéry, PSt předáno.', ltMessage);
+    Self.status := pstTakeReady;
   finally
     barriers.Free();
     UPO.Free();
   end;
-
-  result := 0;}
 end;
 
+class function TBlkPst.WarningBarrier(typ: TJCBarType): Boolean;
+begin
+  if (typ = barTrackOccupied) then
+    Exit(true);
+  Result := JCBarriers.JCWarningBarrier(typ);
+end;
+
+class function TBlkPst.BarrierToMessage(barrier: TJCBarrier): TUPOItem;
+begin
+  if (barrier.typ = barTrackOccupied) then
+    barrier.typ := barTrackLastOccupied;
+  Result := JCBarriers.JCBarrierToMessage(barrier);
+  if (barrier.typ = barTrackLastOccupied) then
+    Result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
+end;
+
+procedure TBlkPst.BarriersUPOOKCallback(Sender: TObject);
+begin
+  Self.Log('Upozornění schválena, kontroluji znovu bariéry...', ltMessage);
+
+  var critical: Boolean := false;
+  var barriers: TJCBarriers := TJCBarriers.Create();
+
+  try
+    Self.ActivationBarriers(barriers);
+
+    for var barrier in barriers do
+      if ((barrier.typ <> barProcessing) and (JCBarriers.CriticalBarrier(barrier.typ))) then
+      begin
+        critical := true;
+        break;
+      end;
+
+    if (critical) then
+    begin
+      Self.Log('Nelze převít PSt - objevily se kritické bariéry', ltMessage);
+      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+        PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
+          (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+      Exit();
+    end;
+
+    // Confirmation sequence barriers?
+    var conditions: TList<TConfSeqItem> := TList<TConfSeqItem>.Create();
+    for var barrier in barriers do
+    begin
+      if (JCBarriers.IsCSBarrier(barrier.typ)) then
+        conditions.Add(TArea.GetCSCondition(barrier.block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+    end;
+
+    if (conditions.Count > 0) then
+    begin
+      Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...', ltMessage);
+
+      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+        PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.BarriersCSCallback, (Self.m_state.senderOR as TArea),
+          'Předání obsluhy na PSt', TBlocks.GetBlksList(Self), conditions);
+    end else begin
+      Self.Log('Žádné další bariéry, PSt předáno.', ltMessage);
+      Self.status := pstTakeReady;
+    end;
+
+  finally
+    barriers.Free();
+  end;
+end;
+
+procedure TBlkPst.BarriersCSCallback(Sender: TIdContext; success: Boolean);
+begin
+  if (not success) then
+  begin
+    Self.Log('Potvrzovací sekvence nepotvrzena, zrušeno předávání PSt', ltMessage);
+    Exit();
+  end;
+
+  var barriers: TJCBarriers := TJCBarriers.Create();
+
+  try
+    Self.ActivationBarriers(barriers);
+
+    // existuji kriticke bariery?
+    var critical: Boolean := false;
+    for var barrier in barriers do
+      if ((barrier.typ <> barProcessing) and (JCBarriers.CriticalBarrier(barrier.typ))) then
+      begin
+        critical := true;
+        break;
+      end;
+
+    // behem potvrzovani se mohly vyskytnout
+    if (critical) then
+    begin
+      Self.Log('Nelze postavit - kritické bariéry', ltMessage);
+      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+        PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
+          (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+      barriers.Free();
+      Exit();
+    end;
+
+    Self.Log('Povrzovaci sekvence OK, PSt předáno.', ltMessage);
+    Self.status := pstTakeReady;
+  finally
+    barriers.Free();
+  end;
+end;
 
 end.
