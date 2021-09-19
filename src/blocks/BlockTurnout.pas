@@ -1098,10 +1098,17 @@ begin
   Self.m_state.movingPanel := TIDContext(Sender);
   Self.m_state.movingOR := TPanelConnData(TIDContext(Sender).data).UPO_ref;
 
+  var conditions := TList<TConfSeqItem>.Create();
   var blk := Blocks.GetBlkByID(Self.trackID);
+
+  if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
+    conditions.Add(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek'));
+  if ((Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
+    conditions.Add(TArea.GetCSCondition(Blk, 'Pod obsluhou PSt'));
+
   PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSPlus,
     (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy plus',
-    TBlocks.GetBlksList(Self), TArea.GetCSConditions(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek')));
+    TBlocks.GetBlksList(Self), conditions);
 end;
 
 procedure TBlkTurnout.UPONSMinusClick(Sender: TObject);
@@ -1109,10 +1116,17 @@ begin
   Self.m_state.movingPanel := TIDContext(Sender);
   Self.m_state.movingOR := TPanelConnData(TIDContext(Sender).data).UPO_ref;
 
+  var conditions := TList<TConfSeqItem>.Create();
   var blk := Blocks.GetBlkByID(Self.trackID);
+
+  if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
+    conditions.Add(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek'));
+  if ((Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
+    conditions.Add(TArea.GetCSCondition(Blk, 'Pod obsluhou PSt'));
+
   PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSMinus,
     (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy mínus',
-    TBlocks.GetBlksList(Self), TArea.GetCSConditions(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek')));
+    TBlocks.GetBlksList(Self), conditions);
 end;
 
 procedure TBlkTurnout.MenuStitClick(SenderPnl: TIDContext; SenderOR: TObject);
@@ -1238,8 +1252,8 @@ begin
   begin
     // na vyhybce neni zaver a menu neni redukovane
 
-    if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied)))
-    then
+    if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))
+        or (Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
     begin
       if (Self.m_state.position = plus) then
         Result := Result + '!NS-,';
