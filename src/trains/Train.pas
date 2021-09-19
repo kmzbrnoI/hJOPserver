@@ -225,9 +225,6 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrain.LoadFromFile(ini: TMemIniFile; const section: string);
-var addr: Integer;
-    data: TStrings;
-    s: string;
 begin
  Self.data.name := ini.ReadString(section, 'nazev', section);
  Self.data.carsCount := ini.ReadInteger(section, 'vozu', 0);
@@ -245,18 +242,18 @@ begin
  Self.data.area := Areas.Get(ini.ReadString(section, 'OR', ''));
  Self.data.announcement := ini.ReadBool(section, 'hlaseni', false);
 
- data := TStringList.Create();
- ExtractStrings([';', ','], [], PChar(ini.ReadString(section, 'HV', '')), data);
+ var strings: TStrings := TStringList.Create();
+ ExtractStrings([';', ','], [], PChar(ini.ReadString(section, 'HV', '')), strings);
 
- while (data.Count > _MAX_TRAIN_HV) do
-   data.Delete(_MAX_TRAIN_HV);
+ while (strings.Count > _MAX_TRAIN_HV) do
+   strings.Delete(_MAX_TRAIN_HV);
 
  // HV se nacitaji takto prapodivne pro osetreni pripadu, kdy u soupravy je uvedene HV, ktere neexistuje
  Self.data.HVs.Clear();
  try
-   for s in data do
+   for var s in strings do
     begin
-     addr := StrToInt(s);
+     var addr := StrToInt(s);
      if (Assigned(HVDb[addr])) then
       begin
        HVDb[addr].train := Self.index;
@@ -267,13 +264,11 @@ begin
 
  end;
 
- data.Free();
+ strings.Free();
  Self.changed := true;
 end;
 
 procedure TTrain.SaveToFile(ini: TMemIniFile; const section: string);
-var str: string;
-    addr: Integer;
 begin
  ini.WriteString(section, 'nazev', Self.data.name);
  ini.WriteInteger(section, 'vozu', Self.data.carsCount);
@@ -313,17 +308,18 @@ begin
 
  ini.WriteBool(section, 'hlaseni', Self.data.announcement);
 
- str := '';
- for addr in Self.HVs do
-  str := str + IntToStr(addr) + ';';
- ini.WriteString(section, 'HV', str);
+ begin
+   var str := '';
+   for var addr in Self.HVs do
+    str := str + IntToStr(addr) + ';';
+   ini.WriteString(section, 'HV', str);
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 // vraci string, kterym je definovana souprava, do panelu
 function TTrain.GetPanelString(): string;
-var addr: Integer;
 begin
  Result := Self.data.name + ';' + IntToStr(Self.data.carsCount) + ';{' + Self.data.note + '};';
 
@@ -339,7 +335,7 @@ begin
 
  Result := Result + ';' + IntToStr(Self.data.length) + ';' + Self.data.typ + ';{';
 
- for addr in Self.HVs do
+ for var addr in Self.HVs do
    Result := Result + '[{' + HVDb[addr].GetPanelLokString() + '}]';
  Result := Result + '};';
 
@@ -367,8 +363,6 @@ end;
 procedure TTrain.UpdateTrainFromPanel(train: TStrings; Usek: TObject; area: TObject; ok: TCb; err: TCb);
 var json: TJsonObject;
     hvs, hv: TStrings;
-    s, straddr: string;
-    hvobj: TJsonObject;
 begin
  json := TJsonObject.Create();
  try
@@ -402,12 +396,12 @@ begin
    try
      ExtractStringsEx([']'], ['['], train[6], hvs);
 
-     for s in hvs do
+     for var s in hvs do
       begin
        hv.Clear();
        ExtractStringsEx(['|'], [], s, hv);
-       straddr := hv[4];
-       hvobj := json['hvs'].O[straddr];
+       var straddr := hv[4];
+       var hvobj := json['hvs'].O[straddr];
        hvobj['note'] := hv[3];
        hvobj['sta'] := StrToInt(hv[7]);
        hvobj['func'] := hv[8];
@@ -424,17 +418,13 @@ begin
 end;
 
 procedure TTrain.UpdateTrainFromJson(train: TJsonObject; ok: TCb; err: TCb);
-var addrhv: TJsonNameValuePair;
-    hv: TJsonObject;
-    i, addr, max_func: Integer;
-    new: TTrainHVs;
-    acq: ^TTrainAcquire;
+var acq: ^TTrainAcquire;
 begin
  if (Self.acquiring) then
    raise Exception.Create('Přebírání lokomotiv soupravy již probíhá!');
 
  // zkontrolujeme, jestli nejaka souprava s timto cislem uz nahodou neexistuje
- for i := 0 to _MAX_TRAIN-1 do
+ for var i := 0 to _MAX_TRAIN-1 do
   begin
    if (Trains[i] = nil) then continue;
 
@@ -492,19 +482,19 @@ begin
    else
      Self.data.direction := THVSite.even;
 
-   for addr in Self.HVs do
+   for var addr in Self.HVs do
      HVDb[addr].OnPredictedSignalChange();
   end;
 
  if (train.O['hvs'].Count > _MAX_TRAIN_HV) then
    raise Exception.Create('Překročen maximální počet hnacích vozidel na soupravě');
 
- new := TList<Integer>.Create();
+ var new := TList<Integer>.Create();
  try
-   for addrhv in train.O['hvs'] do
+   for var addrhv in train.O['hvs'] do
     begin
-     hv := addrhv.Value;
-     addr := StrToInt(addrhv.Name);
+     var hv : TJsonObject := addrhv.Value;
+     var addr := StrToInt(addrhv.Name);
 
      if (not Assigned(HVDb[addr])) then
        raise Exception.Create('Loko '+IntToStr(addr)+' neexistuje na serveru!');
@@ -524,8 +514,8 @@ begin
 
      if (hv.Contains('func')) then
       begin
-       max_func := Min(System.Length(hv.S['func']), _HV_FUNC_MAX);
-       for i := 0 to max_func do
+       var max_func := Min(System.Length(hv.S['func']), _HV_FUNC_MAX);
+       for var i := 0 to max_func do
          HVDb[addr].state.functions[i] := (hv.S['func'][i+1] = '1');
       end;
 
@@ -595,7 +585,6 @@ begin
 end;
 
 procedure TTrain.AllLocoAcquiredOk(newLoks: TList<Integer>);
-var signal: TBlk;
 begin
  Self.fAcquiring := false;
  Self.UvolV(Self.HVs, newLoks);
@@ -607,7 +596,7 @@ begin
 
  TBlkTrack(Self.front).Change();
 
- for signal in TBlkTrack(Self.front).signalJCRef do
+ for var signal in TBlkTrack(Self.front).signalJCRef do
    TBlkSignal(signal).UpdateTrainSpeed(true);
 
  Self.changed := true;
@@ -616,18 +605,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 class procedure TTrain.UvolV(old: TTrainHVs; new: TTrainHVs);
-var new_addr, old_addr: Integer;
-    keep: TList<Integer>;
+var keep: TList<Integer>;
 begin
  keep := TList<Integer>.Create();
 
  try
-   for new_addr in new do
-     for old_addr in old do
+   for var new_addr in new do
+     for var old_addr in old do
        if (new_addr = old_addr) then
           keep.Add(new_addr);
 
-   for old_addr in old do
+   for var old_addr in old do
     begin
      if (not keep.Contains(old_addr)) then
       begin
@@ -645,11 +633,10 @@ end;
 // uvolnit vsechna loko
 // pred uvolnenim loko take zastavime
 procedure TTrain.ReleaseAllLoko();
-var addr: Integer;
 begin
  if ((not Assigned(HVDb)) or (not Assigned(TrakceI))) then Exit();
 
- for addr in Self.HVs do
+ for var addr in Self.HVs do
   begin
    if (not Assigned(HVDb[addr])) then
      continue;
@@ -661,10 +648,9 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrain.SetArea(area: TObject);
-var addr: Integer;
 begin
  Self.data.area := area;
- for addr in Self.HVs do
+ for var addr in Self.HVs do
    HVDb[addr].MoveToArea(area as TArea);
  Self.Data.announcementPlayed := false;
  Self.changed := true;
@@ -673,9 +659,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrain.SetSpeedDirection(speed: Cardinal; dir: THVSite);
-var addr: Integer;
-    direction: Boolean;
-    dir_changed: Boolean;
+var dir_changed: Boolean;
 begin
  if ((TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).speedUpdate)) then
    TBlkRT(Self.front).speedUpdate := false;
@@ -697,7 +681,7 @@ begin
  if ((TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).railway <> nil)) then
    TBlkRT(Self.front).railway.Change();
 
- for addr in Self.HVs do
+ for var addr in Self.HVs do
   begin
    HVDb[addr].OnExpectedSpeedChange();
    if (dir_changed) then
@@ -705,16 +689,16 @@ begin
 
    if (HVDb[addr].ruc) then
     begin
-     writelog('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', WR_MESSAGE);
+     Log('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', WR_MESSAGE);
      continue;
     end;
    if (HVDb[addr].stolen) then
     begin
-     writelog('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE);
+     Log('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', WR_MESSAGE);
      continue;
     end;
 
-   direction := ownConvert.IntToBool(Integer(dir) xor Integer(HVDb[addr].state.siteA));
+   var direction := ownConvert.IntToBool(Integer(dir) xor Integer(HVDb[addr].state.siteA));
 
    try
      HVDb[addr].SetSpeedDir(Self.data.speed, direction,
@@ -730,7 +714,7 @@ begin
       ((Self.front as TBlkTrack).trains[(Self.front as TBlkTrack).trainMoving] = Self.index)) then
   (Self.front as TBlkTrack).trainMoving := -1;
 
- writelog('Souprava ' + Self.name + ' : rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), WR_MESSAGE);
+ Log('Souprava ' + Self.name + ' : rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), WR_MESSAGE);
  Self.changed := true;
 end;
 
@@ -757,9 +741,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrain.IsStolen(): Boolean;
-var addr: Integer;
 begin
- for addr in Self.HVs do
+ for var addr in Self.HVs do
    if (HVDb[addr].stolen) then
      Exit(true);
  Result := false;
@@ -824,7 +807,6 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrain.SetFront(front: TObject);
-var addr: Integer;
 begin
  if (Self.data.front = front) then Exit();
 
@@ -832,7 +814,7 @@ begin
    (Self.data.front as TBlkTrack).slowingReady := false;
  Self.data.front := front;
 
- for addr in Self.HVs do
+ for var addr in Self.HVs do
    HVDb[addr].OnPredictedSignalChange();
 
  Self.changed := true;
@@ -849,13 +831,11 @@ end;
 
 // zmena smeru pri naslapu na smyckovy blok
 procedure TTrain.ChangeDirection();
-var addr: Integer;
-    tmp: Boolean;
 begin
- writelog('Souprava '+ Self.name + ' : změna směru', WR_SPRPREDAT);
+ Log('Souprava '+ Self.name + ' : změna směru', WR_SPRPREDAT);
 
  // zmenit orintaci stanoviste A hnacich vozidel
- for addr in Self.HVs do
+ for var addr in Self.HVs do
   begin
    case (HVDb[addr].state.siteA) of
     THVSite.odd : HVDb[addr].state.siteA := THVSite.even;
@@ -864,7 +844,7 @@ begin
   end;
 
  // zmenit orientaci sipky soupravy
- tmp := Self.data.dir_L;
+ var tmp := Self.data.dir_L;
  Self.data.dir_L := Self.data.dir_S;
  Self.data.dir_S := tmp;
 
@@ -907,8 +887,7 @@ end;
 // a pokud souprava stoji.
 
 procedure TTrain.LokDirChanged();
-var i: Integer;
-    dir: Boolean;
+var dir: Boolean;
 begin
  if ((Self.wantedSpeed <> 0) or (Self.data.dir_L xor Self.data.dir_S) or
      (Self.HVs.Count = 0) or ((Self.front <> nil) and (not TBlkTrack(Self.front).spnl.stationTrack))) then
@@ -917,7 +896,7 @@ begin
  dir := HVDb[Self.HVs[0]].stACurrentDirection;
 
  if (dir = ownConvert.IntToBool(Integer(Self.direction))) then Exit();
- for i := 1 to Self.HVs.Count-1 do
+ for var i := 1 to Self.HVs.Count-1 do
    if (dir <> HVDb[Self.HVs[i]].stACurrentDirection) then
      Exit();
 
@@ -928,31 +907,27 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrain.ToggleHouk(desc: string);
-var addr: Integer;
-    HV: THV;
 begin
- writelog('Souprava ' + Self.name + ' : aktivuji houkání ' + desc, WR_MESSAGE);
+ Log('Souprava ' + Self.name + ' : aktivuji houkání ' + desc, WR_MESSAGE);
 
- for addr in Self.HVs do
+ for var addr in Self.HVs do
   begin
-   HV := HVDb[addr];
+   var HV := HVDb[addr];
    if (HV.CanPlayHouk(desc)) then
      TrakceI.LokFuncToggle(Self, HV, HV.funcDict[desc]);
   end;
 end;
 
 procedure TTrain.SetHoukState(desc: string; state: Boolean);
-var addr: Integer;
-    HV: THV;
 begin
  if (state) then
-   writelog('Souprava ' + Self.name + ' : aktivuji funkci ' + desc, WR_MESSAGE)
+   Log('Souprava ' + Self.name + ' : aktivuji funkci ' + desc, WR_MESSAGE)
  else
-   writelog('Souprava ' + Self.name + ' : deaktivuji funkci ' + desc, WR_MESSAGE);
+   Log('Souprava ' + Self.name + ' : deaktivuji funkci ' + desc, WR_MESSAGE);
 
- for addr in Self.HVs do
+ for var addr in Self.HVs do
   begin
-   HV := HVDb[addr];
+   var HV := HVDb[addr];
    if (HV.CanPlayHouk(desc)) then
      HV.SetSingleFunc(HV.funcDict[desc], state, TTrakce.Callback(), TTrakce.Callback(), Self);
   end;
@@ -1081,9 +1056,8 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrain.IsAnyLokoInRegulator(): Boolean;
-var hvaddr: Integer;
 begin
- for hvaddr in Self.HVs do
+ for var hvaddr in Self.HVs do
    if (HVDb[hvaddr].state.regulators.Count > 0) then
      Exit(true);
  Result := false;
@@ -1102,8 +1076,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrain.GetMaxSpeed(): Cardinal;
-var addr: Integer;
-    minimum: Cardinal;
+var minimum: Cardinal;
 begin
 
  if (Self.HVs.Count = 0) then
@@ -1118,7 +1091,7 @@ begin
    else
      minimum := HVDb[Self.HVs[0]].Data.maxSpeed;
 
-   for addr in Self.HVs do
+   for var addr in Self.HVs do
      if (HVDb[addr].Data.maxSpeed < minimum) then
        minimum := HVDb[addr].Data.maxSpeed;
 
@@ -1181,16 +1154,14 @@ begin
 end;
 
 procedure TTrain.OnPredictedSignalChange();
-var addr: Integer;
 begin
- for addr in Self.HVs do
+ for var addr in Self.HVs do
    HVDb[addr].OnPredictedSignalChange();
 end;
 
 procedure TTrain.OnExpectedSpeedChange();
-var addr: Integer;
 begin
- for addr in Self.HVs do
+ for var addr in Self.HVs do
    HVDb[addr].OnExpectedSpeedChange();
 end;
 
@@ -1233,12 +1204,11 @@ begin
 end;
 
 procedure TTrain.PutPtData(reqJson: TJsonObject; respJson: TJsonObject);
-var hvaddr: Integer;
 begin
  if (not reqJson.Contains('name')) then
    reqJson['name'] := Self.name;
  if (not reqJson.Contains('hvs')) then
-   for hvaddr in Self.HVs do
+   for var hvaddr in Self.HVs do
      reqJson.A['hvs'].Add(hvaddr);
 
  TTrain.PtHVsListToDict(reqJson);
@@ -1267,7 +1237,6 @@ end;
 // Returns speed train should have based on its presence in railways.
 function TTrain.GetRailwaySpeed(): Cardinal;
 var railway: TBlkRailway;
-    blkRT: TBlkRT;
     speed: Cardinal;
 begin
  if ((Self.front = nil) or (TBlk(Self.front).typ <> TBlkType.btRT)) then
@@ -1278,7 +1247,7 @@ begin
    raise ENotInRailway.Create('Traťový úsek není spojen s žádnou tratí!');
 
  speed := TBlkRT(Self.front).Speed(Self);
- for blkRT in railway.tracks do
+ for var blkRT in railway.tracks do
    if (blkRT.trains.Contains(Self.index)) then
      speed := Min(speed, blkRT.Speed(Self));
 
@@ -1316,11 +1285,10 @@ end;
 
 function TTrain.IsOnlyInRailway(): Boolean;
 var blks: TList<TObject>;
-    blk: TObject;
 begin
  blks := Self.GetBlocks();
  try
-   for blk in blks do
+   for var blk in blks do
      if (TBlk(blk).typ <> TBlkType.btRT) then
        Exit(false);
  finally
