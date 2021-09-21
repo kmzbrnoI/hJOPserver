@@ -82,6 +82,7 @@ type
     procedure UPOPstDisDone(Sender: TObject);
     procedure UPONPStDone(Sender: TObject);
     procedure CSNPStDone(Sender: TIDContext; success: Boolean);
+    procedure CSZavOffDone(Sender: TIDContext; success: Boolean);
 
     procedure ActivationBarriers(var barriers: TList<TJCBarrier>);
     procedure Activate(senderPnl: TIdContext; senderOR: TObject);
@@ -394,7 +395,10 @@ begin
   if ((Self.status = pstActive) and (release) and (not take)) then
   begin
     // release pst
-    Self.status := pstTakeReady;
+    if (Self.emLock) then
+      Self.status := pstOff
+    else
+      Self.status := pstTakeReady;
   end;
 end;
 
@@ -457,10 +461,25 @@ end;
 
 procedure TBlkPst.MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
+  if (Self.status = pstRefuging) then
+  begin
+    PanelServer.SendInfoMsg(SenderPnl, 'Blokováno prováděnou volbou!');
+    Exit();
+  end;
+
+  Self.emLock := true;
 end;
 
 procedure TBlkPst.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
+  PanelServer.ConfirmationSequence(SenderPnl, Self.CSZavOffDone, (SenderOR as TArea), 'Zrušení nouzového závěru',
+    TBlocks.GetBlksList(Self), nil);
+end;
+
+procedure TBlkPst.CSZavOffDone(Sender: TIDContext; success: Boolean);
+begin
+  if (success) then
+    Self.emLock := false;
 end;
 
 procedure TBlkPst.MenuHoukEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -510,7 +529,7 @@ function TBlkPst.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights:
 begin
   Result := inherited;
 
-  if ((Self.status = pstOff) and (not Self.zaver)) then
+  if ((Self.status = pstOff) and (not Self.zaver) and (not Self.emLock)) then
     Result := Result + 'PST>,'
   else if ((Self.status = pstTakeReady) and (not Self.error)) then
     Result := Result + 'PST<,'
@@ -527,6 +546,11 @@ begin
   end;
 
   Result := Result + 'STIT,';
+
+  if (Self.emLock) then
+    Result := Result + '!ZAV<,'
+  else
+    Result := Result + 'ZAV>,';
 
   if (RCSi.simulation) then
   begin
@@ -587,8 +611,12 @@ end;
 
 function TBlkPst.GetZaver(): Boolean;
 begin
-//  Result := (Self.m_state.zaver > 0);
-// TODO
+  for var trackId in Self.m_settings.tracks do
+  begin
+    var blk := Blocks.GetBlkByID(trackId);
+    if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT)) and (TBlkTrack(blk).zaver > TZaver.no)) then
+      Exit(true);
+  end;
   Result := false;
 end;
 
@@ -604,28 +632,15 @@ begin
     Inc(Self.m_state.emLock);
     if (Self.m_state.emLock = 1) then
     begin
-      {if (Self.keyReleased) then
-      begin
-        Self.m_state.keyReleased := false;
-        Self.CallChangeToTurnout();
-      end;}
-      inherited Change();
+      if (Self.status = pstTakeReady) then
+        Self.status := pstOff;
+      Self.Change();
     end;
   end else begin
     if (Self.m_state.emLock > 0) then
       Dec(Self.m_state.emLock);
     if (Self.m_state.emLock = 0) then
-    begin
-      // pokud vyhybky nejsou ve spravne poloze, automaticky uvolnujeme klic
-      {if (not Self.IsRightPoloha()) then
-        Self.keyReleased := true
-      else
-      begin
-        Self.CallChangeToTurnout();
-        inherited Change();
-      end;
-      Blocks.NouzZaverZrusen(Self);}
-    end;
+      Self.Change();
   end;
 end;
 
