@@ -111,7 +111,7 @@ object F_JCEdit: TF_JCEdit
     MaxLength = 32
     TabOrder = 0
   end
-  object GB_ZaveryVyhybek: TGroupBox
+  object GB_Turnouts: TGroupBox
     Left = 345
     Top = 7
     Width = 265
@@ -122,7 +122,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = ' V'#253'hybky '
     TabOrder = 9
-    object LV_Vyhybky: TListView
+    object LV_Turnouts: TListView
       Left = 2
       Top = 54
       Width = 261
@@ -151,10 +151,10 @@ object F_JCEdit: TF_JCEdit
       RowSelect = True
       TabOrder = 0
       ViewStyle = vsReport
-      OnChange = LV_VyhybkyChange
-      OnKeyDown = LV_VyhybkyKeyDown
+      OnChange = LV_TurnoutsChange
+      OnKeyDown = LV_TurnoutsKeyDown
     end
-    object CHB_NewZaver: TGroupBox
+    object GB_Turnout_New: TGroupBox
       Left = 2
       Top = 188
       Width = 261
@@ -188,7 +188,7 @@ object F_JCEdit: TF_JCEdit
         Margins.Bottom = 2
         Caption = 'Poloha :'
       end
-      object CB_NewZaverBlok: TComboBox
+      object CB_Turnout: TComboBox
         Left = 56
         Top = 16
         Width = 145
@@ -200,7 +200,7 @@ object F_JCEdit: TF_JCEdit
         Style = csDropDownList
         TabOrder = 0
       end
-      object CB_NewZaverPoloha: TComboBox
+      object CB_Turnout_Pos: TComboBox
         Left = 56
         Top = 40
         Width = 145
@@ -217,7 +217,7 @@ object F_JCEdit: TF_JCEdit
           '+'
           '-')
       end
-      object B_Vyh_Add: TButton
+      object B_Turnout_Ok: TButton
         Left = 205
         Top = 16
         Width = 49
@@ -228,10 +228,10 @@ object F_JCEdit: TF_JCEdit
         Margins.Bottom = 2
         Caption = 'Ok'
         TabOrder = 2
-        OnClick = B_Vyh_AddClick
+        OnClick = B_Turnout_OkClick
       end
     end
-    object B_Vyh_Del: TButton
+    object B_Turnout_Del: TButton
       Left = 80
       Top = 17
       Width = 105
@@ -243,10 +243,10 @@ object F_JCEdit: TF_JCEdit
       Caption = 'Smazat v'#253'hybku'
       Enabled = False
       TabOrder = 1
-      OnClick = B_Vyh_DelClick
+      OnClick = B_Turnout_DelClick
     end
   end
-  object GB_Useky: TGroupBox
+  object GB_Tracks: TGroupBox
     Left = 7
     Top = 155
     Width = 329
@@ -260,7 +260,7 @@ object F_JCEdit: TF_JCEdit
     ParentShowHint = False
     ShowHint = True
     TabOrder = 5
-    object CHB_NewBlok: TGroupBox
+    object GB_Track_New: TGroupBox
       Left = 2
       Top = 192
       Width = 325
@@ -272,7 +272,7 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit '#250'sek '
       TabOrder = 2
-      object CB_NewUsek: TComboBox
+      object CB_Track: TComboBox
         Left = 10
         Top = 16
         Width = 250
@@ -284,7 +284,7 @@ object F_JCEdit: TF_JCEdit
         Style = csDropDownList
         TabOrder = 0
       end
-      object B_Usek_Add: TButton
+      object B_Track_Ok: TButton
         Left = 264
         Top = 16
         Width = 53
@@ -295,10 +295,10 @@ object F_JCEdit: TF_JCEdit
         Margins.Bottom = 2
         Caption = 'Ok'
         TabOrder = 1
-        OnClick = B_Usek_AddClick
+        OnClick = B_Track_OkClick
       end
     end
-    object LV_Useky: TListView
+    object LV_Tracks: TListView
       Left = 2
       Top = 53
       Width = 325
@@ -323,10 +323,10 @@ object F_JCEdit: TF_JCEdit
       RowSelect = True
       TabOrder = 0
       ViewStyle = vsReport
-      OnChange = LV_UsekyChange
-      OnKeyDown = LV_UsekyKeyDown
+      OnChange = LV_TracksChange
+      OnKeyDown = LV_TracksKeyDown
     end
-    object B_Usek_Del: TButton
+    object B_Track_Del: TButton
       Left = 112
       Top = 15
       Width = 105
@@ -338,7 +338,7 @@ object F_JCEdit: TF_JCEdit
       Caption = 'Smazat '#250'sek'
       Enabled = False
       TabOrder = 1
-      OnClick = B_Usek_DelClick
+      OnClick = B_Track_DelClick
     end
   end
   object B_Save: TButton
@@ -368,7 +368,7 @@ object F_JCEdit: TF_JCEdit
     TabOrder = 15
     OnClick = B_StornoClick
   end
-  object CB_Navestidlo: TComboBox
+  object CB_Signal: TComboBox
     Left = 136
     Top = 65
     Width = 201
@@ -379,7 +379,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Style = csDropDownList
     TabOrder = 2
-    OnChange = CB_NavestidloChange
+    OnChange = CB_SignalChange
   end
   object CB_Typ: TComboBox
     Left = 136
@@ -397,7 +397,7 @@ object F_JCEdit: TF_JCEdit
       'Vlakov'#225' cesta'
       'Posunov'#225' cesta')
   end
-  object CB_Dalsi_Nav: TComboBox
+  object CB_Next_Signal: TComboBox
     Left = 136
     Top = 410
     Width = 201
@@ -408,7 +408,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Style = csDropDownList
     TabOrder = 6
-    OnChange = CB_Dalsi_NavChange
+    OnChange = CB_Next_SignalChange
   end
   object CHB_AutoName: TCheckBox
     Left = 88
@@ -420,7 +420,7 @@ object F_JCEdit: TF_JCEdit
     State = cbChecked
     TabOrder = 17
   end
-  object GB_trat: TGroupBox
+  object GB_Railway: TGroupBox
     Left = 345
     Top = 273
     Width = 262
@@ -441,25 +441,25 @@ object F_JCEdit: TF_JCEdit
       Height = 13
       Caption = 'Sm'#283'r:'
     end
-    object CHB_Trat: TCheckBox
+    object CHB_Railway: TCheckBox
       Left = 16
       Top = 16
       Width = 57
       Height = 17
       Caption = 'Povolit'
       TabOrder = 0
-      OnClick = CHB_TratClick
+      OnClick = CHB_RailwayClick
     end
-    object CB_TratBlok: TComboBox
+    object CB_Railway: TComboBox
       Left = 64
       Top = 39
       Width = 145
       Height = 21
       Style = csDropDownList
       TabOrder = 1
-      OnChange = CB_TratBlokChange
+      OnChange = CB_RailwayChange
     end
-    object CB_TratSmer: TComboBox
+    object CB_Railway_Dir: TComboBox
       Left = 64
       Top = 66
       Width = 145
@@ -524,7 +524,7 @@ object F_JCEdit: TF_JCEdit
       Height = 13
       Caption = 'Zru'#353'it n'#225'v'#283'st p'#345'i obsazen'#237' '#250'seku [0..n-1]:'
     end
-    object M_Prj: TMemo
+    object M_Crossings: TMemo
       Left = 8
       Top = 35
       Width = 281
@@ -539,7 +539,7 @@ object F_JCEdit: TF_JCEdit
       ShowHint = True
       TabOrder = 0
     end
-    object M_Odvraty: TMemo
+    object M_Refugees: TMemo
       Left = 8
       Top = 131
       Width = 281
@@ -565,7 +565,7 @@ object F_JCEdit: TF_JCEdit
       TabOrder = 3
       Text = 'E_VB'
     end
-    object M_Zamky: TMemo
+    object M_Locks: TMemo
       Left = 8
       Top = 227
       Width = 281
@@ -636,7 +636,7 @@ object F_JCEdit: TF_JCEdit
     TabOrder = 8
     Value = 0
   end
-  object CB_Navest: TComboBox
+  object CB_Signal_Signal: TComboBox
     Left = 136
     Top = 129
     Width = 201
