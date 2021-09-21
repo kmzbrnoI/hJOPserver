@@ -284,9 +284,11 @@ begin
           TBlkDiscBasicState.disabled, TBlkDiscBasicState.activeInfinite:
             PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
           TBlkDiscBasicState.inactive:
-            Self.ActivateWithPossibleUPO(SenderPnl, SenderOR);
+            if (not Self.PstIsActive()) then
+              Self.ActivateWithPossibleUPO(SenderPnl, SenderOR);
           TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
-            Self.Prolong();
+            if (not Self.PstIsActive()) then
+              Self.Prolong();
         end;
       end;
 
@@ -310,7 +312,7 @@ begin
   begin
     if (Self.active) then
       Result := Result + 'AKTIV<,'
-    else if (Self.state <> TBlkDiscBasicState.disabled) then
+    else if ((Self.state <> TBlkDiscBasicState.disabled) and (not Self.PstIsActive())) then
       Result := Result + 'AKTIV>,';
   end;
   Result := Result + 'STIT,';
@@ -606,7 +608,7 @@ begin
     var state := RCSi.GetInput(Self.m_settings.rcsController.addr);
     if ((state = TRCSInputState.isOn) and (not Self.active)) then
       Self.state := TBlkDiscBasicState.activeInfinite;
-    if ((state = TRCSInputState.isOff) and (Self.active)) then
+    if ((state = TRCSInputState.isOff) and (Self.state = TBlkDiscBasicState.activeInfinite)) then
       Self.state := TBlkDiscBasicState.inactive;
   except
     on E: RCSException do Exit();
