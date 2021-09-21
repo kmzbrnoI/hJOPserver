@@ -3089,11 +3089,11 @@ begin
         case ((blk as TBlkDisconnector).State) of
           TBlkDiscBasicState.disabled:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
-          TBlkDiscBasicState.not_selected:
+          TBlkDiscBasicState.notSelected:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
           TBlkDiscBasicState.mounting:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
-          TBlkDiscBasicState.active:
+          TBlkDiscBasicState.active, TBlkDiscBasicState.activeInfinite:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
         end;
       end;

@@ -5,10 +5,17 @@ unit BlockDisconnector;
 interface
 
 uses IniFiles, Block, Classes, AreaDb, SysUtils, JsonDataObjects,
-  IdContext, Area, TechnologieRCS, RCS;
+  IdContext, Area, TechnologieRCS, RCS, Generics.Collections;
 
 type
-  TBlkDiscBasicState = (disabled = -5, not_selected = 0, mounting = 1, active = 2, shortTimeRemaining = 3);
+  TBlkDiscBasicState = (
+    disabled = -5,
+    notSelected = 0,
+    mounting = 1,
+    active = 2,
+    shortTimeRemaining = 3,
+    activeInfinite = 4
+  );
 
   TBlkDiscSettings = record
     RCSAddrs: TRCSAddrs; // only 1 address
@@ -26,6 +33,7 @@ type
     warning: TDateTime;
     rcsFailed: Boolean;
     note: string;
+    psts: TList<TBlk>;
   end;
 
   TBlkDisconnector = class(TBlk)
@@ -41,13 +49,11 @@ type
     m_settings: TBlkDiscSettings;
     m_state: TBlkDiscState;
 
-    procedure SetState(status: TBlkDiscBasicState);
+    procedure SetState(state: TBlkDiscBasicState);
     procedure UpdateOutput();
 
     procedure SetNote(note: string);
 
-    procedure Mount();
-    procedure Activate();
     procedure Prolong();
 
     procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -55,9 +61,14 @@ type
     procedure MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 
     function IsActive(): Boolean;
+    function IsActiveByController(): Boolean;
+
+    procedure PstCheckActive();
+    procedure ReadControllers();
 
   public
     constructor Create(index: Integer);
+    destructor Destroy(); override;
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
@@ -81,6 +92,11 @@ type
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
 
+    procedure PstAdd(pst: TBlk);
+    procedure PstRemove(pst: TBlk);
+    function PstIsActive(): Boolean;
+    function PstIs(): Boolean;
+
     property fullState: TBlkDiscState read m_state;
     property state: TBlkDiscBasicState read m_state.state write SetState;
     property note: string read m_state.note write SetNote;
@@ -96,7 +112,7 @@ type
 
 implementation
 
-uses TCPServerPanel, ownConvert, Graphics, PTUtils, IfThenElse;
+uses TCPServerPanel, ownConvert, Graphics, PTUtils, IfThenElse, BlockPst, RCSErrors;
 
 constructor TBlkDisconnector.Create(index: Integer);
 begin
@@ -104,7 +120,14 @@ begin
 
   Self.m_globSettings.typ := btDisconnector;
   Self.m_state := Self._def_disc_stav;
-end; // ctor
+  Self.m_state.psts := TList<TBlk>.Create();
+end;
+
+destructor TBlkDisconnector.Destroy();
+begin
+  Self.m_state.psts.Free();
+  inherited;
+end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -168,13 +191,16 @@ begin
   Self.m_state.rcsFailed := not Enable;
 
   if (enable) then
-    Self.state := TBlkDiscBasicState.not_selected;
+    Self.state := TBlkDiscBasicState.notSelected;
+
+  Self.m_state.psts.Clear();
 end;
 
 procedure TBlkDisconnector.Disable();
 begin
   Self.state := TBlkDiscBasicState.disabled;
   Self.m_state.rcsFailed := false;
+  Self.m_state.psts.Clear();
   Self.Change(true);
 end;
 
@@ -200,23 +226,24 @@ begin
         if ((Self.m_state.rcsFailed) and (RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].board))) then
         begin
           Self.m_state.rcsFailed := false;
-          Self.state := TBlkDiscBasicState.not_selected;
+          Self.state := TBlkDiscBasicState.notSelected;
         end;
       end;
     TBlkDiscBasicState.mounting:
       begin
         if (Now > Self.m_state.finish) then
-          Self.Activate();
+          Self.state := TBlkDiscBasicState.active;
       end;
     TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
       begin
         if (Now > Self.m_state.finish) then
-          Self.state := TBlkDiscBasicState.not_selected
+          Self.state := TBlkDiscBasicState.notSelected
         else if ((Now > Self.m_state.warning) and (Self.state = TBlkDiscBasicState.active)) then
           Self.state := TBlkDiscBasicState.shortTimeRemaining;
       end;
   end; // case
 
+  Self.ReadControllers();
   inherited Update();
 end;
 
@@ -248,12 +275,12 @@ begin
     ENTER:
       begin
         case (Self.state) of
-          TBlkDiscBasicState.disabled:
+          TBlkDiscBasicState.disabled, TBlkDiscBasicState.activeInfinite:
             PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
-          TBlkDiscBasicState.not_selected:
-            Self.Mount();
+          TBlkDiscBasicState.notSelected:
+            Self.state := TBlkDiscBasicState.mounting;
           TBlkDiscBasicState.mounting:
-            Self.Activate();
+            Self.state := TBlkDiscBasicState.active;
           TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
             Self.Prolong();
         end;
@@ -262,10 +289,10 @@ begin
     ESCAPE:
       begin
         case (Self.state) of
-          TBlkDiscBasicState.mounting:
-            Self.state := TBlkDiscBasicState.not_selected;
-          TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
-            Self.state := TBlkDiscBasicState.not_selected;
+          TBlkDiscBasicState.mounting, TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining,
+          TBlkDiscBasicState.activeInfinite:
+            if (not Self.IsActiveByController()) then
+              Self.state := TBlkDiscBasicState.notSelected;
         end;
       end;
   end; // case
@@ -276,18 +303,25 @@ end;
 function TBlkDisconnector.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
   Result := inherited;
-  if (Self.active) then
-    Result := Result + 'AKTIV<,'
-  else if (Self.state <> TBlkDiscBasicState.disabled) then
-    Result := Result + 'AKTIV>,';
+  if (not Self.IsActiveByController()) then
+  begin
+    if (Self.active) then
+      Result := Result + 'AKTIV<,'
+    else if (Self.state <> TBlkDiscBasicState.disabled) then
+      Result := Result + 'AKTIV>,';
+  end;
   Result := Result + 'STIT,';
 end;
 
 procedure TBlkDisconnector.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
   if (item = 'STIT') then
-    Self.MenuStitClick(SenderPnl, SenderOR)
-  else if (item = 'AKTIV>') then
+    Self.MenuStitClick(SenderPnl, SenderOR);
+
+  if (Self.IsActiveByController()) then
+    Exit();
+
+  if (item = 'AKTIV>') then
     Self.MenuAktivOnClick(SenderPnl, SenderOR)
   else if (item = 'AKTIV<') then
     Self.MenuAktivOffClick(SenderPnl, SenderOR);
@@ -295,14 +329,27 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkDisconnector.SetState(status: TBlkDiscBasicState);
+procedure TBlkDisconnector.SetState(state: TBlkDiscBasicState);
 begin
-  if (Self.state <> status) then
+  if (Self.state = state) then
+    Exit();
+
+  Self.m_state.state := state;
+
+  if (state = TBlkDiscBasicState.mounting) then
   begin
-    Self.m_state.state := status;
-    Self.UpdateOutput();
-    Self.Change();
+    Self.m_state.finish := Now + EncodeTime(0, 0, Self._MOUNT_TO_ACTIVE_TIME_SEC, 0);
+
+  end else if (state = TBlkDiscBasicState.active) then
+  begin
+    Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
+                                             Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
+    Self.m_state.warning := Now + EncodeTime(0, (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) div 60,
+                                             (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) mod 60, 0);
   end;
+
+  Self.UpdateOutput();
+  Self.Change();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -332,15 +379,18 @@ begin
   case (Self.state) of
     TBlkDiscBasicState.disabled:
       fg := clFuchsia;
-    TBlkDiscBasicState.not_selected:
+    TBlkDiscBasicState.notSelected:
       fg := $A0A0A0;
     TBlkDiscBasicState.mounting:
       fg := clYellow;
-    TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
+    TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining, TBlkDiscBasicState.activeInfinite:
       fg := clLime;
   else
     fg := clFuchsia;
   end;
+
+  if ((fg = $A0A0A0) and (Self.PstIs())) then
+    fg := clBlue;
 
   if (Self.note <> '') then
     bg := clTeal;
@@ -352,21 +402,6 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-
-procedure TBlkDisconnector.Mount();
-begin
-  Self.m_state.finish := Now + EncodeTime(0, 0, Self._MOUNT_TO_ACTIVE_TIME_SEC, 0);
-  Self.state := TBlkDiscBasicState.mounting;
-end;
-
-procedure TBlkDisconnector.Activate();
-begin
-  Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
-                                           Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
-  Self.m_state.warning := Now + EncodeTime(0, (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) div 60,
-                                           (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) mod 60, 0);
-  Self.state := TBlkDiscBasicState.active;
-end;
 
 procedure TBlkDisconnector.Prolong();
 begin
@@ -392,7 +427,7 @@ begin
   case (Self.state) of
     TBlkDiscBasicState.disabled:
       json['state'] := 'off';
-    TBlkDiscBasicState.not_selected:
+    TBlkDiscBasicState.notSelected:
       json['state'] := 'notSelected';
     TBlkDiscBasicState.mounting:
       json['state'] := 'mounting';
@@ -400,6 +435,8 @@ begin
       json['state'] := 'active';
     TBlkDiscBasicState.shortTimeRemaining:
       json['state'] := 'shortTimeRemaining';
+    TBlkDiscBasicState.activeInfinite:
+      json['state'] := 'activeInfinite';
   end;
 end;
 
@@ -415,11 +452,13 @@ begin
     end;
 
     if (reqJson.S['state'] = 'mounting') then
-      Self.Mount()
+      Self.state := TBlkDiscBasicState.mounting
     else if (reqJson.S['state'] = 'active') then
-      Self.Activate()
+      Self.state := TBlkDiscBasicState.active
+    else if (reqJson.S['state'] = 'activeInfinite') then
+      Self.state := TBlkDiscBasicState.activeInfinite
     else if (reqJson.S['state'] = 'notSelected') then
-      Self.state := TBlkDiscBasicState.not_selected;
+      Self.state := TBlkDiscBasicState.notSelected;
   end;
 
   inherited;
@@ -440,21 +479,105 @@ end;
 
 procedure TBlkDisconnector.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.Activate();
+  Self.state := TBlkDiscBasicState.active;
 end;
 
 procedure TBlkDisconnector.MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.state := TBlkDiscBasicState.not_selected;
+  Self.state := TBlkDiscBasicState.notSelected;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TBlkDisconnector.IsActive(): Boolean;
 begin
-  Result := ((Self.state = TBlkDiscBasicState.active) or (Self.state = TBlkDiscBasicState.shortTimeRemaining));
+  Result := ((Self.state = TBlkDiscBasicState.active) or (Self.state = TBlkDiscBasicState.shortTimeRemaining)
+          or (Self.state = TBlkDiscBasicState.activeInfinite));
+end;
+
+function TBlkDisconnector.IsActiveByController(): Boolean;
+begin
+  if (not Self.m_settings.rcsController.enabled) then
+    Exit(false);
+
+  var controller: TRCSInputState;
+  try
+    controller := RCSi.GetInput(Self.m_settings.rcsController.addr);
+  except
+    controller := TRCSInputState.isOff;
+  end;
+
+  Result := ((Self.active) and (controller = TRCSInputState.isOn));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-end.// unit
+procedure TBlkDisconnector.PstAdd(pst: TBlk);
+begin
+  if (Self.m_state.psts.Contains(pst)) then
+    Exit();
+
+  Self.m_state.psts.Add(pst);
+  Self.Change();
+end;
+
+procedure TBlkDisconnector.PstRemove(pst: TBlk);
+begin
+  if (not Self.m_state.psts.Contains(pst)) then
+    Exit();
+
+  Self.m_state.psts.Remove(pst);
+  if (Self.m_state.psts.Count = 0) then
+  begin
+    if (Self.active) then
+      Self.state := TBlkDiscBasicState.notSelected;
+  end;
+  Self.Change();
+end;
+
+function TBlkDisconnector.PstIsActive(): Boolean;
+begin
+  Self.PstCheckActive();
+  for var blk: TBlk in Self.m_state.psts do
+    if (TBlkPst(blk).status = pstActive) then
+      Exit(true);
+  Result := false;
+end;
+
+function TBlkDisconnector.PstIs(): Boolean;
+begin
+  Self.PstCheckActive();
+  Result := (Self.m_state.psts.Count > 0);
+end;
+
+procedure TBlkDisconnector.PstCheckActive();
+begin
+  for var i := Self.m_state.psts.Count-1 downto 0 do
+    if (TBlkPst(Self.m_state.psts[i]).status <= pstOff) then
+      Self.PstRemove(self.m_state.psts[i]);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkDisconnector.ReadControllers();
+begin
+  if ((not Self.m_settings.rcsController.enabled) or (not RCSi.Started)) then
+    Exit();
+  if ((Self.m_settings.rcsController.pstOnly) and (not Self.PstIsActive())) then
+    Exit();
+
+  try
+    var state := RCSi.GetInput(Self.m_settings.rcsController.addr);
+    if ((state = TRCSInputState.isOn) and (not Self.active)) then
+      Self.state := TBlkDiscBasicState.activeInfinite;
+    if ((state = TRCSInputState.isOff) and (Self.active)) then
+      Self.state := TBlkDiscBasicState.notSelected;
+  except
+    on E: RCSException do Exit();
+    on E: Exception do raise;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+end.
