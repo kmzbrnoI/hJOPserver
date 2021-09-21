@@ -1254,7 +1254,7 @@ begin
     // na vyhybce neni zaver a menu neni redukovane
 
     if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))
-        or (Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
+        or (Self.PstIsActive()) or ((coupling <> nil) and (coupling.PstIsActive()))) then
     begin
       if (Self.m_state.position = plus) then
         Result := Result + '!NS-,';
