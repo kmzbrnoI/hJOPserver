@@ -191,6 +191,7 @@ type
     function GetSignal(): TBlk;
     function GetWaitFroLastTrackOrRailwayOccupied(): Boolean;
     function GetLastTrack(): TBlk;
+    function PSts(): TList<TBlk>;
 
     procedure Log(msg: string; typ: LogType = ltJC);
 
@@ -1786,6 +1787,18 @@ begin
           var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZav.Block));
           lock.emLock := true;
           signal.AddBlkToRnz(lock.id, false);
+        end;
+
+        // nastavit nouzovy zaver PSt
+        var psts := Self.PSts();
+        try
+          for var pst in psts do
+          begin
+            TBlkPst(pst).emLock := true;
+            signal.AddBlkToRnz(pst.id, false);
+          end;
+        finally
+          psts.Free();
         end;
 
         Self.m_state.ncBarieryCntLast := -1; // tady je potreba mit cislo < 0
@@ -3606,5 +3619,30 @@ begin
   if (result.typ <> btTrack) and (result.typ <> btRT) then
     result := nil;
 end;
+
+function TJC.PSts(): TList<TBlk>;
+begin
+  Result := TList<TBlk>.Create();
+  try
+    for var blk: TBlk in Blocks do
+    begin
+      if (blk.typ = btPst) then
+      begin
+        for var trackId in Self.m_data.tracks do
+        begin
+          if (TBlkPst(blk).GetSettings().tracks.Contains(trackId)) then
+          begin
+            Result.Add(blk);
+            Break;
+          end;
+        end;
+      end;
+    end;
+  except
+    Result.Free();
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
 
 end.

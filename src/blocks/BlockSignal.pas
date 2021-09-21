@@ -270,7 +270,7 @@ type
 implementation
 
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSignal,
-  GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils,
+  GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
   predvidanyOdjezd, ownConvert;
 
@@ -1600,14 +1600,20 @@ begin
     case (Blk.typ) of
       btTurnout:
         begin
-          if (TBlkTurnout(Blk).emLock) then
-            TBlkTurnout(Blk).DecreaseEmergencyLock(toRnz[blkId]);
+          if (TBlkTurnout(blk).emLock) then
+            TBlkTurnout(blk).DecreaseEmergencyLock(toRnz[blkId]);
         end;
 
       btLock:
         begin
-          if (TBlkLock(Blk).emLock) then
-            TBlkLock(Blk).DecreaseEmLock(toRnz[blkId]);
+          if (TBlkLock(blk).emLock) then
+            TBlkLock(blk).DecreaseEmLock(toRnz[blkId]);
+        end;
+
+      btPst:
+        begin
+          if (TBlkPst(blk).emLock) then
+            TBlkPst(blk).DecreaseEmLock(toRnz[blkId]);
         end;
     end;
   end;
