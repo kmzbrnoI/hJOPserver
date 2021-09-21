@@ -106,6 +106,8 @@ type
 
     function IsInArea(Area: TObject): Boolean;
 
+    procedure BottomErrorBroadcast(error: string; system: string; minRights: TAreaRights = TAreaRights.write);
+
     class procedure AddChangeEvent(var events: TChangeEvents; func: TChangeEvent);
     class procedure RemoveChangeEvent(var events: TChangeEvents; func: TChangeEvent);
 
@@ -515,6 +517,14 @@ end;
 procedure TBlk.Log(text: string; typ: LogType);
 begin
   Logging.Log(Self.name + ': ' + text, typ);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlk.BottomErrorBroadcast(error: string; system: string; minRights: TAreaRights = TAreaRights.write);
+begin
+  for var area: TArea in Self.areas do
+    area.BlkWriteError(Self, error, system, minRights);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

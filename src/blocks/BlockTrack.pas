@@ -613,8 +613,7 @@ begin
 
       // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
       if ((Self.typ = btRT) or (Self.spnl.stationTrack)) then
-        for var area: TArea in Self.areas do
-          area.BlkWriteError(Self, 'Ztráta soupravy v úseku ' + Self.name, 'TECHNOLOGIE');
+        Self.BottomErrorBroadcast('Ztráta soupravy v úseku ' + Self.name, 'TECHNOLOGIE');
       if (Self.m_state.zaver <> TZaver.no) then
         Self.m_state.zaver := TZaver.nouz;
     end; // if train_vypadek_time > 3

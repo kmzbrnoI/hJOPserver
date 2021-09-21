@@ -345,15 +345,13 @@ begin
     // necekaniy stav = prejezd je pod zaverem a na vstupu se objevi cokoliv jineho, nez "uzavreno"
     if ((Self.zaver) and (Self.m_state.basicState = TBlkCrossingBasicState.closed)) then
     begin
-      for var area: TArea in Self.areas do
-        area.BlkWriteError(Self, 'Ztráta dohledu na přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+      Self.BottomErrorBroadcast('Ztráta dohledu na přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
       JCDb.Cancel(Self);
     end;
 
     if ((new_state = TBlkCrossingBasicState.none) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
     begin
-      for var area: TArea in Self.areas do
-        area.BlkWriteError(Self, 'Porucha přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+      Self.BottomErrorBroadcast('Porucha přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
       JCDb.Cancel(Self);
     end;
 
@@ -378,8 +376,7 @@ begin
   begin
     if (now > Self.m_state.closeStart + EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
     begin
-      for var area: TArea in Self.areas do
-        area.BlkWriteError(Self, Self.m_globSettings.name + ' uzavřen déle, jak ' + IntToStr(_UZ_UPOZ_MIN) + ' min',
+      Self.BottomErrorBroadcast(Self.m_globSettings.name + ' uzavřen déle, jak ' + IntToStr(_UZ_UPOZ_MIN) + ' min',
           'VAROVÁNÍ');
       Self.m_state.closeStart := now;
     end;

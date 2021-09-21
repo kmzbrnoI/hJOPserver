@@ -203,7 +203,7 @@ type
     procedure BlkChange(Sender: TObject; specificClient: TIDContext = nil);
     procedure BlkPlaySound(Sender: TObject; min_rights: TAreaRights; sound: Integer; loop: Boolean = false);
     procedure BlkRemoveSound(Sender: TObject; sound: Integer);
-    procedure BlkWriteError(Sender: TObject; error: string; system: string);
+    procedure BlkWriteError(Sender: TObject; error: string; system: string; minRights: TAreaRights = TAreaRights.write);
     procedure BlkNewTrain(Sender: TObject; Panel: TIDContext; trainUsekIndex: Integer);
     procedure BlkEditTrain(Sender: TObject; Panel: TIDContext; train: TObject);
 
@@ -418,10 +418,10 @@ begin
   end;
 end;
 
-procedure TArea.BlkWriteError(Sender: TObject; error: string; system: string);
+procedure TArea.BlkWriteError(Sender: TObject; error: string; system: string; minRights: TAreaRights = TAreaRights.write);
 begin
   for var areaPanel: TAreaPanel in Self.connected do
-    if (areaPanel.rights >= TAreaRights.write) then
+    if (areaPanel.rights >= minRights) then
       PanelServer.BottomError(areaPanel.Panel, error, Self.shortName, system);
 end;
 

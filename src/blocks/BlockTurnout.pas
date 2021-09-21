@@ -747,8 +747,7 @@ begin
       ((Self.intentionalLocked) and (not Self.m_state.movingPlus) and (not Self.m_state.movingMinus)) or
       (Self.LockLocked())) and (Self.zaver <> TZaver.staveni)) then
     begin
-      for var area: TArea in Self.areas do
-        Area.BlkWriteError(Self, 'Není koncová poloha ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+      Self.BottomErrorBroadcast('Není koncová poloha ' + Self.m_globSettings.name, 'TECHNOLOGIE');
       JCDb.Cancel(Self);
     end; // if Blokovani
 
@@ -785,8 +784,7 @@ begin
 
         if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> plus))) then
         begin
-          for var area: TArea in Self.areas do
-            Area.BlkWriteError(Self, 'Ztráta dohledu na výhybce ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+          Self.BottomErrorBroadcast('Ztráta dohledu na výhybce ' + Self.m_globSettings.name, 'TECHNOLOGIE');
           JCDb.Cancel(Self);
         end;
       end;
@@ -823,8 +821,7 @@ begin
 
         if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> minus))) then
         begin
-          for var area: TArea in Self.areas do
-            Area.BlkWriteError(Self, 'Ztráta dohledu na výhybce ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+          Self.BottomErrorBroadcast('Ztráta dohledu na výhybce ' + Self.m_globSettings.name, 'TECHNOLOGIE');
           JCDb.Cancel(Self);
         end;
       end;
@@ -839,8 +836,7 @@ begin
     if ((((Self.ShouldBeLocked()) and (Self.zaver <> TZaver.staveni)) or (Self.LockLocked())) and
       (Self.m_state.positionOld <> both)) then
     begin
-      for var area: TArea in Self.areas do
-        Area.BlkWriteError(Self, 'Není koncová poloha ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+      Self.BottomErrorBroadcast('Není koncová poloha ' + Self.m_globSettings.name, 'TECHNOLOGIE');
       JCDb.Cancel(Self);
     end; // if Blokovani
 
