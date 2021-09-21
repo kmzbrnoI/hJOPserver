@@ -109,6 +109,7 @@ type
     procedure Disable(); override;
     procedure Reset(); override;
     procedure SetStatus(new: TBlkPstStatus);
+    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
     procedure Change(now: Boolean = false); override;
@@ -325,6 +326,12 @@ begin
       if ((blk <> nil) and (blk.typ = btTurnout)) then
         TBlkTurnout(blk).PstAdd(Self);
     end;
+    for var signalId in Self.m_settings.signals do
+    begin
+      var blk := Blocks.GetBlkByID(signalId);
+      if ((blk <> nil) and (blk.typ = btSignal)) then
+        TBlkSignal(blk).PstAdd(Self);
+    end;
 
   end else if ((old > pstOff) and (new = pstOff)) then
   begin
@@ -340,6 +347,12 @@ begin
       var blk := Blocks.GetBlkByID(turnoutId);
       if ((blk <> nil) and (blk.typ = btTurnout)) then
         TBlkTurnout(blk).PstRemove(Self);
+    end;
+    for var signalId in Self.m_settings.signals do
+    begin
+      var blk := Blocks.GetBlkByID(signalId);
+      if ((blk <> nil) and (blk.typ = btSignal)) then
+        TBlkSignal(blk).PstRemove(Self);
     end;
     // unlock all refugees
     for var refugeeZav in Self.m_settings.refugees do
@@ -362,11 +375,31 @@ begin
       if (blk <> nil) then
         blk.Change();
     end;
+    for var signalId in Self.m_settings.signals do
+    begin
+      var blk := Blocks.GetBlkByID(signalId);
+      if (blk <> nil) then
+        blk.Change();
+    end;
 
   end;
 
   Self.ShowIndication();
 end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkPst.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+begin
+  if ((portType = TRCSIOType.output) and ((addr = Self.m_settings.rcsOutTaken) or (addr = Self.m_settings.rcsOutHorn))) then
+    Exit(true);
+
+  if ((portType = TRCSIOType.input) and ((addr = Self.m_settings.rcsInTake) or (addr = Self.m_settings.rcsInRelease))) then
+    Exit(true);
+
+ Result := false;
+end;
+
 
 /// /////////////////////////////////////////////////////////////////////////////
 
