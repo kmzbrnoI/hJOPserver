@@ -206,6 +206,7 @@ type
     procedure ReadContollers();
 
     procedure PstCheckActive();
+    procedure PositionError();
 
   public
     constructor Create(index: Integer);
@@ -726,7 +727,7 @@ begin
       if (Self.state.position <> TTurnoutPosition.disabled) then
       begin
         Self.m_state.position := TTurnoutPosition.disabled;
-        JCDb.Cancel(Self);
+        Self.PositionError();
       end;
       Exit();
     end;
@@ -734,7 +735,7 @@ begin
     if (Self.state.position <> TTurnoutPosition.disabled) then
     begin
       Self.m_state.position := TTurnoutPosition.disabled;
-      JCDb.Cancel(Self);
+      Self.PositionError();
     end;
     Exit();
   end;
@@ -748,8 +749,8 @@ begin
       (Self.LockLocked())) and (Self.zaver <> TZaver.staveni)) then
     begin
       Self.BottomErrorBroadcast('Není koncová poloha ' + Self.m_globSettings.name, 'TECHNOLOGIE');
-      JCDb.Cancel(Self);
-    end; // if Blokovani
+      Self.PositionError();
+    end;
 
     Self.m_state.positionReal := none;
   end;
@@ -785,7 +786,7 @@ begin
         if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> plus))) then
         begin
           Self.BottomErrorBroadcast('Ztráta dohledu na výhybce ' + Self.m_globSettings.name, 'TECHNOLOGIE');
-          JCDb.Cancel(Self);
+          Self.PositionError();
         end;
       end;
     end;
@@ -822,7 +823,7 @@ begin
         if ((Self.ShouldBeLocked(false)) or (Self.LockLocked() and (Self.m_settings.lockPosition <> minus))) then
         begin
           Self.BottomErrorBroadcast('Ztráta dohledu na výhybce ' + Self.m_globSettings.name, 'TECHNOLOGIE');
-          JCDb.Cancel(Self);
+          Self.PositionError();
         end;
       end;
     end;
@@ -837,8 +838,8 @@ begin
       (Self.m_state.positionOld <> both)) then
     begin
       Self.BottomErrorBroadcast('Není koncová poloha ' + Self.m_globSettings.name, 'TECHNOLOGIE');
-      JCDb.Cancel(Self);
-    end; // if Blokovani
+      Self.PositionError();
+    end;
 
     Self.m_state.positionReal := both;
   end;
@@ -2073,5 +2074,16 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-end.// unit
+procedure TBlkTurnout.PositionError();
+begin
+  JCDb.Cancel(Self);
+
+  for var blk: TBlk in Blocks do
+    if (blk.typ = btPst) then
+      TBlkPst(blk).CheckRefugeesPos();
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+end.
 

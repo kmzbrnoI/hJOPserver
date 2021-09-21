@@ -33,6 +33,7 @@ type
     note: string;
     senderOR: TObject;
     senderPnl: TIdContext;
+    error: Boolean;
   end;
 
   // Pst has zaver if any track in pst has zaver
@@ -43,6 +44,9 @@ type
       status: pstDisabled;
       emLock: 0;
       note: '';
+      senderOR: nil;
+      senderPnl: nil;
+      error: false;
     );
 
   private
@@ -67,6 +71,7 @@ type
 
     procedure SetEmLock(new: Boolean);
     procedure SetNote(note: string);
+    procedure SetError(new: Boolean);
 
     procedure CheckInputs();
     procedure ShowIndication();
@@ -113,6 +118,7 @@ type
     procedure SetSettings(settings: TBlkPstSettings);
 
     procedure DecreaseEmLock(amount: Cardinal);
+    procedure CheckRefugeesPos();
 
     property state: TBlkPstState read m_state;
     property status: TBlkPstStatus read m_state.status write SetStatus;
@@ -121,6 +127,7 @@ type
     property emLock: Boolean read GetEmLock write SetEmLock;
     property note: string read m_state.note write SetNote;
     property enabled: Boolean read GetEnabled;
+    property error: Boolean read m_state.error write SetError;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
@@ -269,6 +276,7 @@ end;
 procedure TBlkPst.Enable();
 begin
   Self.m_state.status := pstOff;
+  Self.m_state.error := false;
   Self.Change();
 end;
 
@@ -276,6 +284,7 @@ procedure TBlkPst.Disable();
 begin
   Self.m_state.status := pstDisabled;
   Self.m_state.emLock := 0;
+  Self.m_state.error := false;
   Self.Change(true);
 end;
 
@@ -283,6 +292,7 @@ procedure TBlkPst.Reset();
 begin
   Self.m_state.senderOR := nil;
   Self.m_state.senderPnl := nil;
+  Self.m_state.error := false;
 end;
 
 procedure TBlkPst.SetStatus(new: TBlkPstStatus);
@@ -434,7 +444,10 @@ end;
 procedure TBlkPst.CSNPStDone(Sender: TIDContext; success: Boolean);
 begin
   if (success) then
+  begin
+    Self.error := false;
     Self.status := pstOff;
+  end;
 end;
 
 procedure TBlkPst.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -499,9 +512,9 @@ begin
 
   if ((Self.status = pstOff) and (not Self.zaver)) then
     Result := Result + 'PST>,'
-  else if (Self.status = pstTakeReady) then
+  else if ((Self.status = pstTakeReady) and (not Self.error)) then
     Result := Result + 'PST<,'
-  else if (Self.status = pstActive) then
+  else if ((Self.status = pstActive) or (Self.error)) then
     Result := Result + '!NPST,';
 
   try
@@ -625,6 +638,15 @@ begin
   end;
 end;
 
+procedure TBlkPst.SetError(new: Boolean);
+begin
+  if (Self.m_state.error <> new) then
+  begin
+    Self.m_state.error := new;
+    Self.Change();
+  end;
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkPst.DecreaseEmLock(amount: Cardinal);
@@ -666,6 +688,12 @@ begin
 
   if (Self.emLock) then
     fg := clAqua;
+
+  if (Self.error) then
+    bg := clBlue;
+
+  if ((fg = clBlue) and (bg = clBlue)) then
+    fg := clBlack;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';';
   Result := Result + ownConvert.ColorToStr(bg) + ';0;';
@@ -1153,6 +1181,17 @@ begin
       Exit(false);
   end;
   Result := true;
+end;
+
+procedure TBlkPst.CheckRefugeesPos();
+begin
+  if ((Self.error) or (Self.status < pstTakeReady)) then
+    Exit();
+  if (not Self.AllRefugeesInPosition()) then
+  begin
+    Self.error := true;
+    Self.BottomErrorBroadcast('Porucha ' + Self.name, 'TECHNOLOGIE');
+  end;
 end;
 
 end.
