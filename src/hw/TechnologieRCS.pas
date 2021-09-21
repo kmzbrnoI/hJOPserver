@@ -104,6 +104,7 @@ type
     procedure SetInput(addr: TRCSAddr; state: Integer); overload;
     procedure SetInputs(addrs: TList<TRCSAddr>; state: Integer); overload;
     function GetOutput(addr: TRCSAddr): Integer; overload;
+    function GetOutputState(addr: TRCSAddr): TRCSOutputState; overload;
 
     procedure AddInputChangeEvent(board: Cardinal; event: TRCSBoardChangeEvent);
     procedure RemoveInputChangeEvent(event: TRCSBoardChangeEvent; board: Integer = -1);
@@ -519,6 +520,11 @@ end;
 function TRCS.GetOutput(addr: TRCSAddr): Integer;
 begin
   Result := Self.GetOutput(addr.board, addr.port);
+end;
+
+function TRCS.GetOutputState(addr: TRCSAddr): TRCSOutputState;
+begin
+  Result := Self.GetOutputState(addr.board, addr.port);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
