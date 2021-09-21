@@ -13,6 +13,11 @@ type
   TBlkDiscSettings = record
     RCSAddrs: TRCSAddrs; // only 1 address
     outputType: TRCSOutputState;
+    rcsController: record
+      enabled: Boolean;
+      addr: TRCSAddr;
+      pstOnly: Boolean;
+    end;
   end;
 
   TBlkDiscState = record
@@ -112,7 +117,16 @@ begin
   Self.PushRCSToAreas(Self.m_settings.RCSAddrs);
   Self.m_settings.outputType := TRCSOutputState(ini_tech.ReadInteger(section, 'outputType', 1));
 
+  Self.m_settings.rcsController.enabled := (ini_tech.ReadString(section, 'contRcsAddr', '') <> '');
+  if (Self.m_settings.rcsController.enabled) then
+   begin
+    Self.m_settings.rcsController.addr.Load(ini_tech.ReadString(section, 'contRcsAddr', '0:0'));
+    Self.m_settings.rcsController.pstOnly := ini_tech.ReadBool(section, 'contPstOnly', false);
+    Self.PushRCSToAreas(Self.m_settings.rcsController.addr);
+   end;
+
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
+  Self.PushRCSToAreas(Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkDisconnector.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -123,6 +137,12 @@ begin
 
   if (Self.m_settings.outputType <> osEnabled) then
     ini_tech.WriteInteger(section, 'outputType', Integer(Self.m_settings.outputType));
+
+  if (Self.m_settings.rcsController.enabled) then
+   begin
+    ini_tech.WriteString(section, 'contRcsAddr', Self.m_settings.rcsController.addr.ToString());
+    ini_tech.WriteBool(section, 'contPstOnly', Self.m_settings.rcsController.pstOnly);
+   end;
 end;
 
 procedure TBlkDisconnector.SaveStatus(ini_stat: TMemIniFile; const section: string);
@@ -134,21 +154,20 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkDisconnector.Enable();
-var rcsaddr: TRCSAddr;
-  Enable: Boolean;
+var enable: Boolean;
 begin
-  Enable := true;
+  enable := true;
   try
-    for rcsaddr in Self.m_settings.RCSAddrs do
+    for var rcsaddr in Self.m_settings.RCSAddrs do
       if (not RCSi.IsNonFailedModule(rcsaddr.board)) then
-        Enable := false;
+        enable := false;
   except
-    Enable := false;
+    enable := false;
   end;
 
   Self.m_state.rcsFailed := not Enable;
 
-  if (Enable) then
+  if (enable) then
     Self.state := TBlkDiscBasicState.not_selected;
 end;
 

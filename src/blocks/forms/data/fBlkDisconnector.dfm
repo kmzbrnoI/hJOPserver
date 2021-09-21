@@ -4,7 +4,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkDisconnector'
-  ClientHeight = 209
+  ClientHeight = 332
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -156,7 +156,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
   end
   object B_Storno: TButton
     Left = 151
-    Top = 179
+    Top = 302
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -164,12 +164,12 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 3
+    TabOrder = 5
     OnClick = B_StornoClick
   end
   object B_Save: TButton
     Left = 240
-    Top = 179
+    Top = 302
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -180,5 +180,92 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Default = True
     TabOrder = 4
     OnClick = B_SaveClick
+  end
+  object GB_Indications: TGroupBox
+    Left = 8
+    Top = 172
+    Width = 302
+    Height = 125
+    Caption = ' Voli'#269'e pro ru'#269'n'#237' ovl'#225'd'#225'n'#237' (v pultu)  '
+    TabOrder = 3
+    object Label6: TLabel
+      Left = 7
+      Top = 88
+      Width = 26
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Voli'#269':'
+    end
+    object Label8: TLabel
+      Left = 150
+      Top = 71
+      Width = 29
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Modul'
+    end
+    object Label9: TLabel
+      Left = 229
+      Top = 71
+      Width = 19
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Port'
+    end
+    object SE_Cont_Module: TSpinEdit
+      Left = 150
+      Top = 88
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 1
+      OnExit = SE_Cont_ModuleExit
+    end
+    object SE_Cont_Port: TSpinEdit
+      Left = 226
+      Top = 88
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 3
+      Value = 0
+    end
+    object CHB_Contoller: TCheckBox
+      Left = 7
+      Top = 19
+      Width = 54
+      Height = 17
+      Caption = 'Povolit'
+      TabOrder = 0
+      OnClick = CHB_ContollerClick
+    end
+    object CHB_Contoller_Pst: TCheckBox
+      Left = 7
+      Top = 42
+      Width = 241
+      Height = 17
+      Caption = 'Aktivn'#237' pouze p'#345'i aktivn'#237'm pomocn'#233'm stav'#283'dle'
+      TabOrder = 1
+    end
   end
 end

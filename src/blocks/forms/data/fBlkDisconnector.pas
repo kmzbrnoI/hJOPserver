@@ -21,10 +21,20 @@ type
     SE_module: TSpinEdit;
     CB_outputType: TComboBox;
     Label5: TLabel;
+    GB_Indications: TGroupBox;
+    Label6: TLabel;
+    Label8: TLabel;
+    Label9: TLabel;
+    SE_Cont_Module: TSpinEdit;
+    SE_Cont_Port: TSpinEdit;
+    CHB_Contoller: TCheckBox;
+    CHB_Contoller_Pst: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure SE_moduleExit(Sender: TObject);
+    procedure CHB_ContollerClick(Sender: TObject);
+    procedure SE_Cont_ModuleExit(Sender: TObject);
   private
     isNewBlock: Boolean;
     block: TBlkDisconnector;
@@ -64,6 +74,11 @@ begin
   Self.ShowModal();
 end;
 
+procedure TF_BlkDisconnector.SE_Cont_ModuleExit(Sender: TObject);
+begin
+  Self.SE_Cont_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Cont_Module.Value, Self.SE_Cont_Port.Value);
+end;
+
 procedure TF_BlkDisconnector.SE_moduleExit(Sender: TObject);
 begin
   Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
@@ -77,6 +92,9 @@ begin
   Self.SE_port.Value := 0;
   Self.SE_moduleExit(Self);
   Self.CB_outputType.ItemIndex := 1;
+
+  Self.CHB_Contoller.Checked := false;
+  Self.CHB_ContollerClick(Self.CHB_Contoller);
 
   Self.Caption := 'Nový rozpojovač';
   Self.ActiveControl := Self.E_name;
@@ -121,8 +139,37 @@ begin
     Self.CB_outputType.ItemIndex := -1;
   end;
 
+  begin
+    Self.CHB_Contoller.Checked := settings.rcsController.enabled;
+    Self.CHB_ContollerClick(Self.CHB_Contoller);
+    if (settings.rcsController.enabled) then
+    begin
+      if (settings.rcsController.addr.board > Cardinal(Self.SE_Cont_Module.MaxValue)) then
+        Self.SE_Cont_Module.MaxValue := 0;
+      Self.SE_Cont_Port.MaxValue := 0;
+
+      Self.SE_Cont_Module.Value := settings.rcsController.addr.board;
+      Self.SE_Cont_Port.Value := settings.rcsController.addr.port;
+      Self.CHB_Contoller_Pst.Checked := settings.rcsController.pstOnly;
+    end;
+  end;
+
   Self.Caption := 'Upravit blok ' + glob.name + ' (rozpojovač)';
   Self.ActiveControl := B_Save;
+end;
+
+procedure TF_BlkDisconnector.CHB_ContollerClick(Sender: TObject);
+begin
+  Self.CHB_Contoller_Pst.Enabled := Self.CHB_Contoller.Checked;
+  Self.SE_Cont_Module.Enabled := Self.CHB_Contoller.Checked;
+  Self.SE_Cont_Port.Enabled := Self.CHB_Contoller.Checked;
+
+  if (not Self.CHB_Contoller.Checked) then
+  begin
+    Self.CHB_Contoller_Pst.Checked := false;
+    Self.SE_Cont_Module.Value := 0;
+    Self.SE_Cont_Port.Value := 0;
+  end;
 end;
 
 procedure TF_BlkDisconnector.CommonOpenForm;
@@ -161,13 +208,13 @@ begin
     Exit();
   end;
 
-  var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value), Self.block,
-    TRCSIOType.output);
-  if (another <> nil) then
+  var messages := '';
+
   begin
-    if (Application.MessageBox(PChar('RCS adresa se již používá na bloku ' + another.name + ', chcete pokračovat?'),
-      'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
-      Exit();
+    var addr := TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value);
+    var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
+    if (another <> nil) then
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
   end;
 
   glob.name := Self.E_name.Text;
@@ -206,6 +253,21 @@ begin
   else
     settings.outputType := osEnabled;
   end;
+
+  settings.rcsController.enabled := Self.CHB_Contoller.Checked;
+  if (Self.CHB_Contoller.Checked) then
+  begin
+    settings.rcsController.addr.board := Self.SE_Cont_Module.Value;
+    settings.rcsController.addr.port := Self.SE_Cont_Port.Value;
+    settings.rcsController.pstOnly := Self.CHB_Contoller_Pst.Checked;
+
+    var another := Blocks.AnotherBlockUsesRCS(settings.rcsController.addr, Self.block, TRCSIOType.input);
+    if (another <> nil) then
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcsController.addr.ToString() + '.' + #13#10;
+  end;
+
+  if (messages <> '') then
+    Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
 
   Self.block.SetSettings(settings);
 
