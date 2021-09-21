@@ -55,6 +55,8 @@ type
     procedure MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuHoukEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuHoukDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 
     procedure MenuAdminPoOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAdminPoOffClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -448,6 +450,24 @@ procedure TBlkPst.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
 end;
 
+procedure TBlkPst.MenuHoukEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  try
+    RCSi.SetOutput(Self.m_settings.rcsOutHorn, osf60);
+  except
+    PanelServer.BottomError(SenderPnl, 'Nelze nastavit RCS výstup!', TArea(SenderOR).ShortName, 'TECHNOLOGIE');
+  end;
+end;
+
+procedure TBlkPst.MenuHoukDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  try
+    RCSi.SetOutput(Self.m_settings.rcsOutHorn, osDisabled);
+  except
+    PanelServer.BottomError(SenderPnl, 'Nelze nastavit RCS výstup!', TArea(SenderOR).ShortName, 'TECHNOLOGIE');
+  end;
+end;
+
 procedure TBlkPst.MenuAdminPoOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   try
@@ -483,6 +503,15 @@ begin
     Result := Result + 'PST<,'
   else if (Self.status = pstActive) then
     Result := Result + '!NPST,';
+
+  try
+    if (RCSi.GetOutput(Self.m_settings.rcsOutHorn) > 0) then
+      Result := Result + 'HOUK<,'
+    else
+      Result := Result + 'HOUK>,';
+  except
+    on E: RCSException do begin end;
+  end;
 
   Result := Result + 'STIT,';
 
@@ -526,6 +555,10 @@ begin
     Self.MenuZAVEnableClick(SenderPnl, SenderOR)
   else if (item = 'ZAV<') then
     Self.MenuZAVDisableClick(SenderPnl, SenderOR)
+  else if (item = 'HOUK>') then
+    Self.MenuHoukEnableClick(SenderPnl, SenderOR)
+  else if (item = 'HOUK<') then
+    Self.MenuHoukDisableClick(SenderPnl, SenderOR)
   else if (item = 'PO>') then
     Self.MenuAdminPoOnClick(SenderPnl, SenderOR)
   else if (item = 'PO<') then
