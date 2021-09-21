@@ -1278,6 +1278,9 @@ begin
     // Warning: this may call callback directly
     refugee.SetPosition(TTurnoutPosition(refugeeZav.position), true, false, Self.RefugeeMoved, Self.RefugeeNotMoved);
   end;
+
+  if (Self.m_settings.refugees.Count = 0) then
+    Self.RefugeeMoved(nil);
 end;
 
 procedure TBlkPst.RefugeeMoved(Sender: TObject);

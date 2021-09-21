@@ -1081,7 +1081,7 @@ begin
     ENTER:
       begin
         if (((((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1)) and (JCDb.FindJCActivating(Self.id) = nil) and
-          (Self.signal <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self) and (Self.enabled))) or
+          (Self.signal <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self) and (Self.enabled)) and (not Self.PstIs())) or
           (TArea(SenderOR).stack.mode = VZ)) and (JCDb.IsAnyVC(Self))) then
         begin
           if ((not Self.m_settings.locked) and (not Self.autoblok)) then
@@ -1094,7 +1094,7 @@ begin
     F1:
       begin
         if (((((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1)) and (JCDb.FindJCActivating(Self.id) = nil) and
-          (Self.signal <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)) and (Self.enabled)) or
+          (Self.signal <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)) and (Self.enabled) and (not Self.PstIs())) or
           ((SenderOR as TArea).stack.mode = VZ)) and (JCDb.IsAnyPC(Self))) then
         begin
           if ((not Self.m_settings.locked) and (not Self.autoblok)) then
