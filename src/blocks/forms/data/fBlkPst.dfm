@@ -3,7 +3,7 @@ object F_BlkPst: TF_BlkPst
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'F_BlkPst'
-  ClientHeight = 449
+  ClientHeight = 487
   ClientWidth = 990
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -67,8 +67,8 @@ object F_BlkPst: TF_BlkPst
     Value = 1
   end
   object B_Storno: TButton
-    Left = 94
-    Top = 417
+    Left = 821
+    Top = 456
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -76,12 +76,12 @@ object F_BlkPst: TF_BlkPst
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 7
+    TabOrder = 8
     OnClick = B_StornoClick
   end
   object B_Apply: TButton
-    Left = 7
-    Top = 417
+    Left = 909
+    Top = 456
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -90,7 +90,7 @@ object F_BlkPst: TF_BlkPst
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 8
+    TabOrder = 9
     OnClick = B_ApplyClick
   end
   object GB_RCS: TGroupBox
@@ -284,7 +284,7 @@ object F_BlkPst: TF_BlkPst
     end
   end
   object GB_Tracks: TGroupBox
-    Left = 317
+    Left = 319
     Top = 7
     Width = 329
     Height = 225
@@ -296,7 +296,7 @@ object F_BlkPst: TF_BlkPst
     Caption = ' '#218'seky '
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 3
+    TabOrder = 4
     object GB_TrackEdit: TGroupBox
       Left = 2
       Top = 174
@@ -309,7 +309,6 @@ object F_BlkPst: TF_BlkPst
       Align = alBottom
       Caption = ' P'#345'idat/upravit '#250'sek '
       TabOrder = 1
-      ExplicitTop = 192
       object CB_Track: TComboBox
         Left = 10
         Top = 16
@@ -379,8 +378,6 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_TracksChange
-      ExplicitTop = 53
-      ExplicitHeight = 139
     end
   end
   object GB_Turnouts: TGroupBox
@@ -393,7 +390,7 @@ object F_BlkPst: TF_BlkPst
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' V'#253'hybky '
-    TabOrder = 4
+    TabOrder = 5
     object LV_Turnouts: TListView
       Left = 2
       Top = 15
@@ -423,9 +420,6 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_TurnoutsChange
-      ExplicitTop = 52
-      ExplicitWidth = 326
-      ExplicitHeight = 134
     end
     object GB_TurnoutEdit: TGroupBox
       Left = 2
@@ -439,8 +433,6 @@ object F_BlkPst: TF_BlkPst
       Align = alBottom
       Caption = ' P'#345'idat/upravit v'#253'hybku '
       TabOrder = 1
-      ExplicitTop = 208
-      ExplicitWidth = 326
       object CB_Turnout: TComboBox
         Left = 10
         Top = 16
@@ -492,7 +484,7 @@ object F_BlkPst: TF_BlkPst
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Odvraty '
-    TabOrder = 5
+    TabOrder = 6
     object LV_Refugees: TListView
       Left = 2
       Top = 15
@@ -526,9 +518,6 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_RefugeesChange
-      ExplicitTop = 54
-      ExplicitWidth = 261
-      ExplicitHeight = 134
     end
     object GB_RefEdit: TGroupBox
       Left = 2
@@ -542,8 +531,6 @@ object F_BlkPst: TF_BlkPst
       Align = alBottom
       Caption = ' P'#345'idat/upravit odvrat '
       TabOrder = 1
-      ExplicitTop = 188
-      ExplicitWidth = 261
       object Label10: TLabel
         Left = 8
         Top = 16
@@ -635,7 +622,7 @@ object F_BlkPst: TF_BlkPst
     Caption = ' N'#225'v'#283'stidla '
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 6
+    TabOrder = 7
     object GB_Signal_Edit: TGroupBox
       Left = 2
       Top = 154
@@ -648,7 +635,6 @@ object F_BlkPst: TF_BlkPst
       Align = alBottom
       Caption = ' P'#345'idat/upravit n'#225'v'#283'stidlo '
       TabOrder = 1
-      ExplicitTop = 192
       object CB_Signal: TComboBox
         Left = 10
         Top = 16
@@ -718,7 +704,105 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_SignalsChange
-      ExplicitTop = 53
+    end
+  end
+  object GB_Disconnectors: TGroupBox
+    Left = 7
+    Top = 254
+    Width = 307
+    Height = 225
+    Hint = 'Zadavejte useky od navestidla smerem k poslednimu bloku (vcetne)'
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = ' Rozpojova'#269'e '
+    ParentShowHint = False
+    ShowHint = True
+    TabOrder = 3
+    object GB_disc_edit: TGroupBox
+      Left = 2
+      Top = 174
+      Width = 303
+      Height = 49
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alBottom
+      Caption = ' P'#345'idat/upravit rozpojova'#269' '
+      TabOrder = 1
+      ExplicitWidth = 325
+      object CB_Disconnector: TComboBox
+        Left = 10
+        Top = 16
+        Width = 159
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 0
+      end
+      object B_Disc_Ok: TButton
+        Left = 173
+        Top = 16
+        Width = 53
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Ok'
+        TabOrder = 1
+        OnClick = B_Disc_OkClick
+      end
+      object B_Disc_Delete: TButton
+        Left = 230
+        Top = 16
+        Width = 63
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Smazat'
+        Enabled = False
+        TabOrder = 2
+        OnClick = B_Disc_DeleteClick
+      end
+    end
+    object LV_Disconnectors: TListView
+      Left = 2
+      Top = 15
+      Width = 303
+      Height = 159
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alClient
+      Columns = <
+        item
+          Caption = '#'
+          Width = 20
+        end
+        item
+          Caption = 'ID'
+        end
+        item
+          Caption = 'Rozpojova'#269
+          Width = 200
+        end>
+      GridLines = True
+      MultiSelect = True
+      ReadOnly = True
+      RowSelect = True
+      TabOrder = 0
+      ViewStyle = vsReport
+      OnChange = LV_DisconnectorsChange
+      ExplicitWidth = 325
     end
   end
 end

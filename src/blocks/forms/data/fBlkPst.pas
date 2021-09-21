@@ -57,6 +57,12 @@ type
     B_Ref_Del: TButton;
     B_Turnout_Del: TButton;
     B_Signal_Del: TButton;
+    GB_Disconnectors: TGroupBox;
+    GB_disc_edit: TGroupBox;
+    CB_Disconnector: TComboBox;
+    B_Disc_Ok: TButton;
+    B_Disc_Delete: TButton;
+    LV_Disconnectors: TListView;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
@@ -82,6 +88,10 @@ type
     procedure SE_RCS_Release_ModuleExit(Sender: TObject);
     procedure SE_RCS_Indication_ModuleExit(Sender: TObject);
     procedure SE_RCS_Horn_ModuleExit(Sender: TObject);
+    procedure LV_DisconnectorsChange(Sender: TObject; Item: TListItem;
+      Change: TItemChange);
+    procedure B_Disc_DeleteClick(Sender: TObject);
+    procedure B_Disc_OkClick(Sender: TObject);
   private
     isNewBlock: Boolean;
     block: TBlkPst;
@@ -89,6 +99,7 @@ type
     CB_TurnoutItems: TList<Integer>;
     CB_RefugeeItems: TList<Integer>;
     CB_SignalItems: TList<Integer>;
+    CB_DiscItems: TList<Integer>;
     openIndex: Integer;
 
     procedure NewBlkOpenForm();
@@ -114,6 +125,24 @@ implementation
 uses BlockDb, Block, Area, DataBloky, IfThenElse, BlockTurnout, TechnologieRCS;
 
 {$R *.dfm}
+
+procedure TF_BlkPst.FormCreate(Sender: TObject);
+begin
+  Self.CB_TrackItems := TList<Integer>.Create();
+  Self.CB_TurnoutItems := TList<Integer>.Create();
+  Self.CB_RefugeeItems := TList<Integer>.Create();
+  Self.CB_SignalItems := TList<Integer>.Create();
+  Self.CB_DiscItems := TList<Integer>.Create();
+end;
+
+procedure TF_BlkPst.FormDestroy(Sender: TObject);
+begin
+  Self.CB_TrackItems.Free();
+  Self.CB_TurnoutItems.Free();
+  Self.CB_RefugeeItems.Free();
+  Self.CB_SignalItems.Free();
+  Self.CB_DiscItems.Free();
+end;
 
 procedure TF_BlkPst.EditBlock(blockIndex: Integer);
 begin
@@ -142,6 +171,8 @@ begin
   Self.B_Ref_Ok.Enabled := Self.CB_Ref_Block.Enabled;
   Blocks.FillCB(Self.CB_Signal, Self.CB_SignalItems, nil, nil, btSignal);
   Self.B_Signal_Ok.Enabled := Self.CB_Signal.Enabled;
+  Blocks.FillCB(Self.CB_Disconnector, Self.CB_DiscItems, nil, nil, btDisconnector);
+  Self.B_Disc_Ok.Enabled := Self.CB_Disconnector.Enabled;
 
   Self.Caption := 'Nový blok Pomocné stavědlo';
   Self.ActiveControl := Self.E_Name;
@@ -189,6 +220,14 @@ begin
   end;
   Blocks.FillCB(Self.CB_Signal, Self.CB_SignalItems, nil, Self.block.areas, btSignal);
   Self.B_Signal_Ok.Enabled := Self.CB_Signal.Enabled;
+
+  for var i := 0 to pstSettings.disconnectors.Count-1 do
+  begin
+    var LI := Self.LV_Disconnectors.Items.Add();
+    Self.FillBlockLI(LI, pstSettings.disconnectors[i]);
+  end;
+  Blocks.FillCB(Self.CB_Disconnector, Self.CB_DiscItems, nil, Self.block.areas, btDisconnector);
+  Self.B_Disc_Ok.Enabled := Self.CB_Disconnector.Enabled;
 
   if (pstSettings.rcsInTake.board > Cardinal(Self.SE_RCS_Take_Module.MaxValue)) then
     Self.SE_RCS_Take_Module.MaxValue := 0;
@@ -248,11 +287,13 @@ begin
   Self.LV_Turnouts.Clear();
   Self.LV_Refugees.Clear();
   Self.LV_Signals.Clear();
+  Self.LV_Disconnectors.Clear();
 
   Self.B_Track_Del.Enabled := false;
   Self.B_Turnout_Del.Enabled := false;
   Self.B_Ref_Del.Enabled := false;
   Self.B_Signal_Del.Enabled := false;
+  Self.B_Disc_Delete.Enabled := false;
 
   Self.SE_RCS_Take_Module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCS_Indication_Module.MaxValue := RCSi.maxModuleAddrSafe;
@@ -325,6 +366,10 @@ begin
     pstSettings.refugees.Add(zav);
   end;
 
+  pstSettings.disconnectors := TList<Integer>.Create();
+  for var LI: TListItem in Self.LV_Disconnectors.Items do
+    pstSettings.disconnectors.Add(StrToInt(LI.SubItems[0]));
+
   pstSettings.rcsInTake.board := Self.SE_RCS_Take_Module.Value;
   pstSettings.rcsInTake.port := Self.SE_RCS_Take_Port.Value;
 
@@ -341,6 +386,38 @@ begin
 
   Self.Close();
   Self.block.Change();
+end;
+
+procedure TF_BlkPst.B_Disc_DeleteClick(Sender: TObject);
+begin
+  Self.LV_Disconnectors.DeleteSelected();
+end;
+
+procedure TF_BlkPst.B_Disc_OkClick(Sender: TObject);
+begin
+  if (not Self.CB_Disconnector.Enabled) then
+    Exit();
+
+  if (Self.CB_Disconnector.ItemIndex = -1) then
+  begin
+    Application.MessageBox('Vyberte rozpojovač!', 'Nelze přidat/upravit rozpojovač', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+
+  var id := Self.CB_DiscItems[Self.CB_Disconnector.ItemIndex];
+  if ((Self.LV_Disconnectors.Selected = nil) and (Self.BlockPresent(id, Self.LV_Disconnectors))) then
+  begin
+    Application.MessageBox('Nelze přidat duplicitní rozpojovač!', 'Nelze přidat/upravit rozpojovač', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+
+  var LI: TListItem;
+  if (Self.LV_Disconnectors.Selected = nil) then
+    LI := Self.LV_Disconnectors.Items.Add()
+  else
+    LI := Self.LV_Disconnectors.Selected;
+
+  Self.FillBlockLI(LI, id);
 end;
 
 procedure TF_BlkPst.B_Ref_DelClick(Sender: TObject);
@@ -501,20 +578,22 @@ begin
   BlocksTablePainter.UpdateTable();
 end;
 
-procedure TF_BlkPst.FormCreate(Sender: TObject);
+procedure TF_BlkPst.LV_DisconnectorsChange(Sender: TObject; Item: TListItem;
+  Change: TItemChange);
 begin
-  Self.CB_TrackItems := TList<Integer>.Create();
-  Self.CB_TurnoutItems := TList<Integer>.Create();
-  Self.CB_RefugeeItems := TList<Integer>.Create();
-  Self.CB_SignalItems := TList<Integer>.Create();
-end;
+  Self.B_Disc_Delete.Enabled := (Self.LV_Disconnectors.Selected <> nil);
 
-procedure TF_BlkPst.FormDestroy(Sender: TObject);
-begin
-  Self.CB_TrackItems.Free();
-  Self.CB_TurnoutItems.Free();
-  Self.CB_RefugeeItems.Free();
-  Self.CB_SignalItems.Free();
+  if (Self.CB_Disconnector.Enabled) then
+  begin
+    Self.CB_Disconnector.ItemIndex := -1;
+    if (Self.LV_Disconnectors.Selected <> nil) then
+    begin
+      var id := StrToInt(Self.LV_Disconnectors.Selected.SubItems[0]);
+      for var i := 0 to Self.CB_DiscItems.Count-1 do
+        if (Self.CB_DiscItems[i] = id) then
+          Self.CB_Disconnector.ItemIndex := i;
+    end;
+  end;
 end;
 
 procedure TF_BlkPst.LV_RefugeesChange(Sender: TObject; Item: TListItem;
