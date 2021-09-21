@@ -61,6 +61,11 @@ type
     procedure MenuAdminRadOnClick(SenderPnl: TIDContext; SenderOR: TObject);
     procedure MenuAdminRadOffClick(SenderPnl: TIDContext; SenderOR: TObject);
 
+    procedure ActivateWithPossibleUPO(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure UPOActivDone(Sender: TObject);
+    procedure NoteUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
+      UPO_EscCallback: TNotifyEvent);
+
     function IsActive(): Boolean;
     function IsActiveByController(): Boolean;
 
@@ -113,7 +118,8 @@ type
 
 implementation
 
-uses TCPServerPanel, ownConvert, Graphics, PTUtils, IfThenElse, BlockPst, RCSErrors;
+uses TCPServerPanel, ownConvert, Graphics, PTUtils, IfThenElse, BlockPst,
+    RCSErrors, UPO;
 
 constructor TBlkDisconnector.Create(index: Integer);
 begin
@@ -277,7 +283,7 @@ begin
           TBlkDiscBasicState.disabled, TBlkDiscBasicState.activeInfinite:
             PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
           TBlkDiscBasicState.inactive:
-            Self.state := TBlkDiscBasicState.active;
+            Self.ActivateWithPossibleUPO(SenderPnl, SenderOR);
           TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
             Self.Prolong();
         end;
@@ -482,7 +488,7 @@ end;
 
 procedure TBlkDisconnector.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.state := TBlkDiscBasicState.active;
+  Self.ActivateWithPossibleUPO(SenderPnl, SenderOR);
 end;
 
 procedure TBlkDisconnector.MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -604,6 +610,46 @@ begin
   except
     on E: RCSException do Exit();
     on E: Exception do raise;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkDisconnector.ActivateWithPossibleUPO(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  if (Self.note <> '') then
+    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOActivDone, nil)
+  else
+    Self.UPOActivDone(SenderPnl);
+end;
+
+procedure TBlkDisconnector.UPOActivDone(Sender: TObject);
+begin
+  Self.state := TBlkDiscBasicState.active;
+end;
+
+procedure TBlkDisconnector.NoteUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
+  UPO_EscCallback: TNotifyEvent);
+var UPO: TUPOItems;
+  item: TUPOItem;
+begin
+  UPO := TList<TUPOItem>.Create();
+  try
+    item[0] := GetUPOLine('ŠTÍTEK ' + Self.m_globSettings.name, taCenter, clBlack, clTeal);
+    var lines: TStrings := GetLines(Self.note, _UPO_LINE_LEN);
+
+    try
+      item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+      if (lines.Count > 1) then
+        item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+    finally
+      lines.Free();
+    end;
+
+    UPO.Add(item);
+    PanelServer.UPO(SenderPnl, UPO, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+  finally
+    UPO.Free();
   end;
 end;
 
