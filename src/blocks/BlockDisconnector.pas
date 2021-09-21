@@ -109,7 +109,7 @@ begin
 
   Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
   Self.LoadAreas(ini_rel, 'R').Free();
-  PushRCSToArea(Self.m_areas, Self.m_settings.RCSAddrs);
+  Self.PushRCSToAreas(Self.m_settings.RCSAddrs);
   Self.m_settings.outputType := TRCSOutputState(ini_tech.ReadInteger(section, 'outputType', 1));
 
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');

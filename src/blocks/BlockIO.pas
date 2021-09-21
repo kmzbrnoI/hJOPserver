@@ -150,12 +150,12 @@ begin
 
   if (Self.isRCSinput) then
   begin
-    PushRCSToArea(Self.m_areas, Self.m_settings.RCSinput);
+    Self.PushRCSToAreas(Self.m_settings.RCSinput);
     RCSi.SetNeeded(Self.m_settings.RCSinput.board);
   end;
   if (Self.isRCSOutput) then
   begin
-    PushRCSToArea(Self.m_areas, Self.m_settings.RCSoutput);
+    Self.PushRCSToAreas(Self.m_settings.RCSoutput);
     RCSi.SetNeeded(Self.m_settings.RCSoutput.board);
   end;
 end;

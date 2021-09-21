@@ -56,6 +56,8 @@ type
 
     class procedure PushRCSToArea(areas: TList<TArea>; RCSs: TRCSAddrs); overload;
     class procedure PushRCSToArea(areas: TList<TArea>; RCS: TRCSAddr); overload;
+    procedure PushRCSToAreas(RCSs: TRCSAddrs); overload;
+    procedure PushRCSToAreas(RCS: TRCSAddr); overload;
 
     procedure CallChangeEvents(var events: TChangeEvents);
     function LoadAreas(ini: TMemIniFile; section: string): TStrings; // user must free result!
@@ -272,6 +274,16 @@ class procedure TBlk.PushRCSToArea(areas: TList<TArea>; RCS: TRCSAddr);
 begin
   for var area: TArea in areas do
     Area.RCSAdd(RCS.board);
+end;
+
+procedure TBlk.PushRCSToAreas(RCSs: TRCSAddrs);
+begin
+  TBlk.PushRCSToArea(Self.areas, RCSs);
+end;
+
+procedure TBlk.PushRCSToAreas(RCS: TRCSAddr);
+begin
+  TBlk.PushRCSToArea(Self.areas, RCS);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
