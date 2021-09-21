@@ -10,11 +10,10 @@ uses IniFiles, Block, Classes, AreaDb, SysUtils, JsonDataObjects,
 type
   TBlkDiscBasicState = (
     disabled = -5,
-    notSelected = 0,
-    mounting = 1,
-    active = 2,
-    shortTimeRemaining = 3,
-    activeInfinite = 4
+    inactive = 0,
+    active = 1,
+    shortTimeRemaining = 2,
+    activeInfinite = 3
   );
 
   TBlkDiscSettings = record
@@ -41,7 +40,6 @@ type
     _def_disc_stav: TBlkDiscState = (state: disabled; rcsFailed: false; note: '';);
 
   private const
-    _MOUNT_TO_ACTIVE_TIME_SEC = 3;
     _ACTIVE_TO_DISABLE_TIME_SEC = 60;
     _WARNING_TIME_SEC = 15;
 
@@ -191,7 +189,7 @@ begin
   Self.m_state.rcsFailed := not Enable;
 
   if (enable) then
-    Self.state := TBlkDiscBasicState.notSelected;
+    Self.state := TBlkDiscBasicState.inactive;
 
   Self.m_state.psts.Clear();
 end;
@@ -206,6 +204,9 @@ end;
 
 function TBlkDisconnector.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
+  if ((portType = TRCSIOType.input) and (Self.m_settings.rcsController.enabled) and (addr = Self.m_settings.rcsController.addr)) then
+    Exit(true);
+
   Result := ((portType = TRCSIOType.output) and (Self.m_settings.RCSAddrs.Contains(addr)));
 end;
 
@@ -226,18 +227,13 @@ begin
         if ((Self.m_state.rcsFailed) and (RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].board))) then
         begin
           Self.m_state.rcsFailed := false;
-          Self.state := TBlkDiscBasicState.notSelected;
+          Self.state := TBlkDiscBasicState.inactive;
         end;
-      end;
-    TBlkDiscBasicState.mounting:
-      begin
-        if (Now > Self.m_state.finish) then
-          Self.state := TBlkDiscBasicState.active;
       end;
     TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
       begin
         if (Now > Self.m_state.finish) then
-          Self.state := TBlkDiscBasicState.notSelected
+          Self.state := TBlkDiscBasicState.inactive
         else if ((Now > Self.m_state.warning) and (Self.state = TBlkDiscBasicState.active)) then
           Self.state := TBlkDiscBasicState.shortTimeRemaining;
       end;
@@ -277,9 +273,7 @@ begin
         case (Self.state) of
           TBlkDiscBasicState.disabled, TBlkDiscBasicState.activeInfinite:
             PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
-          TBlkDiscBasicState.notSelected:
-            Self.state := TBlkDiscBasicState.mounting;
-          TBlkDiscBasicState.mounting:
+          TBlkDiscBasicState.inactive:
             Self.state := TBlkDiscBasicState.active;
           TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
             Self.Prolong();
@@ -289,10 +283,9 @@ begin
     ESCAPE:
       begin
         case (Self.state) of
-          TBlkDiscBasicState.mounting, TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining,
-          TBlkDiscBasicState.activeInfinite:
+          TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining, TBlkDiscBasicState.activeInfinite:
             if (not Self.IsActiveByController()) then
-              Self.state := TBlkDiscBasicState.notSelected;
+              Self.state := TBlkDiscBasicState.inactive;
         end;
       end;
   end; // case
@@ -336,11 +329,7 @@ begin
 
   Self.m_state.state := state;
 
-  if (state = TBlkDiscBasicState.mounting) then
-  begin
-    Self.m_state.finish := Now + EncodeTime(0, 0, Self._MOUNT_TO_ACTIVE_TIME_SEC, 0);
-
-  end else if (state = TBlkDiscBasicState.active) then
+  if (state = TBlkDiscBasicState.active) then
   begin
     Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
                                              Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
@@ -379,10 +368,8 @@ begin
   case (Self.state) of
     TBlkDiscBasicState.disabled:
       fg := clFuchsia;
-    TBlkDiscBasicState.notSelected:
+    TBlkDiscBasicState.inactive:
       fg := $A0A0A0;
-    TBlkDiscBasicState.mounting:
-      fg := clYellow;
     TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining, TBlkDiscBasicState.activeInfinite:
       fg := clLime;
   else
@@ -427,10 +414,8 @@ begin
   case (Self.state) of
     TBlkDiscBasicState.disabled:
       json['state'] := 'off';
-    TBlkDiscBasicState.notSelected:
-      json['state'] := 'notSelected';
-    TBlkDiscBasicState.mounting:
-      json['state'] := 'mounting';
+    TBlkDiscBasicState.inactive:
+      json['state'] := 'inactive';
     TBlkDiscBasicState.active:
       json['state'] := 'active';
     TBlkDiscBasicState.shortTimeRemaining:
@@ -451,14 +436,12 @@ begin
       Exit();
     end;
 
-    if (reqJson.S['state'] = 'mounting') then
-      Self.state := TBlkDiscBasicState.mounting
-    else if (reqJson.S['state'] = 'active') then
+    if (reqJson.S['state'] = 'active') then
       Self.state := TBlkDiscBasicState.active
     else if (reqJson.S['state'] = 'activeInfinite') then
       Self.state := TBlkDiscBasicState.activeInfinite
-    else if (reqJson.S['state'] = 'notSelected') then
-      Self.state := TBlkDiscBasicState.notSelected;
+    else if (reqJson.S['state'] = 'inactive') then
+      Self.state := TBlkDiscBasicState.inactive;
   end;
 
   inherited;
@@ -484,7 +467,7 @@ end;
 
 procedure TBlkDisconnector.MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.state := TBlkDiscBasicState.notSelected;
+  Self.state := TBlkDiscBasicState.inactive;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -530,7 +513,7 @@ begin
   if (Self.m_state.psts.Count = 0) then
   begin
     if (Self.active) then
-      Self.state := TBlkDiscBasicState.notSelected;
+      Self.state := TBlkDiscBasicState.inactive;
   end;
   Self.Change();
 end;
@@ -571,7 +554,7 @@ begin
     if ((state = TRCSInputState.isOn) and (not Self.active)) then
       Self.state := TBlkDiscBasicState.activeInfinite;
     if ((state = TRCSInputState.isOff) and (Self.active)) then
-      Self.state := TBlkDiscBasicState.notSelected;
+      Self.state := TBlkDiscBasicState.inactive;
   except
     on E: RCSException do Exit();
     on E: Exception do raise;

@@ -334,10 +334,8 @@ begin
         case ((blk as TBlkDisconnector).state) of
           TBlkDiscBasicState.disabled:
             Self.LV.Items[line].SubItems[3] := 'disabled';
-          TBlkDiscBasicState.notSelected:
+          TBlkDiscBasicState.inactive:
             Self.LV.Items[line].SubItems[3] := 'ok';
-          TBlkDiscBasicState.mounting:
-            Self.LV.Items[line].SubItems[3] := 'mounting';
           TBlkDiscBasicState.active, TBlkDiscBasicState.activeInfinite:
             Self.LV.Items[line].SubItems[3] := 'active';
         end; // case
