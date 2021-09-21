@@ -384,6 +384,16 @@ begin
 
   end;
 
+  if ((old = pstActive) and (new = pstTakeReady)) then
+  begin
+    for var signalId in Self.m_settings.signals do
+    begin
+      var blk := Blocks.GetBlkByID(signalId);
+      if ((blk <> nil) and (blk.typ = btSignal) and (TBlkSignal(blk).signal <> ncStuj)) then
+        TBlkSignal(blk).signal := ncStuj;
+    end;
+  end;
+
   Self.ShowIndication();
 end;
 
@@ -399,7 +409,6 @@ begin
 
  Result := false;
 end;
-
 
 /// /////////////////////////////////////////////////////////////////////////////
 

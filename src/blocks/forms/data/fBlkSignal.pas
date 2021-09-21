@@ -35,6 +35,16 @@ type
     SE_RCSport2: TSpinEdit;
     CHB_RCS_Second_Output: TCheckBox;
     Label6: TLabel;
+    GB_PSt: TGroupBox;
+    CHB_PSt: TCheckBox;
+    Label7: TLabel;
+    Label8: TLabel;
+    SE_Cont_Module: TSpinEdit;
+    SE_Ind_Module: TSpinEdit;
+    Label9: TLabel;
+    Label10: TLabel;
+    SE_Ind_Port: TSpinEdit;
+    SE_Cont_Port: TSpinEdit;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -51,6 +61,9 @@ type
     procedure SE_RCSmodule1Exit(Sender: TObject);
     procedure SE_RCSmodule2Exit(Sender: TObject);
     procedure CHB_RCS_Second_OutputClick(Sender: TObject);
+    procedure CHB_PStClick(Sender: TObject);
+    procedure SE_Ind_ModuleExit(Sender: TObject);
+    procedure SE_Cont_ModuleExit(Sender: TObject);
 
   private
     openIndex: Integer;
@@ -116,6 +129,9 @@ begin
 
   Self.CHB_RCS_Output.Checked := true;
   Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
+
+  Self.CHB_PSt.Checked := false;
+  Self.CHB_PStClick(Self.CHB_PSt);
 
   // prvni udalost nepridavame, protoze muze byt navestidlo seradovaci,
   // ktere ji nepotrebuje
@@ -185,6 +201,27 @@ begin
 
   Self.L_Track_Id.Caption := Blocks.GetBlkName((Self.block as TBlkSignal).trackId);
 
+  begin
+    Self.CHB_PSt.Checked := settings.PSt.enabled;
+    Self.CHB_PStClick(Self.CHB_PSt);
+    if (settings.PSt.enabled) then
+    begin
+      if (settings.PSt.rcsIndicationShunt.board > Cardinal(Self.SE_Ind_Module.MaxValue)) then
+        Self.SE_Ind_Module.MaxValue := 0;
+      Self.SE_Ind_Port.MaxValue := 0;
+
+      Self.SE_Ind_Module.Value := settings.PSt.rcsIndicationShunt.board;
+      Self.SE_Ind_Port.Value := settings.PSt.rcsIndicationShunt.port;
+
+      if (settings.PSt.rcsControllerShunt.board > Cardinal(Self.SE_Cont_Module.MaxValue)) then
+        Self.SE_Cont_Module.MaxValue := 0;
+      Self.SE_Cont_Port.MaxValue := 0;
+
+      Self.SE_Cont_Module.Value := settings.PSt.rcsControllerShunt.board;
+      Self.SE_Cont_Port.Value := settings.PSt.rcsControllerShunt.port;
+    end;
+  end;
+
   Self.Caption := 'Upravit blok ' + glob.name + ' (návěstidlo)';
   Self.ActiveControl := Self.B_Save;
 end;
@@ -204,6 +241,22 @@ end;
 procedure TF_BlkSignal.B_StornoClick(Sender: TObject);
 begin
   Self.Close();
+end;
+
+procedure TF_BlkSignal.CHB_PStClick(Sender: TObject);
+begin
+  Self.SE_Ind_Module.Enabled := Self.CHB_PSt.Checked;
+  Self.SE_Ind_Port.Enabled := Self.CHB_PSt.Checked;
+  Self.SE_Cont_Module.Enabled := Self.CHB_PSt.Checked;
+  Self.SE_Cont_Port.Enabled := Self.CHB_PSt.Checked;
+
+  if (not Self.CHB_PSt.Checked) then
+  begin
+    Self.SE_Ind_Module.Value := 0;
+    Self.SE_Ind_Port.Value := 0;
+    Self.SE_Cont_Module.Value := 0;
+    Self.SE_Cont_Port.Value := 0;
+  end;
 end;
 
 procedure TF_BlkSignal.CHB_RCS_OutputClick(Sender: TObject);
@@ -268,6 +321,9 @@ begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
+
+  var messages := '';
+
   if (Self.CHB_RCS_Output.Checked) then
   begin
     if (CB_Typ.ItemIndex = -1) then
@@ -276,25 +332,17 @@ begin
       Exit();
     end;
 
-    var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value), Self.block,
-      TRCSIOType.output);
+    var addr := TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value);
+    var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
     if (another <> nil) then
-    begin
-      if (Application.MessageBox(PChar('První RCS adresa se již používá na bloku ' + another.name +
-        ', chcete pokračovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
-        Exit();
-    end;
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
   end;
   if (Self.CHB_RCS_Second_Output.Checked) then
   begin
-    var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value), Self.block,
-      TRCSIOType.output);
+    var addr := TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value);
+    var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
     if (another <> nil) then
-    begin
-      if (Application.MessageBox(PChar('Druhá RCS adresa se již používá na bloku ' + another.name +
-        ', chcete pokračovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
-        Exit();
-    end;
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
   end;
 
   for var fBlkNavEvent in Self.eventForms do
@@ -344,6 +392,26 @@ begin
   settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
   for var fBlkNavEvent in Self.eventForms do
     settings.events.Add(fBlkNavEvent.GetEvent());
+
+  settings.PSt.enabled := Self.CHB_PSt.Checked;
+  if (Self.CHB_PSt.Checked) then
+  begin
+    settings.PSt.rcsIndicationShunt.board := Self.SE_Ind_Module.Value;
+    settings.PSt.rcsIndicationShunt.port := Self.SE_Ind_Port.Value;
+    settings.PSt.rcsControllerShunt.board := Self.SE_Cont_Module.Value;
+    settings.PSt.rcsControllerShunt.port := Self.SE_Cont_Port.Value;
+
+    var another := Blocks.AnotherBlockUsesRCS(settings.PSt.rcsIndicationShunt, Self.block, TRCSIOType.output);
+    if (another <> nil) then
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.PSt.rcsIndicationShunt.ToString() + '.' + #13#10;
+
+    another := Blocks.AnotherBlockUsesRCS(settings.PSt.rcsControllerShunt, Self.block, TRCSIOType.output);
+    if (another <> nil) then
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.PSt.rcsControllerShunt.ToString() + '.' + #13#10;
+  end;
+
+  if (messages <> '') then
+    Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
 
   Self.block.SetSettings(settings);
 
@@ -506,6 +574,16 @@ begin
       PageControl.Repaint;
     end;
   end;
+end;
+
+procedure TF_BlkSignal.SE_Cont_ModuleExit(Sender: TObject);
+begin
+  Self.SE_Cont_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Cont_Module.Value, Self.SE_Cont_Port.Value);
+end;
+
+procedure TF_BlkSignal.SE_Ind_ModuleExit(Sender: TObject);
+begin
+  Self.SE_Ind_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Ind_Module.Value, Self.SE_Ind_Port.Value);
 end;
 
 procedure TF_BlkSignal.SE_RCSmodule1Exit(Sender: TObject);

@@ -4,7 +4,7 @@ object F_BlkSignal: TF_BlkSignal
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (n'#225'v'#283'stidlo)'
-  ClientHeight = 346
+  ClientHeight = 469
   ClientWidth = 681
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -246,7 +246,7 @@ object F_BlkSignal: TF_BlkSignal
   end
   object B_Storno: TButton
     Left = 85
-    Top = 312
+    Top = 438
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -254,12 +254,12 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 6
+    TabOrder = 7
     OnClick = B_StornoClick
   end
   object B_Save: TButton
     Left = 7
-    Top = 312
+    Top = 438
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -268,7 +268,7 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 5
+    TabOrder = 6
     OnClick = B_SaveClick
   end
   object SE_Delay: TSpinEdit
@@ -296,7 +296,7 @@ object F_BlkSignal: TF_BlkSignal
     Height = 329
     MultiLine = True
     OwnerDraw = True
-    TabOrder = 7
+    TabOrder = 8
     OnDrawTab = PageControlCloseButtonDrawTab
     OnMouseDown = PageControlCloseButtonMouseDown
     OnMouseLeave = PageControlCloseButtonMouseLeave
@@ -335,7 +335,126 @@ object F_BlkSignal: TF_BlkSignal
       FFFFFFFFFFFFFFFFFFFFFFFF000000000000000000AAAAAAFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF09090900
       0000000000B3B3B3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-    TabOrder = 8
+    TabOrder = 9
     OnClick = BB_Event_AddClick
+  end
+  object GB_PSt: TGroupBox
+    Left = 8
+    Top = 306
+    Width = 303
+    Height = 127
+    Caption = ' Pomocn'#233' stav'#283'dlo - indikace, voli'#269'e '
+    TabOrder = 5
+    object Label7: TLabel
+      Left = 7
+      Top = 64
+      Width = 82
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Indikace posunu:'
+    end
+    object Label8: TLabel
+      Left = 7
+      Top = 96
+      Width = 64
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Voli'#269' posunu:'
+    end
+    object Label9: TLabel
+      Left = 150
+      Top = 40
+      Width = 29
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Modul'
+    end
+    object Label10: TLabel
+      Left = 229
+      Top = 40
+      Width = 19
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Port'
+    end
+    object CHB_PSt: TCheckBox
+      Left = 7
+      Top = 19
+      Width = 256
+      Height = 17
+      Caption = 'Indikovat polohu v'#253'hybky (v pultu), umo'#382'nit voli'#269'e'
+      TabOrder = 0
+      OnClick = CHB_PStClick
+    end
+    object SE_Cont_Module: TSpinEdit
+      Left = 150
+      Top = 96
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 3
+      Value = 1
+      OnExit = SE_Cont_ModuleExit
+    end
+    object SE_Ind_Module: TSpinEdit
+      Left = 150
+      Top = 64
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 1
+      Value = 1
+      OnExit = SE_Ind_ModuleExit
+    end
+    object SE_Ind_Port: TSpinEdit
+      Left = 226
+      Top = 64
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 0
+    end
+    object SE_Cont_Port: TSpinEdit
+      Left = 226
+      Top = 96
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 4
+      Value = 0
+    end
   end
 end

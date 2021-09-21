@@ -71,6 +71,11 @@ type
     // program si pamatuje vice zastavovacich a zpomalovaich udalosti pro ruzne typy a delky soupravy
     fallDelay: Integer; // zpozdeni padu navestidla v sekundach (standartne 0)
     locked: Boolean; // jestli je navestidlo trvale zamknuto na STUJ (hodi se napr. u navestidel a konci kusych koleji)
+    PSt: record
+      enabled: Boolean;
+      rcsIndicationShunt: TRCSAddr;
+      rcsControllerShunt: TRCSAddr;
+    end;
   end;
 
   TBlkSignalState = record
@@ -93,6 +98,7 @@ type
     RCtimer: Integer; // id timeru, ktery se prave ted pouziva pro ruseni JC
     changeCallbackOk, changeCallbackErr: TNotifyEvent; // notifikace o nastaveni polohy navestidla
     changeEnd: TTime;
+    psts: TList<TBlk>;
   end;
 
   TBlkSignalSpnl = record
@@ -152,6 +158,8 @@ type
     procedure MenuKCDKClick(SenderPnl: TIdContext; SenderOR: TObject);
 
     procedure MenuAdminStopIR(SenderPnl: TIdContext; SenderOR: TObject; enabled: Boolean);
+    procedure MenuAdminRadOnClick(SenderPnl: TIDContext; SenderOR: TObject);
+    procedure MenuAdminRadOffClick(SenderPnl: TIDContext; SenderOR: TObject);
 
     procedure UpdateFalling();
     procedure UpdatePrivol();
@@ -172,6 +180,10 @@ type
     procedure UnregisterAllEvents();
     function IsChanging(): Boolean;
     function GetTargetSignal(): TBlkSignalCode;
+
+    procedure PstCheckActive();
+    procedure ShowIndication();
+    procedure ReadContollers();
 
   protected
     m_settings: TBlkSignalSettings;
@@ -216,6 +228,11 @@ type
     procedure PropagatePOdjToRailway();
 
     class function SignalToString(code: TBlkSignalCode): string;
+
+    procedure PstAdd(pst: TBlk);
+    procedure PstRemove(pst: TBlk);
+    function PstIsActive(): Boolean;
+    function PstIs(): Boolean;
 
     property symbolType: TBlkSignalSymbol read m_spnl.symbolType;
     property trackId: Integer read m_spnl.trackId write SetTrackId;
@@ -272,7 +289,7 @@ implementation
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSignal,
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
-  predvidanyOdjezd, ownConvert;
+  predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors;
 
 constructor TBlkSignal.Create(index: Integer);
 begin
@@ -284,12 +301,14 @@ begin
   Self.m_settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
   Self.m_trackId := nil;
   Self.m_groupMaster := nil;
+  Self.m_state.psts := TList<TBlk>.Create();
 end;
 
 destructor TBlkSignal.Destroy();
 begin
   Self.m_state.toRnz.Free();
   Self.m_settings.events.Free();
+  Self.m_state.psts.Free();
 
   inherited;
 end;
@@ -369,7 +388,16 @@ begin
     end;
   end;
 
-  PushRCSToArea(Self.m_areas, Self.m_settings.RCSAddrs);
+  Self.m_settings.PSt.enabled := (ini_tech.ReadString(section, 'indShunt', '') <> '');
+  if (Self.m_settings.PSt.enabled) then
+  begin
+    Self.m_settings.PSt.rcsIndicationShunt.Load(ini_tech.ReadString(section, 'indShunt', ''));
+    Self.m_settings.PSt.rcsControllerShunt.Load(ini_tech.ReadString(section, 'contShunt', ''));
+    Self.PushRCSToAreas(Self.m_settings.PSt.rcsIndicationShunt);
+    Self.PushRCSToAreas(Self.m_settings.PSt.rcsControllerShunt);
+  end;
+
+  Self.PushRCSToAreas(Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkSignal.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -389,6 +417,12 @@ begin
 
   if (Self.m_settings.locked) then
     ini_tech.WriteBool(section, 'zamknuti', Self.m_settings.locked);
+
+  if (Self.m_settings.PSt.enabled) then
+   begin
+    ini_tech.WriteString(section, 'indShunt', Self.m_settings.PSt.rcsIndicationShunt.ToString());
+    ini_tech.WriteString(section, 'contShunt', Self.m_settings.Pst.rcsControllerShunt.ToString());
+   end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -416,6 +450,7 @@ begin
 
   Self.m_state.toRnz.Clear();
   Self.UnregisterAllEvents();
+  Self.m_state.psts.Clear();
   Self.Change();
 end;
 
@@ -429,12 +464,21 @@ begin
   Self.m_state.toRnz.Clear();
   Self.m_state.RCtimer := -1;
   Self.UnregisterAllEvents();
+  Self.m_state.psts.Clear();
   Self.Change(true);
 end;
 
 function TBlkSignal.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
   Result := ((portType = TRCSIOType.output) and (Self.m_settings.RCSAddrs.Contains(addr)));
+
+  if ((portType = TRCSIOType.input) and (Self.m_settings.PSt.enabled) and
+      (addr = Self.m_settings.PSt.rcsControllerShunt)) then
+    Exit(true);
+
+  if ((portType = TRCSIOType.output) and (Self.m_settings.PSt.enabled) and
+      (addr = Self.m_settings.PSt.rcsIndicationShunt)) then
+    Exit(true);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -470,6 +514,7 @@ begin
     end;
   end;
 
+  Self.ReadContollers();
   inherited;
 end;
 
@@ -482,6 +527,7 @@ begin
   if ((Self.track <> nil) and (Self.track.typ = btRT) and (TBlkRT(Self.track).inRailway > -1)) then
     Self.track.Change();
 
+  Self.ShowIndication();
   inherited;
 end;
 
@@ -997,6 +1043,32 @@ begin
   end;
 end;
 
+procedure TBlkSignal.MenuAdminRadOnClick(SenderPnl: TIDContext; SenderOR: TObject);
+begin
+  if (not Self.m_settings.PSt.enabled) then
+    Exit();
+
+  try
+    RCSi.SetInput(Self.m_settings.PSt.rcsControllerShunt, 1);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
+procedure TBlkSignal.MenuAdminRadOffClick(SenderPnl: TIDContext; SenderOR: TObject);
+begin
+  if (not Self.m_settings.PSt.enabled) then
+    Exit();
+
+  try
+    RCSi.SetInput(Self.m_settings.PSt.rcsControllerShunt, 0);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSignal.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
@@ -1077,6 +1149,10 @@ begin
     Self.MenuAdminStopIR(SenderPnl, SenderOR, true)
   else if (item = 'IR<') then
     Self.MenuAdminStopIR(SenderPnl, SenderOR, false)
+  else if (item = 'RAD>') then
+    Self.MenuAdminRadOnClick(SenderPnl, SenderOR)
+  else if (item = 'RAD<') then
+    Self.MenuAdminRadOffClick(SenderPnl, SenderOR)
   else if (item = 'KC') then
     Self.MenuKCDKClick(SenderPnl, SenderOR);
 end;
@@ -1112,7 +1188,8 @@ begin
       // 2 = VC, 3= PC
       if (Self.m_spnl.symbolType = TBlkSignalSymbol.main) then
       begin
-        if (((JCDb.IsAnyVCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TArea).stack.mode = VZ)) then
+        if (((JCDb.IsAnyVCAvailable(Self)) and (Self.enabled) and (not Self.PstIs())) or
+            ((SenderOR as TArea).stack.mode = VZ)) then
         // i kdyz neni zadna VC, schvalne umoznime PN
         begin
           Result := Result + 'VC>,';
@@ -1123,11 +1200,12 @@ begin
       end;
       if (JCDb.IsAnyPC(Self)) then
       begin
-        if (((JCDb.IsAnyPCAvailable(Self)) and (Self.enabled)) or ((SenderOR as TArea).stack.mode = VZ)) then
+        if (((JCDb.IsAnyPCAvailable(Self)) and (Self.enabled) and (not Self.PstIs())) or
+            ((SenderOR as TArea).stack.mode = VZ)) then
           Result := Result + 'PC>,';
         Result := Result + 'PP>,';
       end;
-    end; // else selected <> none ...
+    end;
 
     Result := Result + '-,';
   end;
@@ -1171,6 +1249,8 @@ begin
   // DEBUG: jednoduche nastaveni IR pri knihovne simulator
   if (RCSi.simulation) then
   begin
+    Result := Result + '-,';
+
     if ((Self.m_settings.events.Count > 0) and (Self.m_settings.events[0].stop.typ = TRREvType.rrtIR)) then
     begin
       Blocks.GetBlkByID(Self.m_settings.events[0].stop.data.irId, Blk);
@@ -1178,10 +1258,23 @@ begin
       begin
         case (TBlkIR(Blk).occupied) of
           TIROccupationState.Free:
-            Result := Result + '-,*IR>,';
+            Result := Result + '*IR>,';
           TIROccupationState.occupied:
-            Result := Result + '-,*IR<,';
+            Result := Result + '*IR<,';
         end; // case
+      end;
+    end;
+
+    if (Self.m_settings.PSt.enabled) then
+    begin
+      try
+        if (RCSi.GetInput(Self.m_settings.PSt.rcsControllerShunt) = isOn) then
+          Result := Result + '*RAD<,'
+        else
+          Result := Result + '*RAD>,';
+      except
+        on E: RCSException do begin end;
+        on E: Exception do raise;
       end;
     end;
   end;
@@ -2039,6 +2132,94 @@ end;
 function TBlkSignal.IsEnabled(): Boolean;
 begin
   Result := (Self.signal <> TBlkSignalCode.ncDisabled);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSignal.PstAdd(pst: TBlk);
+begin
+  if (Self.m_state.psts.Contains(pst)) then
+    Exit();
+
+  Self.m_state.psts.Add(pst);
+  Self.Change();
+end;
+
+procedure TBlkSignal.PstRemove(pst: TBlk);
+begin
+  if (not Self.m_state.psts.Contains(pst)) then
+    Exit();
+
+  Self.m_state.psts.Remove(pst);
+  if (Self.m_state.psts.Count = 0) then
+  begin
+    if (Self.signal <> ncStuj) then
+      Self.signal := ncStuj;
+  end;
+  Self.Change();
+end;
+
+function TBlkSignal.PstIsActive(): Boolean;
+begin
+  Self.PstCheckActive();
+  for var blk: TBlk in Self.m_state.psts do
+    if (TBlkPst(blk).status = pstActive) then
+      Exit(true);
+  Result := false;
+end;
+
+function TBlkSignal.PstIs(): Boolean;
+begin
+  Self.PstCheckActive();
+  Result := (Self.m_state.psts.Count > 0);
+end;
+
+procedure TBlkSignal.PstCheckActive();
+begin
+  for var i := Self.m_state.psts.Count-1 downto 0 do
+    if (TBlkPst(Self.m_state.psts[i]).status <= pstOff) then
+      Self.PstRemove(self.m_state.psts[i]);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkSignal.ShowIndication();
+begin
+  if ((not Self.m_settings.PSt.enabled) or (not RCSi.Started)) then
+    Exit();
+
+  try
+    if (not Self.PstIsActive()) then
+    begin
+      RCSi.SetOutput(Self.m_settings.PSt.rcsIndicationShunt, 0);
+      Exit();
+    end;
+
+    if (Self.changing) then
+      RCSi.SetOutput(Self.m_settings.PSt.rcsIndicationShunt, TRCSOutputState.osf240)
+    else
+      RCSi.SetOutput(Self.m_settings.PSt.rcsIndicationShunt,
+        ite((Self.signal = ncPosunZaj) or (Self.signal = ncPosunNezaj), 1, 0));
+  except
+
+  end;
+end;
+
+procedure TBlkSignal.ReadContollers();
+begin
+  if ((not Self.m_settings.PSt.enabled) or (not RCSi.Started) or (not Self.PstIsActive()) or (Self.changing)) then
+    Exit();
+
+  try
+    var state := RCSi.GetInput(Self.m_settings.PSt.rcsControllerShunt);
+    if ((state = TRCSInputState.isOn) and (Self.signal <> ncPosunZaj)) then
+      Self.signal := ncPosunZaj;
+    if ((state = TRCSInputState.isOff) and (Self.signal <> ncStuj)) then
+      Self.signal := ncStuj;
+  except
+    on E: RCSException do Exit();
+    on E: Exception do raise;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
