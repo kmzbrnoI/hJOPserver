@@ -21,6 +21,7 @@ type
     turnouts: TList<Integer>;
     signals: TList<Integer>;
     refugees: TList<TPstRefugeeZav>;
+    disconnectors: TList<Integer>;
     rcsInTake: TRCSAddr;
     rcsInRelease: TRCSAddr;
     rcsOutTaken: TRCSAddr;
@@ -148,7 +149,7 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
-  RCSErrors, RCS, TCPAreasRef, BlockSignal, Logging;
+  RCSErrors, RCS, TCPAreasRef, BlockSignal, Logging, BlockDisconnector;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -161,6 +162,7 @@ begin
   Self.m_settings.turnouts := TList<Integer>.Create();
   Self.m_settings.signals := TList<Integer>.Create();
   Self.m_settings.refugees := TList<TPstRefugeeZav>.Create();
+  Self.m_settings.disconnectors := TList<Integer>.Create();
 end;
 
 destructor TBlkPst.Destroy();
@@ -169,6 +171,7 @@ begin
   Self.m_settings.turnouts.Free();
   Self.m_settings.signals.Free();
   Self.m_settings.refugees.Free();
+  Self.m_settings.disconnectors.Free();
   inherited;
 end;
 
@@ -238,6 +241,18 @@ begin
     end;
   end;
 
+  begin
+    var strs: TStrings := TStringList.Create();
+    try
+      ExtractStringsEx([','], [], ini_tech.ReadString(section, 'disconnectors', ''), strs);
+      Self.m_settings.disconnectors.Clear();
+      for var str in strs do
+        Self.m_settings.disconnectors.Add(StrToInt(str));
+    finally
+      strs.Free();
+    end;
+  end;
+
   Self.m_settings.rcsInTake.Load(ini_tech.ReadString(section, 'rcsInTake', '0:0'));
   Self.m_settings.rcsInRelease.Load(ini_tech.ReadString(section, 'rcsInRelease', '0:0'));
   Self.m_settings.rcsOutTaken.Load(ini_tech.ReadString(section, 'rcsOutTaken', '0:0'));
@@ -259,6 +274,7 @@ begin
   ini_tech.WriteString(section, 'tracks', SerializeIntList(Self.m_settings.tracks));
   ini_tech.WriteString(section, 'turnouts', SerializeIntList(Self.m_settings.turnouts));
   ini_tech.WriteString(section, 'signals', SerializeIntList(Self.m_settings.signals));
+  ini_tech.WriteString(section, 'disconnectors', SerializeIntList(Self.m_settings.disconnectors));
 
   begin
     var str := '';
@@ -332,6 +348,12 @@ begin
       if ((blk <> nil) and (blk.typ = btSignal)) then
         TBlkSignal(blk).PstAdd(Self);
     end;
+    for var discId in Self.m_settings.disconnectors do
+    begin
+      var blk := Blocks.GetBlkByID(discId);
+      if ((blk <> nil) and (blk.typ = btDisconnector)) then
+        TBlkDisconnector(blk).PstAdd(Self);
+    end;
 
   end else if ((old > pstOff) and (new = pstOff)) then
   begin
@@ -360,6 +382,12 @@ begin
       var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
       refugee.IntentionalUnlock();
     end;
+    for var discId in Self.m_settings.disconnectors do
+    begin
+      var blk := Blocks.GetBlkByID(discId);
+      if ((blk <> nil) and (blk.typ = btDisconnector)) then
+        TBlkDisconnector(blk).PstRemove(Self);
+    end;
 
   end else begin
     // call change to all blocks
@@ -381,6 +409,12 @@ begin
       if (blk <> nil) then
         blk.Change();
     end;
+    for var discId in Self.m_settings.disconnectors do
+    begin
+      var blk := Blocks.GetBlkByID(discId);
+      if (blk <> nil) then
+        blk.Change();
+    end;
 
   end;
 
@@ -391,6 +425,13 @@ begin
       var blk := Blocks.GetBlkByID(signalId);
       if ((blk <> nil) and (blk.typ = btSignal) and (TBlkSignal(blk).signal <> ncStuj)) then
         TBlkSignal(blk).signal := ncStuj;
+    end;
+    for var discId in Self.m_settings.disconnectors do
+    begin
+      var blk := Blocks.GetBlkByID(discId);
+      if ((blk <> nil) and (blk.typ = btDisconnector) and (TBlkDisconnector(blk).IsActiveByController()) and
+        (TBlkDisconnector(blk).GetSettings().rcsController.pstOnly)) then
+        TBlkDisconnector(blk).state := TBlkDiscBasicState.inactive;
     end;
   end;
 
@@ -792,6 +833,8 @@ begin
     Self.m_settings.signals.Free();
   if (Self.m_settings.refugees <> settings.refugees) then
     Self.m_settings.refugees.Free();
+  if (Self.m_settings.disconnectors <> settings.disconnectors) then
+    Self.m_settings.disconnectors.Free();
 
   Self.m_settings := settings;
   Self.Change();
@@ -1041,6 +1084,28 @@ begin
     if (signal.signal <> ncStuj) then
       barriers.Add(JCBarrier(barSignalActive, signal));
   end;
+
+  // disconnectors
+  for var discId in Self.m_settings.disconnectors do
+  begin
+    var disc: TBlkDisconnector := TBlkDisconnector(Blocks.GetBlkByID(discId));
+
+    if (disc = nil) then
+    begin
+      barriers.Add(JCBarrier(barBlockNotExists, nil, discId));
+      Exit();
+    end;
+
+    if (disc.typ <> btDisconnector) then
+    begin
+      barriers.Add(JCBarrier(barBlockWrongType, disc, discId));
+      Exit();
+    end;
+
+    if (disc.note <> '') then
+      barriers.Add(JCBarrier(barBlockNote, disc));
+  end;
+
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

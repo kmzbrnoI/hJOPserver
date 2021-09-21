@@ -67,7 +67,6 @@ type
       UPO_EscCallback: TNotifyEvent);
 
     function IsActive(): Boolean;
-    function IsActiveByController(): Boolean;
 
     procedure PstCheckActive();
     procedure ReadControllers();
@@ -97,6 +96,8 @@ type
 
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+
+    function IsActiveByController(): Boolean;
 
     procedure PstAdd(pst: TBlk);
     procedure PstRemove(pst: TBlk);
@@ -564,7 +565,7 @@ begin
   Self.m_state.psts.Remove(pst);
   if (Self.m_state.psts.Count = 0) then
   begin
-    if (Self.active) then
+    if ((Self.IsActiveByController()) and (Self.m_settings.rcsController.pstOnly)) then
       Self.state := TBlkDiscBasicState.inactive;
   end;
   Self.Change();
