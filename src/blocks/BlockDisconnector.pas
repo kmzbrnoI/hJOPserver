@@ -58,6 +58,9 @@ type
     procedure MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 
+    procedure MenuAdminRadOnClick(SenderPnl: TIDContext; SenderOR: TObject);
+    procedure MenuAdminRadOffClick(SenderPnl: TIDContext; SenderOR: TObject);
+
     function IsActive(): Boolean;
     function IsActiveByController(): Boolean;
 
@@ -304,12 +307,29 @@ begin
       Result := Result + 'AKTIV>,';
   end;
   Result := Result + 'STIT,';
+
+  if ((RCSi.simulation) and (Self.m_settings.rcsController.enabled)) then
+  begin
+    try
+      if (RCSi.GetInput(Self.m_settings.rcsController.addr) = isOn) then
+        Result := Result + '-,*RAD<,'
+      else
+        Result := Result + '-,*RAD>,';
+    except
+      on E: RCSException do begin end;
+      on E: Exception do raise;
+    end;
+  end;
 end;
 
 procedure TBlkDisconnector.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
   if (item = 'STIT') then
-    Self.MenuStitClick(SenderPnl, SenderOR);
+    Self.MenuStitClick(SenderPnl, SenderOR)
+  else if (item = 'RAD>') then
+    Self.MenuAdminRadOnClick(SenderPnl, SenderOR)
+  else if (item = 'RAD<') then
+    Self.MenuAdminRadOffClick(SenderPnl, SenderOR);
 
   if (Self.IsActiveByController()) then
     Exit();
@@ -468,6 +488,32 @@ end;
 procedure TBlkDisconnector.MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   Self.state := TBlkDiscBasicState.inactive;
+end;
+
+procedure TBlkDisconnector.MenuAdminRadOnClick(SenderPnl: TIDContext; SenderOR: TObject);
+begin
+  if (not Self.m_settings.rcsController.enabled) then
+    Exit();
+
+  try
+    RCSi.SetInput(Self.m_settings.rcsController.addr, 1);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
+procedure TBlkDisconnector.MenuAdminRadOffClick(SenderPnl: TIDContext; SenderOR: TObject);
+begin
+  if (not Self.m_settings.rcsController.enabled) then
+    Exit();
+
+  try
+    RCSi.SetInput(Self.m_settings.rcsController.addr, 0);
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
