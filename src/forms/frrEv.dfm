@@ -12,6 +12,8 @@ object F_RREv: TF_RREv
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -21,7 +23,7 @@ object F_RREv: TF_RREv
     Height = 13
     Caption = 'Typ ud'#225'losti:'
   end
-  object GB_Cas: TGroupBox
+  object GB_Time: TGroupBox
     Left = 8
     Top = 51
     Width = 145
@@ -35,7 +37,7 @@ object F_RREv: TF_RREv
       Height = 13
       Caption = 'Form'#225't: mm:ss,z'
     end
-    object ME_Cas: TMaskEdit
+    object ME_Time: TMaskEdit
       Left = 8
       Top = 36
       Width = 125
@@ -59,7 +61,7 @@ object F_RREv: TF_RREv
       Text = '  :  . '
     end
   end
-  object GB_Usek: TGroupBox
+  object GB_Track: TGroupBox
     Left = 8
     Top = 51
     Width = 145
@@ -80,7 +82,7 @@ object F_RREv: TF_RREv
       Height = 13
       Caption = #268#225'st '#250'seku:'
     end
-    object CB_UsekStav: TComboBox
+    object CB_Track_State: TComboBox
       Left = 8
       Top = 35
       Width = 129
@@ -91,7 +93,7 @@ object F_RREv: TF_RREv
         'Uvoln'#283'no'
         'Obsazeno')
     end
-    object CB_UsekPart: TComboBox
+    object CB_Track_Part: TComboBox
       Left = 8
       Top = 81
       Width = 129
@@ -126,7 +128,7 @@ object F_RREv: TF_RREv
       Height = 13
       Caption = #268'idlo:'
     end
-    object CB_IRStav: TComboBox
+    object CB_IR_State: TComboBox
       Left = 8
       Top = 35
       Width = 129
@@ -137,7 +139,7 @@ object F_RREv: TF_RREv
         'Uvoln'#283'no'
         'Obsazeno')
     end
-    object CB_IRId: TComboBox
+    object CB_IR: TComboBox
       Left = 8
       Top = 81
       Width = 129
@@ -146,14 +148,14 @@ object F_RREv: TF_RREv
       TabOrder = 1
     end
   end
-  object CB_Typ: TComboBox
+  object CB_Type: TComboBox
     Left = 8
     Top = 24
     Width = 145
     Height = 21
     Style = csDropDownList
     TabOrder = 0
-    OnChange = CB_TypChange
+    OnChange = CB_TypeChange
     Items.Strings = (
       #218'sek'
       'IR '#269'idlo'

@@ -2107,9 +2107,9 @@ begin
       '0':
         begin
           // usek
-          rrData.typ := TRREvType.rrtUsek;
-          rrData.usekState := true;
-          rrData.usekPart := StrToInt(data[2]);
+          rrData.typ := TRREvType.rrtTrack;
+          rrData.trackState := true;
+          rrData.trackPart := StrToInt(data[2]);
         end; // case 0
 
       '1':

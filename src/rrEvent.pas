@@ -19,13 +19,13 @@ interface
 uses Classes, SysUtils, StrUtils;
 
 type
-  TRREvType = (rrtUsek = 1, rrtIR = 2, rrtTime = 3);
+  TRREvType = (rrtTrack = 1, rrtIR = 2, rrtTime = 3);
 
   TRREvData = record
     case typ: TRREvType of
-      rrtUsek:
-        (usekPart: Cardinal;
-          usekState: Boolean;
+      rrtTrack:
+        (trackPart: Cardinal;
+          trackState: Boolean;
         );
 
       rrtIR:
@@ -103,10 +103,10 @@ begin
     Self.m_data.typ := TRREvType(StrToInt(strs[0]));
 
     case (Self.m_data.typ) of
-      rrtUsek:
+      rrtTrack:
         begin
-          Self.m_data.usekState := ownConvert.StrToBool(strs[1]);
-          Self.m_data.usekPart := StrToInt(strs[2]);
+          Self.m_data.trackState := ownConvert.StrToBool(strs[1]);
+          Self.m_data.trackPart := StrToInt(strs[2]);
         end;
 
       rrtIR:
@@ -137,8 +137,8 @@ begin
   Result := IntToStr(Integer(Self.m_data.typ)) + ';';
 
   case (Self.m_data.typ) of
-    rrtUsek:
-      Result := Result + IntToStr(ownConvert.BoolToInt(m_data.usekState)) + ';' + IntToStr(m_data.usekPart);
+    rrtTrack:
+      Result := Result + IntToStr(ownConvert.BoolToInt(m_data.trackState)) + ';' + IntToStr(m_data.trackPart);
 
     rrtIR:
       Result := Result + IntToStr(ownConvert.BoolToInt(m_data.irState)) + ';' + IntToStr(m_data.irId);
@@ -166,22 +166,21 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TRREv.IsTriggerred(Sender: TObject; safeState: Boolean): Boolean;
-var Blk: TBlk;
 begin
   if (not Self.enabled) then
     Exit(false);
 
   try
     case (Self.m_data.typ) of
-      rrtUsek:
+      rrtTrack:
         begin
-          if (Integer(m_data.usekPart) < TBlkTrack(Sender).sectionsState.Count) then
+          if (Integer(m_data.trackPart) < TBlkTrack(Sender).sectionsState.Count) then
           begin
-            case (TBlkTrack(Sender).sectionsState[m_data.usekPart]) of
+            case (TBlkTrack(Sender).sectionsState[m_data.trackPart]) of
               TTrackState.occupied:
-                Result := m_data.usekState;
+                Result := m_data.trackState;
               TTrackState.Free:
-                Result := not m_data.usekState;
+                Result := not m_data.trackState;
             else
               Result := safeState;
             end;
@@ -192,7 +191,7 @@ begin
 
       rrtIR:
         begin
-          Blocks.GetBlkByID(m_data.irId, Blk);
+          var blk := Blocks.GetBlkByID(m_data.irId);
           if (Blk = nil) then
             Exit(safeState);
           if (Blk.typ <> btIR) then
