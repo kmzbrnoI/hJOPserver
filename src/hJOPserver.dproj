@@ -191,7 +191,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
         </DCCReference>
         <DCCReference Include="helpers\version.pas"/>
         <DCCReference Include="forms\fZesilovacEdit.pas">
-            <Form>F_ZesilovacEdit</Form>
+            <Form>F_Booster_Edit</Form>
         </DCCReference>
         <DCCReference Include="blocks\forms\data\fBlkRailway.pas">
             <Form>F_BlkRailway</Form>

@@ -1,4 +1,4 @@
-object F_ZesilovacEdit: TF_ZesilovacEdit
+object F_Booster_Edit: TF_Booster_Edit
   Left = 918
   Top = 121
   ActiveControl = B_Save
@@ -18,7 +18,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
   OnCloseQuery = FormCloseQuery
   PixelsPerInch = 96
   TextHeight = 13
-  object L_Nazev: TLabel
+  object Label4: TLabel
     Left = 9
     Top = 32
     Width = 37
@@ -40,7 +40,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Bottom = 2
     Caption = 'ID :'
   end
-  object E_Nazev: TEdit
+  object E_Name: TEdit
     Left = 97
     Top = 32
     Width = 177
@@ -66,7 +66,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     TabOrder = 5
     OnClick = B_SaveClick
   end
-  object GB_Zkrat: TGroupBox
+  object GB_Short: TGroupBox
     Left = 9
     Top = 64
     Width = 265
@@ -77,7 +77,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Bottom = 2
     Caption = ' Detekce zkratu '
     TabOrder = 2
-    object L_Zkrat_Port: TLabel
+    object Label8: TLabel
       Left = 7
       Top = 60
       Width = 49
@@ -88,7 +88,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Bottom = 2
       Caption = 'RCS port :'
     end
-    object L_Zkrat_module: TLabel
+    object Label7: TLabel
       Left = 7
       Top = 38
       Width = 60
@@ -99,7 +99,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Bottom = 2
       Caption = 'RCS deska :'
     end
-    object SE_Zkrat_Port: TSpinEdit
+    object SE_Short_Port: TSpinEdit
       Left = 167
       Top = 64
       Width = 89
@@ -113,7 +113,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       TabOrder = 2
       Value = 0
     end
-    object SE_Zkrat_module: TSpinEdit
+    object SE_Short_Module: TSpinEdit
       Left = 167
       Top = 38
       Width = 89
@@ -128,17 +128,17 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Value = 1
       OnExit = SE_RCS_moduleExit
     end
-    object CHB_Zkrat: TCheckBox
+    object CHB_Short: TCheckBox
       Left = 8
       Top = 16
       Width = 65
       Height = 17
       Caption = 'Povoleno'
       TabOrder = 0
-      OnClick = CHB_ZkratClick
+      OnClick = CHB_ShortClick
     end
   end
-  object GB_Napajeni: TGroupBox
+  object GB_Power: TGroupBox
     Left = 9
     Top = 168
     Width = 265
@@ -149,7 +149,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
     Margins.Bottom = 2
     Caption = ' Detekce v'#253'padku nap'#225'jen'#237' zesilova'#269'e '
     TabOrder = 3
-    object L_Napajeni_Port: TLabel
+    object Label5: TLabel
       Left = 7
       Top = 60
       Width = 49
@@ -160,7 +160,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Bottom = 2
       Caption = 'RCS port :'
     end
-    object L_Napajeni_module: TLabel
+    object Label6: TLabel
       Left = 7
       Top = 36
       Width = 60
@@ -171,7 +171,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Margins.Bottom = 2
       Caption = 'RCS deska :'
     end
-    object SE_Napajeni_port: TSpinEdit
+    object SE_Power_Port: TSpinEdit
       Left = 167
       Top = 64
       Width = 89
@@ -185,7 +185,7 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       TabOrder = 2
       Value = 0
     end
-    object SE_Napajeni_module: TSpinEdit
+    object SE_Power_Module: TSpinEdit
       Left = 167
       Top = 38
       Width = 89
@@ -200,14 +200,14 @@ object F_ZesilovacEdit: TF_ZesilovacEdit
       Value = 1
       OnExit = SE_RCS_moduleExit
     end
-    object CHB_Napajeni: TCheckBox
+    object CHB_Power: TCheckBox
       Left = 8
       Top = 16
       Width = 65
       Height = 17
       Caption = 'Povoleno'
       TabOrder = 0
-      OnClick = CHB_NapajeniClick
+      OnClick = CHB_PowerClick
     end
   end
   object B_Storno: TButton

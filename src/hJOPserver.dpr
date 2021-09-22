@@ -20,7 +20,7 @@ uses
   fAbout in 'forms\fAbout.pas' {F_About},
   fBlkCrossing in 'blocks\forms\data\fBlkCrossing.pas' {F_BlkCrossing},
   version in 'helpers\version.pas',
-  fZesilovacEdit in 'forms\fZesilovacEdit.pas' {F_ZesilovacEdit},
+  fZesilovacEdit in 'forms\fZesilovacEdit.pas' {F_Booster_Edit},
   fBlkRailway in 'blocks\forms\data\fBlkRailway.pas' {F_BlkRailway},
   fHVEdit in 'hv\forms\fHVEdit.pas' {F_HVEdit},
   fSystemInfo in 'forms\fSystemInfo.pas' {F_SystemInfo},
@@ -210,7 +210,7 @@ var
   Application.CreateForm(TF_Admin, F_Admin);
   Application.CreateForm(TF_Options, F_Options);
   Application.CreateForm(TF_Tester, F_Tester);
-  Application.CreateForm(TF_ZesilovacEdit, F_ZesilovacEdit);
+  Application.CreateForm(TF_Booster_Edit, F_Booster_Edit);
   Application.CreateForm(TF_BlkRailway, F_BlkRailway);
   Application.CreateForm(TF_BlkLock, F_BlkLock);
   Application.CreateForm(TF_BlkDisconnector, F_BlkDisconnector);

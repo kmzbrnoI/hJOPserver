@@ -2341,7 +2341,7 @@ end;
 
 procedure TF_Main.B_zes_addClick(Sender: TObject);
 begin
-  F_ZesilovacEdit.NewZes();
+  F_Booster_Edit.NewBooster();
 end;
 
 procedure TF_Main.B_zes_deleteClick(Sender: TObject);
@@ -3285,7 +3285,7 @@ end;
 procedure TF_Main.LV_ZesilovaceDblClick(Sender: TObject);
 begin
   if (LV_Zesilovace.Selected <> nil) then
-    F_ZesilovacEdit.OpenForm(Boosters.sorted[LV_Zesilovace.ItemIndex]);
+    F_Booster_Edit.EditBooster(Boosters.sorted[LV_Zesilovace.ItemIndex]);
 end;
 
 procedure TF_Main.LV_ZesilovaceKeyPress(Sender: TObject; var Key: Char);
