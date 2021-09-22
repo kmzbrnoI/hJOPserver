@@ -304,13 +304,6 @@ begin
   Self.CHB_npMinusClick(Self.CHB_npMinus);
 
   begin
-    var areas: TArStr;
-    SetLength(areas, Self.block.areas.count);
-    for var i := 0 to Self.block.areas.count - 1 do
-      areas[i] := Self.block.areas[i].id;
-  end;
-
-  begin
     Self.CHB_Indication.Checked := settings.indication.enabled;
     Self.CHB_IndicationClick(Self.CHB_Indication);
     if (settings.indication.enabled) then

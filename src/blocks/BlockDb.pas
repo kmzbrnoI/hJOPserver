@@ -19,14 +19,9 @@ uses IniFiles, Block, SysUtils, Windows, AreaDb, Area, StdCtrls,
   JsonDataObjects, Train, System.Math;
 
 type
-  TArI = array of Integer;
-  PTArI = ^TArI;
-  TArStr = array of string;
-
   TBlksList = TList<TObject>;
 
   TBlocks = class(TObject)
-
   private
     data: TList<TBlk>;
 
@@ -88,8 +83,6 @@ type
     // state = false: cancel NUZ for all nuz-selected blocks in 'areaId'
     procedure NUZ(areaId: string; state: Boolean = true);
 
-    procedure FillCB(CB: TComboBox; items: PTArI; ignore: PTArI; orid: TArStr; blkType: TBlkType; blkId: Integer = -1;
-      blkType2: TBlkType = btAny); overload;
     procedure FillCB(var cb: TComboBox; var items: TList<Integer>; const ignore: TList<Integer>;
       const areas: TList<TArea>; blkType: TBlkType; blkType2: TBlkType = btAny; blockId: Integer = -1); overload;
 
@@ -720,87 +713,6 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-
-procedure TBlocks.FillCB(CB: TComboBox; items: PTArI; ignore: PTArI; orid: TArStr; blkType: TBlkType;
-  blkId: Integer = -1; blkType2: TBlkType = btAny);
-var count: Integer;
-begin
-  count := 0;
-  if (items <> nil) then
-    SetLength(items^, 0);
-  CB.Clear;
-  CB.enabled := true;
-
-  for var bloki: Integer := 0 to Blocks.count - 1 do
-  begin
-    var blk: TBlk := Blocks[bloki];
-    var glob: TBlkSettings := Blk.GetGlobalSettings();
-
-    if ((glob.typ <> blkType) and (glob.typ <> blkType2)) then
-      continue;
-
-    var assign: Boolean;
-    if (Assigned(orid)) then
-    begin
-      assign := false;
-      var areas: TList<TArea> := Blk.areas;
-
-      if ((glob.typ = btRailway) or (glob.typ = btIR)) then
-        assign := true
-      else
-      begin
-        for var i: Integer := 0 to Length(orid) - 1 do
-        begin
-          if (areas.count = 0) then
-            assign := true;
-          if (assign) then
-            Break;
-          for var area: TArea in areas do
-            if (area.id = orid[i]) then
-            begin
-              assign := true;
-              Break;
-            end;
-        end; // for i
-      end;
-    end else begin
-      assign := true;
-    end;
-
-    if (not assign) then
-      continue;
-
-    if (ignore <> nil) then
-    begin
-      for var i: Integer := 0 to Length(ignore^) - 1 do
-      begin
-        if (not assign) then
-          Break;
-        if (glob.id = ignore^[i]) then
-          assign := false;
-      end;
-    end;
-
-    if (not assign) then
-      continue;
-
-    if (items <> nil) then
-    begin
-      SetLength(items^, Length(items^) + 1);
-      items^[Length(items^) - 1] := bloki;
-    end;
-    CB.items.Add(glob.name);
-    if (glob.id = blkId) then
-      CB.ItemIndex := count;
-    count := count + 1;
-  end;
-
-  if (CB.items.count = 0) then
-  begin
-    CB.items.Add('Bloky nenalezeny');
-    CB.enabled := false;
-  end;
-end;
 
 procedure TBlocks.FillCB(var cb: TComboBox; var items: TList<Integer>; const ignore: TList<Integer>;
   const areas: TList<TArea>; blkType: TBlkType; blkType2: TBlkType = btAny; blockId: Integer = -1);

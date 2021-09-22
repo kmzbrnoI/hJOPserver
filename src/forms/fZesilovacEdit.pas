@@ -197,7 +197,6 @@ end;
 
 procedure TF_ZesilovacEdit.NormalOpenForm;
 var bSettings: TBoosterSettings;
-  IgnoraceRCS: TArI;
 begin
   bSettings := open_booster.settings;
 
@@ -206,10 +205,6 @@ begin
 
   SE_Zkrat_Port.Value := bSettings.RCS.overload.port;
   SE_Napajeni_port.Value := bSettings.RCS.power.port;
-
-  SetLength(IgnoraceRCS, 2);
-  IgnoraceRCS[0] := 3;
-  IgnoraceRCS[1] := 4;
 
   Self.SE_Napajeni_module.Value := bSettings.RCS.power.board;
   Self.SE_Zkrat_module.Value := bSettings.RCS.overload.board;
@@ -232,17 +227,12 @@ begin
 end;
 
 procedure TF_ZesilovacEdit.NewOpenForm;
-var IgnoraceRCS: TArI;
 begin
-  E_ID.Text := '';
-  E_Nazev.Text := '';
+  Self.E_ID.Text := '';
+  Self.E_Nazev.Text := '';
 
-  SE_Zkrat_Port.Value := 0;
-  SE_Napajeni_port.Value := 0;
-
-  SetLength(IgnoraceRCS, 2);
-  IgnoraceRCS[0] := 3;
-  IgnoraceRCS[1] := 4;
+  Self.SE_Zkrat_Port.Value := 0;
+  Self.SE_Napajeni_port.Value := 0;
 
   Self.SE_Napajeni_module.Value := 1;
   Self.SE_Zkrat_module.Value := 1;
@@ -264,4 +254,4 @@ begin
   F_ZesilovacEdit.Caption := 'Nový zesilovač';
 end;
 
-end.// unit
+end.

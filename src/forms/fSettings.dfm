@@ -55,6 +55,7 @@ object F_Options: TF_Options
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96
@@ -94,7 +95,7 @@ object F_Options: TF_Options
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Options
+    ActivePage = TS_SS
     Align = alTop
     MultiLine = True
     TabOrder = 2
@@ -395,7 +396,7 @@ object F_Options: TF_Options
           AutoSize = False
           Caption = 'Adresa RCS modulu'
         end
-        object CB_SS_AutRezimy: TComboBox
+        object CB_SS_AC: TComboBox
           Left = 200
           Top = 158
           Width = 161

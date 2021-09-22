@@ -5,12 +5,11 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, Spin, inifiles, Menus, ComCtrls, ExtCtrls, Mask, StrUtils, Buttons,
-  fMain, TechnologieRCS, BlockDb;
+  fMain, TechnologieRCS, BlockDb, Generics.Collections;
 
 type
 
   TF_Options = class(TForm)
-    // Ukladani
     B_pouzit: TButton;
     B_OK: TButton;
     PC_1: TPageControl;
@@ -23,7 +22,7 @@ type
     P_SS: TPanel;
     L_SS_02: TLabel;
     L_SS_01: TLabel;
-    CB_SS_AutRezimy: TComboBox;
+    CB_SS_AC: TComboBox;
     GB_SS_Vystupy: TGroupBox;
     L_SS_Out_1: TLabel;
     L_SS_Out_2: TLabel;
@@ -90,8 +89,9 @@ type
     procedure CHB_SS_EnableClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure CHB_AutosaveClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
-    cb_ac_arri: TArI;
+    CB_AC_Ids: TList<Integer>;
 
   public
 
@@ -114,6 +114,12 @@ uses fRychlostiEdit, GetSystems, FileSystem, Block,
 procedure TF_Options.FormCreate(Sender: TObject);
 begin
   PC_1.ActivePageIndex := 0;
+  Self.CB_AC_Ids := TList<Integer>.Create();
+end;
+
+procedure TF_Options.FormDestroy(Sender: TObject);
+begin
+  Self.CB_AC_Ids.Free();
 end;
 
 procedure TF_Options.PC_1Change(Sender: TObject);
@@ -170,7 +176,7 @@ end;
 procedure TF_Options.FormResize(Sender: TObject);
 begin
   SE_SS_RCSAdr.Left := (PC_1.Width div 2) - (SE_SS_RCSAdr.Width div 2);
-  CB_SS_AutRezimy.Left := SE_SS_RCSAdr.Left;
+  CB_SS_AC.Left := SE_SS_RCSAdr.Left;
   GB_SS_Vstupy.Left := (PC_1.Width div 2) - (GB_SS_Vstupy.Width) - 5;
   GB_SS_Vystupy.Left := (PC_1.Width div 2) + 5;
   CHB_SS_Enable.Left := (PC_1.Width div 2) - (CHB_SS_Enable.Width div 2);
@@ -182,19 +188,14 @@ begin
 end;
 
 procedure TF_Options.NactiSSDoObjektu();
-var IgnoraceRCS: TArI;
-  data: TSSData;
+var data: TSSData;
 begin
   data := SS.GetData();
 
-  SetLength(IgnoraceRCS, 2);
-  IgnoraceRCS[0] := 3;
-  IgnoraceRCS[1] := 4;
-
   Self.SE_SS_RCSAdr.Value := data.RCSAdr;
 
-  F_Options.CB_SS_AutRezimy.Clear();
-  Blocks.FillCB(Self.CB_SS_AutRezimy, @Self.cb_ac_arri, nil, nil, btAC, data.AC_id);
+  F_Options.CB_SS_AC.Clear();
+  Blocks.FillCB(Self.CB_SS_AC, Self.CB_AC_Ids, nil, nil, btAC, btAC, data.AC_id);
 
   Self.CHB_SS_Enable.Checked := data.enabled;
   Self.CHB_SS_EnableClick(Self);
@@ -258,12 +259,12 @@ procedure TF_Options.CHB_SS_EnableClick(Sender: TObject);
 begin
   if (Self.CHB_SS_Enable.Checked) then
   begin
-    Self.CB_SS_AutRezimy.enabled := true;
+    Self.CB_SS_AC.enabled := true;
     Self.SE_SS_RCSAdr.enabled := true;
     Self.GB_SS_Vstupy.enabled := true;
     Self.GB_SS_Vystupy.enabled := true;
   end else begin
-    Self.CB_SS_AutRezimy.enabled := false;
+    Self.CB_SS_AC.enabled := false;
     Self.SE_SS_RCSAdr.enabled := false;
     Self.GB_SS_Vstupy.enabled := false;
     Self.GB_SS_Vystupy.enabled := false;
@@ -336,7 +337,7 @@ begin
   data.enabled := Self.CHB_SS_Enable.Checked;
 
   data.RCSAdr := Self.SE_SS_RCSAdr.Value;
-  data.AC_id := Blocks.GetBlkID(Self.cb_ac_arri[Self.CB_SS_AutRezimy.ItemIndex]);
+  data.AC_id := Self.CB_AC_Ids[Self.CB_SS_AC.ItemIndex];
 
   if (CHB_SS_In_Start.Checked) then
     data.IN_Start := Self.SE_SS_In_Start.Value

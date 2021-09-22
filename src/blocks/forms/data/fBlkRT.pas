@@ -181,7 +181,7 @@ begin
   Self.CHB_Stop_OddClick(Self);
 
   Blocks.FillCB(Self.CB_SignalL, Self.CB_SignalId, nil, nil, btSignal);
-  Blocks.FillCB(Self.CB_SignalS, nil, nil, nil, btSignal);
+  Blocks.FillCB(Self.CB_SignalS, Self.CB_SignalId, nil, nil, btSignal);
   Self.CB_SignalOddIndex := -1;
   Self.CB_SignalEvenIndex := -1;
 
