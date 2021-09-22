@@ -5,13 +5,13 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, StdCtrls, TechnologieMultiJC, Generics.Collections,
-  Spin, BlockDb;
+  Spin, BlockDb, Area;
 
 type
   TF_MJCEdit = class(TForm)
     L_VC_01: TLabel;
     CHB_AutoName: TCheckBox;
-    E_VCNazev: TEdit;
+    E_Name: TEdit;
     GB_JCs: TGroupBox;
     GB_JC_New: TGroupBox;
     CB_JC_Add: TComboBox;
@@ -43,23 +43,24 @@ type
     openMJC: TMultiJC;
     new: Boolean;
 
-    JCs: TList<Integer>;
-    vb: TList<Integer>;
-
-    CB_VB_indexes: TArI;
-    CB_JC_ids: TArI;
+    CB_VB_Ids: TList<Integer>;
+    CB_JC_Ids: TList<Integer>;
 
     procedure UpdateJCCb();
     procedure UpdateVBCb();
+    procedure FillJCName();
+    procedure RecalcJCIndexes();
+    procedure RecalcVBIndexes();
 
     procedure NormalOpenForm();
     procedure EmptyOpenForm();
 
-    procedure MakeAreas(var areas: TArStr);
+    function Areas(): TList<TArea>;
 
   public
     procedure EditMJC(mJC: TMultiJC);
     procedure NewMJC(template: TMultiJC);
+
   end;
 
 var
@@ -69,7 +70,7 @@ implementation
 
 {$R *.dfm}
 
-uses TJCDatabase, TechnologieJC, Block, Area, BlockSignal, TMultiJCDatabase,
+uses TJCDatabase, TechnologieJC, Block, BlockSignal, TMultiJCDatabase,
   DataMultiJC;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -78,53 +79,51 @@ procedure TF_MJCEdit.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Self.openMJC := nil;
   Self.new := false;
-  Self.JCs.Clear();
-  Self.vb.Clear();
 end;
 
 procedure TF_MJCEdit.FormCreate(Sender: TObject);
 begin
   Self.openMJC := nil;
   Self.new := false;
-  Self.JCs := TList<Integer>.Create();
-  Self.vb := TList<Integer>.Create();
+  Self.CB_VB_Ids := TList<Integer>.Create();
+  Self.CB_JC_Ids := TList<Integer>.Create();
 end;
 
 procedure TF_MJCEdit.FormDestroy(Sender: TObject);
 begin
-  Self.JCs.Free();
-  Self.vb.Free();
+  Self.CB_VB_Ids.Free();
+  Self.CB_JC_Ids.Free();
 end;
 
 procedure TF_MJCEdit.LV_JCsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
-var i: Integer;
 begin
   Self.B_JC_Remove.Enabled := (Self.LV_JCs.Selected <> nil);
 
-  if ((Self.LV_JCs.Selected = nil) or (Self.LV_JCs.ItemIndex >= Self.JCs.Count)) then
+  if (Self.LV_JCs.Selected = nil) then
   begin
     Self.CB_JC_Add.ItemIndex := -1;
     Exit();
   end;
 
-  for i := 0 to Length(Self.CB_JC_ids) - 1 do
-    if (Self.CB_JC_ids[i] = Self.JCs[Self.LV_JCs.ItemIndex]) then
+  var selectedId := StrToInt(Self.LV_JCs.Selected.SubItems[0]);
+  for var i := 0 to Self.CB_JC_Ids.Count - 1 do
+    if (Self.CB_JC_ids[i] = selectedId) then
       Self.CB_JC_Add.ItemIndex := i;
 end;
 
 procedure TF_MJCEdit.LV_VBsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
-var i: Integer;
 begin
   Self.B_VB_Remove.Enabled := (Self.LV_VBs.Selected <> nil);
 
-  if ((Self.LV_VBs.Selected = nil) or (Self.LV_VBs.ItemIndex >= Self.vb.Count)) then
+  if (Self.LV_VBs.Selected = nil) then
   begin
     Self.CB_VB_New.ItemIndex := -1;
     Exit();
   end;
 
-  for i := 0 to Length(Self.CB_VB_indexes) - 1 do
-    if (Blocks.GetBlkID(Self.CB_VB_indexes[i]) = Self.vb[Self.LV_VBs.ItemIndex]) then
+  var selectedId := StrToInt(Self.LV_VBs.Selected.SubItems[0]);
+  for var i := 0 to Self.CB_VB_Ids.Count - 1 do
+    if (Self.CB_VB_Ids[i] = selectedId) then
       Self.CB_VB_New.ItemIndex := i;
 end;
 
@@ -136,9 +135,6 @@ begin
 
   Self.B_JC_Remove.Enabled := false;
   Self.B_VB_Remove.Enabled := false;
-
-  Self.JCs.Clear();
-  Self.vb.Clear();
 
   Self.LV_JCs.Clear();
   Self.LV_VBs.Clear();
@@ -160,40 +156,38 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.NormalOpenForm();
-var jcid, vbi: Integer;
-  LI: TListItem;
-  JC: TJC;
-  Blk: TBlk;
 begin
   if (Self.new) then
     Self.SE_ID.Value := Self.openMJC.id + 1
   else
     Self.SE_ID.Value := Self.openMJC.id;
 
-  Self.E_VCNazev.Text := Self.openMJC.name;
+  Self.E_Name.Text := Self.openMJC.name;
 
-  for jcid in Self.openMJC.data.JCs do
+  for var jcid in Self.openMJC.data.JCs do
   begin
-    JC := JCDb.GetJCByID(jcid);
+    var JC := JCDb.GetJCByID(jcid);
     if (JC = nil) then
       continue;
-    LI := Self.LV_JCs.Items.Add;
-    LI.Caption := JC.name;
-    Self.JCs.Add(jcid);
+    var LI: TListItem := Self.LV_JCs.Items.Add;
+    LI.Caption := IntToStr(Self.LV_JCs.Items.Count);
+    LI.SubItems.Add(IntToStr(jcid));
+    LI.SubItems.Add(JC.name);
   end;
 
-  for vbi in Self.openMJC.data.vb do
+  for var vbId in Self.openMJC.data.vb do
   begin
-    Blocks.GetBlkByID(vbi, Blk);
-    if (Blk = nil) then
+    var blk := Blocks.GetBlkByID(vbId);
+    if (blk = nil) then
       continue;
-    LI := Self.LV_VBs.Items.Add;
-    LI.Caption := Blk.GetGlobalSettings.name;
-    Self.vb.Add(vbi);
+    var LI: TListItem := Self.LV_VBs.Items.Add;
+    LI.Caption := IntToStr(Self.LV_VBs.Items.Count);
+    LI.SubItems.Add(IntToStr(vbId));
+    LI.SubItems.Add(blk.GetGlobalSettings.name);
   end;
 
-  Self.B_VB_New.Enabled := (Self.JCs.Count > 0);
-  Self.CB_VB_New.Enabled := (Self.JCs.Count > 0);
+  Self.B_VB_New.Enabled := (Self.openMJC.data.vb.Count > 0);
+  Self.CB_VB_New.Enabled := (Self.openMJC.data.vb.Count > 0);
 
   Self.UpdateJCCb();
   Self.UpdateVBCb();
@@ -217,7 +211,7 @@ begin
   Self.UpdateJCCb();
   Self.UpdateVBCb();
 
-  Self.E_VCNazev.Text := '';
+  Self.E_Name.Text := '';
   Self.ActiveControl := CB_JC_Add;
   Self.Caption := 'Nová složená jízdní cesta';
 end;
@@ -225,52 +219,38 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.UpdateJCCb();
-var JC: TJC;
 begin
-  SetLength(CB_JC_ids, JCDb.Count);
+  Self.CB_JC_Ids.Clear();
   Self.CB_JC_Add.Clear();
-  for JC in JCDb do
+  for var JC in JCDb do
   begin
     Self.CB_JC_Add.Items.Add(JC.name);
-    Self.CB_JC_ids[Self.CB_JC_Add.Items.Count - 1] := JC.id;
+    Self.CB_JC_ids.Add(JC.id);
   end;
 end;
 
 procedure TF_MJCEdit.UpdateVBCb();
-var areas: TArStr;
 begin
-  Self.MakeAreas(areas);
-  Blocks.FillCB(Self.CB_VB_New, @CB_VB_indexes, nil, areas, btTrack, -1);
+  var areas := Self.Areas();
+  try
+    Blocks.FillCB(Self.CB_VB_New, Self.CB_VB_Ids, nil, areas, btTrack);
+  finally
+    areas.Free();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// vytvoreni seznamu oblasti rizeni pro pridani variantnich bodu:
-// oblasti rizeni vytvarime podle 0. JC
-procedure TF_MJCEdit.MakeAreas(var areas: TArStr);
-var Blk: TBlk;
-  i: Integer;
+function TF_MJCEdit.Areas(): TList<TArea>;
 begin
-  if (Self.JCs.Count < 1) then
-    areas := nil
-  else
-  begin
-    try
-      Blocks.GetBlkByID(JCDb.GetJCByID(Self.JCs[0]).data.signalId, Blk);
+  Result := TList<TArea>.Create();
+  if (Self.LV_JCs.Items.Count < 1) then
+    Exit();
 
-      if ((Blk = nil) or (Blk.typ <> btSignal)) then
-      begin
-        areas := nil;
-        Exit();
-      end;
-
-      SetLength(areas, (Blk as TBlkSignal).areas.Count);
-      for i := 0 to (Blk as TBlkSignal).areas.Count - 1 do
-        areas[i] := (Blk as TBlkSignal).areas[i].id;
-    except
-      areas := nil;
-    end;
-  end;
+  var jcId := StrToInt(Self.LV_JCs.Items[0].SubItems[0]);
+  var signal := TBlkSignal(Blocks.GetBlkByID(JCDb.GetJCByID(jcId).data.signalId));
+  if ((signal <> nil) and (signal.typ = btSignal)) then
+    Result.AddRange(signal.areas);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -281,29 +261,25 @@ begin
   if (Self.CB_JC_Add.ItemIndex < 0) then
     Exit();
 
-  if (Self.LV_JCs.ItemIndex = -1) then
-  begin
-    Self.JCs.Add(Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex]);
-    LI := Self.LV_JCs.Items.Add();
-  end else begin
-    Self.JCs[Self.LV_JCs.ItemIndex] := Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex];
-    LI := Self.LV_JCs.Items[Self.LV_JCs.ItemIndex];
-  end;
+  if (Self.LV_JCs.Selected = nil) then
+    LI := Self.LV_JCs.Items.Add()
+  else
+    LI := Self.LV_JCs.Selected;
 
-  LI.Caption := JCDb.GetJCByID(Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex]).name;
-  if (Self.JCs.Count = 1) then
+  var id := Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex];
+  LI.SubItems.Add(IntToStr(id));
+  LI.SubItems.Add(JCDb.GetJCByID(id).name);
+  Self.RecalcJCIndexes();
+
+  if (Self.LV_JCs.Items.Count = 1) then
   begin
     Self.B_VB_New.Enabled := true;
     Self.CB_VB_New.Enabled := true;
-    Self.UpdateVBCb(); // protoze se vytvori oblasti rizeni
+    Self.UpdateVBCb();
   end;
 
-  // doplneni nazvu JC:
   if (Self.CHB_AutoName.Checked) then
-  begin
-    Self.E_VCNazev.Text := Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.signalId) + ' > ' +
-      JCDb.GetJCByID(Self.JCs[Self.JCs.Count - 1]).lastTrack.name;
-  end;
+    Self.FillJCName();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -314,16 +290,15 @@ begin
   if (Self.CB_VB_New.ItemIndex < 0) then
     Exit();
 
-  if (Self.LV_VBs.ItemIndex = -1) then
-  begin
-    Self.vb.Add(Blocks.GetBlkID(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]));
-    LI := Self.LV_VBs.Items.Add();
-  end else begin
-    Self.vb[Self.LV_VBs.ItemIndex] := Blocks.GetBlkID(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]);
-    LI := Self.LV_VBs.Items[Self.LV_VBs.ItemIndex];
-  end;
+  if (Self.LV_VBs.Selected = nil) then
+    LI := Self.LV_VBs.Items.Add()
+  else
+    LI := Self.LV_VBs.Selected;
 
-  LI.Caption := Blocks.GetBlkIndexName(Self.CB_VB_indexes[Self.CB_VB_New.ItemIndex]);
+  var id := Self.CB_VB_Ids[Self.CB_VB_New.ItemIndex];
+  LI.SubItems.Add(IntToStr(id));
+  LI.SubItems.Add(Blocks.GetBlkName(id));
+  Self.RecalcVBIndexes();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -337,30 +312,32 @@ end;
 
 procedure TF_MJCEdit.B_SaveClick(Sender: TObject);
 var data: TMultiJCData;
-  i, prevIndex: Integer;
-  check: TMultiJC;
-  origNav: TBlkSignal;
 begin
-  if (Self.JCs.Count < 2) then
+  if (Self.LV_JCs.Items.Count < 2) then
   begin
     Application.MessageBox('Složená JC musí obsahovat alespoň 2 JC', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Self.E_VCNazev.Text = '') then
+  if (Self.E_Name.Text = '') then
   begin
     Application.MessageBox('Vyplňte název složené JC', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  check := MultiJCDb.GetJCByID(Self.SE_ID.Value);
-  if ((check <> nil) and (check <> Self.openMJC)) then
+
   begin
-    Application.MessageBox('Složená jízdní cesta s tímto ID již existuje', 'Nelze uložit data',
-      MB_OK OR MB_ICONWARNING);
-    Exit();
+    var check := MultiJCDb.GetJCByID(Self.SE_ID.Value);
+    if ((check <> nil) and (check <> Self.openMJC)) then
+    begin
+      Application.MessageBox('Složená jízdní cesta s tímto ID již existuje', 'Nelze uložit data',
+        MB_OK OR MB_ICONWARNING);
+      Exit();
+    end;
   end;
 
   data.id := Self.SE_ID.Value;
-  data.name := Self.E_VCNazev.Text;
+  data.name := Self.E_Name.Text;
+
+  var origSignal: TBlkSignal := nil;
 
   if (Self.new) then
   begin
@@ -377,28 +354,26 @@ begin
         Exit();
       end;
     end;
-
-    origNav := nil;
   end else begin
     data.JCs := Self.openMJC.data.JCs; // dulezite pro pridavani JC
     data.vb := Self.openMJC.data.vb;
 
-    origNav := Self.openMJC.StartSignal();
+    origSignal := Self.openMJC.StartSignal();
 
-    prevIndex := MultiJCDb.GetJCIndexByID(Self.openMJC.id);
+    var prevIndex := MultiJCDb.GetJCIndexByID(Self.openMJC.id);
     Self.openMJC.data := data;
     MultiJCDb.IDChanged(prevIndex);
   end;
 
   Self.openMJC.data.JCs.Clear();
-  for i := 0 to Self.JCs.Count - 1 do
-    Self.openMJC.data.JCs.Add(Self.JCs[i]);
+  for var LI: TListItem in Self.LV_JCs.Items do
+    Self.openMJC.data.JCs.Add(StrToInt(LI.SubItems[0]));
 
   Self.openMJC.data.vb.Clear();
-  for i := 0 to Self.vb.Count - 1 do
-    Self.openMJC.data.vb.Add(Self.vb[i]);
+  for var LI: TListItem in Self.LV_VBs.Items do
+    Self.openMJC.data.vb.Add(StrToInt(LI.SubItems[0]));
 
-  MultiJCDb.SignalChanged(Self.openMJC, origNav);
+  MultiJCDb.SignalChanged(Self.openMJC, origSignal);
   Self.openMJC.changed := true;
   MultiJCTableData.UpdateTable();
   Self.Close();
@@ -408,37 +383,50 @@ end;
 
 procedure TF_MJCEdit.B_JC_RemoveClick(Sender: TObject);
 begin
-  if (Self.LV_JCs.Selected <> nil) then
-  begin
-    Self.JCs.Delete(Self.LV_JCs.ItemIndex);
-    Self.LV_JCs.Items.Delete(Self.LV_JCs.ItemIndex);
-    Self.UpdateJCCb();
-    Self.UpdateVBCb();
+  Self.LV_JCs.DeleteSelected();
+  Self.UpdateJCCb();
+  Self.UpdateVBCb();
+  Self.RecalcJCIndexes();
 
-    // doplneni nazvu JC:
-    if (Self.CHB_AutoName.Checked) then
-    begin
-      if (Self.JCs.Count > 0) then
-        Self.E_VCNazev.Text := Blocks.GetBlkName(JCDb.GetJCByID(Self.JCs[0]).data.signalId) + ' > ' +
-          JCDb.GetJCByID(Self.JCs[Self.JCs.Count - 1]).lastTrack.name
-      else
-        Self.E_VCNazev.Text := '';
-    end;
-  end;
+  if (Self.CHB_AutoName.Checked) then
+    Self.FillJCName();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_MJCEdit.B_VB_RemoveClick(Sender: TObject);
 begin
-  if (Self.LV_VBs.Selected <> nil) then
-  begin
-    Self.vb.Delete(Self.LV_VBs.ItemIndex);
-    Self.LV_VBs.Items.Delete(Self.LV_VBs.ItemIndex);
-    Self.UpdateVBCb();
-  end;
+  Self.LV_VBs.DeleteSelected();
+  Self.UpdateVBCb();
+  Self.RecalcVBIndexes();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-end.// unit
+procedure TF_MJCEdit.FillJCName();
+begin
+  if (Self.LV_JCs.Items.Count = 0) then
+  begin
+    Self.E_Name.Text := '';
+    Exit();
+  end;
+
+  var firstJcId := StrToInt(Self.LV_JCs.Items[0].SubItems[0]);
+  var lastJcId := StrToInt(Self.LV_JCs.Items[Self.LV_JCs.Items.Count-1].SubItems[0]);
+  Self.E_Name.Text := Blocks.GetBlkName(JCDb.GetJCByID(firstJcId).data.signalId) + ' > ' +
+    JCDb.GetJCByID(lastJcId).lastTrack.name;
+end;
+
+procedure TF_MJCEdit.RecalcJCIndexes();
+begin
+  for var i: Integer := 0 to Self.LV_JCs.Items.Count-1 do
+    Self.LV_JCs.Items[i].Caption := IntToStr(i+1);
+end;
+
+procedure TF_MJCEdit.RecalcVBIndexes();
+begin
+  for var i: Integer := 0 to Self.LV_VBs.Items.Count-1 do
+    Self.LV_VBs.Items[i].Caption := IntToStr(i+1);
+end;
+
+end.

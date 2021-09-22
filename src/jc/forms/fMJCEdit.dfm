@@ -50,7 +50,7 @@ object F_MJCEdit: TF_MJCEdit
     State = cbChecked
     TabOrder = 2
   end
-  object E_VCNazev: TEdit
+  object E_Name: TEdit
     Left = 136
     Top = 32
     Width = 540
@@ -85,7 +85,7 @@ object F_MJCEdit: TF_MJCEdit
       Margins.Right = 2
       Margins.Bottom = 2
       Align = alBottom
-      Caption = ' Nov'#225' JC  '
+      Caption = ' P'#345'idat/upravit JC '
       TabOrder = 1
       object CB_JC_Add: TComboBox
         Left = 9
@@ -125,10 +125,18 @@ object F_MJCEdit: TF_MJCEdit
       Align = alBottom
       Columns = <
         item
+          Caption = '#'
+          Width = 30
+        end
+        item
+          Caption = 'ID'
+        end
+        item
           Caption = 'JC'
-          Width = 250
+          Width = 200
         end>
       GridLines = True
+      MultiSelect = True
       ReadOnly = True
       RowSelect = True
       TabOrder = 0
@@ -173,7 +181,7 @@ object F_MJCEdit: TF_MJCEdit
       Margins.Right = 2
       Margins.Bottom = 2
       Align = alBottom
-      Caption = ' Nov'#253' VB  '
+      Caption = ' P'#345'idat/upravit VB '
       TabOrder = 1
       object CB_VB_New: TComboBox
         Left = 10
@@ -213,10 +221,18 @@ object F_MJCEdit: TF_MJCEdit
       Align = alBottom
       Columns = <
         item
+          Caption = '#'
+          Width = 30
+        end
+        item
+          Caption = 'ID'
+        end
+        item
           Caption = 'Blok'
-          Width = 250
+          Width = 200
         end>
       GridLines = True
+      MultiSelect = True
       ReadOnly = True
       RowSelect = True
       TabOrder = 0
