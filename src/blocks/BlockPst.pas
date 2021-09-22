@@ -268,19 +268,32 @@ begin
 end;
 
 procedure TBlkPst.SaveData(ini_tech: TMemIniFile; const section: string);
+var str: string;
 begin
   inherited SaveData(ini_tech, section);
 
-  ini_tech.WriteString(section, 'tracks', SerializeIntList(Self.m_settings.tracks));
-  ini_tech.WriteString(section, 'turnouts', SerializeIntList(Self.m_settings.turnouts));
-  ini_tech.WriteString(section, 'signals', SerializeIntList(Self.m_settings.signals));
-  ini_tech.WriteString(section, 'disconnectors', SerializeIntList(Self.m_settings.disconnectors));
+  str := SerializeIntList(Self.m_settings.tracks);
+  if (str <> '') then
+    ini_tech.WriteString(section, 'tracks', str);
+
+  str := SerializeIntList(Self.m_settings.turnouts);
+  if (str <> '') then
+    ini_tech.WriteString(section, 'turnouts', str);
+
+  str := SerializeIntList(Self.m_settings.signals);
+  if (str <> '') then
+    ini_tech.WriteString(section, 'signals', str);
+
+  str := SerializeIntList(Self.m_settings.disconnectors);
+  if (str <> '') then
+    ini_tech.WriteString(section, 'disconnectors', str);
 
   begin
-    var str := '';
+    str := '';
     for var zav: TPstRefugeeZav in Self.m_settings.refugees do
       str := str + '(' + IntToStr(zav.block) + ',' + TBlkTurnout.PositionToStr(zav.position) + ')';
-    ini_tech.WriteString(section, 'refugees', str);
+    if (str <> '') then
+      ini_tech.WriteString(section, 'refugees', str);
   end;
 
   ini_tech.WriteString(section, 'rcsInTake', Self.m_settings.rcsInTake.ToString());
