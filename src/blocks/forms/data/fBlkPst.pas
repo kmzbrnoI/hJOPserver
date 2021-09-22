@@ -174,6 +174,15 @@ begin
   Blocks.FillCB(Self.CB_Disconnector, Self.CB_DiscItems, nil, nil, btDisconnector);
   Self.B_Disc_Ok.Enabled := Self.CB_Disconnector.Enabled;
 
+  Self.SE_RCS_Take_Module.Value := 1;
+  Self.SE_RCS_Take_Port.Value := 0;
+  Self.SE_RCS_Release_Module.Value := 1;
+  Self.SE_RCS_Release_Port.Value := 0;
+  Self.SE_RCS_Indication_Module.Value := 1;
+  Self.SE_RCS_Indication_Port.Value := 0;
+  Self.SE_RCS_Horn_Module.Value := 1;
+  Self.SE_RCS_Horn_Port.Value := 0;
+
   Self.Caption := 'Nový blok Pomocné stavědlo';
   Self.ActiveControl := Self.E_Name;
 end;

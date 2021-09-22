@@ -732,7 +732,6 @@ object F_BlkPst: TF_BlkPst
       Align = alBottom
       Caption = ' P'#345'idat/upravit rozpojova'#269' '
       TabOrder = 1
-      ExplicitWidth = 325
       object CB_Disconnector: TComboBox
         Left = 10
         Top = 16
@@ -802,7 +801,6 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_DisconnectorsChange
-      ExplicitWidth = 325
     end
   end
 end
