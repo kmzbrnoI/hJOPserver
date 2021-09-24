@@ -1506,7 +1506,7 @@ end;
 procedure TF_Main.PM_PropertiesClick(Sender: TObject);
 begin
   if (LV_HV.Selected <> nil) then
-    F_HVEdit.OpenForm(HVDb[Integer(LV_HV.Selected.Data)]);
+    F_HVEdit.OpenForm(HVDb[StrToInt(LV_HV.Selected.Caption)]);
 end;
 
 procedure TF_Main.PC_1Change(Sender: TObject);
@@ -2169,24 +2169,20 @@ begin
 end;
 
 procedure TF_Main.B_HV_DeleteClick(Sender: TObject);
-var hvs: string;
-  LI: TListItem;
-  i: Integer;
-  addr: Word;
 begin
   if (Self.LV_HV.Selected = nil) then
     Exit();
 
-  hvs := Self.LVSelectedTexts(Self.LV_HV, 'HV', 'HV');
+  var hvs := Self.LVSelectedTexts(Self.LV_HV, 'HV', 'HV');
 
   if (Application.MessageBox(PChar('Opravdu smazat ' + hvs + '?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
-    for i := Self.LV_HV.Items.Count - 1 downto 0 do
+    for var i := Self.LV_HV.Items.Count - 1 downto 0 do
     begin
-      LI := Self.LV_HV.Items[i];
+      var LI: TListItem := Self.LV_HV.Items[i];
       if (LI.Selected) then
       begin
-        addr := Integer(LI.Data);
+        var addr := StrToInt(LI.Caption);
         try
           HVDb.Remove(addr);
         except
@@ -3251,7 +3247,7 @@ begin
         Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
     end;
   end else begin
-    F_HVEdit.OpenForm(HVDb[Integer(LV_HV.Selected.Data)]);
+    F_HVEdit.OpenForm(HVDb[StrToInt(LV_HV.Selected.Caption)]);
   end;
 end;
 
@@ -3365,22 +3361,21 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TF_Main.LVSelectedTexts(LV: TListView; single: string; multiple: string): string;
-var LI: TListItem;
-  Count: Integer;
+var count: Integer;
 begin
   Result := '';
-  Count := 0;
-  for LI in LV.Items do
+  count := 0;
+  for var LI: TListItem in LV.Items do
   begin
     if (LI.Selected) then
     begin
       Result := Result + LI.Caption + ', ';
-      Inc(Count);
+      Inc(count);
     end;
   end;
   Result := LeftStr(Result, Length(Result) - 2);
 
-  if (Count = 1) then
+  if (count = 1) then
     Result := single + ' ' + Result
   else
     Result := multiple + ' ' + Result;

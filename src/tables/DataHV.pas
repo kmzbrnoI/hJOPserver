@@ -38,26 +38,23 @@ constructor THVTableData.Create(LV: TListView);
 begin
   inherited Create;
   Self.LV := LV;
-end; // ctor
+end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure THVTableData.LoadToTable();
-var i, j: Integer;
-  LI: TListItem;
 begin
   Self.LV.Clear();
 
-  for i := 0 to _MAX_ADDR - 1 do
+  for var i := 0 to _MAX_ADDR - 1 do
   begin
     if (HVDb[i] = nil) then
       continue;
 
-    LI := Self.LV.Items.Add;
+    var LI: TListItem := Self.LV.Items.Add;
     LI.Caption := IntToStr(i);
-    LI.Data := Pointer(Integer(HVDb[i].addr));
 
-    for j := 0 to Self.LV.Columns.Count - 2 do
+    for var j := 0 to Self.LV.Columns.Count - 2 do
       LI.SubItems.Add('');
 
     Self.UpdateLine(HVDb[i]);
@@ -67,9 +64,8 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure THVTableData.UpdateTable();
-var i: Integer;
 begin
-  for i := 0 to _MAX_ADDR - 1 do
+  for var i := 0 to _MAX_ADDR - 1 do
   begin
     if (not Assigned(HVDb[i])) then
       continue;
@@ -78,7 +74,7 @@ begin
       Self.UpdateLine(HVDb[i]);
       Self.LV.UpdateItems(HVDb[i].index, HVDb[i].index);
     end;
-  end; // for i
+  end;
 
   Self.reload := false;
 end;
@@ -86,30 +82,25 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure THVTableData.UpdateLine(HV: THV);
-var line: Integer;
-  Data: THVData;
-  state: THVState;
-  slot: TTrkLocoInfo;
-  i: Integer;
-  str: string;
+var str: string;
 begin
   if (HV = nil) then
     Exit();
 
   HV.changed := false;
 
-  line := HV.index;
-  Data := HV.Data;
-  state := HV.state;
-  slot := HV.slot;
+  var line := HV.index;
+  var data := HV.Data;
+  var state := HV.state;
+  var slot := HV.slot;
 
   Self.LV.Items[line].Caption := IntToStr(HV.addr);
-  Self.LV.Items[line].SubItems[0] := Data.name;
-  Self.LV.Items[line].SubItems[1] := Data.designation;
-  Self.LV.Items[line].SubItems[2] := Data.owner;
-  Self.LV.Items[line].SubItems[3] := Data.note;
+  Self.LV.Items[line].SubItems[0] := data.name;
+  Self.LV.Items[line].SubItems[1] := data.designation;
+  Self.LV.Items[line].SubItems[2] := data.owner;
+  Self.LV.Items[line].SubItems[3] := data.note;
 
-  case (Data.typ) of
+  case (data.typ) of
     THVType.other:
       Self.LV.Items[line].SubItems[4] := 'jiný';
     THVType.steam:
@@ -124,7 +115,7 @@ begin
       Self.LV.Items[line].SubItems[4] := 'vůz';
   end; // case
 
-  Self.LV.Items[line].SubItems[5] := IntToStr(Data.transience);
+  Self.LV.Items[line].SubItems[5] := IntToStr(data.transience);
 
   case (state.siteA) of
     odd:
@@ -141,7 +132,7 @@ begin
   else
     Self.LV.Items[line].SubItems[7] := '';
 
-  Self.LV.Items[line].SubItems[8] := IntToStr(Data.maxSpeed) + ' km/h';
+  Self.LV.Items[line].SubItems[8] := IntToStr(data.maxSpeed) + ' km/h';
 
   if (state.train > -1) then
     Self.LV.Items[line].SubItems[19] := Trains.GetTrainNameByIndex(state.train)
@@ -179,22 +170,22 @@ begin
     Self.LV.Items[line].SubItems[11] := IntToStr(ownConvert.BoolToInt(HV.slotFunctions[0]));
 
     str := '';
-    for i := 1 to 4 do
+    for var i := 1 to 4 do
       str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
     Self.LV.Items[line].SubItems[12] := str;
 
     str := '';
-    for i := 5 to 8 do
+    for var i := 5 to 8 do
       str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
     Self.LV.Items[line].SubItems[13] := str;
 
     str := '';
-    for i := 9 to 12 do
+    for var i := 9 to 12 do
       str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
     Self.LV.Items[line].SubItems[14] := str;
 
     str := '';
-    for i := 13 to 20 do
+    for var i := 13 to 20 do
     begin
       str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
       if (i = 16) then
@@ -203,7 +194,7 @@ begin
     Self.LV.Items[line].SubItems[15] := str;
 
     str := '';
-    for i := 21 to 28 do
+    for var i := 21 to 28 do
     begin
       str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
       if (i = 24) then
@@ -230,18 +221,16 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure THVTableData.AddHV(line: Integer; HV: THV);
-var i: Integer;
-  LI: TListItem;
+var LI: TListItem;
   addr: Pointer;
 begin
   LI := Self.LV.Items.Insert(line);
 
   GetMem(addr, 3);
   Integer(addr^) := HV.addr;
-  LI.Data := addr;
-  LI.Caption := IntToStr(HV.addr); // = adresa
+  LI.Caption := IntToStr(HV.addr);
 
-  for i := 0 to Self.LV.Columns.Count - 1 do
+  for var i := 0 to Self.LV.Columns.Count - 1 do
     LI.SubItems.Add('');
 
   Self.UpdateLine(HV);
