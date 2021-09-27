@@ -35,6 +35,7 @@ type
     senderOR: TObject;
     senderPnl: TIdContext;
     error: Boolean;
+    rcsError: Boolean;
   end;
 
   // Pst has zaver if any track in pst has zaver
@@ -48,6 +49,7 @@ type
       senderOR: nil;
       senderPnl: nil;
       error: false;
+      rcsError: false;
     );
 
   private
@@ -73,6 +75,7 @@ type
     procedure SetEmLock(new: Boolean);
     procedure SetNote(note: string);
     procedure SetError(new: Boolean);
+    procedure SetRcsError(new: Boolean);
 
     procedure CheckInputs();
     procedure ShowIndication();
@@ -113,7 +116,6 @@ type
     function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
-    procedure Change(now: Boolean = false); override;
 
     // ----- pst own functions -----
 
@@ -131,6 +133,7 @@ type
     property note: string read m_state.note write SetNote;
     property enabled: Boolean read GetEnabled;
     property error: Boolean read m_state.error write SetError;
+    property rcsError: Boolean read m_state.rcsError write SetRcsError;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
@@ -313,6 +316,7 @@ procedure TBlkPst.Enable();
 begin
   Self.m_state.status := pstOff;
   Self.m_state.error := false;
+  Self.m_state.rcsError := false;
   Self.Change();
 end;
 
@@ -321,6 +325,7 @@ begin
   Self.m_state.status := pstDisabled;
   Self.m_state.emLock := 0;
   Self.m_state.error := false;
+  Self.m_state.rcsError := false;
   Self.Change(true);
 end;
 
@@ -329,6 +334,7 @@ begin
   Self.m_state.senderOR := nil;
   Self.m_state.senderPnl := nil;
   Self.m_state.error := false;
+  Self.m_state.rcsError := false;
 end;
 
 procedure TBlkPst.SetStatus(new: TBlkPstStatus);
@@ -473,27 +479,48 @@ begin
 end;
 
 procedure TBlkPst.CheckInputs();
-var take, release: Boolean;
+var take, release: TRCSInputState;
 begin
   if (not RCSi.Started) then
     Exit();
 
-  take := false;
-  release := false;
+  take := TRCSInputState.failure;
+  release := TRCSInputState.failure;
   try
-    take := (RCSi.GetInput(Self.m_settings.rcsInTake) = TRCSInputState.isOn);
-    release := (RCSi.GetInput(Self.m_settings.rcsInRelease) = TRCSInputState.isOn);
+    take := RCSi.GetInput(Self.m_settings.rcsInTake);
+    release := RCSi.GetInput(Self.m_settings.rcsInRelease);
   except
     on E: RCSException do begin end;
   end;
 
-  if ((Self.status = pstTakeReady) and (take) and (not release)) then
+  if ((take <> TRCSInputState.isOff) and (take <> TRCSInputState.isOn) and
+      (take <> TRCSInputState.notYetScanned)) then
+  begin
+    if (not Self.rcsError) then
+      Self.rcsError := true;
+    Exit();
+  end;
+
+  if ((release <> TRCSInputState.isOff) and (release <> TRCSInputState.isOn) and
+      (release <> TRCSInputState.notYetScanned)) then
+  begin
+    if (not Self.rcsError) then
+      Self.rcsError := true;
+    Exit();
+  end;
+
+  // All inputs ok here
+
+  if (Self.rcsError) then
+    Self.rcsError := false;
+
+  if ((Self.status = pstTakeReady) and (take = TRCSInputState.isOn) and (release = TRCSInputState.isOff)) then
   begin
     // take pst
     Self.status := pstActive;
   end;
 
-  if ((Self.status = pstActive) and (release) and (not take)) then
+  if ((Self.status = pstActive) and (release = TRCSInputState.isOn) and (take = TRCSInputState.isOff)) then
   begin
     // release pst
     if (Self.emLock) then
@@ -501,12 +528,6 @@ begin
     else
       Self.status := pstTakeReady;
   end;
-end;
-
-// change je volan z vyhybky pri zmene zaveru
-procedure TBlkPst.Change(now: Boolean = false);
-begin
-  inherited Change(now);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -625,12 +646,11 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// vytvoreni menu pro potreby konkretniho bloku:
 function TBlkPst.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
   Result := inherited;
 
-  if ((Self.status = pstOff) and (not Self.zaver) and (not Self.emLock)) then
+  if ((Self.status = pstOff) and (not Self.zaver) and (not Self.emLock) and (not Self.rcsError)) then
     Result := Result + 'PST>,'
   else if ((Self.status = pstTakeReady) and (not Self.error)) then
     Result := Result + 'PST<,'
@@ -638,9 +658,10 @@ begin
     Result := Result + '!NPST,';
 
   try
-    if (RCSi.GetOutput(Self.m_settings.rcsOutHorn) > 0) then
+    var output := RCSi.GetOutputState(Self.m_settings.rcsOutHorn);
+    if ((output >= TRCSOutputState.osEnabled) and (output <= TRCSOutputState.osf600)) then
       Result := Result + 'HOUK<,'
-    else
+    else if (output = TRCSOutputState.osDisabled) then
       Result := Result + 'HOUK>,';
   except
     on E: RCSException do begin end;
@@ -675,7 +696,6 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
 procedure TBlkPst.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
   if (not Self.enabled) then
@@ -763,6 +783,15 @@ begin
   end;
 end;
 
+procedure TBlkPst.SetRcsError(new: Boolean);
+begin
+  if (Self.m_state.rcsError <> new) then
+  begin
+    Self.m_state.rcsError := new;
+    Self.Change();
+  end;
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkPst.DecreaseEmLock(amount: Cardinal);
@@ -807,6 +836,9 @@ begin
 
   if (Self.error) then
     bg := clBlue;
+
+  if (Self.rcsError) then
+    fg := clFuchsia;
 
   if ((fg = clBlue) and (bg = clBlue)) then
     fg := clBlack;
