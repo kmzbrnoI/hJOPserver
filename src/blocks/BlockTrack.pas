@@ -98,29 +98,30 @@ type
     procedure XTakeTrainOk(Sender: TObject; Data: Pointer);
     procedure XTakeTrainErr(Sender: TObject; Data: Pointer);
 
-    procedure MenuNewLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
-    procedure MenuEditLokClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuDeleteLokClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuUVOLLokClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuXVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuRegVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuRUCLokClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuMAUSLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuNewTrainClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
+    procedure MenuEditTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuDeleteTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuUVOLTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuVEZMITrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuXVEZMITrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuRegVEZMITrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuRUCTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuMAUSTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTOPTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuNUZStartClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuNUZStopClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuPRESUNLokClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
+    procedure MenuPRESUNTrainClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
     procedure MenuHLASENIOdjezdClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuHLASENIPrijezdClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuHLASENIPrujezdClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuVLOZLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
+    procedure MenuVLOZTrainClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
     procedure MenuPOdjClick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure PotvrDeleteLok(Sender: TIdContext; success: Boolean);
-    procedure PotvrUvolLok(Sender: TIdContext; success: Boolean);
-    procedure PotvrRegVezmiLok(Sender: TIdContext; success: Boolean);
+    procedure PotvrDeleteTrain(Sender: TIdContext; success: Boolean);
+    procedure PotvrUvolTrain(Sender: TIdContext; success: Boolean);
+    procedure PotvrRegVezmiTrain(Sender: TIdContext; success: Boolean);
 
     procedure MenuObsazClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuUvolClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -918,7 +919,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTrack.MenuNewLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
+procedure TBlkTrack.MenuNewTrainClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
 begin
   // nejdrive posleme aktualni seznam hnacich vozidel
   (SenderOR as TArea).PanelHVList(SenderPnl);
@@ -927,12 +928,12 @@ begin
   (SenderOR as TArea).BlkNewTrain(Self, SenderPnl, (itemindex - 2) div 2);
 end;
 
-procedure TBlkTrack.MenuVLOZLokClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
+procedure TBlkTrack.MenuVLOZTrainClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
 begin
   Self.MoveTrain(SenderPnl, SenderOR, (itemindex - 2) div 2);
 end;
 
-procedure TBlkTrack.MenuEditLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuEditTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
     Self.trains.Count)) then
@@ -946,7 +947,7 @@ begin
     TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]);
 end;
 
-procedure TBlkTrack.MenuDeleteLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuDeleteTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 var podm: TConfSeqItems;
   blk: TObject;
 begin
@@ -957,12 +958,12 @@ begin
   podm := TConfSeqItems.Create();
   for blk in Blocks.GetBlkWithTrain(TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]) do
     podm.Add(TArea.GetCSCondition(blk, 'Smazání soupravy z úseku'));
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrDeleteLok, SenderOR as TArea,
+  PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrDeleteTrain, SenderOR as TArea,
     'Smazání soupravy ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name,
     TBlocks.GetBlksList(Self), podm);
 end;
 
-procedure TBlkTrack.PotvrDeleteLok(Sender: TIdContext; success: Boolean);
+procedure TBlkTrack.PotvrDeleteTrain(Sender: TIdContext; success: Boolean);
 begin
   if ((TPanelConnData(Sender.Data).train_menu_index < 0) or (TPanelConnData(Sender.Data).train_menu_index >=
     Self.trains.Count)) then
@@ -976,7 +977,7 @@ begin
   end;
 end;
 
-procedure TBlkTrack.PotvrUvolLok(Sender: TIdContext; success: Boolean);
+procedure TBlkTrack.PotvrUvolTrain(Sender: TIdContext; success: Boolean);
 begin
   if ((TPanelConnData(Sender.Data).train_menu_index < 0) or (TPanelConnData(Sender.Data).train_menu_index >=
     Self.trains.Count)) then
@@ -994,18 +995,18 @@ begin
   end;
 end;
 
-procedure TBlkTrack.MenuUVOLLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuUVOLTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
     Self.trains.Count)) then
     Exit();
 
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrUvolLok, SenderOR as TArea,
+  PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrUvolTrain, SenderOR as TArea,
     'Uvolnění soupravy ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name +
     ' z bloku', TBlocks.GetBlksList(Self), nil);
 end;
 
-procedure TBlkTrack.MenuVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuVEZMITrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
     Self.trains.Count)) then
@@ -1016,12 +1017,12 @@ begin
   if (train.stolen) then
   begin
     // Prevzit soupravu, ktera byla ukradena.
-    Self.MenuXVEZMILokClick(SenderPnl, SenderOR);
+    Self.MenuXVEZMITrainClick(SenderPnl, SenderOR);
   end else begin
     if (train.IsAnyLokoInRegulator()) then
     begin
       // Nasilim prevzit lokomotivy z regulatoru.
-      Self.MenuRegVEZMILokClick(SenderPnl, SenderOR);
+      Self.MenuRegVEZMITrainClick(SenderPnl, SenderOR);
     end;
   end;
 end;
@@ -1036,7 +1037,7 @@ begin
   PanelServer.BottomError(TIdContext(Data), 'Vlak se nepodařilo převzít', '', 'TECHNOLOGIE');
 end;
 
-procedure TBlkTrack.MenuXVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuXVEZMITrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
     Self.trains.Count)) then
@@ -1046,7 +1047,7 @@ begin
   train.Acquire(TTrakce.Callback(Self.XTakeTrainOk, SenderPnl), TTrakce.Callback(Self.XTakeTrainErr, SenderPnl));
 end;
 
-procedure TBlkTrack.MenuRegVEZMILokClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuRegVEZMITrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
     Self.trains.Count)) then
@@ -1058,11 +1059,11 @@ begin
     if (HVDb[hvaddr] <> nil) then
       podm.Add(TArea.GetCSCondition(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
 
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrRegVezmiLok, SenderOR as TArea,
+  PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrRegVezmiTrain, SenderOR as TArea,
     'Nouzové převzetí hnacích vozidel do automatického řízení', TBlocks.GetBlksList(Self), podm);
 end;
 
-procedure TBlkTrack.PotvrRegVezmiLok(Sender: TIdContext; success: Boolean);
+procedure TBlkTrack.PotvrRegVezmiTrain(Sender: TIdContext; success: Boolean);
 begin
   if ((TPanelConnData(Sender.Data).train_menu_index < 0) or (TPanelConnData(Sender.Data).train_menu_index >=
     Self.trains.Count) or (not success)) then
@@ -1165,7 +1166,7 @@ begin
   Self.NUZ := false;
 end;
 
-procedure TBlkTrack.MenuPRESUNLokClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
+procedure TBlkTrack.MenuPRESUNTrainClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
     Self.trains.Count)) then
@@ -1182,7 +1183,7 @@ begin
   end;
 end;
 
-procedure TBlkTrack.MenuRUCLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuRUCTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
     Self.trains.Count)) then
@@ -1198,7 +1199,7 @@ begin
   PanelServer.SendLn(SenderPnl, str);
 end;
 
-procedure TBlkTrack.MenuMAUSLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuMAUSTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
     Self.trains.Count)) then
@@ -1213,6 +1214,16 @@ begin
   str := str + '}';
 
   PanelServer.SendLn(SenderPnl, str);
+end;
+
+procedure TBlkTrack.MenuSTOPTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
+    Self.trains.Count)) then
+    Exit();
+
+  var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
+  train.EmergencyStop();
 end;
 
 procedure TBlkTrack.MenuObsazClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1476,6 +1487,8 @@ begin
 
   if (Self.CanStandTrain()) then
     Result := Result + 'EDIT vlak,';
+  if (train.speed > 0) then
+    Result := Result + '!STOP vlak,';
   if ((Self.CanStandTrain()) or (train_count <= 1)) then
     Result := Result + '!ZRUŠ vlak,';
   if (train_count > 1) then
@@ -1559,25 +1572,27 @@ end;
 procedure TBlkTrack.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
   if (item = 'NOVÝ vlak') then
-    Self.MenuNewLokClick(SenderPnl, SenderOR, itemindex)
+    Self.MenuNewTrainClick(SenderPnl, SenderOR, itemindex)
   else if (item = 'VLOŽ vlak') then
-    Self.MenuVLOZLokClick(SenderPnl, SenderOR, itemindex)
+    Self.MenuVLOZTrainClick(SenderPnl, SenderOR, itemindex)
   else if (item = 'EDIT vlak') then
-    Self.MenuEditLokClick(SenderPnl, SenderOR)
+    Self.MenuEditTrainClick(SenderPnl, SenderOR)
   else if (item = 'ZRUŠ vlak') then
-    Self.MenuDeleteLokClick(SenderPnl, SenderOR)
+    Self.MenuDeleteTrainClick(SenderPnl, SenderOR)
   else if (item = 'UVOL vlak') then
-    Self.MenuUVOLLokClick(SenderPnl, SenderOR)
+    Self.MenuUVOLTrainClick(SenderPnl, SenderOR)
   else if (item = 'VEZMI vlak') then
-    Self.MenuVEZMILokClick(SenderPnl, SenderOR)
+    Self.MenuVEZMITrainClick(SenderPnl, SenderOR)
   else if (item = 'PŘESUŇ vlak>') then
-    Self.MenuPRESUNLokClick(SenderPnl, SenderOR, true)
+    Self.MenuPRESUNTrainClick(SenderPnl, SenderOR, true)
   else if (item = 'PŘESUŇ vlak<') then
-    Self.MenuPRESUNLokClick(SenderPnl, SenderOR, false)
+    Self.MenuPRESUNTrainClick(SenderPnl, SenderOR, false)
   else if (item = 'RUČ vlak') then
-    Self.MenuRUCLokClick(SenderPnl, SenderOR)
+    Self.MenuRUCTrainClick(SenderPnl, SenderOR)
   else if (item = 'MAUS vlak') then
-    Self.MenuMAUSLokClick(SenderPnl, SenderOR)
+    Self.MenuMAUSTrainClick(SenderPnl, SenderOR)
+  else if (item = 'STOP vlak') then
+    Self.MenuSTOPTrainClick(SenderPnl, SenderOR)
   else if (item = 'STIT') then
     Self.MenuStitClick(SenderPnl, SenderOR)
   else if (item = 'VYL') then

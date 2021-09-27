@@ -122,6 +122,7 @@ type
      procedure ClearPOdj();
      function IsAnyLokoInRegulator(): Boolean;
      procedure ForceRemoveAllRegulators();
+     procedure EmergencyStop();
 
      procedure UpdateRailwaySpeed();
      function GetRailwaySpeed(): Cardinal;
@@ -728,6 +729,13 @@ end;
 procedure TTrain.SetDirection(direction: THVSite);
 begin
  Self.SetSpeedDirection(Self.data.speed, direction);
+end;
+
+procedure TTrain.EmergencyStop();
+begin
+  for var addr in Self.HVs do
+    HVDb[addr].EmergencyStop(TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
+  Self.speed := 0;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
