@@ -852,13 +852,50 @@ end;
 procedure TBlkPst.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
   inherited;
+
+  for var trackId: Integer in Self.m_settings.tracks do
+    json.A['tracks'].Add(trackId);
+  for var turnoutId: Integer in Self.m_settings.turnouts do
+    json.A['turnouts'].Add(turnoutId);
+  for var signalId: Integer in Self.m_settings.signals do
+    json.A['signals'].Add(signalId);
+  for var ref: TPstRefugeeZav  in Self.m_settings.refugees do
+  begin
+    var refJson: TJsonObject := json.A['refugees'].AddObject();
+    refJson['block'] := ref.block;
+    refJson['position'] := TBlkTurnout.PositionToStr(ref.position);
+  end;
+  for var discId: Integer in Self.m_settings.disconnectors do
+    json.A['disconnectors'].Add(discId);
+
+
+  TBlk.RCStoJSON(Self.m_settings.rcsInTake, json['rcs'].O['inTake']);
+  TBlk.RCStoJSON(Self.m_settings.rcsInRelease, json['rcs'].O['inRelease']);
+  TBlk.RCStoJSON(Self.m_settings.rcsOutTaken, json['rcs'].O['outTaken']);
+  TBlk.RCStoJSON(Self.m_settings.rcsOutHorn, json['rcs'].O['outHorn']);
+
   if (includeState) then
     Self.GetPtState(json['blockState']);
 end;
 
 procedure TBlkPst.GetPtState(json: TJsonObject);
 begin
-  // TODO
+  case (Self.m_state.status) of
+    TBlkPstStatus.pstDisabled: json['status'] := 'pstDisabled';
+    TBlkPstStatus.pstOff: json['status'] := 'pstOff';
+    TBlkPstStatus.pstRefuging: json['status'] := 'pstRefuging';
+    TBlkPstStatus.pstTakeReady: json['status'] := 'pstTakeReady';
+    TBlkPstStatus.pstActive: json['status'] := 'pstActive';
+  end;
+
+  json['emLock'] := Self.m_state.emLock;
+
+  if (Self.m_state.note <> '') then
+    json['note'] := Self.note;
+  if (Self.m_state.error) then
+    json['error'] := Self.m_state.error;
+  if (Self.m_state.rcsError) then
+    json['rcsError'] := Self.m_state.rcsError;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
