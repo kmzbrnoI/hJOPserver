@@ -258,13 +258,13 @@ begin
   Self.m_settings.rcsOutTaken.Load(ini_tech.ReadString(section, 'rcsOutTaken', '0:0'));
   Self.m_settings.rcsOutHorn.Load(ini_tech.ReadString(section, 'rcsOutHorn', '0:0'));
 
+  Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
+  Self.LoadAreas(ini_rel, 'Pst').Free();
+
   Self.PushRCSToAreas(Self.m_settings.rcsInTake);
   Self.PushRCSToAreas(Self.m_settings.rcsInRelease);
   Self.PushRCSToAreas(Self.m_settings.rcsOutTaken);
   Self.PushRCSToAreas(Self.m_settings.rcsOutHorn);
-
-  Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
-  Self.LoadAreas(ini_rel, 'Pst').Free();
 end;
 
 procedure TBlkPst.SaveData(ini_tech: TMemIniFile; const section: string);
