@@ -421,7 +421,7 @@ end;
 procedure THV.LoadState(ini: TMemIniFile; section: string);
 begin
   Self.state.Area := Areas.Get(ini.ReadString(section, 'stanice', ''));
-  if (Self.state.Area = nil) then
+  if ((Self.state.Area = nil) and (Areas.Count > 0)) then
     Self.state.Area := Areas[HVDb.default_or];
 
   Self.state.traveled_forward := ini.ReadFloat(section, 'najeto_vpred_metru', 0);

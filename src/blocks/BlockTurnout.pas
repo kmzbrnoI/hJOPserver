@@ -342,7 +342,10 @@ begin
 
   var strs: TStrings := Self.LoadAreas(ini_rel, 'V');
   try
-    Self.m_spnl.track := ite(strs.Count >= 2, StrToInt(strs[1]), -1);
+    if (strs.Count >= 2) then
+      Self.m_spnl.track := StrToInt(strs[1])
+    else
+      Self.m_spnl.track := -1;
   finally
     strs.Free();
   end;
