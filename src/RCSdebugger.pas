@@ -145,9 +145,8 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSd.RemoveClient(conn: TIdContext);
-var i: Integer;
 begin
-  for i := 0 to Self.clients.Count - 1 do
+  for var i := 0 to Self.clients.Count - 1 do
     if (Self.clients[i].connection = conn) then
     begin
       Self.clients[i].Free();
@@ -156,16 +155,14 @@ begin
 end;
 
 procedure TRCSd.RemoveAllClients();
-var i: Integer;
 begin
-  for i := 0 to Self.clients.Count - 1 do
+  for var i := 0 to Self.clients.Count - 1 do
     Self.clients[i].Free();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSd.Parse(Sender: TIdContext; parsed: TStrings);
-var i: Integer;
 begin
   parsed[2] := UpperCase(parsed[2]);
 
@@ -173,7 +170,7 @@ begin
   begin
     Self.ParseAuth(Sender, parsed);
   end else begin
-    for i := 0 to Self.clients.Count - 1 do
+    for var i := 0 to Self.clients.Count - 1 do
       if (Self.clients[i].connection = Sender) then
         Self.clients[i].Parse(parsed);
   end;
@@ -182,41 +179,40 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSd.ParseAuth(Sender: TIdContext; parsed: TStrings);
-var User: TUser;
-  client: TRCSdClient;
+var user: TUser;
 begin
   // -> zjistime uzivatele
-  User := UsrDb.GetUser(parsed[3]);
+  user := UsrDb.GetUser(parsed[3]);
 
   // kontrola existence uzivatele
-  if (not Assigned(User)) then
+  if (not Assigned(user)) then
   begin
     PanelServer.SendLn(Sender, '-;RCSd;AUTH;not;Neexistující uživatel');
     Exit();
   end;
 
   // kontrola BANu uzivatele
-  if (User.ban) then
+  if (user.ban) then
   begin
-    PanelServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel ' + User.username + ' má BAN !');
+    PanelServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel ' + user.username + ' má BAN !');
     Exit();
   end;
 
   // kontrola hesla uzivatele
-  if (not TUser.ComparePasswd(parsed[4], User.password, User.salt)) then
+  if (not TUser.ComparePasswd(parsed[4], user.password, user.salt)) then
   begin
     PanelServer.SendLn(Sender, '-;RCSd;AUTH;not;Neplatné heslo');
     Exit();
   end;
 
   // kontrola opravneni root
-  if (not User.root) then
+  if (not user.root) then
   begin
     PanelServer.SendLn(Sender, '-;RCSd;AUTH;not;Uživatel nemá oprávnění root');
     Exit();
   end;
 
-  client := TRCSdClient.Create(Sender);
+  var client := TRCSdClient.Create(Sender);
   Self.clients.Add(client);
   PanelServer.SendLn(Sender, '-;RCSd;AUTH;ok;Autorizováno');
 end;
@@ -224,9 +220,8 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSd.Update();
-var i: Integer;
 begin
-  for i := 0 to Self.clients.Count - 1 do
+  for var i := 0 to Self.clients.Count - 1 do
     Self.clients[i].Update();
 end;
 
@@ -252,14 +247,13 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSdClient.SendOutput(addr: Integer);
-var i: Integer;
-  str: string;
+var str: string;
   max: Cardinal;
 begin
   str := '';
   max := RCSi.GetModuleOutputsCountSafe(addr);
 
-  for i := 0 to max - 1 do
+  for var i := 0 to max - 1 do
   begin
     try
       str := str + IntToStr(RCSi.GetOutput(addr, i)) + '|';
@@ -275,14 +269,13 @@ begin
 end;
 
 procedure TRCSdClient.SendInput(addr: Integer);
-var i: Integer;
-  str: string;
+var str: string;
   max: Cardinal;
 begin
   str := '';
   max := RCSi.GetModuleInputsCountSafe(addr);
 
-  for i := 0 to max - 1 do
+  for var i := 0 to max - 1 do
   begin
     try
       str := str + IntToStr(Integer(RCSi.GetInput(addr, i))) + '|';
@@ -328,10 +321,9 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TRCSdClient.ModuleIndexOf(addr: Integer): Integer;
-var i: Integer;
 begin
   Result := -1;
-  for i := 0 to Self.modules.Count - 1 do
+  for var i := 0 to Self.modules.Count - 1 do
     if (Self.modules[i].addr = addr) then
       Exit(i);
 end;
@@ -339,12 +331,10 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSdClient.Update();
-var i: Integer;
-  module: TRCSdModule;
 begin
-  for i := 0 to Self.modules.Count - 1 do
+  for var i := 0 to Self.modules.Count - 1 do
   begin
-    module := Self.modules[i];
+    var module := Self.modules[i];
     if (module.output_changed) then
     begin
       module.output_changed := false;
@@ -363,12 +353,10 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TRCSdClient.Parse(parsed: TStrings);
-var addr, index, i: Integer;
-  module: TRCSdModule;
-  str: string;
 begin
   if (parsed[2] = 'PLEASE') then
   begin
+    var addr: Integer;
     try
       addr := StrToInt(parsed[3]);
     except
@@ -376,9 +364,10 @@ begin
       Exit();
     end;
 
-    index := Self.ModuleIndexOf(addr);
+    var index := Self.ModuleIndexOf(addr);
     if (index = -1) then
     begin
+      var module: TRCSdModule;
       module.addr := addr;
       module.output_changed := false;
       module.input_changed := false;
@@ -392,6 +381,7 @@ begin
 
   end else if (parsed[2] = 'RELEASE') then
   begin
+    var addr: Integer;
     try
       addr := StrToInt(parsed[3]);
     except
@@ -399,7 +389,7 @@ begin
       Exit();
     end;
 
-    index := Self.ModuleIndexOf(addr);
+    var index := Self.ModuleIndexOf(addr);
     if (index > -1) then
     begin
       RCSi.RemoveInputChangeEvent(Self.OnRCSInputChange, addr);
@@ -410,6 +400,7 @@ begin
 
   end else if (parsed[2] = 'SETOUT') then
   begin
+    var addr: Integer;
     try
       addr := StrToInt(parsed[3]);
     except
@@ -421,6 +412,7 @@ begin
 
   end else if (parsed[2] = 'UPDATE') then
   begin
+    var addr: Integer;
     try
       addr := StrToInt(parsed[3]);
     except
@@ -437,8 +429,8 @@ begin
 
   end else if (parsed[2] = 'LIST') then
   begin
-    str := '';
-    for i := 0 to RCSi.maxModuleAddr do
+    var str := '';
+    for var i := 0 to RCSi.maxModuleAddr do
       if (RCSi.IsModule(i)) then
         str := str + '{' + TRCSd.GetRCSInfo(i) + '}';
     PanelServer.SendLn(Self.conn, '-;RCSd;INFO;{' + str + '}');
@@ -448,7 +440,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 class function TRCSd.GetRCSInfo(board: Cardinal): string;
-var port: Integer;
 begin
   Result := IntToStr(board) + '|';
 
@@ -490,7 +481,7 @@ begin
       Result := Result + 'Nelze ziskat FW - vyjimka|';
   end;
 
-  for port := 0 to RCSi.GetModuleInputsCountSafe(board) - 1 do
+  for var port := 0 to RCSi.GetModuleInputsCountSafe(board) - 1 do
   begin
     try
       case (RCSi.GetInputType(board, port)) of
@@ -505,7 +496,7 @@ begin
   end;
   Result := Result + '|';
 
-  for port := 0 to RCSi.GetModuleOutputsCountSafe(board) - 1 do
+  for var port := 0 to RCSi.GetModuleOutputsCountSafe(board) - 1 do
   begin
     try
       case (RCSi.GetOutputType(board, port)) of
