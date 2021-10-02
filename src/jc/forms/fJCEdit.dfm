@@ -5,7 +5,7 @@ object F_JCEdit: TF_JCEdit
   BorderStyle = bsToolWindow
   Caption = 'Editace vlakove cesty [nazev]'
   ClientHeight = 505
-  ClientWidth = 922
+  ClientWidth = 976
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -33,24 +33,24 @@ object F_JCEdit: TF_JCEdit
   object L_VC_02: TLabel
     Left = 8
     Top = 65
-    Width = 56
+    Width = 53
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'N'#225'v'#283'stidlo :'
+    Caption = 'N'#225'v'#283'stidlo:'
   end
   object L_VC_11: TLabel
     Left = 8
     Top = 97
-    Width = 52
+    Width = 49
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Typ cesty :'
+    Caption = 'Typ cesty:'
   end
   object L_VC_07: TLabel
     Left = 8
@@ -114,7 +114,7 @@ object F_JCEdit: TF_JCEdit
   object GB_Turnouts: TGroupBox
     Left = 345
     Top = 7
-    Width = 265
+    Width = 320
     Height = 261
     Margins.Left = 2
     Margins.Top = 2
@@ -124,21 +124,24 @@ object F_JCEdit: TF_JCEdit
     TabOrder = 9
     object LV_Turnouts: TListView
       Left = 2
-      Top = 54
-      Width = 261
-      Height = 134
+      Top = 15
+      Width = 316
+      Height = 173
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Align = alBottom
+      Align = alClient
       Columns = <
         item
           Caption = '#'
           Width = 20
         end
         item
-          Caption = 'V'#253'hybka'
+          Caption = 'ID'
+        end
+        item
+          Caption = 'N'#225'zev'
           Width = 150
         end
         item
@@ -153,11 +156,14 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_TurnoutsChange
       OnKeyDown = LV_TurnoutsKeyDown
+      ExplicitTop = 54
+      ExplicitWidth = 261
+      ExplicitHeight = 134
     end
     object GB_Turnout_New: TGroupBox
       Left = 2
       Top = 188
-      Width = 261
+      Width = 316
       Height = 71
       Margins.Left = 2
       Margins.Top = 2
@@ -165,33 +171,34 @@ object F_JCEdit: TF_JCEdit
       Margins.Bottom = 2
       Align = alBottom
       Caption = ' P'#345'idat/upravit v'#253'hybku '
-      TabOrder = 2
+      TabOrder = 1
+      ExplicitWidth = 261
       object Label10: TLabel
         Left = 8
         Top = 16
-        Width = 27
+        Width = 24
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Blok :'
+        Caption = 'Blok:'
       end
       object Label11: TLabel
         Left = 8
         Top = 40
-        Width = 39
+        Width = 36
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Poloha :'
+        Caption = 'Poloha:'
       end
       object CB_Turnout: TComboBox
         Left = 56
         Top = 16
-        Width = 145
+        Width = 185
         Height = 21
         Margins.Left = 2
         Margins.Top = 2
@@ -203,7 +210,7 @@ object F_JCEdit: TF_JCEdit
       object CB_Turnout_Pos: TComboBox
         Left = 56
         Top = 40
-        Width = 145
+        Width = 185
         Height = 21
         Margins.Left = 2
         Margins.Top = 2
@@ -218,10 +225,10 @@ object F_JCEdit: TF_JCEdit
           '-')
       end
       object B_Turnout_Ok: TButton
-        Left = 205
-        Top = 16
+        Left = 253
+        Top = 40
         Width = 49
-        Height = 45
+        Height = 22
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -230,20 +237,20 @@ object F_JCEdit: TF_JCEdit
         TabOrder = 2
         OnClick = B_Turnout_OkClick
       end
-    end
-    object B_Turnout_Del: TButton
-      Left = 80
-      Top = 17
-      Width = 105
-      Height = 25
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'Smazat v'#253'hybku'
-      Enabled = False
-      TabOrder = 1
-      OnClick = B_Turnout_DelClick
+      object B_Turnout_Del: TButton
+        Left = 253
+        Top = 15
+        Width = 49
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Smazat'
+        Enabled = False
+        TabOrder = 3
+        OnClick = B_Turnout_DelClick
+      end
     end
   end
   object GB_Tracks: TGroupBox
@@ -270,12 +277,12 @@ object F_JCEdit: TF_JCEdit
       Margins.Right = 2
       Margins.Bottom = 2
       Align = alBottom
-      Caption = ' P'#345'idat/upravit '#250'sek '
-      TabOrder = 2
+      Caption = ' P'#345'idat/upravit/odstranit '#250'sek '
+      TabOrder = 1
       object CB_Track: TComboBox
         Left = 10
         Top = 16
-        Width = 250
+        Width = 183
         Height = 21
         Margins.Left = 2
         Margins.Top = 2
@@ -285,7 +292,7 @@ object F_JCEdit: TF_JCEdit
         TabOrder = 0
       end
       object B_Track_Ok: TButton
-        Left = 264
+        Left = 197
         Top = 16
         Width = 53
         Height = 22
@@ -297,25 +304,42 @@ object F_JCEdit: TF_JCEdit
         TabOrder = 1
         OnClick = B_Track_OkClick
       end
+      object B_Track_Del: TButton
+        Left = 254
+        Top = 16
+        Width = 57
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Smazat'
+        Enabled = False
+        TabOrder = 2
+        OnClick = B_Track_DelClick
+      end
     end
     object LV_Tracks: TListView
       Left = 2
-      Top = 53
+      Top = 15
       Width = 325
-      Height = 139
+      Height = 177
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Align = alBottom
+      Align = alClient
       Columns = <
         item
           Caption = '#'
           Width = 20
         end
         item
-          Caption = #218'sek'
-          Width = 250
+          Caption = 'ID'
+        end
+        item
+          Caption = 'N'#225'zev'
+          Width = 210
         end>
       GridLines = True
       MultiSelect = True
@@ -325,24 +349,12 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_TracksChange
       OnKeyDown = LV_TracksKeyDown
-    end
-    object B_Track_Del: TButton
-      Left = 112
-      Top = 15
-      Width = 105
-      Height = 25
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'Smazat '#250'sek'
-      Enabled = False
-      TabOrder = 1
-      OnClick = B_Track_DelClick
+      ExplicitTop = 53
+      ExplicitHeight = 139
     end
   end
   object B_Save: TButton
-    Left = 532
+    Left = 588
     Top = 473
     Width = 75
     Height = 25
@@ -356,7 +368,7 @@ object F_JCEdit: TF_JCEdit
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
-    Left = 453
+    Left = 509
     Top = 473
     Width = 75
     Height = 25
@@ -423,20 +435,20 @@ object F_JCEdit: TF_JCEdit
   object GB_Railway: TGroupBox
     Left = 345
     Top = 273
-    Width = 262
-    Height = 105
+    Width = 318
+    Height = 76
     Caption = ' N'#225'vaznost na tra'#357' '
     TabOrder = 10
     object Label1: TLabel
-      Left = 24
-      Top = 40
+      Left = 104
+      Top = 16
       Width = 23
       Height = 13
       Caption = 'Tra'#357':'
     end
     object Label2: TLabel
-      Left = 24
-      Top = 64
+      Left = 104
+      Top = 40
       Width = 27
       Height = 13
       Caption = 'Sm'#283'r:'
@@ -451,18 +463,18 @@ object F_JCEdit: TF_JCEdit
       OnClick = CHB_RailwayClick
     end
     object CB_Railway: TComboBox
-      Left = 64
-      Top = 39
-      Width = 145
+      Left = 144
+      Top = 15
+      Width = 161
       Height = 21
       Style = csDropDownList
       TabOrder = 1
       OnChange = CB_RailwayChange
     end
     object CB_Railway_Dir: TComboBox
-      Left = 64
-      Top = 66
-      Width = 145
+      Left = 144
+      Top = 42
+      Width = 161
       Height = 21
       Style = csDropDownList
       TabOrder = 2
@@ -483,7 +495,7 @@ object F_JCEdit: TF_JCEdit
     Value = 0
   end
   object GB_Advanced: TGroupBox
-    Left = 617
+    Left = 670
     Top = 8
     Width = 297
     Height = 390
@@ -592,8 +604,8 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object CHB_Advanced: TCheckBox
-    Left = 349
-    Top = 418
+    Left = 347
+    Top = 389
     Width = 164
     Height = 18
     Caption = 'Zobrazit pokro'#269'il'#225' nastaven'#237
@@ -601,16 +613,16 @@ object F_JCEdit: TF_JCEdit
     OnClick = CHB_AdvancedClick
   end
   object CHB_Odbocka: TCheckBox
-    Left = 349
-    Top = 384
+    Left = 347
+    Top = 355
     Width = 97
     Height = 17
     Caption = 'JC do odbo'#269'ky'
     TabOrder = 11
   end
   object CHB_NZV: TCheckBox
-    Left = 349
-    Top = 401
+    Left = 347
+    Top = 372
     Width = 185
     Height = 17
     Caption = 'Nedostate'#269'n'#225' z'#225'brzdn'#225' vzd'#225'lenost'
