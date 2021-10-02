@@ -439,7 +439,7 @@ begin
   begin
     str := '';
     for i := 0 to RCSi.maxModuleAddr do
-      if ((RCSi.IsModule(i)) or (RCSi.GetNeeded(i))) then
+      if (RCSi.IsModule(i)) then
         str := str + '{' + TRCSd.GetRCSInfo(i) + '}';
     PanelServer.SendLn(Self.conn, '-;RCSd;INFO;{' + str + '}');
   end;
