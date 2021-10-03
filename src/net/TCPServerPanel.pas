@@ -932,7 +932,7 @@ end;
 
 procedure TPanelServer.SendInfoMsg(AContext: TIdContext; msg: string);
 begin
-  Self.SendLn(AContext, '-;INFOMSG;' + msg + ';');
+  Self.SendLn(AContext, '-;INFOMSG;{' + msg + '};');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -949,7 +949,7 @@ procedure TPanelServer.Note(AContext: TIdContext; Blk: TBlk; stit: string);
 begin
   try
     (AContext.data as TPanelConnData).Note := Blk;
-    Self.SendLn(AContext, '-;STIT;' + Blk.name + ';' + stit + ';');
+    Self.SendLn(AContext, '-;STIT;{' + Blk.name + '};{' + stit + '};');
     F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_STIT] := Blk.name;
   except
 
@@ -960,7 +960,7 @@ procedure TPanelServer.Lockut(AContext: TIdContext; Blk: TBlk; vyl: string);
 begin
   try
     (AContext.data as TPanelConnData).lockout := Blk;
-    Self.SendLn(AContext, '-;VYL;' + Blk.name + ';' + vyl + ';');
+    Self.SendLn(AContext, '-;VYL;{' + Blk.name + '};{' + vyl + '};');
     F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_STIT] := Blk.name;
   except
 
@@ -972,7 +972,7 @@ begin
   try
     (AContext.data as TPanelConnData).Menu := Blk;
     (AContext.data as TPanelConnData).menu_or := Area;
-    Self.SendLn(AContext, '-;MENU;' + Menu + ';');
+    Self.SendLn(AContext, '-;MENU;{' + Menu + '};');
     F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_MENU] := Blk.name;
   except
 
@@ -1004,7 +1004,7 @@ begin
 
   if (conditions <> nil) then
     for var i: Integer := 0 to conditions.Count - 1 do
-      str := str + '[' + conditions[i].Block + '|' + conditions[i].Note + ']';
+      str := str + '[{' + conditions[i].Block + '}|{' + conditions[i].Note + '}]';
 
   if (Area <> nil) then
     areaName := Area.name
@@ -1013,7 +1013,7 @@ begin
 
   try
     (AContext.data as TPanelConnData).potvr := callback;
-    Self.SendLn(AContext, '-;' + UpperCase(mode) + ';' + areaName + ';' + event + ';' + str);
+    Self.SendLn(AContext, '-;' + UpperCase(mode) + ';{' + areaName + '};{' + event + '};' + str);
     F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_RIZ] := event;
   except
 
@@ -1078,7 +1078,7 @@ end;
 
 procedure TPanelServer.BottomError(AContext: TIdContext; err: string; stanice: string; tech: string);
 begin
-  Self.SendLn(AContext, '-;BOTTOMERR;' + err + ';' + stanice + ';' + tech + ';');
+  Self.SendLn(AContext, '-;BOTTOMERR;{' + err + '};{' + stanice + '};{' + tech + '};');
   Log(tech + ': ' + stanice + ': ' + err, ltError);
 end;
 
