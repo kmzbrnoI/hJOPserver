@@ -264,7 +264,7 @@ implementation
 uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
-  BlockPSt;
+  BlockPSt, appEv;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -1141,14 +1141,19 @@ begin
     // v jzdni ceste nejsou zadne bariery -> stavim
     Self.Log('Žádné bariéry, stavím');
     Self.SetInitStep();
-  finally
-    if (bariery_out <> nil) then
-      bariery_out.AddRange(barriers);
-    barriers.Free();
-    UPO.Free();
+  except
+    on E:Exception do
+    begin
+      Self.CancelActivating('Výjimka při stavění');
+      AppEvents.LogException(E, 'JC.Activate');
+    end;
   end;
 
-  result := 0;
+  if (bariery_out <> nil) then
+    bariery_out.AddRange(barriers);
+  barriers.Free();
+  UPO.Free();
+  Result := 0;
 end;
 
 function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; from_stack: TObject = nil; nc: Boolean = false;
@@ -1167,7 +1172,7 @@ begin
 
   if (not success) then
   begin
-    Self.CancelActivating('');
+    Self.CancelActivating();
     Exit();
   end;
 
