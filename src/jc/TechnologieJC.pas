@@ -1069,6 +1069,7 @@ end;
 function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; bariery_out: TJCBarriers; from_stack: TObject = nil;
   nc: Boolean = false; fromAB: Boolean = false; abAfter: Boolean = false): Integer;
 begin
+  Result := 0;
   Self.m_state.timeOut := Now + EncodeTime(0, _JC_INITPOTVR_TIMEOUT_SEC div 60, _JC_INITPOTVR_TIMEOUT_SEC mod 60, 0);
 
   Self.m_state.from_stack := from_stack;
@@ -1146,6 +1147,7 @@ begin
     begin
       Self.CancelActivating('Výjimka při stavění');
       AppEvents.LogException(E, 'JC.Activate');
+      Result := 1;
     end;
   end;
 
@@ -1153,7 +1155,6 @@ begin
     bariery_out.AddRange(barriers);
   barriers.Free();
   UPO.Free();
-  Result := 0;
 end;
 
 function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; from_stack: TObject = nil; nc: Boolean = false;
