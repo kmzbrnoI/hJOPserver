@@ -48,7 +48,7 @@ begin
   Result := TStringList.Create();
 
   i := 1;
-  while (i < Length(str)) do
+  while (i <= Length(str)) do
   begin
     Result.Add(copy(str, i, Min(Length(str) - i + 1, line_length)));
     i := i + Min(Length(str), line_length);
