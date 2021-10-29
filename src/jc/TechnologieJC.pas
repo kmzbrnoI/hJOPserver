@@ -554,7 +554,7 @@ begin
   if (not signal.enabled) then
     barriers.Add(JCBarrier(barBlockDisabled, signal));
 
-  if (signal.signal <> ncStuj) then
+  if ((signal.targetSignal <> ncStuj) or (signal.signal <> ncStuj)) then
     barriers.Add(JCBarrier(barSignalActive, signal));
 
   // tracks
@@ -1643,7 +1643,7 @@ begin
         // (behem staveni mohla nastat zmena)
         if (Self.IsCriticalBarrier()) then
         begin
-          if (signal.signal <> ncStuj) then
+          if (signal.targetSignal > ncStuj) then
             signal.signal := ncStuj;
           // Send to all areas because DN could be from any source (last track freed etc.)
           Self.signal.BottomErrorBroadcast('Podmínky pro '+Self.name+' nesplněny!', 'TECHNOLOGIE');
@@ -2105,7 +2105,7 @@ begin
   var signal: TBlkSignal := TBlkSignal(Self.signal);
   Self.Log('Probiha ruseni navesti');
 
-  if ((signal.DNjc = Self) and (signal.signal > ncStuj)) then
+  if ((signal.DNjc = Self) and (signal.targetSignal > ncStuj)) then
   begin
     signal.signal := ncStuj;
     if (signal.ab) then
@@ -2138,7 +2138,7 @@ begin
   end;
 
   // uvolneni prvniho useku pred navestidlem v posunove ceste je signalem pro zhasnuti navestidla
-  if ((signalTrack.GetSettings().RCSAddrs.Count > 0) and (signalTrack.occupied = TTrackState.Free) and (signal.signal <> ncStuj) and
+  if ((signalTrack.GetSettings().RCSAddrs.Count > 0) and (signalTrack.occupied = TTrackState.Free) and (signal.targetSignal <> ncStuj) and
     (Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK) and (Self.typ = TJCType.shunt) and (Self.destroyBlock >= 1)) then
   begin
     Self.Log('Uvolnen usek ' + signalTrack.name + ' : navestidlo ' + signal.name + ' nastaveno na STUJ');
@@ -2165,7 +2165,7 @@ begin
 
         // obsazeni useku rusiciho navest (obvykle 0. usek, u skupinoveho navestidla byva jiny)
         // pozor: toto musi byt na tomto miste kvuli nastavovani Souprava.front
-        if ((i = Self.m_data.signalFallTrackI) and (signal.signal <> ncStuj) and (Self.typ = TJCType.Train)) then
+        if ((i = Self.m_data.signalFallTrackI) and (signal.targetSignal <> ncStuj) and (Self.typ = TJCType.Train)) then
         begin
           // navestidlo pri obsazeni useku rusime jen v pripade, ze se jedna o VC
           Self.Log('Obsazen usek ' + track.name + ' : navestidlo ' + signal.name + ' nastaveno na STUJ');
@@ -2294,7 +2294,7 @@ begin
     then
     begin
       // uvolneni prvniho useku v posunove ceste je signalem pro zhasnuti navestidla
-      if ((signal.signal <> ncStuj) and (Self.typ = TJCType.shunt)) then
+      if ((signal.targetSignal <> ncStuj) and (Self.typ = TJCType.shunt)) then
       begin
         Self.Log('Uvolnen usek ' + track.name + ' : navestidlo ' + signal.name + ' nastaveno na STUJ');
         signal.JCCancelSignal();
@@ -2392,7 +2392,7 @@ begin
     Self.Log('Ruseni: rozpad cesty vlakem');
     if (signal.DNjc = Self) then
     begin
-      if (signal.signal > ncStuj) then
+      if (signal.targetSignal > ncStuj) then
       // tato situace opravdu muze nastat - predstavte si posunovou cestu s jednim usekem vychazejici z nedetek koleje
         signal.JCCancelSignal();
       signal.DNjc := nil;
@@ -2409,7 +2409,7 @@ begin
     Self.CancelActivating('Nelze postavit - obsazen neprofilový úsek');
   end else begin
     var signal: TBlkSignal := Self.signal as TBlkSignal;
-    if ((signal.signal > ncStuj) and (signal.DNjc = Self)) then
+    if ((signal.targetSignal > ncStuj) and (signal.DNjc = Self)) then
     begin
       signal.BottomErrorBroadcast('Chyba povolovací návěsti ' + signal.name, 'TECHNOLOGIE');
       Self.CancelWithoutTrackRelease();
