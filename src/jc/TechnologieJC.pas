@@ -226,7 +226,7 @@ type
 
     function CanDN(): Boolean;
     // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
-    procedure DN(); // DN nastavi zavery vsech bloku na validni a rozsviti navestidlo
+    procedure DN(senderPnl: TIdContext; senderOR: TObject); // DN nastavi zavery vsech bloku na validni a rozsviti navestidlo
     procedure STUJ();
 
     function barriers(nc: Boolean = false): TJCBarriers;
@@ -1645,9 +1645,8 @@ begin
         begin
           if (signal.signal <> ncStuj) then
             signal.signal := ncStuj;
-          if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-            PanelServer.BottomError(Self.m_state.senderPnl, 'Podmínky pro JC nesplněny!',
-              (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+          // Send to all areas because DN could be from any source (last track freed etc.)
+          Self.signal.BottomErrorBroadcast('Podmínky pro '+Self.name+' nesplněny!', 'TECHNOLOGIE');
           Self.Log('Krok 16 : Podmínky pro JC nesplněny!');
           Exit();
         end;
@@ -1713,13 +1712,13 @@ begin
           if (lastTrack.sectReady) then
           begin
             Self.m_state.lastTrackOrRailwayOccupied := false;
-            Self.DN();
+            Self.DN(nil, nil);
           end;
         end else begin
           if ((lastTrack.occupied = TTrackState.Free) and (not lastTrack.IsTrain)) then
           begin
             Self.m_state.lastTrackOrRailwayOccupied := false;
-            Self.DN();
+            Self.DN(nil, nil);
           end;
         end;
       end;
@@ -2953,9 +2952,13 @@ end;
 
 // DN provede zbytek staveni JC (prejezdy, finalizace)
 // tato procedura predpoklada, ze podminky pro DN jsou splneny
-procedure TJC.DN();
+procedure TJC.DN(senderPnl: TIdContext; senderOR: TObject);
 begin
   Self.Log('DN');
+  if (senderOR <> nil) then
+    Self.m_state.senderOR := senderOR;
+  if (senderPnl <> nil) then
+    Self.m_state.senderPnl := senderPnl;
   Self.m_state.timeOut := Now + EncodeTime(0, _JC_TIMEOUT_SEC div 60, _JC_TIMEOUT_SEC mod 60, 0);
 
   if (Self.m_state.crossingWasClosed) then

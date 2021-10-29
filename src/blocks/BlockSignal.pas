@@ -794,7 +794,7 @@ begin
       if ((Self.dnJC.destroyBlock = -2) and (not Self.RCinProgress())) then
       begin
         Self.dnJC.destroyBlock := -1;
-        Self.dnJC.DN();
+        Self.dnJC.DN(nil, nil);
       end;
     end;
     Blocks.TrainPrediction(Self);
@@ -873,7 +873,7 @@ begin
     Self.m_state.RCtimer := -1;
   end;
 
-  Self.dnJC.DN();
+  Self.dnJC.DN(SenderPnl, SenderOR);
   Blocks.TrainPrediction(Self);
 end;
 
