@@ -143,12 +143,13 @@ $(PreBuildEvent)]]></PreBuildEvent>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <VerInfo_Keys>CompanyName=;FileDescription=Software pro řízení modelové železnice dle ZTP-JOP;FileVersion=5.2.0.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.2.1.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_AutoGenVersion>false</VerInfo_AutoGenVersion>
         <VerInfo_MinorVer>2</VerInfo_MinorVer>
-        <VerInfo_Release>0</VerInfo_Release>
+        <VerInfo_Release>1</VerInfo_Release>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>..\icons\hJOPserver.ico</Icon_MainIcon>
+        <DCC_ExeOutput>C:\vlak\hjop\serverOther\</DCC_ExeOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>

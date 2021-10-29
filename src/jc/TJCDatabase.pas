@@ -182,9 +182,9 @@ begin
   for var JC: TJC in Self.JCs do
   begin
     try
-      if (JC.state.destroyBlock > -5) then
+      if (JC.state.destroyBlock > _JC_DESTROY_NONE) then
         JC.DynamicCanceling();
-      if (JC.state.destroyBlock = -6) then
+      if (JC.state.destroyBlock = _JC_DESTROY_NC) then
         JC.DynamicCancelingNC();
 
       if ((JC.activating) or (JC.step = stepJcLastTrackWait)) then
@@ -613,8 +613,7 @@ begin
           (JC.waitForLastTrackOrRailwayOccupy))) then
       begin
         JC.CancelWithoutTrackRelease();
-        for var area: TArea in (tmpblk as TBlkSignal).areas do
-          area.BlkWriteError(Self, 'Chyba povolovací návěsti ' + tmpblk.name, 'TECHNOLOGIE');
+        tmpblk.BottomErrorBroadcast('Chyba povolovací návěsti ' + tmpblk.name, 'TECHNOLOGIE');
       end;
     end;
   finally

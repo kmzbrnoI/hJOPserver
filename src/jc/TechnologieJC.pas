@@ -2112,9 +2112,7 @@ begin
     if (signal.ab) then
     begin
       signal.ab := false; // automaticky zrusi AB
-      if (Self.m_state.senderPnl <> nil) then
-        PanelServer.BottomError(Self.m_state.senderPnl, 'Zrušena AB ' + signal.name,
-          (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+      signal.BottomErrorBroadcast('Zrušena AB ' + signal.name, 'TECHNOLOGIE');
     end;
   end;
 
@@ -2224,9 +2222,7 @@ begin
           // pokud jsme na jinem useku, nez RozpadBlok
           if ((signal.targetSignal > ncStuj) and (signal.DNjc = Self)) then
           begin
-            if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-              PanelServer.BottomError(Self.m_state.senderPnl, 'Chyba povolovací návěsti ' + signal.name,
-                (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+            signal.BottomErrorBroadcast('Chyba povolovací návěsti ' + signal.name, 'TECHNOLOGIE');
             Self.CancelWithoutTrackRelease();
           end;
 
@@ -2416,9 +2412,7 @@ begin
     var signal: TBlkSignal := Self.signal as TBlkSignal;
     if ((signal.signal > ncStuj) and (signal.DNjc = Self)) then
     begin
-      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-        PanelServer.BottomError(Self.m_state.senderPnl, 'Chyba povolovací návěsti ' + signal.name,
-          (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+      signal.BottomErrorBroadcast('Chyba povolovací návěsti ' + signal.name, 'TECHNOLOGIE');
       Self.CancelWithoutTrackRelease();
     end;
   end;
