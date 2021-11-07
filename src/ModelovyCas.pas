@@ -82,7 +82,7 @@ var
 
 implementation
 
-uses TCPServerPanel, fMain, TrainDb, BlockDb;
+uses TCPServerPanel, fMain, TrainDb, BlockDb, ownConvert;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -259,15 +259,13 @@ end;
 
 function TModCas.GetTCPString(): string;
 begin
-  if (Self.started) then
-    PanelServer.BroadcastData('-;MOD-CAS;1;' + Self.strSpeed + ';' + TimeToStr(Self.time))
-  else
-  begin
-    if (Self.used) then
-      PanelServer.BroadcastData('-;MOD-CAS;0;' + Self.strSpeed + ';' + TimeToStr(Self.time))
-    else
-      PanelServer.BroadcastData('-;MOD-CAS;0;' + Self.strSpeed + ';' + TimeToStr(Self.time) + ';0');
-  end;
+  PanelServer.BroadcastData(
+    '-;MOD-CAS;'+
+    IntToStr(ownConvert.BoolToInt(Self.started))+';' +
+    Self.strSpeed + ';' +
+    TimeToStr(Self.time) + ';' +
+    IntToStr(ownConvert.BoolToInt(Self.used))
+  );
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
