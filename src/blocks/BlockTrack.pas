@@ -2464,22 +2464,27 @@ begin
   for var i: Integer := 0 to Self.trains.Count - 1 do
   begin
     var trainI: Integer := Self.trains[i];
+    var train := TrainDb.trains[trainI];
+
     sfg := fg;
     sbg := bg;
 
     if (Self.occupied = TTrackState.free) then
       sfg := clAqua;
 
-    Result := Result + '(' + TrainDb.trains[trainI].name + ';' +
-      IntToStr(ownConvert.BoolToInt(TrainDb.trains[trainI].sdata.dir_L)) +
-      IntToStr(ownConvert.BoolToInt(TrainDb.trains[trainI].sdata.dir_S)) + ';';
+    Result := Result + '(' + train.name + ';' +
+      IntToStr(ownConvert.BoolToInt(train.sdata.dir_L)) +
+      IntToStr(ownConvert.BoolToInt(train.sdata.dir_S)) + ';';
 
-    if ((TrainDb.trains[trainI].areaTo = TrainDb.trains[trainI].station) and (sbg = clBlack)) then
+    if ((train.sdata.note <> '') or (train.HasAnyHVNote())) then
+      sbg := clTeal;
+
+    if ((train.areaTo = train.station) and (sbg = clBlack)) then
       sbg := clSilver;
 
     // predvidany odjezd
-    if (TrainDb.trains[trainI].IsPOdj(Self)) then
-      predvidanyOdjezd.GetPOdjColors(TrainDb.trains[trainI].GetPOdj(Self), sfg, sbg);
+    if (train.IsPOdj(Self)) then
+      predvidanyOdjezd.GetPOdjColors(train.GetPOdj(Self), sfg, sbg);
 
     Result := Result + ownConvert.ColorToStr(sfg) + ';' + ownConvert.ColorToStr(sbg) + ';';
 

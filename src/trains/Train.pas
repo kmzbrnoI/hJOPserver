@@ -123,6 +123,7 @@ type
      function IsAnyLokoInRegulator(): Boolean;
      procedure ForceRemoveAllRegulators();
      procedure EmergencyStop();
+     function HasAnyHVNote(): Boolean;
 
      procedure UpdateRailwaySpeed();
      function GetRailwaySpeed(): Cardinal;
@@ -1310,7 +1311,17 @@ end;
 
 function TTrain.IsSpeedBuffer(): Boolean;
 begin
- Result := (Self.speedBuffer <> nil);
+  Result := (Self.speedBuffer <> nil);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TTrain.HasAnyHVNote(): Boolean;
+begin
+  Result := false;
+  for var addr in Self.HVs do
+    if (HVDb[addr].data.note <> '') then
+      Exit(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
