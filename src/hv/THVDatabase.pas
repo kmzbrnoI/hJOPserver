@@ -481,19 +481,17 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure THVDb.ExportStatistics(filename: string);
-var f: TextFile;
 begin
-  AssignFile(f, filename);
-  Rewrite(f);
+  var sw := TStreamWriter.Create(filename, False, TEncoding.UTF8);
 
   try
-    WriteLn(f, 'adresa;nazev;majitel;najeto_metru_vpred;majeto_bloku_vpred;najeto_metru_vzad;najeto_bloku_vzad');
+    sw.WriteLine('adresa,nazev,majitel,najeto_metru_vpred,najeto_metru_vzad');
 
     for var i: Integer := 0 to _MAX_ADDR - 1 do
       if (Assigned(Self.HVs[i])) then
-        WriteLn(f, Self.HVs[i].ExportStats());
+        sw.WriteLine(Self.HVs[i].ExportStats());
   finally
-    CloseFile(f);
+    sw.Free();
   end;
 end;
 

@@ -548,11 +548,11 @@ begin
   Self.state.traveled_backward := 0;
 end;
 
-// format vystupnich dat: adresa;nazev;majitel;najeto_metru_vpred;najeto_metru_vzad
+// format vystupnich dat: adresa,nazev,majitel,najeto_metru_vpred,najeto_metru_vzad
 function THV.ExportStats(): string;
 begin
-  Result := IntToStr(Self.addr) + ';' + Self.data.name + ';' + Self.data.owner + ';' +
-    Format('%5.2f', [Self.state.traveled_forward]) + ';' + Format('%5.2f', [Self.state.traveled_backward]) + ';';
+  Result := IntToStr(Self.addr) + ',' + Self.data.name + ',' + Self.data.owner + ',' +
+    Format('%5.2f', [Self.state.traveled_forward]) + ',' + Format('%5.2f', [Self.state.traveled_backward]) + ',';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
