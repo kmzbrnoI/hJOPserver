@@ -662,7 +662,7 @@ end;
 procedure TTrain.SetSpeedDirection(speed: Cardinal; dir: THVSite);
 var dir_changed: Boolean;
 begin
- if ((TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).speedUpdate)) then
+ if ((Self.front <> nil) and (TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).speedUpdate)) then
    TBlkRT(Self.front).speedUpdate := false;
 
  dir_changed := (Self.direction <> dir);
@@ -679,7 +679,7 @@ begin
    Exit();
   end;
 
- if ((TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).railway <> nil)) then
+ if ((Self.front <> nil) and (TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).railway <> nil)) then
    TBlkRT(Self.front).railway.Change();
 
  for var addr in Self.HVs do
