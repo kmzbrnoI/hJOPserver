@@ -815,6 +815,10 @@ begin
       PanelServer.SendLn(AContext, '-;HV;ASK;' + IntToStr(i) + ';FOUND;{' + HVDb[i].GetPanelLokString() + '}')
     else
       PanelServer.SendLn(AContext, '-;HV;ASK;' + IntToStr(i) + ';NOT-FOUND');
+
+  end else if (parsed[1] = 'SPEED-STEPS-REQ') then begin
+    PanelServer.SendLn(AContext, '-;SPEED-STEPS;{'+TrakceI.SpeedTableToStr()+'}');
+
   end;
 end;
 

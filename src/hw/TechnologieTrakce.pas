@@ -150,6 +150,7 @@ type
 
     procedure LoadSpeedTable(filename: string; var LVRych: TListView);
     procedure SaveSpeedTable(filename: string);
+    function SpeedTableToStr(): string;
 
     function Step(kmph: Cardinal): Cardinal;
     function Speed(Step: Cardinal): Cardinal;
@@ -514,6 +515,13 @@ begin
     WriteLn(myFile, IntToStr(Self.SpeedTable[i]));
 
   CloseFile(myFile);
+end;
+
+function TTrakce.SpeedTableToStr(): string;
+begin
+  Result := '';
+  for var i: Integer := 1 to _MAX_STEP do
+    Result := Result + IntToStr(Self.SpeedTable[i]) + ',';
 end;
 
 function TTrakce.Step(kmph: Cardinal): Cardinal;
