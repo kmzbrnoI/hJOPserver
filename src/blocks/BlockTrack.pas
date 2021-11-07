@@ -2479,7 +2479,7 @@ begin
     if ((train.sdata.note <> '') or (train.HasAnyHVNote())) then
       sbg := clTeal;
 
-    if ((train.areaTo = train.station) and (sbg = clBlack)) then
+    if (train.areaTo = train.station) then
       sbg := clSilver;
 
     // predvidany odjezd
@@ -2500,6 +2500,11 @@ begin
     // predvidany odjezd
     sfg := fg;
     sbg := bg;
+
+    if ((Self.trainPredict.sdata.note <> '') or (Self.trainPredict.HasAnyHVNote())) then
+      sbg := clTeal;
+
+    // Do not show end station as train text is not contrast compared to background
 
     if (Self.trainPredict.IsPOdj(Self)) then
       predvidanyOdjezd.GetPOdjColors(Self.trainPredict.GetPOdj(Self), sfg, sbg);

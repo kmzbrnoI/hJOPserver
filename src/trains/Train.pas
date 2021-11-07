@@ -596,7 +596,13 @@ begin
  Self.SetSpeedDirection(Self.speed, Self.direction);
  Blocks.ChangeTrainToRailway(Self);
 
- TBlkTrack(Self.front).Change();
+ if (Self.front <> nil) then
+   TBlkTrack(Self.front).Change();
+
+ for var blk in Blocks do
+   if (((blk.typ = TBlkType.btTrack) or (blk.typ = TBlkType.btRT)) and
+       ((TBlkTrack(blk).trains.Contains(Self.index)) or (TBlkTrack(blk).trainPredict = Self))) then
+     blk.Change();
 
  for var signal in TBlkTrack(Self.front).signalJCRef do
    TBlkSignal(signal).UpdateTrainSpeed(true);
