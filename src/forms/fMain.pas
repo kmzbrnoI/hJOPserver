@@ -801,6 +801,7 @@ begin
     BlocksTablePainter.UpdateTable();
 
   PanelServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
+  Trains.StopAllTrains();
 
   if (SystemData.Status = stopping) then
     Self.A_RCS_CloseExecute(nil);
@@ -883,6 +884,7 @@ begin
   SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
   PanelServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
+  Trains.StopAllTrains();
 
   if (SystemData.Status = stopping) then
   begin
@@ -2027,7 +2029,7 @@ begin
   Self.LogStatus('Vypínám systémy...');
   SystemData.Status := stopping;
 
-  Self.LogStatus('Zastavuji všechny Trains...');
+  Self.LogStatus('Zastavuji všechny vlaky...');
   Trains.StopAllTrains();
 
   Application.ProcessMessages();
