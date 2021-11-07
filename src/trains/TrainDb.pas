@@ -251,16 +251,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Tato funkce predpoklada vysokou zatez sbernice do centraly ->
-// schvalne ceka.
 procedure TTrainDb.StopAllTrains();
 begin
  for var i := 0 to _MAX_TRAIN-1 do
   if ((Self.trains[i] <> nil) and (Self.trains[i].wantedSpeed <> 0)) then
-   begin
     Self.trains[i].speed := 0;
-    Sleep(3);
-   end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
