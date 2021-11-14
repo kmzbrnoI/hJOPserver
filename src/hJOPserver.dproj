@@ -59,114 +59,76 @@
         <Base>true</Base>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base)'!=''">
-        <DCC_DependencyCheckOutputName>..\..\..\KMZ\hJOP\serverOther\hJOPserver.exe</DCC_DependencyCheckOutputName>
+        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <DCC_ImageBase>00400000</DCC_ImageBase>
+        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.2.1.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
         <DCC_UsePackage>vcl;rtl;vclx;VclSmp;vclshlctrls;$(DCC_UsePackage)</DCC_UsePackage>
-        <DCC_ExeOutput>d:\UsersData\vlak\KMZ\hJOP\serverOther\</DCC_ExeOutput>
-        <DCC_BplOutput>..\outunit\</DCC_BplOutput>
-        <DCC_RangeChecking>true</DCC_RangeChecking>
-        <DCC_Platform>x86</DCC_Platform>
+        <VerInfo_MajorVer>5</VerInfo_MajorVer>
+        <VerInfo_MinorVer>2</VerInfo_MinorVer>
+        <VerInfo_Release>1</VerInfo_Release>
+        <VerInfo_Locale>1029</VerInfo_Locale>
+        <Icon_MainIcon>..\icons\hJOPserver.ico</Icon_MainIcon>
         <DCC_K>false</DCC_K>
         <DCC_F>false</DCC_F>
         <DCC_N>true</DCC_N>
-        <DCC_DcpOutput>..\outunit\</DCC_DcpOutput>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <DCC_S>false</DCC_S>
         <DCC_E>false</DCC_E>
-        <DebugSourcePath>D:\Users\Vlak\MTB\MTB_knihovna\;$(DebugSourcePath)</DebugSourcePath>
         <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
-        <DCC_IntegerOverflowCheck>true</DCC_IntegerOverflowCheck>
-        <DCC_DcuOutput>..\outunit\</DCC_DcuOutput>
         <SanitizedProjectName>hJOPserver</SanitizedProjectName>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;FMXTee.Editor.Series;IBX;$(DCC_Namespace)</DCC_Namespace>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_AutoGenVersion>true</VerInfo_AutoGenVersion>
-        <VerInfo_MajorVer>5</VerInfo_MajorVer>
-        <VerInfo_Release>13</VerInfo_Release>
-        <VerInfo_Locale>1029</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=Jan Horáček;FileDescription=hJOP technologický server;FileVersion=5.0.13.0;InternalName=hJOPserver;LegalCopyright=Jan Horáček 2008-2020;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=hJOPserver;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
-        <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
-        <BT_BuildType>Debug</BT_BuildType>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <Debugger_DebugSourcePath>C:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\;D:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\;$(Debugger_DebugSourcePath)</Debugger_DebugSourcePath>
-        <Icon_MainIcon>hJOPserver_Icon.ico</Icon_MainIcon>
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
-        <VerInfo_MajorVer>1</VerInfo_MajorVer>
-        <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
-        <VerInfo_Release>0</VerInfo_Release>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
-        <Icon_MainIcon>hJOPserver_Icon.ico</Icon_MainIcon>
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
-        <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
-        <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
-        <BT_BuildType>Debug</BT_BuildType>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_MajorVer>1</VerInfo_MajorVer>
-        <VerInfo_Release>0</VerInfo_Release>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <DCC_AssertionsAtRuntime>false</DCC_AssertionsAtRuntime>
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
         <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
         <DCC_DebugInformation>0</DCC_DebugInformation>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <VerInfo_MajorVer>1</VerInfo_MajorVer>
-        <VerInfo_Release>0</VerInfo_Release>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <Icon_MainIcon>..\icons\hJOPserver.ico</Icon_MainIcon>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <VerInfo_MajorVer>1</VerInfo_MajorVer>
-        <VerInfo_Release>0</VerInfo_Release>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_2)'!=''">
-        <DCC_MapFile>3</DCC_MapFile>
-        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.2.1.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <VerInfo_AutoGenVersion>false</VerInfo_AutoGenVersion>
-        <VerInfo_MinorVer>2</VerInfo_MinorVer>
-        <VerInfo_Release>1</VerInfo_Release>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <Icon_MainIcon>..\icons\hJOPserver.ico</Icon_MainIcon>
         <DCC_ExeOutput>..\x86\output\</DCC_ExeOutput>
         <DCC_DcpOutput>..\x86\outunit\</DCC_DcpOutput>
         <DCC_BplOutput>..\x86\outunit\</DCC_BplOutput>
         <DCC_DcuOutput>..\x86\outunit\</DCC_DcuOutput>
-        <PreBuildEvent><![CDATA[]]></PreBuildEvent>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
-        <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <VerInfo_MajorVer>1</VerInfo_MajorVer>
-        <VerInfo_Release>0</VerInfo_Release>
-        <VerInfo_AutoGenVersion>false</VerInfo_AutoGenVersion>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_Locale>1033</VerInfo_Locale>
-        <Icon_MainIcon>..\icons\hJOPserver.ico</Icon_MainIcon>
+    <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <DCC_DcpOutput>..\x86-64\outunit\</DCC_DcpOutput>
         <DCC_BplOutput>..\x86-64\outunit\</DCC_BplOutput>
         <DCC_DcuOutput>..\x86-64\outunit\</DCC_DcuOutput>
         <DCC_ExeOutput>..\x86-64\output\</DCC_ExeOutput>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <DCC_DebugInformation>0</DCC_DebugInformation>
+        <DCC_LocalDebugSymbols>True</DCC_LocalDebugSymbols>
+        <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
+        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+        <VerInfo_Debug>true</VerInfo_Debug>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <DCC_ExeOutput>..\x86\output\</DCC_ExeOutput>
+        <DCC_DcpOutput>..\x86\outunit\</DCC_DcpOutput>
+        <DCC_BplOutput>..\x86\outunit\</DCC_BplOutput>
+        <DCC_DcuOutput>..\x86\outunit\</DCC_DcuOutput>
+        <VerInfo_Release>2</VerInfo_Release>
+        <BT_BuildType>Debug</BT_BuildType>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
+        <DCC_DcpOutput>..\x86-64\outunit\</DCC_DcpOutput>
+        <DCC_BplOutput>..\x86-64\outunit\</DCC_BplOutput>
+        <DCC_DcuOutput>..\x86-64\outunit\</DCC_DcuOutput>
+        <DCC_ExeOutput>..\x86-64\output\</DCC_ExeOutput>
+        <BT_BuildType>Debug</BT_BuildType>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -481,7 +443,7 @@
                 <Platform value="Win64">True</Platform>
             </Platforms>
             <Deployment Version="3">
-                <DeployFile LocalName="..\..\..\KMZ\hJOP\serverOther\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="..\x86-64\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
                         <RemoteName>hJOPserver.exe</RemoteName>
                         <Overwrite>true</Overwrite>
@@ -1456,12 +1418,4 @@
     </ProjectExtensions>
     <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
-    <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win32'">
-        <PreBuildEvent><![CDATA[]]></PreBuildEvent>
-        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
-        <PreLinkEvent/>
-        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent/>
-        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
-    </PropertyGroup>
 </Project>
