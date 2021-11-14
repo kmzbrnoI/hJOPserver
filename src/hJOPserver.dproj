@@ -7,7 +7,7 @@
         <ProjectVersion>19.2</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+        <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>3</TargetedPlatforms>
         <AppType>Application</AppType>
     </PropertyGroup>
@@ -88,17 +88,16 @@
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_Namespace>Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <Debugger_DebugSourcePath>C:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\;D:\UsersData\Vlak\Delphi\Komponenty\ComPort\Source\;$(Debugger_DebugSourcePath)</Debugger_DebugSourcePath>
         <Icon_MainIcon>hJOPserver_Icon.ico</Icon_MainIcon>
-        <PreBuildEvent><![CDATA[del /q ..\outunit\*
-$(PreBuildEvent)]]></PreBuildEvent>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
+        <VerInfo_MajorVer>1</VerInfo_MajorVer>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
+        <VerInfo_Release>0</VerInfo_Release>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win64)'!=''">
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
@@ -149,7 +148,11 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <VerInfo_Release>1</VerInfo_Release>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>..\icons\hJOPserver.ico</Icon_MainIcon>
-        <DCC_ExeOutput>C:\vlak\hjop\serverOther\</DCC_ExeOutput>
+        <DCC_ExeOutput>..\x86\output\</DCC_ExeOutput>
+        <DCC_DcpOutput>..\x86\outunit\</DCC_DcpOutput>
+        <DCC_BplOutput>..\x86\outunit\</DCC_BplOutput>
+        <DCC_DcuOutput>..\x86\outunit\</DCC_DcuOutput>
+        <PreBuildEvent><![CDATA[]]></PreBuildEvent>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
@@ -160,6 +163,10 @@ $(PreBuildEvent)]]></PreBuildEvent>
         <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>..\icons\hJOPserver.ico</Icon_MainIcon>
+        <DCC_DcpOutput>..\x86-64\outunit\</DCC_DcpOutput>
+        <DCC_BplOutput>..\x86-64\outunit\</DCC_BplOutput>
+        <DCC_DcuOutput>..\x86-64\outunit\</DCC_DcuOutput>
+        <DCC_ExeOutput>..\x86-64\output\</DCC_ExeOutput>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -460,6 +467,13 @@ $(PreBuildEvent)]]></PreBuildEvent>
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k270.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp270.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclBaseExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclBaseExpert270.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclDebugExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclDebugExpert270.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclProjectAnalysisExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclProjectAnalysisExpert270.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclFavoriteFoldersExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclFavoriteFoldersExpert270.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclRepositoryExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclRepositoryExpert270.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclSIMDViewExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclSIMDViewExpert270.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclStackTraceViewerExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclStackTraceViewerExpert270.bpl not found</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>
@@ -473,7 +487,7 @@ $(PreBuildEvent)]]></PreBuildEvent>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\..\..\KMZ\hJOP\serverOther\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="..\x86\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>hJOPserver.exe</RemoteName>
                         <Overwrite>true</Overwrite>
@@ -1442,16 +1456,8 @@ $(PreBuildEvent)]]></PreBuildEvent>
     </ProjectExtensions>
     <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
     <Import Project="$(MSBuildProjectName).deployproj" Condition="Exists('$(MSBuildProjectName).deployproj')"/>
-    <PropertyGroup Condition="'$(Config)'=='Release' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>del /q ..\outunit\*</PreBuildEvent>
-        <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
-        <PreLinkEvent/>
-        <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
-        <PostBuildEvent/>
-        <PostBuildEventIgnoreExitCode>False</PostBuildEventIgnoreExitCode>
-    </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Debug' And '$(Platform)'=='Win32'">
-        <PreBuildEvent>del /q ..\outunit\*</PreBuildEvent>
+        <PreBuildEvent><![CDATA[]]></PreBuildEvent>
         <PreBuildEventIgnoreExitCode>False</PreBuildEventIgnoreExitCode>
         <PreLinkEvent/>
         <PreLinkEventIgnoreExitCode>False</PreLinkEventIgnoreExitCode>
