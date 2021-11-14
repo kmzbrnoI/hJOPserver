@@ -110,8 +110,8 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>True</DCC_LocalDebugSymbols>
-        <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+        <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
         <VerInfo_Debug>true</VerInfo_Debug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
@@ -119,7 +119,6 @@
         <DCC_DcpOutput>..\x86\outunit\</DCC_DcpOutput>
         <DCC_BplOutput>..\x86\outunit\</DCC_BplOutput>
         <DCC_DcuOutput>..\x86\outunit\</DCC_DcuOutput>
-        <VerInfo_Release>2</VerInfo_Release>
         <BT_BuildType>Debug</BT_BuildType>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
