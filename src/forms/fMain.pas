@@ -2916,8 +2916,10 @@ end;
 procedure TF_Main.LV_Stav_RCSCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
-  if ((Item.SubItems.Count > 5) and (Item.SubItems[5] = 'Fail')) then
+  if ((Item.SubItems.Count > 5) and ((Item.SubItems[5] = 'Fail') or (Item.SubItems[5] = 'Error'))) then
     Self.LV_Stav_RCS.Canvas.Brush.Color := _TABLE_COLOR_RED
+  else if ((Item.SubItems.Count > 5) and (Item.SubItems[5] = 'Warning')) then
+    Self.LV_Stav_RCS.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
   else
     Self.LV_Stav_RCS.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
 end;

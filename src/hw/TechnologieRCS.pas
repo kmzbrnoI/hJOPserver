@@ -71,6 +71,7 @@ type
 
     procedure DllOnLog(Sender: TObject; logLevel: TRCSLogLevel; msg: string);
     procedure DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg: PChar);
+    procedure DllOnModuleChanged(Sender: TObject; module: Cardinal);
     procedure DllOnInputChanged(Sender: TObject; module: Cardinal);
     procedure DllOnOutputChanged(Sender: TObject; module: Cardinal);
     function GetMaxModuleAddrSafe(): Cardinal;
@@ -155,6 +156,7 @@ begin
   TRCSIFace(Self).AfterClose := Self.DllAfterClose;
   TRCSIFace(Self).OnError := Self.DllOnError;
   TRCSIFace(Self).OnLog := Self.DllOnLog;
+  TRCSIFace(Self).OnModuleChanged := Self.DllOnModuleChanged;
   TRCSIFace(Self).OnInputChanged := Self.DllOnInputChanged;
   TRCSIFace(Self).OnOutputChanged := Self.DllOnOutputChanged;
 end;
@@ -309,6 +311,18 @@ begin
     Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, ltRCS);
 end;
 
+procedure TRCS.DllOnModuleChanged(Sender: TObject; module: Cardinal);
+begin
+  if (Self.boards.ContainsKey(module)) then
+    for var i: Integer := Self.boards[module].outputChangedEv.Count - 1 downto 0 do
+      if (Assigned(Self.boards[module].outputChangedEv[i])) then
+        Self.boards[module].outputChangedEv[i](Self, module)
+      else
+        Self.boards[module].outputChangedEv.Delete(i);
+  RCSTableData.UpdateBoard(module);
+  F_Tester.RCSModuleChanged(module);
+end;
+
 procedure TRCS.DllOnInputChanged(Sender: TObject; module: Cardinal);
 begin
   if (Self.boards.ContainsKey(module)) then
@@ -317,8 +331,8 @@ begin
         Self.boards[module].inputChangedEv[i](Self, module)
       else
         Self.boards[module].inputChangedEv.Delete(i);
-  RCSTableData.UpdateBoard(module);
-  F_Tester.RCSModuleChanged(module);
+  RCSTableData.UpdateBoardInputs(module);
+  F_Tester.RCSModuleInputsChanged(module);
 end;
 
 procedure TRCS.DllOnOutputChanged(Sender: TObject; module: Cardinal);
@@ -329,8 +343,8 @@ begin
         Self.boards[module].outputChangedEv[i](Self, module)
       else
         Self.boards[module].outputChangedEv.Delete(i);
-  RCSTableData.UpdateBoard(module);
-  F_Tester.RCSModuleChanged(module);
+  RCSTableData.UpdateBoardOutputs(module);
+  F_Tester.RCSModuleOutputsChanged(module);
 end;
 
 // ----- events from dll end -----

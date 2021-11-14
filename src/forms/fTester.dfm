@@ -45,8 +45,8 @@ object F_Tester: TF_Tester
   PixelsPerInch = 96
   TextHeight = 13
   object L_1: TLabel
-    Left = 48
-    Top = 8
+    Left = 7
+    Top = 7
     Width = 63
     Height = 13
     Margins.Left = 2
@@ -61,6 +61,14 @@ object F_Tester: TF_Tester
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
+  end
+  object L_state: TLabel
+    Left = 158
+    Top = 333
+    Width = 3
+    Height = 13
+    Alignment = taRightJustify
+    Caption = '-'
   end
   object GB_vstupy: TGroupBox
     Left = 7

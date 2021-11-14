@@ -3506,7 +3506,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_HV
+    ActivePage = TS_Stav_RCS
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -4968,7 +4968,7 @@ object F_Main: TF_Main
           end
           item
             Alignment = taCenter
-            Caption = 'Existence'
+            Caption = 'Stav'
             Width = 60
           end
           item
