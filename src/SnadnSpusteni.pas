@@ -146,19 +146,42 @@ begin
 
     // outputs
 
+
     if (Self.config.OUT_Ready > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Ready,
-        ownConvert.BoolToInt((not AC.running) and (AC.clientConnected)));
+    begin
+      var curVal: Boolean := (RCSi.GetOutputState(Self.config.RCSAdr, Self.config.OUT_Ready) = TRCSOutputState.osEnabled);
+      var newVal: Boolean := (not AC.running) and (AC.clientConnected);
+
+      if (curVal <> newVal) then
+        RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Ready, ownConvert.BoolToInt(newVal));
+    end;
 
     if (Self.config.OUT_Start > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Start, ownConvert.BoolToInt(AC.running));
+    begin
+      var curVal: Boolean := (RCSi.GetOutputState(Self.config.RCSAdr, Self.config.OUT_Start) = TRCSOutputState.osEnabled);
+      var newVal: Boolean := (AC.running);
+
+      if (curVal <> newVal) then
+        RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Start, ownConvert.BoolToInt(newVal));
+    end;
 
     if (Self.config.OUT_Pause > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Pause,
-        ownConvert.BoolToInt((not AC.running) and (not AC.paused)));
+    begin
+      var curVal: Boolean := (RCSi.GetOutputState(Self.config.RCSAdr, Self.config.OUT_Pause) = TRCSOutputState.osEnabled);
+      var newVal: Boolean := (not AC.running) and (not AC.paused);
+
+      if (curVal <> newVal) then
+        RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Pause, ownConvert.BoolToInt(newVal));
+    end;
 
     if (Self.config.OUT_Stop > -1) then
-      RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Stop, ownConvert.BoolToInt(not AC.running));
+    begin
+      var curVal: Boolean := (RCSi.GetOutputState(Self.config.RCSAdr, Self.config.OUT_Stop) = TRCSOutputState.osEnabled);
+      var newVal: Boolean := (not AC.running);
+
+      if (curVal <> newVal) then
+        RCSi.SetOutput(Self.config.RCSAdr, Self.config.OUT_Stop, ownConvert.BoolToInt(newVal));
+    end;
 
     // TODO: repeating
     { if (Self.config.OUT_Repeat > -1) then
