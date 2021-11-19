@@ -3328,9 +3328,9 @@ end;
 
 procedure TF_Main.UpdateSystemButtons();
 begin
-  Self.A_System_Start.Enabled := ((not RCSi.started) or (not TrakceI.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
+  Self.A_System_Start.Enabled := ((not RCSi.NoExStarted) or (not TrakceI.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
     or (not PanelServer.openned) or (not Blocks.Enabled) or ((GlobalConfig.ptAutoStart) and (not PtServer.openned)));
-  Self.A_System_Stop.Enabled := (RCSi.opened) or (TrakceI.ConnectedSafe()) or (PanelServer.openned) or
+  Self.A_System_Stop.Enabled := (RCSi.NoExOpened) or (TrakceI.ConnectedSafe()) or (PanelServer.openned) or
     (PtServer.openned);
 end;
 
