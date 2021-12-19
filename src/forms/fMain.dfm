@@ -1,7 +1,7 @@
 object F_Main: TF_Main
   Left = 264
   Top = 316
-  Caption = 'hJOPserver'
+  Caption = ','
   ClientHeight = 695
   ClientWidth = 1297
   Color = clWhite
@@ -3466,7 +3466,7 @@ object F_Main: TF_Main
         BiDiMode = bdLeftToRight
         ParentBiDiMode = False
         Text = 'log'
-        Width = 700
+        Width = 550
       end
       item
         Alignment = taCenter
@@ -3483,11 +3483,12 @@ object F_Main: TF_Main
       item
         Alignment = taCenter
         Text = '-'
-        Width = 100
+        Width = 200
       end
       item
-        Text = 'Prim'#225'rn'#237' smy'#269'ka: x ms'
-        Width = 150
+        Alignment = taCenter
+        Text = '-'
+        Width = 200
       end
       item
         Text = 'CPU'

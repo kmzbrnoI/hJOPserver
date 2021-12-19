@@ -13,7 +13,7 @@ const
   _SB_RCS = 1;
   _SB_TRAKCE_STAV = 2;
   _SB_TRAKCE_LIB = 3;
-  _SB_SBERNICE = 4;
+  _SB_RCS_LIB = 4;
   _SB_PROC = 5;
 
   _INIDATA_FN = 'inidata.ini';
@@ -503,9 +503,11 @@ begin
 
   Screen.Cursor := crHourGlass;
   Log('RCS -> ' + fn, ltRCS);
+  Self.SB1.Panels.Items[_SB_RCS_LIB].Text := '-';
   try
     RCSi.LoadLib(RCSi.libDir + '\' + fn);
     Self.LogStatus('RCS: načteno ' + fn);
+    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := ExtractFileName(RCSi.Lib);
   except
     on E: Exception do
     begin
@@ -2706,6 +2708,11 @@ begin
     F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-'
   else
     F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(TrakceI.Lib);
+
+  if (RCSi.Lib = '') then
+    F_Main.SB1.Panels.Items[_SB_RCS_LIB].Text := '-'
+  else
+    F_Main.SB1.Panels.Items[_SB_RCS_LIB].Text := ExtractFileName(RCSi.Lib);
 
   try
     if ((RCSi.ready) and (diag.simInputs) and (RCSi.Simulation)) then
