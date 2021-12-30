@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses TMultiJCDatabase, TechnologieMultiJC, BlockDb, fMain, TJCDatabase;
+uses TMultiJCDatabase, TechnologieMultiJC, BlockDb, fMain, TJCDatabase, StrUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -43,16 +43,15 @@ end; // ctor
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TMultiJCTableData.LoadToTable();
-var i, j: Integer;
-  LI: TListItem;
+var LI: TListItem;
 begin
   Self.LV.Clear();
 
-  for i := 0 to MultiJCDb.Count - 1 do
+  for var i := 0 to MultiJCDb.Count - 1 do
   begin
     LI := Self.LV.Items.Add;
     LI.Caption := IntToStr(i);
-    for j := 0 to Self.LV.Columns.Count - 2 do
+    for var j := 0 to Self.LV.Columns.Count - 2 do
       LI.SubItems.Add('');
 
     try
@@ -65,9 +64,8 @@ begin
 end;
 
 procedure TMultiJCTableData.UpdateTable();
-var i: Integer;
 begin
-  for i := 0 to MultiJCDb.Count - 1 do
+  for var i := 0 to MultiJCDb.Count - 1 do
     if (MultiJCDb[i].changed) then
     begin
       try
@@ -82,8 +80,6 @@ end;
 procedure TMultiJCTableData.UpdateLine(line: Integer);
 var mJCData: TMultiJCData;
   mJC: TMultiJC;
-  i: Integer;
-  str: string;
 begin
   mJC := MultiJCDb[line];
   mJCData := mJC.data;
@@ -96,21 +92,27 @@ begin
   Self.LV.Items[line].SubItems[1] := IntToStr(mJC.state.JCIndex);
 
   // jednotlive jizdni cesty
-  str := '';
-  for i := 0 to mJCData.JCs.Count - 1 do
   begin
-    if (JCDb.GetJCByID(mJCData.JCs[i]) <> nil) then
-      str := str + '(' + JCDb.GetJCByID(mJCData.JCs[i]).name + '), '
-    else
-      str := str + '(neexistujici JC), ';
+    var str := '';
+    for var i := 0 to mJCData.JCs.Count - 1 do
+    begin
+      if (JCDb.GetJCByID(mJCData.JCs[i]) <> nil) then
+        str := str + '(' + JCDb.GetJCByID(mJCData.JCs[i]).name + '), '
+      else
+        str := str + '(neexistujici JC), ';
+    end;
+    Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str)-2);
   end;
-  Self.LV.Items[line].SubItems[2] := str;
 
   // variantni body
-  str := '';
-  for i := 0 to mJCData.vb.Count - 1 do
-    str := str + Blocks.GetBlkName(mJCData.vb[i]) + ', ';
-  Self.LV.Items[line].SubItems[3] := str;
+  begin
+    var str := '';
+    for var i := 0 to mJCData.vb.Count - 2 do
+      str := str + Blocks.GetBlkName(mJCData.vb[i]) + ', ';
+    if (mJCData.vb.Count > 0) then
+      str := str + Blocks.GetBlkName(mJCData.vb[mJCData.vb.Count - 1]);
+    Self.LV.Items[line].SubItems[3] := str;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
