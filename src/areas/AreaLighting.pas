@@ -32,7 +32,7 @@ var strs: TStrings;
 begin
   strs := TStringList.Create();
   try
-    ExtractStringsEx(['|'], [], spnlitem, strs);
+    ExtractStringsEx(['|', ','], [], spnlitem, strs);
     Self.name := strs[2];
     Self.rcsAddr := TRCS.rcsAddr(StrToInt(strs[0]), StrToInt(strs[1]));
   finally
