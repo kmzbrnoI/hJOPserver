@@ -57,7 +57,7 @@ var
 
 implementation
 
-uses Logging, TCPServerPanel, THVDatabase, appEv, FileSystem, PTUtils;
+uses Logging, TCPServerPanel, THVDatabase, appEv, FileSystem, PTUtils, ownStrUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -149,7 +149,7 @@ function TAreas.ParseORs(str: string): TList<TArea>;
 begin
   var parsed: TStrings := TStringList.Create();
   try
-    ExtractStrings(['|'], [], PChar(str), parsed);
+    ExtractStringsEx(['|', ','], [], str, parsed);
 
     Result := TList<TArea>.Create();
     for var areaid: string in parsed do

@@ -343,7 +343,7 @@ begin
   lights := TStringList.Create();
 
   try
-    ExtractStrings([';'], [], PChar(str), data_main);
+    ExtractStringsEx([';', ','], [], str, data_main);
 
     if (data_main.Count < 3) then
       raise Exception.Create('Mene nez 3 parametry v popisu oblasti rizeni');

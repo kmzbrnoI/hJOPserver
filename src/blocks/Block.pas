@@ -511,7 +511,7 @@ begin
 
   var strs: TStrings := TStringList.Create();
   try
-    ExtractStringsEx([';'], [], ini.ReadString(section, IntToStr(Self.id), ''), strs);
+    ExtractStringsEx([';', ','], [], ini.ReadString(section, IntToStr(Self.id), ''), strs);
     if (strs.count < 1) then
       Exit(strs);
     if (Self.m_areas <> nil) then

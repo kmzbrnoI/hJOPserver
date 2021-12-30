@@ -69,7 +69,7 @@ type
 
 implementation
 
-uses TJCDatabase, BlockTrack, Area;
+uses TJCDatabase, BlockTrack, Area, ownConvert;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -160,17 +160,13 @@ begin
   ini.WriteString(section, 'nazev', Self.m_data.name);
 
   begin
-    var str: string := '';
-    for var i: Integer := 0 to Self.data.JCs.Count - 1 do
-      str := str + IntToStr(Self.data.JCs[i]) + ';';
+    var str: string := SerializeIntList(Self.data.JCs);
     if (str <> '') then
       ini.WriteString(section, 'JCs', str);
   end;
 
   begin
-    var str: string := '';
-    for var i: Integer := 0 to Self.data.vb.Count - 1 do
-      str := str + IntToStr(Self.data.vb[i]) + ';';
+    var str: string := SerializeIntList(Self.data.vb);
     if (str <> '') then
       ini.WriteString(section, 'vb', str);
   end;

@@ -71,7 +71,7 @@ type
 
 implementation
 
-uses BlockDb, Block, BlockIR, BlockTrack, ownConvert;
+uses BlockDb, Block, BlockIR, BlockTrack, ownConvert, ownStrUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -98,7 +98,7 @@ begin
   strs := TStringList.Create();
 
   try
-    ExtractStrings([';'], [], PChar(data), strs);
+    ExtractStringsEx([';', ','], [], data, strs);
 
     Self.m_data.typ := TRREvType(StrToInt(strs[0]));
 
@@ -134,14 +134,14 @@ end;
 
 function TRREv.GetDefStr(): string;
 begin
-  Result := IntToStr(Integer(Self.m_data.typ)) + ';';
+  Result := IntToStr(Integer(Self.m_data.typ)) + ',';
 
   case (Self.m_data.typ) of
     rrtTrack:
-      Result := Result + IntToStr(ownConvert.BoolToInt(m_data.trackState)) + ';' + IntToStr(m_data.trackPart);
+      Result := Result + IntToStr(ownConvert.BoolToInt(m_data.trackState)) + ',' + IntToStr(m_data.trackPart);
 
     rrtIR:
-      Result := Result + IntToStr(ownConvert.BoolToInt(m_data.irState)) + ';' + IntToStr(m_data.irId);
+      Result := Result + IntToStr(ownConvert.BoolToInt(m_data.irState)) + ',' + IntToStr(m_data.irId);
 
     rrtTime:
       Result := Result + FormatDateTime('nn:ss.z', m_data.time);

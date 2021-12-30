@@ -1,7 +1,7 @@
 object F_Main: TF_Main
   Left = 264
   Top = 316
-  Caption = ','
+  Caption = 'hJOPserver'
   ClientHeight = 695
   ClientWidth = 1297
   Color = clWhite

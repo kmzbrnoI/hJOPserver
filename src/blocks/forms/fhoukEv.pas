@@ -76,11 +76,11 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEv.FillFuncs();
-var vyzn: TFuncVyznam;
+var vyzn: TFuncName;
 begin
   Self.CB_Func.Clear();
-  for vyzn in FuncsFyznam.Items do
-    Self.CB_Func.Items.Add(vyzn.popis);
+  for vyzn in FuncNames.Items do
+    Self.CB_Func.Items.Add(vyzn.name);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

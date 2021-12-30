@@ -752,12 +752,12 @@ begin
   else if (parsed[1] = 'F-VYZN-GET') then
   begin
     orRef.funcsVyznamReq := true;
-    Self.SendLn(AContext, '-;F-VYZN-LIST;{' + FuncsFyznam.GetFuncsVyznam() + '}');
+    Self.SendLn(AContext, '-;F-VYZN-LIST;{' + FuncNames.AllNames(';') + '}');
   end
 
   else if (parsed[1] = 'F-VYZN-ADD') then
   begin
-    FuncsFyznam.ParseNewItems(parsed[2]);
+    FuncNames.ParseNewItems(parsed[2]);
     Self.BroadcastFuncsDescription();
   end
 
@@ -1397,7 +1397,7 @@ end;
 procedure TPanelServer.BroadcastFuncsDescription();
 var data: string;
 begin
-  data := '-;F-VYZN-LIST;{' + FuncsFyznam.GetFuncsVyznam() + '}';
+  data := '-;F-VYZN-LIST;{' + FuncNames.AllNames() + '}';
   for var i: Integer := 0 to _MAX_CLIENTS - 1 do
     if ((Assigned(Self.clients[i])) and ((Self.clients[i].connection.data as TPanelConnData).funcsVyznamReq)) then
       Self.SendLn(Self.clients[i].connection, data);

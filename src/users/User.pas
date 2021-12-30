@@ -183,7 +183,7 @@ begin
   var str: string := '';
   for var area: TArea in AreaDb.areas do
     if (Self.areas.TryGetValue(area.id, rights)) then
-      str := str + '(' + area.id + ';' + IntToStr(Integer(rights)) + ')';
+      str := str + '(' + area.id + ',' + IntToStr(Integer(rights)) + ')';
 
   if (str <> '') then
     ini.WriteString(section, 'ORs', str);

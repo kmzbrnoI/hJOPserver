@@ -311,9 +311,7 @@ begin
  ini.WriteBool(section, 'hlaseni', Self.data.announcement);
 
  begin
-   var str := '';
-   for var addr in Self.HVs do
-    str := str + IntToStr(addr) + ';';
+   var str := ownConvert.SerializeIntList(Self.HVs);
    ini.WriteString(section, 'HV', str);
  end;
 end;

@@ -401,7 +401,7 @@ type
     mCpuLoad: TCpuLoad;
 
     procedure UpdateCallMethod();
-    procedure OnFuncsVyznamChange(Sender: TObject);
+    procedure OnFuncNameChange(Sender: TObject);
 
     procedure WMPowerBroadcast(var Msg: TMessage); message WM_POWERBROADCAST;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
@@ -1688,7 +1688,7 @@ begin
 
   TrakceI.LogObj := Self.LV_log_lnet;
 
-  FuncsFyznam.OnChange := Self.OnFuncsVyznamChange;
+  FuncNames.OnChange := Self.OnFuncNameChange;
 
   Self.LoadIniLibData();
 
@@ -1986,7 +1986,7 @@ begin
       TEncoding.UTF8);
     try
       ModCas.SaveData(ini);
-      ini.WriteString('funcsVyznam', 'funcsVyznam', FuncsFyznam.GetFuncsVyznam());
+      ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.AllNames());
       ini.WriteBool('RCS', 'ShowOnlyActive', Self.CHB_RCS_Show_Only_Active.Checked);
     finally
       ini.UpdateFile();
@@ -2112,13 +2112,12 @@ end;
 
 procedure TF_Main.B_ChangeClick(Sender: TObject);
 var Data: string;
-  i: Integer;
 begin
   Data := '';
-  for i := 0 to Self.M_funcsVyznam.Lines.Count - 1 do
+  for var i := 0 to Self.M_funcsVyznam.Lines.Count - 1 do
     if (Self.M_funcsVyznam.Lines[i] <> '') then
       Data := Data + '{' + Self.M_funcsVyznam.Lines[i] + '};';
-  FuncsFyznam.ParseWholeList(Data);
+  FuncNames.ParseWholeList(Data);
   PanelServer.BroadcastFuncsDescription();
 end;
 
@@ -2129,20 +2128,18 @@ begin
     HVDb.ClearAllStatistics();
 end;
 
-procedure TF_Main.OnFuncsVyznamChange(Sender: TObject);
-var vyzn: TFuncVyznam;
-  strs: TStrings;
+procedure TF_Main.OnFuncNameChange(Sender: TObject);
 begin
   if (not Self.CHB_LoadChanges.Checked) then
     Exit();
   Self.M_funcsVyznam.Clear();
-  for vyzn in FuncsFyznam.Items do
-    Self.M_funcsVyznam.Lines.Add(vyzn.GetPanelStr());
+  for var name in FuncNames.Items do
+    Self.M_funcsVyznam.Lines.Add(name.GetPanelStr());
 
-  strs := TStringList.Create();
+  var strs := TStringList.Create();
   try
-    for vyzn in FuncsFyznam.Items do
-      strs.Add(vyzn.popis);
+    for var name in FuncNames.Items do
+      strs.Add(name.name);
     F_FuncsSet.UpdateFuncsList(strs);
   finally
     strs.Free();
