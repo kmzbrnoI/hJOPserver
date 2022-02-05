@@ -2017,6 +2017,8 @@ begin
     Exit();
   if ((Self.m_settings.controllers.pstOnly) and (not Self.PstIsActive())) then
     Exit();
+  if ((Self.movingPlus) or (Self.movingMinus)) then
+    Exit();
 
   try
     if ((RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) and
