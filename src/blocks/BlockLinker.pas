@@ -653,7 +653,7 @@ begin
       Result := Result + '2;';
   end;
 
-  Result := Result + railway.GetTrainsList(',') + ';';
+  Result := Result + '{' + railway.GetTrainsList(',') + '}';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

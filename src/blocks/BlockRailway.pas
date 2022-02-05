@@ -1145,28 +1145,34 @@ end;
 
 function TBlkRailwayTrain.SerializeForPanel(railway: TBlk; trainPredict: Boolean = false): string;
 var
-  bpError: Boolean;
-  blk: TBlk;
-  stopsInHalt: Boolean;
+  fg: TColor;
+  bg: TColor;
 begin
+  fg := clWhite;
+  bg := clBlack;
+
   // Pozor, souprava muze byt ve vice usecich a mit poruchu BP jen v jednom z nich
-  bpError := false;
+  var bpError := false;
   for var blkRT: TBlkRT in TBlkRailway(railway).tracks do
     if (blkRT.Train = Self.Train) and (blkRT.bpError) then
       bpError := true;
 
-  blk := Self.Train.front as TBlk;
-  stopsInHalt := ((blk <> nil) and (blk.typ = btRT) and (TBlkRT(blk).tuState.stopStopped));
+  var blk := Self.Train.front as TBlk;
+  var stopsInHalt := ((blk <> nil) and (blk.typ = btRT) and (TBlkRT(blk).tuState.stopStopped));
+
+  if (trainPredict) then
+    fg := clYellow
+  else if (bpError) then
+    fg := clAqua
+  else if ((Self.Train.speed = 0) and (not stopsInHalt)) then
+    fg := clRed;
+
+  if ((Self.Train.HasAnyHVNote()) or (Self.Train.sdata.note <> '')) then
+    bg := clTeal;
 
   Result := Self.Train.name + '|';
-  if (trainPredict) then
-    Result := Result + ownConvert.ColorToStr(clYellow) + '|'
-  else if (bpError) then
-    Result := Result + ownConvert.ColorToStr(clAqua) + '|'
-  else if ((Self.Train.speed = 0) and (not stopsInHalt)) then
-    Result := Result + ownConvert.ColorToStr(clRed) + '|'
-  else
-    Result := Result + ownConvert.ColorToStr(clWhite) + '|';
+  Result := Result + ownConvert.ColorToStr(fg) + '|';
+  Result := Result + ownConvert.ColorToStr(bg) + '|';
 
   if (Self.mTimeDefined) then
     Result := Result + FormatDateTime('nn', Self.mTime);
@@ -1176,8 +1182,10 @@ begin
   else
     Result := Result + ownConvert.ColorToStr(clAqua) + '|';
 
+  Result := Result + '{';
   for var addr: Integer in Self.Train.HVs do
     Result := Result + HVDb[addr].name + '|';
+  Result := Result + '}';
 end;
 
 function TBlkRailwayTrain.GeTTrain(): TTrain;
