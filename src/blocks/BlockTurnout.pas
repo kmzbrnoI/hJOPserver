@@ -247,6 +247,7 @@ type
     procedure PstRemove(pst: TBlk);
     function PstIsActive(): Boolean;
     function PstIs(): Boolean;
+    function ControllerInBasicPosition(): Boolean;
 
     property state: TBlkTurnoutState read m_state;
 
@@ -2079,6 +2080,19 @@ begin
   for var i := Self.m_state.psts.Count-1 downto 0 do
     if (TBlkPst(Self.m_state.psts[i]).status <= pstOff) then
       Self.PstRemove(self.m_state.psts[i]);
+end;
+
+function TBlkTurnout.ControllerInBasicPosition(): Boolean;
+begin
+  if (not Self.m_settings.controllers.enabled) then
+    Exit(true);
+
+  try
+    Result := ((RCSi.GetInput(Self.m_settings.controllers.rcsPlus) <> isOn) and
+               (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) <> isOn));
+  except
+    Result := false;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

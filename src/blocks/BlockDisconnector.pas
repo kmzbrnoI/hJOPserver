@@ -103,6 +103,7 @@ type
     procedure PstRemove(pst: TBlk);
     function PstIsActive(): Boolean;
     function PstIs(): Boolean;
+    function ControllerInBasicPosition(): Boolean;
 
     property fullState: TBlkDiscState read m_state;
     property state: TBlkDiscBasicState read m_state.state write SetState;
@@ -593,6 +594,18 @@ begin
   for var i := Self.m_state.psts.Count-1 downto 0 do
     if (TBlkPst(Self.m_state.psts[i]).status <= pstOff) then
       Self.PstRemove(self.m_state.psts[i]);
+end;
+
+function TBlkDisconnector.ControllerInBasicPosition(): Boolean;
+begin
+  if (not Self.m_settings.rcsController.enabled) then
+    Exit(true);
+
+  try
+    Result := (RCSi.GetInput(Self.m_settings.rcsController.addr) <> isOn);
+  except
+    Result := false;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

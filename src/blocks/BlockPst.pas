@@ -1047,6 +1047,9 @@ begin
     if (turnout.PstIs()) then
       barriers.Add(JCBarrier(barTurnoutPst, turnout));
 
+    if (not turnout.ControllerInBasicPosition()) then
+      barriers.Add(JCBarrier(barControllerNotInBasicPos, turnout));
+
     if (turnout.emLock) then
       barriers.Add(JCBarrier(barTurnoutEmLock, turnout))
     else if (turnout.outputLocked) then
@@ -1165,6 +1168,9 @@ begin
 
     if (signal.signal <> ncStuj) then
       barriers.Add(JCBarrier(barSignalActive, signal));
+
+    if (not signal.ControllerInBasicPosition()) then
+      barriers.Add(JCBarrier(barControllerNotInBasicPos, signal));
   end;
 
   // disconnectors
@@ -1186,6 +1192,9 @@ begin
 
     if (disc.note <> '') then
       barriers.Add(JCBarrier(barBlockNote, disc));
+
+    if (not disc.ControllerInBasicPosition()) then
+      barriers.Add(JCBarrier(barControllerNotInBasicPos, disc));
   end;
 
 end;

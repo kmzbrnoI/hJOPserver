@@ -84,8 +84,8 @@ type
 
     barHVManual,
     barHVNotAllManual,
-
-    barTrainWrongDir
+    barTrainWrongDir,
+    barControllerNotInBasicPos
   );
 
 
@@ -163,6 +163,9 @@ begin
         result.Add(TArea.GetCSCondition(barriers[i].Block, 'Neuzamčen'));
       barLockEmLock:
         result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
+
+      barControllerNotInBasicPos:
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Volič není v základní poloze'));
     end;
   end;
 end;
@@ -227,7 +230,7 @@ begin
       barTurnoutEmLock, barCrosEmOpen, barCrosError, barRefugeeLocked,
       barRefugeeOccupied, barRefugeeNoPosition, barRailwayZaver, barRailwayNotReady, barRailwayRequesting,
       barRailwayWrongDir, barRailwayZAKVC, barLockNotLocked, barTurnoutWrongPos,
-      barTrackPSt, barTurnoutPst, barRefugeePst:
+      barTrackPSt, barTurnoutPst, barRefugeePst, barControllerNotInBasicPos:
       begin
         result[0] := GetUPOLine('NEPŘÍPUSTNÉ', taCenter, clRed, clWhite);
         if (Assigned(barrier.Block)) then
@@ -397,6 +400,9 @@ begin
 
     barTrackPSt, barTurnoutPst, barRefugeePst:
       result[1] := GetUPOLine('Prvek pod pom. stavědlem');
+
+    barControllerNotInBasicPos:
+      result[1] := GetUPOLine('Volič není v základní poloze');
 
   else
     result[0] := GetUPOLine('Neznámá bariéra', taCenter, clRed, clWhite);

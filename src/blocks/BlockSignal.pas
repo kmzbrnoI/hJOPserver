@@ -233,6 +233,7 @@ type
     procedure PstRemove(pst: TBlk);
     function PstIsActive(): Boolean;
     function PstIs(): Boolean;
+    function ControllerInBasicPosition(): Boolean;
 
     property symbolType: TBlkSignalSymbol read m_spnl.symbolType;
     property trackId: Integer read m_spnl.trackId write SetTrackId;
@@ -2179,6 +2180,18 @@ begin
   for var i := Self.m_state.psts.Count-1 downto 0 do
     if (TBlkPst(Self.m_state.psts[i]).status <= pstOff) then
       Self.PstRemove(self.m_state.psts[i]);
+end;
+
+function TBlkSignal.ControllerInBasicPosition(): Boolean;
+begin
+  if (not Self.m_settings.PSt.enabled) then
+    Exit(true);
+
+  try
+    Result := (RCSi.GetInput(Self.m_settings.PSt.rcsControllerShunt) <> isOn);
+  except
+    Result := false;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
