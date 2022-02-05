@@ -26,6 +26,7 @@ type
     rcsInRelease: TRCSAddr;
     rcsOutTaken: TRCSAddr;
     rcsOutHorn: TRCSAddr;
+    rcsOutActive: TRCSAddr;
   end;
 
   TBlkPstState = record
@@ -260,6 +261,7 @@ begin
   Self.m_settings.rcsInRelease.Load(ini_tech.ReadString(section, 'rcsInRelease', '0:0'));
   Self.m_settings.rcsOutTaken.Load(ini_tech.ReadString(section, 'rcsOutTaken', '0:0'));
   Self.m_settings.rcsOutHorn.Load(ini_tech.ReadString(section, 'rcsOutHorn', '0:0'));
+  Self.m_settings.rcsOutActive.Load(ini_tech.ReadString(section, 'rcsOutActive', '0:0'));
 
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
   Self.LoadAreas(ini_rel, 'Pst').Free();
@@ -268,6 +270,7 @@ begin
   Self.PushRCSToAreas(Self.m_settings.rcsInRelease);
   Self.PushRCSToAreas(Self.m_settings.rcsOutTaken);
   Self.PushRCSToAreas(Self.m_settings.rcsOutHorn);
+  Self.PushRCSToAreas(Self.m_settings.rcsOutActive);
 end;
 
 procedure TBlkPst.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -303,6 +306,7 @@ begin
   ini_tech.WriteString(section, 'rcsInRelease', Self.m_settings.rcsInRelease.ToString());
   ini_tech.WriteString(section, 'rcsOutTaken', Self.m_settings.rcsOutTaken.ToString());
   ini_tech.WriteString(section, 'rcsOutHorn', Self.m_settings.rcsOutHorn.ToString());
+  ini_tech.WriteString(section, 'rcsOutActive', Self.m_settings.rcsOutActive.ToString());
 end;
 
 procedure TBlkPst.SaveStatus(ini_stat: TMemIniFile; const section: string);
@@ -461,7 +465,8 @@ end;
 
 function TBlkPst.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
-  if ((portType = TRCSIOType.output) and ((addr = Self.m_settings.rcsOutTaken) or (addr = Self.m_settings.rcsOutHorn))) then
+  if ((portType = TRCSIOType.output) and
+      ((addr = Self.m_settings.rcsOutTaken) or (addr = Self.m_settings.rcsOutHorn) or (addr = Self.m_settings.rcsOutActive))) then
     Exit(true);
 
   if ((portType = TRCSIOType.input) and ((addr = Self.m_settings.rcsInTake) or (addr = Self.m_settings.rcsInRelease))) then
@@ -873,6 +878,7 @@ begin
   TBlk.RCStoJSON(Self.m_settings.rcsInRelease, json['rcs'].O['inRelease']);
   TBlk.RCStoJSON(Self.m_settings.rcsOutTaken, json['rcs'].O['outTaken']);
   TBlk.RCStoJSON(Self.m_settings.rcsOutHorn, json['rcs'].O['outHorn']);
+  TBlk.RCStoJSON(Self.m_settings.rcsOutActive, json['rcs'].O['outActive']);
 
   if (includeState) then
     Self.GetPtState(json['blockState']);
@@ -931,9 +937,18 @@ begin
 
   try
     case (Self.status) of
-      pstDisabled, pstOff, pstRefuging: RCSi.SetOutput(Self.m_settings.rcsOutTaken, 0);
-      pstTakeReady: RCSi.SetOutput(Self.m_settings.rcsOutTaken, TRCSOutputState.osf180);
-      pstActive: RCSi.SetOutput(Self.m_settings.rcsOutTaken, 1);
+      pstDisabled, pstOff, pstRefuging: begin
+        RCSi.SetOutput(Self.m_settings.rcsOutTaken, 0);
+        RCSi.SetOutput(Self.m_settings.rcsOutActive, 0);
+      end;
+      pstTakeReady: begin
+        RCSi.SetOutput(Self.m_settings.rcsOutTaken, TRCSOutputState.osf180);
+        RCSi.SetOutput(Self.m_settings.rcsOutActive, 0);
+      end;
+      pstActive: begin
+        RCSi.SetOutput(Self.m_settings.rcsOutTaken, 1);
+        RCSi.SetOutput(Self.m_settings.rcsOutActive, 1);
+      end;
     end;
   except
     on E: RCSException do begin end;

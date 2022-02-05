@@ -63,6 +63,9 @@ type
     B_Disc_Ok: TButton;
     B_Disc_Delete: TButton;
     LV_Disconnectors: TListView;
+    Label3: TLabel;
+    SE_RCS_Active_Module: TSpinEdit;
+    SE_RCS_Active_Port: TSpinEdit;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
@@ -92,6 +95,7 @@ type
       Change: TItemChange);
     procedure B_Disc_DeleteClick(Sender: TObject);
     procedure B_Disc_OkClick(Sender: TObject);
+    procedure SE_RCS_Active_ModuleExit(Sender: TObject);
   private
     isNewBlock: Boolean;
     block: TBlkPst;
@@ -182,6 +186,8 @@ begin
   Self.SE_RCS_Indication_Port.Value := 0;
   Self.SE_RCS_Horn_Module.Value := 1;
   Self.SE_RCS_Horn_Port.Value := 0;
+  Self.SE_RCS_Active_Module.Value := 1;
+  Self.SE_RCS_Active_Port.Value := 0;
 
   Self.Caption := 'Nový blok Pomocné stavědlo';
   Self.ActiveControl := Self.E_Name;
@@ -262,8 +268,20 @@ begin
   Self.SE_RCS_Horn_Module.Value := pstSettings.rcsOutHorn.board;
   Self.SE_RCS_Horn_Port.Value := pstSettings.rcsOutHorn.port;
 
+  if (pstSettings.rcsOutActive.board > Cardinal(Self.SE_RCS_Active_Module.MaxValue)) then
+    Self.SE_RCS_Active_Module.MaxValue := 0;
+  Self.SE_RCS_Active_Port.MaxValue := 0;
+  Self.SE_RCS_Active_Module.Value := pstSettings.rcsOutActive.board;
+  Self.SE_RCS_Active_Port.Value := pstSettings.rcsOutActive.port;
+
   Self.Caption := 'Upravit blok ' + glob.name + ' (pomocné stavědlo)';
   Self.ActiveControl := Self.B_Apply;
+end;
+
+procedure TF_BlkPst.SE_RCS_Active_ModuleExit(Sender: TObject);
+begin
+  Self.SE_RCS_Active_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Active_Module.Value,
+    Self.SE_RCS_Active_Port.Value);
 end;
 
 procedure TF_BlkPst.SE_RCS_Horn_ModuleExit(Sender: TObject);
@@ -390,6 +408,9 @@ begin
 
   pstSettings.rcsOutHorn.board := Self.SE_RCS_Horn_Module.Value;
   pstSettings.rcsOutHorn.port := Self.SE_RCS_Horn_Port.Value;
+
+  pstSettings.rcsOutActive.board := Self.SE_RCS_Active_Module.Value;
+  pstSettings.rcsOutActive.port := Self.SE_RCS_Active_Port.Value;
 
   Self.block.SetSettings(pstSettings);
 

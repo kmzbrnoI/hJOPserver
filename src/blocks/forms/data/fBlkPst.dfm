@@ -3,7 +3,7 @@ object F_BlkPst: TF_BlkPst
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'F_BlkPst'
-  ClientHeight = 487
+  ClientHeight = 508
   ClientWidth = 990
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -68,7 +68,7 @@ object F_BlkPst: TF_BlkPst
   end
   object B_Storno: TButton
     Left = 821
-    Top = 456
+    Top = 477
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -81,7 +81,7 @@ object F_BlkPst: TF_BlkPst
   end
   object B_Apply: TButton
     Left = 909
-    Top = 456
+    Top = 477
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -97,7 +97,7 @@ object F_BlkPst: TF_BlkPst
     Left = 8
     Top = 67
     Width = 303
-    Height = 182
+    Height = 206
     Caption = ' RCS '
     TabOrder = 2
     object Label4: TLabel
@@ -165,6 +165,17 @@ object F_BlkPst: TF_BlkPst
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Houka'#269'ka:'
+    end
+    object Label3: TLabel
+      Left = 7
+      Top = 168
+      Width = 54
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'PSt aktivn'#237':'
     end
     object SE_RCS_Take_Module: TSpinEdit
       Left = 150
@@ -281,6 +292,35 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 6
       Value = 1
       OnExit = SE_RCS_Horn_ModuleExit
+    end
+    object SE_RCS_Active_Module: TSpinEdit
+      Left = 150
+      Top = 168
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 8
+      Value = 1
+      OnExit = SE_RCS_Active_ModuleExit
+    end
+    object SE_RCS_Active_Port: TSpinEdit
+      Left = 226
+      Top = 168
+      Width = 67
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 9
+      Value = 0
     end
   end
   object GB_Tracks: TGroupBox
@@ -708,7 +748,7 @@ object F_BlkPst: TF_BlkPst
   end
   object GB_Disconnectors: TGroupBox
     Left = 7
-    Top = 254
+    Top = 278
     Width = 307
     Height = 225
     Hint = 'Zadavejte useky od navestidla smerem k poslednimu bloku (vcetne)'
