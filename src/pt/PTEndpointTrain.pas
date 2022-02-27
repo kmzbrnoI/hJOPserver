@@ -5,7 +5,7 @@ unit PTEndpointTrain;
 interface
 
 uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
-  Generics.Collections, Train;
+  Generics.Collections, Train, RegularExpressions;
 
 
 type
@@ -46,17 +46,15 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, TrainDb, StrUtils, ownStrUtils, predvidanyOdjezd, BlockDb,
+uses PTUtils, TrainDb, StrUtils, ownStrUtils, predvidanyOdjezd, BlockDb,
       Block, BlockTrack, TechnologieTrakce;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TPTEndpointTrain.CommonGetPut(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject): TDictionary<string, Integer>;
-var re: TJclRegEx;
-    urlSuffix: string;
+var urlSuffix: string;
     trainName: string;
-    podjId: string;
     trainIndex: Integer;
 begin
  Result := TDictionary<string, Integer>.Create();
@@ -66,26 +64,20 @@ begin
  trainIndex := Trains.GetTrainIndexByName(trainName);
  Result.AddOrSetValue('type', _ET_NONE);
  if (trainIndex = -1) then
-  begin
+ begin
    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Souprava neexistuje', 'Souprava s id '+trainName+' neexistuje');
    Exit();
-  end;
+ end;
 
  Result.AddOrSetValue('train', trainIndex);
- re := TJclRegEx.Create();
- try
-   re.Compile('podj/\d+/?$', false);
-   if (re.Match(ARequestInfo.Document)) then begin
-     podjId := RightStr(re.Captures[0], Length(re.Captures[0])-Length('podj/'));
-     if (podjId[Length(podjId)] = '/') then
-       podjId := LeftStr(podjId, Length(podjId)-1);
-     Result.AddOrSetValue('type', _ET_PODJ);
-     Result.AddOrSetValue('podj', StrToInt(podjId));
-   end else
-     Result.AddOrSetValue('type', _ET_TRAIN);
- finally
-   re.Free();
- end;
+ var match := TRegEx.Match(ARequestInfo.Document, 'podj/(\d+)/?$');
+
+ if (match.Success) then
+ begin
+   Result.AddOrSetValue('type', _ET_PODJ);
+   Result.AddOrSetValue('podj', StrToInt(match.Groups[1].Value));
+ end else
+   Result.AddOrSetValue('type', _ET_TRAIN);
 end;
 
 procedure TPTEndpointTrain.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;

@@ -527,7 +527,7 @@ begin
   if ((Self.CHB_Stop_Odd.Checked) or (Self.CHB_Stop_Even.Checked)) then
   begin
     TUsettings.stop := TBlkRTStop.Create();
-    TUsettings.stop.trainTypeRe.Compile('^' + Self.E_Stop_Trains.Text + '$', false);
+    TUsettings.stop.trainType := '^' + Self.E_Stop_Trains.Text + '$';
     TUsettings.stop.maxLength := Self.SE_Stop_Length.Value;
     try
       TUsettings.stop.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Stop_Delay.Text, 2)),
@@ -655,7 +655,7 @@ begin
     if ((Assigned(Self.block)) and (Self.block.GetSettings.stop <> nil)) then
     begin
       zast := Self.block.GetSettings.stop;
-      Self.E_Stop_Trains.Text := Copy(zast.trainTypeRe.Pattern, 2, Length(zast.trainTypeRe.Pattern) - 2);
+      Self.E_Stop_Trains.Text := Copy(zast.trainType, 2, Length(zast.trainType) - 2);
       Self.SE_Stop_Length.Value := zast.maxLength;
       Self.ME_Stop_Delay.Text := FormatDateTime('nn:ss', zast.delay);
     end;

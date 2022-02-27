@@ -6,7 +6,7 @@ unit PTEndpoint;
 
 interface
 
-uses IdContext, IdCustomHTTPServer, JsonDataObjects;
+uses IdContext, IdCustomHTTPServer, JsonDataObjects, RegularExpressions;
 
 type
   TPTEndpoint = class
@@ -30,7 +30,7 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE;
+uses PTUtils;
 
 procedure TPTEndpoint.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
@@ -62,15 +62,8 @@ begin
 end;
 
 class function TPTEndpoint.PatternMatch(path: string; pattern: string): Boolean;
-var re: TJclRegEx;
 begin
- re := TJclRegEx.Create();
- try
-   re.Compile(pattern, false);
-   Result := re.Match(path);
- finally
-   re.Free();
- end;
+ Result := TRegEx.Match(path, pattern).Success;
 end;
 
 end.

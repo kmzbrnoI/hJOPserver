@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, rrEvent,
   TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
-  Area, StrUtils, JsonDataObjects, TechnologieRCS, Train, JclPCRE;
+  Area, StrUtils, JsonDataObjects, TechnologieRCS, Train, RegularExpressions;
 
 type
   TBlkSignalSelection = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
@@ -38,7 +38,7 @@ type
 
   // zastavovaci a zpomalovaci udalost pro jeden typ soupravy a jeden rozsah delek soupravy
   TBlkSignalTrainEvent = class
-    train_typ_re: TJclRegEx; // regexp matchujici typ soupravy
+    train_type_re: string;
 
     length: record // tato udalost je brana v potaz, pokud ma souprava delku > min && < max
       min: Integer;
@@ -1575,7 +1575,7 @@ begin
     begin
       var event: TBlkSignalTrainEvent := Self.m_settings.events[i];
       if ((Train.length >= event.length.min) and (Train.length <= event.length.max) and
-        (event.train_typ_re.Match(Train.typ))) then
+        (TRegEx.IsMatch(Train.typ, event.train_type_re))) then
         Exit(i);
     end;
 
@@ -1980,8 +1980,6 @@ constructor TBlkSignalTrainEvent.Create();
 begin
   inherited;
 
-  Self.train_typ_re := TJclRegEx.Create();
-  Self.train_typ_re.Compile('.*', false);
   Self.stop := nil;
   Self.slow.ev := nil;
 end;
@@ -1994,7 +1992,6 @@ end;
 
 destructor TBlkSignalTrainEvent.Destroy();
 begin
-  Self.train_typ_re.Free();
   if (Assigned(Self.stop)) then
     Self.stop.Free();
   if (Assigned(Self.slow.ev)) then
@@ -2011,7 +2008,6 @@ begin
   sl2 := TStringList.Create();
   ExtractStringsEx(['|'], [], PChar(str), sl);
 
-  Self.train_typ_re.Compile('.*', false);
   try
     Self.length.min := -1;
     Self.length.max := -1;
@@ -2039,7 +2035,7 @@ begin
 
     if (sl.Count > 2) then
     begin
-      Self.train_typ_re.Compile(ParseTrainTypes(sl[2]), false);
+      Self.train_type_re := ParseTrainTypes(sl[2]);
       Self.length.min := StrToIntDef(sl[3], -1);
       Self.length.max := StrToIntDef(sl[4], -1);
     end;
@@ -2085,7 +2081,7 @@ begin
 
   if (not short) then
   begin
-    Result := Result + '{re:' + Self.train_typ_re.Pattern + '}|' + IntToStr(Self.length.min) + '|' +
+    Result := Result + '{re:' + Self.train_type_re + '}|' + IntToStr(Self.length.min) + '|' +
       IntToStr(Self.length.max);
   end;
 end;

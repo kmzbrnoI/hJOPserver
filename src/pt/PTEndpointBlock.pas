@@ -5,7 +5,7 @@ unit PTEndpointBlock;
 interface
 
 uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
-  Generics.Collections;
+  Generics.Collections, RegularExpressions;
 
 type
   TPTEndpointBlok = class(TPTEndpoint)
@@ -22,34 +22,29 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, BlockDb, Block;
+uses PTUtils, BlockDb, Block;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TPTEndpointBlok.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
-var re: TJclRegEx;
-    blokId:Integer;
-    Blk:TBlk;
-    params:TDictionary<string, string>;
+var blokId: Integer;
+    params: TDictionary<string, string>;
 begin
- re := TJclRegEx.Create();
  params := TDictionary<string, string>.Create();
 
  try
-   // Toto parsovani cisla neni vubec hezke, ale tyto regexpy neumi skupiny :(
-   // S prechodem na novejsi Delphi XE doporucuji vyuzivat regexpy vestavene v Delphi XE.
-   re.Compile('\d+', false);
-   re.Match(ARequestInfo.Document);
-
+   var match := TRegEx.Match(ARequestInfo.Document, _ENDPOINT_MATCH_REGEX);
    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
    try
-     blokId := StrToInt(re.Captures[0]);
+     if (not match.Success) then
+       raise EConvertError.Create('Unable to parse block id');
+     blokId := StrToInt(match.Groups[1].Value);
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id bloku', re.Captures[0] + ' neni validni id bloku');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id bloku');
        Exit();
       end;
    end;
@@ -60,10 +55,9 @@ begin
      Exit();
     end;
 
-   Blocks.GetBlkByID(blokId, Blk);
-   Blk.GetPtData(respJson.O['block'], params.ContainsKey('state') and (PTUtils.HttpParamToBool(params['state'])));
+   var blk := Blocks.GetBlkByID(blokId);
+   blk.GetPtData(respJson.O['block'], params.ContainsKey('state') and (PTUtils.HttpParamToBool(params['state'])));
  finally
-   re.Free();
    params.Free();
  end;
 end;

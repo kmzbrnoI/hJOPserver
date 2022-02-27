@@ -42,7 +42,7 @@
 interface
 
 uses BlockTrack, Classes, Block, IniFiles, SysUtils, IdContext, rrEvent,
-  Generics.Collections, Area, THnaciVozidlo, Train, JclPCRE;
+  Generics.Collections, Area, THnaciVozidlo, Train, RegularExpressions;
 
 type
   TBlkRTStopEvents = class // zastavka v jednom smeru
@@ -65,7 +65,7 @@ type
   TBlkRTStop = class // zastavka na TU
     evL: TBlkRTStopEvents;
     evS: TBlkRTStopEvents;
-    trainTypeRe: TJclRegEx;
+    trainType: string;
     maxLength: Integer;
     delay: TTime;
 
@@ -477,7 +477,8 @@ begin
       Exit();
 
     // kontrola typu soupravy:
-    if (not Self.m_tuSettings.stop.trainTypeRe.Match(Self.Train.typ)) then
+
+    if (not TRegEx.IsMatch(Self.train.typ, Self.m_tuSettings.stop.trainType)) then
       Exit();
 
     // zpomalovani pred zastavkou:
@@ -1407,8 +1408,7 @@ constructor TBlkRTStop.Create();
 begin
   inherited;
 
-  Self.trainTypeRe := TJclRegEx.Create();
-  Self.trainTypeRe.Compile('.*', false);
+  Self.trainType := '';
   Self.evL := nil;
   Self.evS := nil;
 end;
@@ -1421,7 +1421,6 @@ end;
 
 destructor TBlkRTStop.Destroy();
 begin
-  Self.trainTypeRe.Free();
   if (Assigned(Self.evL)) then
     Self.evL.Free();
   if (Assigned(Self.evS)) then
@@ -1455,15 +1454,14 @@ begin
 
   Self.maxLength := ini_tech.ReadInteger(section, 'zast_max_delka', 0);
   Self.delay := StrToTime(ini_tech.ReadString(section, 'zast_delay', '00:20'));
-  Self.trainTypeRe.Compile(TBlkSignalTrainEvent.ParseTrainTypes(ini_tech.ReadString(section, 'zast_soupravy',
-    '')), false);
+  Self.trainType := TBlkSignalTrainEvent.ParseTrainTypes(ini_tech.ReadString(section, 'zast_soupravy', ''));
 end;
 
 procedure TBlkRTStop.SaveToFile(ini_tech: TMemIniFile; const section: string);
 begin
   ini_tech.WriteInteger(section, 'zast_max_delka', Self.maxLength);
   ini_tech.WriteString(section, 'zast_delay', TimeToStr(Self.delay));
-  ini_tech.WriteString(section, 'zast_soupravy', 're:' + Self.trainTypeRe.Pattern);
+  ini_tech.WriteString(section, 'zast_soupravy', 're:' + Self.trainType);
   if (Self.evL <> nil) then
     Self.evL.SaveToFile(ini_tech, section, 'zast_ev_lichy');
   if (Self.evS <> nil) then

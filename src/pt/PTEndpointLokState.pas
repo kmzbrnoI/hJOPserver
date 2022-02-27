@@ -5,7 +5,7 @@ unit PTEndpointLokState;
 interface
 
 uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
-  Generics.Collections;
+  Generics.Collections, RegularExpressions;
 
 type
   TPTEndpointLokStav = class(TPTEndpoint)
@@ -24,34 +24,29 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, THVDatabase;
+uses PTUtils, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TPTEndpointLokStav.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
-var re: TJclRegEx;
-    lokoAddr:Word;
-    params:TDictionary<string, string>;
+var lokoAddr: Word;
+    params: TDictionary<string, string>;
 begin
- re := TJclRegEx.Create();
  params := TDictionary<string, string>.Create();
 
  try
-   // Toto parsovani cisla neni vubec hezke, ale tyto regexpy neumi skupiny :(
-   // S prechodem na novejsi Delphi XE doporucuji vyuzivat regexpy vestavene v Delphi XE.
-   re.Compile('\d+', false);
-   re.Match(ARequestInfo.Document);
-
+   var match := TRegEx.Match(ARequestInfo.Document, _ENDPOINT_MATCH_REGEX);
    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
    try
-     lokoAddr := StrToInt(re.Captures[0]);
+     if (not match.Success) then
+       raise EConvertError.Create('Unable to parse loco addr');
+     lokoAddr := StrToInt(match.Groups[1].Value);
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni adresa lokmotivy',
-          re.Captures[0] + ' neni validni adresa lokmotivy');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni adresa lokomotivy');
        Exit();
       end;
    end;
@@ -65,7 +60,6 @@ begin
 
    HVDb[lokoAddr].GetPtState(respJson.O['lokState']);
  finally
-   re.Free();
    params.Free();
  end;
 end;
@@ -73,26 +67,23 @@ end;
 
 procedure TPTEndpointLokStav.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject);
-var re: TJclRegEx;
-    lokoAddr:Word;
-    params:TDictionary<string, string>;
+var lokoAddr: Word;
+    params: TDictionary<string, string>;
 begin
- re := TJclRegEx.Create();
  params := TDictionary<string, string>.Create();
 
  try
-   re.Compile('\d+', false);
-   re.Match(ARequestInfo.Document);
-
+   var match := TRegEx.Match(ARequestInfo.Document, _ENDPOINT_MATCH_REGEX);
    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
    try
-     lokoAddr := StrToInt(re.Captures[0]);
+     if (not match.Success) then
+       raise EConvertError.Create('Unable to parse loco addr');
+     lokoAddr := StrToInt(match.Groups[1].Value);
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400',
-          'Nevalidni adresa lokmotivy', re.Captures[0] + ' neni validni adresa lokmotivy');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni adresa lokmotivy');
        Exit();
       end;
    end;
@@ -112,7 +103,6 @@ begin
 
    HVDb[lokoAddr].PostPtState(reqJson['lokStav'], respJson);
  finally
-   re.Free();
    params.Free();
  end;
 end;

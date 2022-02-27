@@ -5,7 +5,7 @@ unit PTEndpointBlockState;
 interface
 
 uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
-  Generics.Collections;
+  Generics.Collections, RegularExpressions;
 
 type
   TPTEndpointBlokStav = class(TPTEndpoint)
@@ -24,34 +24,29 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, BlockDb, Block;
+uses PTUtils, BlockDb, Block;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TPTEndpointBlokStav.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
-var re: TJclRegEx;
-    blokId:Integer;
-    Blk:TBlk;
-    params:TDictionary<string, string>;
+var blokId: Integer;
+    params: TDictionary<string, string>;
 begin
- re := TJclRegEx.Create();
  params := TDictionary<string, string>.Create();
 
  try
-   // Toto parsovani cisla neni vubec hezke, ale tyto regexpy neumi skupiny :(
-   // S prechodem na novejsi Delphi XE doporucuji vyuzivat regexpy vestavene v Delphi XE.
-   re.Compile('\d+', false);
-   re.Match(ARequestInfo.Document);
-
+   var match := TRegEx.Match(ARequestInfo.Document, _ENDPOINT_MATCH_REGEX);
    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
    try
-     blokId := StrToInt(re.Captures[0]);
+     if (not match.Success) then
+       raise EConvertError.Create('Unable to parse block id');
+     blokId := StrToInt(match.Groups[1].Value);
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id bloku', re.Captures[0] + ' neni validni id bloku');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id bloku');
        Exit();
       end;
    end;
@@ -62,10 +57,9 @@ begin
      Exit();
     end;
 
-   Blocks.GetBlkByID(blokId, Blk);
-   Blk.GetPtState(respJson.O['blockState']);
+   var blk := Blocks.GetBlkByID(blokId);
+   blk.GetPtState(respJson.O['blockState']);
  finally
-   re.Free();
    params.Free();
  end;
 end;
@@ -74,42 +68,36 @@ end;
 
 procedure TPTEndpointBlokStav.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject);
-var re: TJclRegEx;
-    blokId:Integer;
-    Blk:TBlk;
+var blokId: Integer;
 begin
- re := TJclRegEx.Create();
+ var match := TRegEx.Match(ARequestInfo.Document, _ENDPOINT_MATCH_REGEX);
+
  try
-   re.Compile('\d+', false);
-   re.Match(ARequestInfo.Document);
-
-   try
-     blokId := StrToInt(re.Captures[0]);
-   except
-     on EConvertError do
-      begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id bloku', re.Captures[0] + ' neni validni id bloku');
-       Exit();
-      end;
-   end;
-
-   if (not Blocks.IsBlock(blokId)) then
+   if (not match.Success) then
+     raise EConvertError.Create('Unable to parse block id');
+   blokId := StrToInt(match.Groups[1].Value);
+ except
+   on EConvertError do
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Blok neexistuje', 'Blok s id '+IntToStr(blokId)+' neexistuje');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id bloku');
      Exit();
     end;
-
-   if (not reqJson.Contains('blockState')) then
-    begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce blokStav');
-     Exit();
-    end;
-
-   Blocks.GetBlkByID(blokId, Blk);
-   Blk.PutPtState(reqJson['blockState'], respJson);
- finally
-   re.Free();
  end;
+
+ if (not Blocks.IsBlock(blokId)) then
+  begin
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Blok neexistuje', 'Blok s id '+IntToStr(blokId)+' neexistuje');
+   Exit();
+  end;
+
+ if (not reqJson.Contains('blockState')) then
+  begin
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce blokStav');
+   Exit();
+  end;
+
+ var blk := Blocks.GetBlkByID(blokId);
+ blk.PutPtState(reqJson['blockState'], respJson);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

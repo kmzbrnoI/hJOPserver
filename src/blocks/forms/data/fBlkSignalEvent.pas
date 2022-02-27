@@ -87,7 +87,7 @@ begin
     Self.SE_MaxLength.Value := event.length.max;
     Self.SE_MinLength.Enabled := true;
     Self.SE_MaxLength.Enabled := true;
-    Self.E_Spr.Text := Copy(event.train_typ_re.Pattern, 2, length(event.train_typ_re.Pattern) - 2);
+    Self.E_Spr.Text := Copy(event.train_type_re, 2, length(event.train_type_re) - 2);
   end;
 
   Self.fZast.FillFromRR(event.stop);
@@ -140,7 +140,7 @@ function TF_BlkSignalEvent.GetEvent(): TBlkSignalTrainEvent;
 begin
   Result := TBlkSignalTrainEvent.Create();
   if ((not Self.first) and (Self.E_Spr.Text <> '')) then
-    Result.train_typ_re.Compile('^' + Self.E_Spr.Text + '$', false);
+    Result.train_type_re := '^' + Self.E_Spr.Text + '$';
   Result.length.min := Self.SE_MinLength.Value;
   Result.length.max := Self.SE_MaxLength.Value;
 

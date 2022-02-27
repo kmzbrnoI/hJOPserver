@@ -337,12 +337,12 @@ end;
 // eventy z IdTCPClient
 
 procedure TPanelServer.OnTcpServerConnect(AContext: TIdContext);
-var i: Integer;
 begin
   Self.tcpServer.Contexts.LockList();
   try
-    AContext.connection.IOHandler.DefStringEncoding := enUTF8;
+    AContext.connection.IOHandler.DefStringEncoding := IndyTextEncoding_UTF8;
 
+    var i: Integer;
     for i := 0 to _MAX_CLIENTS - 1 do
       if (Self.clients[i] = nil) then
         break;

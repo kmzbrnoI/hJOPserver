@@ -5,7 +5,7 @@ unit PTEndpointJCStav;
 interface
 
 uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
-  Generics.Collections;
+  Generics.Collections, RegularExpressions;
 
 type
   TPTEndpointJCStav = class(TPTEndpoint)
@@ -22,42 +22,36 @@ type
 
 implementation
 
-uses PTUtils, JclPCRE, TJCDatabase, TechnologieJC;
+uses PTUtils, TJCDatabase, TechnologieJC;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TPTEndpointJCStav.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject);
-var re: TJclRegEx;
-    jcId:Integer;
-    JC:TJC;
+var jcId: Integer;
 begin
- re := TJclRegEx.Create();
+ var match := TRegEx.Match(ARequestInfo.Document, _ENDPOINT_MATCH_REGEX);
+
  try
-   re.Compile('\d+', false);
-   re.Match(ARequestInfo.Document);
-
-   try
-     jcId := StrToInt(re.Captures[0]);
-   except
-     on EConvertError do
-      begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id JC', re.Captures[0] + ' neni validni id JC');
-       Exit();
-      end;
-   end;
-
-   JC := JCDb.GetJCByID(jcId);
-   if (JC = nil) then
+   if (not match.Success) then
+     raise EConvertError.Create('Unable to parse jc id');
+   jcId := StrToInt(match.Groups[1].Value);
+ except
+   on EConvertError do
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'JC neexistuje', 'JC s id '+IntToStr(jcId)+' neexistuje');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id JC');
      Exit();
     end;
-
-   JC.PostPtActivate(reqJson, respJson);
- finally
-   re.Free();
  end;
+
+ var JC := JCDb.GetJCByID(jcId);
+ if (JC = nil) then
+  begin
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'JC neexistuje', 'JC s id '+IntToStr(jcId)+' neexistuje');
+   Exit();
+  end;
+
+ JC.PostPtActivate(reqJson, respJson);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
