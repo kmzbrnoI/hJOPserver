@@ -371,7 +371,12 @@ begin
     Self.RCSRegister(Self.m_settings.controllers.rcsMinus);
    end;
 
-  Self.RCSRegister(Self.m_settings.RCSAddrs);
+  if (Self.IsPositionDetection) then
+    Self.RCSRegister(Self.m_settings.RCSAddrs)
+  else begin
+    for var i := 2 to Self.m_settings.RCSAddrs.Count-1 do
+      Self.RCSRegister(Self.m_settings.RCSAddrs[i]);
+  end;
 end;
 
 procedure TBlkTurnout.SaveData(ini_tech: TMemIniFile; const section: string);
