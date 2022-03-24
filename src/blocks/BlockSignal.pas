@@ -394,11 +394,11 @@ begin
   begin
     Self.m_settings.PSt.rcsIndicationShunt.Load(ini_tech.ReadString(section, 'indShunt', ''));
     Self.m_settings.PSt.rcsControllerShunt.Load(ini_tech.ReadString(section, 'contShunt', ''));
-    Self.PushRCSToAreas(Self.m_settings.PSt.rcsIndicationShunt);
-    Self.PushRCSToAreas(Self.m_settings.PSt.rcsControllerShunt);
+    Self.RCSRegister(Self.m_settings.PSt.rcsIndicationShunt);
+    Self.RCSRegister(Self.m_settings.PSt.rcsControllerShunt);
   end;
 
-  Self.PushRCSToAreas(Self.m_settings.RCSAddrs);
+  Self.RCSRegister(Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkSignal.SaveData(ini_tech: TMemIniFile; const section: string);

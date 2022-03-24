@@ -401,7 +401,7 @@ begin
     strs.free();
   end;
 
-  Self.PushRCSToAreas(Self.m_settings.RCSAddrs);
+  Self.RCSRegister(Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkTrack.SaveData(ini_tech: TMemIniFile; const section: string);

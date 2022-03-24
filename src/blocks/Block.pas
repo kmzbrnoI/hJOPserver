@@ -54,10 +54,10 @@ type
     class function LoadRCS(ini: TMemIniFile; section: string): TRCSAddrs;
     class procedure SaveRCS(ini: TMemIniFile; section: string; data: TRCSAddrs);
 
-    class procedure PushRCSToArea(areas: TList<TArea>; RCSs: TRCSAddrs); overload;
-    class procedure PushRCSToArea(areas: TList<TArea>; RCS: TRCSAddr); overload;
-    procedure PushRCSToAreas(RCSs: TRCSAddrs); overload;
-    procedure PushRCSToAreas(RCS: TRCSAddr); overload;
+    class procedure RCSRegister(areas: TList<TArea>; RCSs: TRCSAddrs); overload;
+    class procedure RCSRegister(areas: TList<TArea>; RCS: TRCSAddr); overload;
+    procedure RCSRegister(RCSs: TRCSAddrs); overload;
+    procedure RCSRegister(RCS: TRCSAddr); overload;
 
     procedure CallChangeEvents(var events: TChangeEvents);
     function LoadAreas(ini: TMemIniFile; section: string): TStrings; // user must free result!
@@ -212,8 +212,6 @@ begin
     var rcsAddr: TRCSAddr := TRCS.rcsAddr(ini.ReadInteger(section, prefix + 'b' + IntToStr(i), 0),
       ini.ReadInteger(section, prefix + 'p' + IntToStr(i), 0));
     Result.Add(rcsAddr);
-    if ((rcsAddr.board > 0) or (rcsAddr.port > 0)) then
-      RCSi.SetNeeded(rcsAddr.board);
   end;
 end;
 
@@ -263,27 +261,31 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class procedure TBlk.PushRCSToArea(areas: TList<TArea>; RCSs: TRCSAddrs);
+class procedure TBlk.RCSRegister(areas: TList<TArea>; RCSs: TRCSAddrs);
 begin
   for var area: TArea in areas do
     for var rcsAddr: TRCSAddr in RCSs do
       area.RCSAdd(rcsAddr.board);
+
+  for var rcsAddr: TRCSAddr in RCSs do
+    RCSi.SetNeeded(rcsAddr.board);
 end;
 
-class procedure TBlk.PushRCSToArea(areas: TList<TArea>; RCS: TRCSAddr);
+class procedure TBlk.RCSRegister(areas: TList<TArea>; RCS: TRCSAddr);
 begin
   for var area: TArea in areas do
     Area.RCSAdd(RCS.board);
+  RCSi.SetNeeded(RCS.board);
 end;
 
-procedure TBlk.PushRCSToAreas(RCSs: TRCSAddrs);
+procedure TBlk.RCSRegister(RCSs: TRCSAddrs);
 begin
-  TBlk.PushRCSToArea(Self.areas, RCSs);
+  TBlk.RCSRegister(Self.areas, RCSs);
 end;
 
-procedure TBlk.PushRCSToAreas(RCS: TRCSAddr);
+procedure TBlk.RCSRegister(RCS: TRCSAddr);
 begin
-  TBlk.PushRCSToArea(Self.areas, RCS);
+  TBlk.RCSRegister(Self.areas, RCS);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -146,7 +146,6 @@ begin
 
   Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
   Self.LoadAreas(ini_rel, 'R').Free();
-  Self.PushRCSToAreas(Self.m_settings.RCSAddrs);
   Self.m_settings.outputType := TRCSOutputState(ini_tech.ReadInteger(section, 'outputType', 1));
 
   Self.m_settings.rcsController.enabled := (ini_tech.ReadString(section, 'contRcsAddr', '') <> '');
@@ -154,11 +153,11 @@ begin
    begin
     Self.m_settings.rcsController.addr.Load(ini_tech.ReadString(section, 'contRcsAddr', '0:0'));
     Self.m_settings.rcsController.pstOnly := ini_tech.ReadBool(section, 'contPstOnly', false);
-    Self.PushRCSToAreas(Self.m_settings.rcsController.addr);
+    Self.RCSRegister(Self.m_settings.rcsController.addr);
    end;
 
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
-  Self.PushRCSToAreas(Self.m_settings.RCSAddrs);
+  Self.RCSRegister(Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkDisconnector.SaveData(ini_tech: TMemIniFile; const section: string);

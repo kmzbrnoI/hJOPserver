@@ -357,8 +357,8 @@ begin
     Self.m_settings.indication.rcsPlus.Load(ini_tech.ReadString(section, 'indRcsPlus', '0:0'));
     Self.m_settings.indication.rcsMinus.Load(ini_tech.ReadString(section, 'indRcsMinus', '0:0'));
     Self.m_settings.indication.pstOnly := ini_tech.ReadBool(section, 'indPstOnly', false);
-    Self.PushRCSToAreas(Self.m_settings.indication.rcsPlus);
-    Self.PushRCSToAreas(Self.m_settings.indication.rcsMinus);
+    Self.RCSRegister(Self.m_settings.indication.rcsPlus);
+    Self.RCSRegister(Self.m_settings.indication.rcsMinus);
    end;
 
   Self.m_settings.controllers.enabled := (ini_tech.ReadString(section, 'contRcsPlus', '') <> '');
@@ -367,11 +367,11 @@ begin
     Self.m_settings.controllers.rcsPlus.Load(ini_tech.ReadString(section, 'contRcsPlus', '0:0'));
     Self.m_settings.controllers.rcsMinus.Load(ini_tech.ReadString(section, 'contRcsMinus', '0:0'));
     Self.m_settings.controllers.pstOnly := ini_tech.ReadBool(section, 'contPstOnly', false);
-    Self.PushRCSToAreas(Self.m_settings.controllers.rcsPlus);
-    Self.PushRCSToAreas(Self.m_settings.controllers.rcsMinus);
+    Self.RCSRegister(Self.m_settings.controllers.rcsPlus);
+    Self.RCSRegister(Self.m_settings.controllers.rcsMinus);
    end;
 
-  Self.PushRCSToAreas(Self.m_settings.RCSAddrs);
+  Self.RCSRegister(Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkTurnout.SaveData(ini_tech: TMemIniFile; const section: string);

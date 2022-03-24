@@ -69,6 +69,9 @@ begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
   Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
+
+  for var rcsAddr: TRCSAddr in Self.m_settings.RCSAddrs do
+    RCSi.SetNeeded(rcsAddr.board);
 end;
 
 procedure TBlkIR.SaveData(ini_tech: TMemIniFile; const section: string);
