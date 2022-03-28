@@ -975,7 +975,7 @@ end;
 procedure TBlkSignal.MenuPPStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((SenderOR as TArea).stack.mode = PV) then
-    if ((Self.signal > ncStuj) or (JCDb.FindJC(Self.id, false) <> nil)) then
+    if (JCDb.FindJC(Self.id, false) <> nil) then
       Exit();
 
   var blk: TBlk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
