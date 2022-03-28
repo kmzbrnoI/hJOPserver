@@ -452,7 +452,7 @@ begin
     for var discId in Self.m_settings.disconnectors do
     begin
       var blk := Blocks.GetBlkByID(discId);
-      if ((blk <> nil) and (blk.typ = btDisconnector) and (TBlkDisconnector(blk).IsActiveByController()) and
+      if ((blk <> nil) and (blk.typ = btDisconnector) and (TBlkDisconnector(blk).active) and
         (TBlkDisconnector(blk).GetSettings().rcsController.pstOnly)) then
         TBlkDisconnector(blk).state := TBlkDiscBasicState.inactive;
     end;

@@ -569,7 +569,7 @@ begin
   Self.m_state.psts.Remove(pst);
   if (Self.m_state.psts.Count = 0) then
   begin
-    if ((Self.IsActiveByController()) and (Self.m_settings.rcsController.pstOnly)) then
+    if (Self.m_settings.rcsController.pstOnly) then
       Self.state := TBlkDiscBasicState.inactive;
   end;
   Self.Change();
