@@ -537,6 +537,8 @@ function TBlkDisconnector.IsActiveByController(): Boolean;
 begin
   if (not Self.m_settings.rcsController.enabled) then
     Exit(false);
+  if (not Self.PstIs()) or (not Self.PstIsActive()) then
+    Exit(false);
 
   var controller: TRCSInputState;
   try
