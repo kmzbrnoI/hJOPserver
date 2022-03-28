@@ -82,6 +82,8 @@ type
     barLockNotLocked,
     barLockEmLock,
 
+    barDiscActive,
+
     barHVManual,
     barHVNotAllManual,
     barTrainWrongDir,
@@ -164,6 +166,9 @@ begin
       barLockEmLock:
         result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
 
+      barDiscActive:
+        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Rozpojovač aktivní'));
+
       barControllerNotInBasicPos:
         result.Add(TArea.GetCSCondition(barriers[i].Block, 'Volič není v základní poloze'));
     end;
@@ -229,7 +234,7 @@ begin
       barTrackZaver, barTrackAB, barTrackTrain, barTurnoutNoPos, barTurnoutLocked,
       barTurnoutEmLock, barCrosEmOpen, barCrosError, barRefugeeLocked,
       barRefugeeOccupied, barRefugeeNoPosition, barRailwayZaver, barRailwayNotReady, barRailwayRequesting,
-      barRailwayWrongDir, barRailwayZAKVC, barLockNotLocked, barTurnoutWrongPos,
+      barRailwayWrongDir, barRailwayZAKVC, barLockNotLocked, barDiscActive, barTurnoutWrongPos,
       barTrackPSt, barTurnoutPst, barRefugeePst, barControllerNotInBasicPos:
       begin
         result[0] := GetUPOLine('NEPŘÍPUSTNÉ', taCenter, clRed, clWhite);
@@ -309,6 +314,9 @@ begin
       result[1] := GetUPOLine('Neuzamčen');
     barLockEmLock:
       result[1] := GetUPOLine('Není nouzový závěr');
+
+    barDiscActive:
+      result[1] := GetUPOLine('Rozpojovač aktivní');
 
     barBlockLockout:
       begin

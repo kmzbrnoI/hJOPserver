@@ -1205,6 +1205,9 @@ begin
       Exit();
     end;
 
+    if (disc.active) then
+      barriers.Add(JCBarrier(barDiscActive, disc));
+
     if (disc.note <> '') then
       barriers.Add(JCBarrier(barBlockNote, disc));
 
