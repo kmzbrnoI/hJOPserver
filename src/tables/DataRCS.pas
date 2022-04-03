@@ -230,6 +230,9 @@ begin
     LI.SubItems[3] := '';
 
     var cnt := RCSi.GetModuleInputsCount(addr);
+    if (cnt = 0) then
+      Exit(); // Cannot decrement cnt-1, because cnt is Cardinal
+
     var start: Integer;
     if (RCSi.GetInput(addr, 0) = unavailablePort) then
       start := 1
@@ -279,6 +282,9 @@ begin
     LI.SubItems[4] := '';
 
     var cnt := RCSi.GetModuleOutputsCount(addr);
+    if (cnt = 0) then
+      Exit(); // Cannot decrement cnt-1, because cnt is Cardinal
+
     for var j := 0 to cnt - 1 do
     begin
       if (j = cnt div 2) then
