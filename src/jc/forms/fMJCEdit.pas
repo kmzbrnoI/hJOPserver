@@ -186,8 +186,8 @@ begin
     LI.SubItems.Add(blk.GetGlobalSettings.name);
   end;
 
-  Self.B_VB_New.Enabled := (Self.openMJC.data.vb.Count > 0);
-  Self.CB_VB_New.Enabled := (Self.openMJC.data.vb.Count > 0);
+  Self.B_VB_New.Enabled := (Self.openMJC.data.JCs.Count > 0);
+  Self.CB_VB_New.Enabled := (Self.openMJC.data.JCs.Count > 0);
 
   Self.UpdateJCCb();
   Self.UpdateVBCb();
