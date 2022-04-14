@@ -109,6 +109,7 @@ object F_MJCEdit: TF_MJCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Caption = 'Ok'
+        Default = True
         TabOrder = 1
         OnClick = B_JC_AddClick
       end
@@ -205,6 +206,7 @@ object F_MJCEdit: TF_MJCEdit
         Margins.Right = 2
         Margins.Bottom = 2
         Caption = 'Ok'
+        Default = True
         TabOrder = 1
         OnClick = B_VB_NewClick
       end

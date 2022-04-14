@@ -261,14 +261,16 @@ begin
   if (Self.CB_JC_Add.ItemIndex < 0) then
     Exit();
 
-  if (Self.LV_JCs.Selected = nil) then
-    LI := Self.LV_JCs.Items.Add()
-  else
+  if (Self.LV_JCs.Selected = nil) then begin
+    LI := Self.LV_JCs.Items.Add();
+    LI.SubItems.Add('');
+    LI.SubItems.Add('');
+  end else
     LI := Self.LV_JCs.Selected;
 
   var id := Self.CB_JC_ids[Self.CB_JC_Add.ItemIndex];
-  LI.SubItems.Add(IntToStr(id));
-  LI.SubItems.Add(JCDb.GetJCByID(id).name);
+  LI.SubItems[0] := IntToStr(id);
+  LI.SubItems[1] := JCDb.GetJCByID(id).name;
   Self.RecalcJCIndexes();
 
   if (Self.LV_JCs.Items.Count = 1) then
@@ -290,14 +292,16 @@ begin
   if (Self.CB_VB_New.ItemIndex < 0) then
     Exit();
 
-  if (Self.LV_VBs.Selected = nil) then
-    LI := Self.LV_VBs.Items.Add()
-  else
+  if (Self.LV_VBs.Selected = nil) then begin
+    LI := Self.LV_VBs.Items.Add();
+    LI.SubItems.Add('');
+    LI.SubItems.Add('');
+  end else
     LI := Self.LV_VBs.Selected;
 
   var id := Self.CB_VB_Ids[Self.CB_VB_New.ItemIndex];
-  LI.SubItems.Add(IntToStr(id));
-  LI.SubItems.Add(Blocks.GetBlkName(id));
+  LI.SubItems[0] := IntToStr(id);
+  LI.SubItems[1] := Blocks.GetBlkName(id);
   Self.RecalcVBIndexes();
 end;
 
