@@ -428,7 +428,7 @@ begin
 
   for var LI: TListItem in Self.LV_Turnouts.Items do
   begin
-    if ((LI.SubItems.Count < 2) or (LI.SubItems.Strings[1] = '')) then
+    if ((LI.SubItems.Count < 3) or ((LI.SubItems.Strings[2] <> '+') and (LI.SubItems.Strings[2] <> '-'))) then
     begin
       Application.MessageBox('Je třeba vybrat polohy všech výhybek!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();

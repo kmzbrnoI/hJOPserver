@@ -156,9 +156,6 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_TurnoutsChange
       OnKeyDown = LV_TurnoutsKeyDown
-      ExplicitTop = 54
-      ExplicitWidth = 261
-      ExplicitHeight = 134
     end
     object GB_Turnout_New: TGroupBox
       Left = 2
@@ -172,7 +169,6 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit v'#253'hybku '
       TabOrder = 1
-      ExplicitWidth = 261
       object Label10: TLabel
         Left = 8
         Top = 16
@@ -349,8 +345,6 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_TracksChange
       OnKeyDown = LV_TracksKeyDown
-      ExplicitTop = 53
-      ExplicitHeight = 139
     end
   end
   object B_Save: TButton
