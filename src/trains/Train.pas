@@ -5,13 +5,16 @@
 interface
 
 uses IniFiles, SysUtils, Classes, Forms, THnaciVozidlo, JsonDataObjects,
-     Generics.Collections, predvidanyOdjezd, Block, Trakce, Math;
+     Generics.Collections, predvidanyOdjezd, Block, Trakce, Math, IdContext;
 
 const
   _MAX_TRAIN_HV = 4;
 
 type
   ENotInRailway = class(Exception);
+  EAlreadyOverriden = class(Exception);
+  ENotOverriden = class(Exception);
+  ENotStoppped = class(Exception);
 
   TTrainHVs = TList<Integer>; // seznam adres hnacich vozidel na souprave
 
@@ -51,14 +54,23 @@ type
     podj: TDictionary<Integer, TPOdj>;  // map track id: podj
   end;
 
+  // Allow to override train speed
+  // When override is enabled, setting of speed does NOT cause the actual train speed to be changed
+  // just internal override.speed is changed.
+  // This mechanism is suitable for train emergency stopping, stopping in stops etc.
+  TTrainSpeedOverride = record
+    isOverride: Boolean;
+    allowRestore: Boolean;
+    speed: Integer;
+  end;
+
   TTrain = class
    private
     data: TTrainData;
     findex: Integer;
     filefront: Integer;
     fAcquiring: Boolean;
-    speedBuffer: PInteger; // pokud tento ukazatel neni nil, rychlost je nastavovana do promenne, na kterou ukazuje
-                           // a ne primo souprave; to se hodi napriklad v zastavce v TU
+    _speedOverride: TTrainSpeedOverride;
 
      procedure Init(index: Integer);
      procedure LoadFromFile(ini: TMemIniFile; const section: string);
@@ -104,9 +116,12 @@ type
      procedure UpdateFront();
      procedure ChangeDirection();
      procedure InterChangeArea(change_ev: Boolean = true);
-     procedure SetSpeedBuffer(speedBuffer: PInteger);
      procedure LokDirChanged();
      procedure CheckAnnouncement(signal: TObject);
+
+     procedure EnableSpeedOverride(newSpeed: Integer; allowRestore: Boolean);
+     procedure DisableSpeedOverride();
+     function IsSpeedOverride(): Boolean;
 
      procedure ToggleHouk(desc: string);
      procedure SetHoukState(desc: string; state: Boolean);
@@ -128,7 +143,6 @@ type
      procedure UpdateRailwaySpeed();
      function GetRailwaySpeed(): Cardinal;
      function GetBlocks(): TList<TObject>;
-     function IsSpeedBuffer(): Boolean;
 
      function PredictedSignal(): TBlk;
      procedure OnPredictedSignalChange();
@@ -136,6 +150,8 @@ type
 
      procedure GetPtData(json: TJsonObject);
      procedure PutPtData(reqJson: TJsonObject; respJson: TJsonObject);
+
+     function Menu(SenderPnl: TIdContext; SenderOR: TObject; SenderTrack: TBlk; SenderTrackI: Integer): string;
 
      property index: Integer read findex;
      property sdata: TTrainData read data;
@@ -171,7 +187,8 @@ implementation
 uses THVDatabase, Logging, ownStrUtils, TrainDb, BlockTrack, DataSpr, appEv,
       DataHV, AreaDb, Area, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
       fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
-      TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse;
+      TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
+      TCPAreasRef;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -205,7 +222,7 @@ end;
 
 procedure TTrain.Init(index: Integer);
 begin
- Self.speedBuffer := nil;
+ Self._speedOverride.isOverride := false;
  Self.changed := false;
  Self.findex := index;
  Self.data.podj := TDictionary<Integer, TPOdj>.Create();
@@ -672,17 +689,17 @@ begin
 
  dir_changed := (Self.direction <> dir);
  Self.data.direction := dir;
- if (Self.speedBuffer = nil) then
-  begin
-   Self.data.wantedSpeed := speed;
-   if (speed > Self.maxSpeed) then
-     Self.data.speed := Self.maxSpeed
-   else
-     Self.data.speed := speed;
-  end else begin
-   Self.speedBuffer^ := speed;
+ if (Self._speedOverride.isOverride) then
+ begin
+   Self._speedOverride.speed := speed;
    Exit();
-  end;
+ end;
+
+ Self.data.wantedSpeed := speed;
+ if (speed > Self.maxSpeed) then
+   Self.data.speed := Self.maxSpeed
+ else
+   Self.data.speed := speed;
 
  if ((Self.front <> nil) and (TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).railway <> nil)) then
    TBlkRT(Self.front).railway.Change();
@@ -887,9 +904,30 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.SetSpeedBuffer(speedBuffer: PInteger);
+procedure TTrain.EnableSpeedOverride(newSpeed: Integer; allowRestore: Boolean);
 begin
- Self.speedBuffer := speedBuffer;
+  if (Self._speedOverride.isOverride) then
+    raise EAlreadyOverriden.Create('Speed already overriden');
+
+  Self._speedOverride.isOverride := true;
+  Self._speedOverride.allowRestore := allowRestore;
+  Self._speedOverride.speed := Self.speed;
+
+  Self.speed := newSpeed;
+end;
+
+procedure TTrain.DisableSpeedOverride();
+begin
+  if (not Self._speedOverride.isOverride) then
+    raise ENotOverriden.Create('Speed not overriden');
+
+  Self._speedOverride.isOverride := false;
+  Self.speed := Self._speedOverride.speed;
+end;
+
+function TTrain.IsSpeedOverride(): Boolean;
+begin
+  Result := Self._speedOverride.isOverride;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1313,19 +1351,74 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrain.IsSpeedBuffer(): Boolean;
-begin
-  Result := (Self.speedBuffer <> nil);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
 function TTrain.HasAnyHVNote(): Boolean;
 begin
   Result := false;
   for var addr in Self.HVs do
     if (HVDb[addr].data.note <> '') then
       Exit(true);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TTrain.Menu(SenderPnl: TIdContext; SenderOR: TObject; SenderTrack: TBlk; SenderTrackI: Integer): string;
+var shPlay: announcementHelper.TAnnToPlay;
+    train_count: Integer;
+    track: TBlkTrack;
+begin
+  track := TBlkTrack(SenderTrack);
+  train_count := Blocks.GetBlkWithTrain(Self).Count;
+
+  if (track.CanStandTrain()) then
+    Result := Result + 'EDIT vlak,';
+  if (Self.speed > 0) then
+    Result := Result + '!STOP vlak,';
+  if ((track.CanStandTrain()) or (train_count <= 1)) then
+    Result := Result + '!ZRUŠ vlak,';
+  if (train_count > 1) then
+    Result := Result + '!UVOL vlak,';
+
+  if (Self.HVs.Count > 0) then
+  begin
+    Result := Result + 'RUČ vlak,';
+    if (TPanelConnData(SenderPnl.Data).maus) then
+      Result := Result + 'MAUS vlak,';
+  end;
+
+  if (track.trainMoving = SenderTrackI) then
+    Result := Result + 'PŘESUŇ vlak<,'
+  else if ((not track.IsTrainMoving()) and (Self.wantedSpeed = 0)) then
+    Result := Result + 'PŘESUŇ vlak>,';
+
+  if (Self.stolen) then
+    Result := Result + 'VEZMI vlak,'
+  else
+  begin
+    if (Self.IsAnyLokoInRegulator()) then
+      Result := Result + '!VEZMI vlak,';
+  end;
+
+  if (track.CanStandTrain()) then
+    Result := Result + 'PODJ,';
+
+  if ((Assigned(TArea(SenderOR).announcement)) and (TArea(SenderOR).announcement.available) and (Self.areaFrom <> nil)
+    and (Self.areaTo <> nil) and (Self.typ <> '')) then
+  begin
+    if ((track.spnl.stationTrack) and (Self.announcement)) then
+      Result := Result + 'HLÁŠENÍ odjezd,';
+
+    try
+      shPlay := announcementHelper.CanPlayArrival(Self, TArea(SenderOR));
+    except
+      on E: Exception do
+        AppEvents.LogException(E, 'CanPlayPrijezdSH');
+    end;
+
+    if ((shPlay.stationTrack <> nil) and ((shPlay.railway = nil) or (Self.IsPOdj(shPlay.stationTrack)))) then
+      Result := Result + 'HLÁŠENÍ příjezd,'
+    else if (shPlay.railway <> nil) then
+      Result := Result + 'HLÁŠENÍ průjezd,';
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

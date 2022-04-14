@@ -1541,7 +1541,7 @@ begin
         if ((Self.IsGoSignal()) and (not Self.m_state.falling) and (Self.track.typ = btRT) and
           (TBlkRT(Self.track).inRailway > -1)) then
         begin
-          if ((Cardinal(Train.wantedSpeed) <> Train.GetRailwaySpeed()) and (not Train.IsSpeedBuffer())) then
+          if ((Cardinal(Train.wantedSpeed) <> Train.GetRailwaySpeed()) and (not Train.IsSpeedOverride())) then
             Train.SetSpeedDirection(Train.GetRailwaySpeed(), Self.m_spnl.direction)
         end else begin
           // neni povolovaci navest -> zastavit

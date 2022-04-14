@@ -153,7 +153,6 @@ type
     function CanTrainSpeedInsert(index: Integer): Boolean;
     function IsStujForTrain(Train: TTrain): Boolean;
     function RealBoosterShortCircuit(): TBoosterSignal;
-    function CanStandTrain(): Boolean;
     function CanBeNextVB(vbs: TList<TObject>; start: TBlk): Boolean;
     function CanBeKC(vbs: TList<TObject>; start: TBlk): Boolean;
 
@@ -217,6 +216,7 @@ type
     procedure RemoveTrain(index: Integer); overload; virtual;
     procedure RemoveTrain(Train: TTrain); overload; virtual;
     function TrainsFull(): Boolean;
+    function CanStandTrain(): Boolean;
 
     function IsTrainMoving(): Boolean;
     procedure ClearPOdj();
@@ -268,7 +268,6 @@ type
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
     procedure POdjChanged(trainId: Integer; var podj: TPOdj);
-    function GetTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer): string;
     function PanelStateString(): string; override;
 
     // PT:
@@ -1362,9 +1361,10 @@ var menu: string;
 begin
   TPanelConnData(SenderPnl.Data).train_menu_index := trainLocalI;
 
+  var train: TTrain := TrainDb.trains[Self.trains[trainLocalI]];
   menu := '$' + Self.m_globSettings.name + ',';
-  menu := menu + '$Souprava ' + TrainDb.trains[Self.trains[trainLocalI]].name + ',-,';
-  menu := menu + Self.GetTrainMenu(SenderPnl, SenderOR, trainLocalI);
+  menu := menu + '$Souprava ' + train.name + ',-,';
+  menu := menu + train.Menu(SenderPnl, SenderOR, Self, trainLocalI);
 
   PanelServer.menu(SenderPnl, Self, (SenderOR as TArea), menu);
 end;
@@ -1387,7 +1387,8 @@ begin
   if (Self.TrainsFull() and (Self.trains.Count = 1)) then
   begin
     TPanelConnData(SenderPnl.Data).train_menu_index := 0;
-    Result := Result + Self.GetTrainMenu(SenderPnl, SenderOR, 0) + '-,';
+    var train: TTrain := TrainDb.trains[Self.trains[0]];
+    Result := Result + train.Menu(SenderPnl, SenderOR, Self, 0) + '-,';
   end else begin
     canAdd := ((Self.CanStandTrain()) and (((not Self.TrainsFull()) and ((Self.m_state.occupied = TTrackState.occupied)
       or (Self.m_settings.RCSAddrs.Count = 0))) or // novy vlak
@@ -1473,68 +1474,6 @@ begin
       end;
     end;
   end; // if RCSi.lib = 2
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-function TBlkTrack.GetTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer): string;
-var train: TTrain;
-  shPlay: announcementHelper.TAnnToPlay;
-  train_count: Integer;
-begin
-  train := TrainDb.trains[Self.trains[trainLocalI]];
-  train_count := Blocks.GetBlkWithTrain(TrainDb.trains[Self.trains[trainLocalI]]).Count;
-
-  if (Self.CanStandTrain()) then
-    Result := Result + 'EDIT vlak,';
-  if (train.speed > 0) then
-    Result := Result + '!STOP vlak,';
-  if ((Self.CanStandTrain()) or (train_count <= 1)) then
-    Result := Result + '!ZRUŠ vlak,';
-  if (train_count > 1) then
-    Result := Result + '!UVOL vlak,';
-
-  if (train.HVs.Count > 0) then
-  begin
-    Result := Result + 'RUČ vlak,';
-    if (TPanelConnData(SenderPnl.Data).maus) then
-      Result := Result + 'MAUS vlak,';
-  end;
-
-  if (Self.trainMoving = trainLocalI) then
-    Result := Result + 'PŘESUŇ vlak<,'
-  else if ((not Self.IsTrainMoving()) and (train.wantedSpeed = 0)) then
-    Result := Result + 'PŘESUŇ vlak>,';
-
-  if (train.stolen) then
-    Result := Result + 'VEZMI vlak,'
-  else
-  begin
-    if (train.IsAnyLokoInRegulator()) then
-      Result := Result + '!VEZMI vlak,';
-  end;
-
-  if (Self.CanStandTrain()) then
-    Result := Result + 'PODJ,';
-
-  if ((Assigned(TArea(SenderOR).announcement)) and (TArea(SenderOR).announcement.available) and (train.areaFrom <> nil)
-    and (train.areaTo <> nil) and (train.typ <> '')) then
-  begin
-    if ((Self.spnl.stationTrack) and (train.announcement)) then
-      Result := Result + 'HLÁŠENÍ odjezd,';
-
-    try
-      shPlay := announcementHelper.CanPlayArrival(train, TArea(SenderOR));
-    except
-      on E: Exception do
-        AppEvents.LogException(E, 'CanPlayPrijezdSH');
-    end;
-
-    if ((shPlay.stationTrack <> nil) and ((shPlay.railway = nil) or (train.IsPOdj(shPlay.stationTrack)))) then
-      Result := Result + 'HLÁŠENÍ příjezd,'
-    else if (shPlay.railway <> nil) then
-      Result := Result + 'HLÁŠENÍ průjezd,';
-  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

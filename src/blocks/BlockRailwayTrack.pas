@@ -92,7 +92,6 @@ type
     stopStopped: Boolean; // jakmile zastavim soupravu v zastavce, nastavim sem true; pokud souprava jede, je zde false
     stopRunTime: TDateTime; // tady je ulozen cas, kdy se ma souprava ze zastavky rozjet
     // tady si pamatuji, jakou rychlost mela souprava puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
-    stopSpeed: Integer;
     stopEnabled: Boolean; // zastavku lze z panelu zapnout a vypnout (v zakladnim stavu je zapla)
     stopPassed: Boolean; // tady je ulozeno true, pokud souprava zastavku jiz projela
     stopSlowReady: Boolean; // jestli je TU pripraveny ke zpomalovani soupravy v zastavce
@@ -122,7 +121,7 @@ type
     procedure StopStopTrain();
 
     procedure MenuZastClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
-    procedure MenuJEDLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuJEDTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuRBPClick(SenderPnl: TIdContext; SenderOR: TObject);
 
     procedure UpdateBP(); // technologie blokove podminky, resi veskere predavani souprav mezi TU a sekcemi TU
@@ -468,11 +467,11 @@ begin
   begin
     // cekam na obsazeni IR
     if ((not Self.tuState.stopEnabled) or (Self.tuState.stopPassed) or
-      (Self.Train.length > Self.m_tuSettings.stop.maxLength) or (Self.Train.front <> Self)) then
+      (Self.train.length > Self.m_tuSettings.stop.maxLength) or (Self.train.front <> Self)) then
       Exit();
 
     // kontrola spravneho smeru
-    if (((Self.Train.direction = THVSite.odd) and (not Self.stopL)) or ((Self.Train.direction = THVSite.even) and
+    if (((Self.train.direction = THVSite.odd) and (not Self.stopL)) or ((Self.train.direction = THVSite.even) and
       (not Self.stopS))) then
       Exit();
 
@@ -484,7 +483,7 @@ begin
     // zpomalovani pred zastavkou:
     if (Self.m_tuState.stopSlowReady) then
     begin
-      case (Self.Train.direction) of
+      case (Self.train.direction) of
         THVSite.odd:
           begin
             if (Self.m_tuSettings.stop.evL.slow.enabled) then
@@ -493,10 +492,10 @@ begin
                 Self.m_tuSettings.stop.evL.slow.ev.Register();
 
               if ((Self.m_tuSettings.stop.evL.slow.enabled) and
-                (Self.Train.wantedSpeed > Self.m_tuSettings.stop.evL.slow.speed) and
+                (Self.train.wantedSpeed > Self.m_tuSettings.stop.evL.slow.speed) and
                 (Self.m_tuSettings.stop.evL.slow.ev.IsTriggerred(Self, true))) then
               begin
-                Self.Train.speed := Self.m_tuSettings.stop.evL.slow.speed;
+                Self.train.speed := Self.m_tuSettings.stop.evL.slow.speed;
                 Self.m_tuState.stopSlowReady := false;
                 Self.speedUpdate := false;
                 Self.m_tuSettings.stop.evL.slow.ev.Unregister();
@@ -511,10 +510,10 @@ begin
               if (not Self.m_tuSettings.stop.evS.slow.ev.enabled) then
                 Self.m_tuSettings.stop.evS.slow.ev.Register();
 
-              if ((Self.Train.wantedSpeed > Self.m_tuSettings.stop.evS.slow.speed) and
+              if ((Self.train.wantedSpeed > Self.m_tuSettings.stop.evS.slow.speed) and
                 (Self.m_tuSettings.stop.evS.slow.ev.IsTriggerred(Self, true))) then
               begin
-                Self.Train.speed := Self.m_tuSettings.stop.evS.slow.speed;
+                Self.train.speed := Self.m_tuSettings.stop.evS.slow.speed;
                 Self.m_tuState.stopSlowReady := false;
                 Self.speedUpdate := false;
                 Self.m_tuSettings.stop.evS.slow.ev.Unregister();
@@ -525,7 +524,7 @@ begin
     end;
 
     // zastavovani v zastavce
-    case (Self.Train.direction) of
+    case (Self.train.direction) of
       THVSite.odd:
         begin
           if (not Self.m_tuSettings.stop.evL.stop.enabled) then
@@ -556,7 +555,7 @@ begin
 
     // osetreni rozjeti vlaku z nejakeho pochybneho duvodu
     // pokud se souprava rozjede, koncim zastavku
-    if (Self.Train.wantedSpeed <> 0) then
+    if (Self.train.wantedSpeed <> 0) then
     begin
       Self.m_tuState.stopStopped := false;
       Self.Change(); // change je dulezite volat kvuli menu
@@ -569,7 +568,7 @@ begin
           if (now >= Self.tuState.stopRunTime - EncodeTime(0, 0, 4, 0)) then
           begin
             Self.m_tuState.stopSoundStep := 1;
-            Self.Train.ToggleHouk('trubka vlakvedoucího');
+            Self.train.ToggleHouk('trubka vlakvedoucího');
           end;
         end;
 
@@ -578,7 +577,7 @@ begin
           if (now >= Self.tuState.stopRunTime - EncodeTime(0, 0, 2, 0)) then
           begin
             Self.m_tuState.stopSoundStep := 2;
-            Self.Train.ToggleHouk('zavření dveří');
+            Self.train.ToggleHouk('zavření dveří');
           end;
         end;
     end;
@@ -586,7 +585,7 @@ begin
     // cekam na timeout na rozjeti vlaku
     if (now > Self.tuState.stopRunTime) then
     begin
-      Self.Train.ToggleHouk('houkačka krátká');
+      Self.train.ToggleHouk('houkačka krátká');
       Self.StopRunTrain();
     end;
   end;
@@ -601,9 +600,7 @@ begin
   Self.m_tuState.stopRunTime := now + Self.m_tuSettings.stop.delay;
 
   try
-    Self.m_tuState.stopSpeed := Self.Train.speed;
-    Self.Train.speed := 0;
-    Self.Train.SetSpeedBuffer(@Self.m_tuState.stopSpeed);
+    Self.train.EnableSpeedOverride(0, true);
   except
 
   end;
@@ -618,8 +615,7 @@ begin
   Self.m_tuState.stopSoundStep := 0;
 
   try
-    Self.Train.SetSpeedBuffer(nil);
-    Self.Train.speed := Self.tuState.stopSpeed;
+    Self.train.DisableSpeedOverride();
   except
 
   end;
@@ -712,12 +708,12 @@ begin
     begin
       if (TBlkRailway(Self.railway).direction = TRailwayDirection.AtoB) then
       begin // vjizdim do trati
-        if (Self.Train.direction <> THVSite.odd) then
-          Self.Train.ChangeDirection();
+        if (Self.train.direction <> THVSite.odd) then
+          Self.train.ChangeDirection();
       end else if (TBlkRailway(Self.railway).direction = TRailwayDirection.BtoA) then
       begin // vjizdim do posledniho useku ve smeru trati
-        if (Self.Train.direction <> TBlkSignal(TBlkRailway(Self.railway).signalA).direction) then
-          Self.Train.ChangeDirection();
+        if (Self.train.direction <> TBlkSignal(TBlkRailway(Self.railway).signalA).direction) then
+          Self.train.ChangeDirection();
       end;
     end;
     if ((Self.id = TBlkRailway(Self.railway).GetSettings().trackIds[TBlkRailway(Self.railway).GetSettings()
@@ -725,13 +721,13 @@ begin
     begin
       if (TBlkRailway(Self.railway).direction = TRailwayDirection.BtoA) then
       begin // vjizdim do trati
-        if ((Self.Train.direction <> THVSite.even) and (TBlkRailway(Self.railway).GetSettings().trackIds.Count > 0))
+        if ((Self.train.direction <> THVSite.even) and (TBlkRailway(Self.railway).GetSettings().trackIds.Count > 0))
         then
-          Self.Train.ChangeDirection();
+          Self.train.ChangeDirection();
       end else if (TBlkRailway(Self.railway).direction = TRailwayDirection.AtoB) then
       begin // vjizdim do posledniho useku ve smeru trati
-        if (Self.Train.direction <> TBlkSignal(TBlkRailway(Self.railway).signalB).direction) then
-          Self.Train.ChangeDirection();
+        if (Self.train.direction <> TBlkSignal(TBlkRailway(Self.railway).signalB).direction) then
+          Self.train.ChangeDirection();
       end;
     end;
   end;
@@ -761,7 +757,7 @@ begin
   begin
     // vlak, ktery oupsti TU a mel by stat v zastavce, je vracen do stavu, kdy se mu nastavuje rychlost
     // toto je pojistka, ke ktere by teoreticky nikdy nemelo dojit
-    oldTrain.SetSpeedBuffer(nil);
+    oldTrain.DisableSpeedOverride();
     Self.m_tuState.stopStopped := false;
   end;
 
@@ -805,7 +801,7 @@ begin
     Self.m_tuState.stopEnabled := new_state;
 end;
 
-procedure TBlkRT.MenuJEDLokClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkRT.MenuJEDTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if (Self.tuState.stopStopped) then
     Self.StopRunTrain();
@@ -817,11 +813,11 @@ begin
   podm := TConfSeqItems.Create();
   if (Self.IsTrain()) then
   begin
-    podm.Add(TArea.GetCSCondition(Self, 'Smazání soupravy ' + Self.Train.name + ' z úseku'));
+    podm.Add(TArea.GetCSCondition(Self, 'Smazání soupravy ' + Self.train.name + ' z úseku'));
     if ((Self.railway <> nil) and (not TBlkRailway(Self.railway).IsTrainInMoreTUs(Self.Train))) then
-      podm.Add(TArea.GetCSCondition(Self.railway, 'Smazání soupravy ' + Self.Train.name + ' z tratě'));
+      podm.Add(TArea.GetCSCondition(Self.railway, 'Smazání soupravy ' + Self.train.name + ' z tratě'));
     if (Blocks.GetBlkWithTrain(Self.Train).Count = 1) then
-      podm.Add(TArea.GetCSCondition(Self, 'Smazání soupravy ' + Self.Train.name + ' z kolejiště'));
+      podm.Add(TArea.GetCSCondition(Self, 'Smazání soupravy ' + Self.train.name + ' z kolejiště'));
   end;
 
   PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TArea,
@@ -856,7 +852,7 @@ end;
 procedure TBlkRT.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
   if (item = 'JEĎ vlak') then
-    Self.MenuJEDLokClick(SenderPnl, SenderOR)
+    Self.MenuJEDTrainClick(SenderPnl, SenderOR)
   else if (item = 'ZAST>') then
     Self.MenuZastClick(SenderPnl, SenderOR, true)
   else if (item = 'ZAST<') then
@@ -1245,8 +1241,8 @@ begin
   begin
     Dec(Self.m_tuState.trainSpeedUpdateIter);
     if (Self.m_tuState.trainSpeedUpdateIter = 0) then
-      if ((Self.IsTrain()) and (Self.slowingReady) and (Self.Train.wantedSpeed > 0)) then
-        Self.Train.UpdateRailwaySpeed();
+      if ((Self.IsTrain()) and (Self.slowingReady) and (Self.train.wantedSpeed > 0)) then
+        Self.train.UpdateRailwaySpeed();
   end;
 end;
 
