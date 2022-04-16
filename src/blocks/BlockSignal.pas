@@ -893,7 +893,7 @@ begin
     // pokud blok pred JC neni -> 30 sekund
     Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 0, 30, 0));
   end else begin
-    if ((Blk as TBlkTrack).occupied = TTrackState.Free) then
+    if (((Blk as TBlkTrack).occupied = TTrackState.Free) and ((Blk as TBlkTrack).GetSettings().RCSAddrs.Count > 0)) then
     begin
       // pokud neni blok pred JC obsazen -> 2 sekundy
       Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 0, 2, 0));
