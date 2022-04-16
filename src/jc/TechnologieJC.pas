@@ -878,10 +878,13 @@ begin
     // direction of a train
     if (Self.typ = TJCType.Train) then
     begin
-      if (Train.sdata.dir_L or Train.sdata.dir_S) then
-        if (((signal.direction = THVSite.odd) and (not Train.sdata.dir_L)) or
-          ((signal.direction = THVSite.even) and (not Train.sdata.dir_S))) then
+      if (train.sdata.dir_L or train.sdata.dir_S) then
+        if (((signal.direction = THVSite.odd) and (not train.sdata.dir_L)) or
+          ((signal.direction = THVSite.even) and (not train.sdata.dir_S))) then
           barriers.Add(JCBarrier(barTrainWrongDir, nil, train.index));
+
+      if (train.front <> signalTrack) then
+        barriers.Add(JCBarrier(barTrainNotFront, nil, train.index))
     end;
 
   end;
