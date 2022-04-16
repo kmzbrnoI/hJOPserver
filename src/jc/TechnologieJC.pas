@@ -600,7 +600,7 @@ begin
     if (track.note <> '') then
       barriers.Add(JCBarrier(barBlockNote, track));
 
-    if (track.PstIs()) then
+    if ((track.PstIs()) and ((i < Self.m_data.tracks.Count-1) or (Self.typ <> TJCType.shunt))) then
       barriers.Add(JCBarrier(barTrackPSt, track));
   end;
 
