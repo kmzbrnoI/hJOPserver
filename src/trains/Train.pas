@@ -5,7 +5,8 @@
 interface
 
 uses IniFiles, SysUtils, Classes, Forms, THnaciVozidlo, JsonDataObjects,
-     Generics.Collections, predvidanyOdjezd, Block, Trakce, Math, IdContext;
+     Generics.Collections, predvidanyOdjezd, Block, Trakce, Math, IdContext,
+     Logging;
 
 const
   _MAX_TRAIN_HV = 4;
@@ -98,6 +99,8 @@ type
      procedure UpdateTrainFromJson(train: TJsonObject; ok: TCb; err: TCb);
      class procedure PtHVsListToDict(train: TJsonObject);
 
+     procedure Log(msg: string; typ: LogType);
+
    public
 
     changed: Boolean;
@@ -184,7 +187,7 @@ type
 
 implementation
 
-uses THVDatabase, Logging, ownStrUtils, TrainDb, BlockTrack, DataSpr, appEv,
+uses THVDatabase, ownStrUtils, TrainDb, BlockTrack, DataSpr, appEv,
       DataHV, AreaDb, Area, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
       fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
@@ -712,12 +715,12 @@ begin
 
    if (HVDb[addr].ruc) then
     begin
-     Log('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', ltData);
+     Self.Log('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', ltData);
      continue;
     end;
    if (HVDb[addr].stolen) then
     begin
-     Log('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', ltMessage);
+     Self.Log('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', ltMessage);
      continue;
     end;
 
@@ -737,7 +740,7 @@ begin
       ((Self.front as TBlkTrack).trains[(Self.front as TBlkTrack).trainMoving] = Self.index)) then
   (Self.front as TBlkTrack).trainMoving := -1;
 
- Log('Souprava ' + Self.name + ' : rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), ltMessage);
+ Self.Log('rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), ltMessage);
  Self.changed := true;
 end;
 
@@ -757,7 +760,11 @@ procedure TTrain.EmergencyStop();
 begin
   for var addr in Self.HVs do
     HVDb[addr].EmergencyStop(TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
-  Self.speed := 0;
+
+  if (not Self.IsSpeedOverride()) then
+    Self.EnableSpeedOverride(0, true);
+
+  Self.Log('Nouzové zastavení', ltMessage);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -862,7 +869,7 @@ end;
 // zmena smeru pri naslapu na smyckovy blok
 procedure TTrain.ChangeDirection();
 begin
- Log('Souprava '+ Self.name + ' : změna směru', ltTrainMove);
+ Self.Log('Změna směru', ltTrainMove);
 
  // zmenit orintaci stanoviste A hnacich vozidel
  for var addr in Self.HVs do
@@ -909,11 +916,12 @@ begin
   if (Self._speedOverride.isOverride) then
     raise EAlreadyOverriden.Create('Speed already overriden');
 
+  var _speed :=  Self.speed;
+  Self.speed := newSpeed;
+
   Self._speedOverride.isOverride := true;
   Self._speedOverride.allowRestore := allowRestore;
-  Self._speedOverride.speed := Self.speed;
-
-  Self.speed := newSpeed;
+  Self._speedOverride.speed := _speed;
 end;
 
 procedure TTrain.DisableSpeedOverride();
@@ -959,7 +967,7 @@ end;
 
 procedure TTrain.ToggleHouk(desc: string);
 begin
- Log('Souprava ' + Self.name + ' : aktivuji houkání ' + desc, ltMessage);
+ Self.Log('Aktivuji houkání ' + desc, ltMessage);
 
  for var addr in Self.HVs do
   begin
@@ -972,9 +980,9 @@ end;
 procedure TTrain.SetHoukState(desc: string; state: Boolean);
 begin
  if (state) then
-   Log('Souprava ' + Self.name + ' : aktivuji funkci ' + desc, ltMessage)
+   Self.Log('Aktivuji funkci ' + desc, ltMessage)
  else
-   Log('Souprava ' + Self.name + ' : deaktivuji funkci ' + desc, ltMessage);
+   Self.Log('Deaktivuji funkci ' + desc, ltMessage);
 
  for var addr in Self.HVs do
   begin
@@ -1398,6 +1406,9 @@ begin
       Result := Result + '!VEZMI vlak,';
   end;
 
+  if ((Self._speedOverride.isOverride) and (Self._speedOverride.allowRestore)) then
+    Result := Result + 'JEĎ vlak,';
+
   if (track.CanStandTrain()) then
     Result := Result + 'PODJ,';
 
@@ -1419,6 +1430,13 @@ begin
     else if (shPlay.railway <> nil) then
       Result := Result + 'HLÁŠENÍ průjezd,';
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrain.Log(msg: string; typ: LogType);
+begin
+  Logging.log('Souprava ' + Self.name + ': ' + msg, typ);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

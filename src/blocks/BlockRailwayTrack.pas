@@ -642,9 +642,6 @@ begin
         true:
           Result := Result + 'ZAST<,';
       end; // case
-    end else begin
-      // pokud v zastavce osuprava stoji, lze ji rozjet
-      Result := Result + 'JEĎ vlak,';
     end;
   end;
 
@@ -851,7 +848,7 @@ end;
 
 procedure TBlkRT.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
-  if (item = 'JEĎ vlak') then
+  if ((item = 'JEĎ vlak') and (Self.m_tuState.stopStopped)) then
     Self.MenuJEDTrainClick(SenderPnl, SenderOR)
   else if (item = 'ZAST>') then
     Self.MenuZastClick(SenderPnl, SenderOR, true)

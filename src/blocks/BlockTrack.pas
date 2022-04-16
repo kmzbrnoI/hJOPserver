@@ -108,6 +108,7 @@ type
     procedure MenuRUCTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuMAUSTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuSTOPTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuJedTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuNUZStartClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1217,12 +1218,27 @@ end;
 
 procedure TBlkTrack.MenuSTOPTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
-    Self.trains.Count)) then
+  if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or
+      (TPanelConnData(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then
     Exit();
 
   var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
   train.EmergencyStop();
+end;
+
+procedure TBlkTrack.MenuJedTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or
+      (TPanelConnData(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then
+    Exit();
+
+  var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
+  try
+    train.DisableSpeedOverride();
+  except
+    on E:ENotOverriden do
+      PanelServer.BottomError(SenderPnl, 'Nelze rozjet nezastavený vlak!', TArea(SenderOR).ShortName, 'Technologie');
+  end;
 end;
 
 procedure TBlkTrack.MenuObsazClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1532,6 +1548,8 @@ begin
     Self.MenuMAUSTrainClick(SenderPnl, SenderOR)
   else if (item = 'STOP vlak') then
     Self.MenuSTOPTrainClick(SenderPnl, SenderOR)
+  else if (item = 'JEĎ vlak') then
+    Self.MenuJEDTrainClick(SenderPnl, SenderOR)
   else if (item = 'STIT') then
     Self.MenuStitClick(SenderPnl, SenderOR)
   else if (item = 'VYL') then
