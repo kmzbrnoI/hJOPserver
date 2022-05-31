@@ -87,6 +87,7 @@ type
     barHVManual,
     barHVNotAllManual,
     barTrainWrongDir,
+    barTrainNotFront,
     barControllerNotInBasicPos
   );
 
@@ -403,7 +404,14 @@ begin
       begin
         result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
         result[1] := GetUPOLine('Jízda proti směru soupravy');
-        result[2] := GetUPOLine('Soprava ' + trains[barrier.param].name);
+        result[2] := GetUPOLine('Souprava ' + trains[barrier.param].name);
+      end;
+
+    barTrainNotFront:
+      begin
+        result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
+        result[1] := GetUPOLine('Čelo vlaku je na jiném úseku');
+        result[2] := GetUPOLine('Souprava ' + trains[barrier.param].name);
       end;
 
     barTrackPSt, barTurnoutPst, barRefugeePst:
@@ -421,7 +429,7 @@ function JCWarningBarrier(typ: TJCBarType): Boolean;
 begin
   case (typ) of
     barBlockNote, barBlockLockout, barPrivol, barHVManual, barHVNotAllManual,
-    barTrainWrongDir, barTrackLastOccupied, barRailwayOccupied, barRailwayZAKPC:
+    barTrainWrongDir, barTrainNotFront, barTrackLastOccupied, barRailwayOccupied, barRailwayZAKPC:
       result := true;
   else
     result := false;
