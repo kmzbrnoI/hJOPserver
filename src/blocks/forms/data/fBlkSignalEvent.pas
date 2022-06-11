@@ -140,7 +140,9 @@ function TF_BlkSignalEvent.GetEvent(): TBlkSignalTrainEvent;
 begin
   Result := TBlkSignalTrainEvent.Create();
   if ((not Self.first) and (Self.E_Spr.Text <> '')) then
-    Result.train_type_re := '^' + Self.E_Spr.Text + '$';
+    Result.train_type_re := '^' + Self.E_Spr.Text + '$'
+  else
+    Result.train_type_re := '^.*$';
   Result.length.min := Self.SE_MinLength.Value;
   Result.length.max := Self.SE_MaxLength.Value;
 

@@ -1571,12 +1571,15 @@ begin
     var train: TTrain := Self.GetTrain(track);
 
     // hledame takovy event, ktery odpovida nasi souprave
-    for var i: Integer := 0 to Self.m_settings.events.Count - 1 do
+    if (Self.m_settings.events.Count >= 2) then
     begin
-      var event: TBlkSignalTrainEvent := Self.m_settings.events[i];
-      if ((Train.length >= event.length.min) and (Train.length <= event.length.max) and
-        (TRegEx.IsMatch(Train.typ, event.train_type_re))) then
-        Exit(i);
+      for var i: Integer := 1 to Self.m_settings.events.Count - 1 do
+      begin
+        var event: TBlkSignalTrainEvent := Self.m_settings.events[i];
+        if ((Train.length >= event.length.min) and (Train.length <= event.length.max) and
+          (TRegEx.IsMatch(Train.typ, event.train_type_re))) then
+          Exit(i);
+      end;
     end;
 
     // pokud jsme event odpovidajici parametrum soupravy nenasli, vyhodnocujeme globalni event
