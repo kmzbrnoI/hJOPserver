@@ -72,6 +72,7 @@ type
     filefront: Integer;
     fAcquiring: Boolean;
     _speedOverride: TTrainSpeedOverride;
+    _emergencyStopped: Boolean;
 
      procedure Init(index: Integer);
      procedure LoadFromFile(ini: TMemIniFile; const section: string);
@@ -179,6 +180,7 @@ type
      property maxSpeed: Cardinal read GetMaxSpeed; // warning: this could be speed with no speed step
      property maxSpeedStep: Cardinal read GetMaxSpeedStep;
      property acquiring: Boolean read fAcquiring;
+     property emergencyStopped: Boolean read _emergencyStopped;
 
      // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
      class procedure UvolV(old: TTrainHVs; new: TTrainHVs);
@@ -232,6 +234,7 @@ begin
  Self.data.HVs := TList<Integer>.Create();
  Self.data.announcementPlayed := false;
  Self.fAcquiring := false;
+ Self._emergencyStopped := false;
 end;
 
 destructor TTrain.Destroy();
@@ -758,6 +761,8 @@ end;
 
 procedure TTrain.EmergencyStop();
 begin
+  Self._emergencyStopped := true;
+
   for var addr in Self.HVs do
     HVDb[addr].EmergencyStop(TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
 
@@ -929,6 +934,7 @@ begin
   if (not Self._speedOverride.isOverride) then
     raise ENotOverriden.Create('Speed not overriden');
 
+  Self._emergencyStopped := false;
   Self._speedOverride.isOverride := false;
   Self.speed := Self._speedOverride.speed;
 end;

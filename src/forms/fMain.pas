@@ -395,6 +395,8 @@ type
     procedure FormShow(Sender: TObject);
     procedure CHB_Log_AuthClick(Sender: TObject);
     procedure LV_logDblClick(Sender: TObject);
+    procedure LV_SoupravyCustomDrawItem(Sender: TCustomListView;
+      Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
   private
     KomunikaceGo: TdateTime;
     call_method: TNotifyEvent;
@@ -2900,6 +2902,18 @@ begin
     Self.B_lok_delete.Caption := 'Smazat soupravy'
   else
     Self.B_lok_delete.Caption := 'Smazat soupravu';
+end;
+
+procedure TF_Main.LV_SoupravyCustomDrawItem(Sender: TCustomListView;
+  Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+begin
+  if (Item.Index >= Trains.count) then
+    Exit();
+
+  if (Trains[Item.Index].emergencyStopped) then
+    (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED
+  else if (Trains[Item.Index].IsSpeedOverride) then
+    (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
 end;
 
 procedure TF_Main.LV_StaniceChange(Sender: TObject; Item: TListItem; Change: TItemChange);

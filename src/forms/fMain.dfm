@@ -3507,7 +3507,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Stav_RCS
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -4330,6 +4330,7 @@ object F_Main: TF_Main
         TabOrder = 0
         ViewStyle = vsReport
         OnChange = LV_SoupravyChange
+        OnCustomDrawItem = LV_SoupravyCustomDrawItem
       end
       object P_Soupravy_pozadi: TPanel
         Left = 0
