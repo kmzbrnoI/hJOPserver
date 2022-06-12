@@ -5,7 +5,7 @@ object F_Booster_Edit: TF_Booster_Edit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Zesilovac [zesilovac]'
-  ClientHeight = 401
+  ClientHeight = 462
   ClientWidth = 281
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -54,7 +54,7 @@ object F_Booster_Edit: TF_Booster_Edit
   end
   object B_Save: TButton
     Left = 198
-    Top = 367
+    Top = 430
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -70,7 +70,7 @@ object F_Booster_Edit: TF_Booster_Edit
     Left = 9
     Top = 64
     Width = 265
-    Height = 100
+    Height = 113
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -137,12 +137,20 @@ object F_Booster_Edit: TF_Booster_Edit
       TabOrder = 0
       OnClick = CHB_ShortClick
     end
+    object CHB_short_reversed: TCheckBox
+      Left = 8
+      Top = 88
+      Width = 248
+      Height = 17
+      Caption = 'Reverzn'#237' indikace (neaktivn'#237' port = zkrat)'
+      TabOrder = 3
+    end
   end
   object GB_Power: TGroupBox
     Left = 9
-    Top = 168
+    Top = 181
     Width = 265
-    Height = 97
+    Height = 116
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -209,10 +217,18 @@ object F_Booster_Edit: TF_Booster_Edit
       TabOrder = 0
       OnClick = CHB_PowerClick
     end
+    object CHB_power_reversed: TCheckBox
+      Left = 8
+      Top = 91
+      Width = 248
+      Height = 17
+      Caption = 'Reverzn'#237' indikace (aktivn'#237' port = nap'#225'jen'#237' ok)'
+      TabOrder = 3
+    end
   end
   object B_Storno: TButton
     Left = 120
-    Top = 367
+    Top = 430
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -225,9 +241,9 @@ object F_Booster_Edit: TF_Booster_Edit
   end
   object GB_DCC: TGroupBox
     Left = 9
-    Top = 269
+    Top = 301
     Width = 265
-    Height = 94
+    Height = 116
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -293,6 +309,14 @@ object F_Booster_Edit: TF_Booster_Edit
       Caption = 'Povoleno'
       TabOrder = 0
       OnClick = CHB_DCCClick
+    end
+    object CHB_dcc_reversed: TCheckBox
+      Left = 8
+      Top = 90
+      Width = 248
+      Height = 17
+      Caption = 'Reverzn'#237' indikace (neaktivn'#237' port = DCC ok)'
+      TabOrder = 3
     end
   end
   object E_ID: TEdit

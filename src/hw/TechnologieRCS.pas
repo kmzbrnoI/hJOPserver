@@ -138,7 +138,7 @@ var
 implementation
 
 uses fMain, diagnostics, GetSystems, BlockDb, Block, BlockTurnout, BlockTrack,
-  BoosterDb, BlockCrossing, RCSErrors, AreaDb,
+  BoosterDb, BlockCrossing, RCSErrors, AreaDb, IfThenElse,
   Logging, TCPServerPanel, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
 constructor TRCS.Create();
@@ -232,9 +232,11 @@ begin
   begin
     try
       if (Booster.isPowerDetection) then
-        Self.SetInput(Booster.settings.RCS.power, 0);
+        Self.SetInput(Booster.settings.rcs.power.addr, ite(Booster.settings.rcs.power.reversed, 1, 0));
       if (Booster.isOverloadDetection) then
-        Self.SetInput(Booster.settings.RCS.overload, 0);
+        Self.SetInput(Booster.settings.rcs.overload.addr, ite(Booster.settings.rcs.overload.reversed, 1, 0));
+      if (Booster.isDCCdetection) then
+        Self.SetInput(Booster.settings.rcs.DCC.addr, ite(Booster.settings.rcs.DCC.reversed, 1, 0));
     except
 
     end;

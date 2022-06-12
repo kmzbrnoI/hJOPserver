@@ -26,7 +26,7 @@ var
 
 implementation
 
-uses Booster, BoosterDb;
+uses Booster, BoosterDb, IfThenElse;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -52,15 +52,15 @@ begin
     LI.Caption := Booster.id;
     LI.SubItems.Add(Booster.name);
     if (Booster.isOverloadDetection) then
-      LI.SubItems.Add(Booster.settings.RCS.overload.ToString())
+      LI.SubItems.Add(ite(Booster.settings.rcs.overload.reversed, '! ', '') + Booster.settings.rcs.overload.addr.ToString())
     else
       LI.SubItems.Add('-');
     if (Booster.isPowerDetection) then
-      LI.SubItems.Add(Booster.settings.RCS.power.ToString())
+      LI.SubItems.Add(ite(Booster.settings.rcs.power.reversed, '! ', '') + Booster.settings.rcs.power.addr.ToString())
     else
       LI.SubItems.Add('-');
     if (Booster.isDCCdetection) then
-      LI.SubItems.Add(Booster.settings.RCS.DCC.ToString())
+      LI.SubItems.Add(ite(Booster.settings.rcs.DCC.reversed, '! ', '') + Booster.settings.rcs.DCC.addr.ToString())
     else
       LI.SubItems.Add('-');
   end;

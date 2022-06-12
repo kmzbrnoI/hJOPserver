@@ -12,14 +12,20 @@ type
   TBoosterSignal = (undef = -1, error = 0, ok = 1);
   TBoosterChangeEvent = procedure(Sender: TObject; state: TBoosterSignal) of object;
 
+  TBoosterRCSSignal = record
+    // disabled input = (addr.board = 0)
+    addr: TRCSAddr;
+    reversed: Boolean;
+  end;
+
   TBoosterSettings = record
     id: string;
     name: string;
 
-    RCS: record
-      overload: TRCSAddr;
-      power: TRCSAddr;
-      DCC: TRCSAddr; // DCC input; DCC nemusi byt detekovano, to se pozna tak, ze .board = 0
+    rcs: record
+      overload: TBoosterRCSSignal;
+      power: TBoosterRCSSignal;
+      DCC: TBoosterRCSSignal;
     end;
   end;
 
@@ -145,14 +151,19 @@ begin
   Self.m_settings.id := section;
   Self.m_settings.name := ini.ReadString(section, 'name', 'booster');
 
-  Self.m_settings.RCS.overload := RCSFromIni(ini, section, 'short', 'zkr_module', 'zkr_port');
-  Self.m_settings.RCS.power := RCSFromIni(ini, section, 'power', 'nap_module', 'nap_port');
-  Self.m_settings.RCS.DCC := RCSFromIni(ini, section, 'dcc', 'dcc_module', 'dcc_port');
+  Self.m_settings.rcs.overload.addr := RCSFromIni(ini, section, 'short', 'zkr_module', 'zkr_port');
+  Self.m_settings.rcs.overload.reversed := ini.ReadBool(section, 'shortReversed', false);
+  Self.m_settings.rcs.power.addr := RCSFromIni(ini, section, 'power', 'nap_module', 'nap_port');
+  Self.m_settings.rcs.power.reversed := ini.ReadBool(section, 'powerReversed', false);
+  Self.m_settings.rcs.DCC.addr := RCSFromIni(ini, section, 'dcc', 'dcc_module', 'dcc_port');
+  Self.m_settings.rcs.DCC.reversed := ini.ReadBool(section, 'dccReversed', false);
 
   if (Self.isPowerDetection) then
-    RCSi.SetNeeded(Self.m_settings.RCS.power.board);
+    RCSi.SetNeeded(Self.m_settings.rcs.power.addr.board);
   if (Self.isOverloadDetection) then
-    RCSi.SetNeeded(Self.m_settings.RCS.overload.board);
+    RCSi.SetNeeded(Self.m_settings.rcs.overload.addr.board);
+  if (Self.isDCCdetection) then
+    RCSi.SetNeeded(Self.m_settings.rcs.DCC.addr.board);
 end;
 
 procedure TBooster.SaveDataToFile(var ini: TMemIniFile; const section: string);
@@ -160,11 +171,23 @@ begin
   ini.WriteString(section, 'name', Self.m_settings.name);
 
   if (Self.isOverloadDetection) then
-    ini.WriteString(section, 'short', Self.m_settings.RCS.overload.ToString());
+  begin
+    ini.WriteString(section, 'short', Self.m_settings.rcs.overload.addr.ToString());
+    if (Self.m_settings.rcs.overload.reversed) then
+      ini.WriteBool(section, 'shortReversed', true);
+  end;
   if (Self.isPowerDetection) then
-    ini.WriteString(section, 'power', Self.m_settings.RCS.power.ToString());
+  begin
+    ini.WriteString(section, 'power', Self.m_settings.rcs.power.addr.ToString());
+    if (Self.m_settings.rcs.power.reversed) then
+      ini.WriteBool(section, 'powerReversed', true);
+  end;
   if (Self.isDCCdetection) then
-    ini.WriteString(section, 'dcc', Self.m_settings.RCS.DCC.ToString());
+  begin
+    ini.WriteString(section, 'dcc', Self.m_settings.rcs.DCC.addr.ToString());
+    if (Self.m_settings.rcs.DCC.reversed) then
+      ini.WriteBool(section, 'dccReversed', true);
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -183,14 +206,14 @@ begin
     Exit(TBoosterSignal.ok);
 
   try
-    val := RCSi.GetInput(Self.m_settings.RCS.overload);
+    val := RCSi.GetInput(Self.m_settings.rcs.overload.addr);
   except
     Exit(TBoosterSignal.undef);
   end;
 
   if ((val = failure) or (val = notYetScanned) or (val = unavailableModule) or (val = unavailablePort)) then
     Result := TBoosterSignal.undef
-  else if (val = isOn) then
+  else if ((val = isOn) xor (Self.m_settings.rcs.overload.reversed)) then
     Result := TBoosterSignal.error
   else
     Result := TBoosterSignal.ok;
@@ -206,14 +229,14 @@ begin
     Exit(TBoosterSignal.ok);
 
   try
-    val := RCSi.GetInput(Self.m_settings.RCS.power);
+    val := RCSi.GetInput(Self.m_settings.rcs.power.addr);
   except
     Exit(TBoosterSignal.undef);
   end;
 
   if ((val = failure) or (val = notYetScanned) or (val = unavailableModule) or (val = unavailablePort)) then
     Result := TBoosterSignal.undef
-  else if (val = isOn) then
+  else if ((val = isOn) xor (Self.m_settings.rcs.power.reversed)) then
     Result := TBoosterSignal.error
   else
     Result := TBoosterSignal.ok;
@@ -242,14 +265,14 @@ begin
   end;
 
   try
-    val := RCSi.GetInput(Self.m_settings.RCS.DCC);
+    val := RCSi.GetInput(Self.m_settings.rcs.DCC.addr);
   except
     Exit(TBoosterSignal.undef);
   end;
 
   if ((val = failure) or (val = notYetScanned) or (val = unavailableModule) or (val = unavailablePort)) then
     Result := TBoosterSignal.undef
-  else if (val = isOn) then
+  else if ((val = isOn) xor (Self.m_settings.rcs.DCC.reversed)) then
     Result := TBoosterSignal.error
   else
     Result := TBoosterSignal.ok;
@@ -259,26 +282,26 @@ end;
 
 function TBooster.GetRCSPresent(): Boolean;
 begin
-  Result := (((not Self.isOverloadDetection) or RCSi.IsModule(Self.m_settings.RCS.overload.board)) and
-    ((not Self.isPowerDetection) or RCSi.IsModule(Self.m_settings.RCS.power.board)) and
-    ((not Self.isDCCdetection) or RCSi.IsModule(Self.m_settings.RCS.DCC.board)));
+  Result := (((not Self.isOverloadDetection) or RCSi.IsModule(Self.m_settings.rcs.overload.addr.board)) and
+    ((not Self.isPowerDetection) or RCSi.IsModule(Self.m_settings.rcs.power.addr.board)) and
+    ((not Self.isDCCdetection) or RCSi.IsModule(Self.m_settings.rcs.DCC.addr.board)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBooster.GetDCCDetection(): Boolean;
 begin
-  Result := (Self.m_settings.RCS.DCC.board > 0);
+  Result := (Self.m_settings.rcs.DCC.addr.board > 0);
 end;
 
 function TBooster.GetOverloadDetection(): Boolean;
 begin
-  Result := (Self.m_settings.RCS.overload.board > 0);
+  Result := (Self.m_settings.rcs.overload.addr.board > 0);
 end;
 
 function TBooster.GetPowerDetection(): Boolean;
 begin
-  Result := (Self.m_settings.RCS.power.board > 0);
+  Result := (Self.m_settings.rcs.power.addr.board > 0);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
