@@ -229,10 +229,8 @@ begin
   begin
     var turnoutSettings := turnout.GetSettings();
 
-    Self.CHB_Coupling_Common_In.Checked := (turnoutSettings.RCSAddrs.count >= 2) and (settings.RCSAddrs.count >= 2) and
-      (turnoutSettings.RCSAddrs[0] = settings.RCSAddrs[0]) and (turnoutSettings.RCSAddrs[1] = settings.RCSAddrs[1]);
-    Self.CHB_Coupling_Common_Out.Checked := (turnoutSettings.RCSAddrs.count >= 4) and (settings.RCSAddrs.count >= 4) and
-      (turnoutSettings.RCSAddrs[2] = settings.RCSAddrs[2]) and (turnoutSettings.RCSAddrs[3] = settings.RCSAddrs[3]);
+    Self.CHB_Coupling_Common_In.Checked := (turnoutSettings.rcs.inp = settings.rcs.inp) and (turnoutSettings.rcs.inm = settings.rcs.inm);
+    Self.CHB_Coupling_Common_Out.Checked := (turnoutSettings.rcs.outp = settings.rcs.outp) and (turnoutSettings.rcs.outm = settings.rcs.outm);
   end;
 
   Self.CHB_Lock.Checked := (settings.lock > -1);
@@ -240,57 +238,38 @@ begin
     Self.CB_Lock_Pos.ItemIndex := Integer(settings.lockPosition);
   Self.CHB_LockClick(Self.CHB_Lock);
 
-  if (settings.RCSAddrs.count > 0) then
-  begin
-    if (Self.block.rcsInPlus.board > Cardinal(Self.SE_In_Plus_module.MaxValue)) then
-      Self.SE_In_Plus_module.MaxValue := 0;
-    Self.SE_In_Plus_port.MaxValue := 0;
 
-    Self.SE_In_Plus_module.Value := Self.block.rcsInPlus.board;
-    Self.SE_In_Plus_port.Value := Self.block.rcsInPlus.port;
-  end else begin
-    Self.SE_In_Plus_module.Value := 0;
-    Self.SE_In_Plus_port.Value := 0;
-  end;
+  if (Self.block.rcsInPlus.board > Cardinal(Self.SE_In_Plus_module.MaxValue)) then
+    Self.SE_In_Plus_module.MaxValue := 0;
+  Self.SE_In_Plus_port.MaxValue := 0;
 
-  if (settings.RCSAddrs.count > 1) then
-  begin
-    if (Self.block.rcsInMinus.board > Cardinal(Self.SE_In_Minus_module.MaxValue)) then
-      Self.SE_In_Minus_module.MaxValue := 0;
-    Self.SE_In_Minus_port.MaxValue := 0;
+  Self.SE_In_Plus_module.Value := Self.block.rcsInPlus.board;
+  Self.SE_In_Plus_port.Value := Self.block.rcsInPlus.port;
 
-    Self.SE_In_Minus_module.Value := Self.block.rcsInMinus.board;
-    Self.SE_In_Minus_port.Value := Self.block.rcsInMinus.port;
-  end else begin
-    Self.SE_In_Minus_module.Value := 0;
-    Self.SE_In_Minus_port.Value := 0;
-  end;
 
-  if (settings.RCSAddrs.count > 2) then
-  begin
-    if (Self.block.rcsOutPlus.board > Cardinal(Self.SE_Out_Plus_module.MaxValue)) then
-      Self.SE_Out_Plus_module.MaxValue := 0;
-    Self.SE_Out_Plus_port.MaxValue := 0;
+  if (Self.block.rcsInMinus.board > Cardinal(Self.SE_In_Minus_module.MaxValue)) then
+    Self.SE_In_Minus_module.MaxValue := 0;
+  Self.SE_In_Minus_port.MaxValue := 0;
 
-    Self.SE_Out_Plus_module.Value := Self.block.rcsOutPlus.board;
-    Self.SE_Out_Plus_port.Value := Self.block.rcsOutPlus.port;
-  end else begin
-    Self.SE_Out_Plus_module.Value := 0;
-    Self.SE_Out_Plus_port.Value := 0;
-  end;
+  Self.SE_In_Minus_module.Value := Self.block.rcsInMinus.board;
+  Self.SE_In_Minus_port.Value := Self.block.rcsInMinus.port;
 
-  if (settings.RCSAddrs.count > 3) then
-  begin
-    if (Self.block.rcsOutMinus.board > Cardinal(Self.SE_Out_Minus_module.MaxValue)) then
-      Self.SE_Out_Minus_module.MaxValue := 0;
-    Self.SE_Out_Minus_port.MaxValue := 0;
 
-    Self.SE_Out_Minus_module.Value := Self.block.rcsOutMinus.board;
-    Self.SE_Out_Minus_port.Value := Self.block.rcsOutMinus.port;
-  end else begin
-    Self.SE_Out_Minus_module.Value := 0;
-    Self.SE_Out_Minus_port.Value := 0;
-  end;
+  if (Self.block.rcsOutPlus.board > Cardinal(Self.SE_Out_Plus_module.MaxValue)) then
+    Self.SE_Out_Plus_module.MaxValue := 0;
+  Self.SE_Out_Plus_port.MaxValue := 0;
+
+  Self.SE_Out_Plus_module.Value := Self.block.rcsOutPlus.board;
+  Self.SE_Out_Plus_port.Value := Self.block.rcsOutPlus.port;
+
+
+  if (Self.block.rcsOutMinus.board > Cardinal(Self.SE_Out_Minus_module.MaxValue)) then
+    Self.SE_Out_Minus_module.MaxValue := 0;
+  Self.SE_Out_Minus_port.MaxValue := 0;
+
+  Self.SE_Out_Minus_module.Value := Self.block.rcsOutMinus.board;
+  Self.SE_Out_Minus_port.Value := Self.block.rcsOutMinus.port;
+
 
   Self.SE_moduleExit(Self);
 
@@ -566,24 +545,38 @@ begin
   end;
 
   var settings: TBlkTurnoutSettings;
-  settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_In_Plus_module.Value, SE_In_Plus_port.Value));
-  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_In_Minus_module.Value, SE_In_Minus_port.Value));
-  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_Out_Plus_module.Value, SE_Out_Plus_port.Value));
-  settings.RCSAddrs.Add(TRCS.RCSAddr(SE_Out_Minus_module.Value, SE_Out_Minus_port.Value));
+  settings.posDetection := Self.CHB_Feedback.Checked;
+
+  settings.rcs.outp := TRCS.RCSAddr(SE_Out_Plus_module.Value, SE_Out_Plus_port.Value);
+  settings.rcs.outm := TRCS.RCSAddr(SE_Out_Minus_module.Value, SE_Out_Minus_port.Value);
+
+  if (Self.CHB_Feedback.Checked) then
+  begin
+    settings.rcs.inp := TRCS.RCSAddr(SE_In_Plus_module.Value, SE_In_Plus_port.Value);
+    settings.rcs.inm := TRCS.RCSAddr(SE_In_Minus_module.Value, SE_In_Minus_port.Value);
+  end else begin
+    settings.rcs.inp := RCSi.RCSAddr(0, 0);
+    settings.rcs.inm := RCSi.RCSAddr(0, 0);
+  end;
+
 
   var messages := '';
-  for var i := 0 to settings.RCSAddrs.count - 1 do
-  begin
-    var typ: TRCSIOType;
-    if (i < 2) then
-      typ := TRCSIOType.input
-    else
-      typ := TRCSIOType.output;
+  var another: TBlk;
+  another := Blocks.AnotherBlockUsesRCS(settings.rcs.outp, Self.block, TRCSIOType.output);
+  if (another <> nil) then
+    messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.outp.ToString() + '.' + #13#10;
+  another := Blocks.AnotherBlockUsesRCS(settings.rcs.outm, Self.block, TRCSIOType.output);
+  if (another <> nil) then
+    messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.outm.ToString() + '.' + #13#10;
 
-    var another := Blocks.AnotherBlockUsesRCS(settings.RCSAddrs[i], Self.block, typ);
+  if (Self.CHB_Feedback.Checked) then
+  begin
+    another := Blocks.AnotherBlockUsesRCS(settings.rcs.inp, Self.block, TRCSIOType.input);
     if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.RCSAddrs[i].ToString() + '.' + #13#10;
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.inp.ToString() + '.' + #13#10;
+    another := Blocks.AnotherBlockUsesRCS(settings.rcs.inm, Self.block, TRCSIOType.input);
+    if (another <> nil) then
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.inm.ToString() + '.' + #13#10;
   end;
 
   if (Self.CHB_Coupling.Checked) then
@@ -606,18 +599,15 @@ begin
       Exit();
     end;
 
-    while (turnoutSettings.RCSAddrs.count < 4) do
-      turnoutSettings.RCSAddrs.Add(TRCS.RCSAddr(0, 0));
-
     if (Self.CHB_Coupling_Common_Out.Checked) then
     begin
-      turnoutSettings.RCSAddrs[2] := settings.RCSAddrs[2];
-      turnoutSettings.RCSAddrs[3] := settings.RCSAddrs[3];
+      turnoutSettings.rcs.outp := settings.rcs.outp;
+      turnoutSettings.rcs.outm := settings.rcs.outm;
     end;
     if (Self.CHB_Coupling_Common_In.Checked) then
     begin
-      turnoutSettings.RCSAddrs[0] := settings.RCSAddrs[0];
-      turnoutSettings.RCSAddrs[1] := settings.RCSAddrs[1];
+      turnoutSettings.rcs.inp := settings.rcs.inp;
+      turnoutSettings.rcs.inm := settings.rcs.inm;
     end;
 
     turnout.SetSettings(turnoutSettings);
@@ -644,8 +634,6 @@ begin
   else
     settings.npMinus := -1;
 
-  settings.posDetection := Self.CHB_Feedback.Checked;
-
   settings.indication.enabled := Self.CHB_Indication.Checked;
   if (Self.CHB_Indication.Checked) then
   begin
@@ -655,7 +643,7 @@ begin
     settings.indication.rcsMinus.port := Self.SE_Ind_Minus_Port.Value;
     settings.indication.pstOnly := Self.CHB_Indication_Pst.Checked;
 
-    var another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsPlus, Self.block, TRCSIOType.output);
+    another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsPlus, Self.block, TRCSIOType.output);
     if (another <> nil) then
       messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.indication.rcsPlus.ToString() + '.' + #13#10;
 
@@ -673,7 +661,7 @@ begin
     settings.controllers.rcsMinus.port := Self.SE_Cont_Minus_Port.Value;
     settings.controllers.pstOnly := Self.CHB_Controllers_Pst.Checked;
 
-    var another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsPlus, Self.block, TRCSIOType.input);
+    another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsPlus, Self.block, TRCSIOType.input);
     if (another <> nil) then
       messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.controllers.rcsPlus.ToString() + '.' + #13#10;
 

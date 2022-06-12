@@ -42,7 +42,9 @@ type
   end;
 
   TBlkTurnoutSettings = record
-    RCSAddrs: TRCSAddrs; // order: in+, in-, out+, out-
+    rcs: record
+      inp, inm, outp, outm: TRCSAddr;
+    end;
     coupling: Integer; // coupling turnout id (-1 in case of none); Both coupling turnouts reference each other.
     lock: Integer; // lock id in case of turnout refering to lock, -1 in case of none
     lockPosition: TTurnoutPosition;
@@ -108,11 +110,6 @@ type
 
     _T_MOVING_TIMEOUT_SEC = 10;
     _T_MOVING_MOCK_SEC = 2;
-
-    _TI_INPLUS = 0;
-    _TI_INMINUS = 1;
-    _TI_OUTPLUS = 2;
-    _TI_OUTMINUS = 3;
 
   private
     m_settings: TBlkTurnoutSettings;
@@ -184,7 +181,6 @@ type
     function GetLock(): TBlk;
     function GetNpPlus(): TBlk;
     function GetNpMinus(): TBlk;
-    function IsPositionDetection(): Boolean;
     function GetCoupling(): TBlkTurnout;
     function ShouldBeLocked(withZamek: Boolean = true): Boolean;
     function ShouldBeLockedIgnoreStaveni(): Boolean;
@@ -196,11 +192,6 @@ type
       UPO_EscCallback: TNotifyEvent);
 
     class function CombineCouplingInputs(first: TRCSInputState; second: TRCSInputState): TRCSInputState;
-
-    function GetRCSInPlus(): TRCSAddr;
-    function GetRCSInMinus(): TRCSAddr;
-    function GetRCSOutPlus(): TRCSAddr;
-    function GetRCSOutMinus(): TRCSAddr;
 
     procedure ShowIndication();
     procedure ReadContollers();
@@ -263,17 +254,17 @@ type
     property lock: TBlk read GetLock;
     property npBlokPlus: TBlk read GetNpPlus;
     property npBlokMinus: TBlk read GetNpMinus;
-    property posDetection: Boolean read IsPositionDetection;
+    property posDetection: Boolean read m_settings.posDetection;
     property outputLocked: Boolean read GetOutputLocked;
     property coupling: TBlkTurnout read GetCoupling;
 
     property movingPlus: Boolean read m_state.movingPlus write m_state.movingPlus;
     property movingMinus: Boolean read m_state.movingMinus write m_state.movingMinus;
 
-    property rcsInPlus: TRCSAddr read GetRCSInPlus;
-    property rcsInMinus: TRCSAddr read GetRCSInMinus;
-    property rcsOutPlus: TRCSAddr read GetRCSOutPlus;
-    property rcsOutMinus: TRCSAddr read GetRCSOutMinus;
+    property rcsInPlus: TRCSAddr read m_settings.rcs.inp;
+    property rcsInMinus: TRCSAddr read m_settings.rcs.inm;
+    property rcsOutPlus: TRCSAddr read m_settings.rcs.outp;
+    property rcsOutMinus: TRCSAddr read m_settings.rcs.outm;
 
     // Panel:
     procedure PanelMenuClick(SenderPnl: TIDContext; SenderOR: TObject; item: string; itemindex: Integer); override;
@@ -298,7 +289,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
-  IfThenElse, RCSErrors, BlockPst;
+  IfThenElse, RCSErrors, BlockPst, FileSystem;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin
@@ -324,11 +315,22 @@ procedure TBlkTurnout.LoadData(ini_tech: TMemIniFile; const section: string; ini
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
-  Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
+  Self.m_settings.rcs.outp := RCSFromIni(ini_tech, section, 'RCSout+', 'RCSb2', 'RCSp2');
+  Self.m_settings.rcs.outm := RCSFromIni(ini_tech, section, 'RCSout-', 'RCSb3', 'RCSp3');
+
+  Self.m_settings.posDetection := (ini_tech.ReadString(section, 'RCSin+', '') <> '') or (ini_tech.ReadInteger(section, 'RCSb0', -1) <> -1);
+  if (Self.m_settings.posDetection) then
+  begin
+    Self.m_settings.rcs.inp := RCSFromIni(ini_tech, section, 'RCSin+', 'RCSb0', 'RCSp0');
+    Self.m_settings.rcs.inm := RCSFromIni(ini_tech, section, 'RCSin-', 'RCSb1', 'RCSp1');
+  end else begin
+    Self.m_settings.rcs.inp := TRCS.RCSAddr(0, 0);
+    Self.m_settings.rcs.inm := TRCS.RCSAddr(0, 0);
+  end;
+
   Self.m_settings.coupling := ini_tech.ReadInteger(section, 'spojka', -1);
   Self.m_settings.lock := ini_tech.ReadInteger(section, 'zamek', -1);
   Self.m_settings.lockPosition := TTurnoutPosition(ini_tech.ReadInteger(section, 'zamek-pol', 0));
-  Self.m_settings.posDetection := ini_tech.ReadBool(section, 'detekcePolohy', true);
 
   Self.m_settings.npPlus := ini_tech.ReadInteger(section, 'npPlus', -1);
   Self.m_settings.npMinus := ini_tech.ReadInteger(section, 'npMinus', -1);
@@ -371,19 +373,26 @@ begin
     Self.RCSRegister(Self.m_settings.controllers.rcsMinus);
    end;
 
-  if (Self.IsPositionDetection) then
-    Self.RCSRegister(Self.m_settings.RCSAddrs)
-  else begin
-    for var i := 2 to Self.m_settings.RCSAddrs.Count-1 do
-      Self.RCSRegister(Self.m_settings.RCSAddrs[i]);
+  if (Self.posDetection) then
+  begin
+    Self.RCSRegister(Self.m_settings.rcs.inp);
+    Self.RCSRegister(Self.m_settings.rcs.inm);
   end;
+  Self.RCSRegister(Self.m_settings.rcs.outp);
+  Self.RCSRegister(Self.m_settings.rcs.outm);
 end;
 
 procedure TBlkTurnout.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
   inherited SaveData(ini_tech, section);
 
-  Self.SaveRCS(ini_tech, section, Self.m_settings.RCSAddrs);
+  ini_tech.WriteString(section, 'RCSout+', Self.m_settings.rcs.outp.ToString());
+  ini_tech.WriteString(section, 'RCSout-', Self.m_settings.rcs.outm.ToString());
+  if (Self.m_settings.posDetection) then
+  begin
+    ini_tech.WriteString(section, 'RCSin+', Self.m_settings.rcs.inp.ToString());
+    ini_tech.WriteString(section, 'RCSin-', Self.m_settings.rcs.inm.ToString());
+  end;
 
   if (Self.m_settings.coupling > -1) then
     ini_tech.WriteInteger(section, 'spojka', Self.m_settings.coupling);
@@ -399,9 +408,6 @@ begin
     ini_tech.WriteInteger(section, 'zamek', Self.m_settings.lock);
     ini_tech.WriteInteger(section, 'zamek-pol', Integer(Self.m_settings.lockPosition));
   end;
-
-  if (not Self.posDetection) then
-    ini_tech.WriteBool(section, 'detekcePolohy', false);
 
   if (Self.m_settings.indication.enabled) then
    begin
@@ -443,18 +449,20 @@ end;
 procedure TBlkTurnout.Enable();
 var enable: Boolean;
 begin
-  enable := (Self.m_settings.RCSAddrs.Count >= 4);
+  enable := True;
 
   if (Self.posDetection) then
   begin
-    for var rcsaddr: TRCSAddr in Self.m_settings.RCSAddrs do
-      if (not RCSi.IsNonFailedModule(rcsaddr.board)) then
-        enable := false;
-  end else begin
-    for var i: Integer := 2 to Self.m_settings.RCSAddrs.Count - 1 do
-      if (not RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[i].board)) then
-        enable := false;
+    if (not RCSi.IsNonFailedModule(Self.rcsInPlus.board)) then
+      enable := false;
+    if (not RCSi.IsNonFailedModule(Self.rcsInMinus.board)) then
+      enable := false;
   end;
+
+  if (not RCSi.IsNonFailedModule(Self.rcsOutPlus.board)) then
+    enable := false;
+  if (not RCSi.IsNonFailedModule(Self.rcsOutMinus.board)) then
+    enable := false;
 
   if (enable) then
   begin
@@ -497,12 +505,10 @@ end;
 
 function TBlkTurnout.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
-  if ((portType = TRCSIOType.input) and (Self.m_settings.RCSAddrs.Count >= 2) and
-    ((Self.rcsInPlus = addr) or (Self.rcsInMinus = addr))) then
+  if ((portType = TRCSIOType.input) and (Self.posDetection) and ((Self.rcsInPlus = addr) or (Self.rcsInMinus = addr))) then
     Exit(true);
 
-  if ((portType = TRCSIOType.output) and (Self.m_settings.RCSAddrs.Count >= 4) and
-    ((Self.rcsOutPlus = addr) or (Self.rcsOutMinus = addr))) then
+  if ((portType = TRCSIOType.output) and ((Self.rcsOutPlus = addr) or (Self.rcsOutMinus = addr))) then
     Exit(true);
 
   if ((portType = TRCSIOType.input) and (Self.m_settings.controllers.enabled) and
@@ -640,8 +646,6 @@ begin
     end;
   end;
 
-  if (data.RCSAddrs <> Self.m_settings.RCSAddrs) then
-    Self.m_settings.RCSAddrs.Free();
   Self.m_settings := data;
 
   Self.MapNpEvents();
@@ -703,14 +707,10 @@ procedure TBlkTurnout.UpdatePosition();
 var inp, couplingInp: TBlkTurnoutInputs;
   coupling: TBlkTurnout;
 begin
-  if (Self.m_settings.RCSAddrs.Count < 4) then
-    Exit();
-
   Blocks.GetBlkByID(Self.m_settings.coupling, TBlk(coupling));
   if ((coupling <> nil) and (coupling.typ <> btTurnout)) then
     Exit();
 
-  // RCSAddrs: poradi(0..3): vst+,vst-,vyst+,vyst-
   try
     inp := Self.GetInputs();
   except
@@ -890,12 +890,6 @@ end;
 procedure TBlkTurnout.SetPosition(new: TTurnoutPosition; lock: Boolean = false; nouz: Boolean = false;
   callback_ok: TNotifyEvent = nil; callback_err: TTurnoutSetPosErrCb = nil);
 begin
-  if (Self.m_settings.RCSAddrs.Count < 4) then
-  begin
-    if (Assigned(callback_err)) then
-      callback_err(Self, vseInvalidRCSConfig);
-    Exit();
-  end;
   if ((new <> plus) and (new <> minus)) then
   begin
     if (Assigned(callback_err)) then
@@ -1521,11 +1515,6 @@ begin
   Result := Self.m_npMinus;
 end;
 
-function TBlkTurnout.IsPositionDetection(): Boolean;
-begin
-  Result := (Self.m_settings.posDetection) and (Self.m_settings.RCSAddrs.Count >= 2);
-end;
-
 /// /////////////////////////////////////////////////////////////////////////////
 
 // pokud je na vyhybku zamek, vyhybka ma nespravnou polohu a klic je v zamku, vyhlasime poruchu zamku
@@ -1964,28 +1953,6 @@ begin
   else
     Result := 'neznámá chyba';
   end;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-function TBlkTurnout.GetRCSInPlus(): TRCSAddr;
-begin
-  Result := Self.m_settings.RCSAddrs[_TI_INPLUS];
-end;
-
-function TBlkTurnout.GetRCSInMinus(): TRCSAddr;
-begin
-  Result := Self.m_settings.RCSAddrs[_TI_INMINUS];
-end;
-
-function TBlkTurnout.GetRCSOutPlus(): TRCSAddr;
-begin
-  Result := Self.m_settings.RCSAddrs[_TI_OUTPLUS];
-end;
-
-function TBlkTurnout.GetRCSOutMinus(): TRCSAddr;
-begin
-  Result := Self.m_settings.RCSAddrs[_TI_OUTMINUS];
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
