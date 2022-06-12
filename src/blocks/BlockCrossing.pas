@@ -51,6 +51,15 @@ type
     _def_crossing_state: TBlkCrossingState = (basicState: disabled; note: ''; lockout: ''; pcEmOpen: false; pcClosed: false;
       zaver: 0;);
 
+    _SECT_RCSICLOSED = 'RCSIclosed';
+    _SECT_RCSIOPEN = 'RCSIopen';
+    _SECT_RCSICAUTION = 'RCSIcaution';
+    _SECT_RCSIANNULATION = 'RCSIannulation';
+    _SECT_RCSOCLOSE = 'RCSOclose';
+    _SECT_RCSOEMOPEN = 'RCSOemOpen';
+    _SECT_RCSOBLOCKPOSITIVE = 'RCSOblockPositive';
+    _SECT_TRACKS = 'tracks';
+
     _UZ_UPOZ_MIN = 4; // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
 
   private
@@ -149,7 +158,7 @@ type
 implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCS, UPO,
-  Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert;
+  Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert, FileSystem;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
@@ -173,46 +182,30 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
-var defaultModule: Integer;
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
   Self.m_state.note := '';
   Self.m_state.lockout := '';
 
-  defaultModule := ini_tech.ReadInteger(section, 'RCS', -1); // old file specs for backward compatibility
-
-  Self.m_settings.RCSInputs.closed := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIzm', defaultModule),
-    ini_tech.ReadInteger(section, 'RCSIz', 0));
-  Self.m_settings.RCSInputs.open := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIom', defaultModule),
-    ini_tech.ReadInteger(section, 'RCSIo', 0));
-  Self.m_settings.RCSInputs.caution := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSIvm', defaultModule),
-    ini_tech.ReadInteger(section, 'RCSIv', 0));
-  Self.m_settings.RCSInputs.annulationUse := (ini_tech.ReadInteger(section, 'RCSam', defaultModule) <> -1);
+  Self.m_settings.RCSInputs.closed := RCSFromIni(ini_tech, section, _SECT_RCSICLOSED, 'RCSIzm', 'RCSIz');
+  Self.m_settings.RCSInputs.open := RCSFromIni(ini_tech, section, _SECT_RCSIOPEN, 'RCSIom', 'RCSIo');
+  Self.m_settings.RCSInputs.caution := RCSFromIni(ini_tech, section, _SECT_RCSICAUTION, 'RCSIvm', 'RCSIv');
+  Self.m_settings.RCSInputs.annulationUse := (ini_tech.ReadInteger(section, 'RCSam', -1) <> -1) or (ini_tech.ReadString(section, _SECT_RCSIANNULATION, '') <> '');
   if (Self.m_settings.RCSInputs.annulationUse) then
-  begin
-    Self.m_settings.RCSInputs.annulation := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSam', defaultModule),
-      ini_tech.ReadInteger(section, 'RCSa', 0));
-  end;
+    Self.m_settings.RCSInputs.annulation := RCSFromIni(ini_tech, section, _SECT_RCSIANNULATION, 'RCSam', 'RCSa');
 
-  Self.m_settings.RCSOutputs.close := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOzm', defaultModule),
-    ini_tech.ReadInteger(section, 'RCSOz', 0));
-  Self.m_settings.RCSOutputs.emOpenUse := (ini_tech.ReadInteger(section, 'RCSOnotm', defaultModule) <> -1);
+  Self.m_settings.RCSOutputs.close := RCSFromIni(ini_tech, section, _SECT_RCSOCLOSE, 'RCSOzm', 'RCSOz');
+  Self.m_settings.RCSOutputs.emOpenUse := (ini_tech.ReadInteger(section, 'RCSOnotm', -1) <> -1) or (ini_tech.ReadString(section, _SECT_RCSOEMOPEN, '') <> '');
   if (Self.m_settings.RCSOutputs.emOpenUse) then
-  begin
-    Self.m_settings.RCSOutputs.emOpen := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSOnotm', defaultModule),
-      ini_tech.ReadInteger(section, 'RCSOnot', 0));
-  end;
+    Self.m_settings.RCSOutputs.emOpen := RCSFromIni(ini_tech, section, _SECT_RCSOEMOPEN, 'RCSOnotm', 'RCSOnot');
 
-  Self.m_settings.RCSOutputs.blockPositiveUse := (ini_tech.ReadInteger(section, 'RCSObpm', defaultModule) <> -1);
+  Self.m_settings.RCSOutputs.blockPositiveUse := (ini_tech.ReadInteger(section, 'RCSObpm', -1) <> -1) or (ini_tech.ReadString(section, _SECT_RCSOBLOCKPOSITIVE, '') <> '');
   if (Self.m_settings.RCSOutputs.blockPositiveUse) then
-  begin
-    Self.m_settings.RCSOutputs.blockPositive := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSObpm', defaultModule),
-      ini_tech.ReadInteger(section, 'RCSObp', 0));
-  end;
+    Self.m_settings.RCSOutputs.blockPositive := RCSFromIni(ini_tech, section, _SECT_RCSOBLOCKPOSITIVE, 'RCSObpm', 'RCSObp');
 
   Self.tracks.Clear();
-  var notracks: Integer := ini_tech.ReadInteger(section, 'tracks', 0);
+  var notracks: Integer := ini_tech.ReadInteger(section, _SECT_TRACKS, 0);
   for var i: Integer := 0 to notracks - 1 do
   begin
     var track: TBlkCrossingTrack := TBlkCrossingTrack.Create();
@@ -241,33 +234,20 @@ procedure TBlkCrossing.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
   inherited SaveData(ini_tech, section);
 
-  ini_tech.WriteInteger(section, 'RCSIzm', Self.m_settings.RCSInputs.closed.board);
-  ini_tech.WriteInteger(section, 'RCSIz', Self.m_settings.RCSInputs.closed.port);
-  ini_tech.WriteInteger(section, 'RCSIom', Self.m_settings.RCSInputs.open.board);
-  ini_tech.WriteInteger(section, 'RCSIo', Self.m_settings.RCSInputs.open.port);
-  ini_tech.WriteInteger(section, 'RCSIvm', Self.m_settings.RCSInputs.caution.board);
-  ini_tech.WriteInteger(section, 'RCSIv', Self.m_settings.RCSInputs.caution.port);
+  ini_tech.WriteString(section, _SECT_RCSICLOSED, Self.m_settings.RCSInputs.closed.ToString());
+  ini_tech.WriteString(section, _SECT_RCSIOPEN, Self.m_settings.RCSInputs.open.ToString());
+  ini_tech.WriteString(section, _SECT_RCSICAUTION, Self.m_settings.RCSInputs.caution.ToString());
   if (Self.m_settings.RCSInputs.annulationUse) then
-  begin
-    ini_tech.WriteInteger(section, 'RCSam', Self.m_settings.RCSInputs.annulation.board);
-    ini_tech.WriteInteger(section, 'RCSa', Self.m_settings.RCSInputs.annulation.port);
-  end;
+    ini_tech.WriteString(section, _SECT_RCSIANNULATION, Self.m_settings.RCSInputs.annulation.ToString());
 
-  ini_tech.WriteInteger(section, 'RCSOzm', Self.m_settings.RCSOutputs.close.board);
-  ini_tech.WriteInteger(section, 'RCSOz', Self.m_settings.RCSOutputs.close.port);
+  ini_tech.WriteString(section, _SECT_RCSOCLOSE, Self.m_settings.RCSOutputs.close.ToString());
   if (Self.m_settings.RCSOutputs.emOpenUse) then
-  begin
-    ini_tech.WriteInteger(section, 'RCSOnotm', Self.m_settings.RCSOutputs.emOpen.board);
-    ini_tech.WriteInteger(section, 'RCSOnot', Self.m_settings.RCSOutputs.emOpen.port);
-  end;
+    ini_tech.WriteString(section, _SECT_RCSOEMOPEN, Self.m_settings.RCSOutputs.emOpen.ToString());
   if (Self.m_settings.RCSOutputs.blockPositiveUse) then
-  begin
-    ini_tech.WriteInteger(section, 'RCSObpm', Self.m_settings.RCSOutputs.blockPositive.board);
-    ini_tech.WriteInteger(section, 'RCSObp', Self.m_settings.RCSOutputs.blockPositive.port);
-  end;
+    ini_tech.WriteString(section, _SECT_RCSOBLOCKPOSITIVE, Self.m_settings.RCSOutputs.blockPositive.ToString());
 
   if (Self.tracks.Count > 0) then
-    ini_tech.WriteInteger(section, 'tracks', Self.tracks.Count);
+    ini_tech.WriteInteger(section, _SECT_TRACKS, Self.tracks.Count);
   for var i: Integer := 0 to Self.tracks.Count - 1 do
     Self.tracks[i].Save(ini_tech, section, 'T' + IntToStr(i));
 end;

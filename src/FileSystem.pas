@@ -3,7 +3,7 @@
 interface
 
 uses
-  SysUtils, Classes, Forms, IniFiles, ComCtrls, StrUtils;
+  SysUtils, Classes, Forms, IniFiles, ComCtrls, StrUtils, TechnologieRCS;
 
 const
   _INIDATA_PATHS_DATA_SECTION = 'PathsData';
@@ -38,6 +38,8 @@ type
     procedure SaveFormData(filename: string);
   end;
 
+  function RCSFromIni(ini: TMemIniFile; section: string; key: string; oldboard: string = ''; oldport: string = ''): TRCSAddr;
+
 var
   Config: TConfig;
   GlobalConfig: TGlobalConfig;
@@ -46,7 +48,7 @@ var
 implementation
 
 uses fSettings, fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
-  TechnologieRCS, AreaDb, BlockDb, BoosterDb, SnadnSpusteni, THVDatabase,
+  AreaDb, BlockDb, BoosterDb, SnadnSpusteni, THVDatabase,
   TCPServerPT, Logging, TCPServerPanel, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
   DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce,
   TechnologieTrakce, TJCDatabase;
@@ -531,6 +533,22 @@ begin
         AppEvents.LogException(e, 'Vyjimka pri ukladani stavu kolejiste');
     end;
     Self.autosave_next := Now + GlobalConfig.autosave_period;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function RCSFromIni(ini: TMemIniFile; section: string; key: string; oldboard: string = ''; oldport: string = ''): TRCSAddr;
+begin
+  var both := ini.ReadString(section, key, '');
+  if (both <> '') then
+  begin
+    Result.Load(both);
+  end else begin
+    if ((oldboard = '') or (oldport = '')) then
+      raise Exception.Create('Unable to load old RCS!');
+    Result.board := ini.ReadInteger(section, oldboard, 0);
+    Result.port := ini.ReadInteger(section, oldport, 0);
   end;
 end;
 
