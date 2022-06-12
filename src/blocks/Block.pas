@@ -37,8 +37,12 @@ type
   /// ////////////////////////////
 
   TBlk = class(TObject)
+  const
+    _MAX_RCS = 4;
+
   private const
     _def_glob_settings: TBlkSettings = (name: ''; id: - 1;);
+
   private
     changed: Boolean;
 
@@ -131,7 +135,7 @@ type
 
 implementation
 
-uses BlockDb, DataBloky, appEv, ownStrUtils, Diagnostics;
+uses BlockDb, DataBloky, appEv, ownStrUtils, Diagnostics, FileSystem;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -192,42 +196,23 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// mj. tady se zjistuje, ktere moduly RCS jsou na kolejisti potreba
 class function TBlk.LoadRCS(ini: TMemIniFile; section: string): TRCSAddrs;
-var count: Integer;
-  prefix: string;
 begin
   Result := TList<TechnologieRCS.TRCSAddr>.Create(RCSAddrComparer);
 
-  prefix := 'RCS';
-  count := ini.ReadInteger(section, prefix + 'cnt', 0);
-  if (count = 0) then // backward compatibility
+  for var i: Integer := 0 to _MAX_RCS-1 do
   begin
-    prefix := 'MTB';
-    count := ini.ReadInteger(section, prefix + 'cnt', 0);
-  end;
+    if ((ini.ReadString(section, 'RCS'+IntToStr(i), '') = '') and (ini.ReadInteger(section, 'RCSb'+IntToStr(i), -1) = -1)) then
+      Break; // no more RCS addresses
 
-  for var i: Integer := 0 to count - 1 do
-  begin
-    var rcsAddr: TRCSAddr := TRCS.rcsAddr(ini.ReadInteger(section, prefix + 'b' + IntToStr(i), 0),
-      ini.ReadInteger(section, prefix + 'p' + IntToStr(i), 0));
-    Result.Add(rcsAddr);
+    Result.Add(RCSFromIni(ini, section, 'RCS'+IntToStr(i), 'RCSb'+IntToStr(i), 'RCSp'+IntToStr(i)));
   end;
 end;
 
 class procedure TBlk.SaveRCS(ini: TMemIniFile; section: string; data: TRCSAddrs);
 begin
-  if (data.count > 0) then
-    ini.WriteInteger(section, 'RCScnt', data.count);
-
   for var i: Integer := 0 to data.count - 1 do
-  begin
-    if ((data[i].board > 0) or (data[i].port > 0)) then
-    begin
-      ini.WriteInteger(section, 'RCSb' + IntToStr(i), data[i].board);
-      ini.WriteInteger(section, 'RCSp' + IntToStr(i), data[i].port);
-    end;
-  end;
+    ini.WriteString(section, 'RCS'+IntToStr(i), data[i].ToString());
 end;
 
 procedure TBlk.Change(now: Boolean = false);
