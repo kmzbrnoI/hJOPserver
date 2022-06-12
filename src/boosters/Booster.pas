@@ -13,6 +13,7 @@ type
   TBoosterChangeEvent = procedure(Sender: TObject; state: TBoosterSignal) of object;
 
   TBoosterSettings = record
+    id: string;
     name: string;
 
     RCS: record
@@ -20,8 +21,6 @@ type
       power: TRCSAddr;
       DCC: TRCSAddr; // DCC input; DCC nemusi byt detekovano, to se pozna tak, ze .board = 0
     end;
-
-    id: string;
   end;
 
   TBooster = class
@@ -76,7 +75,7 @@ type
 
 implementation
 
-uses GetSystems, fMain, RCS, TechnologieTrakce, Trakce;
+uses GetSystems, fMain, RCS, TechnologieTrakce, Trakce, FileSystem;
 
 {
   Format datoveho souboru: .ini soubor, kazdy SPAX ma svou sekci
@@ -146,20 +145,9 @@ begin
   Self.m_settings.id := section;
   Self.m_settings.name := ini.ReadString(section, 'name', 'booster');
 
-  Self.m_settings.RCS.overload.board := ini.ReadInteger(section, 'zkr_module', 0);
-  if (Self.m_settings.RCS.overload.board = 0) then
-    Self.m_settings.RCS.overload.board := ini.ReadInteger(section, 'zkr_mtb', 0);
-  Self.m_settings.RCS.overload.port := ini.ReadInteger(section, 'zkr_port', 0);
-
-  Self.m_settings.RCS.power.board := ini.ReadInteger(section, 'nap_module', 0);
-  if (Self.m_settings.RCS.power.board = 0) then
-    Self.m_settings.RCS.power.board := ini.ReadInteger(section, 'nap_mtb', 0);
-  Self.m_settings.RCS.power.port := ini.ReadInteger(section, 'nap_port', 0);
-
-  Self.m_settings.RCS.DCC.board := ini.ReadInteger(section, 'dcc_module', 0);
-  if (Self.m_settings.RCS.DCC.board = 0) then
-    Self.m_settings.RCS.DCC.board := ini.ReadInteger(section, 'dcc_mtb', 0);
-  Self.m_settings.RCS.DCC.port := ini.ReadInteger(section, 'dcc_port', 0);
+  Self.m_settings.RCS.overload := RCSFromIni(ini, section, 'short', 'zkr_module', 'zkr_port');
+  Self.m_settings.RCS.power := RCSFromIni(ini, section, 'power', 'nap_module', 'nap_port');
+  Self.m_settings.RCS.DCC := RCSFromIni(ini, section, 'dcc', 'dcc_module', 'dcc_port');
 
   if (Self.isPowerDetection) then
     RCSi.SetNeeded(Self.m_settings.RCS.power.board);
@@ -172,22 +160,11 @@ begin
   ini.WriteString(section, 'name', Self.m_settings.name);
 
   if (Self.isOverloadDetection) then
-  begin
-    ini.WriteInteger(section, 'zkr_module', Self.m_settings.RCS.overload.board);
-    ini.WriteInteger(section, 'zkr_port', Self.m_settings.RCS.overload.port);
-  end;
-
+    ini.WriteString(section, 'short', Self.m_settings.RCS.overload.ToString());
   if (Self.isPowerDetection) then
-  begin
-    ini.WriteInteger(section, 'nap_module', Self.m_settings.RCS.power.board);
-    ini.WriteInteger(section, 'nap_port', Self.m_settings.RCS.power.port);
-  end;
-
+    ini.WriteString(section, 'power', Self.m_settings.RCS.power.ToString());
   if (Self.isDCCdetection) then
-  begin
-    ini.WriteInteger(section, 'dcc_module', Self.m_settings.RCS.DCC.board);
-    ini.WriteInteger(section, 'dcc_port', Self.m_settings.RCS.DCC.port);
-  end;
+    ini.WriteString(section, 'dcc', Self.m_settings.RCS.DCC.ToString());
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
