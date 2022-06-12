@@ -101,7 +101,7 @@ type
 
 implementation
 
-uses AreaDb, TCPServerPanel, ownConvert;
+uses AreaDb, TCPServerPanel, ownConvert, FileSystem;
 
 constructor TBlkIO.Create(index: Integer);
 begin
@@ -120,27 +120,18 @@ begin
   Self.m_settings.isRCSOutput := false;
   Self.m_settings.isRCSinput := false;
 
-  strs := TStringList.Create();
-  try
-    ini_tech.ReadSection(section, strs);
-    for var str in strs do
-    begin
-      if (str = 'RCSb0') then
-      begin
-        Self.m_settings.isRCSOutput := true;
-        Self.m_settings.RCSoutput := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSb0', 0),
-          ini_tech.ReadInteger(section, 'RCSp0', 0));
-        Self.m_settings.RCSoutputNeeded := ini_tech.ReadBool(section, 'RCSn0', true);
-      end else if (str = 'RCSbi') then
-      begin
-        Self.m_settings.isRCSinput := true;
-        Self.m_settings.RCSinput := RCSi.RCSAddr(ini_tech.ReadInteger(section, 'RCSbi', 0),
-          ini_tech.ReadInteger(section, 'RCSpi', 0));
-        Self.m_settings.RCSinputNeeded := ini_tech.ReadBool(section, 'RCSni', true);
-      end;
-    end;
-  finally
-    strs.Free();
+  Self.m_settings.isRCSOutput := (ini_tech.ReadString(section, 'RCSout', '') <> '') or (ini_tech.ReadInteger(section, 'RCSb0', -1) <> -1);
+  if (Self.m_settings.isRCSOutput) then
+  begin
+    Self.m_settings.RCSoutput := RCSFromIni(ini_tech, section, 'RCSout', 'RCSb0', 'RCSp0');
+    Self.m_settings.RCSoutputNeeded := ini_tech.ReadBool(section, 'RCSn0', true);
+  end;
+
+  Self.m_settings.isRCSinput := (ini_tech.ReadString(section, 'RCSin', '') <> '') or (ini_tech.ReadInteger(section, 'RCSbi', -1) <> -1);
+  if (Self.m_settings.isRCSinput) then
+  begin
+    Self.m_settings.RCSinput := RCSFromIni(ini_tech, section, 'RCSin', 'RCSbi', 'RCSpi');
+    Self.m_settings.RCSinputNeeded := ini_tech.ReadBool(section, 'RCSni', true);
   end;
 
   Self.LoadAreas(ini_rel, 'POM').Free();
@@ -166,14 +157,12 @@ begin
 
   if (Self.isRCSOutput) then
   begin
-    ini_tech.WriteInteger(section, 'RCSb0', Self.m_settings.RCSoutput.board);
-    ini_tech.WriteInteger(section, 'RCSp0', Self.m_settings.RCSoutput.port);
+    ini_tech.WriteString(section, 'RCSout', Self.m_settings.RCSoutput.ToString());
     ini_tech.WriteBool(section, 'RCSn0', Self.m_settings.RCSoutputNeeded);
   end;
   if (Self.isRCSinput) then
   begin
-    ini_tech.WriteInteger(section, 'RCSbi', Self.m_settings.RCSinput.board);
-    ini_tech.WriteInteger(section, 'RCSpi', Self.m_settings.RCSinput.port);
+    ini_tech.WriteString(section, 'RCSin', Self.m_settings.RCSinput.ToString());
     ini_tech.WriteBool(section, 'RCSni', Self.m_settings.RCSinputNeeded);
   end;
 
