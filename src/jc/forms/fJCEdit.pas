@@ -731,7 +731,7 @@ begin
 
     Self.FillBlocksCB();
 
-    if (Self.mNewJC) then
+    if ((Self.mNewJC) and (Self.OpenIndex = -1)) then
     begin
       case (signal.SymbolType) of
         TBlkSignalSymbol.main:
