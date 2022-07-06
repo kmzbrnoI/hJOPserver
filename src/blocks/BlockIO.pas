@@ -30,15 +30,20 @@ type
 
   TBlkIOstate = record
     enabled: Boolean;
-    activeOutput: Boolean;
     inputState: TRCSInputState;
+    outputState: TRCSOutputState;
     nullTime: TTime;
     note: string;
   end;
 
   TBlkIO = class(TBlk)
   const
-    _def_io_state: TBlkIOstate = (enabled: false; activeOutput: false; inputState: TRCSInputState.isOff; nullTime: 0;);
+    _def_io_state: TBlkIOstate = (
+      enabled: false;
+      inputState: TRCSInputState.isOff;
+      outputState: TRCSOutputState.osDisabled;
+      nullTime: 0;
+    );
 
   private
     m_settings: TBlkIOsettings;
@@ -46,6 +51,7 @@ type
 
     function IsNullable(): Boolean;
     function IsActiveInput(): Boolean;
+    function IsActiveOutput(): Boolean;
 
     procedure SetNote(note: string);
 
@@ -90,7 +96,7 @@ type
     property RCSoutputNeeded: Boolean read m_settings.RCSoutputNeeded;
     property RCSinputNeeded: Boolean read m_settings.RCSinputNeeded;
     property enabled: Boolean read m_state.enabled;
-    property activeOutput: Boolean read m_state.activeOutput;
+    property activeOutput: Boolean read IsActiveOutput;
     property activeInput: Boolean read IsActiveInput;
     property nullable: Boolean read IsNullable;
     property note: string read m_state.note write SetNote;
@@ -198,7 +204,7 @@ end;
 procedure TBlkIO.Disable();
 begin
   Self.m_state.enabled := false;
-  Self.m_state.activeOutput := false;
+  Self.m_state.outputState := TRCSOutputState.osDisabled;
   Self.m_state.inputState := TRCSInputState.isOff;
 end;
 
@@ -225,6 +231,7 @@ end;
 
 procedure TBlkIO.Update();
 var inputState: TRCSInputState;
+    outputState: TRCSOutputState;
 begin
   inherited;
 
@@ -258,6 +265,22 @@ begin
     end;
   end;
 
+  if ((Self.enabled) and (Self.isRCSOutput)) then
+  begin
+    try
+      outputState := RCSi.GetOutputState(Self.m_settings.RCSoutput);
+    except
+      on E: RCSException do
+        outputState := TRCSOutputState.osFailure;
+    end;
+
+    if (outputState <> Self.m_state.outputState) then
+    begin
+      Self.m_state.outputState := outputState;
+      Self.Change();
+    end;
+  end;
+
   if ((Self.enabled) and (Self.nullable) and (Self.activeOutput) and (Now > Self.m_state.nullTime)) then
     Self.Deactivate();
 end;
@@ -268,7 +291,6 @@ procedure TBlkIO.Activate();
 begin
   if (Self.activeOutput) then
     Exit();
-  Self.m_state.activeOutput := true;
 
   if (Self.isRCSOutput) then
   begin
@@ -283,14 +305,13 @@ begin
     Self.m_state.nullTime := Now + EncodeTime(0, Self.m_settings.nullAfterSec div 60,
       Self.m_settings.nullAfterSec mod 60, 0);
 
-  Self.Change();
+  Self.Update();
 end;
 
 procedure TBlkIO.Deactivate();
 begin
   if (not Self.activeOutput) then
     Exit();
-  Self.m_state.activeOutput := false;
 
   if (Self.isRCSOutput) then
   begin
@@ -301,7 +322,7 @@ begin
     end;
   end;
 
-  Self.Change();
+  Self.Update();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -435,6 +456,11 @@ end;
 function TBlkIO.IsActiveInput(): Boolean;
 begin
   Result := (Self.m_state.inputState = TRCSInputState.isOn);
+end;
+
+function TBlkIO.IsActiveOutput(): Boolean;
+begin
+  Result := (Self.m_state.outputState >= TRCSOutputState.osEnabled) and (Self.m_state.outputState <= TRCSOutputState.osf66);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
