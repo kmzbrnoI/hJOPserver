@@ -571,7 +571,7 @@ begin
   begin
     userRights := TAreaRights.null;
     msg := 'Uživatel ' + user.username + ' má BAN !';
-  end else if (not TUser.ComparePasswd(password, user.password, user.salt)) then
+  end else if (not user.ComparePasswd(password)) then
   begin
     userRights := TAreaRights.null;
     msg := 'Neplatné heslo !';

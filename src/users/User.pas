@@ -72,7 +72,8 @@ type
 
     procedure GetPtData(json: TJsonObject);
 
-    class function ComparePasswd(plain: string; hash: string; salt: string): Boolean;
+    function ComparePasswd(plain: string): Boolean; overload;
+    class function ComparePasswd(plain: string; hash: string; salt: string): Boolean; overload;
     // check password match; return true iff match
     class function GenerateHash(plain: AnsiString): string;
     class function NameComparer(): IComparer<TUser>;
@@ -218,6 +219,11 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
+
+function TUser.ComparePasswd(plain: string): Boolean;
+begin
+  Result := TUser.ComparePasswd(plain, Self.password, Self.salt);
+end;
 
 class function TUser.ComparePasswd(plain: string; hash: string; salt: string): Boolean;
 begin
