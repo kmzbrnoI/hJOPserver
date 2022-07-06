@@ -102,12 +102,13 @@ type
     bpInBlk: Boolean; // jestli je v useku zavedena blokova podminka
     bpError: Boolean; // jestli nastala porucha blokove podminky
     trainSpeedUpdateIter: Integer; // pocet zbyvajicich iteraci do nastaveni rychlost soupravy
+    updateSignals: Boolean; // whether to update signals (used for init update)
   end;
 
   TBlkRT = class(TBlkTrack)
   private const
     _def_rt_stav: TBlkRTState = (inRailway: - 1; stopStopped: false; stopEnabled: true; stopSlowReady: false;
-      stopSoundStep: 0; bpError: false; trainSpeedUpdateIter: 0;);
+      stopSoundStep: 0; bpError: false; trainSpeedUpdateIter: 0; updateSignals: false; );
 
   private
     m_tuSettings: TBlkRTSettings;
@@ -410,7 +411,8 @@ begin
   if ((blk <> nil) and (blk.typ = btSignal)) then
     blk.Enable();
 
-  Self.UpdateSignals();
+  // do not call UpdateSignals directly, wait for first Update to have all other blocks (railway, signals) initialized
+  Self.m_tuState.updateSignals := true;
 end;
 
 procedure TBlkRT.Disable();
@@ -427,6 +429,12 @@ begin
 
   if ((Self.inRailway > -1) and (Self.occupied = TTrackState.occupied) and (Self.IsTrain()) and (Self.isStop)) then
     Self.StopUpdate();
+
+  if (Self.m_tuState.updateSignals) then
+  begin
+    Self.m_tuState.updateSignals := false;
+    Self.UpdateSignals();
+  end;
 
   Self.UpdateTrainSpeed();
 end;
