@@ -343,7 +343,7 @@ begin
   for var blk: TBlk in Self.data do
   begin
     try
-      Blk.SaveStatus(ini, IntToStr(Blk.id));
+      Blk.SaveState(ini, IntToStr(Blk.id));
     except
       on E: Exception do
         AppEvents.LogException(E, 'Save blok ' + Blk.name);

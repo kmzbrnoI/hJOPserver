@@ -186,7 +186,7 @@ type
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
-    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
+    procedure SaveState(ini_stat: TMemIniFile; const section: string); override;
 
     procedure Enable(); override;
     procedure Disable(); override;
@@ -356,9 +356,9 @@ begin
     Self.m_rtSettings.stop.SaveToFile(ini_tech, section);
 end;
 
-procedure TBlkRT.SaveStatus(ini_stat: TMemIniFile; const section: string);
+procedure TBlkRT.SaveState(ini_stat: TMemIniFile; const section: string);
 begin
-  inherited SaveStatus(ini_stat, section);
+  inherited SaveState(ini_stat, section);
 
   if (Self.bpInBlk) then
     ini_stat.WriteBool(section, 'bpInBlk', Self.bpInBlk);

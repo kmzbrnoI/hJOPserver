@@ -76,7 +76,7 @@ type
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); virtual;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); virtual;
-    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); virtual;
+    procedure SaveState(ini_stat: TMemIniFile; const section: string); virtual;
 
     procedure Enable(); virtual; abstract;
     procedure Disable(); virtual;
@@ -189,7 +189,7 @@ begin
   ini_tech.WriteInteger(section, 'typ', Integer(Self.m_globSettings.typ));
 end;
 
-procedure TBlk.SaveStatus(ini_stat: TMemIniFile; const section: string);
+procedure TBlk.SaveState(ini_stat: TMemIniFile; const section: string);
 begin
 
 end;

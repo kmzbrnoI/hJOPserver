@@ -119,7 +119,7 @@ type
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
-    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
+    procedure SaveState(ini_stat: TMemIniFile; const section: string); override;
 
     procedure Enable(); override;
     procedure Disable(); override;
@@ -289,7 +289,7 @@ begin
   ini_tech.WriteString(section, 'useky', SerializeIntList(Self.m_settings.trackIds));
 end;
 
-procedure TBlkRailway.SaveStatus(ini_stat: TMemIniFile; const section: string);
+procedure TBlkRailway.SaveState(ini_stat: TMemIniFile; const section: string);
 begin
   ini_stat.WriteInteger(section, 'smer', Integer(Self.file_direction));
 

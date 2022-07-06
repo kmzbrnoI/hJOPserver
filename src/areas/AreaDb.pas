@@ -23,7 +23,7 @@ type
     destructor Destroy(); override;
 
     procedure LoadData(const filename: string; const stat_filename: string);
-    procedure SaveStatus(const filename: string);
+    procedure SaveState(const filename: string);
 
     function Get(index: Integer): TArea; overload;
     function Get(id: string): TArea; overload;
@@ -124,7 +124,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 // ukladani stavu vsech oblasti rizeni
 
-procedure TAreas.SaveStatus(const filename: string);
+procedure TAreas.SaveState(const filename: string);
 begin
   var ini: TMemIniFile := TMemIniFile.Create(filename, TEncoding.UTF8);
 

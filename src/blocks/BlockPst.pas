@@ -108,7 +108,7 @@ type
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
-    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
+    procedure SaveState(ini_stat: TMemIniFile; const section: string); override;
 
     procedure Enable(); override;
     procedure Disable(); override;
@@ -309,7 +309,7 @@ begin
   ini_tech.WriteString(section, 'rcsOutActive', Self.m_settings.rcsOutActive.ToString());
 end;
 
-procedure TBlkPst.SaveStatus(ini_stat: TMemIniFile; const section: string);
+procedure TBlkPst.SaveState(ini_stat: TMemIniFile; const section: string);
 begin
   ini_stat.WriteString(section, 'stit', Self.m_state.note);
 end;

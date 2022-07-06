@@ -65,7 +65,7 @@ type
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
-    procedure SaveStatus(ini_stat: TMemIniFile; const section: string); override;
+    procedure SaveState(ini_stat: TMemIniFile; const section: string); override;
 
     procedure Enable(); override;
     procedure Disable(); override;
@@ -177,7 +177,7 @@ begin
     ini_tech.WriteInteger(section, 'nullTime', Self.m_settings.nullAfterSec);
 end;
 
-procedure TBlkIO.SaveStatus(ini_stat: TMemIniFile; const section: string);
+procedure TBlkIO.SaveState(ini_stat: TMemIniFile; const section: string);
 begin
   if (Self.m_state.note <> '') then
     ini_stat.WriteString(section, 'stit', Self.m_state.note);

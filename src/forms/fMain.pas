@@ -1946,7 +1946,7 @@ begin
   end;
 
   try
-    Areas.SaveStatus(Areas.status_filename);
+    Areas.SaveState(Areas.status_filename);
   except
     on E: Exception do
       AppEvents.LogException(E, 'Save OR status');
