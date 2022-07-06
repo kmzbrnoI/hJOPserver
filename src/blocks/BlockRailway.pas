@@ -777,7 +777,7 @@ end;
 
 procedure TBlkRailway.InitTUs();
 var
-  lTU, sTU: TBlkRT;
+  lRT, sRT: TBlkRT;
   blk, sMaster: TBlkRT;
 begin
   // 1) nejprve vytvorime navaznosti mezi tratovymi useky:
@@ -788,26 +788,26 @@ begin
   if (Self.tracks.Count = 0) then
     Exit();
 
-  lTU := nil;
+  lRT := nil;
   blk := Self.tracks[0];
   if (Self.tracks.Count > 1) then
-    sTU := Self.tracks[1]
+    sRT := Self.tracks[1]
   else
-    sTU := nil;
+    sRT := nil;
 
   for var i: Integer := 0 to Self.tracks.Count - 2 do
   begin
-    blk.lTU := lTU;
-    blk.sTU := sTU;
-    lTU := blk;
-    blk := sTU;
+    blk.lRT := lRT;
+    blk.sRT := sRT;
+    lRT := blk;
+    blk := sRT;
     if (i < Self.tracks.Count - 2) then
-      sTU := Self.tracks[i + 2];
+      sRT := Self.tracks[i + 2];
   end;
 
   // posledni TU:
-  blk.lTU := lTU;
-  blk.sTU := nil;
+  blk.lRT := lRT;
+  blk.sRT := nil;
 
   /// //////////////////////////////////////////////////////////////////////////
   // 2) Kazdemu TU priradime jeho Section Master a Section Masteru priradime
@@ -1158,7 +1158,7 @@ begin
       bpError := true;
 
   var blk := Self.Train.front as TBlk;
-  var stopsInHalt := ((blk <> nil) and (blk.typ = btRT) and (TBlkRT(blk).tuState.stopStopped));
+  var stopsInHalt := ((blk <> nil) and (blk.typ = btRT) and (TBlkRT(blk).rtState.stopStopped));
 
   if (trainPredict) then
     fg := clYellow

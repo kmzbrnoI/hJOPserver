@@ -111,8 +111,8 @@ type
       stopSoundStep: 0; bpError: false; trainSpeedUpdateIter: 0; updateSignals: false; );
 
   private
-    m_tuSettings: TBlkRTSettings;
-    m_tuState: TBlkRTState;
+    m_rtSettings: TBlkRTSettings;
+    m_rtState: TBlkRTState;
 
     m_signalCovering, m_railway: TBlk; // odkaz na kryci navestidla v lichem a sudem smeru
     // pro pristup k temto blokum pouzivat property bez f, toto jsou pouze pomocne promenne!
@@ -167,7 +167,7 @@ type
 
   public
     // reference na tratovy usek blize zacatku trati (lTU) a TU blize konci trati (sTU), tyto refence nastavuje trat pri inicializaci, nebo zmene konfigurace trati
-    lTU, sTU: TBlkRT;
+    lRT, sRT: TBlkRT;
 
     lsectMaster: TBlkRT; // sectMaster pro lichy smer trati
     // pokud jsem sectMaster, zde jsou ulozeny useky me sekce v lichem smeru; pokud nejsem sectMaster, je tento senzam prazdny
@@ -216,9 +216,9 @@ type
     function speed(spr: TTrain): Cardinal; overload;
 
     // pro vyznam properties viz hlavicky getteru a setteru
-    property tuState: TBlkRTState read m_tuState;
-    property inRailway: Integer read m_tuState.inRailway write m_tuState.inRailway;
-    property bpInBlk: Boolean read m_tuState.bpInBlk write m_tuState.bpInBlk;
+    property rtState: TBlkRTState read m_rtState;
+    property inRailway: Integer read m_rtState.inRailway write m_rtState.inRailway;
+    property bpInBlk: Boolean read m_rtState.bpInBlk write m_rtState.bpInBlk;
     property sectOccupied: TTrackState read GetSectOccupy;
     property sectReady: Boolean read GetSectReady;
     property speedUpdate: Boolean read GetSpeedUpdate write SetSpeedUpdate;
@@ -234,7 +234,7 @@ type
     property sectMaster: TBlkRT read GetSectMaster;
     property nextSignal: TBlk read GetNextSignal;
     property ready: Boolean read GetReady;
-    property bpError: Boolean read m_tuState.bpError write SetBPError;
+    property bpError: Boolean read m_rtState.bpError write SetBPError;
     property isStop: Boolean read mIsStop;
     property stopL: Boolean read mIsStopL;
     property stopS: Boolean read mIsStopS;
@@ -254,7 +254,7 @@ begin
   inherited Create(index);
 
   Self.m_globSettings.typ := btRT;
-  Self.m_tuState := _def_rt_stav;
+  Self.m_rtState := _def_rt_stav;
 
   Self.m_railway := nil;
   Self.m_signalCovering := nil;
@@ -263,8 +263,8 @@ begin
   Self.ssectMaster := nil;
   Self.ssectTracks := TList<TBlkRT>.Create();
   Self.bpInBlk := false;
-  Self.m_tuSettings.speeds := TDictionary<Cardinal, Cardinal>.Create();
-  Self.m_tuSettings.stop := nil;
+  Self.m_rtSettings.speeds := TDictionary<Cardinal, Cardinal>.Create();
+  Self.m_rtSettings.stop := nil;
 end;
 
 destructor TBlkRT.Destroy();
@@ -276,8 +276,8 @@ begin
 
   Self.lsectTracks.Free();
   Self.ssectTracks.Free();
-  Self.m_tuSettings.stop.Free();
-  Self.m_tuSettings.speeds.Free();
+  Self.m_rtSettings.stop.Free();
+  Self.m_rtSettings.speeds.Free();
 
   inherited;
 end;
@@ -289,17 +289,17 @@ var strs, strs2: TStrings;
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
-  Self.m_tuSettings.signalLid := ini_tech.ReadInteger(section, 'navL', -1);
-  Self.m_tuSettings.signalSid := ini_tech.ReadInteger(section, 'navS', -1);
+  Self.m_rtSettings.signalLid := ini_tech.ReadInteger(section, 'navL', -1);
+  Self.m_rtSettings.signalSid := ini_tech.ReadInteger(section, 'navS', -1);
 
-  Self.m_tuSettings.speeds.Clear();
+  Self.m_rtSettings.speeds.Clear();
   strs := TStringList.Create();
   strs2 := TStringList.Create();
   try
     var str: string := ini_tech.ReadString(section, 'rychlosti', '');
     if (str = '') then
     begin
-      Self.m_tuSettings.speeds.Add(0, ini_tech.ReadInteger(section, 'rychlost', 0));
+      Self.m_rtSettings.speeds.Add(0, ini_tech.ReadInteger(section, 'rychlost', 0));
     end else begin
       ExtractStringsEx([','], [], str, strs);
       for str in strs do
@@ -307,7 +307,7 @@ begin
         strs2.Clear();
         ExtractStringsEx([':'], [], str, strs2);
         if (strs2.Count = 2) then
-          Self.m_tuSettings.speeds.AddOrSetValue(StrToInt(strs2[0]), StrToInt(strs2[1]));
+          Self.m_rtSettings.speeds.AddOrSetValue(StrToInt(strs2[0]), StrToInt(strs2[1]));
       end;
     end;
   finally
@@ -317,15 +317,15 @@ begin
 
   Self.bpInBlk := ini_stat.ReadBool(section, 'bpInBlk', false);
 
-  if ((not Self.m_tuSettings.speeds.ContainsKey(0)) or (Self.m_tuSettings.speeds[0] < 10)) then
+  if ((not Self.m_rtSettings.speeds.ContainsKey(0)) or (Self.m_rtSettings.speeds[0] < 10)) then
     Log('WARNING: traťový úsek ' + Self.name + ' (' + IntToStr(Self.id) +
       ') nemá korektně zadanou traťovou rychlost', ltError);
 
   if ((ini_tech.ReadString(section, 'zast_ev_lichy_zast', '') <> '') or
     (ini_tech.ReadString(section, 'zast_ev_sudy_zast', '') <> '')) then
-    Self.m_tuSettings.stop := TBlkRTStop.Create(ini_tech, section)
-  else if (Assigned(Self.m_tuSettings.stop)) then
-    Self.m_tuSettings.stop.Free();
+    Self.m_rtSettings.stop := TBlkRTStop.Create(ini_tech, section)
+  else if (Assigned(Self.m_rtSettings.stop)) then
+    Self.m_rtSettings.stop.Free();
 end;
 
 procedure TBlkRT.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -335,25 +335,25 @@ var str: string;
 begin
   inherited SaveData(ini_tech, section);
 
-  if (Self.m_tuSettings.signalLid <> -1) then
-    ini_tech.WriteInteger(section, 'navL', Self.m_tuSettings.signalLid);
+  if (Self.m_rtSettings.signalLid <> -1) then
+    ini_tech.WriteInteger(section, 'navL', Self.m_rtSettings.signalLid);
 
-  if (Self.m_tuSettings.signalSid <> -1) then
-    ini_tech.WriteInteger(section, 'navS', Self.m_tuSettings.signalSid);
+  if (Self.m_rtSettings.signalSid <> -1) then
+    ini_tech.WriteInteger(section, 'navS', Self.m_rtSettings.signalSid);
 
-  speeds := TList<Cardinal>.Create(Self.m_tuSettings.speeds.Keys);
+  speeds := TList<Cardinal>.Create(Self.m_rtSettings.speeds.Keys);
   try
     speeds.Sort();
     str := '';
     for j in speeds do
-      str := str + IntToStr(j) + ':' + IntToStr(Self.m_tuSettings.speeds[j]) + ',';
+      str := str + IntToStr(j) + ':' + IntToStr(Self.m_rtSettings.speeds[j]) + ',';
     ini_tech.WriteString(section, 'rychlosti', str);
   finally
     speeds.Free();
   end;
 
   if (Self.isStop) then
-    Self.m_tuSettings.stop.SaveToFile(ini_tech, section);
+    Self.m_rtSettings.stop.SaveToFile(ini_tech, section);
 end;
 
 procedure TBlkRT.SaveStatus(ini_stat: TMemIniFile; const section: string);
@@ -368,18 +368,18 @@ end;
 
 function TBlkRT.GetSettings(): TBlkRTSettings;
 begin
-  Result := Self.m_tuSettings;
+  Result := Self.m_rtSettings;
 end;
 
 procedure TBlkRT.SetSettings(data: TBlkRTSettings);
 begin
-  if (Self.m_tuSettings.stop <> data.stop) and (Assigned(Self.m_tuSettings.stop)) then
-    Self.m_tuSettings.stop.Free();
+  if (Self.m_rtSettings.stop <> data.stop) and (Assigned(Self.m_rtSettings.stop)) then
+    Self.m_rtSettings.stop.Free();
 
-  if (Self.m_tuSettings.speeds <> data.speeds) then
-    Self.m_tuSettings.speeds.Free();
+  if (Self.m_rtSettings.speeds <> data.speeds) then
+    Self.m_rtSettings.speeds.Free();
 
-  Self.m_tuSettings := data;
+  Self.m_rtSettings := data;
   Self.Change();
 end;
 
@@ -400,24 +400,24 @@ procedure TBlkRT.Enable();
 var blk: TBlkSignal;
 begin
   inherited;
-  Self.m_tuState.bpError := false;
+  Self.m_rtState.bpError := false;
 
   // Aktiaovovat navestidla rucne, aby se rovnou nastavily navesti v trati
-  Blocks.GetBlkByID(Self.m_tuSettings.signalLid, TBlk(blk));
+  Blocks.GetBlkByID(Self.m_rtSettings.signalLid, TBlk(blk));
   if ((blk <> nil) and (blk.typ = btSignal)) then
     blk.Enable();
 
-  Blocks.GetBlkByID(Self.m_tuSettings.signalSid, TBlk(blk));
+  Blocks.GetBlkByID(Self.m_rtSettings.signalSid, TBlk(blk));
   if ((blk <> nil) and (blk.typ = btSignal)) then
     blk.Enable();
 
   // do not call UpdateSignals directly, wait for first Update to have all other blocks (railway, signals) initialized
-  Self.m_tuState.updateSignals := true;
+  Self.m_rtState.updateSignals := true;
 end;
 
 procedure TBlkRT.Disable();
 begin
-  Self.m_tuState.bpError := false;
+  Self.m_rtState.bpError := false;
   inherited;
 end;
 
@@ -430,9 +430,9 @@ begin
   if ((Self.inRailway > -1) and (Self.occupied = TTrackState.occupied) and (Self.IsTrain()) and (Self.isStop)) then
     Self.StopUpdate();
 
-  if (Self.m_tuState.updateSignals) then
+  if (Self.m_rtState.updateSignals) then
   begin
-    Self.m_tuState.updateSignals := false;
+    Self.m_rtState.updateSignals := false;
     Self.UpdateSignals();
   end;
 
@@ -471,11 +471,11 @@ end;
 
 procedure TBlkRT.StopUpdate();
 begin
-  if (not Self.tuState.stopStopped) then
+  if (not Self.rtState.stopStopped) then
   begin
     // cekam na obsazeni IR
-    if ((not Self.tuState.stopEnabled) or (Self.tuState.stopPassed) or
-      (Self.train.length > Self.m_tuSettings.stop.maxLength) or (Self.train.front <> Self)) then
+    if ((not Self.rtState.stopEnabled) or (Self.rtState.stopPassed) or
+      (Self.train.length > Self.m_rtSettings.stop.maxLength) or (Self.train.front <> Self)) then
       Exit();
 
     // kontrola spravneho smeru
@@ -485,46 +485,46 @@ begin
 
     // kontrola typu soupravy:
 
-    if (not TRegEx.IsMatch(Self.train.typ, Self.m_tuSettings.stop.trainType)) then
+    if (not TRegEx.IsMatch(Self.train.typ, Self.m_rtSettings.stop.trainType)) then
       Exit();
 
     // zpomalovani pred zastavkou:
-    if (Self.m_tuState.stopSlowReady) then
+    if (Self.m_rtState.stopSlowReady) then
     begin
       case (Self.train.direction) of
         THVSite.odd:
           begin
-            if (Self.m_tuSettings.stop.evL.slow.enabled) then
+            if (Self.m_rtSettings.stop.evL.slow.enabled) then
             begin
-              if (not Self.m_tuSettings.stop.evL.slow.ev.enabled) then
-                Self.m_tuSettings.stop.evL.slow.ev.Register();
+              if (not Self.m_rtSettings.stop.evL.slow.ev.enabled) then
+                Self.m_rtSettings.stop.evL.slow.ev.Register();
 
-              if ((Self.m_tuSettings.stop.evL.slow.enabled) and
-                (Self.train.wantedSpeed > Self.m_tuSettings.stop.evL.slow.speed) and
-                (Self.m_tuSettings.stop.evL.slow.ev.IsTriggerred(Self, true))) then
+              if ((Self.m_rtSettings.stop.evL.slow.enabled) and
+                (Self.train.wantedSpeed > Self.m_rtSettings.stop.evL.slow.speed) and
+                (Self.m_rtSettings.stop.evL.slow.ev.IsTriggerred(Self, true))) then
               begin
-                Self.train.speed := Self.m_tuSettings.stop.evL.slow.speed;
-                Self.m_tuState.stopSlowReady := false;
+                Self.train.speed := Self.m_rtSettings.stop.evL.slow.speed;
+                Self.m_rtState.stopSlowReady := false;
                 Self.speedUpdate := false;
-                Self.m_tuSettings.stop.evL.slow.ev.Unregister();
+                Self.m_rtSettings.stop.evL.slow.ev.Unregister();
               end;
             end;
           end;
 
         THVSite.even:
           begin
-            if (Self.m_tuSettings.stop.evS.slow.enabled) then
+            if (Self.m_rtSettings.stop.evS.slow.enabled) then
             begin
-              if (not Self.m_tuSettings.stop.evS.slow.ev.enabled) then
-                Self.m_tuSettings.stop.evS.slow.ev.Register();
+              if (not Self.m_rtSettings.stop.evS.slow.ev.enabled) then
+                Self.m_rtSettings.stop.evS.slow.ev.Register();
 
-              if ((Self.train.wantedSpeed > Self.m_tuSettings.stop.evS.slow.speed) and
-                (Self.m_tuSettings.stop.evS.slow.ev.IsTriggerred(Self, true))) then
+              if ((Self.train.wantedSpeed > Self.m_rtSettings.stop.evS.slow.speed) and
+                (Self.m_rtSettings.stop.evS.slow.ev.IsTriggerred(Self, true))) then
               begin
-                Self.train.speed := Self.m_tuSettings.stop.evS.slow.speed;
-                Self.m_tuState.stopSlowReady := false;
+                Self.train.speed := Self.m_rtSettings.stop.evS.slow.speed;
+                Self.m_rtState.stopSlowReady := false;
                 Self.speedUpdate := false;
-                Self.m_tuSettings.stop.evS.slow.ev.Unregister();
+                Self.m_rtSettings.stop.evS.slow.ev.Unregister();
               end;
             end;
           end;
@@ -535,27 +535,27 @@ begin
     case (Self.train.direction) of
       THVSite.odd:
         begin
-          if (not Self.m_tuSettings.stop.evL.stop.enabled) then
-            Self.m_tuSettings.stop.evL.stop.Register();
+          if (not Self.m_rtSettings.stop.evL.stop.enabled) then
+            Self.m_rtSettings.stop.evL.stop.Register();
 
-          if (Self.m_tuSettings.stop.evL.stop.IsTriggerred(Self, true)) then
+          if (Self.m_rtSettings.stop.evL.stop.IsTriggerred(Self, true)) then
           begin
             Self.StopStopTrain();
             Self.speedUpdate := false;
-            Self.m_tuSettings.stop.evL.stop.Unregister();
+            Self.m_rtSettings.stop.evL.stop.Unregister();
           end;
         end;
 
       THVSite.even:
         begin
-          if (not Self.m_tuSettings.stop.evS.stop.enabled) then
-            Self.m_tuSettings.stop.evS.stop.Register();
+          if (not Self.m_rtSettings.stop.evS.stop.enabled) then
+            Self.m_rtSettings.stop.evS.stop.Register();
 
-          if (Self.m_tuSettings.stop.evS.stop.IsTriggerred(Self, true)) then
+          if (Self.m_rtSettings.stop.evS.stop.IsTriggerred(Self, true)) then
           begin
             Self.StopStopTrain();
             Self.speedUpdate := false;
-            Self.m_tuSettings.stop.evS.stop.Unregister();
+            Self.m_rtSettings.stop.evS.stop.Unregister();
           end;
         end;
     end; // case
@@ -565,33 +565,33 @@ begin
     // pokud se souprava rozjede, koncim zastavku
     if (Self.train.wantedSpeed <> 0) then
     begin
-      Self.m_tuState.stopStopped := false;
+      Self.m_rtState.stopStopped := false;
       Self.Change(); // change je dulezite volat kvuli menu
     end;
 
     // prehravani zvuku pri rozjezdu
-    case (Self.tuState.stopSoundStep) of
+    case (Self.rtState.stopSoundStep) of
       0:
         begin
-          if (now >= Self.tuState.stopRunTime - EncodeTime(0, 0, 4, 0)) then
+          if (now >= Self.rtState.stopRunTime - EncodeTime(0, 0, 4, 0)) then
           begin
-            Self.m_tuState.stopSoundStep := 1;
+            Self.m_rtState.stopSoundStep := 1;
             Self.train.ToggleHouk('trubka vlakvedoucího');
           end;
         end;
 
       1:
         begin
-          if (now >= Self.tuState.stopRunTime - EncodeTime(0, 0, 2, 0)) then
+          if (now >= Self.rtState.stopRunTime - EncodeTime(0, 0, 2, 0)) then
           begin
-            Self.m_tuState.stopSoundStep := 2;
+            Self.m_rtState.stopSoundStep := 2;
             Self.train.ToggleHouk('zavření dveří');
           end;
         end;
     end;
 
     // cekam na timeout na rozjeti vlaku
-    if (now > Self.tuState.stopRunTime) then
+    if (now > Self.rtState.stopRunTime) then
     begin
       Self.train.ToggleHouk('houkačka krátká');
       Self.StopRunTrain();
@@ -603,9 +603,9 @@ end;
 
 procedure TBlkRT.StopStopTrain();
 begin
-  Self.m_tuState.stopStopped := true;
-  Self.m_tuState.stopSoundStep := 0;
-  Self.m_tuState.stopRunTime := now + Self.m_tuSettings.stop.delay;
+  Self.m_rtState.stopStopped := true;
+  Self.m_rtState.stopSoundStep := 0;
+  Self.m_rtState.stopRunTime := now + Self.m_rtSettings.stop.delay;
 
   try
     Self.train.EnableSpeedOverride(0, true);
@@ -618,9 +618,9 @@ end;
 
 procedure TBlkRT.StopRunTrain();
 begin
-  Self.m_tuState.stopStopped := false;
-  Self.m_tuState.stopPassed := true;
-  Self.m_tuState.stopSoundStep := 0;
+  Self.m_rtState.stopStopped := false;
+  Self.m_rtState.stopPassed := true;
+  Self.m_rtState.stopSoundStep := 0;
 
   try
     Self.train.DisableSpeedOverride();
@@ -641,10 +641,10 @@ begin
   if ((Self.inRailway > -1) and (Self.isStop)) then
   begin
     Result := Result + '-,';
-    if (not Self.tuState.stopStopped) then
+    if (not Self.rtState.stopStopped) then
     begin
       // pokud neni v zastavce zastavena souprava, lze zastavku vypinat a zapinat
-      case (Self.tuState.stopEnabled) of
+      case (Self.rtState.stopEnabled) of
         false:
           Result := Result + 'ZAST>,';
         true:
@@ -700,8 +700,8 @@ end;
 
 procedure TBlkRT.AddTrain(spr: Integer);
 begin
-  if ((Self.isStop) and (not Self.m_tuState.stopSlowReady)) then
-    Self.m_tuState.stopSlowReady := true;
+  if ((Self.isStop) and (not Self.m_rtState.stopSlowReady)) then
+    Self.m_rtState.stopSlowReady := true;
 
   // Zmena smeru soupravy muze nastat na zacatku i konci trati
   // tak, aby souprava byla vzdy rizeni spravnymi nasvestidly.
@@ -758,28 +758,28 @@ begin
 
   inherited;
 
-  if (Self.m_tuState.stopStopped) then
+  if (Self.m_rtState.stopStopped) then
   begin
     // vlak, ktery oupsti TU a mel by stat v zastavce, je vracen do stavu, kdy se mu nastavuje rychlost
     // toto je pojistka, ke ktere by teoreticky nikdy nemelo dojit
     oldTrain.DisableSpeedOverride();
-    Self.m_tuState.stopStopped := false;
+    Self.m_rtState.stopStopped := false;
   end;
 
-  Self.m_tuState.stopPassed := false;
-  Self.m_tuState.stopSlowReady := false;
+  Self.m_rtState.stopPassed := false;
+  Self.m_rtState.stopSlowReady := false;
 
   if (Self.stopL) then
   begin
-    Self.m_tuSettings.stop.evL.stop.Unregister();
-    if (Self.m_tuSettings.stop.evL.slow.enabled) then
-      Self.m_tuSettings.stop.evL.slow.ev.Unregister();
+    Self.m_rtSettings.stop.evL.stop.Unregister();
+    if (Self.m_rtSettings.stop.evL.slow.enabled) then
+      Self.m_rtSettings.stop.evL.slow.ev.Unregister();
   end;
   if (Self.stopS) then
   begin
-    Self.m_tuSettings.stop.evS.stop.Unregister();
-    if (Self.m_tuSettings.stop.evS.slow.enabled) then
-      Self.m_tuSettings.stop.evS.slow.ev.Unregister();
+    Self.m_rtSettings.stop.evS.stop.Unregister();
+    if (Self.m_rtSettings.stop.evS.slow.enabled) then
+      Self.m_rtSettings.stop.evS.slow.ev.Unregister();
   end;
 
   oldTrain.UpdateRailwaySpeed();
@@ -802,13 +802,13 @@ end;
 
 procedure TBlkRT.MenuZastClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
 begin
-  if (not Self.tuState.stopStopped) then
-    Self.m_tuState.stopEnabled := new_state;
+  if (not Self.rtState.stopStopped) then
+    Self.m_rtState.stopEnabled := new_state;
 end;
 
 procedure TBlkRT.MenuJEDTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  if (Self.tuState.stopStopped) then
+  if (Self.rtState.stopStopped) then
     Self.StopRunTrain();
 end;
 
@@ -856,7 +856,7 @@ end;
 
 procedure TBlkRT.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
 begin
-  if ((item = 'JEĎ vlak') and (Self.m_tuState.stopStopped)) then
+  if ((item = 'JEĎ vlak') and (Self.m_rtState.stopStopped)) then
     Self.MenuJEDTrainClick(SenderPnl, SenderOR)
   else if (item = 'ZAST>') then
     Self.MenuZastClick(SenderPnl, SenderOR, true)
@@ -872,9 +872,9 @@ end;
 
 function TBlkRT.GetRailway(): TBlk;
 begin
-  if (((Self.m_railway = nil) and (Self.tuState.inRailway <> -1)) or
-    ((Self.m_railway <> nil) and (Self.m_railway.id <> Self.tuState.inRailway))) then
-    Blocks.GetBlkByID(Self.tuState.inRailway, Self.m_railway);
+  if (((Self.m_railway = nil) and (Self.rtState.inRailway <> -1)) or
+    ((Self.m_railway <> nil) and (Self.m_railway.id <> Self.rtState.inRailway))) then
+    Blocks.GetBlkByID(Self.rtState.inRailway, Self.m_railway);
   Result := Self.m_railway;
 end;
 
@@ -889,9 +889,9 @@ begin
 
   case (TBlkRailway(Self.railway).direction) of
     TRailwayDirection.AtoB:
-      navPrevID := Self.m_tuSettings.signalLid;
+      navPrevID := Self.m_rtSettings.signalLid;
     TRailwayDirection.BtoA:
-      navPrevID := Self.m_tuSettings.signalSid;
+      navPrevID := Self.m_rtSettings.signalSid;
   else
     navPrevID := -1;
   end;
@@ -904,12 +904,12 @@ end;
 
 function TBlkRT.GetSignalCoverL(): TBlk;
 begin
-  Blocks.GetBlkByID(Self.m_tuSettings.signalLid, Result);
+  Blocks.GetBlkByID(Self.m_rtSettings.signalLid, Result);
 end;
 
 function TBlkRT.GetSignalCoverS(): TBlk;
 begin
-  Blocks.GetBlkByID(Self.m_tuSettings.signalSid, Result);
+  Blocks.GetBlkByID(Self.m_rtSettings.signalSid, Result);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -929,9 +929,9 @@ begin
 
   case (TBlkRailway(Self.railway).direction) of
     TRailwayDirection.AtoB:
-      Result := Self.lTU;
+      Result := Self.lRT;
     TRailwayDirection.BtoA:
-      Result := Self.sTU;
+      Result := Self.sRT;
   else
     Result := nil;
   end;
@@ -944,9 +944,9 @@ begin
 
   case (TBlkRailway(Self.railway).direction) of
     TRailwayDirection.AtoB:
-      Result := Self.sTU;
+      Result := Self.sRT;
     TRailwayDirection.BtoA:
-      Result := Self.lTU;
+      Result := Self.lRT;
   else
     Result := nil;
   end;
@@ -1041,11 +1041,11 @@ begin
       sectUseky := Self.ssectTracks;
     TRailwayDirection.no:
       begin
-        if (Self.sTU = nil) then
+        if (Self.sRT = nil) then
           sectUseky := Self.ssectTracks
         else
         begin
-          if (Self.lTU = nil) then
+          if (Self.lRT = nil) then
             sectUseky := Self.lsectTracks
           else
             Exit(TTrackState.none);
@@ -1111,18 +1111,18 @@ end;
 procedure TBlkRT.CreateNavRefs();
 var blk: TBlk;
 begin
-  Blocks.GetBlkByID(Self.m_tuSettings.signalLid, blk);
-  if ((blk <> nil) and (blk.typ = btSignal) and (Self.lTU <> nil)) then
+  Blocks.GetBlkByID(Self.m_rtSettings.signalLid, blk);
+  if ((blk <> nil) and (blk.typ = btSignal) and (Self.lRT <> nil)) then
   begin
-    TBlkSignal(blk).trackId := Self.lTU.id;
+    TBlkSignal(blk).trackId := Self.lRT.id;
     TBlkSignal(blk).direction := THVSite.odd;
     TBlkSignal(blk).autoblok := true;
   end;
 
-  Blocks.GetBlkByID(Self.m_tuSettings.signalSid, blk);
-  if ((blk <> nil) and (blk.typ = btSignal) and (Self.sTU <> nil)) then
+  Blocks.GetBlkByID(Self.m_rtSettings.signalSid, blk);
+  if ((blk <> nil) and (blk.typ = btSignal) and (Self.sRT <> nil)) then
   begin
-    TBlkSignal(blk).trackId := Self.sTU.id;
+    TBlkSignal(blk).trackId := Self.sRT.id;
     TBlkSignal(blk).direction := THVSite.even;
     TBlkSignal(blk).autoblok := true;
   end;
@@ -1133,8 +1133,8 @@ end;
 procedure TBlkRT.RemoveTURefs();
 var blk: TBlk;
 begin
-  Self.lTU := nil;
-  Self.sTU := nil;
+  Self.lRT := nil;
+  Self.sRT := nil;
   Self.lsectMaster := nil;
   Self.lsectTracks.Clear();
   Self.ssectMaster := nil;
@@ -1142,10 +1142,10 @@ begin
   Self.bpInBlk := false;
   Self.inRailway := -1;
 
-  Blocks.GetBlkByID(Self.m_tuSettings.signalLid, blk);
+  Blocks.GetBlkByID(Self.m_rtSettings.signalLid, blk);
   if ((blk <> nil) and (blk.typ = btSignal)) then
     TBlkSignal(blk).trackId := -1;
-  Blocks.GetBlkByID(Self.m_tuSettings.signalSid, blk);
+  Blocks.GetBlkByID(Self.m_rtSettings.signalSid, blk);
   if ((blk <> nil) and (blk.typ = btSignal)) then
     TBlkSignal(blk).trackId := -1;
 end;
@@ -1169,9 +1169,9 @@ begin
   if ((TBlkRailway(Self.railway).direction = TRailwayDirection.AtoB) or
     (TBlkRailway(Self.railway).direction = TRailwayDirection.no)) then
   begin
-    if (Self.m_tuSettings.signalSid > -1) then
+    if (Self.m_rtSettings.signalSid > -1) then
     begin
-      Blocks.GetBlkByID(Self.m_tuSettings.signalSid, blk);
+      Blocks.GetBlkByID(Self.m_rtSettings.signalSid, blk);
       if (blk <> nil) then
         TBlkSignal(blk).signal := TBlkSignalCode(TBlkRailway(Self.railway).SignalCounterDirection());
     end;
@@ -1180,9 +1180,9 @@ begin
   if ((TBlkRailway(Self.railway).direction = TRailwayDirection.BtoA) or
     (TBlkRailway(Self.railway).direction = TRailwayDirection.no)) then
   begin
-    if (Self.m_tuSettings.signalLid > -1) then
+    if (Self.m_rtSettings.signalLid > -1) then
     begin
-      Blocks.GetBlkByID(Self.m_tuSettings.signalLid, blk);
+      Blocks.GetBlkByID(Self.m_rtSettings.signalLid, blk);
       if (blk <> nil) then
         TBlkSignal(blk).signal := TBlkSignalCode(TBlkRailway(Self.railway).SignalCounterDirection());
     end;
@@ -1242,10 +1242,10 @@ end;
 
 procedure TBlkRT.UpdateTrainSpeed();
 begin
-  if (Self.m_tuState.trainSpeedUpdateIter > 0) then
+  if (Self.m_rtState.trainSpeedUpdateIter > 0) then
   begin
-    Dec(Self.m_tuState.trainSpeedUpdateIter);
-    if (Self.m_tuState.trainSpeedUpdateIter = 0) then
+    Dec(Self.m_rtState.trainSpeedUpdateIter);
+    if (Self.m_rtState.trainSpeedUpdateIter = 0) then
       if ((Self.IsTrain()) and (Self.slowingReady) and (Self.train.wantedSpeed > 0)) then
         Self.train.UpdateRailwaySpeed();
   end;
@@ -1255,15 +1255,15 @@ end;
 
 function TBlkRT.GetSpeedUpdate: Boolean;
 begin
-  Result := (Self.m_tuState.trainSpeedUpdateIter > 0);
+  Result := (Self.m_rtState.trainSpeedUpdateIter > 0);
 end;
 
 procedure TBlkRT.SetSpeedUpdate(state: Boolean);
 begin
-  if ((state) and (Self.m_tuState.trainSpeedUpdateIter = 0)) then
-    Self.m_tuState.trainSpeedUpdateIter := 2;
-  if ((not state) and (Self.m_tuState.trainSpeedUpdateIter > 0)) then
-    Self.m_tuState.trainSpeedUpdateIter := 0;
+  if ((state) and (Self.m_rtState.trainSpeedUpdateIter = 0)) then
+    Self.m_rtState.trainSpeedUpdateIter := 2;
+  if ((not state) and (Self.m_rtState.trainSpeedUpdateIter > 0)) then
+    Self.m_rtState.trainSpeedUpdateIter := 0;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1271,8 +1271,8 @@ end;
 procedure TBlkRT.ReleasedFromJC();
 var railway: TBlkRailway;
 begin
-  Self.m_tuState.stopStopped := false;
-  Self.m_tuState.stopPassed := false;
+  Self.m_rtState.stopStopped := false;
+  Self.m_rtState.stopPassed := false;
 
   if (Self.railway = nil) then
     Exit();
@@ -1313,11 +1313,11 @@ begin
       sectTracks := Self.ssectTracks;
     TRailwayDirection.no:
       begin
-        if (Self.sTU = nil) then
+        if (Self.sRT = nil) then
           sectTracks := Self.ssectTracks
         else
         begin
-          if (Self.lTU = nil) then
+          if (Self.lRT = nil) then
             sectTracks := Self.lsectTracks
           else
             Exit(false);
@@ -1348,7 +1348,7 @@ procedure TBlkRT.SetBPError(state: Boolean);
 begin
   if (Self.bpError <> state) then
   begin
-    Self.m_tuState.bpError := state;
+    Self.m_rtState.bpError := state;
     Self.Change();
   end;
 end;
@@ -1357,10 +1357,10 @@ end;
 
 function TBlkRT.speed(HV: THV): Cardinal;
 begin
-  if (Self.m_tuSettings.speeds.ContainsKey(HV.data.transience)) then
-    Result := Self.m_tuSettings.speeds[HV.data.transience]
-  else if (Self.m_tuSettings.speeds.ContainsKey(0)) then
-    Result := Self.m_tuSettings.speeds[0]
+  if (Self.m_rtSettings.speeds.ContainsKey(HV.data.transience)) then
+    Result := Self.m_rtSettings.speeds[HV.data.transience]
+  else if (Self.m_rtSettings.speeds.ContainsKey(0)) then
+    Result := Self.m_rtSettings.speeds[0]
   else
     Result := 0;
 end;
@@ -1383,23 +1383,23 @@ end;
 
 function TBlkRT.mIsStop(): Boolean;
 begin
-  Result := (Self.m_tuSettings.stop <> nil);
+  Result := (Self.m_rtSettings.stop <> nil);
 end;
 
 function TBlkRT.mIsStopL(): Boolean;
 begin
-  Result := Self.isStop and Assigned(Self.m_tuSettings.stop.evL);
+  Result := Self.isStop and Assigned(Self.m_rtSettings.stop.evL);
 end;
 
 function TBlkRT.mIsStopS(): Boolean;
 begin
-  Result := Self.isStop and Assigned(Self.m_tuSettings.stop.evS);
+  Result := Self.isStop and Assigned(Self.m_rtSettings.stop.evS);
 end;
 
 function TBlkRT.IsStopSlowedDown(): Boolean;
 begin
-  Result := (Self.isStop) and (Self.m_tuState.stopEnabled) and (not Self.m_tuState.stopPassed) and
-    (not Self.m_tuState.stopSlowReady);
+  Result := (Self.isStop) and (Self.m_rtState.stopEnabled) and (not Self.m_rtState.stopPassed) and
+    (not Self.m_rtState.stopSlowReady);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
