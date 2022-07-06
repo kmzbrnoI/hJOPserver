@@ -194,7 +194,7 @@ type
     procedure Update(); override;
     procedure Change(now: Boolean = false); override;
     // aktualizace TU z trati, vola se zejemna pri zmene smeru a jeho ucel je nastavit navestidla autobloku podle smeru trati
-    procedure ChangeFromTrat();
+    procedure ChangeFromRailway();
 
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
@@ -1233,7 +1233,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRT.ChangeFromTrat();
+procedure TBlkRT.ChangeFromRailway();
 begin
   Self.UpdateSignals();
 end;

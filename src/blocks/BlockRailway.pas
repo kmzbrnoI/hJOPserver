@@ -865,7 +865,7 @@ end;
 procedure TBlkRailway.CallChangeToTU();
 begin
   for var blkRT: TBlkRT in Self.tracks do
-    blkRT.ChangeFromTrat();
+    blkRT.ChangeFromRailway();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
