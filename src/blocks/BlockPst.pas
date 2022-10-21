@@ -1363,9 +1363,9 @@ begin
     // behem potvrzovani se mohly vyskytnout
     if (critical) then
     begin
-      Self.Log('Nelze postavit - kritické bariéry', ltMessage);
+      Self.Log('Nelze predat rizeni - kritické bariéry', ltMessage);
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-        PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
+        PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze předat řízení ' + Self.name + ' - kritické bariéry',
           (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
       barriers.Free();
       Exit();
