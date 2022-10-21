@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, rrEvent,
-  TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo,
+  TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo, JCBarriers,
   Area, StrUtils, JsonDataObjects, TechnologieRCS, Train, RegularExpressions;
 
 type
@@ -99,6 +99,10 @@ type
     changeCallbackOk, changeCallbackErr: TNotifyEvent; // notifikace o nastaveni polohy navestidla
     changeEnd: TTime;
     psts: TList<TBlk>;
+
+    // For UPO when activating 'privolavacka' by DK click
+    upoSenderOR: TObject;
+    upoSenderPnl: TIdContext;
   end;
 
   TBlkSignalSpnl = record
@@ -169,6 +173,9 @@ type
 
     procedure PrivolDKClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton);
     procedure PrivokDKPotvrSekv(Sender: TIdContext; success: Boolean);
+    procedure PrivolBarriers(var barriers: TList<TJCBarrier>; SenderArea: TArea);
+    procedure PrivolBarriersConfirmed(Sender: TObject);
+    procedure PrivolBarriersRejected(Sender: TObject);
     procedure RNZPotvrSekv(Sender: TIdContext; success: Boolean);
 
     function GetTrackId(): TBlk;
@@ -290,7 +297,7 @@ implementation
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSignal,
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
-  predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors;
+  predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO;
 
 constructor TBlkSignal.Create(index: Integer);
 begin
@@ -628,6 +635,7 @@ begin
   if ((Self.signal = ncPrivol) and (code = ncStuj)) then
   begin
     // STUJ po privolavacce -> vypnout zvukovou vyzvu
+    Self.Log('Zhasnuta PN', ltMessage);
     for var area: TArea in Self.m_areas do
       Area.pnBlkCnt := area.pnBlkCnt - 1;
   end;
@@ -1653,12 +1661,61 @@ begin
   begin
     for var area: TArea in Self.areas do
       Area.ORDKClickClient();
-    PanelServer.ConfirmationSequence(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea,
-      'Zapnutí přivolávací návěsti', TBlocks.GetBlksList(Self), nil);
+
+    Self.m_state.upoSenderOR := SenderOR;
+    Self.m_state.upoSenderPnl := SenderPnl;
+
+    var barriers: TJCBarriers := TJCBarriers.Create();
+    var UPO: TUPOItems := TList<TUPOItem>.Create;
+    try
+      Self.PrivolBarriers(barriers, SenderOR as TArea);
+
+      // Only warning barriers implemented yet, no other are required
+
+      if ((barriers.Count > 0) and (senderPnl <> nil)) then
+      begin
+        Self.Log('PN: celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...', ltMessage);
+        for var i: Integer := 0 to barriers.Count - 1 do
+          UPO.Add(JCBarriers.JCBarrierToMessage(barriers[i]));
+
+        PanelServer.UPO(SenderPnl, UPO, false, Self.PrivolBarriersConfirmed, Self.PrivolBarriersRejected, Self);
+      end else begin
+        Self.PrivolBarriersConfirmed(Self);
+      end;
+
+    finally
+      barriers.Free();
+      UPO.Free();
+    end;
+
   end else begin
     if (Button = TPanelButton.F2) then
       PanelServer.Menu(SenderPnl, Self, TArea(SenderOR), '$' + TArea(SenderOR).name + ',-,' + 'KC');
   end;
+end;
+
+procedure TBlkSignal.PrivolBarriers(var barriers: TList<TJCBarrier>; SenderArea: TArea);
+begin
+  var privol: TBlksList := Blocks.GetNavPrivol(SenderArea);
+  for var i: Integer := 0 to privol.Count - 1 do
+    barriers.Add(JCBarrier(barPrivol, privol[i] as TBlk, (privol[i] as TBlk).id));
+end;
+
+procedure TBlkSignal.PrivolBarriersConfirmed(Sender: TObject);
+begin
+  if ((Self.m_state.upoSenderOR = nil) or (Self.m_state.upoSenderPnl = nil)) then
+    Exit();
+
+  PanelServer.ConfirmationSequence(Self.m_state.upoSenderPnl, Self.PrivokDKPotvrSekv, Self.m_state.upoSenderOR as TArea,
+    'Zapnutí přivolávací návěsti', TBlocks.GetBlksList(Self), nil);
+
+  Self.m_state.upoSenderOR := nil;
+  Self.m_state.upoSenderPnl := nil;
+end;
+
+procedure TBlkSignal.PrivolBarriersRejected(Sender: TObject);
+begin
+  Self.selected := TBlkSignalSelection.none;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1669,6 +1726,7 @@ begin
   begin
     Self.m_state.selected := TBlkSignalSelection.none;
     Self.signal := ncPrivol;
+    Self.Log('Rozsvícena PN bez podpory zab. zař. / prodloužena PN', ltMessage);
   end else begin
     Self.selected := TBlkSignalSelection.none;
   end;
