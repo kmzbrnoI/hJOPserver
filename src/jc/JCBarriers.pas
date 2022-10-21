@@ -374,21 +374,21 @@ begin
 
     barPrivol:
       begin
-        result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
+        result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
         result[1] := GetUPOLine('Svítí přivolávací návěst');
         result[2] := GetUPOLine(barrier.Block.name);
       end;
 
     barHVManual:
       begin
-        result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
+        result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
         result[1] := GetUPOLine('Hnací vozidlo v ručním řízení');
         result[2] := GetUPOLine(IntToStr(barrier.param) + ' : ' + HVDb[barrier.param].name);
       end;
 
     barHVNotAllManual:
       begin
-        result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
+        result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
         result[1] := GetUPOLine('Ne všechna HV v ručním řízení');
         result[2] := GetUPOLine('');
       end;
@@ -402,14 +402,14 @@ begin
 
     barTrainWrongDir:
       begin
-        result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
+        result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
         result[1] := GetUPOLine('Jízda proti směru soupravy');
         result[2] := GetUPOLine('Souprava ' + trains[barrier.param].name);
       end;
 
     barTrainNotFront:
       begin
-        result[0] := GetUPOLine('POZOR !', taCenter, clYellow, $A0A0A0);
+        result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
         result[1] := GetUPOLine('Čelo vlaku je na jiném úseku');
         result[2] := GetUPOLine('Souprava ' + trains[barrier.param].name);
       end;
