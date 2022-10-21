@@ -519,7 +519,7 @@ begin
   for var JC: TJC in Self.JCs do
   begin
     if ((JC.typ = TJCType.shunt) or (JC.data.nextSignalType <> TJCNextSignalType.signal) or
-      (JC.data.nextSignalId <> signal.id)) then
+      (JC.data.nextSignalId <> signal.id) or (not JC.active)) then
       continue;
 
     Blocks.GetBlkByID(JC.data.signalId, TBlk(prevSignal));
