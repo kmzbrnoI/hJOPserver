@@ -675,18 +675,16 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TArea.PanelClick(Sender: TIDContext; blokid: Integer; Button: TPanelButton; params: string = '');
-var
-  blk: TBlk;
-  rights: TAreaRights;
 begin
-  rights := Self.PanelDbRights(Sender);
+  var rights := Self.PanelDbRights(Sender);
   if (rights < TAreaRights.write) then
   begin
     PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
     Exit();
   end;
 
-  if (Blocks.GetBlkByID(blokid, blk) <> 0) then
+  var blk := Blocks.GetBlkByID(blokid);
+  if (blk = nil) then
     Exit();
 
   // musime provest kontrolu, jestli OR ma povoleno menit blok
