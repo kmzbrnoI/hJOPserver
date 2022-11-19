@@ -112,6 +112,7 @@ type
 
     function GetLastTrack(): TBlk; overload;
     function GetLockout(): Boolean;
+    function IsFree(): Boolean; // free = able to change railway direction (definition from "releovka")
 
   public
     constructor Create(index: Integer);
@@ -182,6 +183,7 @@ type
     property lastTrack: TBlk read GetLastTrack;
     property lockout: Boolean read GetLockout;
     property tracks: TList<TBlkRT> read m_tracks;
+    property free: Boolean read IsFree;
 
     // vrati hranicni navestidla
     property signalA: TBlk read GetSignalA; // hranicni navestidlo trati blize zacatku trati
@@ -1098,6 +1100,12 @@ begin
     if ((blk <> nil) and (blk.typ = TBlkType.btRT)) then
       Self.m_tracks.Add(TBlkRT(blk));
   end;
+end;
+
+function TBlkRailway.IsFree(): Boolean;
+begin
+  Result := ((not Self.request) and (not Self.RBPCan) and (not Self.emLock) and
+             (not Self.occupied) and (not Self.zaver) and (not Self.departureForbidden));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
