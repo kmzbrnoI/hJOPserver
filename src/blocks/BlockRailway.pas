@@ -1076,16 +1076,22 @@ end;
 
 procedure TBlkRailway.GetPtState(json: TJsonObject);
 begin
-  json['lock'] := Self.m_state.zaver;
-  json['direction'] := Integer(Self.m_state.direction);
-  json['request'] := Self.m_state.request;
+  json['lock'] := Self.zaver;
+  json['direction'] := Integer(Self.direction);
+  json['request'] := Self.request;
 
   for var train: TBlkRailwayTrain in Self.m_state.trains do
     if (not train.predict) then
       json.A['trains'].Add(train.Train.name);
   if (Self.m_state.trainPredict <> nil) then
     json['trainPredict'] := Self.m_state.trainPredict.Train;
+
   json['BP'] := Self.m_state.BP;
+  json['free'] := Self.free;
+  json['rbpcan'] := Self.RBPCan;
+  json['occupied'] := Self.occupied;
+  json['departureForbidden'] := Self.departureForbidden;
+  json['emLock'] := Self.emLock;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
