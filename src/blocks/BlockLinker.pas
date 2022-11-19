@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes,
+uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, JsonDataObjects,
   IdContext, StrUtils, Area, Generics.Collections;
 
 type
@@ -78,6 +78,9 @@ type
 
     function GetSettings(): TBlkLinkerSettings;
     procedure SetSettings(data: TBlkLinkerSettings);
+
+    procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
+    procedure GetPtState(json: TJsonObject); override;
 
     procedure ApproveRequest();
     function CanZTS(): Boolean;
@@ -615,6 +618,29 @@ begin
   end;
 
   Result := Result + '{' + railway.GetTrainsList(',') + '}';
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkLinker.GetPtData(json: TJsonObject; includeState: Boolean);
+begin
+  inherited;
+
+  json['parent'] := Self.m_settings.parent;
+
+  if (includeState) then
+    Self.GetPtState(json['blockState']);
+end;
+
+procedure TBlkLinker.GetPtState(json: TJsonObject);
+begin
+  json['enabled'] := Self.enabled;
+  json['departureForbidden'] := Self.departureForbidden;
+  json['emLock'] := Self.emLock;
+  json['request'] := Self.request;
+
+  if (Self.note <> '') then
+    json['note'] := Self.note;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
