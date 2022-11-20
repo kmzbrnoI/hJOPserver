@@ -102,7 +102,6 @@ type
     turnoff_callback: TNotifyEvent;
 
     eOnReady: TReadyEvent;
-    eOnOpenError: TErrorEvent;
 
     mLogLevelFile: TTrkLogLevel;
     mLogLevelTable: TTrkLogLevel;
@@ -166,8 +165,7 @@ type
     function NearestLowerSpeed(Speed: Cardinal): Cardinal;
 
     property OnReady: TReadyEvent read eOnReady write eOnReady;
-    property OnOpenError: TErrorEvent read eOnOpenError write eOnOpenError;
-
+    
     property logLevelFile: TTrkLogLevel read mLogLevelFile write SetLoglevelFile;
     property logLevelTable: TTrkLogLevel read mLogLevelTable write SetLoglevelTable;
 
@@ -242,7 +240,7 @@ begin
 
   TTrakceIFace(Self).LoadLib(filename, Self.configDir + '\' + ChangeFileExt(libName, '.ini'));
 
-  Log(llInfo, 'Načtena knihovna ' + libName);
+  Log(llInfo, 'Načtena knihovna ' + libName + ', Trakce API v'+Self.apiVersionStr());
 
   if (Self.unbound.Count = 0) then
   begin
@@ -331,7 +329,7 @@ end;
 procedure TTrakce.TrkLog(Sender: TObject; lvl: TTrkLogLevel; msg: string);
 begin
   Self.Log(lvl, msg);
-  if ((Self.opening) and (lvl = llErrors) and (Assigned(Self.OnOpenError))) then
+  if ((Self.opening) and (lvl = llErrors) and (Assigned(Self.OnOpenError)) and (Self.apiVersion < $0101)) then
   begin
     Self.opening := false;
     Self.OnOpenError(Self, msg);
