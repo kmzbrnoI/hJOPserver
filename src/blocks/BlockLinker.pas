@@ -487,7 +487,7 @@ end;
 function TBlkLinker.CanZTS(): Boolean;
 begin
   var railway := TBlkRailway(Self.parent);
-  if ((railway = nil) or (not railway.free) or (Self.request)) then
+  if ((railway = nil) or (not railway.railwayFree) or (Self.request)) then
     Exit(false);
 
   if (railway.IsFirstLinker(Self)) then

@@ -183,7 +183,7 @@ type
     property lastTrack: TBlk read GetLastTrack;
     property lockout: Boolean read GetLockout;
     property tracks: TList<TBlkRT> read m_tracks;
-    property free: Boolean read IsFree;
+    property railwayFree: Boolean read IsFree;
 
     // vrati hranicni navestidla
     property signalA: TBlk read GetSignalA; // hranicni navestidlo trati blize zacatku trati
@@ -1087,7 +1087,7 @@ begin
     json['trainPredict'] := Self.m_state.trainPredict.Train;
 
   json['BP'] := Self.m_state.BP;
-  json['free'] := Self.free;
+  json['free'] := Self.railwayFree;
   json['rbpcan'] := Self.RBPCan;
   json['occupied'] := Self.occupied;
   json['departureForbidden'] := Self.departureForbidden;
