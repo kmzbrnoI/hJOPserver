@@ -103,6 +103,7 @@ type
       params: string = ''); virtual;
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); virtual;
     function PanelStateString(): string; virtual;
+    function AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; item: string): Boolean; virtual;
 
     // Tyto procedury vraci json objekt do \json, z dedicich bloku
     // je nutno volat inherited.
@@ -524,6 +525,14 @@ procedure TBlk.BottomErrorBroadcast(error: string; system: string; minRights: TA
 begin
   for var area: TArea in Self.areas do
     area.BlkWriteError(Self, error, system, minRights);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlk.AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; item: string): Boolean;
+begin
+  var menu: string := Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+  Result := menu.Contains(item); // default = accept only those items persent in menu now
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

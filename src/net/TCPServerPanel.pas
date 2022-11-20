@@ -666,6 +666,19 @@ begin
     orRef.Menu := nil; // musi byt v tomto poradi - pri volani menu do bloku uz musi byt menu = nil
     F_Main.LV_Clients.items[orRef.index].SubItems[_LV_CLIENTS_COL_MENU] := '';
 
+    var rights := orRef.menu_or.PanelDbRights(AContext);
+    if (rights < TAreaRights.write) then
+    begin
+      PanelServer.SendInfoMsg(AContext, TArea._COM_ACCESS_DENIED);
+      Exit();
+    end;
+
+    if (not blk.AcceptsMenuClick(AContext, orRef.menu_or, rights, parsed[2])) then
+    begin
+      PanelServer.SendInfoMsg(AContext, 'Neplatná volba');
+      Exit();
+    end;
+
     if (parsed.Count > 2) then
       blk.PanelMenuClick(AContext, orRef.menu_or, parsed[2], StrToIntDef(parsed[3], -1))
     else

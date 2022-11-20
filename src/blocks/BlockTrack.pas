@@ -270,6 +270,7 @@ type
       params: string = ''); override;
     procedure POdjChanged(trainId: Integer; var podj: TPOdj);
     function PanelStateString(): string; override;
+    function AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; item: string): Boolean; override;
 
     // PT:
 
@@ -2471,6 +2472,23 @@ begin
   end;
 
   Result := Result + '}';
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrack.AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; item: string): Boolean;
+begin
+  var panelData := TPanelConnData(SenderPnl.Data);
+  if ((panelData.train_menu_index >= 0) and (panelData.train_menu_index < Self.trains.Count)) then
+  begin
+    var train: TTrain := TrainDb.trains[Self.trains[panelData.train_menu_index]];
+    var trainmenu: string := train.Menu(SenderPnl, SenderOR, Self, panelData.train_menu_index);
+    if (trainmenu.Contains(item)) then
+      Exit(true);
+  end;
+
+  var menu: string := Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+  Result := menu.Contains(item); // default = accept only those items persent in menu now
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

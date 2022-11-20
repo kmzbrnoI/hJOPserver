@@ -108,7 +108,8 @@
         <DCC_BplOutput>..\x86-64\outunit\</DCC_BplOutput>
         <DCC_DcuOutput>..\x86-64\outunit\</DCC_DcuOutput>
         <DCC_ExeOutput>..\x86-64\output\</DCC_ExeOutput>
-        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Release>4</VerInfo_Release>
+        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.3.4.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>True</DCC_LocalDebugSymbols>
@@ -129,7 +130,8 @@
         <DCC_DcuOutput>..\x86-64\outunit\</DCC_DcuOutput>
         <DCC_ExeOutput>..\x86-64\output\</DCC_ExeOutput>
         <BT_BuildType>Debug</BT_BuildType>
-        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.3.2.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.3.4.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Release>4</VerInfo_Release>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">

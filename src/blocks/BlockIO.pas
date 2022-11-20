@@ -119,7 +119,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkIO.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
-var strs: TStrings;
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 

@@ -100,7 +100,7 @@ type
   /// //////////////////////////////////////////////////////////////////////////
 
   TArea = class
-  private const
+  public const
     _COM_ACCESS_DENIED = 'Přístup odepřen';
 
   private
@@ -112,7 +112,6 @@ type
 
     procedure PanelDbAdd(Panel: TIDContext; rights: TAreaRights; user: string);
     procedure PanelDbRemove(Panel: TIDContext; contextDestroyed: Boolean = false);
-    function PanelDbRights(Panel: TIDContext): TAreaRights;
     function PanelDbIndex(Panel: TIDContext): Integer;
 
     procedure NUZTimeOut(Sender: TObject); // NUZ timeout callback
@@ -173,6 +172,7 @@ type
     procedure LoadStat(ini: TMemIniFile; section: string);
     procedure SaveStat(ini: TMemIniFile; section: string);
 
+    function PanelDbRights(Panel: TIDContext): TAreaRights;
     procedure RemoveClient(Panel: TIDContext; contextDestroyed: Boolean = false);
 
     procedure Update();
