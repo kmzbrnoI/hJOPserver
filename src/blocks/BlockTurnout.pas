@@ -110,6 +110,7 @@ type
 
     _T_MOVING_TIMEOUT_SEC = 10;
     _T_MOVING_MOCK_SEC = 2;
+    _T_MOVING_ACTIVE_OUTPUT_MS = 500;
 
   private
     m_settings: TBlkTurnoutSettings;
@@ -466,10 +467,9 @@ begin
 
   if (enable) then
   begin
-    if (Self.posDetection) then
-      Self.m_state.position := none
-    else
-      Self.m_state.position := Self.m_state.positionSave;
+    Self.m_state.position := none;
+    if (not Self.posDetection) then
+      Self.SetPosition(Self.m_state.positionSave);
   end;
 
   Self.m_state.psts.Clear();
@@ -977,7 +977,9 @@ begin
   if (not lock) then
   begin
     Self.m_nullOutput.enabled := true;
-    Self.m_nullOutput.NullOutputTime := now + EncodeTime(0, 0, 0, 500);
+    Self.m_nullOutput.NullOutputTime := now + EncodeTime(
+      0, 0, _T_MOVING_ACTIVE_OUTPUT_MS div 1000, _T_MOVING_ACTIVE_OUTPUT_MS mod 1000
+    );
   end;
 
   if (coupling <> nil) then
