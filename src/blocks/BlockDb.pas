@@ -65,7 +65,6 @@ type
     function GetBlkName(id: Integer): string;
     function GetBlkIndexName(index: Integer): string;
 
-    function GetBlkSignalSelected(obl: string): TBlk;
     function GetBlkTrackTrainMoving(obl: string): TBlk;
 
     function GetNavPrivol(Area: TArea): TBlksList;
@@ -616,31 +615,6 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-
-function TBlocks.GetBlkSignalSelected(obl: string): TBlk;
-var orindex: Integer;
-begin
-  for var blk: TBlk in Self.data do
-  begin
-    if (Blk.typ <> btSignal) then
-      continue;
-
-    orindex := -1;
-    for var j := 0 to (Blk as TBlkSignal).areas.count - 1 do
-      if ((Blk as TBlkSignal).areas[j].id = obl) then
-        orindex := j;
-
-    if (orindex = -1) then
-      continue;
-
-    if (((Blk as TBlkSignal).selected > TBlkSignalSelection.none) and
-      ((JCDb.FindJCActivating((Blk as TBlkSignal).id) = nil) or ((Blk as TBlkSignal).areas[orindex].stack.mode = VZ)))
-    then
-      Exit(Blk);
-  end;
-
-  Result := nil;
-end;
 
 function TBlocks.GetBlkTrackTrainMoving(obl: string): TBlk;
 begin

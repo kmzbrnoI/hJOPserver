@@ -166,7 +166,6 @@ type
   public
     stack: TORStack;
     changed: Boolean;
-    vb: TList<TObject>; // variation points active
     connected: TList<TAreaPanel>;
     announcement: TStationAnnouncement;
 
@@ -200,8 +199,6 @@ type
     procedure BroadcastGlobalData(data: string; min_rights: TAreaRights = read);
 
     procedure BroadcastBottomError(err: string; tech: string; min_rights: TAreaRights = read; stanice: string = '');
-
-    procedure ClearVb();
 
     // --- called from technological blocks ---
 
@@ -325,7 +322,6 @@ begin
   Self.m_state.regPlease := nil;
 
   Self.stack := TORStack.Create(index, Self);
-  Self.vb := TList<TObject>.Create();
   Self.changed := false;
 
   Self.countdowns := TList<TAreaCountdown>.Create();
@@ -339,7 +335,6 @@ begin
 
   Self.stack.Free();
   Self.m_data.lights.Free();
-  Self.vb.Free();
   Self.countdowns.Free();
   Self.connected.Free();
   Self.RCSs.Free();
@@ -776,8 +771,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TArea.PanelEscape(Sender: TIDContext);
-var
-  blk: TBlk;
 begin
   if (not IsWritable(Sender)) then
   begin
@@ -788,17 +781,7 @@ begin
 
   Self.ORDKClickClient();
 
-  if (Self.vb.Count > 0) then
-  begin
-    (Self.vb[Self.vb.Count - 1] as TBlkTrack).jcEnd := TZaver.no;
-    Self.vb.Delete(Self.vb.Count - 1);
-  end else begin
-    blk := Blocks.GetBlkSignalSelected(Self.id);
-    if (blk <> nil) then
-      (blk as TBlkSignal).selected := TBlkSignalSelection.none;
-  end;
-
-  blk := Blocks.GetBlkTrackTrainMoving(Self.id);
+  var blk := Blocks.GetBlkTrackTrainMoving(Self.id);
   if (blk <> nil) then
     (blk as TBlkTrack).trainMoving := -1;
 end;
@@ -1800,15 +1783,6 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.ClearVb();
-begin
-  for var i: Integer := 0 to Self.vb.Count - 1 do
-    (Self.vb[i] as TBlkTrack).jcEnd := TZaver.no;
-  Self.vb.Clear();
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
 function TArea.GetORPanel(conn: TIDContext; var ORPanel: TAreaPanel): Integer;
 begin
   for var i: Integer := 0 to Self.connected.Count - 1 do
@@ -1937,6 +1911,10 @@ begin
   if (Self.timerCnt > 0) then
     PanelServer.DeleteSound(Panel, _SND_TIMEOUT);
   Self.stack.OnWriteToRead(Panel);
+
+  // This will hide path blocks in other panel areas, but it's still better than not hiding anything
+  // (we don't know which blocks to hide)
+  TPanelConnData(Panel.Data).ClearAndHidePathBlocks();
 end;
 
 procedure TArea.AuthReadersTo(rights: TAreaRights; exception: TIdContext = nil);

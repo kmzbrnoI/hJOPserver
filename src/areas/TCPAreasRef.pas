@@ -31,6 +31,8 @@ type
     procedure OnUnreachable(AContext: TIdContext);
     procedure PingNewReceived(time: TTime);
 
+    class procedure HidePathBlock(blk: TBlk);
+
   public
     areas: TList<TArea>;
     protocol_version: string;
@@ -46,6 +48,10 @@ type
     funcsVyznamReq: Boolean;
     // jestli mame panelu odesilat zmeny vyznamu funkci; zmeny se odesilaji jen, pokud panel alespon jednou zazadal o seznam vyznamu funkci
     maus: Boolean; // jestli je k panelu pripojeny uLI-daemon pripraveny prijimat adresy
+
+    // bloky aktualne zadavane JC (se zobrazenym podbarvenim)
+    // 0. blok je vzdy navestidlo, nasleduji variantni body, posledni blok je posledni usek JC
+    pathBlocks: TList<TBlk>;
 
     train_new_usek_index: Integer; // index nove vytvarene soupravy na useku (-1 pokud neni vytvarena)
     train_edit: TTrain; // souprava, kterou panel edituje
@@ -76,7 +82,7 @@ type
     destructor Destroy(); override;
 
     procedure Escape(AContext: TIdContext); // volano pri stisku Escape v panelu
-    procedure Reset();
+    function Reset(weak: boolean = false): Boolean; // returns if handled
     procedure ResetTrains();
 
     class function ORPing(id: Cardinal; sent: TDateTime): TAreaPing;
@@ -84,18 +90,24 @@ type
     procedure PingUpdate(AContext: TIdContext);
     procedure PongReceived(id: Cardinal);
 
+    procedure ClearAndHidePathBlocks();
+    procedure DeleteLastPathBlock();
+    procedure DeleteAndHideLastPathBlock();
+    function PathIsStartSignal(): Boolean;
+
     property ping: TTime read GetPing;
   end;
 
 implementation
 
-uses fMain, TCPServerPanel, RegulatorTCP;
+uses fMain, TCPServerPanel, RegulatorTCP, BlockSignal, BlockTrack;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 constructor TPanelConnData.Create(index: Integer);
 begin
   inherited Create();
+  Self.pathBlocks := TList<TBlk>.Create();
   Self.regulator_loks := TList<THV>.Create();
   Self.st_hlaseni := TList<TArea>.Create();
   Self.soundDict := TDictionary<Integer, Cardinal>.Create();
@@ -112,6 +124,7 @@ end;
 
 destructor TPanelConnData.Destroy();
 begin
+  Self.pathBlocks.Free();
   Self.areas.Free();
   Self.st_hlaseni.Free();
   Self.regulator_loks.Free();
@@ -125,31 +138,71 @@ end;
 
 procedure TPanelConnData.Escape(AContext: TIdContext);
 begin
-  if ((Self.note = nil) and (Self.lockout = nil) and (not Assigned(Self.potvr)) and (Self.menu = nil) and
-    (not Assigned(Self.UPO_OK))) then
+  var handled := Self.Reset(true);
+
+  if (not handled) then
     for var area: TArea in Self.areas do
       Area.PanelEscape(AContext);
-
-  Self.Reset();
 end;
 
-procedure TPanelConnData.Reset();
+function TPanelConnData.Reset(weak: boolean = false): Boolean;
 begin
-  Self.note := nil;
-  Self.lockout := nil;
-  Self.potvr := nil;
-  Self.menu := nil;
-  Self.menu_or := nil;
-  Self.UPO_OK := nil;
-  Self.UPO_Esc := nil;
-  Self.UPO_ref := nil;
-  Self.ResetTrains();
+  Result := false;
 
-  Self.podj_track := nil;
-  Self.podj_trainid := -1;
+  if (Self.note <> nil) then
+  begin
+    Self.note := nil;
+    Result := true;
+  end;
+
+  if (Self.lockout <> nil) then
+  begin
+    Self.lockout := nil;
+    Result := true;
+  end;
+
+  if (Assigned(Self.potvr)) then
+  begin
+    Self.potvr := nil;
+    Result := true;
+  end;
+
+  if (Self.menu <> nil) then
+  begin
+    Self.menu := nil;
+    Self.menu_or := nil;
+    Self.train_menu_index := -1;
+    Result := true;
+  end;
+
+  if (Self.UPO_ref <> nil) then
+  begin
+    Self.UPO_OK := nil;
+    Self.UPO_Esc := nil;
+    Self.UPO_ref := nil;
+    Result := true;
+  end;
+
+  if ((Self.train_edit <> nil) or (Self.train_usek <> nil)) then
+  begin
+    Self.ResetTrains();
+    Result := true;
+  end;
+
+  if (Self.podj_track <> nil) then
+  begin
+    Self.podj_track := nil;
+    Self.podj_trainid := -1;
+    Result := true;
+  end;
+
+  if (((not Result) or (not weak)) and (Self.pathBlocks.Count > 0)) then
+  begin
+    Self.DeleteAndHideLastPathBlock();
+    Result := true;
+  end;
 
   Self.funcsVyznamReq := false;
-  Self.train_menu_index := -1;
 
   F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_MENU] := '';
   F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_STIT] := '';
@@ -278,6 +331,46 @@ begin
   Self.ping_received_next_index := (Self.ping_received_next_index + 1) mod _PING_WINDOW_SIZE;
 
   PanelServer.GUIQueueLineToRefresh(Self.index);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TPanelConnData.ClearAndHidePathBlocks();
+begin
+  for var blk: TBlk in Self.pathBlocks do
+    Self.HidePathBlock(blk);
+
+  Self.pathBlocks.Clear();
+end;
+
+procedure TPanelConnData.DeleteLastPathBlock();
+begin
+  if (Self.pathBlocks.Count = 0) then
+    raise Exception.Create('pathBlocks empty');
+  Self.pathBlocks.Delete(Self.pathBlocks.Count-1);
+end;
+
+procedure TPanelConnData.DeleteAndHideLastPathBlock();
+begin
+  if (Self.pathBlocks.Count = 0) then
+    raise Exception.Create('pathBlocks empty');
+  Self.HidePathBlock(Self.pathBlocks[Self.pathBlocks.Count-1]);
+  Self.DeleteLastPathBlock();
+end;
+
+function TPanelConnData.PathIsStartSignal(): Boolean;
+begin
+  Result := ((Self.pathBlocks.Count > 0) and (Self.pathBlocks[0].typ = btSignal));
+end;
+
+class procedure TPanelConnData.HidePathBlock(blk: TBlk);
+begin
+  case (blk.typ) of
+    btSignal:
+      TBlkSignal(blk).selected := TBlkSignalSelection.none;
+    btTrack, btRT:
+      TBlkTrack(blk).jcEnd := TZaver.no;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

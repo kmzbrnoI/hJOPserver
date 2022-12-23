@@ -154,8 +154,8 @@ type
     function CanTrainSpeedInsert(index: Integer): Boolean;
     function IsStujForTrain(Train: TTrain): Boolean;
     function RealBoosterShortCircuit(): TBoosterSignal;
-    function CanBeNextVB(vbs: TList<TObject>; start: TBlk): Boolean;
-    function CanBeKC(vbs: TList<TObject>; start: TBlk): Boolean;
+    function CanBeNextVB(blocks: TList<TBlk>): Boolean;
+    function CanBeKC(blocks: TList<TBlk>): Boolean;
 
     function GetSignalL(): TBlk;
     function GetSignalS(): TBlk;
@@ -165,7 +165,7 @@ type
   protected
     m_settings: TBlkTrackSettings;
 
-    procedure MenuVBClick(SenderPnl: TIdContext; SenderOR: TObject);
+    function MenuVBClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
     function MenuKCClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
     function MoveTrain(SenderPnl: TIdContext; SenderOR: TObject; trainLocalIndex: Integer): Boolean;
 
@@ -1095,18 +1095,18 @@ end;
 // pokud volba nebyla uspesna, vraci false a v tom pripade je vyvolano menu
 function TBlkTrack.MenuKCClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
 begin
-  if ((Self.m_state.jcEnd <> TZaver.no) and (not(SenderOR as TArea).vb.Contains(Self))) then
+  if ((Self.m_state.jcEnd <> TZaver.no) and (not TPanelConnData(SenderPnl.Data).pathBlocks.Contains(Self))) then
   begin
     PanelServer.SendInfoMsg(SenderPnl, 'Probíhá volba');
     Exit(true);
   end;
 
-  if ((SenderOR as TArea).vb.Contains(Self)) then
-    (SenderOR as TArea).vb.Remove(Self);
-
-  var signal: TBlkSignal := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id) as TBlkSignal;
-  if (signal = nil) then
+  if (TPanelConnData(SenderPnl.Data).pathBlocks.Count < 1) then // no start selected
     Exit(false);
+  if (not TPanelConnData(SenderPnl.Data).PathIsStartSignal()) then
+    Exit(false);
+
+  var signal := TBlkSignal(TPanelConnData(SenderPnl.Data).pathBlocks[0]);
 
   case (signal.selected) of
     TBlkSignalSelection.VC:
@@ -1117,31 +1117,40 @@ begin
       Self.m_state.jcEnd := TZaver.nouz;
   end; // case
 
-  JCDb.ActivateJC(signal, Self, SenderPnl, SenderOR, signal.beginAB);
+  TPanelConnData(SenderPnl.Data).pathBlocks.Add(Self);
+
+  try
+    JCDb.ActivateJC(TPanelConnData(SenderPnl.Data).pathBlocks, SenderPnl, SenderOR, signal.beginAB);
+  except
+    on E: Exception do
+    begin
+      AppEvents.LogException(E, 'TBlkTrack.MenuKCClick - JCDb.ActivateJC');
+      TPanelConnData(SenderPnl.Data).DeleteAndHideLastPathBlock();
+      PanelServer.BottomError(SenderPnl, 'Vnitřní chyba serveru', TArea(SenderOR).shortName, 'TECHNOLOGIE')
+    end;
+  end;
 
   Self.Change();
   Result := true;
 end;
 
-procedure TBlkTrack.MenuVBClick(SenderPnl: TIdContext; SenderOR: TObject);
+function TBlkTrack.MenuVBClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
 begin
   if (Self.m_state.jcEnd <> TZaver.no) then
   begin
     PanelServer.SendInfoMsg(SenderPnl, 'Probíhá volba');
-    Exit();
+    Exit(true);
   end;
 
-  var blk: TBlk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
-  if (blk = nil) then
-    Exit();
-
-  if (not Self.CanBeNextVB((SenderOR as TArea).vb, blk)) then
+  if (not Self.CanBeNextVB(TPanelConnData(SenderPnl.Data).pathBlocks)) then
   begin
     PanelServer.SendInfoMsg(SenderPnl, 'Není variantním bodem žádné JC');
-    Exit();
+    Exit(true);
   end;
 
-  case ((blk as TBlkSignal).selected) of
+  var startSignal := TBlkSignal(TPanelConnData(SenderPnl.Data).pathBlocks[0]);
+
+  case (startSignal.selected) of
     TBlkSignalSelection.VC:
       Self.m_state.jcEnd := TZaver.vlak;
     TBlkSignalSelection.PC:
@@ -1152,9 +1161,9 @@ begin
       Self.m_state.jcEnd := TZaver.nouz;
   end;
 
-  (SenderOR as TArea).vb.Add(Self);
-
+  TPanelConnData(SenderPnl.Data).pathBlocks.Add(Self);
   Self.Change();
+  Result := true;
 end;
 
 procedure TBlkTrack.MenuNUZStartClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1390,9 +1399,7 @@ end;
 
 // vytvoreni menu pro potreby konkretniho bloku:
 function TBlkTrack.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
-var blk: TBlk;
-  canAdd: Boolean;
-  addStr: string;
+var addStr: string;
 begin
   Result := inherited;
 
@@ -1407,7 +1414,7 @@ begin
     var train: TTrain := TrainDb.trains[Self.trains[0]];
     Result := Result + train.Menu(SenderPnl, SenderOR, Self, 0) + '-,';
   end else begin
-    canAdd := ((Self.CanStandTrain()) and (((not Self.TrainsFull()) and ((Self.m_state.occupied = TTrackState.occupied)
+    var canAdd := ((Self.CanStandTrain()) and (((not Self.TrainsFull()) and ((Self.m_state.occupied = TTrackState.occupied)
       or (Self.m_settings.RCSAddrs.Count = 0))) or // novy vlak
       (addStr = 'VLOŽ vlak,') // presun vlaku
       ));
@@ -1440,14 +1447,13 @@ begin
     Result := Result + '-,NUZ>,';
 
   // 11 = KC
-  blk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
-  if (blk <> nil) then
+  if (TPanelConnData(SenderPnl.Data).PathIsStartSignal()) then
   begin
-    if ((Self.CanBeKC((SenderOR as TArea).vb, blk)) or Self.CanBeNextVB((SenderOR as TArea).vb, blk)) then
+    if ((Self.CanBeKC(TPanelConnData(SenderPnl.Data).pathBlocks)) or Self.CanBeNextVB(TPanelConnData(SenderPnl.Data).pathBlocks)) then
       Result := Result + '-,';
-    if (Self.CanBeKC((SenderOR as TArea).vb, blk)) then
+    if (Self.CanBeKC(TPanelConnData(SenderPnl.Data).pathBlocks)) then
       Result := Result + 'KC,';
-    if (Self.CanBeNextVB((SenderOR as TArea).vb, blk)) then
+    if (Self.CanBeNextVB(TPanelConnData(SenderPnl.Data).pathBlocks)) then
       Result := Result + 'VB,';
   end;
 
@@ -1505,19 +1511,21 @@ begin
 
     ENTER:
       begin
-        if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
-          if (((Self.m_settings.maxTrains <> 1) and (Self.trains.Count > 0)) or
-            (not Self.MoveTrain(SenderPnl, SenderOR, 0))) then
-            Self.ShowProperMenu(SenderPnl, (SenderOR as TArea), rights, params);
+        var handled := Self.MenuKCClick(SenderPnl, SenderOR);
+        if (not handled) then
+        begin
+          if ((Self.m_settings.maxTrains <> 1) and (Self.trains.Count > 0)) then
+            handled := Self.MoveTrain(SenderPnl, SenderOR, 0);
+        end;
+        if (not handled) then
+          Self.ShowProperMenu(SenderPnl, (SenderOR as TArea), rights, params);
       end;
 
     F1:
       begin
-        blk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
-        if (blk = nil) then
+        var handled := Self.MenuVBClick(SenderPnl, SenderOR);
+        if (not handled) then
           Self.ShowProperMenu(SenderPnl, (SenderOR as TArea), rights, params)
-        else
-          Self.MenuVBClick(SenderPnl, SenderOR);
       end;
   end;
 end;
@@ -2512,29 +2520,33 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkTrack.CanBeNextVB(vbs: TList<TObject>; start: TBlk): Boolean;
-var vbs_plus_me: TList<TObject>;
+function TBlkTrack.CanBeNextVB(blocks: TList<TBlk>): Boolean;
 begin
-  if (vbs.Contains(Self)) then
+  if (blocks.Contains(Self)) then
     Exit(false);
 
-  vbs_plus_me := TList<TObject>.Create();
-
+  var vbs_plus_me := TList<TBlk>.Create();
   try
-    vbs_plus_me.AddRange(vbs);
+    vbs_plus_me.AddRange(blocks);
     vbs_plus_me.Add(Self);
 
-    Result := ((JCDb.IsAnyJCWithPrefix(start as TBlkSignal, vbs_plus_me)) or
-      (MultiJCDb.IsAnyMJCWithPrefix(start as TBlkSignal, vbs_plus_me)));
+    Result := ((JCDb.IsAnyJCWithPrefix(vbs_plus_me)) or (MultiJCDb.IsAnyMJCWithPrefix(vbs_plus_me)));
   finally
     vbs_plus_me.free();
   end;
 end;
 
-function TBlkTrack.CanBeKC(vbs: TList<TObject>; start: TBlk): Boolean;
+function TBlkTrack.CanBeKC(blocks: TList<TBlk>): Boolean;
 begin
-  Result := ((JCDb.FindJC(start as TBlkSignal, vbs, Self) <> nil) or (MultiJCDb.Find(start as TBlkSignal, vbs,
-    Self) <> nil));
+  var withMe := TList<TBlk>.Create();
+  try
+    withMe.AddRange(blocks);
+    withMe.Add(Self);
+
+    Result := ((JCDb.FindJC(withMe) <> nil) or (MultiJCDb.Find(withMe) <> nil));
+  finally
+    withMe.Free();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -297,7 +297,7 @@ implementation
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSignal,
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
-  predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO;
+  predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO, TCPAreasRef;
 
 constructor TBlkSignal.Create(index: Integer);
 begin
@@ -827,12 +827,8 @@ begin
     if (((Self.dnJC <> nil) and (Self.dnJC.destroyEndBlock < 1)) or (JCDb.FindJCActivating(Self.id) <> nil)) then
       Exit();
 
-  var blk: TBlk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
-  if (blk <> nil) then
-  begin
-    (blk as TBlkSignal).selected := TBlkSignalSelection.none;
-    TArea(SenderOR).ClearVb(); // smazeme dosavadni seznam variantnich bodu
-  end;
+  TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
+  TPanelConnData(SenderPnl.Data).pathBlocks.Add(Self);
   Self.selected := TBlkSignalSelection.VC;
   Self.m_state.beginAB := false;
 end;
@@ -840,6 +836,7 @@ end;
 procedure TBlkSignal.MenuVCStopClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   Self.selected := TBlkSignalSelection.none;
+  TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
 end;
 
 procedure TBlkSignal.MenuPCStartClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -848,9 +845,9 @@ begin
     if (((Self.dnJC <> nil) and (Self.dnJC.destroyEndBlock < 1)) or (JCDb.FindJCActivating(Self.id) <> nil)) then
       Exit();
 
-  var blk: TBlk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
-  if (blk <> nil) then
-    (blk as TBlkSignal).selected := TBlkSignalSelection.none;
+  TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
+  TPanelConnData(SenderPnl.Data).pathBlocks.Add(Self);
+
   Self.selected := TBlkSignalSelection.PC;
   Self.m_state.beginAB := false;
 end;
@@ -858,6 +855,7 @@ end;
 procedure TBlkSignal.MenuPCStopClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   Self.selected := TBlkSignalSelection.none;
+  TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
 end;
 
 procedure TBlkSignal.MenuSTUJClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -964,9 +962,8 @@ begin
   if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then
     Exit();
 
-  Blk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
-  if (Blk <> nil) then
-    (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
+  TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
+  TPanelConnData(SenderPnl.Data).pathBlocks.Add(Self);
   Self.selected := TBlkSignalSelection.NC;
 
   for var area: TArea in Self.areas do
@@ -976,6 +973,7 @@ end;
 procedure TBlkSignal.MenuPNStopClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   Self.selected := TBlkSignalSelection.none;
+  TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -986,15 +984,15 @@ begin
     if (JCDb.FindJC(Self.id, false) <> nil) then
       Exit();
 
-  var blk: TBlk := Blocks.GeTBlkSignalSelected((SenderOR as TArea).id);
-  if (blk <> nil) then
-    (blk as TBlkSignal).selected := TBlkSignalSelection.none;
+  TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
+  TPanelConnData(SenderPnl.Data).pathBlocks.Add(Self);
   Self.selected := TBlkSignalSelection.PP;
 end;
 
 procedure TBlkSignal.MenuPPStopClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   Self.selected := TBlkSignalSelection.none;
+  TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

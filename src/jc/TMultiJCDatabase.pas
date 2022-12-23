@@ -37,9 +37,9 @@ type
      function GetJCByID(id: Integer): TMultiJC;
      function GetJCIndexByID(id: Integer): Integer;
 
-     function Activate(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean): Boolean;
-     function Find(startSignal: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): TMultiJC;
-     function IsAnyMJCWithPrefix(startNav: TBlkSignal; vb: TList<TObject>): Boolean;
+     function Activate(blocks: TList<TBlk>; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean): Boolean;
+     function Find(blocks: TList<TBlk>): TMultiJC;
+     function IsAnyMJCWithPrefix(blocks: TList<TBlk>): Boolean;
 
      function Add(data: TMultiJCData): TMultiJC;
      procedure Remove(index: Integer);
@@ -61,7 +61,8 @@ var
 implementation
 
 uses Logging, GetSystems, BlockDb, BlockTrack, Area, TCPServerPanel,
-      DataMultiJC, AreaStack, AreaDb, TechnologieJC, TJCDatabase, appEv;
+      DataMultiJC, AreaStack, AreaDb, TechnologieJC, TJCDatabase, appEv,
+      TCPAreasRef;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TRIDA TMultiJCDb
@@ -242,14 +243,19 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJCDb.Find(startSignal: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): TMultiJC;
-var mjc: TMultiJC;
+function TMultiJCDb.Find(blocks: TList<TBlk>): TMultiJC;
 begin
+ if (blocks.Count < 2) then // at least signal and last track must be in blocks
+   Exit(nil);
+ if ((blocks[0].typ <> btSignal) or ((blocks[blocks.Count-1].typ <> btTrack) and (blocks[blocks.Count-1].typ <> btRT))) then
+   Exit(nil);
+
+ var startSignal := TBlkSignal(blocks[0]);
  if (not Self.JCsStartSignal.ContainsKey(startSignal)) then
    Exit(nil);
 
- for mjc in Self.JCsStartSignal[startSignal] do
-   if (mjc.Match(startSignal, vb, endBlk)) then
+ for var mjc: TMultiJC in Self.JCsStartSignal[startSignal] do
+   if (mjc.Match(blocks)) then
      Exit(mjc);
 
  Result := nil;
@@ -257,28 +263,26 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJCDb.Activate(StartBlk, EndBlk: TBlk; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean): Boolean;
+function TMultiJCDb.Activate(blocks: TList<TBlk>; SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean): Boolean;
 var mJC: TMultiJC;
-    j: Integer;
 begin
- mJC := Self.Find(startBlk as TBlkSignal, (SenderOR as TArea).vb, endBlk);
- Result := (mJC <> nil);
+ mJC := Self.Find(blocks);
 
- if (mJC <> nil) then
+ if (mJC = nil) then
+   Exit(False);
+
+ if ((SenderOR as TArea).stack.mode = TORStackMode.VZ) then
   begin
-   if ((SenderOR as TArea).stack.mode = TORStackMode.VZ) then
-    begin
-     // VZ -> pridame do zasobniku postupne vsechny jizdni cesty
-     for j := 0 to mJC.data.JCs.Count-1 do
-       (SenderOR as TArea).stack.AddJC(JCDb.GetJCByID(mJC.data.JCs[j]), SenderPnl, false, abAfter);
+   // VZ -> pridame do zasobniku postupne vsechny jizdni cesty
+   for var j := 0 to mJC.data.JCs.Count-1 do
+     (SenderOR as TArea).stack.AddJC(JCDb.GetJCByID(mJC.data.JCs[j]), SenderPnl, false, abAfter);
 
-     (StartBlk as TBlkSignal).selected := TBlkSignalSelection.none;
-     (EndBlk as TBlkTrack).jcEnd := TZaver.no;
-     (SenderOR as TArea).ClearVb();
-    end else begin
-     mJC.Activate(SenderPnl, SenderOR);
-    end;
+   TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
+  end else begin
+   mJC.Activate(SenderPnl, SenderOR);
   end;
+
+  Result := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -350,34 +354,36 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TMultiJCDb.IsAnyMJCWithPrefix(startNav: TBlkSignal; vb: TList<TObject>): Boolean;
-var mjc: TMultiJC;
-    jc: TJC;
-    j: Integer;
-    error: Boolean;
+function TMultiJCDb.IsAnyMJCWithPrefix(blocks: TList<TBlk>): Boolean;
 begin
+ if ((blocks.Count = 0) or (blocks[0].typ <> btSignal)) then
+   Exit(false);
+
+ var startSignal := TBlkSignal(blocks[0]);
+
  // startNav musi mit navolenou volbu, aby tato funkce fungovala.
- if (not Self.JCsStartSignal.ContainsKey(startNav)) then
+ if (not Self.JCsStartSignal.ContainsKey(startSignal)) then
    Exit(False);
 
- for mjc in Self.JCsStartSignal[startNav] do
+ for var mjc in Self.JCsStartSignal[startSignal] do
   begin
    if (mjc.data.JCs.Count < 2) then continue;
 
-   jc := JCDb.GetJCByID(mjc.data.JCs[0]);
+   var jc := JCDb.GetJCByID(mjc.data.JCs[0]);
    if (JC = nil) then continue;
-   if (Integer(startNav.selected) <> Integer(JC.typ)) then
+   if (Integer(startSignal.selected) <> Integer(JC.typ)) then
      continue;
 
-   if (JC.data.signalId <> startNav.id) then
+   if (JC.data.signalId <> startSignal.id) then
      continue;
 
    // kontrola variantnich bodu
-   if (vb.Count > mjc.data.vb.Count) then continue;
+   if (blocks.Count > mjc.data.vb.Count+1) then
+     continue;
 
-   error := false;
-   for j := 0 to vb.Count-1 do
-     if (mjc.data.vb[j] <> (vb[j] as TBlk).id) then
+   var error: Boolean := false;
+   for var j := 1 to blocks.Count-1 do
+     if (mjc.data.vb[j-1] <> blocks[j].id) then
        error := true;
    if (error) then continue;
 

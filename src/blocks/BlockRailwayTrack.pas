@@ -668,18 +668,17 @@ begin
 
     ENTER:
       begin
-        if (not Self.MenuKCClick(SenderPnl, SenderOR)) then
-          if (not Self.MoveTrain(SenderPnl, SenderOR, 0)) then // predpokladame, ze TU muze mit max. 1 soupravu
-            PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+        var handled := Self.MenuKCClick(SenderPnl, SenderOR);
+        // no train moving here
+        if (not handled) then
+          PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
       end;
 
     F1:
       begin
-        var blk: TBlk := Blocks.GetBlkSignalSelected((SenderOR as TArea).id);
-        if (blk = nil) then
+        var handled := Self.MenuVBClick(SenderPnl, SenderOR);
+        if (not handled) then
           PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
-        else
-          Self.MenuVBClick(SenderPnl, SenderOR);
       end;
   end;
 end;

@@ -55,7 +55,7 @@ type
     procedure Activate(SenderPnl: TIdContext; SenderOR: TObject);
     procedure CancelActivation();
 
-    function Match(startNav: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): Boolean;
+    function Match(blocks: TList<TBlk>): Boolean;
     function StartSignal(): TBlkSignal;
 
     property data: TMultiJCData read m_data write m_data;
@@ -69,7 +69,7 @@ type
 
 implementation
 
-uses TJCDatabase, BlockTrack, Area, ownConvert;
+uses TJCDatabase, BlockTrack, Area, ownConvert, TCPAreasRef;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -222,7 +222,7 @@ begin
   Self.activatingJC.Activate(SenderPnl, SenderOR);
   Self.m_state.JCIndex := 0;
 
-  (SenderOR as TArea).vb.Clear();
+  TPanelConnData(SenderPnl.Data).pathBlocks.Clear();
 
   Self.changed := true;
 end;
@@ -276,33 +276,37 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TMultiJC.Match(startNav: TBlkSignal; vb: TList<TObject>; endBlk: TBlk): Boolean;
-var JC: TJC;
+function TMultiJC.Match(blocks: TList<TBlk>): Boolean;
 begin
-  if (Self.data.JCs.Count < 2) then
+  if ((Self.data.JCs.Count < 2) or (blocks.Count < 2)) then
     Exit(false);
 
-  JC := JCDb.GetJCByID(Self.data.JCs[0]);
+  var JC := JCDb.GetJCByID(Self.data.JCs[0]);
   if (JC = nil) then
     Exit(false);
 
-  if (JC.data.signalId <> startNav.id) then
+  if (blocks[0].typ <> btSignal) then
     Exit(false);
-  if (Integer(startNav.selected) <> Integer(JC.typ)) then
+  var startSignal: TBlkSignal := TBlkSignal(blocks[0]);
+
+  if (JC.data.signalId <> blocks[0].id) then
+    Exit(false);
+  if (Integer(startSignal.selected) <> Integer(JC.typ)) then
     Exit(false);
 
   // posledni blok musi byt posledni blok posledni jizdni cesty
   JC := JCDb.GetJCByID(Self.data.JCs[Self.data.JCs.Count - 1]);
   if (JC = nil) then
     Exit(false);
-  if (JC.data.tracks[JC.data.tracks.Count - 1] <> endBlk.id) then
+  if (JC.data.tracks[JC.data.tracks.Count - 1] <> blocks[blocks.Count-1].id) then
     Exit(false);
 
   // kontrola variantnich bodu
-  if (vb.Count <> Self.data.vb.Count) then
+  if (blocks.Count <> Self.data.vb.Count+2) then
     Exit(false);
-  for var j: Integer := 0 to vb.Count - 1 do
-    if (Self.data.vb[j] <> (vb[j] as TBlk).id) then
+
+  for var j: Integer := 0 to Self.data.vb.Count - 1 do
+    if (Self.data.vb[j] <> blocks[j+1].id) then
       Exit(false);
 
   for var j: Integer := 0 to Self.data.JCs.Count - 1 do

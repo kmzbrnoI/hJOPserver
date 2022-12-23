@@ -417,6 +417,8 @@ begin
     orsRef.UPO_ref := nil;
   end;
 
+  orsRef.ClearAndHidePathBlocks();
+
   // zrusime pripadnou zadost o lokomotivu
   if (orsRef.regulator_zadost <> nil) then
     orsRef.regulator_zadost.LokoCancel(AContext);
