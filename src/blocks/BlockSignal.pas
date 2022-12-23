@@ -2080,7 +2080,7 @@ begin
 
     if ((sl.Count > 1) and (sl[1] <> '') and (LeftStr(sl[1], 2) <> '-1')) then
     begin
-      ExtractStringsEx([';'], [], sl[1], sl2);
+      ExtractStringsEx([';', ','], [], sl[1], sl2);
 
       Self.slow.enabled := true;
       if (old) then
@@ -2137,7 +2137,7 @@ begin
   Result := '{' + Self.stop.GetDefStr() + '}|';
 
   if (Self.slow.enabled) then
-    Result := Result + '{{' + Self.slow.ev.GetDefStr() + '};' + IntToStr(Self.slow.speed) + '}';
+    Result := Result + '{{' + Self.slow.ev.GetDefStr() + '},' + IntToStr(Self.slow.speed) + '}';
   Result := Result + '|';
 
   if (not short) then
