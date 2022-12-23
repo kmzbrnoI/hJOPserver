@@ -91,7 +91,7 @@ begin
   str := TStringList.Create();
 
   try
-    ExtractStringsEx([';'], [], data, str);
+    ExtractStringsEx([';', ','], [], data, str);
 
     m_event := TRREv.Create(str[0]);
 
@@ -113,7 +113,7 @@ end;
 
 function THoukEv.GetDefString(): string;
 begin
-  Result := '{' + Self.m_event.GetDefStr() + '};' + IntToStr(Integer(Self.m_funcType)) + ';' + Self.m_sound;
+  Result := '{' + Self.m_event.GetDefStr() + '},' + IntToStr(Integer(Self.m_funcType)) + ',' + Self.m_sound;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
