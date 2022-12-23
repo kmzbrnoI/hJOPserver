@@ -90,7 +90,7 @@ begin
     begin
       str := str + Area.shortName + ':';
       case User.Areas[Area.id] of
-        TAreaRights.read:
+        TAreaRights.read, TAreaRights.other:
           str := str + 'R';
         TAreaRights.write:
           str := str + 'W';

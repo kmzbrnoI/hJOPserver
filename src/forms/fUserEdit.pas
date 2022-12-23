@@ -136,7 +136,7 @@ begin
   case TAreaRights(Item.Data^) of
     TAreaRights.null:
       Self.LV_ORs.Canvas.Brush.Color := clWhite;
-    TAreaRights.read:
+    TAreaRights.read, TAreaRights.other:
       Self.LV_ORs.Canvas.Brush.Color := $FFFFAA;
     TAreaRights.write:
       Self.LV_ORs.Canvas.Brush.Color := $AAFFFF;

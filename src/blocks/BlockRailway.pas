@@ -977,9 +977,9 @@ begin
     Exit(false);
 
   for var first: TAreaPanel in TBlkLinker(Self.linkerA).areas[0].Connected do
-    if (first.rights >= TAreaRights.write) then
+    if (IsWritable(first)) then
       for var second: TAreaPanel in TBlkLinker(Self.linkerB).areas[0].Connected do
-        if ((first.user = second.user) and (second.rights >= TAreaRights.write)) then
+        if ((first.user = second.user) and (IsWritable(second))) then
           Exit(true);
 
   Result := false;

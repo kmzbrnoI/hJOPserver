@@ -683,7 +683,7 @@ begin
     end;
   end;
 
-  if (rights >= TAreaRights.superuser) then
+  if (rights = TAreaRights.superuser) then
   begin
     Result := Result + '-,';
     if (Self.zaver) then

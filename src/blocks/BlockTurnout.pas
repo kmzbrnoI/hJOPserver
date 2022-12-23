@@ -1284,7 +1284,7 @@ begin
   else if ((Self.position = TTurnoutPosition.plus) or (Self.position = TTurnoutPosition.minus)) then
     Result := Result + 'ZAV>,';
 
-  if (rights >= TAreaRights.superuser) then
+  if (rights = TAreaRights.superuser) then
   begin
     Result := Result + '-,';
     if (Self.intentionalLocked) then

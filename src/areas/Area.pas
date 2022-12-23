@@ -34,7 +34,7 @@ const
   _SND_JC_NO = 12;
 
 type
-  TAreaRights = (null = 0, read = 1, write = 2, superuser = 3);
+  TAreaRights = (null = 0, read = 1, write = 2, superuser = 3, other = 4); // 'other' is never saved, just transmitted to panel
   TPanelButton = (F1, F2, ENTER, ESCAPE);
 
   EMaxClients = class(Exception);
@@ -158,6 +158,11 @@ type
     procedure DkMenuShowLok(Sender: TIDContext);
     procedure ShowDkMenu(Panel: TIDContext; root: string; menustr: string);
 
+    procedure AuthReadersTo(rights: TAreaRights; exception: TIdContext = nil);
+    procedure UpdateReadersAuth(exception: TIdContext = nil);
+
+    function AnySuperuserConnected(): Boolean;
+
   public
     stack: TORStack;
     changed: Boolean;
@@ -247,6 +252,9 @@ type
 
     procedure GetPtData(json: TJsonObject);
 
+    function IsReadable(panel: TIdContext): Boolean;
+    function IsWritable(panel: TIdContext): Boolean;
+
     class function ORRightsToString(rights: TAreaRights): string;
     class function GetCSCondition(block: TObject; condition: string): TConfSeqItem; overload;
     class function GetCSCondition(target: string; condition: string): TConfSeqItem; overload;
@@ -269,6 +277,11 @@ type
     property index: Integer read m_index write SetIndex;
   end;
 
+  function IsReadable(right: TAreaRights): Boolean; overload;
+  function IsWritable(right: TAreaRights): Boolean; overload;
+  function IsReadable(panel: TAreaPanel): Boolean; overload;
+  function IsWritable(panel: TAreaPanel): Boolean; overload;
+
 implementation
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -277,6 +290,26 @@ uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, Logging, TechnologieJC
   TJCDatabase, ownConvert, TCPServerPanel, AreaDb, block, THVDatabase, TrainDb,
   UserDb, THnaciVozidlo, Trakce, user, TCPAreasRef, fRegulator, RegulatorTCP,
   ownStrUtils, train, changeEvent, TechnologieTrakce;
+
+function IsReadable(right: TAreaRights): Boolean;
+begin
+  Result := (right > TAreaRights.null);
+end;
+
+function IsWritable(right: TAreaRights): Boolean;
+begin
+  Result := (right = TAreaRights.write) or (right = TAreaRights.superuser);
+end;
+
+function IsReadable(panel: TAreaPanel): Boolean;
+begin
+  Result := IsReadable(panel.rights);
+end;
+
+function IsWritable(panel: TAreaPanel): Boolean;
+begin
+  Result := IsWritable(panel.rights);
+end;
 
 constructor TArea.Create(index: Integer);
 begin
@@ -312,6 +345,16 @@ begin
   Self.RCSs.Free();
 
   inherited;
+end;
+
+function TArea.IsReadable(panel: TIdContext): Boolean;
+begin
+  Result := Area.IsReadable(Self.PanelDbRights(panel));
+end;
+
+function TArea.IsWritable(panel: TIdContext): Boolean;
+begin
+  Result := Area.IsWritable(Self.PanelDbRights(panel));
 end;
 
 constructor TAreaRCSs.Create();
@@ -404,7 +447,7 @@ begin
 
   for var areaPanel: TAreaPanel in Self.connected do
   begin
-    if (areaPanel.rights < TAreaRights.read) then
+    if (not Area.IsReadable(areaPanel)) then
       continue;
     if ((specificClient <> nil) and (areaPanel.Panel <> specificClient)) then
       continue;
@@ -458,14 +501,16 @@ end;
 // Panel database maintainance
 
 procedure TArea.PanelDbAdd(Panel: TIDContext; rights: TAreaRights; user: string);
-var
-  pnl: TAreaPanel;
 begin
+  if (rights = TAreaRights.other) then
+    rights := TAreaRights.read;
+
   for var i: Integer := 0 to Self.connected.Count - 1 do
   begin
     if (Self.connected[i].Panel = Panel) then
     begin
       // pokud uz je zaznam v databazi, pouze upravime tento zaznam
+      var pnl: TAreaPanel;
       pnl := Self.connected[i];
       pnl.rights := rights;
       pnl.user := user;
@@ -480,6 +525,7 @@ begin
   if ((Panel.data as TPanelConnData).areas.Count >= _MAX_ORREF) then
     raise EMaxClients.Create('Připojen maximální OR k jedné stanici');
 
+  var pnl: TAreaPanel;
   pnl.Panel := Panel;
   pnl.rights := rights;
   pnl.user := user;
@@ -491,7 +537,7 @@ begin
   (Panel.data as TPanelConnData).areas.Add(Self);
 
   // odesleme incializacni udaje
-  if (rights > TAreaRights.null) then
+  if (Area.IsReadable(rights)) then
   begin
     Self.SendState(Panel);
     Self.stack.NewConnection(Panel);
@@ -544,9 +590,6 @@ procedure TArea.PanelAuthorise(Sender: TIDContext; rights: TAreaRights; username
 var
   userRights: TAreaRights;
   msg: string;
-  Panel: TAreaPanel;
-  user: TUser;
-  lastRights: TAreaRights;
 begin
   // panel se chce odpojit -> vyradit z databaze
   if (rights = TAreaRights.null) then
@@ -559,9 +602,12 @@ begin
     Exit();
   end;
 
+  if (rights = TAreaRights.other) then // just for sure
+    rights := TAreaRights.read;
+
   // tady mame zaruceno, ze panel chce zadat o neco vic, nez null
 
-  user := UsrDb.GetUser(username);
+  var user := UsrDb.GetUser(username);
 
   if (not Assigned(user)) then
   begin
@@ -581,7 +627,7 @@ begin
       msg := 'K této OŘ nemáte oprávnění';
   end;
 
-  lastRights := Self.PanelDbRights(Sender);
+  var lastRights := Self.PanelDbRights(Sender);
 
   try
     if (userRights = TAreaRights.null) then
@@ -604,7 +650,7 @@ begin
       Exit();
     end;
 
-    msg := 'Úspěšně autorizováno !';
+    msg := 'Úspěšně autorizováno';
 
     // check if other panels are connected
     // only single panel could be connected with write rights
@@ -613,18 +659,18 @@ begin
       // ... omitting superuser ...
       for var i: Integer := 0 to Self.connected.Count - 1 do
       begin
-        if ((Self.connected[i].rights = write) and (Self.connected[i].Panel <> Sender)) then
+        if ((Self.connected[i].rights = TAreaRights.write) and (Self.connected[i].Panel <> Sender)) then // intentionally omitting superuser
         begin
           // same user authorizes -> change his other panel to read
           if (Self.connected[i].user = username) then
           begin
-            Panel := Self.connected[i];
-            Panel.rights := TAreaRights.read;
-            Self.connected[i] := Panel;
-            Self.ORAuthoriseResponse(Panel.Panel, Panel.rights, 'Převzetí řízení', user.fullName);
+            var panel := Self.connected[i];
+            panel.rights := TAreaRights.read;
+            Self.connected[i] := panel;
             PanelServer.GUIQueueLineToRefresh(i);
+            // ORAuthoriseResponse is sent in UpdateReadersAuth
           end else begin
-            rights := TAreaRights.read;
+            rights := TAreaRights.other; // this value is never saved to db ('read' if saved, see PanelDbAdd)
             msg := 'Panel již připojen!';
             Break;
           end;
@@ -643,13 +689,39 @@ begin
   end;
 
   UsrDb.LoginUser(username);
-  Self.ORAuthoriseResponse(Sender, rights, msg, user.fullName);
   PanelServer.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
 
-  if ((rights > read) and (lastRights <= read)) then
+  var sendRights: TAreaRights := rights;
+  if (rights = TAreaRights.read) and (Self.AnySuperuserConnected()) then
+    sendRights := TAreaRights.other;
+
+  Self.ORAuthoriseResponse(Sender, sendRights, msg, user.fullName);
+
+  if ((Area.IsWritable(rights)) and (not Area.IsWritable(lastRights))) then
     Self.AuthReadToWrite(Sender);
-  if ((rights < write) and (lastRights >= write)) then
+  if ((not Area.IsWritable(rights)) and (Area.IsWritable(lastRights))) then
     Self.AuthWriteToRead(Sender);
+
+  Self.UpdateReadersAuth(Sender);
+end;
+
+procedure TArea.UpdateReadersAuth(exception: TIdContext = nil);
+begin
+  var isSuperuser: Boolean := false;
+  var isWrite: Boolean := false;
+  for var areaPanel in Self.connected do
+  begin
+    if (areaPanel.rights = TAreaRights.write) then
+      isWrite := true;
+    if (areaPanel.rights = TAreaRights.superuser) then
+      isSuperuser := true;
+  end;
+
+  var rights := TAreaRights.read;
+  if ((isWrite) or (isSuperuser)) then
+    rights := TAreaRights.other;
+
+  Self.AuthReadersTo(rights, exception);
 end;
 
 // ziskani stavu vsech bloku v panelu
@@ -676,8 +748,7 @@ end;
 
 procedure TArea.PanelClick(Sender: TIDContext; blokid: Integer; Button: TPanelButton; params: string = '');
 begin
-  var rights := Self.PanelDbRights(Sender);
-  if (rights < TAreaRights.write) then
+  if (not IsWritable(Sender)) then
   begin
     PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
     Exit();
@@ -694,7 +765,7 @@ begin
   begin
     if (area = Self) then
     begin
-      blk.PanelClick(Sender, Self, Button, rights, params);
+      blk.PanelClick(Sender, Self, Button, Self.PanelDbRights(Sender), params);
       Exit();
     end;
   end;
@@ -708,8 +779,7 @@ procedure TArea.PanelEscape(Sender: TIDContext);
 var
   blk: TBlk;
 begin
-  // kontrola opravneni klienta
-  if (Self.PanelDbRights(Sender) < TAreaRights.write) then
+  if (not IsWritable(Sender)) then
   begin
     // ORTCPServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
     // tady se schvalne neposila informace o chybe - aby klienta nespamovala chyba v momente, kdy provadi escape a nema autorizovana vsechna OR na panelu
@@ -767,7 +837,7 @@ end;
 
 procedure TArea.PanelMessage(Sender: TIDContext; recepient: string; msg: string);
 begin
-  if (Self.PanelDbRights(Sender) < TAreaRights.write) then
+  if (not IsWritable(Sender)) then
   begin
     PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
     Exit();
@@ -794,7 +864,7 @@ end;
 procedure TArea.PanelHVList(Sender: TIDContext);
 begin
   // kontrola opravneni klienta
-  if (Self.PanelDbRights(Sender) < TAreaRights.read) then
+  if (not IsReadable(Sender)) then
   begin
     PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
     Exit();
@@ -815,7 +885,7 @@ var
   track: TBlkTrack;
   train: TTrain;
 begin
-  if (Self.PanelDbRights(Sender) < TAreaRights.write) then
+  if (not IsWritable(Sender)) then
   begin
     PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
     Exit();
@@ -890,7 +960,7 @@ end;
 
 procedure TArea.PanelMoveLok(Sender: TIDContext; lok_addr: word; new_or: string);
 begin
-  if (Self.PanelDbRights(Sender) < TAreaRights.write) then
+  if (not IsWritable(Sender)) then
   begin
     Self.SendLn(Sender, 'HV;MOVE;' + IntToStr(lok_addr) + ';ERR;Přístup odepřen');
     Exit();
@@ -1043,6 +1113,7 @@ procedure TArea.RemoveClient(Panel: TIDContext; contextDestroyed: Boolean = fals
 begin
   Self.PanelDbRemove(Panel, contextDestroyed);
   Self.stack.OnDisconnect(Panel);
+  Self.UpdateReadersAuth(Panel);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1080,7 +1151,7 @@ begin
   begin
     // V OR nastal zkrat -> prehrat zvuk
     for var i: Integer := 0 to Self.connected.Count - 1 do
-      if (Self.connected[i].rights > TAreaRights.read) then
+      if (Area.IsWritable(Self.connected[i])) then
         PanelServer.PlaySound(Self.connected[i].Panel, _SND_OVERLOAD, true);
   end;
 
@@ -1105,7 +1176,7 @@ begin
   begin
     // nastala zadost -> prehrat zvuk
     for var i: Integer := 0 to Self.connected.Count - 1 do
-      if (Self.connected[i].rights > TAreaRights.read) then
+      if (Area.IsWritable(Self.connected[i])) then
         PanelServer.PlaySound(Self.connected[i].Panel, _SND_RAILWAY_REQEST, true);
   end;
 
@@ -1130,7 +1201,7 @@ begin
   begin
     // aktivace prvni privolavaci navesti -> prehrat zvuk
     for var i: Integer := 0 to Self.connected.Count - 1 do
-      if (Self.connected[i].rights > TAreaRights.read) then
+      if (Area.IsWritable(Self.connected[i])) then
         PanelServer.PlaySound(Self.connected[i].Panel, _SND_PRIVOLAVACKA, true);
   end;
 
@@ -1155,7 +1226,7 @@ begin
   begin
     // aktivace prvniho timeru -> prehrat zvuk
     for var i: Integer := 0 to Self.connected.Count - 1 do
-      if (Self.connected[i].rights > TAreaRights.read) then
+      if (Area.IsWritable(Self.connected[i])) then
         PanelServer.PlaySound(Self.connected[i].Panel, _SND_TIMEOUT, true);
   end;
 
@@ -1190,7 +1261,7 @@ procedure TArea.SendMessage(Sender: TArea; msg: string);
 begin
   for var areaPanel: TAreaPanel in Self.connected do
   begin
-    if (areaPanel.rights >= TAreaRights.write) then
+    if (Area.IsWritable(areaPanel)) then
     begin
       Self.SendLn(areaPanel.Panel, 'MSG;' + Sender.id + ';{' + msg + '}');
       Exit();
@@ -1505,7 +1576,7 @@ procedure TArea.PanelLokoReq(Sender: TIDContext; str: TStrings);
 begin
   // kontrola opravneni klienta
   var rights: TAreaRights := Self.PanelDbRights(Sender);
-  if (rights < write) then
+  if (not Area.IsWritable(rights)) then
   begin
     PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
     Exit();
@@ -1535,14 +1606,14 @@ begin
         end;
 
         // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
-        if ((HV.state.Area <> Self) and (rights < TAreaRights.superuser)) then
+        if ((HV.state.Area <> Self) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Loko ' + data[i] + ' se nenachází ve stanici');
           Exit();
         end;
 
         // nelze vygenerovat token pro loko, ktere je uz v regulatoru
-        if ((HV.state.regulators.Count > 0) and (rights < TAreaRights.superuser)) then
+        if ((HV.state.regulators.Count > 0) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Loko ' + data[i] + ' již otevřeno v regulátoru');
           Exit();
@@ -1592,14 +1663,14 @@ begin
         end;
 
         // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
-        if ((HV.state.Area <> Self) and (rights < TAreaRights.superuser)) then
+        if ((HV.state.Area <> Self) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-REQ;ERR;Loko ' + data[i] + ' se nenachází ve stanici');
           Exit();
         end;
 
         // nelze vygenerovat token pro loko, ktere je uz v regulatoru
-        if ((HV.state.regulators.Count > 0) and (rights < TAreaRights.superuser)) then
+        if ((HV.state.regulators.Count > 0) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-REQ;ERR;Loko ' + data[i] + ' již otevřeno v regulátoru');
           Exit();
@@ -1611,7 +1682,7 @@ begin
 
       // vsem ostatnim panelum jeste posleme, ze doslo ke zruseni zadosti
       for var i: Integer := 0 to Self.connected.Count - 1 do
-        if ((Self.connected[i].rights >= TAreaRights.read) and (Self.connected[i].Panel <> Sender)) then
+        if ((Area.IsReadable(Self.connected[i])) and (Self.connected[i].Panel <> Sender)) then
           Self.SendLn(Self.connected[i].Panel, 'LOK-REQ;CANCEL;');
 
       // lokomotivy priradime regulatoru
@@ -1764,6 +1835,8 @@ begin
       Result := 'write';
     TAreaRights.superuser:
       Result := 'superuser';
+    TAreaRights.other:
+      Result := 'other';
   else
     Result := '';
   end;
@@ -1866,19 +1939,36 @@ begin
   Self.stack.OnWriteToRead(Panel);
 end;
 
+procedure TArea.AuthReadersTo(rights: TAreaRights; exception: TIdContext = nil);
+begin
+  for var areaPanel in Self.connected do
+  begin
+    if (areaPanel.Panel = exception) then
+      continue;
+    if (areaPanel.rights = TAreaRights.read) then // intentionally omitting superuser (superuser stays)
+    begin
+      var user := UsrDb.GetUser(areaPanel.user);
+      var name: string := '';
+      if (Assigned(user)) then
+        name := user.fullName;
+      Self.ORAuthoriseResponse(areaPanel.Panel, rights, '', name);
+    end;
+  end;
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 class function TArea.ORRightsToString(rights: TAreaRights): string;
 begin
   case (rights) of
-    null:
-      Result := 'žádná oprávnění';
-    read:
-      Result := 'oprávnění ke čtení';
-    write:
-      Result := 'oprávnění k zápisu';
-    superuser:
-      Result := 'superuser';
+    TAreaRights.null:
+      Result := 'žádné oprávnění';
+    TAreaRights.read, TAreaRights.other:
+      Result := 'oprávnění k pozorování';
+    TAreaRights.write:
+      Result := 'oprávnění k řízení';
+    TAreaRights.superuser:
+      Result := 'superuživatel';
   else
     Result := '';
   end;
@@ -2102,6 +2192,16 @@ begin
   json['id'] := Self.id;
   json['name'] := Self.name;
   json['shortName'] := Self.shortName;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TArea.AnySuperuserConnected(): Boolean;
+begin
+  Result := false;
+  for var areaPanel in Self.connected do
+    if (areaPanel.rights = TAreaRights.superuser) then
+      Exit(true);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

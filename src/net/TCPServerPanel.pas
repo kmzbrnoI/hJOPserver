@@ -667,7 +667,7 @@ begin
     F_Main.LV_Clients.items[orRef.index].SubItems[_LV_CLIENTS_COL_MENU] := '';
 
     var rights := orRef.menu_or.PanelDbRights(AContext);
-    if (rights < TAreaRights.write) then
+    if (not IsWritable(rights)) then
     begin
       PanelServer.SendInfoMsg(AContext, TArea._COM_ACCESS_DENIED);
       Exit();
