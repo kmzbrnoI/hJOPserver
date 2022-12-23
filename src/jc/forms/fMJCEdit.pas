@@ -247,10 +247,14 @@ begin
   if (Self.LV_JCs.Items.Count < 1) then
     Exit();
 
-  var jcId := StrToInt(Self.LV_JCs.Items[0].SubItems[0]);
-  var signal := TBlkSignal(Blocks.GetBlkByID(JCDb.GetJCByID(jcId).data.signalId));
-  if ((signal <> nil) and (signal.typ = btSignal)) then
-    Result.AddRange(signal.areas);
+  for var item: TListItem in Self.LV_JCs.Items do
+  begin
+    var jcId := StrToInt(item.SubItems[0]);
+    var signal := TBlkSignal(Blocks.GetBlkByID(JCDb.GetJCByID(jcId).data.signalId));
+    for var area: TArea in signal.areas do
+      if (not Result.Contains(area)) then
+        Result.Add(area);
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

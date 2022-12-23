@@ -13,9 +13,10 @@ uses
 type
 
   TMultiJCState = record
-    JCIndex: Integer;
+    JCIndex: Integer; // index v 'activatingJCs'
     SenderOR: TObject;
     SenderPnl: TIdContext;
+    activatingJCs: TList<Integer>; // JCs in stack=VZ are activated all at once at the beginning, here is the rest
   end;
 
   TMultiJCData = record
@@ -30,7 +31,7 @@ type
   TMultiJC = class
 
   private const
-    _def_mutiJC_staveni: TMultiJCState = (JCIndex: - 1; SenderOR: nil; SenderPnl: nil;);
+    _def_mutiJC_staveni: TMultiJCState = (JCIndex: - 1; SenderOR: nil; SenderPnl: nil; activatingJCs: nil;);
 
   private
     m_data: TMultiJCData;
@@ -52,7 +53,7 @@ type
     procedure LoadData(ini: TMemIniFile; section: string);
     procedure SaveData(ini: TMemIniFile);
 
-    procedure Activate(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure Activate(SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
     procedure CancelActivation();
 
     function Match(blocks: TList<TBlk>): Boolean;
@@ -69,7 +70,7 @@ type
 
 implementation
 
-uses TJCDatabase, BlockTrack, Area, ownConvert, TCPAreasRef;
+uses TJCDatabase, BlockTrack, Area, ownConvert, TCPAreasRef, AreaStack;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -82,6 +83,7 @@ begin
 
   Self.m_data.JCs := TList<Integer>.Create();
   Self.m_data.vb := TList<Integer>.Create();
+  Self.m_state.activatingJCs := TList<Integer>.Create();
 
   Self.activatingJC := nil;
 end;
@@ -99,6 +101,8 @@ begin
     Self.m_data.JCs := TList<Integer>.Create();
   if (not Assigned(data.vb)) then
     Self.m_data.vb := TList<Integer>.Create();
+
+  Self.m_state.activatingJCs := TList<Integer>.Create();
 end;
 
 destructor TMultiJC.Destroy();
@@ -107,6 +111,8 @@ begin
     FreeAndNil(Self.m_data.JCs);
   if (Assigned(Self.m_data.vb)) then
     FreeAndNil(Self.m_data.vb);
+  if (Assigned(Self.m_state.activatingJCs)) then
+    Self.m_state.activatingJCs.Free();
 
   inherited Destroy();
 end;
@@ -175,20 +181,19 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TMultiJC.UpdateActivating();
-var JC: TJC;
 begin
   if (Self.activatingJC.active) then
   begin
     // aktualni cesta postavena
     Inc(Self.m_state.JCIndex);
 
-    if (Self.m_state.JCIndex >= Self.m_data.JCs.Count) then
+    if (Self.m_state.JCIndex >= Self.m_state.activatingJCs.Count) then
     begin
       // vsechny cesty postaveny
       Self.CancelActivation();
     end else begin
       // vsechny cesty nepostaveny -> stavime dalsi cestu
-      JC := JCDb.GetJCByID(Self.m_data.JCs[Self.m_state.JCIndex]);
+      var JC := JCDb.GetJCByID(Self.m_state.activatingJCs[Self.m_state.JCIndex]);
       if (JC = nil) then
         Self.CancelActivation()
       else
@@ -209,20 +214,37 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TMultiJC.Activate(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TMultiJC.Activate(SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
 begin
-  for var i: Integer := 0 to Self.m_data.JCs.Count - 1 do
-    if (JCDb.GetJCByID(Self.m_data.JCs[i]) = nil) then
+  for var jcId in Self.m_data.JCs do
+    if (JCDb.GetJCByID(jcId) = nil) then
       raise Exception.Create('JC ve slozene jizdni ceste neexistuje');
 
   Self.m_state.SenderOR := SenderOR;
   Self.m_state.SenderPnl := SenderPnl;
 
-  Self.activatingJC := JCDb.GetJCByID(Self.m_data.JCs[0]);
+  Self.m_state.activatingJCs.Clear();
+  for var jcId in Self.m_data.JCs do
+  begin
+    var jc: TJC := JCDb.GetJCByID(jcId);
+    if ((jc.signal.areas.Count > 0) and (jc.signal.areas[0].stack.mode = TORStackMode.VZ)) then
+    begin
+      jc.signal.areas[0].stack.AddJC(jc, SenderPnl, false, abAfter);
+    end else
+      Self.m_state.activatingJCs.Add(jcId);
+  end;
+
+  if (Self.m_state.activatingJCs.Count <> Self.m_data.JCs.Count) then
+    TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks()
+  else
+    TPanelConnData(SenderPnl.Data).pathBlocks.Clear();
+
+  if (Self.m_state.activatingJCs.Count = 0) then
+    Exit();
+
+  Self.activatingJC := JCDb.GetJCByID(Self.m_state.activatingJCs[0]);
   Self.activatingJC.Activate(SenderPnl, SenderOR);
   Self.m_state.JCIndex := 0;
-
-  TPanelConnData(SenderPnl.Data).pathBlocks.Clear();
 
   Self.changed := true;
 end;

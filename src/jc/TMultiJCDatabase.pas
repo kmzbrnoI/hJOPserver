@@ -271,18 +271,8 @@ begin
  if (mJC = nil) then
    Exit(False);
 
- if ((SenderOR as TArea).stack.mode = TORStackMode.VZ) then
-  begin
-   // VZ -> pridame do zasobniku postupne vsechny jizdni cesty
-   for var j := 0 to mJC.data.JCs.Count-1 do
-     (SenderOR as TArea).stack.AddJC(JCDb.GetJCByID(mJC.data.JCs[j]), SenderPnl, false, abAfter);
-
-   TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
-  end else begin
-   mJC.Activate(SenderPnl, SenderOR);
-  end;
-
-  Result := true;
+ mJC.Activate(SenderPnl, SenderOR, abAfter);
+ Result := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
