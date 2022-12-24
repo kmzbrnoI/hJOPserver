@@ -245,7 +245,7 @@ type
 implementation
 
 uses TrainDb, BlockDb, TCPServerPanel, BlockRailway, BlockSignal, TJCDatabase,
-  logging, TechnologieJC, ownStrUtils, THVDatabase;
+  logging, TechnologieJC, ownStrUtils, THVDatabase, IfThenElse;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -637,24 +637,27 @@ function TBlkRT.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: 
 begin
   Result := inherited;
 
+  var starI := Result.IndexOf('*');
+  var debug: string := '';
+  if (starI > -1) then
+  begin
+    debug := Copy(Result, starI-1, Length(Result)-starI+1);
+    Result := Copy(Result, 0, starI-2);
+  end;
+
   // zastavka
   if ((Self.inRailway > -1) and (Self.isStop)) then
   begin
     Result := Result + '-,';
+    // pokud neni v zastavce zastavena souprava, lze zastavku vypinat a zapinat
     if (not Self.rtState.stopStopped) then
-    begin
-      // pokud neni v zastavce zastavena souprava, lze zastavku vypinat a zapinat
-      case (Self.rtState.stopEnabled) of
-        false:
-          Result := Result + 'ZAST>,';
-        true:
-          Result := Result + 'ZAST<,';
-      end; // case
-    end;
+      Result := Result + ite(Self.rtState.stopEnabled, 'ZAST<,', 'ZAST>,');
   end;
 
   if (Self.bpError) then
     Result := Result + '!RBP,';
+
+  Result := Result + debug;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
