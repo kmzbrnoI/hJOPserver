@@ -145,7 +145,7 @@ type
      function HasAnyHVNote(): Boolean;
 
      procedure UpdateRailwaySpeed();
-     function GetRailwaySpeed(): Cardinal;
+     function GetRailwaySpeed(var speed: Cardinal): Boolean;
      function GetBlocks(): TList<TObject>;
 
      function PredictedSignal(): TBlk;
@@ -1300,43 +1300,69 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // Returns speed train should have based on its presence in railways.
-function TTrain.GetRailwaySpeed(): Cardinal;
-var railway: TBlkRailway;
-    speed: Cardinal;
+function TTrain.GetRailwaySpeed(var speed: Cardinal): Boolean;
 begin
- if ((Self.front = nil) or (TBlk(Self.front).typ <> TBlkType.btRT)) then
-   raise ENotInRailway.Create('Souprava není v žádné trati, nelze určit traťovou rychlost!');
+ if (Self.front = nil) then
+   Exit(false);
 
- railway := TBlkRailway(TBlkRT(Self.front).railway);
- if (railway = nil) then
-   raise ENotInRailway.Create('Traťový úsek není spojen s žádnou tratí!');
+ var rtsSpeed: Integer := -1;
+ var tracks := Blocks.GetBlkWithTrain(Self);
+ try
+   for var track in tracks do
+   begin
+     if (TBlk(track).typ = btRT) then
+     begin
+       var rtSpeed := TBlkRT(track).Speed(Self);
+       rtsSpeed := ite(rtsSpeed = -1, rtSpeed, Min(rtsSpeed, rtSpeed));
+     end else begin
+       // assert TBlk(track).typ = btTrack
+       var turnouts: TList<TBlk> := Blocks.GetTurnoutsAtTrack(TBlk(track).id);
+       try
+         if (turnouts.Count > 0) then
+           Exit(false);
+       finally
+         turnouts.Free();
+       end;
+     end;
+   end;
+ finally
+   tracks.Free();
+ end;
 
- speed := TBlkRT(Self.front).Speed(Self);
- for var blkRT in railway.tracks do
-   if (blkRT.trains.Contains(Self.index)) then
-     speed := Min(speed, blkRT.Speed(Self));
+ if (rtsSpeed = -1) then
+ begin
+   // train not in railway -> it could be in path going to track
+   var jc := JCDb.FindActiveJCWithTrack(TBlk(Self.front).id);
+   if (jc = nil) then
+     Exit(false);
+   if (jc.lastTrack.typ <> btRT) then
+     Exit(false);
 
- Result := speed;
+   rtsSpeed := TBlkRT(jc.lastTrack).speed(Self);
+ end;
+
+ speed := rtsSpeed;
+ Result := true;
 end;
 
 procedure TTrain.UpdateRailwaySpeed();
-var speed: Integer;
 begin
- if ((Self.front <> nil) and (TBlk(Self.front).typ = TBlkType.btRT)) then
-  begin
-   speed := Self.GetRailwaySpeed();
-   if (Self.IsOnlyInRailway() and (TBlkTrack(Self.front).slowingReady) and (Self.wantedSpeed > 0) and
-       (not TBlkRT(Self.front).stopSlowedDown)) then
-    begin
-     // In railway only -> set speed directly
-     if (Self.wantedSpeed <> speed) then
-       Self.speed := speed;
-    end else begin
-     // In railway and in outgoing area too OR aready slowed down -> only decrease speed
-     if (Self.wantedSpeed > speed) then
-       Self.speed := speed;
-    end;
-  end;
+ var speed: Cardinal;
+ var success := Self.GetRailwaySpeed(speed);
+ if ((not success) or (Self.wantedSpeed = 0) or (Self.front = nil)) then
+   Exit();
+
+ if ((TBlkTrack(Self.front).slowingReady) and
+     ((TBlk(Self.front).typ <> btRT) or (not TBlkRT(Self.front).stopSlowedDown))) then
+ begin
+   // Not yet slowed -> increase & decrease speed
+   if (Cardinal(Self.wantedSpeed) <> speed) then
+     Self.speed := speed;
+ end else begin
+   // Already slowed down -> do not increase speed, just decrese
+   if (Cardinal(Self.wantedSpeed) > speed) then
+     Self.speed := speed;
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -90,6 +90,7 @@ type
 
     function GetBlkWithTrain(Train: TTrain): TBlksList;
     function GetTurnoutWithLock(zamekID: Integer): TBlksList;
+    function GetTurnoutsAtTrack(trackId: Integer): TList<TBlk>;
 
     // call 'Change' on all tracks with train 'Train'
     procedure ChangeTrackWithTrain(Train: TTrain);
@@ -171,14 +172,16 @@ end;
 // Send event to areas.
 procedure TBlocks.BlkChange(Sender: TObject);
 begin
-  if (((Sender as TBlk).typ = btTrack) or ((Sender as TBlk).typ = btRT)) then
+  if ((TBlk(Sender).typ = btTrack) or (TBlk(Sender).typ = btRT)) then
   begin
     // track change -> on-track turnouts change
-    var blkset: TBlkSettings := (Sender as TBlk).GetGlobalSettings();
-    for var blk: TBlk in Self.data do
-      if (blk.typ = btTurnout) then
-        if ((blk as TBlkTurnout).trackID = blkset.id) then
-          blk.Change(true);
+    var turnouts: TList<TBlk> := Self.GetTurnoutsAtTrack(TBlk(Sender).id);
+    try
+      for var turnout: TBlk in turnouts do
+        turnout.Change(true);
+    finally
+      turnouts.Free();
+    end;
   end;
 
   // call 'BlkChange' to areas
@@ -772,6 +775,15 @@ begin
   for var blk: TBlk in Self.data do
     if (((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain(Train))) then
       Result.Add(Blk);
+end;
+
+function TBlocks.GetTurnoutsAtTrack(trackId: Integer): TList<TBlk>;
+begin
+  Result := TList<TBlk>.Create();
+  for var blk: TBlk in Self.data do
+    if (blk.typ = btTurnout) then
+      if ((blk as TBlkTurnout).trackID = trackId) then
+        Result.Add(blk);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -957,7 +957,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSignal.MenuPNStartClick(SenderPnl: TIdContext; SenderOR: TObject);
-var Blk: TBlk;
 begin
   if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then
     Exit();
@@ -1547,8 +1546,10 @@ begin
         if ((Self.IsGoSignal()) and (not Self.m_state.falling) and (Self.track.typ = btRT) and
           (TBlkRT(Self.track).inRailway > -1)) then
         begin
-          if ((Cardinal(Train.wantedSpeed) <> Train.GetRailwaySpeed()) and (not Train.IsSpeedOverride())) then
-            Train.SetSpeedDirection(Train.GetRailwaySpeed(), Self.m_spnl.direction)
+          var speed: Cardinal;
+          var success := Train.GetRailwaySpeed(speed);
+          if ((success) and (Cardinal(Train.wantedSpeed) <> speed) and (not Train.IsSpeedOverride())) then
+            Train.SetSpeedDirection(speed, Self.m_spnl.direction)
         end else begin
           // neni povolovaci navest -> zastavit
           if (Train.wantedSpeed <> 0) then

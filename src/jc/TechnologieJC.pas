@@ -2168,7 +2168,7 @@ begin
 
         // obsazeni useku rusiciho navest (obvykle 0. usek, u skupinoveho navestidla byva jiny)
         // pozor: toto musi byt na tomto miste kvuli nastavovani Souprava.front
-        if ((i = Self.m_data.signalFallTrackI) and (signal.targetSignal <> ncStuj) and (Self.typ = TJCType.Train)) then
+        if ((i = Integer(Self.m_data.signalFallTrackI)) and (signal.targetSignal <> ncStuj) and (Self.typ = TJCType.Train)) then
         begin
           // navestidlo pri obsazeni useku rusime jen v pripade, ze se jedna o VC
           Self.Log('Obsazen usek ' + track.name + ' : navestidlo ' + signal.name + ' nastaveno na STUJ');
@@ -2274,8 +2274,11 @@ begin
 
       if ((Self.typ = TJCType.Train) and (track.IsTrain())) then
       begin
-        Self.Log('Smazana souprava ' + track.Train.name + ' z bloku ' + track.name, ltTrainMove);
+        var train := track.Train;
         track.RemoveTrains();
+        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + track.name, ltTrainMove);
+        if (Self.lastTrack.typ = TBlkType.btRT) then
+          train.UpdateRailwaySpeed();
       end;
     end; // if Self.rozpadBlok >= 1
   end; // if (cyklus2 = Self.rozpadRuseniBlok)
@@ -2385,10 +2388,6 @@ begin
       if ((signalTrack.typ = btRT) and (TBlkRT(signalTrack).railway <> nil) and (TBlkRT(signalTrack).bpInBlk)) then
         TBlkRT(signalTrack).ReleasedFromJC();
     end;
-
-    if ((Self.lastTrack.typ = TBlkType.btRT) and (TBlkTrack(Self.lastTrack).IsTrain()) and (Self.typ = TJCType.Train))
-    then
-      TBlkTrack(Self.lastTrack).Train.UpdateRailwaySpeed();
 
     Self.destroyBlock := _JC_DESTROY_NONE;
     Self.destroyEndBlock := _JC_DESTROY_NONE;
