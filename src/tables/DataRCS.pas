@@ -239,9 +239,9 @@ begin
     else
       start := 0;
 
-    for var j := start to cnt - 1 do
+    for var j: Integer := start to cnt - 1 do
     begin
-      if (j = ((cnt + start) div 2)) then
+      if (j = ((Integer(cnt) + start) div 2)) then
         LI.SubItems[3] := LI.SubItems[3] + ' ';
 
       case (RCSi.GetInput(addr, j)) of
