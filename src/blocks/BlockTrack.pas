@@ -1503,7 +1503,6 @@ end;
 
 procedure TBlkTrack.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
   params: string = '');
-var blk: TBlk;
 begin
   case (Button) of
     F2:
@@ -1512,11 +1511,8 @@ begin
     ENTER:
       begin
         var handled := Self.MenuKCClick(SenderPnl, SenderOR);
-        if (not handled) then
-        begin
-          if ((Self.m_settings.maxTrains <> 1) and (Self.trains.Count > 0)) then
-            handled := Self.MoveTrain(SenderPnl, SenderOR, 0);
-        end;
+        if ((not handled) and ((Self.m_settings.maxTrains = 1) or (Self.trains.Count = 0))) then
+          handled := Self.MoveTrain(SenderPnl, SenderOR, 0);
         if (not handled) then
           Self.ShowProperMenu(SenderPnl, (SenderOR as TArea), rights, params);
       end;
