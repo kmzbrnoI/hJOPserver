@@ -17,6 +17,7 @@ type
     SenderOR: TObject;
     SenderPnl: TIdContext;
     activatingJCs: TList<Integer>; // JCs in stack=VZ are activated all at once at the beginning, here is the rest
+    abAfter: Boolean;
   end;
 
   TMultiJCData = record
@@ -199,7 +200,7 @@ begin
       else
       begin
         Self.activatingJC := JC;
-        Self.activatingJC.Activate(Self.m_state.SenderPnl, Self.m_state.SenderOR);
+        Self.activatingJC.Activate(Self.m_state.SenderPnl, Self.m_state.SenderOR, nil, False, False, Self.m_state.abAfter);
       end;
       Self.changed := true;
     end;
@@ -222,6 +223,7 @@ begin
 
   Self.m_state.SenderOR := SenderOR;
   Self.m_state.SenderPnl := SenderPnl;
+  Self.m_state.abAfter := abAfter;
 
   Self.m_state.activatingJCs.Clear();
   for var jcId in Self.m_data.JCs do
@@ -243,7 +245,7 @@ begin
     Exit();
 
   Self.activatingJC := JCDb.GetJCByID(Self.m_state.activatingJCs[0]);
-  Self.activatingJC.Activate(SenderPnl, SenderOR);
+  Self.activatingJC.Activate(SenderPnl, SenderOR, nil, false, false, Self.m_state.abAfter);
   Self.m_state.JCIndex := 0;
 
   Self.changed := true;
