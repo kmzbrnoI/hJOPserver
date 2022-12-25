@@ -7,8 +7,6 @@ uses TechnologieJC, ExtCtrls, BlockRailway, SysUtils;
 type
   TJCSimulator = class
   private
-
-    procedure OnTimer(Sender: TObject);
     procedure UpdateJC(JC: TJC);
 
   public
@@ -16,12 +14,11 @@ type
 
     constructor Create();
     destructor Destroy(); override;
+    procedure OnTimer(Sender: TObject);
   end;
 
   TRailwaySimulator = class
   private
-
-    procedure OnTimer(Sender: TObject);
     procedure UpdateTrat(Trat: TBlkRailway);
 
   public
@@ -29,11 +26,11 @@ type
 
     constructor Create();
     destructor Destroy(); override;
+    procedure OnTimer(Sender: TObject);
   end;
 
   TTurnoutSimulator = class
   private
-
     procedure OnTimer(Sender: TObject);
 
   public

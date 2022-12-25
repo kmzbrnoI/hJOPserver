@@ -17,6 +17,8 @@ type
     CHB_SimVyhybky: TCheckBox;
     CHB_Zaver: TCheckBox;
     CHB_Show_Block_Id: TCheckBox;
+    B_JC_Single_Iter: TButton;
+    B_Trat_Single_Iter: TButton;
     procedure B_SaveClick(Sender: TObject);
     procedure B_InputSimClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -28,6 +30,8 @@ type
     procedure CHB_SimInputClick(Sender: TObject);
     procedure CHB_ZaverClick(Sender: TObject);
     procedure CHB_Show_Block_IdClick(Sender: TObject);
+    procedure B_JC_Single_IterClick(Sender: TObject);
+    procedure B_Trat_Single_IterClick(Sender: TObject);
   public
     procedure LoadData(ini: TMemIniFile);
     procedure SaveData(ini: TMemIniFile);
@@ -61,6 +65,11 @@ begin
   ini.WriteInteger(SECTION, 'FormTop', F_Admin.Top);
 end;
 
+procedure TF_Admin.B_JC_Single_IterClick(Sender: TObject);
+begin
+  JCSimulator.OnTimer(Self);
+end;
+
 procedure TF_Admin.B_SaveClick(Sender: TObject);
 var ini: TMemIniFile;
 const SECTION = 'AdminData';
@@ -74,6 +83,11 @@ begin
   finally
     ini.Free();
   end;
+end;
+
+procedure TF_Admin.B_Trat_Single_IterClick(Sender: TObject);
+begin
+  RailwaySimulator.OnTimer(Self);
 end;
 
 procedure TF_Admin.CHB_JC_SimulatorClick(Sender: TObject);

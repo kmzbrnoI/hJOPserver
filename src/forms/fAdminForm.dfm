@@ -41,7 +41,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Ulo'#382'it do souboru'
-    TabOrder = 8
+    TabOrder = 10
     OnClick = B_SaveClick
   end
   object CHB_SimInput: TCheckBox
@@ -54,7 +54,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Simulovat stav vstup'#367' automaticky (InputSim)'
-    TabOrder = 1
+    TabOrder = 3
     OnClick = CHB_SimInputClick
   end
   object CHB_SimSoupravaUsek: TCheckBox
@@ -67,7 +67,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Simulovat obsazen'#237' '#250'seku soupravou'
-    TabOrder = 2
+    TabOrder = 4
     OnClick = CHB_SimSoupravaUsekClick
   end
   object CHB_JC_Simulator: TCheckBox
@@ -80,7 +80,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Simulovat pr'#367'jezd vlaku j'#237'zdn'#237' cestou'
-    TabOrder = 3
+    TabOrder = 5
     OnClick = CHB_JC_SimulatorClick
   end
   object CHB_Trat_Sim: TCheckBox
@@ -93,7 +93,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Simulovat pr'#367'jezd vlaku trat'#237
-    TabOrder = 4
+    TabOrder = 6
     OnClick = CHB_Trat_SimClick
   end
   object CHB_SimVyhybky: TCheckBox
@@ -106,7 +106,7 @@ object F_Admin: TF_Admin
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Simulovat koncovou polohu p'#345'i stav'#283'n'#237' v'#253'hybek'
-    TabOrder = 5
+    TabOrder = 7
     OnClick = CHB_SimVyhybkyClick
   end
   object CHB_Zaver: TCheckBox
@@ -115,7 +115,7 @@ object F_Admin: TF_Admin
     Width = 201
     Height = 17
     Caption = 'Zobrazovat diagnostick'#233' z'#225'v'#283'ry blok'#367
-    TabOrder = 6
+    TabOrder = 8
     OnClick = CHB_ZaverClick
   end
   object CHB_Show_Block_Id: TCheckBox
@@ -124,7 +124,25 @@ object F_Admin: TF_Admin
     Width = 161
     Height = 17
     Caption = 'Zobrazovat v menu ID blok'#367
-    TabOrder = 7
+    TabOrder = 9
     OnClick = CHB_Show_Block_IdClick
+  end
+  object B_JC_Single_Iter: TButton
+    Left = 88
+    Top = 8
+    Width = 75
+    Height = 25
+    Caption = 'JC 1 iterace'
+    TabOrder = 1
+    OnClick = B_JC_Single_IterClick
+  end
+  object B_Trat_Single_Iter: TButton
+    Left = 169
+    Top = 8
+    Width = 75
+    Height = 25
+    Caption = 'Tra'#357' 1 iterace'
+    TabOrder = 2
+    OnClick = B_Trat_Single_IterClick
   end
 end
