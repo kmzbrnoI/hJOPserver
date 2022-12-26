@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ComCtrls, Spin, TechnologieJC, Generics.Collections, BlockDb,
-  StrUtils, Math, Area;
+  StrUtils, Math, Area, fTrainSpeed;
 
 type
   TF_JCEdit = class(TForm)
@@ -32,8 +32,6 @@ type
     L_VC_11: TLabel;
     L_VC_07: TLabel;
     CB_Next_Signal: TComboBox;
-    L_VC_10: TLabel;
-    L_VC_12: TLabel;
     CHB_AutoName: TCheckBox;
     GB_Railway: TGroupBox;
     CHB_Railway: TCheckBox;
@@ -57,12 +55,13 @@ type
     CHB_NZV: TCheckBox;
     Label6: TLabel;
     SE_SignalFallTrackI: TSpinEdit;
-    SE_Speed_Stop: TSpinEdit;
-    SE_Speed_Go: TSpinEdit;
     CB_Signal_Signal: TComboBox;
     Label9: TLabel;
     B_Track_Del: TButton;
     B_Turnout_Del: TButton;
+    GB_Speeds: TGroupBox;
+    GB_SpeedsStop: TGroupBox;
+    GB_SpeedsGo: TGroupBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
@@ -92,6 +91,9 @@ type
     CB_RailwayIds: TList<Integer>;
     JCData: TJCdata;
 
+    fTrainSpeedGo: TF_TrainSpeed;
+    fTrainSpeedStop: TF_TrainSpeed;
+
     procedure EmptyOpenForm();
     procedure EditOpenForm();
     procedure CommonOpenForm();
@@ -119,7 +121,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, Block, AreaDb,
+uses GetSystems, FileSystem, Block, AreaDb, TrainSpeed,
   BlockSignal, TJCDatabase, DataJC, BlockRailway, BlockTurnout;
 
 {$R *.dfm}
@@ -131,6 +133,16 @@ begin
   Self.CB_RailwayIds := TList<Integer>.Create();
   Self.CB_TurnoutIds := TList<Integer>.Create();
   Self.CB_TrackIds := TList<Integer>.Create();
+
+  Self.fTrainSpeedGo := TF_TrainSpeed.Create(nil);
+  Self.fTrainSpeedGo.Parent := Self.GB_SpeedsGo;
+  Self.fTrainSpeedGo.Align := alClient;
+  Self.fTrainSpeedGo.Show();
+
+  Self.fTrainSpeedStop := TF_TrainSpeed.Create(nil);
+  Self.fTrainSpeedStop.Parent := Self.GB_SpeedsStop;
+  Self.fTrainSpeedStop.Align := alClient;
+  Self.fTrainSpeedStop.Show();
 end;
 
 procedure TF_JCEdit.FormDestroy(Sender: TObject);
@@ -140,6 +152,9 @@ begin
   Self.CB_RailwayIds.Free();
   Self.CB_TurnoutIds.Free();
   Self.CB_TrackIds.Free();
+
+  Self.fTrainSpeedGo.Free();
+  Self.fTrainSpeedStop.Free();
 end;
 
 procedure TF_JCEdit.B_StornoClick(Sender: TObject);
@@ -175,8 +190,10 @@ begin
   Self.CB_Signal_Signal.Enabled := false;
 
   Self.CB_Next_Signal.ItemIndex := -1;
-  Self.SE_Speed_Stop.Value := 40;
-  Self.SE_Speed_Go.Value := 40;
+
+  Self.fTrainSpeedGo.Default();
+  Self.fTrainSpeedStop.Default();
+
   Self.CB_SignalChange(Self);
   Self.Caption := 'Vytvořit novou jízdní cestu';
   Self.LV_Tracks.Clear();
@@ -197,7 +214,7 @@ end;
 
 procedure TF_JCEdit.EditOpenForm();
 begin
-  JCData := JCDb.GetJCByIndex(OpenIndex).data;
+  Self.JCData := JCDb.GetJCByIndex(OpenIndex).data;
 
   Blocks.FillCB(Self.CB_Signal, Self.CB_SignalIds, nil, nil, btSignal, btAny, JCData.signalId);
   Self.CB_SignalChange(Self);
@@ -206,9 +223,8 @@ begin
   Self.SE_ID.Value := JCData.id;
 
   Self.CB_Typ.ItemIndex := Integer(JCData.typ) - 1;
-  Self.SE_Speed_Go.Value := JCData.speedGo;
-  Self.SE_Speed_Stop.Value := JCData.speedStop;
 
+  // Filling of fTrainSpeedGo & fTrainSpeedGo done in CB_TypChange
   Self.CB_TypChange(Self.CB_Typ);
 
   Self.CHB_Railway.Checked := (JCData.railwayId > -1);
@@ -372,6 +388,7 @@ begin
 end;
 
 procedure TF_JCEdit.B_SaveClick(Sender: TObject);
+label Fail;
 begin
   if (Self.E_Name.Text = '') then
   begin
@@ -403,18 +420,6 @@ begin
     Application.MessageBox('Vyberte další návěstidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Self.SE_Speed_Go.Value = 0) then
-  begin
-    Application.MessageBox('Vyplňte, jaká bude rychlost lokomotivy při projiždění JC při postaveném dalším návěstidle!',
-      'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit();
-  end;
-  if (Self.SE_Speed_Stop.Value = 0) then
-  begin
-    Application.MessageBox('Vyplňte, jaká bude rychlost lokomotivy při projiždění JC při dalším návěstidle na stůj!',
-      'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit();
-  end;
   if (Self.CHB_Railway.Checked) and (Self.CB_Railway.ItemIndex < 0) then
   begin
     Application.MessageBox('Vyberte trať!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
@@ -441,188 +446,196 @@ begin
     Exit();
   end;
 
-  JCData.name := Self.E_Name.Text;
-  JCData.id := Self.SE_ID.Value;
-  JCData.signalId := Self.CB_SignalIds[Self.CB_Signal.ItemIndex];
-  JCData.typ := TJCType(Self.CB_Typ.ItemIndex + 1);
+  var JCsaveData: TJCdata := TechnologieJC.NewJCData();
 
-  if (JCData.typ = TJCType.shunt) then begin
-    case (Self.CB_Signal_Signal.ItemIndex) of
-     0: JCData.signalCode := Integer(ncPosunZaj);
-     1: JCData.signalCode := Integer(ncPosunNezaj);
-    end;
-  end else
-    JCData.signalCode := Integer(ncDisabled);
-
-  JCData.speedGo := Self.SE_Speed_Go.Value;
-  JCData.speedStop := Self.SE_Speed_Stop.Value;
-  JCData.turn := Self.CHB_Odbocka.Checked;
-  JCData.nzv := Self.CHB_NZV.Checked;
-  JCData.signalFallTrackI := Self.SE_SignalFallTrackI.Value;
-
-  if (Self.CHB_Railway.Checked) then
-  begin
-    Self.JCData.railwayId := Self.CB_RailwayIds[Self.CB_Railway.ItemIndex];
-    Self.JCData.railwayDir := TRailwayDirection(Self.CB_Railway_Dir.ItemIndex + 1);
-  end else begin
-    Self.JCData.railwayId := -1;
-    Self.JCData.railwayDir := TRailwayDirection.no;
-  end;
-
-  Self.CB_Next_SignalChange(Self.CB_Next_Signal);
-
-  if (not Assigned(JCData.turnouts) or (mNewJC)) then
-    JCData.turnouts := TList<TJCTurnoutZav>.Create();
-  JCData.turnouts.Clear();
-  for var LI: TListItem in Self.LV_Turnouts.Items do
-  begin
-    var zav: TJCTurnoutZav;
-    zav.Block := StrToInt(LI.SubItems.Strings[0]);
-    zav.position := TBlkTurnout.StrToPosition(LI.SubItems.Strings[2]);
-    JCData.turnouts.Add(zav);
-  end;
-
-  if (not Assigned(JCData.tracks) or (mNewJC)) then
-    JCData.tracks := TList<Integer>.Create();
-  JCData.tracks.Clear();
-  for var LI: TListItem in Self.LV_Tracks.Items do
-    JCData.tracks.Add(StrToInt(LI.SubItems.Strings[0]));
-
-  var parsed := TStringList.Create();
   try
-    // crossings
-    if (not Assigned(JCData.crossings) or (mNewJC)) then
-      JCData.crossings := TList<TJCCrossingZav>.Create();
-    for var crossingZav in JCData.crossings do
-      crossingZav.closeTracks.Free();
-    JCData.crossings.Clear();
-    for var line in Self.M_Crossings.Lines do
-    begin
-      parsed.Clear();
-      ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
-
-      var crossingZav: TJCCrossingZav;
-      try
-        crossingZav.closeTracks := nil;
-        crossingZav.crossingId := StrToInt(parsed[0]);
-        if (parsed.Count > 1) then
-          crossingZav.openTrack := StrToInt(parsed[1])
-        else
-          crossingZav.openTrack := -1;
-
-        crossingZav.closeTracks := TList<Integer>.Create();
-        for var i := 2 to parsed.Count - 1 do
-          crossingZav.closeTracks.Add(StrToInt(parsed[i]));
-
-        JCData.crossings.Add(crossingZav);
-      except
-        on E: Exception do
-        begin
-          if (Assigned(crossingZav.closeTracks)) then
-            crossingZav.closeTracks.Free();
-
-          Application.MessageBox(PChar('Napodařilo se naparsovat přejezd "' + line + '":' + #13#10 + E.Message),
-            'Chyba', MB_OK OR MB_ICONWARNING);
-          Exit();
-        end;
-      end;
-    end;
-
-    // refugees
-    if (not Assigned(JCData.refuges) or (mNewJC)) then
-      JCData.refuges := TList<TJCRefugeeZav>.Create();
-    JCData.refuges.Clear();
-    for var line in Self.M_Refugees.Lines do
-    begin
-      parsed.Clear();
-      ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
-
-      try
-        var refugeeZav: TJCRefugeeZav;
-        refugeeZav.Block := StrToInt(parsed[0]);
-        if (parsed[1] = '+') then
-          refugeeZav.position := TTurnoutPosition.plus
-        else
-          refugeeZav.position := TTurnoutPosition.minus;
-        refugeeZav.ref_blk := StrToInt(parsed[2]);
-        JCData.refuges.Add(refugeeZav);
-      except
-        on E: Exception do
-        begin
-          Application.MessageBox(PChar('Napodařilo se naparsovat odvrat "' + line + '":' + #13#10 + E.Message), 'Chyba',
-            MB_OK OR MB_ICONWARNING);
-          Exit();
-        end;
-      end;
-    end;
-
-    // locks
-    if (not Assigned(JCData.locks) or (mNewJC)) then
-      JCData.locks := TList<TJCRefZav>.Create();
-    JCData.locks.Clear();
-    for var line in Self.M_Locks.Lines do
-    begin
-      parsed.Clear();
-      ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
-
-      try
-        var refz: TJCRefZav;
-        refz.Block := StrToInt(parsed[0]);
-        refz.ref_blk := StrToInt(parsed[1]);
-        JCData.locks.Add(refz);
-      except
-        on E: Exception do
-        begin
-          Application.MessageBox(PChar('Napodařilo se naparsovat zámek ' + line + ':' + #13#10 + E.Message), 'Chyba',
-            MB_OK OR MB_ICONWARNING);
-          Exit();
-        end;
-      end;
-    end;
-
-    // variant points
-    if (not Assigned(JCData.vb) or (mNewJC)) then
-      JCData.vb := TList<Integer>.Create();
-    JCData.vb.Clear();
-    parsed.Clear();
-    ExtractStrings([','], [], PChar(StringReplace(Self.E_VB.Text, ' ', '', [rfReplaceAll])), parsed);
-
-    for var item in parsed do
-    begin
-      try
-        JCData.vb.Add(StrToInt(Item));
-      except
-        on E: Exception do
-        begin
-          Application.MessageBox(PChar('Napodařilo se naparsovat variatní bod ' + Item + ':' + #13#10 + E.Message),
-            'Chyba', MB_OK OR MB_ICONWARNING);
-          Exit();
-        end;
-      end;
-    end;
-
-  finally
-    parsed.Free()
-  end;
-
-  if (mNewJC) then
-  begin
     try
-      JCDb.Add(Self.JCData);
+      JCsaveData.speedsGo := Self.fTrainSpeedGo.Get();
+      JCsaveData.speedsStop := Self.fTrainSpeedStop.Get();
     except
-      on E: Exception do
+      on E:Exception do
       begin
-        Application.MessageBox(PChar('Přidávání JC skončilo s chybou' + #13#10 + E.Message), 'Chyba',
-          MB_OK OR MB_ICONWARNING);
+        TechnologieJC.FreeJCData(JCsaveData);
+        Application.MessageBox(PChar('Rychlosti:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();
       end;
     end;
 
-  end else begin
-    // update existing path
-    var JC := JCDb.GetJCByIndex(OpenIndex);
-    JC.data := Self.JCData;
-    JCTableData.UpdateLine(JC.index);
+    JCsaveData.name := Self.E_Name.Text;
+    JCsaveData.id := Self.SE_ID.Value;
+    JCsaveData.signalId := Self.CB_SignalIds[Self.CB_Signal.ItemIndex];
+    JCsaveData.typ := TJCType(Self.CB_Typ.ItemIndex + 1);
+
+    if (JCsaveData.typ = TJCType.shunt) then begin
+      case (Self.CB_Signal_Signal.ItemIndex) of
+       0: JCsaveData.signalCode := Integer(ncPosunZaj);
+       1: JCsaveData.signalCode := Integer(ncPosunNezaj);
+      end;
+    end else
+      JCsaveData.signalCode := Integer(ncDisabled);
+
+    JCsaveData.turn := Self.CHB_Odbocka.Checked;
+    JCsaveData.nzv := Self.CHB_NZV.Checked;
+    JCsaveData.signalFallTrackI := Self.SE_SignalFallTrackI.Value;
+
+    if (Self.CHB_Railway.Checked) then
+    begin
+      JCsaveData.railwayId := Self.CB_RailwayIds[Self.CB_Railway.ItemIndex];
+      JCsaveData.railwayDir := TRailwayDirection(Self.CB_Railway_Dir.ItemIndex + 1);
+    end else begin
+      JCsaveData.railwayId := -1;
+      JCsaveData.railwayDir := TRailwayDirection.no;
+    end;
+
+    Self.CB_Next_SignalChange(Self.CB_Next_Signal); // fills JCData.nextSinagl*
+    JCsaveData.nextSignalType := JCData.nextSignalType;
+    JCsaveData.nextSignalId := JCData.nextSignalId;
+
+    for var LI: TListItem in Self.LV_Turnouts.Items do
+    begin
+      var zav: TJCTurnoutZav;
+      zav.Block := StrToInt(LI.SubItems.Strings[0]);
+      zav.position := TBlkTurnout.StrToPosition(LI.SubItems.Strings[2]);
+      JCsaveData.turnouts.Add(zav);
+    end;
+
+    for var LI: TListItem in Self.LV_Tracks.Items do
+      JCsaveData.tracks.Add(StrToInt(LI.SubItems.Strings[0]));
+
+    var parsed := TStringList.Create();
+    try
+      // crossings
+      for var line in Self.M_Crossings.Lines do
+      begin
+        parsed.Clear();
+        ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
+
+        var crossingZav: TJCCrossingZav;
+        try
+          crossingZav.closeTracks := nil;
+          crossingZav.crossingId := StrToInt(parsed[0]);
+          if (parsed.Count > 1) then
+            crossingZav.openTrack := StrToInt(parsed[1])
+          else
+            crossingZav.openTrack := -1;
+
+          crossingZav.closeTracks := TList<Integer>.Create();
+          for var i := 2 to parsed.Count - 1 do
+            crossingZav.closeTracks.Add(StrToInt(parsed[i]));
+
+          JCsaveData.crossings.Add(crossingZav);
+        except
+          on E: Exception do
+          begin
+            if (Assigned(crossingZav.closeTracks)) then
+              crossingZav.closeTracks.Free();
+
+            TechnologieJC.FreeJCData(JCsaveData);
+            Application.MessageBox(PChar('Napodařilo se naparsovat přejezd "' + line + '":' + #13#10 + E.Message),
+              'Chyba', MB_OK OR MB_ICONWARNING);
+            Exit();
+          end;
+        end;
+      end;
+
+      // refugees
+      for var line in Self.M_Refugees.Lines do
+      begin
+        parsed.Clear();
+        ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
+
+        try
+          var refugeeZav: TJCRefugeeZav;
+          refugeeZav.Block := StrToInt(parsed[0]);
+          if (parsed[1] = '+') then
+            refugeeZav.position := TTurnoutPosition.plus
+          else
+            refugeeZav.position := TTurnoutPosition.minus;
+          refugeeZav.ref_blk := StrToInt(parsed[2]);
+          JCsaveData.refuges.Add(refugeeZav);
+        except
+          on E: Exception do
+          begin
+            TechnologieJC.FreeJCData(JCsaveData);
+            Application.MessageBox(PChar('Napodařilo se naparsovat odvrat "' + line + '":' + #13#10 + E.Message), 'Chyba',
+              MB_OK OR MB_ICONWARNING);
+            Exit();
+          end;
+        end;
+      end;
+
+      // locks
+      for var line in Self.M_Locks.Lines do
+      begin
+        parsed.Clear();
+        ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
+
+        try
+          var refz: TJCRefZav;
+          refz.Block := StrToInt(parsed[0]);
+          refz.ref_blk := StrToInt(parsed[1]);
+          JCsaveData.locks.Add(refz);
+        except
+          on E: Exception do
+          begin
+            TechnologieJC.FreeJCData(JCsaveData);
+            Application.MessageBox(PChar('Napodařilo se naparsovat zámek ' + line + ':' + #13#10 + E.Message), 'Chyba',
+              MB_OK OR MB_ICONWARNING);
+            Exit();
+          end;
+        end;
+      end;
+
+      // variant points
+      parsed.Clear();
+      ExtractStrings([','], [], PChar(StringReplace(Self.E_VB.Text, ' ', '', [rfReplaceAll])), parsed);
+      for var item in parsed do
+      begin
+        try
+          JCsaveData.vb.Add(StrToInt(Item));
+        except
+          on E: Exception do
+          begin
+            TechnologieJC.FreeJCData(JCsaveData);
+            Application.MessageBox(PChar('Napodařilo se naparsovat variantní bod ' + Item + ':' + #13#10 + E.Message),
+              'Chyba', MB_OK OR MB_ICONWARNING);
+            Exit();
+          end;
+        end;
+      end;
+    finally
+      parsed.Free()
+    end;
+
+    if (mNewJC) then
+    begin
+      try
+        JCDb.Add(JCsaveData);
+      except
+        on E: Exception do
+        begin
+          TechnologieJC.FreeJCData(JCsaveData);
+          Application.MessageBox(PChar('Přidávání JC skončilo s chybou' + #13#10 + E.Message), 'Chyba',
+            MB_OK OR MB_ICONWARNING);
+          Exit();
+        end;
+      end;
+
+    end else begin
+      // update existing path
+      var JC := JCDb.GetJCByIndex(OpenIndex);
+      JC.data := JCsaveData;
+      JCTableData.UpdateLine(JC.index);
+    end;
+
+  except
+    on E:Exception do
+    begin
+      TechnologieJC.FreeJCData(JCsaveData);
+      Application.MessageBox(PChar('Neočekávaná chyba:' + #13#10 + E.Message), 'Chyba',
+        MB_OK OR MB_ICONWARNING);
+      Exit();
+    end;
   end;
 
   Self.Close();
@@ -758,13 +771,16 @@ end;
 procedure TF_JCEdit.CB_TypChange(Sender: TObject);
 begin
   Self.JCData.typ := TJCType(Self.CB_Typ.ItemIndex + 1);
-  Self.SE_Speed_Go.Enabled := (JCData.typ <> TJCType.shunt);
-  Self.SE_Speed_Stop.Enabled := (JCData.typ <> TJCType.shunt);
 
-  if (JCData.typ = TJCType.shunt) then
+  Self.fTrainSpeedGo.LV_Speeds.Enabled := (Self.JCData.typ = TJCType.train);
+  Self.fTrainSpeedStop.LV_Speeds.Enabled := (Self.JCData.typ = TJCType.train);
+  if (Self.JCData.typ = TJCType.shunt) then
   begin
-    Self.SE_Speed_Go.Value := 40;
-    Self.SE_Speed_Stop.Value := 40;
+    Self.fTrainSpeedGo.Clear();
+    Self.fTrainSpeedStop.Clear();
+  end else begin
+    Self.fTrainSpeedGo.Fill(Self.JCData.speedsGo);
+    Self.fTrainSpeedStop.Fill(Self.JCData.speedsStop);
   end;
 
   Self.CB_Signal_Signal.Clear();

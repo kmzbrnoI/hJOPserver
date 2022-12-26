@@ -15,7 +15,7 @@ uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Logging,
   Dialogs, Menus, Buttons, ComCtrls, fMain, BlockDb, Block, Train,
   IniFiles, IdContext, BlockRailway, Generics.Collections, UPO, BlockTurnout,
-  Area, changeEvent, changeEventCaller, JsonDataObjects, PTUtils, JCBarriers;
+  Area, changeEvent, changeEventCaller, JsonDataObjects, PTUtils, JCBarriers, TrainSpeed;
 
 const
   _JC_INITPOTVR_TIMEOUT_SEC = 60; // timeout UPO a potvrzeni na zacatku staveni JC
@@ -104,7 +104,7 @@ type
 
     railwayId: Integer;
     railwayDir: TRailwayDirection;
-    speedGo, speedStop: Integer; // rychlost v JC pri dalsim navestidle navestici dovolujici a NEdovolujici navest
+    speedsGo, speedsStop: TList<TTrainSpeed>;
     turn: Boolean; // jc od odbocky (40 km/h)
     nzv: Boolean; // nedostatecna zabrzdna vzdalenost
     signalFallTrackI: Cardinal;
@@ -259,6 +259,9 @@ type
     property OnSignalChanged: ENavChanged read fOnSignalChanged write fOnSignalChanged;
   end;
 
+  function NewJCData(): TJCdata;
+  procedure FreeJCData(jcdata: TJCData);
+
 implementation
 
 uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
@@ -277,13 +280,7 @@ begin
   Self.m_state := _def_jc_staveni;
   Self.m_state.ncBariery := TList<TJCBarrier>.Create();
 
-  Self.m_data.locks := TList<TJCRefZav>.Create();
-  Self.m_data.vb := TList<Integer>.Create();
-
-  Self.m_data.turnouts := TList<TJCTurnoutZav>.Create();
-  Self.m_data.tracks := TList<Integer>.Create();
-  Self.m_data.refuges := TList<TJCRefugeeZav>.Create();
-  Self.m_data.crossings := TList<TJCCrossingZav>.Create();
+  Self.m_data := NewJCData();
 end;
 
 constructor TJC.Create(data: TJCdata);
@@ -294,42 +291,53 @@ begin
   Self.m_state := _def_jc_staveni;
   if (not Assigned(Self.m_state.ncBariery)) then
     Self.m_state.ncBariery := TList<TJCBarrier>.Create();
-
-  if (not Assigned(Self.m_data.locks)) then
-    Self.m_data.locks := TList<TJCRefZav>.Create();
-  if (not Assigned(Self.m_data.vb)) then
-    Self.m_data.vb := TList<Integer>.Create();
-  if (not Assigned(Self.m_data.refuges)) then
-    Self.m_data.refuges := TList<TJCRefugeeZav>.Create();
-  if (not Assigned(Self.m_data.crossings)) then
-    Self.m_data.crossings := TList<TJCCrossingZav>.Create();
-  if (not Assigned(Self.m_data.turnouts)) then
-    Self.m_data.turnouts := TList<TJCTurnoutZav>.Create();
-  if (not Assigned(Self.m_data.tracks)) then
-    Self.m_data.tracks := TList<Integer>.Create();
 end;
 
 destructor TJC.Destroy();
 begin
   if (Assigned(Self.m_state.ncBariery)) then
     FreeAndNil(Self.m_state.ncBariery);
-  if (Assigned(Self.m_data.locks)) then
-    FreeAndNil(Self.m_data.locks);
-  if (Assigned(Self.m_data.vb)) then
-    Self.m_data.vb.Free();
-
-  if (Assigned(Self.m_data.turnouts)) then
-    Self.m_data.turnouts.Free();
-  if (Assigned(Self.m_data.tracks)) then
-    Self.m_data.tracks.Free();
-  if (Assigned(Self.m_data.refuges)) then
-    Self.m_data.refuges.Free();
-  for var i := 0 to Self.m_data.crossings.Count - 1 do
-    Self.m_data.crossings[i].closeTracks.Free();
-  if (Assigned(Self.m_data.crossings)) then
-    Self.m_data.crossings.Free();
+  FreeJCData(Self.m_data);
 
   inherited;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function NewJCData(): TJCdata;
+begin
+  Result.turnouts := TList<TJCTurnoutZav>.Create();
+  Result.tracks := TList<Integer>.Create();
+  Result.refuges := TList<TJCRefugeeZav>.Create();
+  Result.crossings := TList<TJCCrossingZav>.Create();
+  Result.locks := TList<TJCRefZav>.Create();
+  Result.vb := TList<Integer>.Create();
+  Result.speedsGo := TList<TTrainSpeed>.Create();
+  Result.speedsStop := TList<TTrainSpeed>.Create();
+end;
+
+procedure FreeJCData(jcdata: TJCData);
+begin
+  if (Assigned(jcdata.turnouts)) then
+    jcdata.turnouts.Free();
+  if (Assigned(jcdata.tracks)) then
+    jcdata.tracks.Free();
+  if (Assigned(jcdata.refuges)) then
+    jcdata.refuges.Free();
+  if (Assigned(jcdata.crossings)) then
+  begin
+    for var crossing in jcdata.crossings do
+      crossing.closeTracks.Free();
+    jcdata.crossings.Free();
+  end;
+  if (Assigned(jcdata.locks)) then
+    FreeAndNil(jcdata.locks);
+  if (Assigned(jcdata.vb)) then
+    jcdata.vb.Free();
+  if (Assigned(jcdata.speedsGo)) then
+    jcdata.speedsGo.Free();
+  if (Assigned(jcdata.speedsStop)) then
+    jcdata.speedsStop.Free();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2572,13 +2580,8 @@ begin
   else
    Self.m_data.signalCode := Integer(ncDisabled);
 
-  Self.m_data.speedGo := ini.ReadInteger(section, 'rychDalsiN', 0);
-  if (Self.m_data.speedGo < 10) then
-    Self.m_data.speedGo := Self.m_data.speedGo*10; //  backward compatibility
-
-  Self.m_data.speedStop := ini.ReadInteger(section, 'rychNoDalsiN', 0);
-  if (Self.m_data.speedStop < 10) then
-    Self.m_data.speedStop := Self.m_data.speedStop*10; //  backward compatibility
+  Self.m_data.speedsGo := TTrainSpeed.IniLoad(ini.ReadString(section, 'rychDalsiN', ''));
+  Self.m_data.speedsStop := TTrainSpeed.IniLoad(ini.ReadString(section, 'rychNoDalsiN', ''));
 
   sl := TStringList.Create();
   try
@@ -2707,8 +2710,18 @@ begin
     ini.WriteInteger(section, 'dalsiNTyp', Integer(Self.m_data.nextSignalType));
   if (Self.m_data.nextSignalType = TJCNextSignalType.signal) then
     ini.WriteInteger(section, 'dalsiN', Self.m_data.nextSignalId);
-  ini.WriteInteger(section, 'rychDalsiN', Self.m_data.speedGo);
-  ini.WriteInteger(section, 'rychNoDalsiN', Self.m_data.speedStop);
+
+  var speedsGo: string := TTrainSpeed.IniStr(Self.m_data.speedsGo);
+  if (speedsGo <> '') then
+    ini.WriteString(section, 'rychDalsiN', speedsGo)
+  else
+    ini.DeleteKey(section, 'rychDalsiN');
+
+  var speedsStop: string := TTrainSpeed.IniStr(Self.m_data.speedsStop);
+  if (speedsStop <> '') then
+    ini.WriteString(section, 'rychNoDalsiN', speedsStop)
+  else
+    ini.DeleteKey(section, 'rychNoDalsiN');
 
   if ((Self.m_data.typ = TJCType.shunt) and (Self.m_data.signalCode <> Integer(ncPosunZaj))) then
     ini.WriteInteger(section, 'navest', Integer(Self.m_data.signalCode))
@@ -3386,6 +3399,23 @@ var id_changed: Boolean;
   signal_changed: Boolean;
   orig_signal: TBlk;
 begin
+  if (Self.m_data.turnouts <> prop.turnouts) then
+    Self.m_data.turnouts.Free();
+  if (Self.m_data.tracks <> prop.tracks) then
+    Self.m_data.tracks.Free();
+  if (Self.m_data.refuges <> prop.refuges) then
+    Self.m_data.refuges.Free();
+  if (Self.m_data.crossings <> prop.crossings) then
+    Self.m_data.crossings.Free();
+  if (Self.m_data.locks <> prop.locks) then
+    Self.m_data.locks.Free();
+  if (Self.m_data.vb <> prop.vb) then
+    Self.m_data.vb.Free();
+  if (Self.m_data.speedsGo <> prop.speedsGo) then
+    Self.m_data.speedsGo.Free();
+  if (Self.m_data.speedsStop <> prop.speedsStop) then
+    Self.m_data.speedsStop.Free();
+
   id_changed := ((Self.id <> prop.id) and (Self.id <> -1));
   signal_changed := (Self.data.signalId <> prop.signalId);
   Blocks.GetBlkByID(Self.data.signalId, orig_signal);
@@ -3575,8 +3605,8 @@ begin
     json['railwayDir'] := Integer(Self.m_data.railwayDir);
   end;
 
-  json['speedGo'] := Self.m_data.speedGo;
-  json['speedStop'] := Self.m_data.speedStop;
+  TTrainSpeed.GetPtData(Self.m_data.speedsGo, json['speedsGo']);
+  TTrainSpeed.GetPtData(Self.m_data.speedsStop, json['speedsStop']);
   json['turn'] := Self.m_data.turn;
 
   if (includeStaveni) then

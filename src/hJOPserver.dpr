@@ -158,7 +158,9 @@ uses
   PTEndpointUser in 'pt\PTEndpointUser.pas',
   BlockPst in 'blocks\BlockPst.pas',
   fBlkPst in 'blocks\forms\data\fBlkPst.pas' {F_BlkPst},
-  JCBarriers in 'jc\JCBarriers.pas';
+  JCBarriers in 'jc\JCBarriers.pas',
+  TrainSpeed in 'trains\TrainSpeed.pas',
+  fTrainSpeed in 'forms\fTrainSpeed.pas' {F_TrainSpeed};
 
 {$R *.res}
 
@@ -181,6 +183,7 @@ var
   Application.CreateForm(TF_BlkAC, F_BlkAC);
   Application.CreateForm(TF_BlkGroupSignal, F_BlkGroupSignal);
   Application.CreateForm(TF_BlkPst, F_BlkPst);
+  Application.CreateForm(TF_TrainSpeed, F_TrainSpeed);
   F_Splash.AddStav('Vytvářím okna...');
 
   Application.CreateForm(TF_Console, F_Console);

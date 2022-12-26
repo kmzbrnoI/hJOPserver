@@ -297,7 +297,8 @@ implementation
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSignal,
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
-  predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO, TCPAreasRef;
+  predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO, TCPAreasRef,
+  TrainSpeed;
 
 constructor TBlkSignal.Create(index: Integer);
 begin
@@ -1510,25 +1511,33 @@ begin
                 (not Train.IsPOdj(Self.dnJC.lastTrack))) then
               begin
                 // na konci JC budeme stat
-                if ((Train.wantedSpeed <> Self.dnJC.data.speedGo) or (Train.direction <> Self.m_spnl.direction)) then
-                  Train.SetSpeedDirection(Self.dnJC.data.speedGo, Self.m_spnl.direction);
+                var speed: Cardinal;
+                if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsGo, speed)) then // if success
+                  if ((Train.wantedSpeed <> speed) or (Train.direction <> Self.m_spnl.direction)) then
+                    Train.SetSpeedDirection(speed, Self.m_spnl.direction);
               end else begin
                 // na konci JC jedeme dal
-                if ((Train.wantedSpeed <> Self.dnJC.data.speedStop) or (Train.direction <> Self.m_spnl.direction)) then
-                  Train.SetSpeedDirection(Self.dnJC.data.speedStop, Self.m_spnl.direction);
+                var speed: Cardinal;
+                if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed)) then // if success
+                  if ((Train.wantedSpeed <> speed) or (Train.direction <> Self.m_spnl.direction)) then
+                    Train.SetSpeedDirection(speed, Self.m_spnl.direction);
               end;
             end;
 
           TJCNextSignalType.railway:
             begin
-              if ((Train.wantedSpeed <> Self.dnJC.data.speedGo) or (Train.direction <> Self.m_spnl.direction)) then
-                Train.SetSpeedDirection(Self.dnJC.data.speedGo, Self.m_spnl.direction);
+              var speed: Cardinal;
+              if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsGo, speed)) then // if success
+                if ((Train.wantedSpeed <> speed) or (Train.direction <> Self.m_spnl.direction)) then
+                  Train.SetSpeedDirection(speed, Self.m_spnl.direction);
             end;
 
           TJCNextSignalType.no:
             begin
-              if ((Train.wantedSpeed <> Self.dnJC.data.speedStop) or (Train.direction <> Self.m_spnl.direction)) then
-                Train.SetSpeedDirection(Self.dnJC.data.speedStop, Self.m_spnl.direction);
+              var speed: Cardinal;
+              if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed)) then // if success
+                if ((Train.wantedSpeed <> speed) or (Train.direction <> Self.m_spnl.direction)) then
+                  Train.SetSpeedDirection(speed, Self.m_spnl.direction);
             end;
         end;
 

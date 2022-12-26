@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses BlockTurnout, TJCDatabase, TechnologieJC, Block, BlockDb, fMain, ownConvert;
+uses BlockTurnout, TJCDatabase, TechnologieJC, Block, BlockDb, fMain, ownConvert, TrainSpeed;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -140,8 +140,8 @@ begin
     str := str + Blocks.GetBlkName(JCData.tracks[j]) + '; ';
   Self.LV.Items[line].SubItems[6] := LeftStr(str, Length(str) - 2);
 
-  Self.LV.Items[line].SubItems[9] := IntToStr(JCData.speedGo) + ' km/h';
-  Self.LV.Items[line].SubItems[10] := IntToStr(JCData.speedStop) + ' km/h';
+  Self.LV.Items[line].SubItems[9] := TTrainSpeed.DefaultSpeedStr(JCData.speedsGo);
+  Self.LV.Items[line].SubItems[10] := TTrainSpeed.DefaultSpeedStr(JCData.speedsStop);
 
   // odvraty
   str := '';

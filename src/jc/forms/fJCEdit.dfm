@@ -4,7 +4,7 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editace vlakove cesty [nazev]'
-  ClientHeight = 505
+  ClientHeight = 577
   ClientWidth = 976
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -63,28 +63,6 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = 'Dal'#353#237' n'#225'v'#283'stidlo :'
   end
-  object L_VC_10: TLabel
-    Left = 7
-    Top = 440
-    Width = 167
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Rychlost (dal'#353#237' n'#225'v. na st'#367'j) [km/h]:'
-  end
-  object L_VC_12: TLabel
-    Left = 7
-    Top = 472
-    Width = 201
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Rychlost (dal'#353#237' n'#225'v. povoluje j'#237'zdu) [km/h]:'
-  end
   object Label3: TLabel
     Left = 8
     Top = 34
@@ -121,7 +99,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' V'#253'hybky '
-    TabOrder = 9
+    TabOrder = 11
     object LV_Turnouts: TListView
       Left = 2
       Top = 15
@@ -348,8 +326,8 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object B_Save: TButton
-    Left = 588
-    Top = 473
+    Left = 590
+    Top = 544
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -358,12 +336,12 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 14
+    TabOrder = 13
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
-    Left = 509
-    Top = 473
+    Left = 511
+    Top = 544
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -371,7 +349,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 15
+    TabOrder = 14
     OnClick = B_StornoClick
   end
   object CB_Signal: TComboBox
@@ -424,24 +402,24 @@ object F_JCEdit: TF_JCEdit
     Caption = 'auto'
     Checked = True
     State = cbChecked
-    TabOrder = 17
+    TabOrder = 16
   end
   object GB_Railway: TGroupBox
-    Left = 345
-    Top = 273
-    Width = 318
+    Left = 8
+    Top = 436
+    Width = 328
     Height = 76
     Caption = ' N'#225'vaznost na tra'#357' '
-    TabOrder = 10
+    TabOrder = 7
     object Label1: TLabel
-      Left = 104
+      Left = 111
       Top = 16
       Width = 23
       Height = 13
       Caption = 'Tra'#357':'
     end
     object Label2: TLabel
-      Left = 104
+      Left = 111
       Top = 40
       Width = 27
       Height = 13
@@ -457,7 +435,7 @@ object F_JCEdit: TF_JCEdit
       OnClick = CHB_RailwayClick
     end
     object CB_Railway: TComboBox
-      Left = 144
+      Left = 151
       Top = 15
       Width = 161
       Height = 21
@@ -466,7 +444,7 @@ object F_JCEdit: TF_JCEdit
       OnChange = CB_RailwayChange
     end
     object CB_Railway_Dir: TComboBox
-      Left = 144
+      Left = 151
       Top = 42
       Width = 161
       Height = 21
@@ -494,7 +472,7 @@ object F_JCEdit: TF_JCEdit
     Width = 297
     Height = 390
     Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' kurzorem) '
-    TabOrder = 16
+    TabOrder = 15
     object Label4: TLabel
       Left = 8
       Top = 16
@@ -598,49 +576,29 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object CHB_Advanced: TCheckBox
-    Left = 347
-    Top = 389
+    Left = 8
+    Top = 554
     Width = 164
     Height = 18
     Caption = 'Zobrazit pokro'#269'il'#225' nastaven'#237
-    TabOrder = 13
+    TabOrder = 10
     OnClick = CHB_AdvancedClick
   end
   object CHB_Odbocka: TCheckBox
-    Left = 347
-    Top = 355
+    Left = 8
+    Top = 520
     Width = 97
     Height = 17
     Caption = 'JC do odbo'#269'ky'
-    TabOrder = 11
+    TabOrder = 8
   end
   object CHB_NZV: TCheckBox
-    Left = 347
-    Top = 372
+    Left = 8
+    Top = 537
     Width = 185
     Height = 17
     Caption = 'Nedostate'#269'n'#225' z'#225'brzdn'#225' vzd'#225'lenost'
-    TabOrder = 12
-  end
-  object SE_Speed_Stop: TSpinEdit
-    Left = 232
-    Top = 440
-    Width = 105
-    Height = 22
-    MaxValue = 200
-    MinValue = 0
-    TabOrder = 7
-    Value = 0
-  end
-  object SE_Speed_Go: TSpinEdit
-    Left = 232
-    Top = 472
-    Width = 105
-    Height = 22
-    MaxValue = 200
-    MinValue = 0
-    TabOrder = 8
-    Value = 0
+    TabOrder = 9
   end
   object CB_Signal_Signal: TComboBox
     Left = 136
@@ -649,5 +607,33 @@ object F_JCEdit: TF_JCEdit
     Height = 21
     Style = csDropDownList
     TabOrder = 4
+  end
+  object GB_Speeds: TGroupBox
+    Left = 346
+    Top = 271
+    Width = 318
+    Height = 268
+    Caption = ' Rychlosti '
+    TabOrder = 12
+    object GB_SpeedsStop: TGroupBox
+      Left = 2
+      Top = 15
+      Width = 314
+      Height = 122
+      Align = alTop
+      Caption = ' Rychlosti p'#345'i dal'#353#237'm n'#225'v'#283'stidle na st'#367'j '
+      TabOrder = 0
+    end
+    object GB_SpeedsGo: TGroupBox
+      Left = 2
+      Top = 137
+      Width = 314
+      Height = 129
+      Align = alClient
+      Caption = ' Rychlosti p'#345'i dal'#353#237'm n'#225'v'#283'stidle povoluj'#237'c'#237'm j'#237'zdu  '
+      TabOrder = 1
+      ExplicitTop = 160
+      ExplicitHeight = 106
+    end
   end
 end
