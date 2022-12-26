@@ -25,6 +25,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure LV_SpeedsDblClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     E_LV: TEdit;
     editRow: TListItem;
@@ -85,6 +86,11 @@ begin
     LI.SubItems.Add(ts.trainTypeRe);
     LI.SubItems.Add(ts.hvTransienceRe);
   end;
+end;
+
+procedure TF_TrainSpeed.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Self.editRow := nil;
 end;
 
 procedure TF_TrainSpeed.FormCreate(Sender: TObject);
