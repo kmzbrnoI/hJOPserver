@@ -73,7 +73,9 @@ end;
 
 function TTrainSpeed.Match(train: TTrain): Boolean;
 begin
-  if (not TRegEx.IsMatch(train.typ, Self.trainTypeRe)) then
+  // The 2nd part of the condition is because an empty string is not matched by '.*'
+  if ((not TRegEx.IsMatch(train.typ, '^'+Self.trainTypeRe+'$')) and
+      ((train.typ <> '') or (not TRegEx.IsMatch(' ', '^'+Self.trainTypeRe+'$')))) then
     Exit(false);
 
   for var hvAddr in train.HVs do
@@ -138,6 +140,9 @@ end;
 class function TTrainSpeed.IniLoad(line: string): TList<TTrainSpeed>;
 begin
   Result := TList<TTrainSpeed>.Create();
+
+  if (line = '') then
+    Exit();
 
   if (not line.Contains('(')) then
   begin
