@@ -1512,9 +1512,13 @@ begin
               begin
                 // na konci JC budeme stat
                 var speed: Cardinal;
-                if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsGo, speed)) then // if success
-                  if ((Train.wantedSpeed <> speed) or (Train.direction <> Self.m_spnl.direction)) then
-                    Train.SetSpeedDirection(speed, Self.m_spnl.direction);
+                var success: Boolean;
+                if (Self.dnJC.data.speedsGo.Count > 0) then // if go speeds empty, use stop speeds
+                  success := TTrainSpeed.Pick(Train, Self.dnJC.data.speedsGo, speed)
+                else
+                  success := TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed);
+                if ((success) and (Train.wantedSpeed <> speed) or (Train.direction <> Self.m_spnl.direction)) then
+                  Train.SetSpeedDirection(speed, Self.m_spnl.direction);
               end else begin
                 // na konci JC jedeme dal
                 var speed: Cardinal;
