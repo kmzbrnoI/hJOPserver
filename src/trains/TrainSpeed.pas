@@ -160,7 +160,7 @@ begin
           strs2.Clear();
           ExtractStringsEx([':'], [], str, strs2);
           if (strs2.Count = 2) then
-            Result.Add(TTrainSpeed.Create(StrToInt(strs2[0]), '.*', strs2[1]));
+            Result.Add(TTrainSpeed.Create(StrToInt(strs2[1]), '.*', strs2[0]));
         end;
       except
         for var ts: TTrainSpeed in Result do
