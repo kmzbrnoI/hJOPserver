@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, BlockDb, Block, Mask,
+  StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, BlockDb, Block, Mask, fTrainSpeed,
   BlockRailwayTrack, StrUtils, BlockTrack, fBlkRTStopEvent, Generics.Collections;
 
 type
@@ -57,11 +57,9 @@ type
     TS_Zast_lichy: TTabSheet;
     TS_Zast_sudy: TTabSheet;
     CHB_Stop_Even: TCheckBox;
-    GB_Speed: TGroupBox;
-    LV_Speeds: TListView;
-    SE_transience: TSpinEdit;
-    B_speed_apply: TButton;
-    SE_speed: TSpinEdit;
+    GB_Speeds: TGroupBox;
+    GB_SpeedsL: TGroupBox;
+    GB_SpeedsS: TGroupBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -72,8 +70,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure SE_RCS_BoardExit(Sender: TObject);
-    procedure B_speed_applyClick(Sender: TObject);
-    procedure LV_SpeedsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
   private
     isNewBlock: Boolean;
     block: TBlkRT;
@@ -82,11 +78,12 @@ type
     CB_SignalOddIndex, CB_SignalEvenIndex: Integer;
     stopEven, stopOdd: TF_BlkRTStopEvent;
 
+    fTrainSpeedL: TF_TrainSpeed;
+    fTrainSpeedS: TF_TrainSpeed;
+
     procedure CommonOpenForm();
     procedure EditOpenForm();
     procedure NewOpenForm();
-
-    function GetSpeeds(): TDictionary<Cardinal, Cardinal>;
 
   public
     procedure EditBlock(blockIndex: Integer);
@@ -100,7 +97,7 @@ var
 implementation
 
 uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky, ownStrUtils,
-  AreaDb, Booster, Area;
+  AreaDb, Booster, Area, TrainSpeed;
 
 {$R *.dfm}
 
@@ -115,6 +112,16 @@ begin
   Self.stopOdd := TF_BlkRTStopEvent.Create(Self.TS_Zast_lichy);
   Self.stopOdd.Parent := Self.TS_Zast_sudy;
   Self.stopOdd.Show();
+
+  Self.fTrainSpeedL := TF_TrainSpeed.Create(nil);
+  Self.fTrainSpeedL.Parent := Self.GB_SpeedsL;
+  Self.fTrainSpeedL.Align := alClient;
+  Self.fTrainSpeedL.Show();
+
+  Self.fTrainSpeedS := TF_TrainSpeed.Create(nil);
+  Self.fTrainSpeedS.Parent := Self.GB_SpeedsS;
+  Self.fTrainSpeedS.Align := alClient;
+  Self.fTrainSpeedS.Show();
 end;
 
 procedure TF_BlkRT.FormDestroy(Sender: TObject);
@@ -122,6 +129,9 @@ begin
   Self.stopEven.Free();
   Self.stopOdd.Free();
   Self.CB_SignalId.Free();
+
+  Self.fTrainSpeedL.Free();
+  Self.fTrainSpeedS.Free();
 end;
 
 procedure TF_BlkRT.EditBlock(blockIndex: Integer);
@@ -185,9 +195,8 @@ begin
   Self.CB_SignalOddIndex := -1;
   Self.CB_SignalEvenIndex := -1;
 
-  Self.LV_Speeds.Clear();
-  Self.SE_speed.Value := 0;
-  Self.SE_transience.Value := 0;
+  Self.fTrainSpeedL.Default();
+  Self.fTrainSpeedS.Default();
 
   Self.stopEven.OpenEmptyForm();
   Self.stopOdd.OpenEmptyForm();
@@ -317,13 +326,8 @@ begin
   Self.CHB_SignalLClick(CHB_SignalL);
   Self.CHB_SignalSClick(CHB_SignalS);
 
-  Self.LV_Speeds.Clear();
-  for var i in TUsettings.speeds.Keys do
-  begin
-    var LI: TListItem := Self.LV_Speeds.Items.Add();
-    LI.Caption := IntToStr(i);
-    LI.SubItems.Add(IntToStr(TUsettings.speeds[i]) + ' km/h');
-  end;
+  Self.fTrainSpeedL.Fill(TUsettings.speedsL);
+  Self.fTrainSpeedS.Fill(TUsettings.speedsS);
 
   if (TUsettings.stop <> nil) then
   begin
@@ -347,53 +351,6 @@ begin
   Self.CB_Booster.Clear();
   for var booster in Boosters.sorted do
     Self.CB_Booster.Items.Add(booster.name + ' (' + booster.id + ')');
-end;
-
-procedure TF_BlkRT.LV_SpeedsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
-begin
-  if (Self.LV_Speeds.Selected = nil) then
-  begin
-    Self.SE_transience.Value := 0;
-    Self.SE_speed.Value := 0;
-  end else begin
-    Self.SE_transience.Value := StrToInt(Self.LV_Speeds.Selected.Caption);
-    var str := Self.LV_Speeds.Selected.SubItems.Strings[0];
-    Self.SE_speed.Value := StrToInt(LeftStr(str, Length(str) - 5));
-  end;
-end;
-
-procedure TF_BlkRT.B_speed_applyClick(Sender: TObject);
-var transience, speed: Integer;
-begin
-  transience := Self.SE_transience.Value;
-  speed := Self.SE_speed.Value;
-
-  if (speed <= 0) then
-  begin
-    // delete speed
-    for var i := 0 to Self.LV_Speeds.Items.count - 1 do
-    begin
-      if (Self.LV_Speeds.Items[i].Caption = IntToStr(transience)) then
-      begin
-        Self.LV_Speeds.Items.Delete(i);
-        Exit();
-      end;
-    end;
-    Exit();
-  end;
-
-  for var LI: TListItem in Self.LV_Speeds.Items do
-  begin
-    if (LI.Caption = IntToStr(transience)) then
-    begin
-      LI.SubItems.Strings[0] := IntToStr(speed) + ' km/h';
-      Exit();
-    end;
-  end;
-
-  var LI: TListItem := Self.LV_Speeds.Items.Add();
-  LI.Caption := IntToStr(transience);
-  LI.SubItems.Add(IntToStr(speed) + ' km/h');
 end;
 
 procedure TF_BlkRT.B_StornoClick(Sender: TObject);
@@ -453,25 +410,16 @@ begin
     end;
   end;
 
-  var speeds: TDictionary<Cardinal, Cardinal>;
-  try
-    speeds := Self.GetSpeeds();
-  except
-    on E: Exception do
-    begin
-      Application.MessageBox(PChar('Nepodařilo se načíst rychlosti:' + #13#10 + E.Message), 'Nelze uložit data',
-        MB_OK OR MB_ICONWARNING);
-      Exit();
-    end;
-  end;
-
-  if (speeds.Keys.count = 0) then
+  if (Self.fTrainSpeedL.LV_Speeds.Items.Count = 0) then
   begin
-    speeds.Free();
-    Application.MessageBox('Rychlostní tabulka musí mít alespoň jednu rychlost!', 'Nelze uložit data',
+    Application.MessageBox('Nezadány traťové rychlosti (zadejte alespoň pro lichý směr)!', 'Nelze uložit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
+
+
+  var speedsL: TList<TTrainSpeed> := Self.fTrainSpeedL.Get();
+  var speedsS: TList<TTrainSpeed> := Self.fTrainSpeedS.Get();
 
   var glob: TBlkSettings;
   glob.name := Self.E_Name.Text;
@@ -485,7 +433,8 @@ begin
     except
       on E: Exception do
       begin
-        speeds.Free();
+        speedsL.Free();
+        speedsS.Free();
         Application.MessageBox(PChar('Nepodařilo se přidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
           MB_OK OR MB_ICONWARNING);
         Exit();
@@ -512,7 +461,8 @@ begin
   settings.maxTrains := 1;
 
   var TUsettings: TBlkRTSettings;
-  TUsettings.speeds := speeds;
+  TUsettings.speedsL := speedsL;
+  TUsettings.speedsS := speedsS;
 
   if (Self.CHB_SignalL.Checked) then
     TUsettings.signalLid := Self.CB_SignalId[Self.CB_SignalL.ItemIndex]
@@ -533,7 +483,8 @@ begin
       TUsettings.stop.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Stop_Delay.Text, 2)),
         StrToInt(RightStr(Self.ME_Stop_Delay.Text, 2)), 0);
     except
-      speeds.Free();
+      speedsL.Free();
+      speedsS.Free();
       TUsettings.stop.Free();
       Application.MessageBox('Nesprávně zadaný čas čekání v zastávce!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
@@ -680,15 +631,5 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-
-function TF_BlkRT.GetSpeeds(): TDictionary<Cardinal, Cardinal>;
-begin
-  Result := TDictionary<Cardinal, Cardinal>.Create();
-  for var LI: TListItem in Self.LV_Speeds.Items do
-  begin
-    var speed := LeftStr(LI.SubItems.Strings[0], Length(LI.SubItems.Strings[0]) - 5);
-    Result.Add(StrToInt(LI.Caption), StrToInt(speed));
-  end;
-end;
 
 end.

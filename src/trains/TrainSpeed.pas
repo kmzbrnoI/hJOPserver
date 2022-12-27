@@ -78,6 +78,9 @@ begin
       ((train.typ <> '') or (not TRegEx.IsMatch(' ', '^'+Self.trainTypeRe+'$')))) then
     Exit(false);
 
+  if (train.HVs.Count = 0) then
+    Exit(false);
+
   for var hvAddr in train.HVs do
     if ((HVDb[hvAddr] <> nil) and (not TRegEx.IsMatch(IntToStr(HVDb[hvAddr].data.transience), Self.hvTransienceRe))) then
       Exit(false);
@@ -143,6 +146,35 @@ begin
 
   if (line = '') then
     Exit();
+
+  if (line.Contains(':')) then
+  begin
+    // backward-compatible mode for railway tracks
+    var strs: TStrings := TStringList.Create();
+    var strs2: TStrings := TStringList.Create();
+    try
+      try
+        ExtractStringsEx([','], [], line, strs);
+        for var str: string in strs do
+        begin
+          strs2.Clear();
+          ExtractStringsEx([':'], [], str, strs2);
+          if (strs2.Count = 2) then
+            Result.Add(TTrainSpeed.Create(StrToInt(strs2[0]), '.*', strs2[1]));
+        end;
+      except
+        for var ts: TTrainSpeed in Result do
+          ts.Free();
+        Result.Free();
+        raise;
+      end;
+    finally
+      strs.Free();
+      strs2.Free();
+    end;
+
+    Exit();
+  end;
 
   if (not line.Contains('(')) then
   begin

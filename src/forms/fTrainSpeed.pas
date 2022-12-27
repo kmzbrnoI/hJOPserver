@@ -34,6 +34,7 @@ type
     procedure E_LVExit(Sender: TObject);
     procedure E_LVKeyPress(Sender: TObject; var Key: Char);
     procedure ELVAccept();
+    procedure ELVHide();
 
   public
 
@@ -78,6 +79,7 @@ end;
 
 procedure TF_TrainSpeed.Fill(tss: TList<TTrainSpeed>);
 begin
+  Self.ELVHide();
   Self.LV_Speeds.Clear();
   for var ts: TTrainSpeed in tss do
   begin
@@ -134,9 +136,14 @@ begin
       editRow.Caption := Self.E_LV.Text
     else
       editRow.SubItems[editCol-1] := Self.E_LV.Text;
-    Self.E_LV.Visible := false;
-    editRow := nil;
+    Self.ELVHide();
   end;
+end;
+
+procedure TF_TrainSpeed.ELVHide();
+begin
+  Self.E_LV.Visible := false;
+  editRow := nil;
 end;
 
 procedure TF_TrainSpeed.LV_SpeedsDblClick(Sender: TObject);
@@ -212,6 +219,7 @@ end;
 
 procedure TF_TrainSpeed.Default();
 begin
+  Self.ELVHide();
   Self.LV_Speeds.Clear();
   var LI: TListItem := Self.LV_Speeds.Items.Add();
   LI.Caption := '40';
@@ -221,6 +229,7 @@ end;
 
 procedure TF_TrainSpeed.Clear();
 begin
+  Self.ELVHide();
   Self.LV_Speeds.Clear();
 end;
 

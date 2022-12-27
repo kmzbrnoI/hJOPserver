@@ -42,7 +42,8 @@
 interface
 
 uses BlockTrack, Classes, Block, IniFiles, SysUtils, IdContext, rrEvent,
-  Generics.Collections, Area, THnaciVozidlo, Train, RegularExpressions;
+  Generics.Collections, Area, THnaciVozidlo, Train, RegularExpressions,
+  TrainSpeed;
 
 type
   TBlkRTStopEvents = class // zastavka v jednom smeru
@@ -82,8 +83,7 @@ type
     // obsahuje id bloku navestidla, pokud neni TU kryty v danem smeru, obsahuje -1
     // vyuzivano pro autoblok
     signalLid, signalSid: Integer; // odkaz na kryci navestidlo TU v lichem smeru a kryci navestidlo v sudem smeru
-    // rychlost v tratovem useku pro danou tridu prechodnosti; trida prechodnosti 0 je fallback v pripade neexistence zaznamu
-    speeds: TDictionary<Cardinal, Cardinal>;
+    speedsL, speedsS: TList<TTrainSpeed>; // when speedS is empty, speedL is considered also for even direction
   end;
 
   TBlkRTState = record
@@ -212,8 +212,7 @@ type
     procedure RemoveTrains(); override;
     procedure RemoveTrain(index: Integer); override;
 
-    function speed(HV: THV): Cardinal; overload;
-    function speed(spr: TTrain): Cardinal; overload;
+    function speed(train: TTrain): Cardinal;
 
     // pro vyznam properties viz hlavicky getteru a setteru
     property rtState: TBlkRTState read m_rtState;
@@ -263,7 +262,8 @@ begin
   Self.ssectMaster := nil;
   Self.ssectTracks := TList<TBlkRT>.Create();
   Self.bpInBlk := false;
-  Self.m_rtSettings.speeds := TDictionary<Cardinal, Cardinal>.Create();
+  Self.m_rtSettings.speedsL := TList<TTrainSpeed>.Create();
+  Self.m_rtSettings.speedsS := TList<TTrainSpeed>.Create();
   Self.m_rtSettings.stop := nil;
 end;
 
@@ -277,7 +277,8 @@ begin
   Self.lsectTracks.Free();
   Self.ssectTracks.Free();
   Self.m_rtSettings.stop.Free();
-  Self.m_rtSettings.speeds.Free();
+  Self.m_rtSettings.speedsL.Free();
+  Self.m_rtSettings.speedsS.Free();
 
   inherited;
 end;
@@ -285,41 +286,41 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkRT.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
-var strs, strs2: TStrings;
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
   Self.m_rtSettings.signalLid := ini_tech.ReadInteger(section, 'navL', -1);
   Self.m_rtSettings.signalSid := ini_tech.ReadInteger(section, 'navS', -1);
 
-  Self.m_rtSettings.speeds.Clear();
-  strs := TStringList.Create();
-  strs2 := TStringList.Create();
+  Self.m_rtSettings.speedsL.Clear();
+  Self.m_rtSettings.speedsS.Clear();
+
+  var rychlostiL := ini_tech.ReadString(section, 'rychlostiL', '');
+  var rychlostiS := ini_tech.ReadString(section, 'rychlostiS', '');
+  if (rychlostiL = '') then
+  begin
+    // backward-compatible mode (trans1:speed1,trans2:speed2)
+    rychlostiL := ini_tech.ReadString(section, 'rychlosti', '');
+    if (rychlostiL = '') then // even mode backward-compatible mode (single speed)
+      rychlostiL := ini_tech.ReadString(section, 'rychlost', '');
+  end;
+
   try
-    var str: string := ini_tech.ReadString(section, 'rychlosti', '');
-    if (str = '') then
+    Self.m_rtSettings.speedsL := TTrainSpeed.IniLoad(rychlostiL);
+    Self.m_rtSettings.speedsS := TTrainSpeed.IniLoad(rychlostiS);
+  except
+    on E:Exception do
     begin
-      Self.m_rtSettings.speeds.Add(0, ini_tech.ReadInteger(section, 'rychlost', 0));
-    end else begin
-      ExtractStringsEx([','], [], str, strs);
-      for str in strs do
-      begin
-        strs2.Clear();
-        ExtractStringsEx([':'], [], str, strs2);
-        if (strs2.Count = 2) then
-          Self.m_rtSettings.speeds.AddOrSetValue(StrToInt(strs2[0]), StrToInt(strs2[1]));
-      end;
+      Self.m_rtSettings.speedsL.Clear();
+      Self.m_rtSettings.speedsS.Clear();
+      Self.Log('Nelze nacist rychlosti: '+E.Message, ltError);
     end;
-  finally
-    strs.Free();
-    strs2.Free();
   end;
 
   Self.bpInBlk := ini_stat.ReadBool(section, 'bpInBlk', false);
 
-  if ((not Self.m_rtSettings.speeds.ContainsKey(0)) or (Self.m_rtSettings.speeds[0] < 10)) then
-    Log('WARNING: traťový úsek ' + Self.name + ' (' + IntToStr(Self.id) +
-      ') nemá korektně zadanou traťovou rychlost', ltError);
+  if (Self.m_rtSettings.speedsL.Count = 0) then
+    Self.Log('Nenačtena traťová rychlost', ltError);
 
   if ((ini_tech.ReadString(section, 'zast_ev_lichy_zast', '') <> '') or
     (ini_tech.ReadString(section, 'zast_ev_sudy_zast', '') <> '')) then
@@ -329,9 +330,6 @@ begin
 end;
 
 procedure TBlkRT.SaveData(ini_tech: TMemIniFile; const section: string);
-var str: string;
-  j: Cardinal;
-  speeds: TList<Cardinal>;
 begin
   inherited SaveData(ini_tech, section);
 
@@ -341,16 +339,9 @@ begin
   if (Self.m_rtSettings.signalSid <> -1) then
     ini_tech.WriteInteger(section, 'navS', Self.m_rtSettings.signalSid);
 
-  speeds := TList<Cardinal>.Create(Self.m_rtSettings.speeds.Keys);
-  try
-    speeds.Sort();
-    str := '';
-    for j in speeds do
-      str := str + IntToStr(j) + ':' + IntToStr(Self.m_rtSettings.speeds[j]) + ',';
-    ini_tech.WriteString(section, 'rychlosti', str);
-  finally
-    speeds.Free();
-  end;
+  ini_tech.WriteString(section, 'rychlostiL', TTrainSpeed.IniStr(Self.m_rtSettings.speedsL));
+  if (Self.m_rtSettings.speedsS.Count > 0) then
+    ini_tech.WriteString(section, 'rychlostiS', TTrainSpeed.IniStr(Self.m_rtSettings.speedsS));
 
   if (Self.isStop) then
     Self.m_rtSettings.stop.SaveToFile(ini_tech, section);
@@ -376,8 +367,10 @@ begin
   if (Self.m_rtSettings.stop <> data.stop) and (Assigned(Self.m_rtSettings.stop)) then
     Self.m_rtSettings.stop.Free();
 
-  if (Self.m_rtSettings.speeds <> data.speeds) then
-    Self.m_rtSettings.speeds.Free();
+  if (Self.m_rtSettings.speedsL <> data.speedsL) then
+    Self.m_rtSettings.speedsL.Free();
+  if (Self.m_rtSettings.speedsS <> data.speedsS) then
+    Self.m_rtSettings.speedsS.Free();
 
   Self.m_rtSettings := data;
   Self.Change();
@@ -1357,28 +1350,26 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkRT.speed(HV: THV): Cardinal;
+function TBlkRT.speed(train: TTrain): Cardinal;
 begin
-  if (Self.m_rtSettings.speeds.ContainsKey(HV.data.transience)) then
-    Result := Self.m_rtSettings.speeds[HV.data.transience]
-  else if (Self.m_rtSettings.speeds.ContainsKey(0)) then
-    Result := Self.m_rtSettings.speeds[0]
-  else
-    Result := 0;
-end;
-
-function TBlkRT.speed(spr: TTrain): Cardinal;
-var addr: Word;
-  minSpeed: Cardinal;
-begin
-  if (spr.HVs.Count = 0) then
+  if (Self.railway = nil) then
     Exit(0);
 
-  minSpeed := Self.speed(HVDb[spr.HVs[0]]);
-  for addr in spr.HVs do
-    if (Self.speed(HVDb[addr]) < minSpeed) then
-      minSpeed := Self.speed(HVDb[addr]);
-  Result := minSpeed;
+  var speed: Cardinal;
+  var success: Boolean;
+
+  if (TBlkRailway(Self.railway).direction = TRailwayDirection.AtoB) then
+    success := TTrainSpeed.Pick(train, Self.m_rtSettings.speedsL, speed)
+  else if (TBlkRailway(Self.railway).direction = TRailwayDirection.BtoA) then
+  begin
+    success := TTrainSpeed.Pick(train, Self.m_rtSettings.speedsS, speed);
+    if (not success) then
+      success := TTrainSpeed.Pick(train, Self.m_rtSettings.speedsL, speed);
+  end;
+
+  if (not success) then
+    Exit(0);
+  Result := speed;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
