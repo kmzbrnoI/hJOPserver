@@ -2580,8 +2580,17 @@ begin
   else
    Self.m_data.signalCode := Integer(ncDisabled);
 
-  Self.m_data.speedsGo := TTrainSpeed.IniLoad(ini.ReadString(section, 'rychDalsiN', ''));
-  Self.m_data.speedsStop := TTrainSpeed.IniLoad(ini.ReadString(section, 'rychNoDalsiN', ''));
+  try
+    Self.m_data.speedsGo := TTrainSpeed.IniLoad(ini.ReadString(section, 'rychDalsiN', ''));
+    Self.m_data.speedsStop := TTrainSpeed.IniLoad(ini.ReadString(section, 'rychNoDalsiN', ''));
+  except
+    on E:Exception do
+    begin
+      Self.m_data.speedsGo.Clear();
+      Self.m_data.speedsStop.Clear();
+      Self.Log('Nelze nacist rychlosti: '+E.Message, ltError);
+    end;
+  end;
 
   sl := TStringList.Create();
   try
