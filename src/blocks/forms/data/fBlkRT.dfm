@@ -503,25 +503,12 @@ object F_BlkRT: TF_BlkRT
     Height = 112
     Caption = ' Autoblok '
     TabOrder = 7
-    object Label10: TLabel
-      Left = 16
-      Top = 16
-      Width = 196
-      Height = 13
-      Caption = #218'sek je kryt'#253' n'#225'v'#283'stidlem v lich'#233'm sm'#283'ru:'
-    end
-    object Label11: TLabel
-      Left = 16
-      Top = 64
-      Width = 197
-      Height = 13
-      Caption = #218'sek je kryt'#253' n'#225'v'#283'stidlem v sud'#233'm sm'#283'ru:'
-    end
     object CHB_SignalL: TCheckBox
-      Left = 335
-      Top = 12
-      Width = 17
+      Left = 16
+      Top = 15
+      Width = 217
       Height = 17
+      Caption = #218'sek je kryt'#253' n'#225'v'#283'stidlem v lich'#233'm sm'#283'ru:'
       TabOrder = 0
       OnClick = CHB_SignalLClick
     end
@@ -534,10 +521,11 @@ object F_BlkRT: TF_BlkRT
       TabOrder = 1
     end
     object CHB_SignalS: TCheckBox
-      Left = 335
-      Top = 60
-      Width = 17
+      Left = 16
+      Top = 62
+      Width = 225
       Height = 17
+      Caption = #218'sek je kryt'#253' n'#225'v'#283'stidlem v sud'#233'm sm'#283'ru:'
       TabOrder = 2
       OnClick = CHB_SignalSClick
     end

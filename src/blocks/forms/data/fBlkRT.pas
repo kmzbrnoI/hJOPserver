@@ -47,10 +47,8 @@ type
     CHB_loop: TCheckBox;
     L_Usek33: TLabel;
     GB_Autoblok: TGroupBox;
-    Label10: TLabel;
     CHB_SignalL: TCheckBox;
     CB_SignalL: TComboBox;
-    Label11: TLabel;
     CHB_SignalS: TCheckBox;
     CB_SignalS: TComboBox;
     PC_Stop: TPageControl;
