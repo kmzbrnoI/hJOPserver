@@ -1360,7 +1360,7 @@ begin
     Exit(0);
 
   var speed: Cardinal;
-  var success: Boolean;
+  var success: Boolean := false;
 
   if (TBlkRailway(Self.railway).direction = TRailwayDirection.AtoB) then
     success := TTrainSpeed.Pick(train, Self.m_rtSettings.speedsL, speed)
