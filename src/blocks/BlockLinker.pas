@@ -45,6 +45,8 @@ type
     procedure MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 
+    procedure MenuTrainInfoClick(SenderPnl: TIdContext; SenderOR: TObject);
+
     procedure PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
     procedure PanelPotvrSekvZAK(Sender: TIdContext; success: Boolean);
 
@@ -54,9 +56,9 @@ type
     procedure UPOZAKOnClick(Sender: TObject);
 
     procedure SetRequest(zadost: Boolean);
-
     procedure NoteUPO(SenderPnl: TIdContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
       UPO_EscCallback: TNotifyEvent);
+    procedure MenuTrainPredicted(SenderPnl: TIdContext; SenderOR: TObject);
 
   public
     constructor Create(index: Integer);
@@ -102,14 +104,15 @@ type
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
     function PanelStateString(): string; override;
+    function AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; item: string): Boolean; override;
   end;
 
   /// /////////////////////////////////////////////////////////////////////////////
 
 implementation
 
-uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert,
-  TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack;
+uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert, TrainDb,
+  TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack, TCPAreasRef;
 
 constructor TBlkLinker.Create(index: Integer);
 begin
@@ -343,6 +346,21 @@ begin
   Self.departureForbidden := true;
 end;
 
+procedure TBlkLinker.MenuTrainInfoClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  var railway := TBlkRailway(Self.parent);
+  if (railway.trainPredict = nil) then
+    Exit();
+
+  var train: TTrain := TrainDb.trains[railway.trainPredict.traini];
+  var conditions := train.InfoWindowItems();
+  try
+    PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, TBlocks.GetBlksList(Self), conditions, true, false);
+  finally
+    conditions.Free();
+  end;
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 // vytvoreni menu pro potreby konkretniho bloku:
@@ -383,6 +401,12 @@ begin
   Result := Result + 'STIT,';
 end;
 
+function TBlkLinker.AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; item: string): Boolean;
+begin
+  var menu: string := Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
+  Result := menu.Contains(item) or (item = 'INFO vlak'); // check of validity of 'INFO vlak' is performed in callback
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkLinker.ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights;
@@ -392,14 +416,31 @@ begin
   railway := TBlkRailway(Self.parent);
   if (railway = nil) then
     Exit();
-  if (train_index >= railway.state.trains.Count) then
-    Exit();
-  var train: TTrain := railway.state.trains[train_index].Train;
 
-  var blk: TBlk := railway.GetTrainTrack(Train);
-  if (blk = nil) then
+  if (train_index < railway.state.trains.Count) then
+  begin
+    var train: TTrain := railway.state.trains[train_index].Train;
+    var blk: TBlk := railway.GetTrainTrack(train);
+    if (blk = nil) then
+      Exit();
+    TBlkTrack(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0); // it must be 0th train in the track, because it's railway track
+  end else if (railway.trainPredict <> nil) then begin
+    Self.MenuTrainPredicted(SenderPnl, SenderOR);
+  end;
+end;
+
+procedure TBlkLinker.MenuTrainPredicted(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  var railway := TBlkRailway(Self.parent);
+  if (railway.trainPredict = nil) then
     Exit();
-  TBlkTrack(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0);
+
+  var train: TTrain := TrainDb.Trains[railway.trainPredict.traini];
+  var menu := '$' + Self.name + ',';
+  menu := menu + '$Souprava ' + train.name + ',-,';
+  menu := menu + train.MenuRailwayPredicted();
+
+  PanelServer.menu(SenderPnl, Self, (SenderOR as TArea), menu);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -440,7 +481,9 @@ begin
   else if (item = 'ZAV>') then
     Self.MenuZAVOnClick(SenderPnl, SenderOR)
   else if (item = 'ZAV<') then
-    Self.MenuZAVOffClick(SenderPnl, SenderOR);
+    Self.MenuZAVOffClick(SenderPnl, SenderOR)
+  else if (item = 'INFO vlak') then
+    Self.MenuTrainInfoClick(SenderPnl, SenderOR);
 end;
 
 /// ////////////////////////////////////////////////////////////////////////////

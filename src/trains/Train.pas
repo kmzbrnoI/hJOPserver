@@ -156,6 +156,7 @@ type
      procedure PutPtData(reqJson: TJsonObject; respJson: TJsonObject);
 
      function Menu(SenderPnl: TIdContext; SenderOR: TObject; SenderTrack: TBlk; SenderTrackI: Integer): string;
+     function MenuRailwayPredicted(): string;
      function InfoWindowItems(): TList<TConfSeqItem>;
      function StrArrowDirection(): string;
 
@@ -1466,6 +1467,11 @@ begin
     else if (shPlay.railway <> nil) then
       Result := Result + 'HLÁŠENÍ průjezd,';
   end;
+end;
+
+function TTrain.MenuRailwayPredicted(): string;
+begin
+  Result := 'INFO vlak,';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

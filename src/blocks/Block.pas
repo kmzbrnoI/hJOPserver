@@ -532,7 +532,7 @@ end;
 function TBlk.AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; item: string): Boolean;
 begin
   var menu: string := Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
-  Result := menu.Contains(item); // default = accept only those items persent in menu now
+  Result := menu.Contains(item); // default = accept only those items present in menu now
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
