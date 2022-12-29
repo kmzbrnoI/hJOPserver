@@ -23,7 +23,7 @@ const
   _MAX_ORREF = 16;
 
   // these constants must match constantd defined in clients
-  _SND_RAILWAY_REQEST = 4;
+  _SND_RAILWAY_REQUEST = 4;
   _SND_PRIVOLAVACKA = 5;
   _SND_TIMEOUT = 6;
   _SND_OVERLOAD = 7;
@@ -1152,14 +1152,14 @@ begin
     // nastala zadost -> prehrat zvuk
     for var i: Integer := 0 to Self.connected.Count - 1 do
       if (Area.IsWritable(Self.connected[i])) then
-        PanelServer.PlaySound(Self.connected[i].Panel, _SND_RAILWAY_REQEST, true);
+        PanelServer.PlaySound(Self.connected[i].Panel, _SND_RAILWAY_REQUEST, true);
   end;
 
   if ((new = 0) and (Self.railwayReqBlkCnt > 0)) then
   begin
     // skocnila zadost -> vypnout zvuk
     for var i: Integer := 0 to Self.connected.Count - 1 do
-      PanelServer.DeleteSound(Self.connected[i].Panel, _SND_RAILWAY_REQEST);
+      PanelServer.DeleteSound(Self.connected[i].Panel, _SND_RAILWAY_REQUEST);
   end;
 
   Self.m_state.railwayReqBlkCnt := new;
@@ -1885,7 +1885,7 @@ begin
   if (Self.shortCircBlkCnt > 2) then
     PanelServer.PlaySound(Panel, _SND_OVERLOAD, true);
   if (Self.railwayReqBlkCnt > 0) then
-    PanelServer.PlaySound(Panel, _SND_RAILWAY_REQEST, true);
+    PanelServer.PlaySound(Panel, _SND_RAILWAY_REQUEST, true);
   if (Self.pnBlkCnt > 0) then
     PanelServer.PlaySound(Panel, _SND_PRIVOLAVACKA, true);
   if (Self.timerCnt > 0) then
@@ -1897,7 +1897,7 @@ begin
   if (Self.shortCircBlkCnt > 2) then
     PanelServer.DeleteSound(Panel, _SND_OVERLOAD);
   if (Self.railwayReqBlkCnt > 0) then
-    PanelServer.DeleteSound(Panel, _SND_RAILWAY_REQEST);
+    PanelServer.DeleteSound(Panel, _SND_RAILWAY_REQUEST);
   if (Self.pnBlkCnt > 0) then
     PanelServer.DeleteSound(Panel, _SND_PRIVOLAVACKA);
   if (Self.timerCnt > 0) then
