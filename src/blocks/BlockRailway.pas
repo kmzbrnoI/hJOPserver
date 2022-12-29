@@ -1199,7 +1199,12 @@ begin
   Result := Result + '{';
   for var addr: Integer in Self.Train.HVs do
     Result := Result + HVDb[addr].name + '|';
-  Result := Result + '}';
+  Result := Result + '}|';
+
+  if (not trainPredict) then
+    Result := Result + IntToStr(ownConvert.BoolToInt(Self.Train.emergencyStopped))
+  else
+    Result := Result + '-'
 end;
 
 function TBlkRailwayTrain.GeTTrain(): TTrain;

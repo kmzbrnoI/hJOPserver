@@ -1258,6 +1258,7 @@ begin
 
   var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
   train.EmergencyStop();
+  Self.Change()
 end;
 
 procedure TBlkTrack.MenuJedTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1273,6 +1274,8 @@ begin
     on E:ENotOverriden do
       PanelServer.BottomError(SenderPnl, 'Nelze rozjet nezastavený vlak!', TArea(SenderOR).ShortName, 'Technologie');
   end;
+
+  Self.Change()
 end;
 
 procedure TBlkTrack.MenuObsazClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -2477,8 +2480,11 @@ begin
     Result := Result + ownConvert.ColorToStr(sfg) + ';' + ownConvert.ColorToStr(sbg) + ';';
 
     if (Self.trainMoving = i) then
-      Result := Result + ownConvert.ColorToStr(clYellow) + ';';
+      Result := Result + ownConvert.ColorToStr(clYellow) + ';'
+    else
+      Result := Result + '-;';
 
+    Result := Result + IntToStr(ownConvert.BoolToInt(train.emergencyStopped)) + ';';
     Result := Result + ')';
   end;
 
