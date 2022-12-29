@@ -153,7 +153,7 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
-  RCSErrors, RCS, TCPAreasRef, BlockSignal, Logging, BlockDisconnector;
+  RCSErrors, RCS, TCPAreasRef, BlockSignal, Logging, BlockDisconnector, ConfSeq;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -569,7 +569,7 @@ procedure TBlkPst.UPONPstDone(Sender: TObject);
 begin
   PanelServer.ConfirmationSequence(TIDContext(Sender), Self.CSNPStDone,
     (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové zrušení obsluhy PSt',
-    TBlocks.GetBlksList(Self), TArea.GetCSConditions(TArea.GetCSCondition(Self, 'Není základní poloha prvku PSt')));
+    TBlocks.GetBlksList(Self), CSConditions(CSCondition(Self, 'Není základní poloha prvku PSt')));
 end;
 
 procedure TBlkPst.CSNPStDone(Sender: TIDContext; success: Boolean);
@@ -1319,7 +1319,7 @@ begin
     for var barrier in barriers do
     begin
       if (JCBarriers.IsCSBarrier(barrier.typ)) then
-        conditions.Add(TArea.GetCSCondition(barrier.block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+        conditions.Add(CSCondition(barrier.block, JCBarriers.BarrierGetCSNote(barrier.typ)));
     end;
 
     if (conditions.Count > 0) then

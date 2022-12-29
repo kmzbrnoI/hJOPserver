@@ -103,7 +103,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, BlockDb, ownConvert, Diagnostics,
+uses GetSystems, TechnologieRCS, BlockDb, ownConvert, Diagnostics, ConfSeq,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout,
   TCPServerPT, ownStrUtils;
 
@@ -508,24 +508,24 @@ var conds: TList<TConfSeqItem>;
 begin
   conds := TList<TConfSeqItem>.Create();
   if (Self.clientConnected) then
-    conds.Add(TArea.GetCSCondition('Klient: pøipojen', ''))
+    conds.Add(CSCondition('Klient: pøipojen', ''))
   else
-    conds.Add(TArea.GetCSCondition('Klient: nepøipojen', ''));
+    conds.Add(CSCondition('Klient: nepøipojen', ''));
   case (Self.acState) of
     TACState.stopped:
-      conds.Add(TArea.GetCSCondition('AC: zastaven', ''));
+      conds.Add(CSCondition('AC: zastaven', ''));
     TACState.running:
-      conds.Add(TArea.GetCSCondition('AC: bìží', ''));
+      conds.Add(CSCondition('AC: bìží', ''));
     TACState.paused:
-      conds.Add(TArea.GetCSCondition('AC: pozastaven', ''))
+      conds.Add(CSCondition('AC: pozastaven', ''))
   end;
 
   for var str in Self.m_state.lines do
-    conds.Add(TArea.GetCSCondition(str, ''));
+    conds.Add(CSCondition(str, ''));
 
   if (not Self.m_state.panelsShowingState.Contains(pnl)) then
     Self.m_state.panelsShowingState.Add(pnl);
-  PanelServer.CSWindow(pnl, 'IS', Self.PanelSTAVClosed, Area, 'Zobrazení stavu AC', TBlocks.GetBlksList(Self), conds)
+  PanelServer.InfoWindow(pnl, Self.PanelSTAVClosed, Area, 'Zobrazení stavu AC', TBlocks.GetBlksList(Self), conds)
 end;
 
 procedure TBlkAC.PanelSTAVClosed(Sender: TIdContext; success: Boolean);

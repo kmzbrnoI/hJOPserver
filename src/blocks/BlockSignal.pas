@@ -298,7 +298,7 @@ uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSigna
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
   predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO, TCPAreasRef,
-  TrainSpeed;
+  TrainSpeed, ConfSeq;
 
 constructor TBlkSignal.Create(index: Integer);
 begin
@@ -1007,17 +1007,20 @@ procedure TBlkSignal.MenuRNZClick(SenderPnl: TIdContext; SenderOR: TObject);
 var conditions: TList<TConfSeqItem>;
 begin
   conditions := TList<TConfSeqItem>.Create();
+  try
+    for var blkId: Integer in Self.m_state.toRnz.Keys do
+    begin
+      var blk: TBlk;
+      Blocks.GetBlkByID(blkId, blk);
+      if (blk <> nil) then
+        conditions.Add(CSCondition(blk, 'Rušení NZ'));
+    end;
 
-  for var blkId: Integer in Self.m_state.toRnz.Keys do
-  begin
-    var blk: TBlk;
-    Blocks.GetBlkByID(blkId, blk);
-    if (blk <> nil) then
-      conditions.Add(TArea.GetCSCondition(blk, 'Rušení NZ'));
+    PanelServer.ConfirmationSequence(SenderPnl, Self.RNZPotvrSekv, SenderOR as TArea,
+      'Zrušení nouzových závěrů po nouzové cestě', TBlocks.GetBlksList(Self), conditions, true, false);
+  finally
+    conditions.Free();
   end;
-
-  PanelServer.ConfirmationSequence(SenderPnl, Self.RNZPotvrSekv, SenderOR as TArea,
-    'Zrušení nouzových závěrů po nouzové cestě', TBlocks.GetBlksList(Self), conditions);
 end;
 
 procedure TBlkSignal.MenuKCDKClick(SenderPnl: TIdContext; SenderOR: TObject);

@@ -29,7 +29,7 @@
 
 interface
 
-uses Block, Generics.Collections, Area, JsonDataObjects, UPO;
+uses Block, Generics.Collections, Area, JsonDataObjects, UPO, ConfSeq;
 
 type
   TJCBarType = (
@@ -122,56 +122,56 @@ begin
   begin
     case (barriers[i].typ) of
       barBlockDisabled:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Blok neaktivní'));
+        result.Add(CSCondition(barriers[i].Block, 'Blok neaktivní'));
 
       barTrackOccupied:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Úsek obsazen'));
+        result.Add(CSCondition(barriers[i].Block, 'Úsek obsazen'));
       barTrackTrain:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Úsek obsahuje soupravu'));
+        result.Add(CSCondition(barriers[i].Block, 'Úsek obsahuje soupravu'));
 
       barCrosEmOpen:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nouzově otevřen'));
+        result.Add(CSCondition(barriers[i].Block, 'Nouzově otevřen'));
       barCrosError:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Porucha'));
+        result.Add(CSCondition(barriers[i].Block, 'Porucha'));
       barCrosNotClosed:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Neuzavřen'));
+        result.Add(CSCondition(barriers[i].Block, 'Neuzavřen'));
 
       barTurnoutNoPos:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není správná poloha'));
+        result.Add(CSCondition(barriers[i].Block, 'Není správná poloha'));
       barTurnoutEmLock:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
+        result.Add(CSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
       barTurnoutWrongPos:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není správná poloha'));
+        result.Add(CSCondition(barriers[i].Block, 'Není správná poloha'));
 
       barRailwayZAKVC, barRailwayZAKPC:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Zákaz odjezdu'));
+        result.Add(CSCondition(barriers[i].Block, 'Zákaz odjezdu'));
       barRailwayNoZAK:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nezaveden zákaz odjezdu'));
+        result.Add(CSCondition(barriers[i].Block, 'Nezaveden zákaz odjezdu'));
       barRailwayZaver:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Závěr'));
+        result.Add(CSCondition(barriers[i].Block, 'Závěr'));
       barRailwayNotReady:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nepovoluje odjezd'));
+        result.Add(CSCondition(barriers[i].Block, 'Nepovoluje odjezd'));
       barRailwayRequesting:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Probíhá žádost'));
+        result.Add(CSCondition(barriers[i].Block, 'Probíhá žádost'));
       barRailwayWrongDir:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nesouhlas'));
+        result.Add(CSCondition(barriers[i].Block, 'Nesouhlas'));
       barRailwayNoBp:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Bloková podmínka nezavedena'));
+        result.Add(CSCondition(barriers[i].Block, 'Bloková podmínka nezavedena'));
       barRailwayNoTrainMove:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Nedojde k přenosu čísla vlaku'));
+        result.Add(CSCondition(barriers[i].Block, 'Nedojde k přenosu čísla vlaku'));
       barRailwayMoveEnd:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Vlak bude přenesen až na konec trati'));
+        result.Add(CSCondition(barriers[i].Block, 'Vlak bude přenesen až na konec trati'));
 
       barLockNotLocked:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Neuzamčen'));
+        result.Add(CSCondition(barriers[i].Block, 'Neuzamčen'));
       barLockEmLock:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
+        result.Add(CSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
 
       barDiscActive:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Rozpojovač aktivní'));
+        result.Add(CSCondition(barriers[i].Block, 'Rozpojovač aktivní'));
 
       barControllerNotInBasicPos:
-        result.Add(TArea.GetCSCondition(barriers[i].Block, 'Volič není v základní poloze'));
+        result.Add(CSCondition(barriers[i].Block, 'Volič není v základní poloze'));
     end;
   end;
 end;

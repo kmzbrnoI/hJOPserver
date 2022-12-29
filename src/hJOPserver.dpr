@@ -160,7 +160,8 @@ uses
   fBlkPst in 'blocks\forms\data\fBlkPst.pas' {F_BlkPst},
   JCBarriers in 'jc\JCBarriers.pas',
   TrainSpeed in 'trains\TrainSpeed.pas',
-  fTrainSpeed in 'forms\fTrainSpeed.pas' {F_TrainSpeed};
+  fTrainSpeed in 'forms\fTrainSpeed.pas' {F_TrainSpeed},
+  ConfSeq in 'ConfSeq.pas';
 
 {$R *.res}
 

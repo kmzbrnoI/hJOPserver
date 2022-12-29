@@ -244,7 +244,7 @@ type
 implementation
 
 uses TrainDb, BlockDb, TCPServerPanel, BlockRailway, BlockSignal, TJCDatabase,
-  logging, TechnologieJC, ownStrUtils, THVDatabase, IfThenElse;
+  logging, TechnologieJC, ownStrUtils, THVDatabase, IfThenElse, ConfSeq;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -808,20 +808,24 @@ begin
 end;
 
 procedure TBlkRT.MenuRBPClick(SenderPnl: TIdContext; SenderOR: TObject);
-var podm: TConfSeqItems;
+var conditions: TConfSeqItems;
 begin
-  podm := TConfSeqItems.Create();
-  if (Self.IsTrain()) then
-  begin
-    podm.Add(TArea.GetCSCondition(Self, 'Smazání soupravy ' + Self.train.name + ' z úseku'));
-    if ((Self.railway <> nil) and (not TBlkRailway(Self.railway).IsTrainInMoreTUs(Self.Train))) then
-      podm.Add(TArea.GetCSCondition(Self.railway, 'Smazání soupravy ' + Self.train.name + ' z tratě'));
-    if (Blocks.GetBlkWithTrain(Self.Train).Count = 1) then
-      podm.Add(TArea.GetCSCondition(Self, 'Smazání soupravy ' + Self.train.name + ' z kolejiště'));
-  end;
+  conditions := TList<TConfSeqItem>.Create();
+  try
+    if (Self.IsTrain()) then
+    begin
+      conditions.Add(CSCondition(Self, 'Smazání soupravy ' + Self.train.name + ' z úseku'));
+      if ((Self.railway <> nil) and (not TBlkRailway(Self.railway).IsTrainInMoreTUs(Self.Train))) then
+        conditions.Add(CSCondition(Self.railway, 'Smazání soupravy ' + Self.train.name + ' z tratě'));
+      if (Blocks.GetBlkWithTrain(Self.Train).Count = 1) then
+        conditions.Add(CSCondition(Self, 'Smazání soupravy ' + Self.train.name + ' z kolejiště'));
+    end;
 
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TArea,
-    'Zrušení poruchy blokové podmínky', TBlocks.GetBlksList(Self), podm);
+    PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TArea,
+      'Zrušení poruchy blokové podmínky', TBlocks.GetBlksList(Self), conditions, true, false);
+  finally
+    conditions.Free();
+  end;
 end;
 
 procedure TBlkRT.PanelPotvrSekvRBP(Sender: TIdContext; success: Boolean);

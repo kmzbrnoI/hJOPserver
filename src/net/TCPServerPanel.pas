@@ -9,7 +9,7 @@
 interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
-  Classes, StrUtils, Graphics, Windows, Area, ExtCtrls,
+  Classes, StrUtils, Graphics, Windows, Area, ExtCtrls, ConfSeq,
   IdContext, Block, ComCtrls, IdSync, BlockDb, UPO, TCPAreasRef,
   User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
@@ -99,6 +99,8 @@ type
     procedure Menu(AContext: TIdContext; Blk: TBlk; Area: TArea; Menu: string);
 
     procedure ConfirmationSequence(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
+      senders: TBlksList; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+    procedure InfoWindow(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
       senders: TBlksList; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
     procedure CSWindow(AContext: TIdContext; mode: string; callback: TCSCallback; Area: TArea; event: string;
       senders: TBlksList; conditions: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
@@ -1002,6 +1004,12 @@ procedure TPanelServer.ConfirmationSequence(AContext: TIdContext; callback: TCSC
   senders: TBlksList; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
 begin
   Self.CSWindow(AContext, 'PS', callback, Area, event, senders, podminky, free_senders, free_cond);
+end;
+
+procedure TPanelServer.InfoWindow(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
+  senders: TBlksList; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+begin
+  Self.CSWindow(AContext, 'IS', callback, Area, event, senders, podminky, free_senders, free_cond);
 end;
 
 procedure TPanelServer.CSWindow(AContext: TIdContext; mode: string; callback: TCSCallback; Area: TArea; event: string;

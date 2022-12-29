@@ -287,7 +287,7 @@ implementation
 uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, THVDatabase, Math,
   Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils,
-  announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef,
+  announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef, ConfSeq,
   Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase, BlockPst, IfThenElse;
 
 constructor TBlkTrack.Create(index: Integer);
@@ -949,19 +949,23 @@ begin
 end;
 
 procedure TBlkTrack.MenuDeleteTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
-var podm: TConfSeqItems;
+var conditions: TConfSeqItems;
   blk: TObject;
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
     Self.trains.Count)) then
     Exit();
 
-  podm := TConfSeqItems.Create();
-  for blk in Blocks.GetBlkWithTrain(TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]) do
-    podm.Add(TArea.GetCSCondition(blk, 'Smazání soupravy z úseku'));
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrDeleteTrain, SenderOR as TArea,
-    'Smazání soupravy ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name,
-    TBlocks.GetBlksList(Self), podm);
+  conditions := TList<TConfSeqItem>.Create();
+  try
+    for blk in Blocks.GetBlkWithTrain(TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]) do
+      conditions.Add(CSCondition(blk, 'Smazání soupravy z úseku'));
+    PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrDeleteTrain, SenderOR as TArea,
+      'Smazání soupravy ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name,
+      TBlocks.GetBlksList(Self), conditions, true, false);
+  finally
+    conditions.Free();
+  end;
 end;
 
 procedure TBlkTrack.PotvrDeleteTrain(Sender: TIdContext; success: Boolean);
@@ -1055,13 +1059,17 @@ begin
     Exit();
   var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
 
-  var podm: TConfSeqItems := TConfSeqItems.Create();
-  for var hvaddr: Integer in Train.HVs do
-    if (HVDb[hvaddr] <> nil) then
-      podm.Add(TArea.GetCSCondition(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
+  var conditions: TConfSeqItems := TConfSeqItems.Create();
+  try
+    for var hvaddr: Integer in Train.HVs do
+      if (HVDb[hvaddr] <> nil) then
+        conditions.Add(CSCondition(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
 
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrRegVezmiTrain, SenderOR as TArea,
-    'Nouzové převzetí hnacích vozidel do automatického řízení', TBlocks.GetBlksList(Self), podm);
+    PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrRegVezmiTrain, SenderOR as TArea,
+      'Nouzové převzetí hnacích vozidel do automatického řízení', TBlocks.GetBlksList(Self), conditions, true, false);
+  finally
+    conditions.Free();
+  end;
 end;
 
 procedure TBlkTrack.PotvrRegVezmiTrain(Sender: TIdContext; success: Boolean);

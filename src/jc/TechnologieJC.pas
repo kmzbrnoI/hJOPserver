@@ -267,7 +267,7 @@ implementation
 uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
-  BlockPSt, appEv;
+  BlockPSt, appEv, ConfSeq;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -1256,25 +1256,29 @@ begin
 
     // existuji bariery na potvrzeni potvrzovaci sekvenci ?
     var conditions: TList<TConfSeqItem> := TList<TConfSeqItem>.Create;
-    for var barrier in barriers do
-    begin
-      if (JCBarriers.IsCSBarrier(barrier.typ)) then
-        conditions.Add(TArea.GetCSCondition(barrier.Block, JCBarriers.BarrierGetCSNote(barrier.typ)));
-    end;
+    try
+      for var barrier in barriers do
+      begin
+        if (JCBarriers.IsCSBarrier(barrier.typ)) then
+          conditions.Add(CSCondition(barrier.Block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+      end;
 
-    if (conditions.Count > 0) then
-    begin
-      // ano, takoveto bariery existuji -> potvrzovaci sekvence
-      Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...');
+      if (conditions.Count > 0) then
+      begin
+        // ano, takoveto bariery existuji -> potvrzovaci sekvence
+        Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...');
 
-      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-        PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TArea),
-          'Jízdní cesta s potvrzením', TBlocks.GetBlksList(Self.signal, Self.lastTrack), conditions);
+        if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+          PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TArea),
+            'Jízdní cesta s potvrzením', TBlocks.GetBlksList(Self.signal, Self.lastTrack), conditions, true, false);
 
-      Self.step := stepConfSeq;
-    end else begin
-      // ne, takoveto bariery neexistuji -> stavim jizdni cestu
-      Self.SetInitStep();
+        Self.step := stepConfSeq;
+      end else begin
+        // ne, takoveto bariery neexistuji -> stavim jizdni cestu
+        Self.SetInitStep();
+      end;
+    finally
+      conditions.Free();
     end;
 
   finally

@@ -290,7 +290,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
-  IfThenElse, RCSErrors, BlockPst, FileSystem;
+  IfThenElse, RCSErrors, BlockPst, FileSystem, ConfSeq;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin
@@ -1104,17 +1104,21 @@ begin
   Self.m_state.movingPanel := TIDContext(Sender);
   Self.m_state.movingOR := TPanelConnData(TIDContext(Sender).data).UPO_ref;
 
-  var conditions := TList<TConfSeqItem>.Create();
   var blk := Blocks.GetBlkByID(Self.trackID);
+  var conditions := TList<TConfSeqItem>.Create();
 
-  if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
-    conditions.Add(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek'));
-  if ((Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
-    conditions.Add(TArea.GetCSCondition(Blk, 'Pod obsluhou PSt'));
+  try
+    if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
+      conditions.Add(CSCondition(Blk, 'Obsazený kolejový úsek'));
+    if ((Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
+      conditions.Add(CSCondition(Blk, 'Pod obsluhou PSt'));
 
-  PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSPlus,
-    (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy plus',
-    TBlocks.GetBlksList(Self), conditions);
+    PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSPlus,
+      (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy plus',
+      TBlocks.GetBlksList(Self), conditions, true, false);
+  finally
+    conditions.Free();
+  end;
 end;
 
 procedure TBlkTurnout.UPONSMinusClick(Sender: TObject);
@@ -1122,17 +1126,21 @@ begin
   Self.m_state.movingPanel := TIDContext(Sender);
   Self.m_state.movingOR := TPanelConnData(TIDContext(Sender).data).UPO_ref;
 
-  var conditions := TList<TConfSeqItem>.Create();
   var blk := Blocks.GetBlkByID(Self.trackID);
+  var conditions := TList<TConfSeqItem>.Create();
 
-  if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
-    conditions.Add(TArea.GetCSCondition(Blk, 'Obsazený kolejový úsek'));
-  if ((Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
-    conditions.Add(TArea.GetCSCondition(Blk, 'Pod obsluhou PSt'));
+  try
+    if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
+      conditions.Add(CSCondition(Blk, 'Obsazený kolejový úsek'));
+    if ((Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
+      conditions.Add(CSCondition(Blk, 'Pod obsluhou PSt'));
 
-  PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSMinus,
-    (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy mínus',
-    TBlocks.GetBlksList(Self), conditions);
+    PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSMinus,
+      (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy mínus',
+      TBlocks.GetBlksList(Self), conditions, true, false);
+  finally
+    conditions.Free();
+  end;
 end;
 
 procedure TBlkTurnout.MenuStitClick(SenderPnl: TIDContext; SenderOR: TObject);

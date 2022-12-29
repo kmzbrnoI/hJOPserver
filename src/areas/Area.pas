@@ -40,14 +40,6 @@ type
   EMaxClients = class(Exception);
   ENoClientConnected = class(Exception);
 
-  // confirmation sequence condition
-  TConfSeqItem = record
-    target: string;
-    condition: string;
-  end;
-
-  TConfSeqItems = TList<TConfSeqItem>;
-
   TAreaData = record
     name: string;
     nameShort: string;
@@ -253,9 +245,6 @@ type
     function IsWritable(panel: TIdContext): Boolean;
 
     class function ORRightsToString(rights: TAreaRights): string;
-    class function GetCSCondition(block: TObject; condition: string): TConfSeqItem; overload;
-    class function GetCSCondition(target: string; condition: string): TConfSeqItem; overload;
-    class function GetCSConditions(condition: TConfSeqItem): TConfSeqItems;
 
     class function NameComparer(): IComparer<TArea>;
     class function IdComparer(): IComparer<TArea>;
@@ -286,7 +275,7 @@ implementation
 uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, Logging, TechnologieJC,
   TJCDatabase, ownConvert, TCPServerPanel, AreaDb, block, THVDatabase, TrainDb,
   UserDb, THnaciVozidlo, Trakce, user, TCPAreasRef, fRegulator, RegulatorTCP,
-  ownStrUtils, train, changeEvent, TechnologieTrakce;
+  ownStrUtils, train, changeEvent, TechnologieTrakce, ConfSeq;
 
 function IsReadable(right: TAreaRights): Boolean;
 begin
@@ -789,24 +778,27 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TArea.DkNUZStart(Sender: TIDContext);
-var
-  conditions: TList<TConfSeqItem>;
+var conditions: TList<TConfSeqItem>;
 begin
   conditions := TList<TConfSeqItem>.Create();
-  for var blk: TBlk in Blocks do
-  begin
-    if (Blk.typ <> btTrack) then
-      continue;
-    if (not(Blk as TBlkTrack).NUZ) then
-      continue;
+  try
+    for var blk: TBlk in Blocks do
+    begin
+      if (Blk.typ <> btTrack) then
+        continue;
+      if (not(Blk as TBlkTrack).NUZ) then
+        continue;
 
-    for var area: TArea in (Blk as TBlkTrack).areas do
-      if (area = Self) then
-        conditions.Add(GetCSCondition(Blk, 'Nouzové vybavování'));
+      for var area: TArea in (Blk as TBlkTrack).areas do
+        if (area = Self) then
+          conditions.Add(CSCondition(Blk, 'Nouzové vybavování'));
+    end;
+
+    PanelServer.ConfirmationSequence(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků',
+      TBlocks.GetBlksList(Self), conditions, true, false);
+  finally
+    conditions.Free();
   end;
-
-  PanelServer.ConfirmationSequence(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků',
-    TBlocks.GetBlksList(Self), conditions);
 end;
 
 procedure TArea.DkNUZStop(Sender: TIDContext);
@@ -1953,26 +1945,6 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-
-class function TArea.GetCSCondition(block: TObject; condition: string): TConfSeqItem;
-begin
-  Result.target := TBlk(block).name;
-  Result.condition := condition;
-end;
-
-class function TArea.GetCSCondition(target: string; condition: string): TConfSeqItem;
-begin
-  Result.target := target;
-  Result.condition := condition;
-end;
-
-class function TArea.GetCSConditions(condition: TConfSeqItem): TConfSeqItems;
-begin
-  Result := TList<TConfSeqItem>.Create();
-  Result.Add(condition);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
 
 procedure TArea.OnAnncmntAvailable(Sender: TObject; available: Boolean);
 begin
