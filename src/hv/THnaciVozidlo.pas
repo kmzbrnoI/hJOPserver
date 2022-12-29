@@ -1101,7 +1101,7 @@ end;
 
 function THV.NiceName(): string;
 begin
-  Result := IntToStr(Self.addr) + ' : ' + Self.data.name + '(' + Self.data.designation + ')';
+  Result := IntToStr(Self.addr) + ' : ' + Self.data.name + ' (' + Self.data.designation + ')';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

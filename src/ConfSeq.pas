@@ -12,8 +12,8 @@ type
 
   TConfSeqItems = TList<TConfSeqItem>;
 
-  function CSCondition(block: TObject; condition: string): TConfSeqItem; overload;
-  function CSCondition(target: string; condition: string): TConfSeqItem; overload;
+  function CSCondition(block: TObject; condition: string = ''): TConfSeqItem; overload;
+  function CSCondition(target: string; condition: string = ''): TConfSeqItem; overload;
   function CSConditions(condition: TConfSeqItem): TConfSeqItems;
 
 implementation

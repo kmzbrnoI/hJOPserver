@@ -100,6 +100,7 @@ type
 
     procedure MenuNewTrainClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
     procedure MenuEditTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuInfoTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuDeleteTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuUVOLTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuVEZMITrainClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -948,6 +949,21 @@ begin
     TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]);
 end;
 
+procedure TBlkTrack.MenuInfoTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
+    Self.trains.Count)) then
+    Exit();
+
+  var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
+  var conditions := train.InfoWindowItems();
+  try
+    PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, TBlocks.GetBlksList(Self), conditions, true, false);
+  finally
+    conditions.Free();
+  end;
+end;
+
 procedure TBlkTrack.MenuDeleteTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 var conditions: TConfSeqItems;
   blk: TObject;
@@ -1545,6 +1561,8 @@ begin
     Self.MenuVLOZTrainClick(SenderPnl, SenderOR, itemindex)
   else if (item = 'EDIT vlak') then
     Self.MenuEditTrainClick(SenderPnl, SenderOR)
+  else if (item = 'INFO vlak') then
+    Self.MenuInfoTrainClick(SenderPnl, SenderOR)
   else if (item = 'ZRUŠ vlak') then
     Self.MenuDeleteTrainClick(SenderPnl, SenderOR)
   else if (item = 'UVOL vlak') then

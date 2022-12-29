@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, SysUtils, Classes, Forms, THnaciVozidlo, JsonDataObjects,
      Generics.Collections, predvidanyOdjezd, Block, Trakce, Math, IdContext,
-     Logging;
+     Logging, Area, ConfSeq;
 
 const
   _MAX_TRAIN_HV = 4;
@@ -156,6 +156,8 @@ type
      procedure PutPtData(reqJson: TJsonObject; respJson: TJsonObject);
 
      function Menu(SenderPnl: TIdContext; SenderOR: TObject; SenderTrack: TBlk; SenderTrackI: Integer): string;
+     function InfoWindowItems(): TList<TConfSeqItem>;
+     function StrArrowDirection(): string;
 
      property index: Integer read findex;
      property sdata: TTrainData read data;
@@ -190,7 +192,7 @@ type
 implementation
 
 uses THVDatabase, ownStrUtils, TrainDb, BlockTrack, DataSpr, appEv,
-      DataHV, AreaDb, Area, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
+      DataHV, AreaDb, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
       fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
       TCPAreasRef;
@@ -1410,7 +1412,9 @@ begin
   train_count := Blocks.GetBlkWithTrain(Self).Count;
 
   if (track.CanStandTrain()) then
-    Result := Result + 'EDIT vlak,';
+    Result := Result + 'EDIT vlak,'
+  else
+    Result := Result + 'INFO vlak,';
   if (Self.speed > 0) then
     Result := Result + '!STOP vlak,';
   if ((track.CanStandTrain()) or (train_count <= 1)) then
@@ -1469,6 +1473,54 @@ end;
 procedure TTrain.Log(msg: string; typ: LogType);
 begin
   Logging.log('Souprava ' + Self.name + ': ' + msg, typ);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TTrain.StrArrowDirection(): string;
+begin
+  Result := '';
+  if (Self.data.dir_L) then
+    Result := 'L';
+  if (Self.data.dir_S) then
+    Result := Result + 'S';
+  if (Result = '') then
+    Result := '-';
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TTrain.InfoWindowItems(): TList<TConfSeqItem>;
+begin
+  Result := TList<TConfSeqItem>.Create();
+  try
+    Result.Add(CSCondition('Souprava '+Self.name));
+    Result.Add(CSCondition('Typ: '+Self.data.typ));
+    Result.Add(CSCondition('Délka: '+IntToStr(Self.data.length)+' cm'));
+    Result.Add(CSCondition('Počet vozů: '+IntToStr(Self.data.carsCount)));
+    Result.Add(CSCondition('Směr: '+Self.StrArrowDirection()));
+
+    if (Self.data.areaFrom <> nil) then
+      Result.Add(CSCondition('Výchozí stanice: '+TArea(Self.data.areaFrom).name))
+    else
+      Result.Add(CSCondition('Výchozí stanice: nevyplněno'));
+
+    if (Self.data.areaTo <> nil) then
+      Result.Add(CSCondition('Cílová stanice: '+TArea(Self.data.areaTo).name))
+    else
+      Result.Add(CSCondition('Cílová stanice: nevyplněno'));
+
+    if (Self.data.note <> '') then
+      Result.Add(CSCondition('Poznámka: '+ Self.data.note));
+
+    for var i: Integer := 0 to Self.HVs.Count-1 do
+      if (HVDb[Self.HVs[i]] <> nil) then
+        Result.Add(CSCondition('HV '+IntToStr(i+1)+': '+ HVDb[Self.HVs[i]].NiceName()));
+
+  except
+    Result.Free();
+  end;
+
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
