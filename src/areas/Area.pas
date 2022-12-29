@@ -42,8 +42,8 @@ type
 
   // confirmation sequence condition
   TConfSeqItem = record
-    block: string;
-    note: string;
+    target: string;
+    condition: string;
   end;
 
   TConfSeqItems = TList<TConfSeqItem>;
@@ -1956,14 +1956,14 @@ end;
 
 class function TArea.GetCSCondition(block: TObject; condition: string): TConfSeqItem;
 begin
-  Result.block := TBlk(block).name;
-  Result.note := condition;
+  Result.target := TBlk(block).name;
+  Result.condition := condition;
 end;
 
 class function TArea.GetCSCondition(target: string; condition: string): TConfSeqItem;
 begin
-  Result.block := target;
-  Result.note := condition;
+  Result.target := target;
+  Result.condition := condition;
 end;
 
 class function TArea.GetCSConditions(condition: TConfSeqItem): TConfSeqItems;

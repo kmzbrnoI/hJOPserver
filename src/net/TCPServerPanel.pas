@@ -1023,7 +1023,7 @@ begin
 
   if (conditions <> nil) then
     for var i: Integer := 0 to conditions.Count - 1 do
-      str := str + '[{' + conditions[i].Block + '}|{' + conditions[i].Note + '}]';
+      str := str + '[{' + conditions[i].target + '}|{' + conditions[i].condition + '}]';
 
   if (Area <> nil) then
     areaName := Area.name
