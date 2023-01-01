@@ -72,6 +72,21 @@ object F_BlkRailwayState: TF_BlkRailwayState
     Height = 13
     Caption = 'Souprava:'
   end
+  object Label3: TLabel
+    Left = 296
+    Top = 8
+    Width = 89
+    Height = 13
+    Caption = 'Blokov'#225' podm'#237'nka:'
+  end
+  object L_BP: TLabel
+    Left = 483
+    Top = 9
+    Width = 23
+    Height = 13
+    Alignment = taRightJustify
+    Caption = 'L_BP'
+  end
   object CB_Zadost: TComboBox
     Left = 176
     Top = 58
@@ -168,17 +183,17 @@ object F_BlkRailwayState: TF_BlkRailwayState
   end
   object B_BP_Enable: TButton
     Left = 296
-    Top = 16
-    Width = 89
+    Top = 28
+    Width = 97
     Height = 25
     Caption = 'Zav'#233'st BP'
     TabOrder = 7
     OnClick = B_BP_EnableClick
   end
   object B_BP_Disable: TButton
-    Left = 400
-    Top = 16
-    Width = 89
+    Left = 410
+    Top = 28
+    Width = 96
     Height = 25
     Caption = 'Zru'#353'it BP'
     TabOrder = 8

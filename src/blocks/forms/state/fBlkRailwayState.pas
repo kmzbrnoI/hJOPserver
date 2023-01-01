@@ -26,6 +26,8 @@ type
     B_RmSpr: TButton;
     Label2: TLabel;
     B_AddSpr: TButton;
+    Label3: TLabel;
+    L_BP: TLabel;
     procedure B_ObnovitClick(Sender: TObject);
     procedure B_SaveDataClick(Sender: TObject);
     procedure B_BP_EnableClick(Sender: TObject);
@@ -48,7 +50,7 @@ implementation
 
 {$R *.dfm}
 
-uses ownConvert, TrainDb;
+uses ownConvert, TrainDb, IfThenElse;
 
 procedure TF_BlkRailwayState.B_AddSprClick(Sender: TObject);
 begin
@@ -115,6 +117,10 @@ begin
   Self.E_Soupravy.Text := '';
   for train in railway.state.Trains do
     Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(train.train.index) + ',';
+
+  Self.L_BP.Caption := ite(railway.BP, 'zavedena', 'nezavedena');
+  Self.B_BP_Enable.Enabled := not railway.BP;
+  Self.B_BP_Disable.Enabled := railway.BP;
 end;
 
 procedure TF_BlkRailwayState.Save();
