@@ -26,6 +26,8 @@ type
     procedure LV_SpeedsDblClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure LV_SpeedsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     E_LV: TEdit;
     editRow: TListItem;
@@ -215,6 +217,13 @@ procedure TF_TrainSpeed.LV_SpeedsDragOver(Sender, Source: TObject; X,
   Y: Integer; State: TDragState; var Accept: Boolean);
 begin
   Accept := (Source = Self.LV_Speeds);
+end;
+
+procedure TF_TrainSpeed.LV_SpeedsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key = VK_DELETE) then
+    Self.MI_DeleteClick(Self);
 end;
 
 procedure TF_TrainSpeed.Default();

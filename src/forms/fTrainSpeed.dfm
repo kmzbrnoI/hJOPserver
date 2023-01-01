@@ -48,6 +48,7 @@ object F_TrainSpeed: TF_TrainSpeed
     OnDblClick = LV_SpeedsDblClick
     OnDragDrop = LV_SpeedsDragDrop
     OnDragOver = LV_SpeedsDragOver
+    OnKeyDown = LV_SpeedsKeyDown
   end
   object PM_Speeds: TPopupMenu
     OnPopup = PM_SpeedsPopup
