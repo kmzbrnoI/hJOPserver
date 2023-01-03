@@ -9,9 +9,9 @@ unit rrEvent;
   - uplynuti urcite doby
 
   Definicni string udalosti:
-  - usek: "typ;state;part"
-  - IR: "typ;state;irid"
-  - cas: "typ;timeSec"
+  - usek: "typ,state,part[,track]"
+  - IR: "typ,state,irid[,track]"
+  - cas: "typ,timeSec[,track]"
 }
 
 interface
@@ -22,6 +22,8 @@ type
   TRREvType = (rrtTrack = 1, rrtIR = 2, rrtTime = 3);
 
   TRREvData = record
+    trackId: Integer;
+
     case typ: TRREvType of
       rrtTrack:
         (trackPart: Cardinal;
@@ -47,13 +49,14 @@ type
   private
     m_data: TRREvData;
     m_state: TRREvState;
+    m_trackAllowed: Boolean;
 
     procedure LoadFromDefStr(data: string);
 
   public
 
-    constructor Create(data: string); overload;
-    constructor Create(data: TRREvData); overload;
+    constructor Create(trackAllowed: Boolean; data: string); overload;
+    constructor Create(trackAllowed: Boolean; data: TRREvData); overload;
 
     function GetDefStr(): string;
 
@@ -66,25 +69,29 @@ type
     property enabled: Boolean read m_state.enabled;
     property data: TRREvData read m_data;
     property typ: TRREvType read m_data.typ;
+    property trackAllowed: Boolean read m_trackAllowed;
+    property trackId: Integer read m_data.trackId;
 
   end;
 
 implementation
 
-uses BlockDb, Block, BlockIR, BlockTrack, ownConvert, ownStrUtils;
+uses BlockDb, Block, BlockIR, BlockTrack, ownConvert, ownStrUtils, IfThenElse;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-constructor TRREv.Create(data: string);
+constructor TRREv.Create(trackAllowed: Boolean; data: string);
 begin
   inherited Create();
+  Self.m_trackAllowed := trackAllowed;
   Self.m_state.enabled := false;
   LoadFromDefStr(data);
 end;
 
-constructor TRREv.Create(data: TRREvData);
+constructor TRREv.Create(trackAllowed: Boolean; data: TRREvData);
 begin
   inherited Create();
+  Self.m_trackAllowed := trackAllowed;
   Self.m_state.enabled := false;
   Self.m_data := data;
 end;
@@ -107,12 +114,20 @@ begin
         begin
           Self.m_data.trackState := ownConvert.StrToBool(strs[1]);
           Self.m_data.trackPart := StrToInt(strs[2]);
+          if (strs.Count > 3) then
+            Self.m_data.trackId := StrToInt(strs[3])
+          else
+            Self.m_data.trackId := -1;
         end;
 
       rrtIR:
         begin
           Self.m_data.irState := ownConvert.StrToBool(strs[1]);
           Self.m_data.irId := StrToInt(strs[2]);
+          if (strs.Count > 3) then
+            Self.m_data.trackId := StrToInt(strs[3])
+          else
+            Self.m_data.trackId := -1;
         end;
 
       rrtTime:
@@ -125,6 +140,11 @@ begin
             Self.m_data.time := EncodeTime(0, StrToInt(LeftStr(strs[1], 2)), StrToInt(Copy(strs[1], 4, 2)),
               StrToInt(RightStr(strs[1], 1)));
           end;
+
+          if (strs.Count > 2) then
+            Self.m_data.trackId := StrToInt(strs[2])
+          else
+            Self.m_data.trackId := -1;
         end;
     end; // m_data.typ
   finally
@@ -146,6 +166,9 @@ begin
     rrtTime:
       Result := Result + FormatDateTime('nn:ss.z', m_data.time);
   end;
+
+  if ((Self.trackAllowed) and (Self.m_data.trackId > -1)) then
+    Result := Result + ',' + IntToStr(Self.m_data.trackId);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -174,9 +197,25 @@ begin
     case (Self.m_data.typ) of
       rrtTrack:
         begin
-          if (Integer(m_data.trackPart) < TBlkTrack(Sender).sectionsState.Count) then
+          var track: TBlkTrack := nil;
+          if (Self.trackAllowed) then
           begin
-            case (TBlkTrack(Sender).sectionsState[m_data.trackPart]) of
+            var blk := Blocks.GetBlkByID(Self.m_data.trackId);
+            if ((blk.typ = btTrack) or (blk.typ = btRT)) then
+              track := TBlkTrack(track);
+          end;
+          if (track = nil) then
+            track := TBlkTrack(Sender);
+
+          if (track = nil) then
+          begin
+            Result := safeState;
+            Exit();
+          end;
+
+          if (Integer(m_data.trackPart) < track.sectionsState.Count) then
+          begin
+            case (track.sectionsState[m_data.trackPart]) of
               TTrackState.occupied:
                 Result := m_data.trackState;
               TTrackState.Free:

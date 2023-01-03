@@ -30,17 +30,29 @@ type
     Label6: TLabel;
     ME_Time: TMaskEdit;
     CB_IR: TComboBox;
+    CB_Track: TComboBox;
+    CHB_Track: TCheckBox;
     procedure CB_TypeChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure CB_TrackChange(Sender: TObject);
+    procedure CHB_TrackClick(Sender: TObject);
   private
     CB_IRId: TList<Integer>;
+    CB_TrackIds: TList<Integer>;
+    _trackEnabled: Boolean;
+
+    procedure SetTrackEnabled(new: Boolean);
+    procedure UpdateTrackParts();
 
   public
+
     procedure FillFromRR(ev: TRREv);
     procedure ShowEmpty();
     function GetRREv(): TRREv;
     function InputValid(): Boolean;
+
+    property trackEnabled: Boolean read _trackEnabled write SetTrackEnabled;
 
   protected
     procedure SetEnabled(state: Boolean); override;
@@ -49,47 +61,93 @@ type
 
 implementation
 
-uses Block, ownConvert;
+uses Block, ownConvert, BlockTrack;
 
 {$R *.dfm}
 
 procedure TF_RREv.FormCreate(Sender: TObject);
 begin
   Self.CB_IRId := TList<Integer>.Create();
+  Self.CB_TrackIds := TList<Integer>.Create();
+  Self.SetTrackEnabled(false);
 end;
 
 procedure TF_RREv.FormDestroy(Sender: TObject);
 begin
   Self.CB_IRId.Free();
+  Self.CB_Track.Free();
+end;
+
+procedure TF_RREv.CB_TrackChange(Sender: TObject);
+begin
+  Self.UpdateTrackParts();
+end;
+
+procedure TF_RREv.UpdateTrackParts();
+begin
+  for var i: Integer := 0 to 3 do
+    Self.CB_Track_Part.Items[i] := IntToStr(i+1);
+
+  if ((Self.trackEnabled) and (Self.CB_Track.ItemIndex > -1)) then
+  begin
+    var blkId := Self.CB_TrackIds[Self.CB_Track.ItemIndex];
+    var blk: TBlk := Blocks.GetBlkById(blkId);
+    if ((blk = nil) or ((blk.typ <> btTrack) and (blk.typ <> btRT))) then
+      Exit();
+    var blkTrackSettings := TBlkTrack(blk).GetSettings();
+
+    for var i: Integer := 0 to 3 do
+      if (blkTrackSettings.RCSAddrs.Count > i) then
+        Self.CB_Track_Part.Items[i] := IntToStr(i+1)+' (' + blkTrackSettings.RCSAddrs[i].ToString() + ')';
+  end;
 end;
 
 procedure TF_RREv.CB_TypeChange(Sender: TObject);
 begin
-  Self.GB_Track.Visible := false;
-  Self.GB_IR.Visible := false;
-  Self.GB_Time.Visible := false;
+  Self.GB_Track.Visible := (Self.CB_Type.ItemIndex = 0);
+  Self.GB_IR.Visible := (Self.CB_Type.ItemIndex = 1);
+  Self.GB_Time.Visible := (Self.CB_Type.ItemIndex = 2);
+end;
 
-  case (Self.CB_Type.ItemIndex) of
-    0:
-      Self.GB_Track.Visible := true;
-    1:
-      Self.GB_IR.Visible := true;
-    2:
-      Self.GB_Time.Visible := true;
-  end;
+procedure TF_RREv.CHB_TrackClick(Sender: TObject);
+begin
+  Self.CB_Track.Enabled := Self.CHB_Track.Checked;
+  if (not Self.CHB_Track.Checked) then
+    Self.CB_Track.ItemIndex := -1;
+end;
+
+procedure TF_RREv.SetTrackEnabled(new: Boolean);
+begin
+  Self._trackEnabled := new;
+
+  Self.CHB_Track.Visible := Self._trackEnabled;
+  Self.CB_Track.Visible := Self._trackEnabled;
+
+  if (Self._trackEnabled) then
+    Self.GB_Track.Top := Self.CB_Track.Top + Self.CB_Track.Height + 6
+  else
+    Self.GB_Track.Top := Self.CHB_Track.Top;
+
+  Self.GB_IR.Top := Self.GB_Track.Top;
+  Self.GB_Time.Top := Self.GB_Track.Top;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_RREv.ShowEmpty();
 begin
+  Blocks.FillCB(Self.CB_Track, Self.CB_TrackIds, nil, nil, btTrack, btRT);
   Blocks.FillCB(Self.CB_IR, Self.CB_IRId, nil, nil, btIR);
+  Self.CHB_Track.Checked := false;
+  Self.CHB_TrackClick(Self);
+
   Self.CB_Track_Part.ItemIndex := 0;
   Self.CB_IR.ItemIndex := 0;
   Self.CB_Track_State.ItemIndex := 1;
   Self.CB_IR_State.ItemIndex := 1;
   Self.ME_Time.Text := '00:00.0';
   Self.CB_TypeChange(Self.CB_Type);
+  Self.UpdateTrackParts();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -97,6 +155,11 @@ end;
 procedure TF_RREv.FillFromRR(ev: TRREv);
 begin
   Self.ShowEmpty();
+
+  Self.CHB_Track.Checked := (ev.trackId > -1);
+  Blocks.FillCB(Self.CB_Track, Self.CB_TrackIds, nil, nil, btTrack, btRT, ev.trackId);
+  Self.CHB_TrackClick(Self);
+  Self.UpdateTrackParts();
 
   case (ev.typ) of
     rrtTrack:
@@ -128,6 +191,11 @@ end;
 function TF_RREv.GetRREv(): TRREv;
 var data: TRREvData;
 begin
+  if ((Self.trackEnabled) and (Self.CHB_Track.Checked)) then
+    data.trackId := Self.CB_TrackIds[Self.CB_Track.ItemIndex]
+  else
+    data.trackId := -1;
+
   case (Self.CB_Type.ItemIndex) of
     0:
       begin
@@ -151,7 +219,7 @@ begin
       end;
   end;
 
-  Result := TRREv.Create(data);
+  Result := TRREv.Create(Self.trackEnabled, data);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -159,6 +227,8 @@ end;
 function TF_RREv.InputValid(): Boolean;
 begin
   if (Self.CB_Type.ItemIndex < 0) then
+    Exit(false);
+  if ((Self.CHB_Track.Checked) and (Self.CB_Track.ItemIndex < 0)) then
     Exit(false);
 
   case (Self.CB_Type.ItemIndex) of
@@ -179,7 +249,8 @@ procedure TF_RREv.SetEnabled(state: Boolean);
 begin
   inherited;
 
-  Self.CB_Type.Enabled := state;
+  Self.CHB_Track.Enabled := state;
+  Self.CHB_TrackClick(Self);
   Self.CB_Track_Part.Enabled := state;
   Self.CB_IR.Enabled := state;
   Self.CB_Track_State.Enabled := state;
@@ -189,6 +260,7 @@ begin
   if (not state) then
   begin
     Self.CB_Type.ItemIndex := -1;
+    Self.CB_Track.ItemIndex := -1;
     Self.CB_Track_Part.ItemIndex := -1;
     Self.CB_IR.ItemIndex := -1;
     Self.CB_Track_State.ItemIndex := -1;

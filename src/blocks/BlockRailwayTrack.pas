@@ -1495,13 +1495,13 @@ end;
 procedure TBlkRTStopEvents.LoadFromFile(ini_tech: TMemIniFile; const section: string; const prefix: string);
 var str: string;
 begin
-  Self.stop := TRREv.Create(ini_tech.ReadString(section, prefix + '_zast', ''));
+  Self.stop := TRREv.Create(false, ini_tech.ReadString(section, prefix + '_zast', ''));
 
   str := ini_tech.ReadString(section, prefix + '_zpom_ev', '');
   Self.slow.enabled := (str <> '');
   if (Self.slow.enabled) then
   begin
-    Self.slow.ev := TRREv.Create(str);
+    Self.slow.ev := TRREv.Create(true, str);
     Self.slow.speed := ini_tech.ReadInteger(section, prefix + '_zpom_sp', 40);
   end;
 end;

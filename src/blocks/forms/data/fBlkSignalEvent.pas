@@ -53,10 +53,12 @@ begin
 
   Self.fZast := TF_RREv.Create(nil);
   Self.fZast.Parent := Self.P_ZastForm;
+  Self.fZast.trackEnabled := false;
   Self.fZast.Show();
 
   Self.fZpom := TF_RREv.Create(nil);
   Self.fZpom.Parent := Self.P_ZpomForm;
+  Self.fZpom.trackEnabled := true;
   Self.fZpom.Show();
 end;
 

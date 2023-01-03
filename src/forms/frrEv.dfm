@@ -3,7 +3,7 @@ object F_RREv: TF_RREv
   Top = 0
   BorderStyle = bsNone
   Caption = 'F_RREv'
-  ClientHeight = 169
+  ClientHeight = 213
   ClientWidth = 161
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -25,11 +25,11 @@ object F_RREv: TF_RREv
   end
   object GB_Time: TGroupBox
     Left = 8
-    Top = 51
+    Top = 95
     Width = 145
     Height = 110
     Caption = ' '#268'as '
-    TabOrder = 3
+    TabOrder = 4
     object Label6: TLabel
       Left = 8
       Top = 16
@@ -63,11 +63,11 @@ object F_RREv: TF_RREv
   end
   object GB_Track: TGroupBox
     Left = 8
-    Top = 51
+    Top = 95
     Width = 145
     Height = 110
     Caption = ' '#218'sek '
-    TabOrder = 1
+    TabOrder = 2
     object Label2: TLabel
       Left = 8
       Top = 16
@@ -109,11 +109,11 @@ object F_RREv: TF_RREv
   end
   object GB_IR: TGroupBox
     Left = 8
-    Top = 51
+    Top = 95
     Width = 145
     Height = 110
     Caption = ' IR '#269'idlo '
-    TabOrder = 2
+    TabOrder = 3
     object Label4: TLabel
       Left = 8
       Top = 16
@@ -160,5 +160,23 @@ object F_RREv: TF_RREv
       #218'sek'
       'IR '#269'idlo'
       #268'as')
+  end
+  object CB_Track: TComboBox
+    Left = 8
+    Top = 68
+    Width = 145
+    Height = 21
+    Style = csDropDownList
+    TabOrder = 1
+    OnChange = CB_TrackChange
+  end
+  object CHB_Track: TCheckBox
+    Left = 8
+    Top = 51
+    Width = 97
+    Height = 17
+    Caption = 'Odli'#353'n'#253' '#250'sek'
+    TabOrder = 5
+    OnClick = CHB_TrackClick
   end
 end

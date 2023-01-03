@@ -4,7 +4,7 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
   Align = alClient
   BorderStyle = bsNone
   Caption = 'F_BlkSignalEvent'
-  ClientHeight = 302
+  ClientHeight = 346
   ClientWidth = 348
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -61,7 +61,7 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
     Left = 177
     Top = 50
     Width = 165
-    Height = 247
+    Height = 289
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -83,9 +83,9 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
     end
     object P_ZpomForm: TPanel
       Left = 2
-      Top = 71
+      Top = 70
       Width = 161
-      Height = 174
+      Height = 217
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2

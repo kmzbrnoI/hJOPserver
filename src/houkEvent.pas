@@ -93,7 +93,7 @@ begin
   try
     ExtractStringsEx([';', ','], [], data, str);
 
-    m_event := TRREv.Create(str[0]);
+    m_event := TRREv.Create(false, str[0]);
 
     if (str.Count > 2) then
       m_sound := str[2]

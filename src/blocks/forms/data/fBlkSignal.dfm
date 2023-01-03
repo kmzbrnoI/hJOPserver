@@ -293,7 +293,7 @@ object F_BlkSignal: TF_BlkSignal
     Left = 317
     Top = 8
     Width = 356
-    Height = 329
+    Height = 375
     MultiLine = True
     OwnerDraw = True
     TabOrder = 8

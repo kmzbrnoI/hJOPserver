@@ -60,7 +60,7 @@ type
     procedure Parse(str: string; old: Boolean);
     class function ParseTrainTypes(types: string): string;
     function ToFileStr(short: Boolean = false): string;
-    class function ParseOldRychEvent(str: string): TRREv;
+    class function ParseOldRychEvent(trackAllowed: Boolean; str: string): TRREv;
   end;
 
   TBlkSignalSettings = record
@@ -2089,9 +2089,9 @@ begin
     Self.length.max := -1;
 
     if (old) then
-      Self.stop := Self.ParseOldRychEvent(sl[0])
+      Self.stop := Self.ParseOldRychEvent(false, sl[0])
     else
-      Self.stop := TRREv.Create(sl[0]);
+      Self.stop := TRREv.Create(false, sl[0]);
 
     if ((sl.Count > 1) and (sl[1] <> '') and (LeftStr(sl[1], 2) <> '-1')) then
     begin
@@ -2099,9 +2099,9 @@ begin
 
       Self.slow.enabled := true;
       if (old) then
-        Self.slow.ev := Self.ParseOldRychEvent(sl[1])
+        Self.slow.ev := Self.ParseOldRychEvent(true, sl[1])
       else
-        Self.slow.ev := TRREv.Create(sl2[0]);
+        Self.slow.ev := TRREv.Create(true, sl2[0]);
 
       Self.slow.speed := StrToInt(sl2[sl2.Count - 1]);
     end else begin
@@ -2167,7 +2167,7 @@ end;
 // : typ.stop(0=usek;1=ir);
 // pro usek nasleduje: usekid;usekpart;speed;
 // pro ir nasleduje: irid;speed;
-class function TBlkSignalTrainEvent.ParseOldRychEvent(str: string): TRREv;
+class function TBlkSignalTrainEvent.ParseOldRychEvent(trackAllowed: Boolean; str: string): TRREv;
 var data: TStrings;
   rrData: TRREvData;
 begin
@@ -2194,7 +2194,7 @@ begin
         end; // case 1
     end; // case
 
-    Result := TRREv.Create(rrData);
+    Result := TRREv.Create(trackAllowed, rrData);
   finally
     data.Free();
   end;
