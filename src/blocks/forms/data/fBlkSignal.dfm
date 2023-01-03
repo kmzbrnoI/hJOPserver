@@ -4,7 +4,7 @@ object F_BlkSignal: TF_BlkSignal
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (n'#225'v'#283'stidlo)'
-  ClientHeight = 469
+  ClientHeight = 441
   ClientWidth = 681
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -245,8 +245,8 @@ object F_BlkSignal: TF_BlkSignal
     end
   end
   object B_Storno: TButton
-    Left = 85
-    Top = 438
+    Left = 520
+    Top = 408
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -258,8 +258,8 @@ object F_BlkSignal: TF_BlkSignal
     OnClick = B_StornoClick
   end
   object B_Save: TButton
-    Left = 7
-    Top = 438
+    Left = 600
+    Top = 408
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -293,7 +293,7 @@ object F_BlkSignal: TF_BlkSignal
     Left = 317
     Top = 8
     Width = 356
-    Height = 375
+    Height = 369
     MultiLine = True
     OwnerDraw = True
     TabOrder = 8

@@ -3,7 +3,7 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
   Top = 0
   BorderStyle = bsNone
   Caption = 'F_BlkRTStopEvent'
-  ClientHeight = 257
+  ClientHeight = 290
   ClientWidth = 354
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
     Left = 7
     Top = 7
     Width = 165
-    Height = 191
+    Height = 186
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -29,17 +29,18 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
       Left = 2
       Top = 15
       Width = 161
-      Height = 174
+      Height = 169
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
+      ExplicitHeight = 162
     end
   end
   object GB_DetekceZpomalenii: TGroupBox
     Left = 179
     Top = 7
     Width = 165
-    Height = 242
+    Height = 274
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -61,14 +62,12 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
     end
     object P_Zpom: TPanel
       Left = 2
-      Top = 66
+      Top = 70
       Width = 161
-      Height = 174
+      Height = 202
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitLeft = 9
-      ExplicitTop = 65
     end
     object SE_Slow_Speed: TSpinEdit
       Left = 11

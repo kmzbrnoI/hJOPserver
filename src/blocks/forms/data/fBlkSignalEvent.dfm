@@ -4,7 +4,7 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
   Align = alClient
   BorderStyle = bsNone
   Caption = 'F_BlkSignalEvent'
-  ClientHeight = 346
+  ClientHeight = 337
   ClientWidth = 348
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -40,7 +40,7 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
     Left = 7
     Top = 106
     Width = 165
-    Height = 191
+    Height = 183
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -51,17 +51,18 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
       Left = 2
       Top = 15
       Width = 161
-      Height = 174
+      Height = 166
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
+      ExplicitHeight = 174
     end
   end
   object GB_DetekceZpomalenii: TGroupBox
     Left = 177
     Top = 50
     Width = 165
-    Height = 289
+    Height = 279
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -85,10 +86,11 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
       Left = 2
       Top = 70
       Width = 161
-      Height = 217
+      Height = 207
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
+      ExplicitTop = 80
     end
     object SE_Slow_Speed: TSpinEdit
       Left = 9

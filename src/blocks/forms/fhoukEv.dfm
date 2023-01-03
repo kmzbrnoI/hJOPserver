@@ -3,7 +3,7 @@ object F_HoukEv: TF_HoukEv
   Top = 0
   BorderStyle = bsNone
   Caption = 'F_HoukEv'
-  ClientHeight = 265
+  ClientHeight = 271
   ClientWidth = 161
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -43,12 +43,13 @@ object F_HoukEv: TF_HoukEv
   end
   object P_Ev: TPanel
     Left = 0
-    Top = 96
+    Top = 107
     Width = 161
-    Height = 169
+    Height = 164
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitTop = 102
   end
   object CB_Func: TComboBox
     Left = 8

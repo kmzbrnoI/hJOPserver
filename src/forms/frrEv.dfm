@@ -3,7 +3,7 @@ object F_RREv: TF_RREv
   Top = 0
   BorderStyle = bsNone
   Caption = 'F_RREv'
-  ClientHeight = 213
+  ClientHeight = 205
   ClientWidth = 161
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,14 +18,14 @@ object F_RREv: TF_RREv
   TextHeight = 13
   object Label1: TLabel
     Left = 8
-    Top = 8
+    Top = 3
     Width = 62
     Height = 13
     Caption = 'Typ ud'#225'losti:'
   end
   object GB_Time: TGroupBox
     Left = 8
-    Top = 95
+    Top = 90
     Width = 145
     Height = 110
     Caption = ' '#268'as '
@@ -63,7 +63,7 @@ object F_RREv: TF_RREv
   end
   object GB_Track: TGroupBox
     Left = 8
-    Top = 95
+    Top = 90
     Width = 145
     Height = 110
     Caption = ' '#218'sek '
@@ -109,7 +109,7 @@ object F_RREv: TF_RREv
   end
   object GB_IR: TGroupBox
     Left = 8
-    Top = 95
+    Top = 90
     Width = 145
     Height = 110
     Caption = ' IR '#269'idlo '
@@ -150,7 +150,7 @@ object F_RREv: TF_RREv
   end
   object CB_Type: TComboBox
     Left = 8
-    Top = 24
+    Top = 19
     Width = 145
     Height = 21
     Style = csDropDownList
@@ -163,7 +163,7 @@ object F_RREv: TF_RREv
   end
   object CB_Track: TComboBox
     Left = 8
-    Top = 68
+    Top = 63
     Width = 145
     Height = 21
     Style = csDropDownList
@@ -172,7 +172,7 @@ object F_RREv: TF_RREv
   end
   object CHB_Track: TCheckBox
     Left = 8
-    Top = 51
+    Top = 46
     Width = 97
     Height = 17
     Caption = 'Odli'#353'n'#253' '#250'sek'

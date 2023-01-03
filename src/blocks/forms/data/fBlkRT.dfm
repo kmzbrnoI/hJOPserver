@@ -4,7 +4,7 @@ object F_BlkRT: TF_BlkRT
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (tratovy usek)'
-  ClientHeight = 598
+  ClientHeight = 640
   ClientWidth = 697
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -77,7 +77,7 @@ object F_BlkRT: TF_BlkRT
   end
   object B_OK: TButton
     Left = 615
-    Top = 564
+    Top = 608
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -91,7 +91,7 @@ object F_BlkRT: TF_BlkRT
   end
   object B_Storno: TButton
     Left = 536
-    Top = 564
+    Top = 608
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -391,7 +391,7 @@ object F_BlkRT: TF_BlkRT
     Left = 324
     Top = 126
     Width = 365
-    Height = 433
+    Height = 464
     Caption = ' Zast'#225'vka '
     TabOrder = 8
     object Label5: TLabel
@@ -463,8 +463,8 @@ object F_BlkRT: TF_BlkRT
       Left = 2
       Top = 149
       Width = 361
-      Height = 282
-      ActivePage = TS_Zast_lichy
+      Height = 313
+      ActivePage = TS_Zast_sudy
       Align = alBottom
       TabOrder = 5
       object TS_Zast_lichy: TTabSheet
