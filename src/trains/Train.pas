@@ -487,7 +487,7 @@ begin
  if (train.Contains('station')) then
    Self.data.area := Areas.Get(train.S['station']);
  if (train.Contains('front')) then
-   Blocks.GetBlkByID(train['front'], TBlk(Self.data.front));
+   TBlk(Self.data.front) := Blocks.GetBlkByID(train['front']);
 
  if (train.Contains('areaFrom')) then
    Self.data.areaFrom := Areas.Get(train.S['areaFrom']);
@@ -866,10 +866,8 @@ begin
 end;
 
 procedure TTrain.UpdateFront();
-var blk: TBlk;
 begin
- Blocks.GetBlkByID(Self.filefront, blk);
- Self.front := blk;
+ Self.front := Blocks.GetBlkTrackOrRTByID(Self.filefront);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1179,8 +1177,6 @@ end;
 function TTrain.PredictedSignal(): TBlk;
 var frontblk: TBlkTrack;
     signal: TBlkSignal;
-    jc: TJC;
-    tu: TBlkRT;
 begin
  frontblk := Self.front as TBlkTrack;
  if (frontblk = nil) then
@@ -1189,6 +1185,7 @@ begin
  if (frontblk.typ = btRT) then
    Exit(TBlkRT(frontblk).nextSignal);
 
+ signal := nil;
  case (Self.direction) of
    THVSite.odd: signal := frontblk.signalL as TBlkSignal;
    THVSite.even: signal := frontblk.signalS as TBlkSignal;
@@ -1197,24 +1194,21 @@ begin
  if ((signal <> nil) and (signal.SymbolType = TBlkSignalSymbol.main)) then
    Exit(signal);
 
- jc := JCDb.FindActiveJCWithTrack(frontblk.id);
+ var jc := JCDb.FindActiveJCWithTrack(frontblk.id);
  if (jc = nil) then
    Exit(nil);
 
  case (jc.data.nextSignalType) of
   TJCNextSignalType.no: Exit(nil);
   TJCNextSignalType.railway: begin
-    Blocks.GetBlkByID(jc.data.tracks[jc.data.tracks.Count-1], TBlk(frontblk));
-    if (frontblk <> nil) and (frontblk.typ = btRT) then
-     begin
-      tu := TBlkRT(frontblk);
-      Exit(tu.nextSignal);
-     end else
+    var rt: TBlkRT := Blocks.GetBlkRTByID(jc.data.tracks[jc.data.tracks.Count-1]);
+    if (rt <> nil) then
+      Exit(rt.nextSignal)
+    else
       Exit(nil);
   end;
   TJCNextSignalType.signal: begin
-    Blocks.GetBlkByID(jc.data.nextSignalId, TBlk(signal));
-    Exit(signal);
+    Exit(Blocks.GetBlkSignalByID(jc.data.nextSignalId));
   end;
  end;
 

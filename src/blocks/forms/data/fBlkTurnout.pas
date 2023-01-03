@@ -223,9 +223,8 @@ begin
   Self.CHB_Coupling.Checked := (settings.coupling > -1);
   Self.CHB_CouplingClick(Self.CHB_Coupling);
 
-  var turnout: TBlkTurnout;
-  Blocks.GetBlkByID(settings.coupling, TBlk(turnout));
-  if ((turnout <> nil) and (turnout.typ = btTurnout)) then
+  var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(settings.coupling);
+  if (turnout <> nil) then
   begin
     var turnoutSettings := turnout.GetSettings();
 
@@ -583,9 +582,8 @@ begin
   begin
     settings.coupling := Self.CB_CouplingIds[Self.CB_Coupling.ItemIndex];
 
-    var turnout: TBlkTurnout;
-    Blocks.GetBlkByID(settings.coupling, TBlk(turnout));
-    if ((Self.block = nil) or (Self.block.typ <> btTurnout)) then
+    var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(settings.coupling);
+    if (turnout = nil) then
     begin
       Application.MessageBox('Blok spojky neexistuje nebo není výhybka', 'Chyba', MB_OK OR MB_ICONWARNING);
       Exit();

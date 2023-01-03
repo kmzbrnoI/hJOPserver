@@ -231,7 +231,7 @@ type
     function FourtyKmph(): Boolean;
     class function AddOpak(code: TBlkSignalCode): TBlkSignalCode;
 
-    function GetTrain(usek: TBlk = nil): TTrain;
+    function GetTrain(track: TBlk = nil): TTrain;
     procedure PropagatePOdjToRailway();
 
     class function SignalToString(code: TBlkSignalCode): string;
@@ -1010,8 +1010,7 @@ begin
   try
     for var blkId: Integer in Self.m_state.toRnz.Keys do
     begin
-      var blk: TBlk;
-      Blocks.GetBlkByID(blkId, blk);
+      var blk: TBlk := Blocks.GetBlkByID(blkId);
       if (blk <> nil) then
         conditions.Add(CSCondition(blk, 'Rušení NZ'));
     end;
@@ -1039,14 +1038,10 @@ begin
   try
     if (Self.m_settings.events[0].stop.typ = TRREvType.rrtIR) then
     begin
-      var blk: TBlk;
-      Blocks.GetBlkByID(Self.m_settings.events[0].stop.data.irId, blk);
-      if ((blk = nil) or (blk.typ <> btIR)) then
+      var ir: TBlkIR := Blocks.GetBlkIrByID(Self.m_settings.events[0].stop.data.irId);
+      if (ir = nil) then
         Exit();
-      if (enabled) then
-        RCSi.SetInput(TBlkIR(blk).GetSettings().RCSAddrs[0].board, TBlkIR(Blk).GetSettings().RCSAddrs[0].port, 1)
-      else
-        RCSi.SetInput(TBlkIR(blk).GetSettings().RCSAddrs[0].board, TBlkIR(Blk).GetSettings().RCSAddrs[0].port, 0);
+      RCSi.SetInput(ir.GetSettings().RCSAddrs[0], ite(enabled, 1, 0));
     end;
   except
     PanelServer.BottomError(SenderPnl, 'Nepodařilo se nastavit stav IR čidla!', TArea(SenderOR).ShortName, 'SIMULACE');
@@ -1171,7 +1166,6 @@ end;
 
 // vytvoreni menu pro konkretni s-com:
 function TBlkSignal.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
-var Blk: TBlk;
 begin
   Result := inherited;
 
@@ -1263,10 +1257,10 @@ begin
 
     if ((Self.m_settings.events.Count > 0) and (Self.m_settings.events[0].stop.typ = TRREvType.rrtIR)) then
     begin
-      Blocks.GetBlkByID(Self.m_settings.events[0].stop.data.irId, Blk);
-      if ((Blk <> nil) and (Blk.typ = btIR)) then
+      var ir := Blocks.GetBlkIrByID(Self.m_settings.events[0].stop.data.irId);
+      if (ir <> nil) then
       begin
-        case (TBlkIR(Blk).occupied) of
+        case (ir.occupied) of
           TIROccupationState.Free:
             Result := Result + '*IR>,';
           TIROccupationState.occupied:
@@ -1515,11 +1509,9 @@ begin
         case (Self.dnJC.data.nextSignalType) of
           TJCNextSignalType.signal:
             begin
-              var signal: TBlk;
-              Blocks.GetBlkByID(Self.dnJC.data.nextSignalId, signal);
+              var signal := Blocks.GetBlkSignalByID(Self.dnJC.data.nextSignalId);
 
-              if ((signal <> nil) and (signal.typ = btSignal) and (TBlkSignal(signal).IsGoSignal()) and
-                (not Train.IsPOdj(Self.dnJC.lastTrack))) then
+              if ((signal <> nil) and (signal.IsGoSignal()) and (not Train.IsPOdj(Self.dnJC.lastTrack))) then
               begin
                 // na konci JC budeme stat
                 var speed: Cardinal;
@@ -1769,9 +1761,8 @@ begin
 
   for var blkId: Integer in toRnz.Keys do
   begin
-    var blk: TBlk;
-    Blocks.GetBlkByID(blkId, Blk);
-    if (Blk = nil) then
+    var blk := Blocks.GetBlkByID(blkId);
+    if (blk = nil) then
       continue;
 
     case (Blk.typ) of
@@ -1885,15 +1876,15 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkSignal.GetTrain(usek: TBlk = nil): TTrain;
+function TBlkSignal.GetTrain(track: TBlk = nil): TTrain;
 begin
-  if (usek = nil) then
-    Blocks.GetBlkByID(Self.trackId, usek);
+  if (track = nil) then
+    track := Blocks.GetBlkTrackOrRTByID(Self.trackId);
 
   if (Self.direction = THVSite.odd) then
-    Result := TBlkTrack(usek).trainSudy
+    Result := TBlkTrack(track).trainSudy
   else
-    Result := TBlkTrack(usek).trainL;
+    Result := TBlkTrack(track).trainL;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1913,25 +1904,20 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSignal.PropagatePOdjToRailway();
-var Train: TTrain;
-  railway: TBlk;
+var train: TTrain;
 begin
-  Train := Self.GetTrain();
-  if (Train = nil) then
+  train := Self.GetTrain();
+  if (train = nil) then
   begin
-    Train := TBlkTrack(Self.track).trainPredict;
-    if (Train = nil) then
+    train := TBlkTrack(Self.track).trainPredict;
+    if (train = nil) then
       Exit();
   end;
 
-  if (Self.dnJC = nil) then
+  if ((Self.dnJC = nil) or (Self.dnJC.data.railwayId = -1)) then
     Exit();
-  if (Self.dnJC.data.railwayId = -1) then
-    Exit();
-  Blocks.GetBlkByID(Self.dnJC.data.railwayId, railway);
-  if (TBlkRailway(railway).trainPredict = nil) then
-    Exit();
-  if (TBlkRailway(railway).trainPredict.Train <> Train) then
+  var railway := Blocks.GetBlkRailwayByID(Self.dnJC.data.railwayId);
+  if ((railway = nil) or (railway.trainPredict = nil) or (railway.trainPredict.Train <> Train)) then
     Exit();
 
   if (Train.IsPOdj(Self.track)) then

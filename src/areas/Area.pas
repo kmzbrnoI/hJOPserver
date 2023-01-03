@@ -1058,8 +1058,7 @@ begin
 
         if (JC <> nil) then
         begin
-          var signal: TBlkSignal;
-          Blocks.GetBlkByID(JC.data.signalId, TBlk(signal));
+          var signal: TBlkSignal := Blocks.GetBlkSignalByID(JC.data.signalId);
           if ((signal.signal > ncStuj) and (signal.DNjc = JC)) then
             PanelServer.BottomError(JC.state.SenderPnl, 'Chyba povolovací návěsti ' + signal.name, Self.shortName,
               'TECHNOLOGIE');
@@ -1694,15 +1693,14 @@ begin
   else if (str[2] = 'U-PLEASE') then
   begin
     try
-      var blk: TBlk;
-      Blocks.GetBlkByID(StrToInt(str[3]), blk);
-      if ((blk = nil) or ((blk.typ <> btTrack) and (blk.typ <> btRT))) then
+      var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(StrToInt(str[3]));
+      if (track = nil) then
       begin
         Self.SendLn(Sender, 'LOK-REQ;U-ERR;Neplatný blok');
         Exit();
       end;
 
-      if (not(blk as TBlkTrack).IsTrain()) then
+      if (not track.IsTrain()) then
       begin
         Self.SendLn(Sender, 'LOK-REQ;U-ERR;Žádná souprava na bloku');
         Exit();
@@ -1712,7 +1710,7 @@ begin
       if (str.Count > 4) then
       begin
         traini := StrToIntDef(str[4], -1);
-        if ((traini < -1) or (traini >= (blk as TBlkTrack).Trains.Count)) then
+        if ((traini < -1) or (traini >= track.Trains.Count)) then
         begin
           Self.SendLn(Sender, 'LOK-REQ;U-ERR;Tato souprava na úseku neexistuje');
           Exit();
@@ -1724,12 +1722,12 @@ begin
       if (traini = -1) then
       begin
         // vsechny soupravy na useku
-        for var j: Integer := 0 to (blk as TBlkTrack).Trains.Count - 1 do
-          for var addr: Integer in Trains[(blk as TBlkTrack).Trains[j]].HVs do
+        for var j: Integer := 0 to track.Trains.Count - 1 do
+          for var addr: Integer in Trains[track.Trains[j]].HVs do
             line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end else begin
         // konkretni souprava
-        for var addr: Integer in Trains[(Blk as TBlkTrack).Trains[traini]].HVs do
+        for var addr: Integer in Trains[track.Trains[traini]].HVs do
           line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end;
 

@@ -19,7 +19,7 @@ type
 
   TRailwaySimulator = class
   private
-    procedure UpdateTrat(Trat: TBlkRailway);
+    procedure Update(railway: TBlkRailway);
 
   public
     timer: TTimer;
@@ -83,8 +83,6 @@ begin
 end;
 
 procedure TJCSimulator.UpdateJC(JC: TJC);
-var Blk, signal: TBlk;
-  trackSettings: TBlkTrackSettings;
 begin
   try
     if (JC.state.destroyBlock < 0) then
@@ -93,12 +91,12 @@ begin
     if (((JC.state.destroyBlock = 1) or (JC.state.destroyBlock >= JC.data.tracks.Count)) and
       (JC.state.destroyEndBlock = -1)) then
     begin
-      Blocks.GetBlkByID(JC.data.signalId, signal);
-      Blocks.GetBlkByID((signal as TBlkSignal).trackId, Blk);
+      var signal := Blocks.GetBlkSignalByID(JC.data.signalId);
+      var track := Blocks.GetBlkTrackOrRTByID(signal.trackId);
 
-      if ((Blk as TBlkTrack).occupied = TTrackState.occupied) then
+      if (track.occupied = TTrackState.occupied) then
       begin
-        trackSettings := (Blk as TBlkTrack).GetSettings();
+        var trackSettings := track.GetSettings();
         RCSi.SetInputs(trackSettings.RCSAddrs, 0);
         Exit();
       end;
@@ -111,16 +109,16 @@ begin
         Exit();
 
       // uvolnit RozpadRuseniBlok
-      Blocks.GetBlkByID(JC.data.tracks[JC.state.destroyEndBlock], Blk);
-      trackSettings := (Blk as TBlkTrack).GetSettings();
+      var track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.state.destroyEndBlock]);
+      var trackSettings := track.GetSettings();
       RCSi.SetInputs(trackSettings.RCSAddrs, 0);
     end else begin
       // obsadit RozpadBlok
       if (JC.state.destroyBlock >= JC.data.tracks.Count) then
         Exit();
 
-      Blocks.GetBlkByID(JC.data.tracks[JC.state.destroyBlock], Blk);
-      trackSettings := (Blk as TBlkTrack).GetSettings();
+      var track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.state.destroyBlock]);
+      var trackSettings := track.GetSettings();
       if (trackSettings.RCSAddrs.Count > 0) then
         RCSi.SetInput(trackSettings.RCSAddrs[0].board, trackSettings.RCSAddrs[0].port, 1);
     end; // else
@@ -151,46 +149,43 @@ begin
 end;
 
 procedure TRailwaySimulator.OnTimer(Sender: TObject);
-var Blk: TBlk;
 begin
   if ((not GetFunctions.GetSystemStart()) or (not RCSi.Simulation)) then
     Exit();
 
-  for Blk in Blocks do
+  for var blk: TBlk in Blocks do
   begin
-    if (Blk.typ <> btRailway) then
+    if (blk.typ <> btRailway) then
       continue;
-    if (((Blk as TBlkRailway).BP) and ((Blk as TBlkRailway).occupied) and
-      ((TBlkRailway(Blk).direction = TRailwayDirection.AtoB) or (TBlkRailway(Blk).direction = TRailwayDirection.BtoA)))
+    if (((blk as TBlkRailway).BP) and ((blk as TBlkRailway).occupied) and
+      ((TBlkRailway(blk).direction = TRailwayDirection.AtoB) or (TBlkRailway(blk).direction = TRailwayDirection.BtoA)))
     then
-      Self.UpdateTrat(Blk as TBlkRailway);
+      Self.Update(blk as TBlkRailway);
   end;
 end;
 
-procedure TRailwaySimulator.UpdateTrat(Trat: TBlkRailway);
-var rt: TBlkRT;
-  railwaySettings: TBlkRailwaySettings;
-  i: Integer;
+procedure TRailwaySimulator.Update(railway: TBlkRailway);
+var railwaySettings: TBlkRailwaySettings;
 begin
   try
-    railwaySettings := Trat.GetSettings();
+    railwaySettings := railway.GetSettings();
 
     // mazani soupravy vzadu
-    for i := 0 to railwaySettings.trackIds.Count - 1 do
+    for var i := 0 to railwaySettings.trackIds.Count - 1 do
     begin
-      Blocks.GetBlkByID(railwaySettings.trackIds[i], TBlk(rt));
+      var rt := TBlkRT(Blocks.GetBlkByID(railwaySettings.trackIds[i]));
       if ((rt.bpInBlk) and (rt.prevRT <> nil) and (rt.prevRT.occupied = TTrackState.occupied) and
         (rt.prevRT.train = rt.train)) then
       begin
         RCSi.SetInput(TBlkTrack(rt.prevRT).GetSettings().RCSAddrs[0], 0);
         Exit();
       end;
-    end; // for i
+    end;
 
     // predavani soupravy dopredu
-    for i := 0 to railwaySettings.trackIds.Count - 1 do
+    for var i := 0 to railwaySettings.trackIds.Count - 1 do
     begin
-      Blocks.GetBlkByID(railwaySettings.trackIds[i], TBlk(rt));
+      var rt := TBlkRT(Blocks.GetBlkByID(railwaySettings.trackIds[i]));
       if ((rt.occupied = TTrackState.occupied) and (rt.bpInBlk) and (rt.nextRT <> nil) and
         (rt.nextRT.occupied = TTrackState.free) and ((rt.nextRT.signalCover = nil) or
         (TBlkSignal(rt.nextRT.signalCover).signal > ncStuj))) then
@@ -198,7 +193,7 @@ begin
         RCSi.SetInput(TBlkTrack(rt.nextRT).GetSettings().RCSAddrs[0], 1);
         Exit();
       end;
-    end; // for i
+    end;
   except
 
   end;

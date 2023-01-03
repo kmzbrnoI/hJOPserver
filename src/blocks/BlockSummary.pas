@@ -163,15 +163,13 @@ end;
 
 // vytvoreni menu pro potreby konkretniho bloku:
 function TBlkSummary.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
-var prjid: Integer;
-  crossing: TBlk;
 begin
   Result := inherited;
 
-  for prjid in Self.m_settings.crossings do
+  for var crosid in Self.m_settings.crossings do
   begin
-    Blocks.GetBlkByID(prjid, crossing);
-    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+    var crossing := Blocks.GetBlkCrossingByID(crosid);
+    if (crossing <> nil) then
       Result := Result + crossing.name + ','
     else
       Result := Result + '#???,';
@@ -190,15 +188,14 @@ end;
 
 // toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
 procedure TBlkSummary.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
-var crossing: TBlk;
 begin
   if (not Self.enabled) then
     Exit();
 
   if ((itemindex - 2 >= 0) and (itemindex - 2 < Self.m_settings.crossings.Count)) then
   begin
-    Blocks.GetBlkByID(Self.m_settings.crossings[itemindex - 2], crossing);
-    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
+    var crossing := Blocks.GetBlkCrossingByID(Self.m_settings.crossings[itemindex - 2]);
+    if (crossing <> nil) then
       PanelServer.Menu(SenderPnl, crossing, SenderOR as TArea, crossing.ShowPanelMenu(SenderPnl, SenderOR,
         TAreaRights.write));
   end;
@@ -211,8 +208,7 @@ begin
   Result := true;
   for var crossingid: Integer in Self.m_settings.crossings do
   begin
-    var crossing: TBlk;
-    Blocks.GetBlkByID(crossingid, crossing);
+    var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingid);
     if ((crossing <> nil) and (crossing.typ = btCrossing)) then
     begin
       if (TBlkCrossing(crossing).state = TBlkCrossingBasicState.disabled) then
@@ -228,10 +224,9 @@ begin
   Result := false;
   for var crossingid: Integer in Self.m_settings.crossings do
   begin
-    var crossing: TBlk;
-    Blocks.GetBlkByID(crossingid, crossing);
-    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
-      if (TBlkCrossing(crossing).annulation) then
+    var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingid);
+    if (crossing <> nil) then
+      if (crossing.annulation) then
         Exit(true);
   end;
 end;
@@ -241,10 +236,9 @@ begin
   Result := false;
   for var crossingid: Integer in Self.m_settings.crossings do
   begin
-    var crossing: TBlk;
-    Blocks.GetBlkByID(crossingid, crossing);
-    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
-      if (TBlkCrossing(crossing).pcClosed) then
+    var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingid);
+    if (crossing <> nil) then
+      if (crossing.pcClosed) then
         Exit(true);
   end;
 end;
@@ -254,10 +248,9 @@ begin
   Result := false;
   for var crossingid: Integer in Self.m_settings.crossings do
   begin
-    var crossing: TBlk;
-    Blocks.GetBlkByID(crossingid, crossing);
-    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
-      if (TBlkCrossing(crossing).state = TBlkCrossingBasicState.closed) then
+    var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingid);
+    if (crossing <> nil) then
+      if (crossing.state = TBlkCrossingBasicState.closed) then
         Exit(true);
   end;
 end;
@@ -267,10 +260,9 @@ begin
   Result := false;
   for var crossingid: Integer in Self.m_settings.crossings do
   begin
-    var crossing: TBlk;
-    Blocks.GetBlkByID(crossingid, crossing);
-    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
-      if (TBlkCrossing(crossing).state = TBlkCrossingBasicState.none) then
+    var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingid);
+    if (crossing <> nil) then
+      if (crossing.state = TBlkCrossingBasicState.none) then
         Exit(true);
   end;
 end;
@@ -280,10 +272,9 @@ begin
   Result := false;
   for var crossingid: Integer in Self.m_settings.crossings do
   begin
-    var crossing: TBlk;
-    Blocks.GetBlkByID(crossingid, crossing);
-    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
-      if (TBlkCrossing(crossing).pcEmOpen) then
+    var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingid);
+    if (crossing <> nil) then
+      if (crossing.pcEmOpen) then
         Exit(true);
   end;
 end;
@@ -294,10 +285,9 @@ procedure TBlkSummary.CreateReferences();
 begin
   for var crossingid: Integer in Self.m_settings.crossings do
   begin
-    var crossing: TBlk;
-    Blocks.GetBlkByID(crossingid, crossing);
-    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
-      TBlkCrossing(crossing).AddSH(Self);
+    var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingid);
+    if (crossing <> nil) then
+      crossing.AddSH(Self);
   end;
 end;
 
@@ -305,10 +295,9 @@ procedure TBlkSummary.RemoveReferences();
 begin
   for var crossingid: Integer in Self.m_settings.crossings do
   begin
-    var crossing: TBlk;
-    Blocks.GetBlkByID(crossingid, crossing);
-    if ((crossing <> nil) and (crossing.typ = btCrossing)) then
-      TBlkCrossing(crossing).RemoveSH(Self);
+    var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingid);
+    if (crossing <> nil) then
+      crossing.RemoveSH(Self);
   end;
 end;
 

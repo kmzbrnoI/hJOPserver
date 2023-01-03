@@ -454,8 +454,7 @@ begin
       begin
         for var _trackId: Integer in TBlkRailway(railway).GetSettings().trackIds do
         begin
-          var railwayTrack: TBlk;
-          Blocks.GetBlkByID(_trackId, railwayTrack);
+          var railwayTrack: TBlk := Blocks.GetBlkByID(_trackId);
           if ((railwayTrack <> nil) and (railwayTrack.typ = btRT)) then
             if ((TBlkRT(railwayTrack).signalCover = nil) and (railwayTrack.id = trackId)) then
               Exit(JC);
@@ -520,9 +519,6 @@ end;
 // Jakmile dojde k nastaveni navestidla na ceste JC, tady se zkontroluje, zda-li
 // se nahodou nema nejake navestidlo pred cestou JC rozsvitit jinak.
 procedure TJCDb.UpdatePrevSignal(signal: TBlkSignal);
-var
-  prevSignal: TBlkSignal;
-  code: TBlkSignalCode;
 begin
   for var JC: TJC in Self.JCs do
   begin
@@ -530,13 +526,14 @@ begin
       (JC.data.nextSignalId <> signal.id) or (not JC.active)) then
       continue;
 
-    Blocks.GetBlkByID(JC.data.signalId, TBlk(prevSignal));
+    var prevSignal := Blocks.GetBlkSignalByID(JC.data.signalId);
 
     if (not prevSignal.IsGoSignal()) then
       continue;
     if (prevSignal.changing) then
       continue;
 
+    var code: TBlkSignalCode := ncStuj;
     if ((signal.IsGoSignal()) and (not signal.IsOpakVystraha())) then
     begin
       if (JC.data.turn) then
@@ -572,8 +569,7 @@ end;
 
 // rusi cestu, ve ktere je zadany blok
 procedure TJCDb.Cancel(blk: TBlk);
-var tmpblk: TBlk;
-  JCs: TList<TJC>;
+var JCs: TList<TJC>;
 begin
   JCs := TList<TJC>.Create();
   try
@@ -615,13 +611,13 @@ begin
 
     for var JC: TJC in JCs do
     begin
-      Blocks.GetBlkByID(JC.data.signalId, tmpblk);
-      if ((TBlkSignal(tmpblk).DNjc = JC) and
-          ((TBlkSignal(tmpblk).IsGoSignal(TJCType.train) or (TBlkSignal(tmpblk).IsGoSignal(TJCType.shunt))) or (TBlkSignal(tmpblk).ZAM) or
+      var tmpSignal := Blocks.GetBlkSignalByID(JC.data.signalId);
+      if ((tmpSignal <> nil) and (tmpSignal.DNjc = JC) and
+          ((tmpSignal.IsGoSignal(TJCType.train) or (tmpSignal.IsGoSignal(TJCType.shunt))) or (tmpSignal.ZAM) or
           (JC.waitForLastTrackOrRailwayOccupy))) then
       begin
         JC.CancelWithoutTrackRelease();
-        tmpblk.BottomErrorBroadcast('Chyba povolovací návěsti ' + tmpblk.name, 'TECHNOLOGIE');
+        tmpSignal.BottomErrorBroadcast('Chyba povolovací návěsti ' + tmpSignal.name, 'TECHNOLOGIE');
       end;
     end;
   finally
@@ -810,14 +806,9 @@ begin
   begin
     if ((JC.typ = typ) and (JC.data.tracks.Count > 0)) then
     begin
-      var blk: TBlk;
-      Blocks.GetBlkByID(JC.data.tracks[0], blk);
-      if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT))) then
-      begin
-        var track: TBlkTrack := blk as TBlkTrack;
-        if ((track.Zaver = TZaver.no) and (track.occupied = TTrackState.Free)) then
-          Exit(true);
-      end;
+      var track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[0]);
+      if ((track <> nil) and (track.Zaver = TZaver.no) and (track.occupied = TTrackState.Free)) then
+        Exit(true);
     end;
   end;
   Result := false;

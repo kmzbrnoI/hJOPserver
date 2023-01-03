@@ -992,17 +992,11 @@ begin
   // tracks
   for var trackId in Self.m_settings.tracks do
   begin
-    var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackId));
+    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackId);
 
     if (track = nil) then
     begin
       barriers.Add(JCBarrier(barBlockNotExists, nil, trackId));
-      Exit();
-    end;
-
-    if ((track.typ <> btTrack) and (track.typ <> btRT)) then
-    begin
-      barriers.Add(JCBarrier(barBlockWrongType, track, trackId));
       Exit();
     end;
 
@@ -1030,17 +1024,11 @@ begin
   // turnouts
   for var turnoutId in Self.m_settings.turnouts do
   begin
-    var turnout: TBlkTurnout := TBlkturnout(Blocks.GetBlkByID(turnoutId));
+    var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(turnoutId);
 
     if (turnout = nil) then
     begin
       barriers.Add(JCBarrier(barBlockNotExists, nil, turnoutId));
-      Exit();
-    end;
-
-    if (turnout.typ <> btTurnout) then
-    begin
-      barriers.Add(JCBarrier(barBlockWrongType, turnout, turnoutId));
       Exit();
     end;
 
@@ -1090,17 +1078,11 @@ begin
   // refugees
   for var refugeeZav: TPstRefugeeZav in Self.m_settings.refugees do
   begin
-    var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.Block));
+    var refugee: TBlkTurnout := Blocks.GetBlkTurnoutByID(refugeeZav.Block);
 
     if (refugee = nil) then
     begin
       barriers.Add(JCBarrier(barBlockNotExists, nil, refugeeZav.block));
-      Exit();
-    end;
-
-    if (refugee.typ <> btTurnout) then
-    begin
-      barriers.Add(JCBarrier(barBlockWrongType, refugee, refugeeZav.block));
       Exit();
     end;
 
@@ -1167,17 +1149,11 @@ begin
   // signals
   for var signalId in Self.m_settings.signals do
   begin
-    var signal: TBlkSignal := TBlkSignal(Blocks.GetBlkByID(signalId));
+    var signal: TBlkSignal := Blocks.GetBlkSignalByID(signalId);
 
     if (signal = nil) then
     begin
       barriers.Add(JCBarrier(barBlockNotExists, nil, signalId));
-      Exit();
-    end;
-
-    if (signal.typ <> btSignal) then
-    begin
-      barriers.Add(JCBarrier(barBlockWrongType, signal, signalId));
       Exit();
     end;
 
@@ -1195,17 +1171,11 @@ begin
   // disconnectors
   for var discId in Self.m_settings.disconnectors do
   begin
-    var disc: TBlkDisconnector := TBlkDisconnector(Blocks.GetBlkByID(discId));
+    var disc: TBlkDisconnector := Blocks.GetBlkDisconnectorByID(discId);
 
     if (disc = nil) then
     begin
       barriers.Add(JCBarrier(barBlockNotExists, nil, discId));
-      Exit();
-    end;
-
-    if (disc.typ <> btDisconnector) then
-    begin
-      barriers.Add(JCBarrier(barBlockWrongType, disc, discId));
       Exit();
     end;
 

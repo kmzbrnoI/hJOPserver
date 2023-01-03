@@ -91,10 +91,10 @@ begin
   if ((Self.trackEnabled) and (Self.CB_Track.ItemIndex > -1)) then
   begin
     var blkId := Self.CB_TrackIds[Self.CB_Track.ItemIndex];
-    var blk: TBlk := Blocks.GetBlkById(blkId);
-    if ((blk = nil) or ((blk.typ <> btTrack) and (blk.typ <> btRT))) then
+    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(blkId);
+    if (track = nil) then
       Exit();
-    var blkTrackSettings := TBlkTrack(blk).GetSettings();
+    var blkTrackSettings := track.GetSettings();
 
     for var i: Integer := 0 to 3 do
       if (blkTrackSettings.RCSAddrs.Count > i) then

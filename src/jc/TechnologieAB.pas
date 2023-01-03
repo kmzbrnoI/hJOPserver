@@ -76,10 +76,9 @@ begin
 
   for var trackId: Integer in jc.data.tracks do
   begin
-    var track: TBlk;
-    Blocks.GetBlkByID(trackId, TBlk(track));
-    if ((track <> nil) and ((track.typ = btTrack) or (track.typ = btRT)) and (TBlkTrack(track).Zaver = TZaver.ab)) then
-      TBlkTrack(track).Zaver := TZaver.no;
+    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackId);
+    if ((track <> nil) and (track.zaver = TZaver.ab)) then
+      track.zaver := TZaver.no;
   end;
 
   var i: Integer := Self.JCs.IndexOf(jc);
@@ -114,12 +113,11 @@ begin
 
     Log('DN JC ' + jc.name + ' : podmínky splněny, stavím', ltStack);
 
-    var blk: TBlk;
-    Blocks.GetBlkByID(jc.data.signalId, blk);
-    if ((blk = nil) or (blk.typ <> btSignal) or (TBlkSignal(blk).areas.Count = 0)) then
+    var signal: TBlkSignal := Blocks.GetBlkSignalByID(jc.data.signalId);
+    if ((signal = nil) or (signal.areas.Count = 0)) then
       Self.Remove(jc);
 
-    jc.Activate(nil, TBlkSignal(blk).areas[0], nil, false, true);
+    jc.Activate(nil, signal.areas[0], nil, false, true);
   finally
     barriers.Free();
   end;

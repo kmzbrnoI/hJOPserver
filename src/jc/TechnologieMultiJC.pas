@@ -254,27 +254,29 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TMultiJC.CancelActivation();
-var JC: TJC;
-  Blk: TBlk;
 begin
   Self.m_state.JCIndex := -1;
   Self.activatingJC := nil;
 
   // zrusime zacatek staveni na navestidle
-  JC := JCDb.GetJCByID(Self.m_data.JCs[0]);
-  Blocks.GetBlkByID(JC.data.signalId, Blk);
-  (Blk as TBlkSignal).selected := TBlkSignalSelection.none;
+  begin
+    var JC := JCDb.GetJCByID(Self.m_data.JCs[0]);
+    var signal := Blocks.GetBlkSignalByID(JC.data.signalId);
+    signal.selected := TBlkSignalSelection.none;
+  end;
 
   // zrusime konec staveni na poslednim useku posledni JC
-  JC := JCDb.GetJCByID(Self.m_data.JCs[Self.m_data.JCs.Count - 1]);
-  Blocks.GetBlkByID(JC.data.tracks[JC.data.tracks.Count - 1], Blk);
-  (Blk as TBlkTrack).jcEnd := TZaver.no;
+  begin
+    var JC := JCDb.GetJCByID(Self.m_data.JCs[Self.m_data.JCs.Count - 1]);
+    var track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.data.tracks.Count - 1]);
+    track.jcEnd := TZaver.no;
+  end;
 
   // zrusime konec staveni na vsech variantnich bodech
   for var i: Integer := 0 to Self.m_data.vb.Count - 1 do
   begin
-    Blocks.GetBlkByID(Self.m_data.vb[i], Blk);
-    (Blk as TBlkTrack).jcEnd := TZaver.no;
+    var track := Blocks.GetBlkTrackOrRTByID(Self.m_data.vb[i]);
+    track.jcEnd := TZaver.no;
   end;
 
   Self.changed := true;

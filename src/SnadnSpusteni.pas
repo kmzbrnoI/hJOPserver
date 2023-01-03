@@ -93,16 +93,14 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TSS.Update();
-var blk: TBlk;
-  AC: TBlkAC;
 begin
   if ((not Self.config.enabled) or (not RCSi.NoExStarted())) then
     Exit();
 
-  Blocks.GetBlkById(Self.config.AC_id, blk);
+  var blk := Blocks.GetBlkById(Self.config.AC_id);
   if ((blk = nil) or (blk.typ <> btAC)) then
     Exit();
-  AC := TBlkAC(blk);
+  var AC := TBlkAC(blk);
 
   if (not RCSi.IsNonFailedModule(Self.config.RCSAdr)) then
     Exit();

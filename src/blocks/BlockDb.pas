@@ -18,7 +18,8 @@ uses IniFiles, Block, SysUtils, Windows, AreaDb, Area, StdCtrls,
   Generics.Collections, Classes, IdContext, TechnologieRCS,
   JsonDataObjects, Train, System.Math,
   BlockTrack, BlockTurnout, BlockIR, BlockLock, BlockRailway, BlockGroupSignal,
-  BlockLinker, BlockAC, BlockRailwayTrack, BlockPst, BlockSignal, BlockSummary;
+  BlockLinker, BlockAC, BlockRailwayTrack, BlockPst, BlockSignal, BlockSummary,
+  BlockCrossing, BlockDisconnector;
 
 type
   TBlocks = class(TObject)
@@ -59,13 +60,21 @@ type
     procedure Update();
 
     function GetBlkIndex(id: Integer): Integer;
-    function GetBlkByID(id: Integer; var Blk: TBlk; typeAssert1: TBlkType = btAny; typeAssert2: TBlkType = btAny): Integer; overload;
-    function GetBlkByID(id: Integer; typeAssert1: TBlkType = btAny; typeAssert2: TBlkType = btAny): TBlk; overload;
+    function GetBlkByID(id: Integer): TBlk; overload;
     function GetBlkID(index: Integer): Integer;
     function GetBlkName(id: Integer): string;
     function GetBlkIndexName(index: Integer): string;
 
     function GetBlkTrackOrRTByID(id: Integer): TBlkTrack;
+    function GetBlkRTByID(id: Integer): TBlkRT;
+    function GetBlkTurnoutByID(id: Integer): TBlkTurnout;
+    function GetBlkSignalByID(id: Integer): TBlkSignal;
+    function GetBlkCrossingByID(id: Integer): TBlkCrossing;
+    function GetBlkRailwayByID(id: Integer): TBlkRailway;
+    function GetBlkLinkerByID(id: Integer): TBlkLinker;
+    function GetBlkLockByID(id: Integer): TBlkLock;
+    function GetBlkIrByID(id: Integer): TBlkIR;
+    function GetBlkDisconnectorByID(id: Integer): TBlkDisconnector;
 
     function GetBlkTrackTrainMoving(obl: string): TBlk;
 
@@ -88,7 +97,7 @@ type
       const areas: TList<TArea>; blkType: TBlkType; blkType2: TBlkType = btAny; blockId: Integer = -1); overload;
 
     procedure RemoveTrain(Train: TTrain);
-    procedure TrainPrediction(signal: TBlk);
+    procedure TrainPrediction(signal: TBlkSignal);
 
     function GetBlkWithTrain(Train: TTrain): TBlksList;
     function GetTurnoutWithLock(zamekID: Integer): TBlksList;
@@ -128,8 +137,8 @@ var
 
 implementation
 
-uses fMain, BlockCrossing, TJCDatabase, Logging, DataBloky, TrainDb, TechnologieJC,
-  AreaStack, GetSystems, BlockDisconnector, appEv, BlockIO, PTUtils, TechnologieAB,
+uses fMain, TJCDatabase, Logging, DataBloky, TrainDb, TechnologieJC,
+  AreaStack, GetSystems, appEv, BlockIO, PTUtils, TechnologieAB,
   ACBlocks;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -416,13 +425,12 @@ begin
 end;
 
 procedure TBlocks.Delete(index: Integer);
-var tmp, Blk: TBlk;
 begin
   if (index < 0) then
     raise Exception.Create('Index podtekl seznam bloků');
   if (index >= Self.data.count) then
     raise Exception.Create('Index přetekl seznam bloků');
-  tmp := Self.data[index];
+  var tmp := Self.data[index];
   if ((tmp.typ = btRT) and (TBlkRT(tmp).inRailway > -1)) then
     raise Exception.Create('Tento blok je zaveden jako traťový úsek v trati ID ' + IntToStr((tmp as TBlkRT).inRailway));
   if ((tmp.typ = btSignal) and (TBlkSignal(tmp).groupMaster <> nil)) then
@@ -442,8 +450,8 @@ begin
   end;
   if (tmp.typ = btLinker) then
   begin
-    Blocks.GetBlkByID((tmp as TBlkLinker).GetSettings.parent, Blk);
-    if (Blk <> nil) then
+    var blk := Blocks.GetBlkByID((tmp as TBlkLinker).GetSettings.parent);
+    if (blk <> nil) then
       Self.Delete(Blocks.GetBlkIndex((tmp as TBlkLinker).GetSettings.parent));
   end;
 
@@ -543,32 +551,89 @@ begin
   Result := -1;
 end;
 
-function TBlocks.GetBlkByID(id: Integer; var Blk: TBlk; typeAssert1: TBlkType = btAny; typeAssert2: TBlkType = btAny): Integer;
-var index: Integer;
+function TBlocks.GetBlkByID(id: Integer): TBlk;
 begin
-  Blk := nil;
-  index := Self.GetBlkIndex(id);
-  if (index < 0) then
-    Exit(-1);
-  Self.GetBlkByIndex(index, Blk);
-
-  if ((typeAssert1 <> btAny) and (blk.typ <> typeAssert1)) then
-    if ((typeAssert2 = btAny) or (Blk.typ <> typeAssert2)) then
-      Exit(-1);
-
-  Result := 0;
-end;
-
-function TBlocks.GetBlkByID(id: Integer; typeAssert1: TBlkType = btAny; typeAssert2: TBlkType = btAny): TBlk;
-var blk: TBlk;
-begin
- Self.GetBlkByID(id, blk);
- Result := blk;
+  Self.GetBlkByIndex(Self.GetBlkIndex(id), Result);
 end;
 
 function TBlocks.GetBlkTrackOrRTByID(id: Integer): TBlkTrack;
 begin
-  Result := TBlkTrack(Self.GetBlkByID(id, btTrack, btRT));
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT))) then
+    Result := TBlkTrack(blk);
+end;
+
+function TBlocks.GetBlkRTByID(id: Integer): TBlkRT;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btRT)) then
+    Result := TBlkRT(blk);
+end;
+
+function TBlocks.GetBlkTurnoutByID(id: Integer): TBlkTurnout;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btTurnout)) then
+    Result := TBlkTurnout(blk);
+end;
+
+function TBlocks.GetBlkSignalByID(id: Integer): TBlkSignal;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btSignal)) then
+    Result := TBlkSignal(blk);
+end;
+
+function TBlocks.GetBlkCrossingByID(id: Integer): TBlkCrossing;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btCrossing)) then
+    Result := TBlkCrossing(blk);
+end;
+
+function TBlocks.GetBlkRailwayByID(id: Integer): TBlkRailway;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btRailway)) then
+    Result := TBlkRailway(blk);
+end;
+
+function TBlocks.GetBlkLinkerByID(id: Integer): TBlkLinker;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btLinker)) then
+    Result := TBlkLinker(blk);
+end;
+
+function TBlocks.GetBlkLockByID(id: Integer): TBlkLock;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btLinker)) then
+    Result := TBlkLock(blk);
+end;
+
+function TBlocks.GetBlkIrByID(id: Integer): TBlkIR;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btIr)) then
+    Result := TBlkIR(blk);
+end;
+
+function TBlocks.GetBlkDisconnectorByID(id: Integer): TBlkDisconnector;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btDisconnector)) then
+    Result := TBlkDisconnector(blk);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -611,12 +676,12 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBlocks.GetBlkName(id: Integer): string;
-var Blk: TBlk;
+var blk: TBlk;
 begin
-  Self.GetBlkByID(id, Blk);
-  if (not Assigned(Blk)) then
+  blk := Self.GetBlkByID(id);
+  if (not Assigned(blk)) then
     Exit('## Blok s timto ID neexistuje ##');
-  Result := Blk.name;
+  Result := blk.name;
 end;
 
 function TBlocks.GetBlkIndexName(index: Integer): string;
@@ -797,37 +862,39 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlocks.TrainPrediction(signal: TBlk);
+procedure TBlocks.TrainPrediction(signal: TBlkSignal);
 var track, startTrack: TBlkTrack;
   railway: TBlkRailway;
   Train: TTrain;
   JC: TJC;
 begin
+  track := nil;
+
   try
     // get train on track before signal
-    track := TBlkTrack(TBlkSignal(signal).track);
+    track := TBlkTrack(signal.track);
     startTrack := track;
-    Train := TBlkSignal(signal).GeTTrain(track);
+    Train := signal.GeTTrain(track);
 
-    if (TBlkSignal(signal).IsGoSignal()) then
+    if (signal.IsGoSignal()) then
     begin
-      if ((not track.IsTrain()) or (Train.direction <> TBlkSignal(signal).direction)) then
+      if ((not track.IsTrain()) or (Train.direction <> signal.direction)) then
         Train := track.trainPredict
     end
     else
       Train := nil;
-    JC := TBlkSignal(signal).DNjc;
+    JC := signal.DNjc;
 
     // predict while paths exist
     while ((JC <> nil) and (JC.typ = TJCType.Train) and (JC.state.destroyBlock <= 0)) do
     begin
       // signal is go?
-      Blocks.GetBlkByID(JC.data.signalId, signal);
-      if ((signal = nil) or (signal.typ <> btSignal) or (not TBlkSignal(signal).IsGoSignal())) then
+      signal := Blocks.GetBlkSignalByID(JC.data.signalId);
+      if ((signal = nil) or (not signal.IsGoSignal())) then
         Train := nil;
 
       // get last track of the path
-      Blocks.GetBlkByID(JC.data.tracks[JC.data.tracks.count - 1], TBlk(track));
+      track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.data.tracks.count - 1]);
 
       if (track = startTrack) then
         Exit();
@@ -835,7 +902,7 @@ begin
       if ((track.typ = btRT) and (TBlkRT(track).inRailway > -1)) then
       begin
         // last track in railway -> continue on the other side of railway
-        Blocks.GetBlkByID(TBlkRT(track).inRailway, TBlk(railway));
+        railway := Blocks.GetBlkRailwayByID(TBlkRT(track).inRailway);
         if (Train <> nil) then
         begin
           if ((railway.trainPredict = nil) or (railway.trainPredict.Train <> Train)) then
@@ -852,9 +919,9 @@ begin
 
         case (railway.direction) of
           TRailwayDirection.AtoB:
-            Blocks.GetBlkByID(railway.GetSettings().trackIds[railway.GetSettings().trackIds.count - 1], TBlk(track));
+            track := Blocks.GetBlkTrackOrRTByID(railway.GetSettings().trackIds[railway.GetSettings().trackIds.count - 1]);
           TRailwayDirection.BtoA:
-            Blocks.GetBlkByID(railway.GetSettings().trackIds[0], TBlk(track));
+            track := Blocks.GetBlkTrackOrRTByID(railway.GetSettings().trackIds[0]);
         end;
 
         // train was not propagated tot end of railway -> exit (maybe some signal in autoblock locked? etc.)

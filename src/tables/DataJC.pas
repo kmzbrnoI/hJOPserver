@@ -83,9 +83,6 @@ end;
 procedure TJCTableData.UpdateLine(line: Integer);
 var JCData: TJCdata;
   JC: TJC;
-  j: Integer;
-  str: string;
-  Blk: TBlk;
 begin
   JC := JCDb.GetJCByIndex(line);
   JCData := JC.data;
@@ -122,41 +119,47 @@ begin
   end; // else DalsiNNavaznostTyp = 0
 
   // vyhybky
-  str := '';
-  for j := 0 to JCData.turnouts.Count - 1 do
   begin
-    case (JCData.turnouts[j].position) of
-      TTurnoutPosition.plus:
-        str := str + '(' + Blocks.GetBlkName(JCData.turnouts[j].Block) + ', +)';
-      TTurnoutPosition.minus:
-        str := str + '(' + Blocks.GetBlkName(JCData.turnouts[j].Block) + ', -)';
-    end;
-  end; // for j
-  Self.LV.Items[line].SubItems[5] := str;
+    var str: string := '';
+    for var j := 0 to JCData.turnouts.Count - 1 do
+    begin
+      case (JCData.turnouts[j].position) of
+        TTurnoutPosition.plus:
+          str := str + '(' + Blocks.GetBlkName(JCData.turnouts[j].Block) + ', +)';
+        TTurnoutPosition.minus:
+          str := str + '(' + Blocks.GetBlkName(JCData.turnouts[j].Block) + ', -)';
+      end;
+    end; // for j
+    Self.LV.Items[line].SubItems[5] := str;
+  end;
 
   // useky
-  str := '';
-  for j := 0 to JCData.tracks.Count - 1 do
-    str := str + Blocks.GetBlkName(JCData.tracks[j]) + '; ';
-  Self.LV.Items[line].SubItems[6] := LeftStr(str, Length(str) - 2);
+  begin
+    var str: string := '';
+    for var j := 0 to JCData.tracks.Count - 1 do
+      str := str + Blocks.GetBlkName(JCData.tracks[j]) + '; ';
+    Self.LV.Items[line].SubItems[6] := LeftStr(str, Length(str) - 2);
 
-  Self.LV.Items[line].SubItems[9] := TTrainSpeed.DefaultSpeedStr(JCData.speedsGo);
-  Self.LV.Items[line].SubItems[10] := TTrainSpeed.DefaultSpeedStr(JCData.speedsStop);
+    Self.LV.Items[line].SubItems[9] := TTrainSpeed.DefaultSpeedStr(JCData.speedsGo);
+    Self.LV.Items[line].SubItems[10] := TTrainSpeed.DefaultSpeedStr(JCData.speedsStop);
+  end;
 
   // odvraty
-  str := '';
-  for j := 0 to JCData.refuges.Count - 1 do
   begin
-    case (JCData.refuges[j].position) of
-      TTurnoutPosition.plus:
-        str := str + '(' + Blocks.GetBlkName(JCData.refuges[j].Block) + ', +, ' +
-          Blocks.GetBlkName(JCData.refuges[j].ref_blk) + ')';
-      TTurnoutPosition.minus:
-        str := str + '(' + Blocks.GetBlkName(JCData.refuges[j].Block) + ', -, ' +
-          Blocks.GetBlkName(JCData.refuges[j].ref_blk) + ')';
-    end;
-  end; // for j
-  Self.LV.Items[line].SubItems[11] := str;
+    var str: string := '';
+    for var j := 0 to JCData.refuges.Count - 1 do
+    begin
+      case (JCData.refuges[j].position) of
+        TTurnoutPosition.plus:
+          str := str + '(' + Blocks.GetBlkName(JCData.refuges[j].Block) + ', +, ' +
+            Blocks.GetBlkName(JCData.refuges[j].ref_blk) + ')';
+        TTurnoutPosition.minus:
+          str := str + '(' + Blocks.GetBlkName(JCData.refuges[j].Block) + ', -, ' +
+            Blocks.GetBlkName(JCData.refuges[j].ref_blk) + ')';
+      end;
+    end; // for j
+    Self.LV.Items[line].SubItems[11] := str;
+  end;
 
   if (JCData.railwayId > -1) then
     Self.LV.Items[line].SubItems[12] := Blocks.GetBlkName(JCData.railwayId)
@@ -164,34 +167,40 @@ begin
     Self.LV.Items[line].SubItems[12] := '';
 
   // prejezdy
-  str := '';
-  for j := 0 to JCData.crossings.Count - 1 do
-    str := str + Blocks.GetBlkName(JCData.crossings[j].crossingId) + '; ';
-  Self.LV.Items[line].SubItems[13] := LeftStr(str, Length(str) - 2);
+  begin
+    var str: string := '';
+    for var j := 0 to JCData.crossings.Count - 1 do
+      str := str + Blocks.GetBlkName(JCData.crossings[j].crossingId) + '; ';
+    Self.LV.Items[line].SubItems[13] := LeftStr(str, Length(str) - 2);
+  end;
 
   // podminky zamky
-  str := '';
-  for j := 0 to JCData.locks.Count - 1 do
-    str := str + '(' + Blocks.GetBlkName(JCData.locks[j].Block) + ' : ' +
-      Blocks.GetBlkName(JCData.locks[j].ref_blk) + ')';
-  Self.LV.Items[line].SubItems[14] := str;
+  begin
+    var str: string := '';
+    for var j := 0 to JCData.locks.Count - 1 do
+      str := str + '(' + Blocks.GetBlkName(JCData.locks[j].Block) + ' : ' +
+        Blocks.GetBlkName(JCData.locks[j].ref_blk) + ')';
+    Self.LV.Items[line].SubItems[14] := str;
+  end;
 
   // neprofilove useky
-  str := '';
-  for j := 0 to JCData.turnouts.Count - 1 do
   begin
-    Blocks.GetBlkByID(JCData.turnouts[j].Block, Blk);
-    if (Blk <> nil) and (Blk.typ = btTurnout) then
+    var str: string := '';
+    for var j := 0 to JCData.turnouts.Count - 1 do
     begin
-      if ((JCData.turnouts[j].position = TTurnoutPosition.plus) and (TBlkTurnout(Blk).npBlokPlus <> nil)) then
-        str := str + TBlkTurnout(Blk).npBlokPlus.name + ', '
-      else if ((JCData.turnouts[j].position = TTurnoutPosition.minus) and (TBlkTurnout(Blk).npBlokMinus <> nil)) then
-        str := str + TBlkTurnout(Blk).npBlokMinus.name + ', ';
-    end
-    else
-      str := str + '?, ';
+      var blk: TBlkTurnout := Blocks.GetBlkTurnoutByID(JCData.turnouts[j].Block);
+      if (blk <> nil) then
+      begin
+        if ((JCData.turnouts[j].position = TTurnoutPosition.plus) and (blk.npBlokPlus <> nil)) then
+          str := str + blk.npBlokPlus.name + ', '
+        else if ((JCData.turnouts[j].position = TTurnoutPosition.minus) and (blk.npBlokMinus <> nil)) then
+          str := str + blk.npBlokMinus.name + ', ';
+      end
+      else
+        str := str + '?, ';
+    end;
+    Self.LV.Items[line].SubItems[15] := LeftStr(str, Length(str) - 2);
   end;
-  Self.LV.Items[line].SubItems[15] := LeftStr(str, Length(str) - 2);
 
   Self.LV.Items[line].SubItems[16] := ownConvert.BoolToTick(JCData.nzv);
 end;

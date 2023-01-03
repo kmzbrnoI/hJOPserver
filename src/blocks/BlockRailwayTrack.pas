@@ -390,19 +390,22 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkRT.Enable();
-var blk: TBlkSignal;
 begin
   inherited;
   Self.m_rtState.bpError := false;
 
   // Aktiaovovat navestidla rucne, aby se rovnou nastavily navesti v trati
-  Blocks.GetBlkByID(Self.m_rtSettings.signalLid, TBlk(blk));
-  if ((blk <> nil) and (blk.typ = btSignal)) then
-    blk.Enable();
+  begin
+    var signal: TBlkSignal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalLid);
+    if (signal <> nil) then
+      signal.Enable();
+  end;
 
-  Blocks.GetBlkByID(Self.m_rtSettings.signalSid, TBlk(blk));
-  if ((blk <> nil) and (blk.typ = btSignal)) then
-    blk.Enable();
+  begin
+    var signal: TBlkSignal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalSid);
+    if (signal <> nil) then
+      signal.Enable();
+  end;
 
   // do not call UpdateSignals directly, wait for first Update to have all other blocks (railway, signals) initialized
   Self.m_rtState.updateSignals := true;
@@ -420,7 +423,7 @@ procedure TBlkRT.Update();
 begin
   inherited;
 
-  if ((Self.inRailway > -1) and (Self.isStop)) then
+  if ((Self.inRailway > -1) and (Self.occupied = TTrackState.occupied) and (Self.IsTrain()) and (Self.isStop)) then
     Self.StopUpdate();
 
   if (Self.m_rtState.updateSignals) then
@@ -877,7 +880,7 @@ function TBlkRT.GetRailway(): TBlk;
 begin
   if (((Self.m_railway = nil) and (Self.rtState.inRailway <> -1)) or
     ((Self.m_railway <> nil) and (Self.m_railway.id <> Self.rtState.inRailway))) then
-    Blocks.GetBlkByID(Self.rtState.inRailway, Self.m_railway);
+    Self.m_railway := Blocks.GetBlkRailwayByID(Self.rtState.inRailway);
   Result := Self.m_railway;
 end;
 
@@ -901,18 +904,18 @@ begin
 
   if (((Self.m_signalCovering = nil) and (navPrevID <> -1)) or ((Self.m_signalCovering <> nil) and
     (Self.m_signalCovering.id <> navPrevID))) then
-    Blocks.GetBlkByID(navPrevID, Self.m_signalCovering);
+    Self.m_signalCovering := Blocks.GetBlkSignalByID(navPrevID);
   Result := Self.m_signalCovering;
 end;
 
 function TBlkRT.GetSignalCoverL(): TBlk;
 begin
-  Blocks.GetBlkByID(Self.m_rtSettings.signalLid, Result);
+  Result := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalLid);
 end;
 
 function TBlkRT.GetSignalCoverS(): TBlk;
 begin
-  Blocks.GetBlkByID(Self.m_rtSettings.signalSid, Result);
+  Result := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalSid);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1112,29 +1115,31 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkRT.CreateNavRefs();
-var blk: TBlk;
 begin
-  Blocks.GetBlkByID(Self.m_rtSettings.signalLid, blk);
-  if ((blk <> nil) and (blk.typ = btSignal) and (Self.lRT <> nil)) then
   begin
-    TBlkSignal(blk).trackId := Self.lRT.id;
-    TBlkSignal(blk).direction := THVSite.odd;
-    TBlkSignal(blk).autoblok := true;
+    var signal: TBlkSignal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalLid);
+    if ((signal <> nil) and (Self.lRT <> nil)) then
+    begin
+      signal.trackId := Self.lRT.id;
+      signal.direction := THVSite.odd;
+      signal.autoblok := true;
+    end;
   end;
 
-  Blocks.GetBlkByID(Self.m_rtSettings.signalSid, blk);
-  if ((blk <> nil) and (blk.typ = btSignal) and (Self.sRT <> nil)) then
   begin
-    TBlkSignal(blk).trackId := Self.sRT.id;
-    TBlkSignal(blk).direction := THVSite.even;
-    TBlkSignal(blk).autoblok := true;
+    var signal: TBlkSignal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalSid);
+    if ((signal <> nil) and (Self.sRT <> nil)) then
+    begin
+      signal.trackId := Self.sRT.id;
+      signal.direction := THVSite.even;
+      signal.autoblok := true;
+    end;
   end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkRT.RemoveTURefs();
-var blk: TBlk;
 begin
   Self.lRT := nil;
   Self.sRT := nil;
@@ -1145,12 +1150,17 @@ begin
   Self.bpInBlk := false;
   Self.inRailway := -1;
 
-  Blocks.GetBlkByID(Self.m_rtSettings.signalLid, blk);
-  if ((blk <> nil) and (blk.typ = btSignal)) then
-    TBlkSignal(blk).trackId := -1;
-  Blocks.GetBlkByID(Self.m_rtSettings.signalSid, blk);
-  if ((blk <> nil) and (blk.typ = btSignal)) then
-    TBlkSignal(blk).trackId := -1;
+  begin
+    var signal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalLid);
+    if (signal <> nil) then
+      signal.trackId := -1;
+  end;
+
+  begin
+    var signal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalSid);
+    if (signal <> nil) then
+      signal.trackId := -1;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1158,8 +1168,6 @@ end;
 // zruseni navesti do trati v pripade nahleho obsazeni prvni sekce trati.
 
 procedure TBlkRT.UpdateSignals();
-var blk: TBlk;
-  jc: TJC;
 begin
   // kontrola zruseni navesti jizdni cesty pri obsazeni sekce trati:
   // tato metoda je volana vzdy pouze u sectMastera (tj. krajniho bloku sekce)
@@ -1174,9 +1182,9 @@ begin
   begin
     if (Self.m_rtSettings.signalSid > -1) then
     begin
-      Blocks.GetBlkByID(Self.m_rtSettings.signalSid, blk);
-      if (blk <> nil) then
-        TBlkSignal(blk).signal := TBlkSignalCode(TBlkRailway(Self.railway).SignalCounterDirection());
+      var signal: TBlkSignal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalSid);
+      if (signal <> nil) then
+        signal.signal := TBlkSignalCode(TBlkRailway(Self.railway).SignalCounterDirection());
     end;
   end;
 
@@ -1185,9 +1193,9 @@ begin
   begin
     if (Self.m_rtSettings.signalLid > -1) then
     begin
-      Blocks.GetBlkByID(Self.m_rtSettings.signalLid, blk);
-      if (blk <> nil) then
-        TBlkSignal(blk).signal := TBlkSignalCode(TBlkRailway(Self.railway).SignalCounterDirection());
+      var signal: TBlkSignal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalLid);
+      if (signal <> nil) then
+        signal.signal := TBlkSignalCode(TBlkRailway(Self.railway).SignalCounterDirection());
     end;
   end;
 
@@ -1198,7 +1206,7 @@ begin
   // navest autobloku)
   if ((Self.prevRT = nil) and (Self.sectOccupied = TTrackState.occupied) and (TBlkRailway(Self.railway).zaver)) then
   begin
-    jc := JCDb.FindActiveJCWithTrack(Self.id);
+    var jc: TJC := JCDb.FindActiveJCWithTrack(Self.id);
     if ((jc <> nil) and (not jc.waitForLastTrackOrRailwayOccupy) and (jc.state.destroyBlock < jc.data.tracks.Count - 1))
     then
       JCDb.Cancel(Self);

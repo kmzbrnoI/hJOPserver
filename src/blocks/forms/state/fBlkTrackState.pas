@@ -102,8 +102,7 @@ begin
   end;
 end;
 
-procedure TF_BlkTrackState.SavePrmnToProgram;
-var Blk: TBlk;
+procedure TF_BlkTrackState.SavePrmnToProgram();
 begin
   Self.Blk.Zaver := TZaver(CB_Zaver.ItemIndex);
   Self.Blk.NUZ := ownConvert.IntToBool(CB_NUZ.ItemIndex);
@@ -112,7 +111,6 @@ begin
     Self.Blk.trainPredict := trains[SE_Souprava_Predict.Value]
   else
     Self.Blk.trainPredict := nil;
-  Blocks.GetBlkByID(Self.SE_NavJCRef.Value, Blk);
   if (Self.Blk.signalJCRef.Count = 0) then
     Self.Blk.signalJCRef.Clear();
   Self.Blk.shortCircuit := TBoosterSignal(CB_Zes_Zkrat.ItemIndex - 1);

@@ -107,13 +107,8 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkTrackRef.GetBlock(): TBlkTrack;
-var blk: TBlk;
 begin
-  Blocks.GetBlkById(Self.blockId, blk);
-  if ((blk = nil) or ((blk.typ = btTrack) or (blk.typ = btRT))) then
-    Result := TBlkTrack(blk)
-  else
-    Result := nil;
+  Result := Blocks.GetBlkTrackOrRTByID(Self.blockId);
 end;
 
 function TBlkTrackRef.GetBlockState(): TTrackState;

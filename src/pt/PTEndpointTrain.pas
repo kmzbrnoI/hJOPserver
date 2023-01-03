@@ -144,8 +144,6 @@ end;
 
 procedure TPTEndpointTrain.OnPUTPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain; podjId: Integer);
-var podj: TPodj;
-    blk: TBlk;
 begin
  if (not reqJson.Contains('podj')) then
   begin
@@ -153,11 +151,11 @@ begin
    Exit();
   end;
 
- podj := nil;
+ var podj: TPodj := nil;
  try
    try
      podj := TPodj.Create(reqJson.O['podj']);
-     Blocks.GetBlkByID(podjId, blk);
+     var blk: TBlkTrack := Blocks.GetBlkTrackOrRTByID(podjId);
      if ((blk = nil) or (blk.typ <> TBlkType.btTrack)) then
       begin
        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Neplatny typ bloku', 'Blok neexistuje nebo neni usek');

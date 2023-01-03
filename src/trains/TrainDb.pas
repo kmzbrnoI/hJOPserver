@@ -199,19 +199,18 @@ end;
 
 function TTrainDb.Add(train: TJsonObject; ok: TCb; err: TCb): TTrain;
 var i: Integer;
-    usek: TBlk;
 begin
  i := Self.GetEmptySpaceForTrain();
- Blocks.GetBlkByID(train['front'], usek);
+ var track := Blocks.GetBlkTrackOrRTByID(train['front']);
  if (train.Contains('createPos')) then
    train.I['createPos'] := 0;
 
  try
   Self.trains[i] := TTrain.Create(train, i, ok, err);
-  if (Assigned(usek)) then          // toto musi byt tady, nikoliv v konstruktoru
+  if (Assigned(track)) then          // toto musi byt tady, nikoliv v konstruktoru
    begin
-    (usek as TBlkTrack).AddTrain(train.I['createPos'], i);
-    (usek as TBlkTrack).Change();    // volano kvuli aktualizaci dat
+    track.AddTrain(train.I['createPos'], i);
+    track.Change();    // volano kvuli aktualizaci dat
    end;
 
   Self.trains[i].OnPredictedSignalChange();

@@ -2066,18 +2066,17 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.B_AB_DeleteClick(Sender: TObject);
-var blk: TBlk;
-  jc: TJC;
+var jc: TJC;
 begin
   jc := ABlist[Self.LV_AB.ItemIndex];
   if ((Self.LV_AB.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat jízdní cestu ' + jc.name + '?'),
     'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
   begin
     try
-      Blocks.GetBlkByID(jc.Data.signalId, blk);
-      if ((blk <> nil) and (blk.typ = btSignal) and (TBlkSignal(blk).ABJC = jc)) then
+      var signal := Blocks.GetBlkSignalByID(jc.Data.signalId);
+      if ((signal <> nil) and (signal.ABJC = jc)) then
       begin
-        TBlkSignal(blk).ABJC := nil;
+        signal.ABJC := nil;
         if (ABlist.Contains(jc)) then
           ABlist.Remove(ABlist[Self.LV_AB.ItemIndex]);
       end

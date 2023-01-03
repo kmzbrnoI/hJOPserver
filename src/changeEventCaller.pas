@@ -41,70 +41,61 @@ uses BlockDb, Block, BlockTrack, BlockTurnout, BlockLock, BlockCrossing,
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TChangeEventCaller.CopyUsekZaver(Sender: TObject; data: Integer);
-var blk: TBlk;
 begin
-  Blocks.GetBlkByID(data, blk);
-  if ((blk = nil) or ((blk.typ <> btTrack) and (blk.typ <> btRT))) then
+  var track := Blocks.GetBlkTrackOrRTByID(data);
+  if (track = nil) then
     Exit();
 
-  TBlkTrack(blk).Zaver := TBlkTrack(Sender).Zaver;
+  track.zaver := TBlkTrack(Sender).zaver;
 end;
 
 procedure TChangeEventCaller.NullZamekZaver(Sender: TObject; data: Integer);
-var blk: TBlk;
 begin
-  Blocks.GetBlkByID(data, blk);
-  if ((blk = nil) or (blk.typ <> btLock)) then
+  var lock: TBlkLock := Blocks.GetBlkLockByID(data);
+  if (lock = nil) then
     Exit();
-
-  TBlkLock(blk).Zaver := false;
+  lock.Zaver := false;
 end;
 
 procedure TChangeEventCaller.NullPrejezdZaver(Sender: TObject; data: Integer);
-var blk: TBlk;
 begin
-  Blocks.GetBlkByID(data, blk);
-  if ((blk = nil) or (blk.typ <> btCrossing)) then
+  var crossing := Blocks.GetBlkCrossingByID(data);
+  if (crossing = nil) then
     Exit();
-
-  TBlkCrossing(blk).Zaver := false;
+  crossing.Zaver := false;
 end;
 
 procedure TChangeEventCaller.NullTratZaver(Sender: TObject; data: Integer);
-var blk: TBlk;
 begin
-  Blocks.GetBlkByID(data, blk);
-  if ((blk = nil) or (blk.typ <> btRailway)) then
+  var railway: TBlkRailway := Blocks.GetBlkRailwayByID(data);
+  if (railway = nil) then
     Exit();
-
-  TBlkRailway(blk).Zaver := false;
+  railway.Zaver := false;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TChangeEventCaller.NullVyhybkaMenuReduction(Sender: TObject; data: Integer);
-var blk: TBlk;
 begin
-  Blocks.GetBlkByID(data, blk);
-  if ((blk = nil) or (blk.typ <> btTurnout)) then
+  var turnout := Blocks.GetBlkTurnoutByID(data);
+  if (turnout = nil) then
     Exit();
 
-  TBlkTurnout(blk).IntentionalUnlock();
+  turnout.IntentionalUnlock();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TChangeEventCaller.RemoveUsekNeprofil(Sender: TObject; data: Integer);
-var blk: TBlk;
-  caller: ^TNPCallerData;
+var caller: ^TNPCallerData;
 begin
   caller := Pointer(data);
 
-  Blocks.GetBlkByID(caller.usekId, blk);
-  if ((blk = nil) or ((blk.typ <> btTrack) and (blk.typ <> btRT))) then
+  var track := Blocks.GetBlkTrackOrRTByID(caller.usekId);
+  if (track = nil) then
     Exit();
 
-  TBlkTrack(blk).RemoveNeprofilJC(caller.jcId);
+  track.RemoveNeprofilJC(caller.jcId);
   FreeMem(caller);
 end;
 

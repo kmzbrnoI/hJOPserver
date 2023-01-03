@@ -507,14 +507,14 @@ end;
 function TBlkRailway.GetLinkerA(): TBlk;
 begin
   if (Self.m_linkerA = nil) then
-    Blocks.GetBlkByID(Self.m_settings.linkerA, Self.m_linkerA);
+    Self.m_linkerA := Blocks.GetBlkLinkerByID(Self.m_settings.linkerA);
   Result := Self.m_linkerA;
 end;
 
 function TBlkRailway.GetLinkerB(): TBlk;
 begin
   if (Self.m_linkerB = nil) then
-    Blocks.GetBlkByID(Self.m_settings.linkerB, Self.m_linkerB);
+    Self.m_linkerB := Blocks.GetBlkLinkerByID(Self.m_settings.linkerB);
   Result := Self.m_linkerB;
 end;
 
@@ -732,22 +732,21 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkRailway.CheckTUExist();
-var blk: TBlk;
 begin
   for var i: Integer := Self.m_settings.trackIds.Count - 1 downto 0 do
   begin
-    Blocks.GetBlkByID(Self.m_settings.trackIds[i], blk);
-    if ((blk = nil) or (blk.typ <> btRT)) then
+    var track := Blocks.GetBlkByID(Self.m_settings.trackIds[i]);
+    if ((track = nil) or (track.typ <> btRT)) then
     begin
       Log('Trat ' + Self.name + ' obsahuje referenci na TU ID ' + IntToStr(Self.m_settings.trackIds[i]) +
         ', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', ltError);
       Self.m_settings.trackIds.Delete(i);
       continue;
     end;
-    if (((blk as TBlkRT).inRailway <> -1) and ((blk as TBlkRT).inRailway <> Self.id)) then
+    if ((TBlkRT(track).inRailway <> -1) and (TBlkRT(track).inRailway <> Self.id)) then
     begin
       Log('Trat ' + Self.name + ': TU ID ' + IntToStr(Self.m_settings.trackIds[i]) + ' jiz referuje na trat ID ' +
-        IntToStr((blk as TBlkRT).inRailway) + ', odstranuji referenci', ltError);
+        IntToStr(TBlkRT(track).inRailway) + ', odstranuji referenci', ltError);
       Self.m_settings.trackIds.Delete(i);
     end;
   end;
@@ -903,7 +902,7 @@ begin
           end;
           if ((blk.signalCover <> nil) and (TBlkSignal(blk.signalCover).signal = ncStuj)) then
           begin
-            Blocks.TrainPrediction(Self.signalB);
+            Blocks.TrainPrediction(Self.signalB as TBlkSignal);
             Exit();
           end;
         end;
@@ -911,7 +910,7 @@ begin
         if ((last.trainPredict = nil) and (Self.trainPredict <> nil)) then
           last.trainPredict := Self.trainPredict.Train;
         if ((call_prediction) and (Self.signalB <> nil)) then
-          Blocks.TrainPrediction(Self.signalB);
+          Blocks.TrainPrediction(Self.signalB as TBlkSignal);
       end;
 
     TRailwayDirection.BtoA:
@@ -935,7 +934,7 @@ begin
           end;
           if ((blk.signalCover <> nil) and (TBlkSignal(blk.signalCover).signal = ncStuj)) then
           begin
-            Blocks.TrainPrediction(Self.signalA);
+            Blocks.TrainPrediction(Self.signalA as TBlkSignal);
             Exit();
           end;
         end;
@@ -943,7 +942,7 @@ begin
         if ((last.trainPredict = nil) and (Self.trainPredict <> nil)) then
           last.trainPredict := Self.trainPredict.Train;
         if ((call_prediction) and (Self.signalA <> nil)) then
-          Blocks.TrainPrediction(Self.signalA);
+          Blocks.TrainPrediction(Self.signalA as TBlkSignal);
       end;
   end; // case
 end;
@@ -954,11 +953,8 @@ function TBlkRailway.GetReady(): Boolean;
 begin
   for var blkId: Integer in Self.m_settings.trackIds do
   begin
-    var blkRT: TBlk;
-    Blocks.GetBlkByID(blkId, blkRT);
-    if ((blkRT = nil) or (blkRT.typ <> btRT)) then
-      Exit(false);
-    if (not TBlkRT(blkRT).ready) then
+    var blkRT: TBlkRT := Blocks.GetBlkRTByID(blkId);
+    if ((blkRT = nil) or (not blkRT.ready)) then
       Exit(false);
   end;
   Result := true;
@@ -1101,10 +1097,9 @@ begin
   Self.m_tracks.Clear();
   for var blkId: Integer in Self.m_settings.trackIds do
   begin
-    var blk: TBlk;
-    Blocks.GetBlkByID(blkId, blk);
-    if ((blk <> nil) and (blk.typ = TBlkType.btRT)) then
-      Self.m_tracks.Add(TBlkRT(blk));
+    var rt: TBlkRT := Blocks.GetBlkRTByID(blkId);
+    if (rt <> nil) then
+      Self.m_tracks.Add(rt);
   end;
 end;
 

@@ -143,10 +143,9 @@ begin
   Self.m_signals.Clear();
   for var sigId in Self.m_gs_settings.signalIds do
   begin
-    var blk: TBlk;
-    Blocks.GetBlkByID(sigId, blk);
-    if ((blk <> nil) and (blk.typ = TBlkType.btSignal)) then
-      Self.m_signals.Add(TBlkSignal(blk));
+    var blk: TBlkSignal := Blocks.GetBlkSignalByID(sigId);
+    if (blk <> nil) then
+      Self.m_signals.Add(blk);
   end;
 end;
 

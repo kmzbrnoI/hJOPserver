@@ -227,12 +227,10 @@ begin
 
       rrtIR:
         begin
-          var blk := Blocks.GetBlkByID(m_data.irId);
-          if (Blk = nil) then
+          var ir: TBlkIR := Blocks.GetBlkIrByID(m_data.irId);
+          if (ir = nil) then
             Exit(safeState);
-          if (Blk.typ <> btIR) then
-            Exit(safeState);
-          case (TBlkIR(Blk).occupied) of
+          case (ir.occupied) of
             TIROccupationState.occupied:
               Result := m_data.irState;
             TIROccupationState.Free:
@@ -259,7 +257,7 @@ end;
 function TRREv.Track(Sender: TObject): TObject;
 begin
   if ((Self.trackAllowed) and (Self.m_data.trackId > -1)) then
-    Result := Blocks.GetBlkByID(Self.m_data.trackId, btTrack, btRT)
+    Result := Blocks.GetBlkTrackOrRTByID(Self.m_data.trackId)
   else
     Result := Sender;
 end;

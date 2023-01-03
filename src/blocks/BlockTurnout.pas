@@ -123,7 +123,7 @@ type
     end;
 
     m_lock: TBlk;
-    m_parent: TBlk;
+    m_parent: TBlkTrack;
     m_npPlus: TBlk;
     m_npMinus: TBlk;
 
@@ -551,37 +551,27 @@ begin
     Exit(TZaver.no);
 
   if (((Self.m_parent = nil) and (Self.m_spnl.track <> -1)) or ((Self.m_parent.id <> Self.m_spnl.track))) then
-    Blocks.GetBlkByID(Self.m_spnl.track, Self.m_parent);
+    Self.m_parent := Blocks.GetBlkTrackOrRTByID(Self.m_spnl.track);
   if (Self.m_parent <> nil) then
-    Result := (Self.m_parent as TBlkTrack).zaver
+    Result := Self.m_parent.zaver
   else
     Result := TZaver.no;
 end;
 
 function TBlkTurnout.GetNUZ(): Boolean;
-var tmpBlk: TBlk;
-  return: Integer;
 begin
-  return := Blocks.GetBlkByID(Self.m_spnl.track, tmpBlk);
-  if (return < 0) then
+  var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_spnl.track);
+  if ((track = nil) or (track.typ <> btTrack)) then
     Exit(false);
-  if (tmpBlk.typ <> btTrack) then
-    Exit(false);
-
-  Result := (TBlkTrack(tmpBlk)).NUZ;
+  Result := track.NUZ;
 end;
 
 function TBlkTurnout.GetOccupied(): TTrackState;
-var tmpBlk: TBlk;
-  return: Integer;
 begin
-  return := Blocks.GetBlkByID(Self.m_spnl.track, tmpBlk);
-  if (return < 0) then
+  var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_spnl.track);
+  if (track = nil) then
     Exit(TTrackState.none);
-  if ((tmpBlk.typ <> btTrack) and (tmpBlk.typ <> btRT)) then
-    Exit(TTrackState.none);
-
-  Result := (tmpBlk as TBlkTrack).occupied;
+  Result := track.occupied;
 end;
 
 function TBlkTurnout.GetOutputLocked(): Boolean;
@@ -597,8 +587,7 @@ begin
 end;
 
 procedure TBlkTurnout.SetSettings(data: TBlkTurnoutSettings);
-var Blk: TBlk;
-  coupling_old: Integer;
+var coupling_old: Integer;
 begin
   if (data.coupling = Self.id) then
     raise ECoupling.Create('Nelze mít spojku sám se sebou!');
@@ -612,18 +601,18 @@ begin
     // zkontrolujeme, pokud spojka uz neexistovala a pokud ano, tak ji smazeme
     if (coupling_old > -1) then
     begin
-      Blocks.GetBlkByID(coupling_old, Blk);
-      if ((Blk <> nil) and (Blk.typ = btTurnout)) then
-        (Blk as TBlkTurnout).SetCouplingNoPropag(-1);
+      var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(coupling_old);
+      if (turnout <> nil) then
+        turnout.SetCouplingNoPropag(-1);
     end;
 
     // pridame spojku do druhe vyhybky
-    Blocks.GetBlkByID(data.coupling, Blk);
-    if ((Blk = nil) or (Blk.typ <> btTurnout)) then
+    var coupling: TBlkTurnout := Blocks.GetBlkTurnoutByID(data.coupling);
+    if (coupling = nil) then
     begin
       Self.m_settings.coupling := -1;
     end else begin
-      var coupling_settings: TBlkTurnoutSettings := (Blk as TBlkTurnout).GetSettings();
+      var coupling_settings: TBlkTurnoutSettings := coupling.GetSettings();
       if (coupling_settings.coupling <> Self.id) then
       begin
         if (coupling_settings.coupling <> -1) then
@@ -633,16 +622,16 @@ begin
         end;
 
         coupling_settings.coupling := Self.id;
-        (Blk as TBlkTurnout).SetSettings(coupling_settings);
+        coupling.SetSettings(coupling_settings);
       end;
     end;
   end else begin
     // odebereme spojku z druhe vyhybky
     if (coupling_old <> -1) then
     begin
-      Blocks.GetBlkByID(coupling_old, Blk);
-      if ((Blk <> nil) and (Blk.typ = btTurnout)) then
-        (Blk as TBlkTurnout).SetCouplingNoPropag(-1);
+      var coupling: TBlkTurnout := Blocks.GetBlkTurnoutByID(coupling_old);
+      if (coupling <> nil) then
+        coupling.SetCouplingNoPropag(-1);
     end;
   end;
 
@@ -707,9 +696,7 @@ procedure TBlkTurnout.UpdatePosition();
 var inp, couplingInp: TBlkTurnoutInputs;
   coupling: TBlkTurnout;
 begin
-  Blocks.GetBlkByID(Self.m_settings.coupling, TBlk(coupling));
-  if ((coupling <> nil) and (coupling.typ <> btTurnout)) then
-    Exit();
+  coupling := Blocks.GetBlkTurnoutByID(Self.m_settings.coupling);
 
   try
     inp := Self.GetInputs();
@@ -1260,7 +1247,7 @@ var coupling: TBlkTurnout;
 begin
   Result := inherited;
 
-  Blocks.GetBlkByID(Self.m_settings.coupling, TBlk(coupling));
+  coupling := Blocks.GetBlkTurnoutByID(Self.m_settings.coupling);
 
   if (not Self.ShouldBeLocked()) then
   begin
@@ -1503,7 +1490,7 @@ function TBlkTurnout.GetLock(): TBlk;
 begin
   if (((Self.m_lock = nil) and (Self.m_settings.lock <> -1)) or
     ((Self.m_lock <> nil) and (Self.m_lock.id <> Self.m_settings.lock))) then
-    Blocks.GetBlkByID(Self.m_settings.lock, Self.m_lock);
+    Self.m_lock := Blocks.GetBlkLockByID(Self.m_settings.lock);
   Result := Self.m_lock;
 end;
 
@@ -1513,7 +1500,7 @@ function TBlkTurnout.GetNpPlus(): TBlk;
 begin
   if (((Self.m_npPlus = nil) and (Self.m_settings.npPlus <> -1)) or
     ((Self.m_npPlus <> nil) and (Self.m_npPlus.id <> Self.m_settings.npPlus))) then
-    Blocks.GetBlkByID(Self.m_settings.npPlus, Self.m_npPlus);
+    Self.m_npPlus := Blocks.GetBlkTrackOrRTByID(Self.m_settings.npPlus);
   Result := Self.m_npPlus;
 end;
 
@@ -1521,7 +1508,7 @@ function TBlkTurnout.GetNpMinus(): TBlk;
 begin
   if (((Self.m_npMinus = nil) and (Self.m_settings.npMinus <> -1)) or
     ((Self.m_npMinus <> nil) and (Self.m_npMinus.id <> Self.m_settings.npMinus))) then
-    Blocks.GetBlkByID(Self.m_settings.npMinus, Self.m_npMinus);
+    Self.m_npMinus := Blocks.GetBlkTrackOrRTByID(Self.m_settings.npMinus);
   Result := Self.m_npMinus;
 end;
 
@@ -1775,7 +1762,6 @@ end;
 
 function TBlkTurnout.PanelStateString(): string;
 var fg, bg: TColor;
-  Blk: TBlk;
 begin
   Result := inherited;
 
@@ -1809,13 +1795,15 @@ begin
       end; // case
 
       // je soucasti vybarveneho neprofiloveho useku / pst
-      Blocks.GetBlkByID(Self.trackID, Blk);
-      if ((Blk <> nil) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and (fg = $A0A0A0)) then
       begin
-        if (TBlkTrack(Blk).IsNeprofilJC) then
-          fg := clYellow;
-        if (TBlkTrack(Blk).PstIs()) then
-          fg := clBlue;
+        var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.trackID);
+        if ((track <> nil) and (fg = $A0A0A0)) then
+        begin
+          if (track.IsNeprofilJC) then
+            fg := clYellow;
+          if (track.PstIs()) then
+            fg := clBlue;
+        end;
       end;
     end;
 
@@ -1912,9 +1900,7 @@ end;
 
 function TBlkTurnout.GetCoupling(): TBlkTurnout;
 begin
-  Blocks.GetBlkByID(Self.m_settings.coupling, TBlk(Result));
-  if ((Result <> nil) and (Result.typ <> btTurnout)) then
-    Result := nil;
+  Result := Blocks.GetBlkTurnoutByID(Self.m_settings.coupling);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -53,7 +53,6 @@ end;
 procedure TF_Console.B_OK_consoleClick(Sender: TObject);
 var
   strings: TStrings;
-  blk: TBlk;
 begin
   strings := TStringList.Create();
 
@@ -151,7 +150,7 @@ begin
         if (strings.Count < 2) then
           Exit();
 
-        Blocks.GetBlkByID(StrToInt(strings[1]), blk);
+        var blk := Blocks.GetBlkByID(StrToInt(strings[1]));
 
         if (blk = nil) then
         begin

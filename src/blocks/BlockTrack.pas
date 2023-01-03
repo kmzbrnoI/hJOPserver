@@ -1692,11 +1692,11 @@ begin
     Train.front := Self;
 
   for var signal: TBlk in (blk as TBlkTrack).signalJCRef do
-    Blocks.TrainPrediction(signal);
+    Blocks.TrainPrediction(signal as TBlkSignal);
 
   if (blk <> Self) then
     for var signal: TBlk in Self.signalJCRef do
-      Blocks.TrainPrediction(signal);
+      Blocks.TrainPrediction(signal as TBlkSignal);
 
   Result := true;
 end;
@@ -2364,7 +2364,6 @@ end;
 
 function TBlkTrack.PanelStateString(): string;
 var fg, bg, nebarVetve, sfg, sbg: TColor;
-  blk: TBlk;
 begin
   // Pro blok trati se vola take
   Result := IntToStr(Integer(btTrack)) + ';' + IntToStr(Self.id) + ';';;
@@ -2390,9 +2389,9 @@ begin
   // zobrazeni zakazu odjezdu do trati
   if ((fg = $A0A0A0) and (Self.typ = btRT) and (TBlkRT(Self).inRailway > -1)) then
   begin
-    Blocks.GetBlkByID(TBlkRT(Self).inRailway, blk);
-    if ((blk <> nil) and (blk.typ = btRailway)) then
-      if ((blk as TBlkRailway).departureForbidden) then
+    var railway := Blocks.GetBlkRailwayByID(TBlkRT(Self).inRailway);
+    if (railway <> nil) then
+      if (railway.departureForbidden) then
         fg := clBlue;
   end;
 
