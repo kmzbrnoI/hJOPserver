@@ -4,7 +4,7 @@ object F_BlkRT: TF_BlkRT
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (tratovy usek)'
-  ClientHeight = 640
+  ClientHeight = 601
   ClientWidth = 697
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -77,7 +77,7 @@ object F_BlkRT: TF_BlkRT
   end
   object B_OK: TButton
     Left = 615
-    Top = 608
+    Top = 566
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -91,7 +91,7 @@ object F_BlkRT: TF_BlkRT
   end
   object B_Storno: TButton
     Left = 536
-    Top = 608
+    Top = 566
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -391,7 +391,7 @@ object F_BlkRT: TF_BlkRT
     Left = 324
     Top = 126
     Width = 365
-    Height = 464
+    Height = 435
     Caption = ' Zast'#225'vka '
     TabOrder = 8
     object Label5: TLabel
@@ -406,14 +406,14 @@ object F_BlkRT: TF_BlkRT
       Top = 88
       Width = 148
       Height = 13
-      Caption = 'Maxim'#225'ln'#237' d'#233'lka soupravy (cm):'
+      Caption = 'Maxim'#225'ln'#237' d'#233'lka soupravy [cm]:'
     end
     object Label7: TLabel
       Left = 16
       Top = 120
       Width = 150
       Height = 13
-      Caption = #268'as '#269'ek'#225'n'#237' v zast'#225'vce (mm:ss):'
+      Caption = #268'as '#269'ek'#225'n'#237' v zast'#225'vce [mm:ss]:'
     end
     object CHB_Stop_Odd: TCheckBox
       Left = 16
@@ -461,10 +461,10 @@ object F_BlkRT: TF_BlkRT
     end
     object PC_Stop: TPageControl
       Left = 2
-      Top = 149
+      Top = 147
       Width = 361
-      Height = 313
-      ActivePage = TS_Zast_sudy
+      Height = 286
+      ActivePage = TS_Zast_lichy
       Align = alBottom
       TabOrder = 5
       object TS_Zast_lichy: TTabSheet

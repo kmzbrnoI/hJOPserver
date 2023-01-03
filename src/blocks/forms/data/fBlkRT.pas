@@ -103,12 +103,14 @@ procedure TF_BlkRT.FormCreate(Sender: TObject);
 begin
   Self.CB_SignalId := TList<Integer>.Create();
 
-  Self.stopEven := TF_BlkRTStopEvent.Create(Self.TS_Zast_lichy);
+  Self.stopEven := TF_BlkRTStopEvent.Create(nil);
   Self.stopEven.Parent := Self.TS_Zast_lichy;
+  Self.stopEven.Color := clWhite;
   Self.stopEven.Show();
 
-  Self.stopOdd := TF_BlkRTStopEvent.Create(Self.TS_Zast_lichy);
+  Self.stopOdd := TF_BlkRTStopEvent.Create(nil);
   Self.stopOdd.Parent := Self.TS_Zast_sudy;
+  Self.stopOdd.Color := clWhite;
   Self.stopOdd.Show();
 
   Self.fTrainSpeedL := TF_TrainSpeed.Create(nil);

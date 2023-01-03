@@ -5,13 +5,14 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
   Caption = 'F_BlkRTStopEvent'
   ClientHeight = 290
   ClientWidth = 354
-  Color = clBtnFace
+  Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object GB_DetekceZastaveni: TGroupBox
@@ -40,7 +41,7 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
     Left = 179
     Top = 7
     Width = 165
-    Height = 274
+    Height = 242
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -62,12 +63,13 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
     end
     object P_Zpom: TPanel
       Left = 2
-      Top = 70
+      Top = 72
       Width = 161
-      Height = 202
+      Height = 168
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
+      ExplicitTop = 104
     end
     object SE_Slow_Speed: TSpinEdit
       Left = 11

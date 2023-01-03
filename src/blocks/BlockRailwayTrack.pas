@@ -420,7 +420,7 @@ procedure TBlkRT.Update();
 begin
   inherited;
 
-  if ((Self.inRailway > -1) and (Self.occupied = TTrackState.occupied) and (Self.IsTrain()) and (Self.isStop)) then
+  if ((Self.inRailway > -1) and (Self.isStop)) then
     Self.StopUpdate();
 
   if (Self.m_rtState.updateSignals) then
@@ -466,7 +466,6 @@ procedure TBlkRT.StopUpdate();
 begin
   if (not Self.rtState.stopStopped) then
   begin
-    // cekam na obsazeni IR
     if ((not Self.rtState.stopEnabled) or (Self.rtState.stopPassed) or
       (Self.train.length > Self.m_rtSettings.stop.maxLength) or (Self.train.front <> Self)) then
       Exit();
@@ -476,8 +475,7 @@ begin
       (not Self.stopS))) then
       Exit();
 
-    // kontrola typu soupravy:
-
+    // kontrola typu soupravy
     if (not TRegEx.IsMatch(Self.train.typ, Self.m_rtSettings.stop.trainType)) then
       Exit();
 
@@ -523,6 +521,9 @@ begin
           end;
       end; // case
     end;
+
+    if ((Self.occupied <> TTrackState.occupied) or (not Self.IsTrain())) then
+      Exit();
 
     // zastavovani v zastavce
     case (Self.train.direction) of

@@ -15,6 +15,7 @@ type
     P_Zpom: TPanel;
     SE_Slow_Speed: TSpinEdit;
     procedure CHB_ZpomalClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     fZast: TF_RREv;
     fZpom: TF_RREv;
@@ -44,12 +45,10 @@ begin
 
   Self.fZast := TF_RREv.Create(nil);
   Self.fZast.Parent := Self.P_Stop;
-  Self.fZast.trackEnabled := false;
   Self.fZast.Show();
 
   Self.fZpom := TF_RREv.Create(nil);
   Self.fZpom.Parent := Self.P_Zpom;
-  Self.fZpom.trackEnabled := true;
   Self.fZpom.Show();
 end;
 
@@ -58,6 +57,12 @@ begin
   Self.fZast.Free();
   Self.fZpom.Free();
   inherited;
+end;
+
+procedure TF_BlkRTStopEvent.FormShow(Sender: TObject);
+begin
+  Self.fZast.Color := Self.Color;
+  Self.fZpom.Color := Self.Color;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
