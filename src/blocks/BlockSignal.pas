@@ -1528,13 +1528,13 @@ begin
                   success := TTrainSpeed.Pick(Train, Self.dnJC.data.speedsGo, speed)
                 else
                   success := TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed);
-                if ((success) and (Train.wantedSpeed <> speed) or (Train.direction <> Self.m_spnl.direction)) then
+                if ((success) and (Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.m_spnl.direction)) then
                   Train.SetSpeedDirection(speed, Self.m_spnl.direction);
               end else begin
                 // na konci JC jedeme dal
                 var speed: Cardinal;
                 if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed)) then // if success
-                  if ((Train.wantedSpeed <> speed) or (Train.direction <> Self.m_spnl.direction)) then
+                  if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.m_spnl.direction)) then
                     Train.SetSpeedDirection(speed, Self.m_spnl.direction);
               end;
             end;
@@ -1543,7 +1543,7 @@ begin
             begin
               var speed: Cardinal;
               if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsGo, speed)) then // if success
-                if ((Train.wantedSpeed <> speed) or (Train.direction <> Self.m_spnl.direction)) then
+                if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.m_spnl.direction)) then
                   Train.SetSpeedDirection(speed, Self.m_spnl.direction);
             end;
 
@@ -1551,7 +1551,7 @@ begin
             begin
               var speed: Cardinal;
               if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed)) then // if success
-                if ((Train.wantedSpeed <> speed) or (Train.direction <> Self.m_spnl.direction)) then
+                if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.m_spnl.direction)) then
                   Train.SetSpeedDirection(speed, Self.m_spnl.direction);
             end;
         end;
@@ -1816,7 +1816,7 @@ function TBlkSignal.GetTrackId(): TBlk;
 begin
   if (((Self.m_trackId = nil) and (Self.trackId <> -1)) or
     ((Self.m_trackId <> nil) and (Self.trackId <> Self.m_trackId.id))) then
-    Blocks.GetBlkByID(Self.trackId, Self.m_trackId, btTrack, btRT);
+    Self.m_trackId := Blocks.GetBlkTrackorRTByID(Self.trackId);
   Result := Self.m_trackId;
 end;
 
