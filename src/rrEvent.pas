@@ -65,6 +65,7 @@ type
 
     // Sender must be a valid "Usek" blok.
     function IsTriggerred(Sender: TObject; safeState: Boolean): Boolean;
+    function Track(Sender: TObject): TObject;
 
     property enabled: Boolean read m_state.enabled;
     property data: TRREvData read m_data;
@@ -199,11 +200,7 @@ begin
         begin
           var track: TBlkTrack := nil;
           if (Self.trackAllowed) then
-          begin
-            var blk := Blocks.GetBlkByID(Self.m_data.trackId);
-            if ((blk.typ = btTrack) or (blk.typ = btRT)) then
-              track := TBlkTrack(track);
-          end;
+            track := Blocks.GetBlkTrackOrRTByID(Self.m_data.trackId);
           if (track = nil) then
             track := TBlkTrack(Sender);
 
@@ -257,6 +254,14 @@ begin
     Result := safeState;
   end;
 
+end;
+
+function TRREv.Track(Sender: TObject): TObject;
+begin
+  if ((Self.trackAllowed) and (Self.m_data.trackId > -1)) then
+    Result := Blocks.GetBlkByID(Self.m_data.trackId, btTrack, btRT)
+  else
+    Result := Sender;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

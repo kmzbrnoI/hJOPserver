@@ -1375,38 +1375,14 @@ end;
 // force nucene zastavi vlak, resp. nastavi jeho rychlost
 // metoda je volana s force v pripade, kdy dochazi k prime zmene navesti od uzivatele (STUJ, DN, RC)
 procedure TBlkSignal.UpdateTrainSpeed(force: Boolean = false);
-var track: TBlk;
 begin
   if (Self.m_settings.events.Count = 0) then
     Exit();
-  track := Self.track;
+  var track := TBlkTrack(Self.track);
   if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then
     Exit(); // pokud jsem posunove navestidlo, koncim funkci
-  if ((track = nil) or ((track.typ <> btTrack) and (track.typ <> btRT))) then
+  if (track = nil) then
     Exit(); // pokud pred navestidlem neni usek, koncim funkci
-
-  // pokud na useku prede mnou neni souprava, koncim funkci
-  if (not(track as TBlkTrack).IsTrain()) then
-  begin
-    // tady musi dojit ke zruseni registrace eventu, kdyby nedoslo, muze se stat,
-    // ze za nejakou dobu budou splneny podminky, pro overovani eventu, ale
-    // event bude porad bezet -> pokud je casovy, okamzite byse spustil
-    if ((Self.m_lastEvIndex >= 0) and (Self.m_lastEvIndex < Self.m_settings.events.Count)) then
-      if (Self.m_settings.events[Self.m_lastEvIndex].stop.enabled) then
-        Self.m_settings.events[Self.m_lastEvIndex].stop.Unregister();
-    Exit();
-  end;
-
-  // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
-  var train: TTrain := Self.GetTrain(track);
-  if (train.front <> track) then
-  begin
-    // tady musime zrusit registraci eventu, viz vyse
-    if ((Self.m_lastEvIndex >= 0) and (Self.m_lastEvIndex < Self.m_settings.events.Count)) then
-      if (Self.m_settings.events[Self.m_lastEvIndex].stop.enabled) then
-        Self.m_settings.events[Self.m_lastEvIndex].stop.Unregister();
-    Exit();
-  end;
 
   if ((track.typ = btRT) and (TBlkRT(track).railway <> nil)) then
   begin
@@ -1418,7 +1394,7 @@ begin
     if ((railway.direction = TRailwayDirection.BtoA) and (Self = railway.signalB)) then
       Exit();
 
-    // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontetu zmeny smeru soupravy)
+    // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontextu zmeny smeru soupravy)
     if ((Self.autoblok) and (TBlkRailway(TBlkRT(track).railway).direction = TRailwayDirection.AtoB) and
       (Self.direction = THVSite.even)) then
       Exit();
@@ -1450,26 +1426,58 @@ begin
   /// ////////////////////////////////////////////////
 
   // ZPOMALOVANI
-  if ((signalEv.slow.enabled) and (Train.wantedSpeed > signalEv.slow.speed) and ((track as TBlkTrack).slowingReady) and
-    ((not Self.IsGoSignal()) or (Train.IsPOdj(track))) and (Train.direction = Self.m_spnl.direction)) then
-  begin
-    if (not signalEv.slow.ev.enabled) then
-      signalEv.slow.ev.Register();
+  // Zpomalni je mozne i na jinem useku nez je usek pred navestidlem
+  // Proto kontroly pritmnosti vlaku na useku pred navestidlem jsou az nize
 
-    if (signalEv.slow.ev.IsTriggerred(track, true)) then
+  if (signalEv.slow.enabled) then
+  begin
+    var slowTrack := TBlkTrack(signalEv.slow.ev.Track(track));
+    var slowTrain := Self.GetTrain(slowTrack);
+
+    if ((slowTrain <> nil) and (slowTrain.front = slowTrack) and (slowTrain.wantedSpeed > signalEv.slow.speed) and (slowTrack.slowingReady) and
+        ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(slowTrack))) and (slowTrain.direction = Self.m_spnl.direction)) then
     begin
-      signalEv.slow.ev.Unregister();
-      Train.speed := signalEv.slow.speed;
-      (track as TBlkTrack).slowingReady := false;
+      if (not signalEv.slow.ev.enabled) then
+        signalEv.slow.ev.Register();
+
+      if (signalEv.slow.ev.IsTriggerred(slowTrack, true)) then
+      begin
+        signalEv.slow.ev.Unregister();
+        slowTrain.speed := signalEv.slow.speed;
+        slowTrack.slowingReady := false;
+      end;
+    end else begin
+      if (signalEv.slow.ev.enabled) then
+        signalEv.slow.ev.Unregister();
     end;
-  end else begin
-    if ((signalEv.slow.enabled) and (signalEv.slow.ev.enabled)) then
-      signalEv.slow.ev.Unregister();
   end;
 
   /// ////////////////////////////////////////////////
-
   // ZASTAVOVANI, resp. nastavovani rychlosti prislusne JC
+
+  // pokud na useku prede mnou neni souprava, koncim funkci
+  if (not track.IsTrain()) then
+  begin
+    // tady musi dojit ke zruseni registrace eventu, kdyby nedoslo, muze se stat,
+    // ze za nejakou dobu budou splneny podminky, pro overovani eventu, ale
+    // event bude porad bezet -> pokud je casovy, okamzite byse spustil
+    if ((Self.m_lastEvIndex >= 0) and (Self.m_lastEvIndex < Self.m_settings.events.Count)) then
+      if (Self.m_settings.events[Self.m_lastEvIndex].stop.enabled) then
+        Self.m_settings.events[Self.m_lastEvIndex].stop.Unregister();
+    Exit();
+  end;
+
+  // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
+  var train: TTrain := Self.GetTrain(track);
+  if (train.front <> track) then
+  begin
+    // tady musime zrusit registraci eventu, viz vyse
+    if ((Self.m_lastEvIndex >= 0) and (Self.m_lastEvIndex < Self.m_settings.events.Count)) then
+      if (Self.m_settings.events[Self.m_lastEvIndex].stop.enabled) then
+        Self.m_settings.events[Self.m_lastEvIndex].stop.Unregister();
+    Exit();
+  end;
+
   if (not signalEv.stop.enabled) then
     signalEv.stop.Register();
 
@@ -1488,7 +1496,7 @@ begin
       if (not Train.GetPOdj(track).origin_set) then
       begin
         Train.GetPOdj(track).RecordOriginNow();
-        TBlkTrack(track).PropagatePOdjToRailway();
+        track.PropagatePOdjToRailway();
         track.Change();
       end;
 
@@ -1580,13 +1588,12 @@ end;
 // Vraci udalost, na kterou by se melo reagovat podle aktualniho stavu kolejiste.
 
 function TBlkSignal.CurrentEventIndex(): Integer;
-var track: TBlk;
 begin
   if (Self.m_settings.events.Count = 0) then
     raise ENoEvents.Create('No current events!');
 
-  track := Self.track;
-  if (not(track as TBlkTrack).IsTrain()) then
+  var track := TBlkTrack(Self.track);
+  if (not track.IsTrain()) then
   begin
     // na bloku neni zadna souprava
     Result := 0;
@@ -1809,7 +1816,7 @@ function TBlkSignal.GetTrackId(): TBlk;
 begin
   if (((Self.m_trackId = nil) and (Self.trackId <> -1)) or
     ((Self.m_trackId <> nil) and (Self.trackId <> Self.m_trackId.id))) then
-    Blocks.GetBlkByID(Self.trackId, Self.m_trackId);
+    Blocks.GetBlkByID(Self.trackId, Self.m_trackId, btTrack, btRT);
   Result := Self.m_trackId;
 end;
 

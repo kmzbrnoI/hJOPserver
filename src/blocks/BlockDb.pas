@@ -16,7 +16,7 @@ interface
 
 uses IniFiles, Block, SysUtils, Windows, AreaDb, Area, StdCtrls,
   Generics.Collections, Classes, IdContext, TechnologieRCS,
-  JsonDataObjects, Train, System.Math;
+  JsonDataObjects, Train, System.Math, BlockTrack;
 
 type
   TBlksList = TList<TObject>;
@@ -59,11 +59,13 @@ type
     procedure Update();
 
     function GetBlkIndex(id: Integer): Integer;
-    function GetBlkByID(id: Integer; var Blk: TBlk): Integer; overload;
-    function GetBlkByID(id: Integer): TBlk; overload;
+    function GetBlkByID(id: Integer; var Blk: TBlk; typeAssert1: TBlkType = btAny; typeAssert2: TBlkType = btAny): Integer; overload;
+    function GetBlkByID(id: Integer; typeAssert1: TBlkType = btAny; typeAssert2: TBlkType = btAny): TBlk; overload;
     function GetBlkID(index: Integer): Integer;
     function GetBlkName(id: Integer): string;
     function GetBlkIndexName(index: Integer): string;
+
+    function GetBlkTrackOrRTByID(id: Integer): TBlkTrack;
 
     function GetBlkTrackTrainMoving(obl: string): TBlk;
 
@@ -127,7 +129,7 @@ var
 
 implementation
 
-uses BlockTurnout, BlockTrack, BlockIR, BlockSignal, fMain, BlockCrossing,
+uses BlockTurnout, BlockIR, BlockSignal, fMain, BlockCrossing,
   BlockLock, TJCDatabase, Logging, BlockRailway, BlockLinker, BlockAC,
   DataBloky, TrainDb, TechnologieJC, AreaStack, GetSystems, BlockDisconnector,
   BlockRailwayTrack, appEv, BlockIO, PTUtils, BlockSummary,
@@ -544,7 +546,7 @@ begin
   Result := -1;
 end;
 
-function TBlocks.GetBlkByID(id: Integer; var Blk: TBlk): Integer;
+function TBlocks.GetBlkByID(id: Integer; var Blk: TBlk; typeAssert1: TBlkType = btAny; typeAssert2: TBlkType = btAny): Integer;
 var index: Integer;
 begin
   Blk := nil;
@@ -552,14 +554,24 @@ begin
   if (index < 0) then
     Exit(-1);
   Self.GetBlkByIndex(index, Blk);
+
+  if ((typeAssert1 <> btAny) and (blk.typ <> typeAssert1)) then
+    if ((typeAssert2 = btAny) or (Blk.typ <> typeAssert2)) then
+      Exit(-1);
+
   Result := 0;
 end;
 
-function TBlocks.GetBlkByID(id: Integer): TBlk;
+function TBlocks.GetBlkByID(id: Integer; typeAssert1: TBlkType = btAny; typeAssert2: TBlkType = btAny): TBlk;
 var blk: TBlk;
 begin
  Self.GetBlkByID(id, blk);
  Result := blk;
+end;
+
+function TBlocks.GetBlkTrackOrRTByID(id: Integer): TBlkTrack;
+begin
+  Result := TBlkTrack(Self.GetBlkByID(id, btTrack, btRT));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
