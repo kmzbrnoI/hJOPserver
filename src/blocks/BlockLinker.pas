@@ -283,7 +283,7 @@ end;
 procedure TBlkLinker.MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TArea,
-    'Zrušení zákazu odjezdu na trať', TBlocks.GetBlksList(Self), nil);
+    'Zrušení zákazu odjezdu na trať', GetObjsList(Self), nil);
 end;
 
 procedure TBlkLinker.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -301,7 +301,7 @@ end;
 procedure TBlkLinker.MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TArea, 'Zrušení nouzového závěru',
-    TBlocks.GetBlksList(Self), nil);
+    GetObjsList(Self), nil);
 end;
 
 procedure TBlkLinker.PanelPotvrSekvZAK(Sender: TIdContext; success: Boolean);
@@ -355,7 +355,7 @@ begin
   var train: TTrain := TrainDb.trains[railway.trainPredict.traini];
   var conditions := train.InfoWindowItems();
   try
-    PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, TBlocks.GetBlksList(Self), conditions, true, false);
+    PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, GetObjsList(Self), conditions, true, false);
   finally
     conditions.Free();
   end;

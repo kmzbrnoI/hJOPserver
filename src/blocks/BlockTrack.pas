@@ -747,7 +747,7 @@ begin
   if ((Self.m_state.lockout <> '') and (lockout = '')) then
   begin
     PanelServer.ConfirmationSequence(Sender, Self.ORVylukaNull, Self.m_areas[0], 'Zrušení výluky',
-      TBlocks.GetBlksList(Self), nil);
+      GetObjsList(Self), nil);
   end else begin
     Self.lockout := lockout;
   end;
@@ -958,7 +958,7 @@ begin
   var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
   var conditions := train.InfoWindowItems();
   try
-    PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, TBlocks.GetBlksList(Self), conditions, true, false);
+    PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, GetObjsList(Self), conditions, true, false);
   finally
     conditions.Free();
   end;
@@ -978,7 +978,7 @@ begin
       conditions.Add(CSCondition(blk, 'Smazání soupravy z úseku'));
     PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrDeleteTrain, SenderOR as TArea,
       'Smazání soupravy ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name,
-      TBlocks.GetBlksList(Self), conditions, true, false);
+      GetObjsList(Self), conditions, true, false);
   finally
     conditions.Free();
   end;
@@ -1024,7 +1024,7 @@ begin
 
   PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrUvolTrain, SenderOR as TArea,
     'Uvolnění soupravy ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name +
-    ' z bloku', TBlocks.GetBlksList(Self), nil);
+    ' z bloku', GetObjsList(Self), nil);
 end;
 
 procedure TBlkTrack.MenuVEZMITrainClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1082,7 +1082,7 @@ begin
         conditions.Add(CSCondition(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
 
     PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrRegVezmiTrain, SenderOR as TArea,
-      'Nouzové převzetí hnacích vozidel do automatického řízení', TBlocks.GetBlksList(Self), conditions, true, false);
+      'Nouzové převzetí hnacích vozidel do automatického řízení', GetObjsList(Self), conditions, true, false);
   finally
     conditions.Free();
   end;

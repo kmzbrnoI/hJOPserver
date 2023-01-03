@@ -1000,7 +1000,7 @@ end;
 procedure TBlkSignal.MenuPPNClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   PanelServer.ConfirmationSequence(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea,
-    'Prodloužení doby přivolávací návěsti', TBlocks.GetBlksList(Self), nil);
+    'Prodloužení doby přivolávací návěsti', GetObjsList(Self), nil);
 end;
 
 procedure TBlkSignal.MenuRNZClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1017,7 +1017,7 @@ begin
     end;
 
     PanelServer.ConfirmationSequence(SenderPnl, Self.RNZPotvrSekv, SenderOR as TArea,
-      'Zrušení nouzových závěrů po nouzové cestě', TBlocks.GetBlksList(Self), conditions, true, false);
+      'Zrušení nouzových závěrů po nouzové cestě', GetObjsList(Self), conditions, true, false);
   finally
     conditions.Free();
   end;
@@ -1030,7 +1030,7 @@ begin
     for var area: TArea in Self.areas do
       Area.ORDKClickClient();
     PanelServer.ConfirmationSequence(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea,
-      'Zapnutí přivolávací návěsti', TBlocks.GetBlksList(Self), nil);
+      'Zapnutí přivolávací návěsti', GetObjsList(Self), nil);
   end;
 end;
 
@@ -1729,7 +1729,7 @@ begin
     Exit();
 
   PanelServer.ConfirmationSequence(Self.m_state.upoSenderPnl, Self.PrivokDKPotvrSekv, Self.m_state.upoSenderOR as TArea,
-    'Zapnutí přivolávací návěsti', TBlocks.GetBlksList(Self), nil);
+    'Zapnutí přivolávací návěsti', GetObjsList(Self), nil);
 
   Self.m_state.upoSenderOR := nil;
   Self.m_state.upoSenderPnl := nil;

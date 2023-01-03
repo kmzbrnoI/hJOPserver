@@ -134,6 +134,8 @@ type
     property typ: TBlkType read m_globSettings.typ;
   end;
 
+  TBlksList = TList<TBlk>;
+
 implementation
 
 uses BlockDb, DataBloky, appEv, ownStrUtils, Diagnostics, FileSystem;

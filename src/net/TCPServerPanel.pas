@@ -10,7 +10,7 @@ interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
   Classes, StrUtils, Graphics, Windows, Area, ExtCtrls, ConfSeq,
-  IdContext, Block, ComCtrls, IdSync, BlockDb, UPO, TCPAreasRef,
+  IdContext, Block, ComCtrls, IdSync, UPO, TCPAreasRef,
   User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
 const
@@ -99,11 +99,11 @@ type
     procedure Menu(AContext: TIdContext; Blk: TBlk; Area: TArea; Menu: string);
 
     procedure ConfirmationSequence(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
-      senders: TBlksList; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+      senders: TList<TObject>; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
     procedure InfoWindow(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
-      senders: TBlksList; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+      senders: TList<TObject>; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
     procedure CSWindow(AContext: TIdContext; mode: string; callback: TCSCallback; Area: TArea; event: string;
-      senders: TBlksList; conditions: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+      senders: TList<TObject>; conditions: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
     procedure CSClose(AContext: TIdContext; msg: string = '');
     procedure CSWindowClose(AContext: TIdContext; mode: string; msg: string = '');
 
@@ -156,7 +156,7 @@ implementation
 uses fMain, BlockTrack, BlockTurnout, BlockSignal, AreaDb, BlockLinker,
   BlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, FileSystem,
   BlockLock, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
-  UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks,
+  UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks, BlockDb,
   BlockDisconnector, BlockIO, ownConvert, THVDatabase, BlockPst;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1001,31 +1001,35 @@ begin
 end;
 
 procedure TPanelServer.ConfirmationSequence(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
-  senders: TBlksList; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+  senders: TList<TObject>; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
 begin
   Self.CSWindow(AContext, 'PS', callback, Area, event, senders, podminky, free_senders, free_cond);
 end;
 
 procedure TPanelServer.InfoWindow(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
-  senders: TBlksList; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+  senders: TList<TObject>; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
 begin
   Self.CSWindow(AContext, 'IS', callback, Area, event, senders, podminky, free_senders, free_cond);
 end;
 
 procedure TPanelServer.CSWindow(AContext: TIdContext; mode: string; callback: TCSCallback; Area: TArea; event: string;
-  senders: TBlksList; conditions: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+  senders: TList<TObject>; conditions: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
 var str, areaName: string;
 begin
   str := '';
   if (Assigned(senders)) then
-    for var i: Integer := 0 to senders.Count - 1 do
-      if (Assigned(senders[i])) then
+  begin
+    for var sender: TObject in senders do
+    begin
+      if (Assigned(sender)) then
       begin
-        if ((senders[i].ClassType.InheritsFrom(TBlk))) then
-          str := str + (senders[i] as TBlk).name + '|'
-        else if (senders[i].ClassType = TArea) then
-          str := str + 'Stanoviště výpravčího ' + (senders[i] as TArea).name + '|';
+        if ((sender.ClassType.InheritsFrom(TBlk))) then
+          str := str + TBlk(sender).name + '|'
+        else if (sender.ClassType = TArea) then
+          str := str + 'Stanoviště výpravčího ' + TArea(sender).name + '|';
       end;
+    end;
+  end;
 
   str := str + ';';
 

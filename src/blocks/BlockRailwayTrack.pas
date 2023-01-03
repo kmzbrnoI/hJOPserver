@@ -244,7 +244,7 @@ type
 implementation
 
 uses TrainDb, BlockDb, TCPServerPanel, BlockRailway, BlockSignal, TJCDatabase,
-  logging, TechnologieJC, ownStrUtils, THVDatabase, IfThenElse, ConfSeq;
+  logging, TechnologieJC, ownStrUtils, THVDatabase, IfThenElse, ConfSeq, ownConvert;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -823,7 +823,7 @@ begin
     end;
 
     PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TArea,
-      'Zrušení poruchy blokové podmínky', TBlocks.GetBlksList(Self), conditions, true, false);
+      'Zrušení poruchy blokové podmínky', GetObjsList(Self), conditions, true, false);
   finally
     conditions.Free();
   end;
@@ -831,7 +831,6 @@ end;
 
 procedure TBlkRT.PanelPotvrSekvRBP(Sender: TIdContext; success: Boolean);
 var old_train: Integer;
-  blks: TList<TObject>;
 begin
   if (success) then
   begin
@@ -841,10 +840,14 @@ begin
     if (Self.IsTrain()) then
     begin
       Self.RemoveTrains();
-      blks := Blocks.GetBlkWithTrain(TrainDb.trains[old_train]);
-      if (blks.Count = 0) then
-        TrainDb.trains.Remove(old_train);
-      blks.Free();
+      var blks := Blocks.GetBlkWithTrain(TrainDb.trains[old_train]);
+      try
+        if (blks.Count = 0) then
+          TrainDb.trains.Remove(old_train);
+      finally
+        blks.Free();
+      end;
+
     end;
 
     if (Self.railway <> nil) then

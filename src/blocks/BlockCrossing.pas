@@ -564,14 +564,14 @@ procedure TBlkCrossing.UPOZUZClick(Sender: TObject);
 begin
   PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZUZCallBack,
     (TPanelConnData(TIdContext(Sender).data).UPO_ref as TArea), 'Zrušení uzavření přejezdu',
-    TBlocks.GetBlksList(Self), nil);
+    GetObjsList(Self), nil);
 end;
 
 procedure TBlkCrossing.UPONOTClick(Sender: TObject);
 begin
   PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZNOTCallBack,
     (TPanelConnData(TIdContext(Sender).data).UPO_ref as TArea), 'Nouzové otevření přejezdu',
-    TBlocks.GetBlksList(Self), nil);
+    GetObjsList(Self), nil);
 end;
 
 procedure TBlkCrossing.UPOZNOTClick(Sender: TObject);

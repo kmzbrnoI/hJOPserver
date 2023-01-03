@@ -13,7 +13,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Logging,
-  Dialogs, Menus, Buttons, ComCtrls, fMain, BlockDb, Block, Train,
+  Dialogs, Menus, Buttons, ComCtrls, fMain, Block, Train,
   IniFiles, IdContext, BlockRailway, Generics.Collections, UPO, BlockTurnout,
   Area, changeEvent, changeEventCaller, JsonDataObjects, PTUtils, JCBarriers, TrainSpeed;
 
@@ -267,7 +267,7 @@ implementation
 uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
-  BlockPSt, appEv, ConfSeq;
+  BlockPSt, appEv, ConfSeq, BlockDb;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -1270,7 +1270,7 @@ begin
 
         if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
           PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TArea),
-            'Jízdní cesta s potvrzením', TBlocks.GetBlksList(Self.signal, Self.lastTrack), conditions, true, false);
+            'Jízdní cesta s potvrzením', GetObjsList(Self.signal, Self.lastTrack), conditions, true, false);
 
         Self.step := stepConfSeq;
       end else begin
@@ -1846,7 +1846,7 @@ begin
 
           if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
             PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.NC_PS_Callback,
-              Self.m_state.senderOR as TArea, str, TBlocks.GetBlksList(signal, lastTrack),
+              Self.m_state.senderOR as TArea, str, GetObjsList(signal, lastTrack),
               JCBarriers.BarriersToConfSeq(Self.m_state.ncBariery));
         end;
         Self.m_state.ncBarieryCntLast := Self.m_state.ncBariery.Count;

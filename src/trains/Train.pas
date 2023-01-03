@@ -146,7 +146,7 @@ type
 
      procedure UpdateRailwaySpeed();
      function GetRailwaySpeed(var speed: Cardinal): Boolean;
-     function GetBlocks(): TList<TObject>;
+     function GetBlocks(): TList<TBlk>;
 
      function PredictedSignal(): TBlk;
      procedure OnPredictedSignalChange();
@@ -1370,7 +1370,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrain.GetBlocks(): TList<TObject>;
+function TTrain.GetBlocks(): TList<TBlk>;
 begin
  Result := Blocks.GetBlkWithTrain(Self);
 end;
@@ -1378,18 +1378,17 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrain.IsOnlyInRailway(): Boolean;
-var blks: TList<TObject>;
 begin
- blks := Self.GetBlocks();
- try
-   for var blk in blks do
-     if (TBlk(blk).typ <> TBlkType.btRT) then
-       Exit(false);
- finally
-   blks.Free();
- end;
+  var blks: TList<TBlk> := Self.GetBlocks();
+  try
+    for var blk: TBlk in blks do
+      if (blk.typ <> TBlkType.btRT) then
+        Exit(false);
+  finally
+    blks.Free();
+  end;
 
- Result := true;
+  Result := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

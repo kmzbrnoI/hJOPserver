@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, IdContext,
   Generics.Collections, Area, JsonDataObjects, TechnologieRCS, BlockTurnout,
-  TechnologieJC, JCBarriers, UPO;
+  JCBarriers, UPO;
 
 type
   TBlkPstStatus = (pstDisabled, pstOff, pstRefuging, pstTakeReady, pstActive);
@@ -569,7 +569,7 @@ procedure TBlkPst.UPONPstDone(Sender: TObject);
 begin
   PanelServer.ConfirmationSequence(TIDContext(Sender), Self.CSNPStDone,
     (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové zrušení obsluhy PSt',
-    TBlocks.GetBlksList(Self), CSConditions(CSCondition(Self, 'Není základní poloha prvku PSt')));
+    GetObjsList(Self), CSConditions(CSCondition(Self, 'Není základní poloha prvku PSt')));
 end;
 
 procedure TBlkPst.CSNPStDone(Sender: TIDContext; success: Boolean);
@@ -600,7 +600,7 @@ end;
 procedure TBlkPst.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   PanelServer.ConfirmationSequence(SenderPnl, Self.CSZavOffDone, (SenderOR as TArea), 'Zrušení nouzového závěru',
-    TBlocks.GetBlksList(Self), nil);
+    GetObjsList(Self), nil);
 end;
 
 procedure TBlkPst.CSZavOffDone(Sender: TIDContext; success: Boolean);
@@ -1328,7 +1328,7 @@ begin
 
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
         PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.BarriersCSCallback, (Self.m_state.senderOR as TArea),
-          'Předání obsluhy na PSt', TBlocks.GetBlksList(Self), conditions);
+          'Předání obsluhy na PSt', GetObjsList(Self), conditions);
     end else begin
       Self.MoveRefugees();
     end;

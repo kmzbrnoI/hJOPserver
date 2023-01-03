@@ -194,7 +194,7 @@ end;
 procedure TBlkLock.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TArea), 'Zrušení nouzového závěru',
-    TBlocks.GetBlksList(Self), nil);
+    GetObjsList(Self), nil);
 end;
 
 procedure TBlkLock.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);

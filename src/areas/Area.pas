@@ -795,7 +795,7 @@ begin
     end;
 
     PanelServer.ConfirmationSequence(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků',
-      TBlocks.GetBlksList(Self), conditions, true, false);
+      GetObjsList(Self), conditions, true, false);
   finally
     conditions.Free();
   end;

@@ -16,11 +16,11 @@ interface
 
 uses IniFiles, Block, SysUtils, Windows, AreaDb, Area, StdCtrls,
   Generics.Collections, Classes, IdContext, TechnologieRCS,
-  JsonDataObjects, Train, System.Math, BlockTrack;
+  JsonDataObjects, Train, System.Math,
+  BlockTrack, BlockTurnout, BlockIR, BlockLock, BlockRailway, BlockGroupSignal,
+  BlockLinker, BlockAC, BlockRailwayTrack, BlockPst, BlockSignal, BlockSummary;
 
 type
-  TBlksList = TList<TObject>;
-
   TBlocks = class(TObject)
   private
     data: TList<TBlk>;
@@ -103,7 +103,6 @@ type
     procedure BlkIDChanged(index: Integer);
     procedure ClearPOdj();
 
-    class function GetBlksList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TBlksList;
     class function SEPortMaxValue(addr: Integer; currentValue: Integer): Integer;
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean; Area: TArea = nil; typ: TBlkType = btAny);
@@ -129,11 +128,9 @@ var
 
 implementation
 
-uses BlockTurnout, BlockIR, BlockSignal, fMain, BlockCrossing,
-  BlockLock, TJCDatabase, Logging, BlockRailway, BlockLinker, BlockAC,
-  DataBloky, TrainDb, TechnologieJC, AreaStack, GetSystems, BlockDisconnector,
-  BlockRailwayTrack, appEv, BlockIO, PTUtils, BlockSummary,
-  TechnologieAB, ACBlocks, BlockGroupSignal, BlockPst;
+uses fMain, BlockCrossing, TJCDatabase, Logging, DataBloky, TrainDb, TechnologieJC,
+  AreaStack, GetSystems, BlockDisconnector, appEv, BlockIO, PTUtils, TechnologieAB,
+  ACBlocks;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -783,7 +780,7 @@ end;
 
 function TBlocks.GetBlkWithTrain(Train: TTrain): TBlksList;
 begin
-  Result := TList<TObject>.Create();
+  Result := TList<TBlk>.Create();
   for var blk: TBlk in Self.data do
     if (((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain(Train))) then
       Result.Add(Blk);
@@ -886,37 +883,29 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class function TBlocks.GetBlksList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TBlksList;
-begin
-  Result := TList<TObject>.Create();
-  if (first <> nil) then
-    Result.Add(first);
-  if (second <> nil) then
-    Result.Add(second);
-  if (third <> nil) then
-    Result.Add(third);
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
 function TBlocks.GetNavPrivol(Area: TArea): TBlksList;
 begin
-  Result := TList<TObject>.Create();
-  for var blk: TBlk in Self.data do
-  begin
-    if (Blk.typ <> btSignal) then
-      continue;
-    if ((Blk as TBlkSignal).signal <> ncPrivol) then
-      continue;
-
-    for var marea: TArea in (Blk as TBlkSignal).areas do
+  Result := TList<TBlk>.Create();
+  try
+    for var blk: TBlk in Self.data do
     begin
-      if (marea = Area) then
+      if (Blk.typ <> btSignal) then
+        continue;
+      if ((Blk as TBlkSignal).signal <> ncPrivol) then
+        continue;
+
+      for var marea: TArea in (Blk as TBlkSignal).areas do
       begin
-        Result.Add(Blk);
-        Break;
+        if (marea = Area) then
+        begin
+          Result.Add(Blk);
+          Break;
+        end;
       end;
     end;
+  except
+    Result.Free();
+    raise;
   end;
 end;
 

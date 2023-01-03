@@ -676,7 +676,7 @@ procedure TBlkTurnout.SetLockout(Sender: TIDContext; lockout: string);
 begin
   if ((Self.m_state.lockout <> '') and (lockout = '')) then
     PanelServer.ConfirmationSequence(Sender, Self.AreaNullLockout, Self.m_areas[0], 'Zrušení výluky',
-      TBlocks.GetBlksList(Self), nil)
+      GetObjsList(Self), nil)
   else
     Self.lockout := lockout;
 end;
@@ -1115,7 +1115,7 @@ begin
 
     PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSPlus,
       (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy plus',
-      TBlocks.GetBlksList(Self), conditions, true, false);
+      GetObjsList(Self), conditions, true, false);
   finally
     conditions.Free();
   end;
@@ -1137,7 +1137,7 @@ begin
 
     PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSMinus,
       (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy mínus',
-      TBlocks.GetBlksList(Self), conditions, true, false);
+      GetObjsList(Self), conditions, true, false);
   finally
     conditions.Free();
   end;
@@ -1163,7 +1163,7 @@ end;
 procedure TBlkTurnout.MenuZAVDisableClick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
   PanelServer.ConfirmationSequence(SenderPnl, Self.PanelCSZAV, (SenderOR as TArea), 'Zrušení nouzového závěru',
-    TBlocks.GetBlksList(Self), nil);
+    GetObjsList(Self), nil);
 end;
 
 procedure TBlkTurnout.PanelCSZAV(Sender: TIDContext; success: Boolean);

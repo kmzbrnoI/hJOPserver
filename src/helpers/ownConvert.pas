@@ -15,6 +15,7 @@ function ColorToStr(color: TColor): string;
 
 function SerializeIntList(l: TList<Integer>): string;
 
+function GetObjsList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TList<TObject>;
 
 implementation
 
@@ -69,6 +70,22 @@ begin
     Result := Result + IntToStr(l[i]) + ',';
   if (l.Count > 0) then
     Result := Result + IntToStr(l[l.Count-1]);
+end;
+
+function GetObjsList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TList<TObject>;
+begin
+  Result := TList<TObject>.Create();
+  try
+    if (first <> nil) then
+      Result.Add(first);
+    if (second <> nil) then
+      Result.Add(second);
+    if (third <> nil) then
+      Result.Add(third);
+  except
+    Result.Free();
+    raise;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
