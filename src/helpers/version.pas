@@ -8,6 +8,8 @@ uses Windows, SysUtils, Forms, jclPEImage;
  function LastBuildDate(): string;
  function LastBuildTime(): string;
 
+ const _RELEASE: Boolean = false;
+
 implementation
 
 function VersionStr(const FileName: string): string;//cteni verze z nastaveni
@@ -30,6 +32,8 @@ begin
       Minor := LoWord(pinfo.dwFileVersionMS);
       Release := HiWord(pinfo.dwFileVersionLS);
       Result := Format('%d.%d.%d',[Major, Minor, Release]);
+      if (not _RELEASE) then
+        Result := Result + '-dev';
      end;
     FreeMem(buffer);
   end;
