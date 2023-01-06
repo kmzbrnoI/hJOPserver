@@ -8,26 +8,43 @@ uses
   Generics.Collections, UITypes;
 
 type
+  TMouseUpEvent = procedure (Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer) of object;
+
+  TIOGUI = class
+  const
+    _PADDING: Integer = 5;
+
+  public
+    panel: TPanel;
+    shape: TShape;
+    description: TLabel;
+    value: TLabel;
+
+    constructor Create(parent: TWinControl; i: Integer; onMouseUp: TMouseUpEvent); // must call resize after create to properly show
+    destructor Destroy(); override;
+    procedure Resize(top, width, height: Integer);
+  end;
+
   TF_Tester = class(TForm)
-    GB_vstupy: TGroupBox;
+    GB_Inputs: TGroupBox;
     L_1: TLabel;
-    CB_RCSAdr: TComboBox;
-    CHB_LogZmeny: TCheckBox;
-    GB_Change: TGroupBox;
-    LB_Changes: TListBox;
-    B_Clear: TButton;
-    GB_vystupy: TGroupBox;
-    L_state: TLabel;
+    CB_Addr: TComboBox;
+    GB_Outputs: TGroupBox;
+    CB_AddrIn: TComboBox;
+    CB_AddrOut: TComboBox;
+    P_Inputs: TPanel;
+    P_Outputs: TPanel;
     procedure FormCreate(Sender: TObject);
-    procedure CB_RCSAdrChange(Sender: TObject);
-    procedure B_ClearClick(Sender: TObject);
+    procedure CB_AddrChange(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure CB_AddrInChange(Sender: TObject);
+    procedure CB_AddrOutChange(Sender: TObject);
 
   private const
     _S_TOP = 18;
     _S_HEIGHT = 12;
     _S_WIDTH = 25;
-    _S_INCR = 15;
     _S_LEFT = 10;
     _L_LEFT = 40;
     _NO_INPUTS = 16;
@@ -35,21 +52,21 @@ type
 
   private
     RCSAddr: Integer;
+    RCSAddrInputs: Integer;
+    RCSAddrOutputs: Integer;
+
     CB_RCSAdrData: TList<Cardinal>; // always sorted!
-    SInput: array [0 .. _NO_INPUTS - 1] of TShape;
-    SOutput: array [0 .. _NO_OUTPUTS - 1] of TShape;
+    inputs: TObjectList<TIOGUI>;
+    outputs: TObjectList<TIOGUI>;
 
-    LInput: array [0 .. _NO_INPUTS - 1] of TLabel;
-    LOutput: array [0 .. _NO_OUTPUTS - 1] of TLabel;
-
-    procedure CreateSInput();
-    procedure CreateSOutput();
+    procedure CreateInputs(rcsAddr: Integer);
+    procedure CreateOutputs(rcsAddr: Integer);
     procedure SOutputMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FillRCSAddrs();
 
   public
-    procedure UpdateOut();
-    procedure UpdateIn();
+    procedure UpdateOutputs();
+    procedure UpdateInputs();
     procedure UpdateState();
 
     procedure AfterRCSOpen();
@@ -64,264 +81,307 @@ var
 
 implementation
 
-uses TechnologieRCS, Logging, RCS, BlockSignal, RCSErrors;
+uses TechnologieRCS, Logging, RCS, BlockSignal, RCSErrors, IfThenElse;
 
 {$R *.dfm}
 
-procedure TF_Tester.UpdateOut();
-var val: Integer;
-  outCnt: Cardinal;
+constructor TIOGUI.Create(parent: TWinControl; i: Integer; onMouseUp: TMouseUpEvent);
 begin
-  if ((not RCSi.NoExStarted()) or (RCSAddr < 0) or (RCSi.IsModuleFailure(RCSAddr))) then
-  begin
-    for var i := 0 to _NO_OUTPUTS - 1 do
-    begin
-      SOutput[i].Brush.Color := clGray;
-      SOutput[i].Visible := true;
-    end;
-    Exit();
-  end;
+  inherited Create();
 
-  try
-    outCnt := RCSi.GetModuleOutputsCount(RCSAddr);
-  except
-    outCnt := _NO_OUTPUTS;
-  end;
+  Self.panel := TPanel.Create(nil);
+  Self.panel.Parent := parent;
+  Self.panel.Left := 0;
+  Self.panel.BevelOuter := bvNone;
+  Self.panel.ParentColor := false;
+  Self.panel.ParentBackground := false;
 
-  for var i := 0 to _NO_OUTPUTS - 1 do
-  begin
-    SOutput[i].Visible := (i < Integer(outCnt));
-    LOutput[i].Visible := (i < Integer(outCnt));
+  Self.shape := TShape.Create(nil);
+  Self.shape.Parent := Self.panel;
+  Self.shape.Left := _PADDING;
+  Self.shape.Top := _PADDING;
+  Self.shape.Tag := i;
+  Self.shape.Brush.Color := clGray;
+  Self.shape.OnMouseUp := onMouseUp;
 
-    if (i < Integer(outCnt)) then
-    begin
-      try
-        val := RCSi.GetOutput(RCSAddr, i);
-        if (val >= RCS_ERRORS_START) then
-          val := -1;
-      except
-        val := -1;
-      end;
+  Self.description := TLabel.Create(nil);
+  Self.description.Parent := Self.panel;
+  Self.description.AutoSize := true;
+  Self.description.Font.Size := 10;
+  Self.description.Caption := IntToStr(i);
 
-      if (val < 0) then
-        SOutput[i].Brush.Color := clGray
-      else
-      begin
-        if (RCSi.GetOutputType(RCSAddr, i) = TRCSOPortType.optSCom) then
-        begin
-          if (val = 0) then
-            SOutput[i].Brush.Color := clBlue
-          else
-            SOutput[i].Brush.Color := clWhite;
-        end else begin
-          if (val = 0) then
-            SOutput[i].Brush.Color := clRed
-          else
-            SOutput[i].Brush.Color := clLime;
-        end;
-      end;
-    end;
-  end; // for i
+  Self.value := TLabel.Create(nil);
+  Self.value.Parent := Self.panel;
+  Self.value.AutoSize := true;
+  Self.value.Font.Size := 10;
+  Self.value.Caption := '-';
 end;
 
-procedure TF_Tester.UpdateIn();
-var InputState: TRCSInputState;
-  LastState: TRCSInputState;
-  stateStr: string;
-  inCnt: Cardinal;
+destructor TIOGUI.Destroy();
 begin
-  if ((not RCSi.NoExStarted()) or (RCSAddr < 0) or (RCSi.IsModuleFailure(RCSAddr))) then
-  begin
-    for var i := 0 to _NO_INPUTS - 1 do
-    begin
-      SInput[i].Brush.Color := clGray;
-      SInput[i].Visible := true;
-    end;
-    Exit();
-  end;
+  Self.shape.Free();
+  Self.description.Free();
+  Self.value.Free();
+  Self.panel.Free();
+  inherited Destroy();
+end;
 
-  try
-    inCnt := RCSi.GetModuleInputsCount(RCSAddr);
-  except
-    inCnt := _NO_INPUTS;
-  end;
-
-  for var i := 0 to _NO_INPUTS - 1 do
-  begin
-    SInput[i].Visible := (i < Integer(inCnt));
-    LInput[i].Visible := (i < Integer(inCnt));
-
-    if (i < Integer(inCnt)) then
-    begin
-      try
-        InputState := RCSi.GetInput(RCSAddr, i);
-      except
-        InputState := failure;
-      end;
-
-      if (Self.CHB_LogZmeny.Checked) then
-      begin
-        case (SInput[i].Brush.Color) of
-          clRed:
-            LastState := isOff;
-          clLime:
-            LastState := isOn;
-          clGray:
-            LastState := failure;
-          clSilver:
-            LastState := notYetScanned;
-        else
-          LastState := failure;
-        end;
-
-        if (InputState <> LastState) then
-        begin
-          case (InputState) of
-            isOff:
-              stateStr := '0';
-            isOn:
-              stateStr := '1';
-            failure:
-              stateStr := 'F';
-            notYetScanned:
-              stateStr := '?';
-          end;
-
-          Self.LB_Changes.Items.Add('Změna:: RCS:' + Format('%3d', [RCSAddr]) + ', port: ' + Format('%2d', [i]) +
-            ', state:' + stateStr);
-          Beep;
-        end; // if (InputState <> LastState)
-      end; // if F_Tester.CHB_LogZmeny.Checked
-
-      if (InputState = isOn) then
-        SInput[i].Brush.Color := clLime
-      else if (InputState = isOff) then
-        SInput[i].Brush.Color := clRed
-      else if (InputState = notYetScanned) then
-        SInput[i].Brush.Color := clSilver
-      else
-        SInput[i].Brush.Color := clGray;
-    end; // if i < inCnt
-  end; // for i
+procedure TIOGUI.Resize(top, width, height: Integer);
+begin
+  Self.panel.Top := top;
+  Self.panel.Width := width;
+  Self.panel.Height := height;
+  Self.shape.Top := (height div 8);
+  Self.shape.Width := (width div 2);
+  Self.shape.Height := height - (2*Self.shape.Top);
+  Self.description.Left := (width div 2) + 3*_PADDING;
+  Self.description.Top := (height div 2) - (Self.description.Height div 2);
+  Self.value.Left := Round(width/4*3) + _PADDING;
+  Self.value.Top := (height div 2) - (Self.value.Height div 2);
 end;
 
 procedure TF_Tester.UpdateState();
 begin
-  if (Self.RCSAddr < 0) then
+  if (Self.RCSAddrInputs > -1) then
   begin
-    Self.L_state.Caption := '-';
-    Self.L_state.Font.Color := clBlack;
+    try
+      if (RCSi.IsModuleFailure(Self.RCSAddrInputs)) then begin
+        Self.GB_Inputs.Color := clSilver;
+      end else if (RCSi.IsModuleError(Self.RCSAddrInputs)) then begin
+        Self.GB_Inputs.Color := clRed;
+      end else if (RCSi.IsModuleWarning(Self.RCSAddrInputs)) then begin
+        Self.GB_Inputs.Color := clYellow;
+      end else begin
+        Self.GB_Inputs.Color := clBtnFace;
+      end;
+    except
+      Self.GB_Inputs.Color := clRed;
+    end;
+  end else begin
+    Self.GB_Inputs.Color := clBtnFace;
+  end;
+
+  if (Self.RCSAddrOutputs > -1) then
+  begin
+    try
+      if (RCSi.IsModuleFailure(Self.RCSAddrOutputs)) then begin
+        Self.GB_Outputs.Color := clSilver;
+      end else if (RCSi.IsModuleError(Self.RCSAddrOutputs)) then begin
+        Self.GB_Outputs.Color := clRed;
+      end else if (RCSi.IsModuleWarning(Self.RCSAddrOutputs)) then begin
+        Self.GB_Outputs.Color := clYellow;
+      end else begin
+        Self.GB_Outputs.Color := clBtnFace;
+      end;
+    except
+      Self.GB_Outputs.Color := clRed;
+    end;
+  end else begin
+    Self.GB_Outputs.Color := clBtnFace;
+  end;
+end;
+
+procedure TF_Tester.UpdateInputs();
+begin
+  if ((not RCSi.NoExStarted()) or (Self.RCSAddrInputs < 0)) then
+  begin
+    for var i := 0 to Self.inputs.Count-1 do
+      Self.inputs[i].shape.Brush.Color := clGray;
     Exit();
   end;
 
-  try
-    if (RCSi.IsModuleFailure(Self.RCSAddr)) then begin
-      Self.L_state.Caption := 'fail';
-      Self.L_state.Font.Color := clRed;
-    end else if (RCSi.IsModuleError(Self.RCSAddr)) then begin
-      Self.L_state.Caption := 'error';
-      Self.L_state.Font.Color := clRed;
-    end else if (RCSi.IsModuleWarning(Self.RCSAddr)) then begin
-      Self.L_state.Caption := 'warning';
-      Self.L_state.Font.Color := clOlive;
-    end else begin
-      Self.L_state.Caption := 'ok';
-      Self.L_state.Font.Color := clGreen;
+  for var i := 0 to Self.inputs.Count-1 do
+  begin
+    var state: TRCSInputState;
+    try
+      state := RCSi.GetInput(Self.RCSAddrInputs, i);
+    except
+      state := failure;
     end;
-  except
-    Self.L_state.Caption := 'exc';
-    Self.L_state.Font.Color := clRed;
+
+    if (state = TRCSInputState.isOn) then begin
+      Self.inputs[i].panel.Color := ite(Self.inputs[i].shape.Brush.Color = clRed, clYellow, clBtnFace);
+      Self.inputs[i].shape.Brush.Color := clLime;
+      Self.inputs[i].value.Caption := 'on';
+    end else if (state = TRCSInputState.isOff) then begin
+      Self.inputs[i].panel.Color := ite(Self.inputs[i].shape.Brush.Color = clLime, clYellow, clBtnFace);
+      Self.inputs[i].shape.Brush.Color := clRed;
+      Self.inputs[i].value.Caption := 'off';
+    end else if (state = TRCSInputState.notYetScanned) then begin
+      Self.inputs[i].panel.Color := ite(Self.inputs[i].shape.Brush.Color <> clSilver, clYellow, clBtnFace);
+      Self.inputs[i].shape.Brush.Color := clSilver;
+      Self.inputs[i].value.Caption := 'NYS';
+    end else begin
+      Self.inputs[i].panel.Color := ite(Self.inputs[i].shape.Brush.Color <> clGray, clYellow, clBtnFace);
+      Self.inputs[i].shape.Brush.Color := clGray;
+      Self.inputs[i].value.Caption := '-';
+    end;
+  end; // for i
+end;
+
+procedure TF_Tester.UpdateOutputs();
+begin
+  if ((not RCSi.NoExStarted()) or (Self.RCSAddrOutputs < 0)) then
+  begin
+    for var i := 0 to Self.outputs.Count-1 do
+      Self.outputs[i].shape.Brush.Color := clGray;
+    Exit();
   end;
+
+  for var i := 0 to Self.outputs.Count-1 do
+  begin
+    var state: TRCSOutputState := osFailure;
+    var typ: TRCSOPortType := optPlain;
+    try
+      state := RCSi.GetOutputState(Self.RCSAddrOutputs, i);
+      typ := RCSI.GetOutputType(Self.RCSAddrOutputs, i);
+    except
+
+    end;
+
+    if (typ = optSCom) then
+    begin
+      Self.outputs[i].shape.Brush.Color := ite(state = osDisabled, clBlue, clWhite);
+      Self.outputs[i].value.Caption := IntToStr(Integer(state));
+    end else begin
+      Self.outputs[i].shape.Brush.Color := ite(state = osDisabled, clRed, clLime);
+      if (state = osDisabled) then
+        Self.outputs[i].value.Caption := 'off'
+      else if (state = osEnabled) then
+        Self.outputs[i].value.Caption := 'on';
+    end;
+
+    case (state) of
+      osf60:
+        Self.outputs[i].value.Caption := 'f60';
+      osf120:
+        Self.outputs[i].value.Caption := 'f120';
+      osf180:
+        Self.outputs[i].value.Caption := 'f180';
+      osf240:
+        Self.outputs[i].value.Caption := 'f240';
+      osf300:
+        Self.outputs[i].value.Caption := 'f300';
+      osf600:
+        Self.outputs[i].value.Caption := 'f600';
+      osf33:
+        Self.outputs[i].value.Caption := 'f33';
+      osf66:
+        Self.outputs[i].value.Caption := 'f66';
+
+      osFailure, osNotYetScanned, osUnavailableModule, osUnavailablePort:
+      begin
+        Self.outputs[i].shape.Brush.Color := clGray;
+        Self.outputs[i].value.Caption := '-';
+      end;
+    end;
+  end; // for i
 end;
 
 procedure TF_Tester.FormCreate(Sender: TObject);
 begin
   Self.CB_RCSAdrData := TList<Cardinal>.Create();
+  Self.inputs := TObjectList<TIOGUI>.Create();
+  Self.outputs := TObjectList<TIOGUI>.Create();
+
   Self.RCSAddr := -1;
-  Self.CreateSInput();
-  Self.CreateSOutput();
+  Self.RCSAddrInputs := -1;
+  Self.RCSAddrOutputs := -1;
 end;
 
 procedure TF_Tester.FormDestroy(Sender: TObject);
 begin
   Self.CB_RCSAdrData.Free();
+  Self.inputs.Free();
+  Self.outputs.Free();
 end;
 
-procedure TF_Tester.CB_RCSAdrChange(Sender: TObject);
+procedure TF_Tester.FormResize(Sender: TObject);
 begin
-  if ((CB_RCSAdr.ItemIndex > -1) and (CB_RCSAdr.ItemIndex < CB_RCSAdrData.Count)) then
-    RCSAddr := CB_RCSAdrData[CB_RCSAdr.ItemIndex]
-  else
-    RCSAddr := -1;
+  Self.CB_Addr.Width := Self.ClientWidth - (2*Self.CB_Addr.Left);
+  Self.GB_Inputs.Width := (Self.ClientWidth div 2) - Round(1.5*Self.GB_Inputs.Left);
+  Self.GB_Outputs.Left := (Self.ClientWidth div 2) + (Self.GB_Inputs.Left div 2);
+  Self.GB_Outputs.Width := Self.GB_Inputs.Width;
+  Self.GB_Inputs.Height := Self.ClientHeight - Self.GB_Inputs.Top - 5;
+  Self.GB_Outputs.Height := Self.ClientHeight - Self.GB_Outputs.Top - 5;
 
-  Self.UpdateOut();
-  Self.UpdateIn();
-  Self.UpdateState();
-end;
-
-procedure TF_Tester.CreateSInput();
-var aTop: Integer;
-begin
-  aTop := _S_TOP;
-
-  for var i := 0 to _NO_INPUTS - 1 do
   begin
-    SInput[i] := TShape.Create(Self.GB_vstupy);
+    var aTop: Integer := 0;
+    for var i: Integer := 0 to Self.inputs.Count-1 do
+    begin
+      Self.inputs[i].Resize(aTop, Self.P_Inputs.ClientWidth, Self.P_Inputs.ClientHeight div Self.inputs.Count);
+      aTop := aTop + (Self.P_Inputs.ClientHeight div Self.inputs.Count);
+    end;
+  end;
 
-    SInput[i].Parent := Self.GB_vstupy;
-    SInput[i].Top := aTop;
-    SInput[i].Left := _S_LEFT;
-    SInput[i].Width := _S_WIDTH;
-    SInput[i].Height := _S_HEIGHT;
-    SInput[i].Shape := stRectangle;
-    SInput[i].Tag := i;
-    SInput[i].Brush.Color := clRed;
-
-    var L := TLabel.Create(Self.GB_vstupy);
-    L.Parent := Self.GB_vstupy;
-    L.Caption := IntToStr(i);
-    L.Left := _L_LEFT;
-    L.Top := aTop;
-    LInput[i] := L;
-
-    aTop := aTop + _S_INCR;
+  begin
+    var aTop: Integer := 0;
+    for var i: Integer := 0 to Self.outputs.Count-1 do
+    begin
+      Self.outputs[i].Resize(aTop, Self.P_Outputs.ClientWidth, Self.P_Outputs.ClientHeight div Self.outputs.Count);
+      aTop := aTop + (Self.P_Outputs.ClientHeight div Self.outputs.Count);
+    end;
   end;
 end;
 
-procedure TF_Tester.CreateSOutput();
-var aTop: Integer;
+procedure TF_Tester.CB_AddrInChange(Sender: TObject);
 begin
-  aTop := _S_TOP;
+  Self.inputs.Clear();
 
-  for var i := 0 to _NO_OUTPUTS - 1 do
+  if (Self.CB_AddrIn.ItemIndex > -1) then
   begin
-    SOutput[i] := TShape.Create(Self.GB_vystupy);
+    Self.RCSAddrInputs := Self.CB_RCSAdrData[Self.CB_AddrIn.ItemIndex];
+    Self.CreateInputs(Self.RCSAddrInputs);
+    Self.UpdateInputs();
+  end else
+    Self.RCSAddrInputs := -1;
 
-    SOutput[i].Parent := Self.GB_vystupy;
-    SOutput[i].Top := aTop;
-    SOutput[i].Left := _S_LEFT;
-    SOutput[i].Width := _S_WIDTH;
-    SOutput[i].Height := _S_HEIGHT;
-    SOutput[i].Shape := stRectangle;
-    SOutput[i].Tag := i;
-    SOutput[i].Brush.Color := clRed;
-    SOutput[i].OnMouseUp := SOutputMouseUp;
+  Self.UpdateState();
+end;
 
-    var L := TLabel.Create(Self.GB_vystupy);
-    L.Parent := Self.GB_vystupy;
-    L.Caption := IntToStr(i);
-    L.Left := _L_LEFT;
-    L.Top := aTop;
-    LOutput[i] := L;
+procedure TF_Tester.CB_AddrOutChange(Sender: TObject);
+begin
+  Self.outputs.Clear();
 
-    aTop := aTop + _S_INCR;
-  end; // for i
+  if (Self.CB_AddrOut.ItemIndex > -1) then
+  begin
+    Self.RCSAddrOutputs := Self.CB_RCSAdrData[Self.CB_AddrOut.ItemIndex];
+    Self.CreateOutputs(Self.RCSAddrOutputs);
+    Self.UpdateOutputs();
+  end else
+    Self.RCSAddrOutputs := -1;
+
+  Self.UpdateState();
+end;
+
+procedure TF_Tester.CB_AddrChange(Sender: TObject);
+begin
+  Self.CB_AddrIn.ItemIndex := Self.CB_Addr.ItemIndex;
+  Self.CB_AddrInChange(Self);
+  Self.CB_AddrOut.ItemIndex := Self.CB_Addr.ItemIndex;
+  Self.CB_AddrOutChange(Self);
+end;
+
+procedure TF_Tester.CreateInputs(rcsAddr: Integer);
+begin
+  Self.inputs.Clear();
+  for var i := 0 to RCSi.GetModuleInputsCountSafe(rcsAddr)-1 do
+    Self.inputs.Add(TIOGUI.Create(Self.P_Inputs, i, nil));
+  Self.FormResize(Self);
+end;
+
+procedure TF_Tester.CreateOutputs(rcsAddr: Integer);
+begin
+  Self.outputs.Clear();
+  for var i := 0 to RCSi.GetModuleOutputsCountSafe(rcsAddr)-1 do
+    Self.outputs.Add(TIOGUI.Create(Self.P_Outputs, i, Self.SOutputMouseUp));
+  Self.FormResize(Self);
 end;
 
 procedure TF_Tester.SOutputMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var oldColor: TColor;
 begin
-  if (RCSAddr < 0) then
+  if (Self.RCSAddrOutputs < 0) then
     Exit();
   oldColor := (Sender as TShape).Brush.Color;
   (Sender as TShape).Brush.Color := clYellow;
@@ -329,12 +389,12 @@ begin
   try
     if (oldColor = clRed) then
     begin
-      RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 1);
+      RCSi.SetOutput(Self.RCSAddrOutputs, (Sender as TShape).Tag, 1);
     end else if (oldColor = clBlue) then
     begin
-      RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, Integer(ncVse));
+      RCSi.SetOutput(Self.RCSAddrOutputs, (Sender as TShape).Tag, Integer(ncVse));
     end else begin
-      RCSi.SetOutput(RCSAddr, (Sender as TShape).Tag, 0);
+      RCSi.SetOutput(Self.RCSAddrOutputs, (Sender as TShape).Tag, 0);
     end;
   except
     on E: Exception do
@@ -342,15 +402,12 @@ begin
   end;
 end;
 
-procedure TF_Tester.B_ClearClick(Sender: TObject);
-begin
-  Self.LB_Changes.Clear();
-end;
-
 procedure TF_Tester.FillRCSAddrs();
 begin
   Self.CB_RCSAdrData.Clear();
-  Self.CB_RCSAdr.Clear();
+  Self.CB_Addr.Clear();
+  Self.CB_AddrIn.Clear();
+  Self.CB_AddrOut.Clear();
 
   for var i := 0 to RCSi.maxModuleAddr do
   begin
@@ -362,16 +419,22 @@ begin
     end;
 
     Self.CB_RCSAdrData.Add(i);
+    var name: string := '-';
 
     try
-      Self.CB_RCSAdr.Items.Add(IntToStr(i) + ': ' + RCSi.GetModuleName(i));
+      name := RCSi.GetModuleName(i);
     except
-      Self.CB_RCSAdr.Items.Add(IntToStr(i) + ': -');
+      name := IntToStr(i);
     end;
+
+    var addrAndName: string := IntToStr(i) + ': ' + name;
+    Self.CB_Addr.Items.Add(addrAndName);
+    Self.CB_AddrIn.Items.Add(addrAndName);
+    Self.CB_AddrOut.Items.Add(addrAndName);
   end;
 
-  Self.CB_RCSAdr.ItemIndex := -1;
-  Self.CB_RCSAdrChange(Self);
+  Self.CB_Addr.ItemIndex := -1;
+  Self.CB_AddrChange(Self);
 end;
 
 procedure TF_Tester.AfterRCSOpen();
@@ -381,19 +444,32 @@ end;
 
 procedure TF_Tester.RCSModuleChanged(addr: Cardinal);
 begin
-  if (Integer(addr) = Self.RCSAddr) then
+  if ((Integer(addr) = Self.RCSAddr) and (Self.CB_Addr.ItemIndex > -1)) then
   begin
-    Self.UpdateOut();
-    Self.UpdateIn();
+    try
+      Self.CB_Addr.Text := IntToStr(addr) + ': ' + RCSi.GetModuleName(addr);
+    except
+      Self.CB_Addr.Text := IntToStr(addr) + ': -';
+    end;
+  end;
+  if ((Integer(addr) = Self.RCSAddrInputs) and (Self.CB_AddrIn.ItemIndex > -1)) then
+  begin
     Self.UpdateState();
-
-    if (Self.CB_RCSAdr.ItemIndex > -1) then
-    begin
-      try
-        Self.CB_RCSAdr.Text := IntToStr(addr) + ': ' + RCSi.GetModuleName(addr);
-      except
-        Self.CB_RCSAdr.Text := IntToStr(addr) + ': -';
-      end;
+    Self.UpdateInputs();
+    try
+      Self.CB_AddrIn.Text := IntToStr(addr) + ': ' + RCSi.GetModuleName(addr);
+    except
+      Self.CB_AddrIn.Text := IntToStr(addr) + ': -';
+    end;
+  end;
+  if ((Integer(addr) = Self.RCSAddrOutputs) and (Self.CB_AddrOut.ItemIndex > -1)) then
+  begin
+    Self.UpdateState();
+    Self.UpdateOutputs();
+    try
+      Self.CB_AddrOut.Text := IntToStr(addr) + ': ' + RCSi.GetModuleName(addr);
+    except
+      Self.CB_AddrOut.Text := IntToStr(addr) + ': -';
     end;
   end;
 
@@ -402,12 +478,18 @@ begin
     if (not Self.CB_RCSAdrData.BinarySearch(addr, i)) then
     begin
       // address not in addrs list -> add
+      var name: string := '-';
       try
-        Self.CB_RCSAdr.Items.Insert(i, IntToStr(addr) + ': ' + RCSi.GetModuleName(addr));
+        name := RCSi.GetModuleName(addr);
       except
-        Self.CB_RCSAdr.Items.Insert(i, IntToStr(addr) + ': -');
+
       end;
 
+      var addrAndName: string := IntToStr(addr) + ': ' + name;
+
+      Self.CB_Addr.Items.Insert(i, addrAndName);
+      Self.CB_AddrIn.Items.Insert(i, addrAndName);
+      Self.CB_AddrOut.Items.Insert(i, addrAndName);
       Self.CB_RCSAdrData.Insert(i, addr);
     end;
   end;
@@ -415,14 +497,14 @@ end;
 
 procedure TF_Tester.RCSModuleInputsChanged(addr: Cardinal);
 begin
-  if (Integer(addr) = Self.RCSAddr) then
-    Self.UpdateIn();
+  if (Integer(addr) = Self.RCSAddrInputs) then
+    Self.UpdateInputs();
 end;
 
 procedure TF_Tester.RCSModuleOutputsChanged(addr: Cardinal);
 begin
-  if (Integer(addr) = Self.RCSAddr) then
-    Self.UpdateOut();
+  if (Integer(addr) = Self.RCSAddrOutputs) then
+    Self.UpdateOutputs();
 end;
 
 end.

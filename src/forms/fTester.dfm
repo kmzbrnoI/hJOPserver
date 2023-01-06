@@ -2,10 +2,9 @@ object F_Tester: TF_Tester
   Left = 849
   Top = 124
   BorderIcons = [biSystemMenu]
-  BorderStyle = bsSingle
   Caption = 'RCS tester'
-  ClientHeight = 354
-  ClientWidth = 492
+  ClientHeight = 446
+  ClientWidth = 360
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -39,15 +38,15 @@ object F_Tester: TF_Tester
     0000000000000000000000000000000000000000000000000000000000000000
     000000000000000000000000000000000001FFFFFFFFFFFFFFFFFFFFFFFF}
   OldCreateOrder = False
-  Position = poScreenCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object L_1: TLabel
     Left = 7
     Top = 7
-    Width = 63
+    Width = 66
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
@@ -62,117 +61,100 @@ object F_Tester: TF_Tester
     Font.Style = []
     ParentFont = False
   end
-  object L_state: TLabel
-    Left = 158
-    Top = 333
-    Width = 3
-    Height = 13
-    Alignment = taRightJustify
-    Caption = '-'
-  end
-  object GB_vstupy: TGroupBox
+  object GB_Inputs: TGroupBox
     Left = 7
     Top = 49
-    Width = 73
-    Height = 275
+    Width = 164
+    Height = 390
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Vstupy '
-    TabOrder = 0
+    Color = clBtnFace
+    ParentBackground = False
+    ParentColor = False
+    TabOrder = 1
+    object CB_AddrIn: TComboBox
+      Left = 2
+      Top = 15
+      Width = 160
+      Height = 21
+      Align = alTop
+      Style = csDropDownList
+      TabOrder = 0
+      OnChange = CB_AddrInChange
+      ExplicitLeft = 24
+      ExplicitTop = 24
+      ExplicitWidth = 145
+    end
+    object P_Inputs: TPanel
+      Left = 2
+      Top = 36
+      Width = 160
+      Height = 352
+      Align = alClient
+      BevelOuter = bvNone
+      ParentBackground = False
+      TabOrder = 1
+      ExplicitLeft = 32
+      ExplicitTop = 136
+      ExplicitWidth = 185
+      ExplicitHeight = 41
+    end
   end
-  object CB_RCSAdr: TComboBox
+  object CB_Addr: TComboBox
     Left = 8
     Top = 24
-    Width = 153
+    Width = 345
     Height = 21
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    TabOrder = 1
-    OnChange = CB_RCSAdrChange
+    TabOrder = 0
+    OnChange = CB_AddrChange
   end
-  object CHB_LogZmeny: TCheckBox
-    Left = 7
-    Top = 330
-    Width = 97
-    Height = 17
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Logovat zm'#283'ny'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 2
-  end
-  object GB_Change: TGroupBox
-    Left = 176
-    Top = 7
-    Width = 305
-    Height = 340
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = ' Zm'#283'ny '
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
-    Font.Height = -11
-    Font.Name = 'MS Sans Serif'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 3
-    object LB_Changes: TListBox
-      Left = 2
-      Top = 15
-      Width = 301
-      Height = 290
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Align = alTop
-      Font.Charset = EASTEUROPE_CHARSET
-      Font.Color = clBlack
-      Font.Height = -11
-      Font.Name = 'Courier New'
-      Font.Style = []
-      ItemHeight = 14
-      ParentFont = False
-      TabOrder = 0
-    end
-    object B_Clear: TButton
-      Left = 88
-      Top = 314
-      Width = 139
-      Height = 17
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'Smazat'
-      TabOrder = 1
-      OnClick = B_ClearClick
-    end
-  end
-  object GB_vystupy: TGroupBox
-    Left = 91
+  object GB_Outputs: TGroupBox
+    Left = 175
     Top = 49
-    Width = 73
-    Height = 275
+    Width = 178
+    Height = 390
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' V'#253'stupy '
-    TabOrder = 4
+    Color = clBtnFace
+    ParentBackground = False
+    ParentColor = False
+    TabOrder = 2
+    object CB_AddrOut: TComboBox
+      Left = 2
+      Top = 15
+      Width = 174
+      Height = 21
+      Align = alTop
+      Style = csDropDownList
+      TabOrder = 0
+      OnChange = CB_AddrOutChange
+      ExplicitLeft = 4
+      ExplicitTop = 23
+      ExplicitWidth = 118
+    end
+    object P_Outputs: TPanel
+      Left = 2
+      Top = 36
+      Width = 174
+      Height = 352
+      Align = alClient
+      BevelOuter = bvNone
+      TabOrder = 1
+      ExplicitLeft = 4
+      ExplicitTop = 38
+      ExplicitWidth = 118
+      ExplicitHeight = 237
+    end
   end
 end
