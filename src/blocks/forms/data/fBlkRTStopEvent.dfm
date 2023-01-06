@@ -12,6 +12,7 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDefault
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
@@ -34,7 +35,6 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitHeight = 162
     end
   end
   object GB_DetekceZpomalenii: TGroupBox
@@ -69,7 +69,6 @@ object F_BlkRTStopEvent: TF_BlkRTStopEvent
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitTop = 104
     end
     object SE_Slow_Speed: TSpinEdit
       Left = 11

@@ -420,7 +420,6 @@ type
     procedure LoadIniLibData();
     procedure DetekujAutSpusteniSystemu();
     procedure OnStart();
-    procedure SaveFormPosition();
     procedure VypisDatumCas();
     procedure LogStatus(str: string);
     procedure DisableRemoveButtons();
@@ -1938,7 +1937,6 @@ begin
   end;
 
   try
-    F_Main.SaveFormPosition;
     FormData.SaveFormData(FormData.aFile);
   except
     on E: Exception do
@@ -2737,30 +2735,14 @@ begin
   CloseForm;
 end;
 
-procedure TF_Main.SaveFormPosition();
-var ini: TMemIniFile;
-begin
-  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
-  try
-    case F_Main.WindowState of
-      wsNormal:
-        ini.WriteInteger('Application', 'WState', 1);
-      wsMaximized:
-        ini.WriteInteger('Application', 'WState', 0);
-    end; // case
-    ini.WriteInteger('Application', 'Left', F_Main.Left);
-    ini.WriteInteger('Application', 'Top', F_Main.Top);
-    ini.WriteInteger('Application', 'Heigth', F_Main.Height);
-    ini.WriteInteger('Application', 'Width', F_Main.Width);
-  finally
-    ini.UpdateFile();
-    ini.Free();
-  end;
-end;
-
 procedure TF_Main.PM_SaveFormPosClick(Sender: TObject);
 begin
-  F_Main.SaveFormPosition;
+  try
+    FormData.SaveFormData(FormData.aFile);
+  except
+    on E: Exception do
+      Application.MessageBox(PChar('Výjimka:'+#13#10+E.Message), 'Chyba při ukládání dat', MB_OK OR MB_ICONWARNING);
+  end;
 end;
 
 procedure TF_Main.FormPaint(Sender: TObject);

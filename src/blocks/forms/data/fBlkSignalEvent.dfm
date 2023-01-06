@@ -13,6 +13,7 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDefault
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -55,7 +56,6 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 0
-      ExplicitHeight = 174
     end
   end
   object GB_DetekceZpomalenii: TGroupBox
@@ -90,7 +90,6 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
       Align = alBottom
       BevelOuter = bvNone
       TabOrder = 2
-      ExplicitTop = 80
     end
     object SE_Slow_Speed: TSpinEdit
       Left = 9

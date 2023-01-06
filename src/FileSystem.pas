@@ -50,7 +50,7 @@ implementation
 uses fSettings, fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
   AreaDb, BlockDb, BoosterDb, SnadnSpusteni, THVDatabase,
   TCPServerPT, Logging, TCPServerPanel, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
-  DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce,
+  DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce, fTester,
   TechnologieTrakce, TJCDatabase;
 
 procedure TConfig.CreateCfgDirs();
@@ -342,21 +342,6 @@ begin
 
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
   try
-    case ini.ReadInteger('Application', 'WState', 0) of
-      0:
-        begin
-          F_Main.WindowState := wsMaximized;
-        end;
-      1:
-        begin
-          F_Main.Left := ini.ReadInteger('Application', 'Left', 200);
-          F_Main.Top := ini.ReadInteger('Application', 'Top', 200);
-          F_Main.Height := ini.ReadInteger('Application', 'Heigth', 500);
-          F_Main.Width := ini.ReadInteger('Application', 'Width', 1125);
-          F_Main.WindowState := wsNormal;
-        end;
-    end; // case
-
     F_Options.LB_Timer.ItemIndex := ini.ReadInteger('SystemCfg', 'TimerInterval', 4);
     F_Options.LB_TimerClick(Self);
     F_Options.CHB_povolit_spusteni.Checked := ini.ReadBool('SystemCfg', 'AutSpusteni', false);
@@ -469,24 +454,45 @@ begin
   FormData.aFile := filename;
   objs := TStringList.Create();
   try
-    ini.GetStrings(objs); // "[LV_xy]" (must cut "[]")
+    ini.ReadSections(objs); // "[LV_xy]" (must cut "[]")
     for var obj in objs do
     begin
-      var j := 0;
-      var rawObj := Copy(obj, 2, Length(obj) - 2);
-      while (ini.ReadInteger(rawObj, IntToStr(j), -1) > -1) do
+      var aComponent := Application.FindComponent(obj);
+      if (aComponent = nil) then
+        aComponent := F_Options.FindComponent(obj);
+      if (aComponent = nil) then
+        aComponent := F_Main.FindComponent(obj);
+
+      if (aComponent <> nil) then
       begin
-        var aComponent := F_Options.FindComponent(rawObj);
-        if (aComponent = nil) then
-          aComponent := F_Main.FindComponent(rawObj);
+        if (aComponent is TForm) then
+        begin
+          var form: TForm := (aComponent as TForm);
+          if ((ini.ReadBool(obj, 'maximized', false)) and (TBorderIcon.biMaximize in form.BorderIcons)) then
+          begin
+            form.WindowState := TWindowState.wsMaximized;
+          end else begin
+            form.WindowState := wsNormal;
+            form.Left := ini.ReadInteger(obj, 'Left', (aComponent as TForm).Left);
+            form.Top := ini.ReadInteger(obj, 'Top', (aComponent as TForm).Top);
+            form.Width := ini.ReadInteger(obj, 'Width', (aComponent as TForm).Width);
+            form.Height := ini.ReadInteger(obj, 'Height', (aComponent as TForm).Height);
+          end;
+        end;
 
-        if (aComponent <> nil) then
-          if (j < (aComponent as TListView).Columns.Count) then
-            (aComponent as TListView).Columns.Items[j].Width := ini.ReadInteger(rawObj, IntToStr(j), 0);
-
-        j := j + 1;
-      end; // while
+        if (aComponent is TListView) then
+        begin
+          var j := 0;
+          while (ini.ReadInteger(obj, IntToStr(j), -1) > -1) do
+          begin
+            if (j < (aComponent as TListView).Columns.Count) then
+              (aComponent as TListView).Columns.Items[j].Width := ini.ReadInteger(obj, IntToStr(j), 0);
+            j := j + 1;
+          end;
+        end; // while
+      end;
     end; // for i
+
   finally
     objs.Free();
     ini.Free();
@@ -495,24 +501,46 @@ begin
 end;
 
 procedure TFormData.SaveFormData(filename: String);
-var i, j: Integer;
-  ini: TMemIniFile;
+var ini: TMemIniFile;
 begin
   DeleteFile(filename);
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
   try
-    for i := 0 to F_Options.ComponentCount - 1 do
-      if (F_Options.Components[i].ClassType = TListView) then
-        for j := 0 to (F_Options.Components[i] as TListView).Columns.Count - 1 do
+    for var i := 0 to F_Options.ComponentCount - 1 do
+      if (F_Options.Components[i] is TListView) then
+        for var j := 0 to (F_Options.Components[i] as TListView).Columns.Count - 1 do
           ini.WriteInteger(F_Options.Components[i].Name, IntToStr(j), (F_Options.Components[i] as TListView)
             .Columns.Items[j].Width);
 
-    for i := 0 to F_Main.ComponentCount - 1 do
-      if (F_Main.Components[i].ClassType = TListView) then
-        for j := 0 to (F_Main.Components[i] as TListView).Columns.Count - 1 do
+    for var i := 0 to F_Main.ComponentCount - 1 do
+      if (F_Main.Components[i] is TListView) then
+        for var j := 0 to (F_Main.Components[i] as TListView).Columns.Count - 1 do
           ini.WriteInteger(F_Main.Components[i].Name, IntToStr(j), (F_Main.Components[i] as TListView)
             .Columns.Items[j].Width);
+
+    for var i: Integer := 0 to Application.ComponentCount - 1 do
+    begin
+      if (Application.Components[i] is TForm) then
+      begin
+        var form: TForm := (Application.Components[i] as TForm);
+        if ((form.BorderStyle = bsSizeable) and (form.WindowState <> TWindowState.wsMaximized)) then
+        begin
+          ini.WriteInteger(form.Name, 'Width', form.Width);
+          ini.WriteInteger(form.Name, 'Height', form.Height);
+        end;
+        if (TBorderIcon.biMaximize in form.BorderIcons) then
+        begin
+          if (form.WindowState = TWindowState.wsMaximized) then
+            ini.WriteBool(Application.Components[i].Name, 'maximized', true);
+        end;
+        if ((form = F_Main) and (form.WindowState <> TWindowState.wsMaximized)) then
+        begin
+          ini.WriteInteger(form.Name, 'Left', form.Left);
+          ini.WriteInteger(form.Name, 'Top', form.Top);
+        end;
+      end;
+    end;
   finally
     ini.UpdateFile();
     ini.Free();

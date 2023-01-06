@@ -3131,6 +3131,7 @@ object F_Main: TF_Main
     FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
   Menu = Menu_1
   OldCreateOrder = False
+  Position = poDefault
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
