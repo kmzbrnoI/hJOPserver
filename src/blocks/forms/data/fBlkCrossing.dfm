@@ -570,7 +570,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Width = 241
         Height = 21
         TabOrder = 2
-        Text = 'Edit2'
+        Text = 'E_Track_Middle'
       end
       object E_Track_Right: TEdit
         Left = 16
@@ -578,7 +578,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Width = 241
         Height = 21
         TabOrder = 3
-        Text = 'Edit2'
+        Text = 'E_Track_Right'
       end
       object E_Track_Right_Out: TEdit
         Left = 16
@@ -586,7 +586,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Width = 241
         Height = 21
         TabOrder = 4
-        Text = 'Edit2'
+        Text = 'E_Track_Right_Out'
       end
       object ME_Track_Anul_Time: TMaskEdit
         Left = 168
@@ -621,7 +621,6 @@ object F_BlkCrossing: TF_BlkCrossing
       TabOrder = 4
       Items.Strings = (
         'Uvoln'#283'n'#237' prost'#345'edn'#237'ho '#250'seku'
-        'Obsazen'#237' t'#345'et'#237'ho '#250'seku'
         'Uvoln'#283'n'#237' vzdalovac'#237'ho '#250'seku')
     end
   end

@@ -23,8 +23,7 @@ type
 
   TBlkCrossingTrackOpening = (
     toMiddleFree = 0,
-    toLastOccupied = 1,
-    toOutFree = 2
+    toOutFree = 1
   );
 
   TBlkCrossingTrack = class
@@ -111,7 +110,11 @@ begin
   Self.middle.Parse(ini.ReadString(section, prefix + '-middle', ''));
   Self.right.Parse(ini.ReadString(section, prefix + '-right', ''));
   Self.rightOut.Parse(ini.ReadString(section, prefix + '-rightOut', ''));
-  Self.opening := TBlkCrossingTrackOpening(ini.ReadInteger(section, prefix + '-opening', 0));
+
+  var opening: Integer := ini.ReadInteger(section, prefix + '-opening', 0);
+  if (opening > 1) then
+    opening := 1;
+  Self.opening := TBlkCrossingTrackOpening(opening);
 
   str := ini.ReadString(section, prefix + '-anulTime', '01:00');
   Self.anulTime := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
@@ -206,9 +209,7 @@ begin
         if (Self.middle.state <> TTrackState.occupied) then
           Self.state := tsUnexpectedOccupation
         else if (Self.left.state = TTrackState.Free) then
-          Self.state := tsLRMidOccupied
-        else if ((Self.right.changed) and (Self.opening = toLastOccupied)) then
-          Self.stateChanged := true;
+          Self.state := tsLRMidOccupied;
       end;
 
     tsRLRightMidOccupied:
@@ -216,9 +217,7 @@ begin
         if (Self.middle.state <> TTrackState.occupied) then
           Self.state := tsUnexpectedOccupation
         else if (Self.right.state = TTrackState.Free) then
-          Self.state := tsRLMidOccupied
-        else if ((Self.left.changed) and (Self.opening = toLastOccupied)) then
-          Self.stateChanged := true;
+          Self.state := tsRLMidOccupied;
       end;
 
     tsLRMidOccupied:
@@ -234,8 +233,7 @@ begin
           end
           else
             Self.state := tsFree;
-        end else if ((Self.right.changed) and (Self.opening = toLastOccupied)) then
-          Self.stateChanged := true;
+        end;
       end;
 
     tsRLMidOccupied:
@@ -251,8 +249,7 @@ begin
           end
           else
             Self.state := tsFree;
-        end else if ((Self.left.changed) and (Self.opening = toLastOccupied)) then
-          Self.stateChanged := true;
+        end;
       end;
 
     tsLROnlyRightOccupied:
@@ -316,15 +313,6 @@ begin
         Result := (Self.state = tsLRLeftOccupied) or (Self.state = tsRLRightOccupied) or
           (Self.state = tsLRLeftMidOccupied) or (Self.state = tsRLRightMidOccupied) or (Self.state = tsLRMidOccupied) or
           (Self.state = tsRLMidOccupied);
-      end;
-
-    toLastOccupied:
-      begin
-        Result := (Self.state = tsLRLeftOccupied) or (Self.state = tsRLRightOccupied) or
-          (((Self.state = tsLRLeftMidOccupied) or (Self.state = tsLRMidOccupied)) and
-          (Self.right.state <> TTrackState.occupied)) or
-          (((Self.state = tsRLRightMidOccupied) or (Self.state = tsRLMidOccupied)) and
-          (Self.left.state <> TTrackState.occupied));
       end;
 
     toOutFree:
