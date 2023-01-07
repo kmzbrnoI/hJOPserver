@@ -8756,9 +8756,9 @@ object F_Main: TF_Main
     OnPopup = PM_BlokyPopup
     Left = 280
     Top = 456
-    object MI_TechProp: TMenuItem
-      Caption = 'Technologick'#233' vlastnosti'
-      OnClick = MI_TechPropClick
+    object MI_BlockState: TMenuItem
+      Caption = 'Stav bloku'
+      OnClick = MI_BlockStateClick
     end
     object MenuItem2: TMenuItem
       Caption = '-'

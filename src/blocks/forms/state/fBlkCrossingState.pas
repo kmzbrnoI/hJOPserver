@@ -49,6 +49,7 @@ uses ownConvert;
 procedure TF_BlkCrossingState.B_ApplyClick(Sender: TObject);
 begin
   Self.Apply();
+  Self.Update();
 end;
 
 procedure TF_BlkCrossingState.B_RefreshClick(Sender: TObject);

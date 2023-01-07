@@ -203,7 +203,7 @@ type
     PM_SaveLayout: TMenuItem;
     A_SaveStav: TAction;
     PM_Bloky: TPopupMenu;
-    MI_TechProp: TMenuItem;
+    MI_BlockState: TMenuItem;
     MenuItem2: TMenuItem;
     MI_Prop: TMenuItem;
     B_VC_Add: TButton;
@@ -352,7 +352,7 @@ type
     procedure A_SaveStavExecute(Sender: TObject);
     procedure PM_BlokyPopup(Sender: TObject);
     procedure MI_PropClick(Sender: TObject);
-    procedure MI_TechPropClick(Sender: TObject);
+    procedure MI_BlockStateClick(Sender: TObject);
     procedure B_JC_ResetClick(Sender: TObject);
     procedure P_Time_modelovyDblClick(Sender: TObject);
     procedure P_ZrychleniDblClick(Sender: TObject);
@@ -2563,7 +2563,7 @@ begin
   Screen.Cursor := crDefault;
 end;
 
-procedure TF_Main.MI_TechPropClick(Sender: TObject);
+procedure TF_Main.MI_BlockStateClick(Sender: TObject);
 var blk: TBlk;
 begin
   if (LV_Blocks.Selected = nil) then
@@ -2573,11 +2573,11 @@ begin
 
   case (blk.typ) of
     btTurnout:
-      F_BlkTurnoutState.OpenForm(blk as TBlkTurnout);
+      F_BlkTurnoutState.Open(blk as TBlkTurnout);
     btTrack, btRT:
-      F_BlkTrackState.OpenForm(blk as TBlkTrack);
+      F_BlkTrackState.Open(blk as TBlkTrack);
     btRailway:
-      F_BlkRailwayState.OpenForm(blk as TBlkRailway);
+      F_BlkRailwayState.Open(blk as TBlkRailway);
     btCrossing:
       F_BlkCrossingState.Open(blk as TBlkCrossing)
   end;

@@ -8,38 +8,35 @@ uses
 
 type
   TF_BlkTurnoutState = class(TForm)
-    B_Update: TButton;
+    B_Refresh: TButton;
     B_Apply: TButton;
-    M_Vyluka: TMemo;
+    M_Lockout: TMemo;
     Label6: TLabel;
-    M_Stitek: TMemo;
+    M_Note: TMemo;
     Label1: TLabel;
-    L_Usek21: TLabel;
-    L_Usek25: TLabel;
-    L_Usek20: TLabel;
-    Label2: TLabel;
-    Label7: TLabel;
-    CB_Locked: TComboBox;
+    Label4: TLabel;
+    Label3: TLabel;
     SE_Locks: TSpinEdit;
-    CB_Stav_Plus: TComboBox;
-    CB_Stav_Minus: TComboBox;
     SE_Zaver: TSpinEdit;
     B_Unlock: TButton;
+    CHB_Moving_Plus: TCheckBox;
+    CHB_Moving_Minus: TCheckBox;
+    CHB_Locked: TCheckBox;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
-    procedure B_UpdateClick(Sender: TObject);
+    procedure B_RefreshClick(Sender: TObject);
     procedure B_UnlockClick(Sender: TObject);
   private
-    OpenBlk: TBlkTurnout;
+    turnout: TBlkTurnout;
 
-    procedure myUpdate();
-    procedure myApply();
+    procedure Refresh();
+    procedure Apply();
 
   private const
 
   public
-    procedure OpenForm(blk: TBlkTurnout);
+    procedure Open(turnout: TBlkTurnout);
   end;
 
 var
@@ -54,67 +51,69 @@ uses ownConvert;
 
 procedure TF_BlkTurnoutState.B_ApplyClick(Sender: TObject);
 begin
-  Self.myApply();
-  Self.myUpdate();
+  Self.Apply();
+  Self.Refresh();
 end;
 
 procedure TF_BlkTurnoutState.B_UnlockClick(Sender: TObject);
 begin
-  Self.OpenBlk.IntentionalUnlock();
-  Self.myUpdate();
+  Self.turnout.IntentionalUnlock();
+  Self.Refresh();
 end;
 
-procedure TF_BlkTurnoutState.B_UpdateClick(Sender: TObject);
+procedure TF_BlkTurnoutState.B_RefreshClick(Sender: TObject);
 begin
-  Self.myUpdate();
+  Self.Refresh();
 end;
 
 procedure TF_BlkTurnoutState.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.OpenBlk := nil;
+  Self.turnout := nil;
 end;
 
 procedure TF_BlkTurnoutState.FormCreate(Sender: TObject);
 begin
-  Self.OpenBlk := nil;
+  Self.turnout := nil;
 end;
 
-procedure TF_BlkTurnoutState.OpenForm(blk: TBlkTurnout);
+procedure TF_BlkTurnoutState.Open(turnout: TBlkTurnout);
 begin
-  Self.OpenBlk := blk;
-  Self.myUpdate();
-
-  Self.Caption := 'Technologické vlastnosti bloku ' + blk.name;
+  Self.turnout := turnout;
+  Self.Refresh();
+  Self.Caption := 'Stav výhybky ' + turnout.name;
   Self.Show();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkTurnoutState.myUpdate();
+procedure TF_BlkTurnoutState.Refresh();
 begin
-  Self.M_Stitek.Text := Self.OpenBlk.note;
-  Self.M_Vyluka.Text := Self.OpenBlk.lockout;
+  Self.M_Note.Text := Self.turnout.note;
+  Self.M_Lockout.Text := Self.turnout.lockout;
 
-  Self.SE_Zaver.Value := Self.OpenBlk.state.locks;
-  Self.CB_Stav_Plus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.movingPlus);
-  Self.CB_Stav_Minus.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.movingMinus);
+  Self.SE_Zaver.Value := Self.turnout.state.locks;
+  Self.CHB_Moving_Plus.Checked := Self.turnout.movingPlus;
+  Self.CHB_Moving_Minus.Checked := Self.turnout.movingMinus;
 
-  Self.CB_Locked.ItemIndex := ownConvert.BoolToInt(Self.OpenBlk.outputLocked);
-  Self.SE_Locks.Value := Self.OpenBlk.state.intentionalLocks;
+  Self.CHB_Locked.Checked := Self.turnout.outputLocked;
+  Self.SE_Locks.Value := Self.turnout.state.intentionalLocks;
 
-  Self.B_Unlock.Enabled := Self.OpenBlk.intentionalLocked;
+  Self.B_Unlock.Enabled := Self.turnout.intentionalLocked;
 end;
 
-procedure TF_BlkTurnoutState.myApply();
+procedure TF_BlkTurnoutState.Apply();
 begin
-  Self.OpenBlk.note := Self.M_Stitek.Text;
-  Self.OpenBlk.lockout := Self.M_Vyluka.Text;
+  if (Self.turnout = nil) then
+    Exit();
+
+  Self.turnout.note := Self.M_Note.Text;
+  Self.turnout.lockout := Self.M_Lockout.Text;
 
   if (Self.SE_Zaver.Value = 0) then
-    Self.OpenBlk.ResetEmLocks();
+    Self.turnout.ResetEmLocks();
 
-  Self.OpenBlk.movingPlus := ownConvert.IntToBool(CB_Stav_Plus.ItemIndex);
-  Self.OpenBlk.movingMinus := ownConvert.IntToBool(CB_Stav_Minus.ItemIndex);
+  Self.turnout.movingPlus := Self.CHB_Moving_Plus.Checked;
+  Self.turnout.movingMinus := Self.CHB_Moving_Minus.Checked;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

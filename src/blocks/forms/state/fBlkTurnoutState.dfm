@@ -3,7 +3,7 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
   Top = 0
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Technologicke vlastnosti bloku: [blok]'
+  Caption = 'Stav v'#253'hybky [blok]'
   ClientHeight = 194
   ClientWidth = 577
   Color = clBtnFace
@@ -41,9 +41,9 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Margins.Bottom = 2
     Caption = #352't'#237'tek:'
   end
-  object L_Usek21: TLabel
+  object Label4: TLabel
     Left = 8
-    Top = 24
+    Top = 12
     Width = 149
     Height = 13
     Margins.Left = 2
@@ -52,20 +52,9 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Margins.Bottom = 2
     Caption = 'Po'#269'et ud'#283'len'#253'ch nouz. z'#225'v'#283'r'#367':'
   end
-  object L_Usek25: TLabel
+  object Label3: TLabel
     Left = 7
-    Top = 101
-    Width = 147
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'RCS v'#253'stup dr'#382'en (zamknuto):'
-  end
-  object L_Usek20: TLabel
-    Left = 7
-    Top = 129
+    Top = 42
     Width = 64
     Height = 13
     Margins.Left = 2
@@ -74,130 +63,96 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Margins.Bottom = 2
     Caption = 'Po'#269'et z'#225'mk'#367':'
   end
-  object Label2: TLabel
-    Left = 8
-    Top = 51
-    Width = 112
-    Height = 13
-    Caption = 'Stav'#283'n'#237' do polohy plus:'
-  end
-  object Label7: TLabel
-    Left = 8
-    Top = 76
-    Width = 120
-    Height = 13
-    Caption = 'Stav'#283'n'#237' do polohy m'#237'nus:'
-  end
-  object B_Update: TButton
-    Left = 384
+  object B_Refresh: TButton
+    Left = 414
     Top = 157
-    Width = 92
+    Width = 76
     Height = 26
-    Caption = 'Aktualizovat'
-    TabOrder = 0
-    OnClick = B_UpdateClick
+    Caption = 'Obnovit'
+    TabOrder = 9
+    OnClick = B_RefreshClick
   end
   object B_Apply: TButton
-    Left = 482
+    Left = 496
     Top = 157
-    Width = 89
+    Width = 75
     Height = 26
     Caption = 'Pou'#382#237't'
-    TabOrder = 1
+    Default = True
+    TabOrder = 8
     OnClick = B_ApplyClick
   end
-  object M_Vyluka: TMemo
+  object M_Lockout: TMemo
     Left = 296
     Top = 102
     Width = 275
     Height = 49
     Lines.Strings = (
-      'M_Stitek')
-    TabOrder = 2
+      'M_Lockout')
+    TabOrder = 7
   end
-  object M_Stitek: TMemo
+  object M_Note: TMemo
     Left = 296
     Top = 30
     Width = 275
     Height = 49
     Lines.Strings = (
-      'M_Stitek')
-    TabOrder = 3
-  end
-  object CB_Locked: TComboBox
-    Left = 176
-    Top = 101
-    Width = 107
-    Height = 21
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Style = csDropDownList
-    Enabled = False
-    TabOrder = 4
-    Items.Strings = (
-      'Ne'
-      'Ano')
+      'M_Note')
+    TabOrder = 6
   end
   object SE_Locks: TSpinEdit
     Left = 176
-    Top = 127
+    Top = 40
     Width = 107
     Height = 22
     MaxValue = 0
     MinValue = 0
     ReadOnly = True
-    TabOrder = 5
+    TabOrder = 1
     Value = 0
-  end
-  object CB_Stav_Plus: TComboBox
-    Left = 176
-    Top = 51
-    Width = 107
-    Height = 21
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Style = csDropDownList
-    TabOrder = 6
-    Items.Strings = (
-      'Ne'
-      'Ano')
-  end
-  object CB_Stav_Minus: TComboBox
-    Left = 176
-    Top = 76
-    Width = 107
-    Height = 21
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Style = csDropDownList
-    TabOrder = 7
-    Items.Strings = (
-      'Ne'
-      'Ano')
   end
   object SE_Zaver: TSpinEdit
     Left = 176
-    Top = 24
+    Top = 12
     Width = 107
     Height = 22
     MaxValue = 0
     MinValue = 0
-    TabOrder = 8
+    TabOrder = 0
     Value = 0
   end
   object B_Unlock: TButton
     Left = 176
-    Top = 155
+    Top = 68
     Width = 107
     Height = 25
     Caption = 'Odemknout'
-    TabOrder = 9
+    TabOrder = 2
     OnClick = B_UnlockClick
+  end
+  object CHB_Moving_Plus: TCheckBox
+    Left = 6
+    Top = 91
+    Width = 130
+    Height = 17
+    Caption = 'Stav'#283'n'#237' do polohy plus'
+    TabOrder = 3
+  end
+  object CHB_Moving_Minus: TCheckBox
+    Left = 6
+    Top = 114
+    Width = 142
+    Height = 17
+    Caption = 'Stav'#283'n'#237' do polohy m'#237'nus'
+    TabOrder = 4
+  end
+  object CHB_Locked: TCheckBox
+    Left = 6
+    Top = 137
+    Width = 161
+    Height = 17
+    Caption = 'RCS v'#253'stup dr'#382'en (zamknuto)'
+    Enabled = False
+    TabOrder = 5
   end
 end

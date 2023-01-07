@@ -8,39 +8,41 @@ uses
 
 type
   TF_BlkRailwayState = class(TForm)
-    L_Usek21: TLabel;
     L_Usek24: TLabel;
-    L_Usek25: TLabel;
     L_Usek20: TLabel;
-    CB_Zadost: TComboBox;
-    CB_Smer: TComboBox;
-    CB_Zaver: TComboBox;
-    B_SaveData: TButton;
-    B_Obnovit: TButton;
+    CB_Direction: TComboBox;
+    B_Apply: TButton;
+    B_Refresh: TButton;
     SE_Souprava: TSpinEdit;
     Label1: TLabel;
-    E_Soupravy: TEdit;
+    E_Trains: TEdit;
     B_BP_Enable: TButton;
     B_BP_Disable: TButton;
-    SE_Spr_Add: TSpinEdit;
-    B_RmSpr: TButton;
+    SE_Train_Add: TSpinEdit;
+    B_Train_Delete: TButton;
     Label2: TLabel;
-    B_AddSpr: TButton;
+    B_Train_Add: TButton;
     Label3: TLabel;
     L_BP: TLabel;
-    procedure B_ObnovitClick(Sender: TObject);
-    procedure B_SaveDataClick(Sender: TObject);
+    CHB_Zaver: TCheckBox;
+    CHB_Request: TCheckBox;
+    procedure B_RefreshClick(Sender: TObject);
+    procedure B_ApplyClick(Sender: TObject);
     procedure B_BP_EnableClick(Sender: TObject);
     procedure B_BP_DisableClick(Sender: TObject);
-    procedure B_RmSprClick(Sender: TObject);
-    procedure B_AddSprClick(Sender: TObject);
+    procedure B_Train_DeleteClick(Sender: TObject);
+    procedure B_Train_AddClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     railway: TBlkRailway;
 
-    procedure Update(); reintroduce;
-    procedure Save();
+    procedure Refresh();
+    procedure Apply();
+
   public
-    procedure OpenForm(Blk: TBlkRailway);
+    procedure Open(railway: TBlkRailway);
+
   end;
 
 var
@@ -52,87 +54,101 @@ implementation
 
 uses ownConvert, TrainDb, IfThenElse;
 
-procedure TF_BlkRailwayState.B_AddSprClick(Sender: TObject);
+procedure TF_BlkRailwayState.B_Train_AddClick(Sender: TObject);
 begin
   try
-    if (Trains[Self.SE_Spr_Add.Value] <> nil) then
-      Self.railway.AddTrain(Trains[Self.SE_Spr_Add.Value]);
+    if (Trains[Self.SE_Train_Add.Value] <> nil) then
+      Self.railway.AddTrain(Trains[Self.SE_Train_Add.Value]);
   except
     on E: Exception do
       Application.MessageBox(PChar('Výjimka:' + #13#10 + E.Message), 'Výjimka', MB_OK OR MB_ICONERROR);
   end;
 
-  Self.Update();
+  Self.Refresh();
 end;
 
 procedure TF_BlkRailwayState.B_BP_DisableClick(Sender: TObject);
 begin
   Self.railway.BP := false;
-  Self.Update();
+  Self.Refresh();
 end;
 
 procedure TF_BlkRailwayState.B_BP_EnableClick(Sender: TObject);
 begin
   Self.railway.BP := true;
-  Self.Update();
+  Self.Refresh();
 end;
 
-procedure TF_BlkRailwayState.B_ObnovitClick(Sender: TObject);
+procedure TF_BlkRailwayState.B_RefreshClick(Sender: TObject);
 begin
-  Self.Update();
+  Self.Refresh();
 end;
 
-procedure TF_BlkRailwayState.B_RmSprClick(Sender: TObject);
+procedure TF_BlkRailwayState.B_Train_DeleteClick(Sender: TObject);
 begin
-  if (Trains[Self.SE_Spr_Add.Value] <> nil) then
-    Self.railway.RemoveTrain(Trains[Self.SE_Spr_Add.Value]);
-  Self.Update();
+  if (Trains[Self.SE_Train_Add.Value] <> nil) then
+    Self.railway.RemoveTrain(Trains[Self.SE_Train_Add.Value]);
+  Self.Refresh();
 end;
 
-procedure TF_BlkRailwayState.B_SaveDataClick(Sender: TObject);
+procedure TF_BlkRailwayState.FormClose(Sender: TObject;
+  var Action: TCloseAction);
 begin
-  Self.Save();
+  Self.railway := nil;
 end;
 
-procedure TF_BlkRailwayState.OpenForm(Blk: TBlkRailway);
+procedure TF_BlkRailwayState.FormCreate(Sender: TObject);
 begin
-  Self.railway := Blk;
-  Self.Update();
-  Self.Caption := 'Trať ' + Blk.name;
+  Self.railway := nil;
+end;
+
+procedure TF_BlkRailwayState.B_ApplyClick(Sender: TObject);
+begin
+  Self.Apply();
+end;
+
+procedure TF_BlkRailwayState.Open(railway: TBlkRailway);
+begin
+  Self.railway := railway;
+  Self.Refresh();
+  Self.Caption := 'Stav trati ' + railway.name;
   Self.Show();
 end;
 
-procedure TF_BlkRailwayState.Update();
+procedure TF_BlkRailwayState.Refresh();
 var train: TBlkRailwayTrain;
 begin
-  Self.CB_Zaver.ItemIndex := ownConvert.BoolToInt(railway.Zaver);
-  Self.CB_Smer.ItemIndex := Integer(railway.direction) + 1;
-  Self.CB_Zadost.ItemIndex := ownConvert.BoolToInt(railway.request);
+  Self.CHB_Zaver.Checked := railway.zaver;
+  Self.CB_Direction.ItemIndex := Integer(railway.direction) + 1;
+  Self.CHB_Request.Checked := railway.request;
 
   if (railway.trainPredict <> nil) then
     Self.SE_Souprava.Value := railway.trainPredict.traini
   else
     Self.SE_Souprava.Value := -1;
 
-  Self.E_Soupravy.Text := '';
+  Self.E_Trains.Text := '';
   for train in railway.state.Trains do
-    Self.E_Soupravy.Text := Self.E_Soupravy.Text + IntToStr(train.train.index) + ',';
+    Self.E_Trains.Text := Self.E_Trains.Text + IntToStr(train.train.index) + ',';
 
   Self.L_BP.Caption := ite(railway.BP, 'zavedena', 'nezavedena');
   Self.B_BP_Enable.Enabled := not railway.BP;
   Self.B_BP_Disable.Enabled := railway.BP;
 end;
 
-procedure TF_BlkRailwayState.Save();
+procedure TF_BlkRailwayState.Apply();
 begin
-  railway.Zaver := ownConvert.IntToBool(CB_Zaver.ItemIndex);
-  railway.direction := TRailwayDirection(Self.CB_Smer.ItemIndex - 1);
-  railway.request := ownConvert.IntToBool(CB_Zadost.ItemIndex);
+  if (Self.railway = nil) then
+    Exit();
+
+  Self.railway.Zaver := Self.CHB_Zaver.Checked;
+  Self.railway.direction := TRailwayDirection(Self.CB_Direction.ItemIndex - 1);
+  Self.railway.request := Self.CHB_Request.Checked;
 
   if (Self.SE_Souprava.Value = -1) then
-    railway.trainPredict := nil
+    Self.railway.trainPredict := nil
   else
-    railway.trainPredict := TBlkRailwayTrain.Create(Self.SE_Souprava.Value);
+    Self.railway.trainPredict := TBlkRailwayTrain.Create(Self.SE_Souprava.Value);
 end;
 
 end.// unit

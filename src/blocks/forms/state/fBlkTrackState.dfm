@@ -4,7 +4,7 @@ object F_BlkTrackState: TF_BlkTrackState
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Vlastnosti useku [usek]'
-  ClientHeight = 345
+  ClientHeight = 329
   ClientWidth = 585
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -15,6 +15,8 @@ object F_BlkTrackState: TF_BlkTrackState
   FormStyle = fsStayOnTop
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object L_Usek21: TLabel
@@ -28,17 +30,6 @@ object F_BlkTrackState: TF_BlkTrackState
     Margins.Bottom = 2
     Caption = 'Z'#225'v'#283'r :'
   end
-  object L_Usek24: TLabel
-    Left = 7
-    Top = 33
-    Width = 29
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'NUZ :'
-  end
   object L_Usek25: TLabel
     Left = 7
     Top = 56
@@ -51,8 +42,8 @@ object F_BlkTrackState: TF_BlkTrackState
     Caption = 'Konec JC :'
   end
   object L_Usek27: TLabel
-    Left = 8
-    Top = 82
+    Left = 7
+    Top = 91
     Width = 121
     Height = 13
     Margins.Left = 2
@@ -62,8 +53,8 @@ object F_BlkTrackState: TF_BlkTrackState
     Caption = 'P'#345'edpov'#237'dan'#225' souprava :'
   end
   object Label1: TLabel
-    Left = 306
-    Top = 12
+    Left = 305
+    Top = 8
     Width = 31
     Height = 13
     Margins.Left = 2
@@ -74,7 +65,7 @@ object F_BlkTrackState: TF_BlkTrackState
   end
   object Label3: TLabel
     Left = 7
-    Top = 110
+    Top = 122
     Width = 77
     Height = 13
     Margins.Left = 2
@@ -84,8 +75,8 @@ object F_BlkTrackState: TF_BlkTrackState
     Caption = 'NavCRef po'#269'et:'
   end
   object Label6: TLabel
-    Left = 306
-    Top = 84
+    Left = 305
+    Top = 80
     Width = 35
     Height = 13
     Margins.Left = 2
@@ -96,30 +87,17 @@ object F_BlkTrackState: TF_BlkTrackState
   end
   object Label2: TLabel
     Left = 8
-    Top = 140
+    Top = 156
     Width = 75
     Height = 13
     Caption = 'Zesilova'#269' zkrat:'
   end
   object Label7: TLabel
     Left = 8
-    Top = 172
+    Top = 188
     Width = 93
     Height = 13
     Caption = 'Zesilova'#269' nap'#225'jen'#237':'
-  end
-  object Label4: TLabel
-    Left = 304
-    Top = 160
-    Width = 25
-    Height = 13
-    Caption = 'DCC:'
-  end
-  object S_DCC: TShape
-    Left = 342
-    Top = 160
-    Width = 65
-    Height = 16
   end
   object CB_KonecVC: TComboBox
     Left = 176
@@ -136,21 +114,6 @@ object F_BlkTrackState: TF_BlkTrackState
       'Zadne'
       'Vlakove'
       'Posunove')
-  end
-  object CB_NUZ: TComboBox
-    Left = 176
-    Top = 33
-    Width = 107
-    Height = 21
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Style = csDropDownList
-    TabOrder = 1
-    Items.Strings = (
-      'Ne'
-      'Ano')
   end
   object CB_Zaver: TComboBox
     Left = 176
@@ -171,9 +134,9 @@ object F_BlkTrackState: TF_BlkTrackState
       'Stav'#283'c'#237
       'AB')
   end
-  object B_SaveData: TButton
+  object B_Apply: TButton
     Left = 505
-    Top = 314
+    Top = 300
     Width = 73
     Height = 24
     Margins.Left = 2
@@ -183,11 +146,11 @@ object F_BlkTrackState: TF_BlkTrackState
     Caption = 'Pou'#382#237't'
     Default = True
     TabOrder = 9
-    OnClick = B_SaveDataClick
+    OnClick = B_ApplyClick
   end
-  object B_Obnovit: TButton
+  object B_Refresh: TButton
     Left = 425
-    Top = 314
+    Top = 300
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -196,29 +159,29 @@ object F_BlkTrackState: TF_BlkTrackState
     Margins.Bottom = 2
     Caption = 'Obnovit'
     TabOrder = 10
-    OnClick = B_ObnovitClick
+    OnClick = B_RefreshClick
   end
-  object M_Stitek: TMemo
-    Left = 304
-    Top = 30
+  object M_Note: TMemo
+    Left = 303
+    Top = 26
     Width = 275
     Height = 49
     Lines.Strings = (
-      'M_Stitek')
+      'M_Note')
     TabOrder = 7
   end
-  object M_Vyluka: TMemo
-    Left = 304
-    Top = 102
+  object M_Lockout: TMemo
+    Left = 303
+    Top = 98
     Width = 275
     Height = 49
     Lines.Strings = (
-      'M_Stitek')
+      'M_Lockout')
     TabOrder = 8
   end
   object SE_Souprava_Predict: TSpinEdit
     Left = 176
-    Top = 82
+    Top = 88
     Width = 107
     Height = 22
     MaxValue = 0
@@ -228,7 +191,7 @@ object F_BlkTrackState: TF_BlkTrackState
   end
   object SE_NavJCRef: TSpinEdit
     Left = 176
-    Top = 110
+    Top = 119
     Width = 107
     Height = 22
     MaxValue = 0
@@ -236,9 +199,9 @@ object F_BlkTrackState: TF_BlkTrackState
     TabOrder = 4
     Value = 0
   end
-  object CB_Zes_Zkrat: TComboBox
+  object CB_Booster_Short: TComboBox
     Left = 176
-    Top = 137
+    Top = 153
     Width = 107
     Height = 21
     Margins.Left = 2
@@ -252,9 +215,9 @@ object F_BlkTrackState: TF_BlkTrackState
       'Ano'
       'Ne')
   end
-  object CB_Zes_Napajeni: TComboBox
+  object CB_Booster_Power: TComboBox
     Left = 176
-    Top = 169
+    Top = 185
     Width = 107
     Height = 21
     Margins.Left = 2
@@ -268,14 +231,14 @@ object F_BlkTrackState: TF_BlkTrackState
       'Ne'
       'Ano')
   end
-  object GB_Soupravy: TGroupBox
-    Left = 8
-    Top = 195
+  object GB_Trains: TGroupBox
+    Left = 302
+    Top = 153
     Width = 275
     Height = 142
     Caption = ' Soupravy '
     TabOrder = 11
-    object LB_Soupravy: TListBox
+    object LB_Trains: TListBox
       Left = 2
       Top = 44
       Width = 271
@@ -284,16 +247,16 @@ object F_BlkTrackState: TF_BlkTrackState
       ItemHeight = 13
       TabOrder = 0
     end
-    object B_SprDelete: TButton
+    object B_Train_Delete: TButton
       Left = 56
       Top = 13
       Width = 161
       Height = 25
       Caption = 'Odstranit soupravu z '#250'seku'
       TabOrder = 1
-      OnClick = B_SprDeleteClick
+      OnClick = B_Train_DeleteClick
     end
-    object GB_SprAdd: TGroupBox
+    object GB_Train_Add: TGroupBox
       Left = 2
       Top = 88
       Width = 271
@@ -301,6 +264,7 @@ object F_BlkTrackState: TF_BlkTrackState
       Align = alBottom
       Caption = ' P'#345'idat soupravu '
       TabOrder = 2
+      ExplicitTop = 87
       object Label5: TLabel
         Left = 9
         Top = 17
@@ -308,7 +272,7 @@ object F_BlkTrackState: TF_BlkTrackState
         Height = 13
         Caption = 'Index soupravy:'
       end
-      object SE_SprAdd_Index: TSpinEdit
+      object SE_Train_Add_Index: TSpinEdit
         Left = 94
         Top = 17
         Width = 80
@@ -318,15 +282,32 @@ object F_BlkTrackState: TF_BlkTrackState
         TabOrder = 0
         Value = 0
       end
-      object B_SprAdd: TButton
+      object B_Train_Add: TButton
         Left = 184
         Top = 17
         Width = 75
         Height = 22
         Caption = 'P'#345'idat'
         TabOrder = 1
-        OnClick = B_SprAddClick
+        OnClick = B_Train_AddClick
       end
     end
+  end
+  object CHB_NUZ: TCheckBox
+    Left = 8
+    Top = 34
+    Width = 233
+    Height = 17
+    Caption = #218'sek ozna'#269'en pro nouzov'#233' uvoln'#283'n'#237' z'#225'v'#283'ru'
+    TabOrder = 1
+  end
+  object CHB_DCC: TCheckBox
+    Left = 8
+    Top = 219
+    Width = 51
+    Height = 17
+    Caption = 'DCC'
+    Enabled = False
+    TabOrder = 12
   end
 end

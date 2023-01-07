@@ -9,44 +9,46 @@ uses
 type
   TF_BlkTrackState = class(TForm)
     L_Usek21: TLabel;
-    L_Usek24: TLabel;
     L_Usek25: TLabel;
     L_Usek27: TLabel;
     CB_KonecVC: TComboBox;
-    CB_NUZ: TComboBox;
     CB_Zaver: TComboBox;
-    B_SaveData: TButton;
-    B_Obnovit: TButton;
+    B_Apply: TButton;
+    B_Refresh: TButton;
     Label1: TLabel;
     Label3: TLabel;
-    M_Stitek: TMemo;
+    M_Note: TMemo;
     Label6: TLabel;
-    M_Vyluka: TMemo;
+    M_Lockout: TMemo;
     SE_Souprava_Predict: TSpinEdit;
     SE_NavJCRef: TSpinEdit;
     Label2: TLabel;
     Label7: TLabel;
-    CB_Zes_Zkrat: TComboBox;
-    CB_Zes_Napajeni: TComboBox;
-    Label4: TLabel;
-    S_DCC: TShape;
-    GB_Soupravy: TGroupBox;
-    LB_Soupravy: TListBox;
-    B_SprDelete: TButton;
-    GB_SprAdd: TGroupBox;
-    SE_SprAdd_Index: TSpinEdit;
+    CB_Booster_Short: TComboBox;
+    CB_Booster_Power: TComboBox;
+    GB_Trains: TGroupBox;
+    LB_Trains: TListBox;
+    B_Train_Delete: TButton;
+    GB_Train_Add: TGroupBox;
+    SE_Train_Add_Index: TSpinEdit;
     Label5: TLabel;
-    B_SprAdd: TButton;
-    procedure B_ObnovitClick(Sender: TObject);
-    procedure B_SaveDataClick(Sender: TObject);
-    procedure B_SprDeleteClick(Sender: TObject);
-    procedure B_SprAddClick(Sender: TObject);
+    B_Train_Add: TButton;
+    CHB_NUZ: TCheckBox;
+    CHB_DCC: TCheckBox;
+    procedure B_RefreshClick(Sender: TObject);
+    procedure B_ApplyClick(Sender: TObject);
+    procedure B_Train_DeleteClick(Sender: TObject);
+    procedure B_Train_AddClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
-    Blk: TBlkTrack;
-    procedure LoadPrmnFromProgram;
-    procedure SavePrmnToProgram;
+    track: TBlkTrack;
+    procedure Refresh();
+    procedure Apply();
+
   public
-    procedure OpenForm(Blok: TBlkTrack);
+    procedure Open(track: TBlkTrack);
+
   end;
 
 var
@@ -58,114 +60,109 @@ uses fMain, ownConvert, TrainDb, Booster;
 
 {$R *.dfm}
 
-procedure TF_BlkTrackState.LoadPrmnFromProgram;
-var spr: Integer;
+procedure TF_BlkTrackState.Refresh();
 begin
-  CB_Zaver.ItemIndex := Integer(Self.Blk.Zaver);
+  Self.CB_Zaver.ItemIndex := Integer(Self.track.Zaver);
 
-  case (Self.Blk.NUZ) of
-    false:
-      CB_NUZ.ItemIndex := 0;
-    true:
-      CB_NUZ.ItemIndex := 1;
-  end;
+  Self.CHB_NUZ.Checked := Self.track.NUZ;
 
-  CB_Zes_Zkrat.ItemIndex := Integer(Self.Blk.shortCircuit) + 1;
-  CB_Zes_Napajeni.ItemIndex := Integer(Self.Blk.power) + 1;
+  CB_Booster_Short.ItemIndex := Integer(Self.track.shortCircuit) + 1;
+  CB_Booster_Power.ItemIndex := Integer(Self.track.power) + 1;
 
-  case (Self.Blk.NUZ) of
-    false:
-      CB_NUZ.ItemIndex := 0;
-    true:
-      CB_NUZ.ItemIndex := 1;
-  end;
+  Self.LB_Trains.Clear();
+  for var train in Self.track.trains do
+    Self.LB_Trains.Items.Add(IntToStr(train));
 
-  Self.LB_Soupravy.Clear();
-  for spr in Self.Blk.trains do
-    Self.LB_Soupravy.Items.Add(IntToStr(spr));
-
-  if (Blk.trainPredict = nil) then
-    SE_Souprava_Predict.Value := -1
+  if (track.trainPredict = nil) then
+    Self.SE_Souprava_Predict.Value := -1
   else
-    SE_Souprava_Predict.Value := Blk.trainPredict.index;
-  SE_NavJCRef.Value := Blk.signalJCRef.Count;
-  CB_KonecVC.ItemIndex := Integer(Self.Blk.jcEnd);
+    Self.SE_Souprava_Predict.Value := Self.track.trainPredict.index;
+  Self.SE_NavJCRef.Value := Self.track.signalJCRef.Count;
+  Self.CB_KonecVC.ItemIndex := Integer(Self.track.jcEnd);
 
-  M_Stitek.Text := Blk.note;
-  M_Vyluka.Text := Blk.lockout;
+  Self.M_Note.Text := Self.track.note;
+  Self.M_Lockout.Text := Self.track.lockout;
 
-  case (Self.Blk.DCC) of
-    false:
-      Self.S_DCC.Brush.Color := clRed;
-    true:
-      Self.S_DCC.Brush.Color := clLime;
-  end;
+  Self.CHB_DCC.Checked := Self.track.DCC;
 end;
 
-procedure TF_BlkTrackState.SavePrmnToProgram();
+procedure TF_BlkTrackState.Apply();
 begin
-  Self.Blk.Zaver := TZaver(CB_Zaver.ItemIndex);
-  Self.Blk.NUZ := ownConvert.IntToBool(CB_NUZ.ItemIndex);
-  Self.Blk.jcEnd := TZaver(CB_KonecVC.ItemIndex);
+  if (Self.track = nil) then
+    Exit();
+
+  Self.track.Zaver := TZaver(Self.CB_Zaver.ItemIndex);
+  Self.track.NUZ := Self.CHB_NUZ.Checked;
+  Self.track.jcEnd := TZaver(Self.CB_KonecVC.ItemIndex);
   if (SE_Souprava_Predict.Value > -1) then
-    Self.Blk.trainPredict := trains[SE_Souprava_Predict.Value]
+    Self.track.trainPredict := trains[Self.SE_Souprava_Predict.Value]
   else
-    Self.Blk.trainPredict := nil;
-  if (Self.Blk.signalJCRef.Count = 0) then
-    Self.Blk.signalJCRef.Clear();
-  Self.Blk.shortCircuit := TBoosterSignal(CB_Zes_Zkrat.ItemIndex - 1);
-  Self.Blk.power := TBoosterSignal(CB_Zes_Napajeni.ItemIndex - 1);
-  Self.Blk.lockout := M_Vyluka.Text;
-  Self.Blk.note := M_Stitek.Text;
+    Self.track.trainPredict := nil;
+  if (Self.track.signalJCRef.Count = 0) then
+    Self.track.signalJCRef.Clear();
+  Self.track.shortCircuit := TBoosterSignal(Self.CB_Booster_Short.ItemIndex - 1);
+  Self.track.power := TBoosterSignal(Self.CB_Booster_Power.ItemIndex - 1);
+  Self.track.lockout := Self.M_Lockout.Text;
+  Self.track.note := Self.M_Note.Text;
 end;
 
-procedure TF_BlkTrackState.OpenForm(Blok: TBlkTrack);
+procedure TF_BlkTrackState.Open(track: TBlkTrack);
 begin
-  Self.Blk := Blok;
-  LoadPrmnFromProgram();
-  Self.Caption := 'Vlastnosti úseku ' + Self.Blk.name;
+  Self.track := track;
+  Self.Refresh();
+  Self.Caption := 'Stav úseku ' + track.name;
   Self.Show();
 end;
 
-procedure TF_BlkTrackState.B_ObnovitClick(Sender: TObject);
+procedure TF_BlkTrackState.B_RefreshClick(Sender: TObject);
 begin
-  LoadPrmnFromProgram();
+  Self.Refresh();
 end;
 
-procedure TF_BlkTrackState.B_SaveDataClick(Sender: TObject);
+procedure TF_BlkTrackState.B_ApplyClick(Sender: TObject);
 begin
-  SavePrmnToProgram();
+  Self.Apply();
 end;
 
-procedure TF_BlkTrackState.B_SprAddClick(Sender: TObject);
+procedure TF_BlkTrackState.B_Train_AddClick(Sender: TObject);
 begin
-  if ((Self.SE_SprAdd_Index.Value < 0) or (Self.SE_SprAdd_Index.Value >= _MAX_TRAIN) or
-    (trains[Self.SE_SprAdd_Index.Value] = nil)) then
+  if ((Self.track = nil) or (Self.SE_Train_Add_Index.Value < 0) or (Self.SE_Train_Add_Index.Value >= _MAX_TRAIN) or
+    (trains[Self.SE_Train_Add_Index.Value] = nil)) then
     Exit();
 
   try
-    Self.Blk.AddTrainS(Self.SE_SprAdd_Index.Value);
-    Self.LB_Soupravy.Items.Add(IntToStr(Self.SE_SprAdd_Index.Value));
+    Self.track.AddTrainS(Self.SE_Train_Add_Index.Value);
+    Self.LB_Trains.Items.Add(IntToStr(Self.SE_Train_Add_Index.Value));
   except
     on E: Exception do
       Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
   end;
 end;
 
-procedure TF_BlkTrackState.B_SprDeleteClick(Sender: TObject);
+procedure TF_BlkTrackState.B_Train_DeleteClick(Sender: TObject);
 begin
-  if (Self.LB_Soupravy.ItemIndex = -1) then
+  if ((Self.LB_Trains.ItemIndex = -1) or (Self.track = nil)) then
     Exit();
   if (Application.MessageBox('Opravdu?', 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
     Exit();
 
   try
-    Self.Blk.RemoveTrain(StrToInt(Self.LB_Soupravy.Items[Self.LB_Soupravy.ItemIndex]));
-    Self.LB_Soupravy.Items.Delete(Self.LB_Soupravy.ItemIndex);
+    Self.track.RemoveTrain(StrToInt(Self.LB_Trains.Items[Self.LB_Trains.ItemIndex]));
+    Self.LB_Trains.Items.Delete(Self.LB_Trains.ItemIndex);
   except
     on E: Exception do
       Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
   end;
+end;
+
+procedure TF_BlkTrackState.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Self.track := nil;
+end;
+
+procedure TF_BlkTrackState.FormCreate(Sender: TObject);
+begin
+  Self.track := nil;
 end;
 
 end.// unit
