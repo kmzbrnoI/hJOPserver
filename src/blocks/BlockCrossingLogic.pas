@@ -50,7 +50,6 @@ type
   public
     sections: array [0 .. 4] of TBlkTrackRefs;
     openingLR, openingRL: TBlkCrossingTrackOpening;
-    anulLimited: Boolean;
     anulTime: TTime;
 
     onChanged: TNotifyEvent;
@@ -129,11 +128,7 @@ begin
   end;
 
   str := ini.ReadString(section, prefix + '-anulTime', '');
-  Self.anulLimited := (str <> '');
-  if (Self.anulLimited) then
-    Self.anulTime := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0)
-  else
-    Self.anulTime := 0;
+  Self.anulTime := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0)
 end;
 
 procedure TBlkCrossingTrack.Save(ini: TMemIniFile; section: string; prefix: string);
@@ -150,8 +145,7 @@ begin
     ini.WriteString(section, prefix + '-rightOut', Self.rightOut.ToStr());
   ini.WriteInteger(section, prefix + '-openingLR', Integer(Self.openingLR));
   ini.WriteInteger(section, prefix + '-openingRL', Integer(Self.openingRL));
-  if (Self.anulLimited) then
-    ini.WriteString(section, prefix + '-anulTime', FormatDateTime('nn:ss', Self.anulTime));
+  ini.WriteString(section, prefix + '-anulTime', FormatDateTime('nn:ss', Self.anulTime));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -280,7 +274,7 @@ begin
             Self.state := tsLRRightOutOccupied
           else
             Self.state := tsFree;
-        end else if ((Now > Self.anulEnd) and (Self.anulLimited)) then
+        end else if ((Now > Self.anulEnd) and (Self.openingLR = toMiddleFree)) then
           Self.state := tsRLRightOccupied;
       end;
 
@@ -294,7 +288,7 @@ begin
             Self.state := tsRLLeftOutOccupied
           else
             Self.state := tsFree;
-        end else if ((Now > Self.anulEnd) and (Self.anulLimited)) then
+        end else if ((Now > Self.anulEnd) and (Self.openingRL = toMiddleFree)) then
           Self.state := tsLRLeftOccupied;
       end;
 
@@ -332,6 +326,8 @@ begin
             Result := (Self.state = tsLRLeftOccupied) or (Self.state = tsLRLeftMidOccupied) or (Self.state = tsLRMidOccupied);
         toOutFree:
             Result := (Self.state >= tsLRLeftOccupied);
+      else
+        Result := true; // never happens
       end;
     end;
 
@@ -341,13 +337,16 @@ begin
             Result := (Self.state = tsRLRightOccupied) or (Self.state = tsRLRightMidOccupied) or (Self.state = tsRLMidOccupied);
         toOutFree:
             Result := (Self.state >= tsLRLeftOccupied);
+      else
+        Result := true; // never happens
       end;
     end;
 
     tsUnexpectedOccupation, tsException: Result := true;
     tsFree: Result := false;
+  else
+    Result := true; // never happens
   end;
-
 end;
 
 function TBlkCrossingTrack.mPositiveLight(): Boolean;
@@ -376,8 +375,8 @@ end;
 
 function TBlkCrossingTrack.GetAnullation(): Boolean;
 begin
-  Result := (((Self.state = tsRLOnlyLeftOccupied) or (Self.state = tsLROnlyRightOccupied)) and
-    (Self.anulLimited));
+  Result := (((Self.state = tsRLOnlyLeftOccupied) and (Self.openingRL = toMiddleFree)) or
+             ((Self.state = tsLROnlyRightOccupied) and (Self.openingLR = toMiddleFree)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -63,7 +63,6 @@ type
     CHB_RCS_BP: TCheckBox;
     SE_out_bp_board: TSpinEdit;
     SE_out_bp_port: TSpinEdit;
-    CHB_AnulLimited: TCheckBox;
     CB_Track_Open_RL: TComboBox;
     CB_Track_Open_LR: TComboBox;
     Label11: TLabel;
@@ -77,7 +76,6 @@ type
     procedure CHB_RCS_AnullationClick(Sender: TObject);
     procedure CHB_RCS_NOTClick(Sender: TObject);
     procedure CHB_RCS_BPClick(Sender: TObject);
-    procedure CHB_AnulLimitedClick(Sender: TObject);
   private
     openIndex: Integer;
     block: TBlkCrossing;
@@ -276,7 +274,6 @@ begin
   Self.E_Track_Right_Out.Enabled := (Self.CB_Track.ItemIndex <> -1);
   Self.CB_Track_Open_LR.Enabled := (Self.CB_Track.ItemIndex <> -1);
   Self.CB_Track_Open_RL.Enabled := (Self.CB_Track.ItemIndex <> -1);
-  Self.CHB_AnulLimited.Enabled := (Self.CB_Track.ItemIndex <> -1);
   Self.ME_Track_Anul_Time.Enabled := (Self.CB_Track.ItemIndex <> -1);
 
   if ((Self.CB_Track.ItemIndex < Self.CB_Track.Items.Count - 1) and (Self.CB_Track.ItemIndex <> -1)) then
@@ -289,8 +286,7 @@ begin
     Self.E_Track_Right_Out.Text := Self.tracks[Self.CB_Track.ItemIndex].rightOut.ToStr();
     Self.CB_Track_Open_LR.ItemIndex := Integer(Self.tracks[Self.CB_Track.ItemIndex].openingLR);
     Self.CB_Track_Open_RL.ItemIndex := Integer(Self.tracks[Self.CB_Track.ItemIndex].openingRL);
-    Self.CHB_AnulLimited.Checked := Self.tracks[Self.CB_Track.ItemIndex].anulLimited;
-    Self.CHB_AnulLimitedClick(Self);
+    Self.ME_Track_Anul_Time.Text := FormatDateTime('nn:ss', Self.tracks[Self.CB_Track.ItemIndex].anulTime)
   end else begin
     // new track
     Self.E_Track_Left_Out.Text := '';
@@ -300,19 +296,9 @@ begin
     Self.E_Track_Right_Out.Text := '';
     Self.CB_Track_Open_LR.ItemIndex := -1;
     Self.CB_Track_Open_RL.ItemIndex := -1;
-    Self.CHB_AnulLimited.Checked := false;
     Self.ME_Track_Anul_Time.Text := '00:00';
   end;
 
-end;
-
-procedure TF_BlkCrossing.CHB_AnulLimitedClick(Sender: TObject);
-begin
-  Self.ME_Track_Anul_Time.Enabled := Self.CHB_AnulLimited.Checked;
-  if ((Self.CHB_AnulLimited.Checked) and (Self.CB_Track.ItemIndex > -1)) then
-    Self.ME_Track_Anul_Time.Text := FormatDateTime('nn:ss', Self.tracks[Self.CB_Track.ItemIndex].anulTime)
-  else
-    Self.ME_Track_Anul_Time.Text := '00:00';
 end;
 
 procedure TF_BlkCrossing.CHB_JOP_controlClick(Sender: TObject);
@@ -529,10 +515,8 @@ begin
 
   track.openingLR := TBlkCrossingTrackOpening(Self.CB_Track_Open_LR.ItemIndex);
   track.openingRL := TBlkCrossingTrackOpening(Self.CB_Track_Open_RL.ItemIndex);
-  track.anulLimited := Self.CHB_AnulLimited.Checked;
-  if (Self.CHB_AnulLimited.Checked) then
-    track.anulTime := EncodeTime(0, StrToInt(LeftStr(Self.ME_Track_Anul_Time.Text, 2)),
-      StrToInt(Copy(Self.ME_Track_Anul_Time.Text, 4, 2)), 0);
+  track.anulTime := EncodeTime(0, StrToInt(LeftStr(Self.ME_Track_Anul_Time.Text, 2)),
+    StrToInt(Copy(Self.ME_Track_Anul_Time.Text, 4, 2)), 0);
 end;
 
 end.

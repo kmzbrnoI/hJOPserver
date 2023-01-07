@@ -4,7 +4,7 @@ object F_BlkCrossing: TF_BlkCrossing
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 497
+  ClientHeight = 489
   ClientWidth = 651
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -54,7 +54,7 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object B_save_P: TButton
     Left = 7
-    Top = 465
+    Top = 456
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -68,7 +68,7 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object B_Storno: TButton
     Left = 93
-    Top = 465
+    Top = 456
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -455,7 +455,7 @@ object F_BlkCrossing: TF_BlkCrossing
     Left = 336
     Top = 9
     Width = 307
-    Height = 480
+    Height = 472
     Caption = ' P'#345'ejezd '#345#237'zen'#253' pouze z hJOP '
     TabOrder = 3
     object Label2: TLabel
@@ -496,7 +496,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Left = 16
       Top = 69
       Width = 273
-      Height = 400
+      Height = 388
       Caption = 'check'
       TabOrder = 3
       object Label3: TLabel
@@ -543,7 +543,7 @@ object F_BlkCrossing: TF_BlkCrossing
       end
       object Label9: TLabel
         Left = 16
-        Top = 367
+        Top = 351
         Width = 141
         Height = 13
         Caption = 'Mezn'#237' anula'#269'n'#237' doba [mm:ss]:'
@@ -597,7 +597,7 @@ object F_BlkCrossing: TF_BlkCrossing
       end
       object ME_Track_Anul_Time: TMaskEdit
         Left = 168
-        Top = 368
+        Top = 352
         Width = 89
         Height = 24
         Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
@@ -615,17 +615,8 @@ object F_BlkCrossing: TF_BlkCrossing
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 8
-        Text = '00:00'
-      end
-      object CHB_AnulLimited: TCheckBox
-        Left = 16
-        Top = 346
-        Width = 201
-        Height = 17
-        Caption = 'Anulovat obsazen'#237' krajin'#237'ch KO pouze:'
         TabOrder = 7
-        OnClick = CHB_AnulLimitedClick
+        Text = '00:00'
       end
       object CB_Track_Open_RL: TComboBox
         Left = 16
