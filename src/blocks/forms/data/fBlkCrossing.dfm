@@ -4,7 +4,7 @@ object F_BlkCrossing: TF_BlkCrossing
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 434
+  ClientHeight = 497
   ClientWidth = 651
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -54,7 +54,7 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object B_save_P: TButton
     Left = 7
-    Top = 400
+    Top = 465
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -68,7 +68,7 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object B_Storno: TButton
     Left = 93
-    Top = 400
+    Top = 465
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -455,7 +455,7 @@ object F_BlkCrossing: TF_BlkCrossing
     Left = 336
     Top = 9
     Width = 307
-    Height = 417
+    Height = 480
     Caption = ' P'#345'ejezd '#345#237'zen'#253' pouze z hJOP '
     TabOrder = 3
     object Label2: TLabel
@@ -496,8 +496,8 @@ object F_BlkCrossing: TF_BlkCrossing
       Left = 16
       Top = 69
       Width = 273
-      Height = 340
-      Caption = ' Kolej 1 '
+      Height = 400
+      Caption = 'check'
       TabOrder = 3
       object Label3: TLabel
         Left = 16
@@ -537,16 +537,23 @@ object F_BlkCrossing: TF_BlkCrossing
       object Label8: TLabel
         Left = 16
         Top = 253
-        Width = 89
+        Width = 158
         Height = 13
-        Caption = 'Otev'#345#237't p'#345'ejezd p'#345'i:'
+        Caption = 'Otev'#345#237't p'#345'ejezd ve sm'#283'ru L>R p'#345'i:'
       end
       object Label9: TLabel
         Left = 16
-        Top = 303
+        Top = 367
         Width = 141
         Height = 13
         Caption = 'Mezn'#237' anula'#269'n'#237' doba [mm:ss]:'
+      end
+      object Label11: TLabel
+        Left = 16
+        Top = 299
+        Width = 158
+        Height = 13
+        Caption = 'Otev'#345#237't p'#345'ejezd ve sm'#283'ru R>L p'#345'i:'
       end
       object E_Track_Left_Out: TEdit
         Left = 16
@@ -590,7 +597,7 @@ object F_BlkCrossing: TF_BlkCrossing
       end
       object ME_Track_Anul_Time: TMaskEdit
         Left = 168
-        Top = 304
+        Top = 368
         Width = 89
         Height = 24
         Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
@@ -608,20 +615,40 @@ object F_BlkCrossing: TF_BlkCrossing
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 5
+        TabOrder = 8
         Text = '00:00'
       end
-    end
-    object CB_Track_Open: TComboBox
-      Left = 32
-      Top = 341
-      Width = 241
-      Height = 21
-      Style = csDropDownList
-      TabOrder = 4
-      Items.Strings = (
-        'Uvoln'#283'n'#237' prost'#345'edn'#237'ho '#250'seku'
-        'Uvoln'#283'n'#237' vzdalovac'#237'ho '#250'seku')
+      object CHB_AnulLimited: TCheckBox
+        Left = 16
+        Top = 346
+        Width = 201
+        Height = 17
+        Caption = 'Anulovat obsazen'#237' krajin'#237'ch KO pouze:'
+        TabOrder = 7
+        OnClick = CHB_AnulLimitedClick
+      end
+      object CB_Track_Open_RL: TComboBox
+        Left = 16
+        Top = 318
+        Width = 241
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 6
+        Items.Strings = (
+          'Uvoln'#283'n'#237' prost'#345'edn'#237'ho '#250'seku'
+          'Uvoln'#283'n'#237' vzdalovac'#237'ho '#250'seku')
+      end
+      object CB_Track_Open_LR: TComboBox
+        Left = 16
+        Top = 272
+        Width = 241
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 5
+        Items.Strings = (
+          'Uvoln'#283'n'#237' prost'#345'edn'#237'ho '#250'seku'
+          'Uvoln'#283'n'#237' vzdalovac'#237'ho '#250'seku')
+      end
     end
   end
 end
