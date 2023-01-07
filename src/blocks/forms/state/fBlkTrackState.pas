@@ -124,12 +124,12 @@ begin
   Self.Blk := Blok;
   LoadPrmnFromProgram();
   Self.Caption := 'Vlastnosti úseku ' + Self.Blk.name;
-  Self.Show;
+  Self.Show();
 end;
 
 procedure TF_BlkTrackState.B_ObnovitClick(Sender: TObject);
 begin
-  LoadPrmnFromProgram;
+  LoadPrmnFromProgram();
 end;
 
 procedure TF_BlkTrackState.B_SaveDataClick(Sender: TObject);

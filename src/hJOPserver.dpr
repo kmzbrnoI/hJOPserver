@@ -161,7 +161,8 @@ uses
   JCBarriers in 'jc\JCBarriers.pas',
   TrainSpeed in 'trains\TrainSpeed.pas',
   fTrainSpeed in 'forms\fTrainSpeed.pas' {F_TrainSpeed},
-  ConfSeq in 'ConfSeq.pas';
+  ConfSeq in 'ConfSeq.pas',
+  fBlkCrossingState in 'blocks\forms\state\fBlkCrossingState.pas' {F_BlkCrossingState};
 
 {$R *.res}
 
@@ -185,6 +186,7 @@ var
   Application.CreateForm(TF_BlkGroupSignal, F_BlkGroupSignal);
   Application.CreateForm(TF_BlkPst, F_BlkPst);
   Application.CreateForm(TF_TrainSpeed, F_TrainSpeed);
+  Application.CreateForm(TF_BlkCrossingState, F_BlkCrossingState);
   F_Splash.AddStav('Vytvářím okna...');
 
   Application.CreateForm(TF_Console, F_Console);

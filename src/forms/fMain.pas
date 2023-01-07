@@ -489,7 +489,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
   fBlkTurnoutState, fBlkRailwayState, BlockRailway, ModelovyCas, fBlkLock,
   BlockLock, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
   fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
-  AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB,
+  AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB, fBlkCrossingState,
   Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal, fBlkPst, BlockPst;
 
 {$R *.dfm}
@@ -2578,6 +2578,8 @@ begin
       F_BlkTrackState.OpenForm(blk as TBlkTrack);
     btRailway:
       F_BlkRailwayState.OpenForm(blk as TBlkRailway);
+    btCrossing:
+      F_BlkCrossingState.Open(blk as TBlkCrossing)
   end;
 end;
 
