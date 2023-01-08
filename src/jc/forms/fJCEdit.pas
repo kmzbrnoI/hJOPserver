@@ -191,7 +191,7 @@ begin
 
   Self.CB_Next_Signal.ItemIndex := -1;
 
-  Self.fTrainSpeedGo.Default();
+  Self.fTrainSpeedGo.Clear();
   Self.fTrainSpeedStop.Default();
 
   Self.CB_SignalChange(Self);

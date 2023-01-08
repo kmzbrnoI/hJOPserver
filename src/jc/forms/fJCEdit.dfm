@@ -632,8 +632,6 @@ object F_JCEdit: TF_JCEdit
       Align = alClient
       Caption = ' Rychlosti p'#345'i dal'#353#237'm n'#225'v'#283'stidle povoluj'#237'c'#237'm j'#237'zdu  '
       TabOrder = 1
-      ExplicitTop = 160
-      ExplicitHeight = 106
     end
   end
 end

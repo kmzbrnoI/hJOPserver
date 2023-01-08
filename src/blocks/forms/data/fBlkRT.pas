@@ -196,7 +196,7 @@ begin
   Self.CB_SignalEvenIndex := -1;
 
   Self.fTrainSpeedL.Default();
-  Self.fTrainSpeedS.Default();
+  Self.fTrainSpeedS.Clear();
 
   Self.stopEven.OpenEmptyForm();
   Self.stopOdd.OpenEmptyForm();
