@@ -951,11 +951,15 @@ end;
 
 procedure TBlkTrack.MenuInfoTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
-    Self.trains.Count)) then
+  var train: TTrain := nil;
+  if ((TPanelConnData(SenderPnl.Data).train_menu_index >= 0) and (TPanelConnData(SenderPnl.Data).train_menu_index < Self.trains.Count)) then
+    train := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]
+  else if ((TPanelConnData(SenderPnl.Data).train_menu_index = 0) and (Self.trainPredict <> nil)) then
+    train := Self.trainPredict;
+
+  if (train = nil) then
     Exit();
 
-  var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
   var conditions := train.InfoWindowItems();
   try
     PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, GetObjsList(Self), conditions, true, false);
@@ -1461,7 +1465,7 @@ begin
   end;
 
   if ((Self.trainPredict <> nil) and (Self.spnl.stationTrack)) then
-    Result := Result + 'PODJ,-,';
+    Result := Result + 'INFO vlak,PODJ,-,';
 
   Result := Result + 'STIT,VYL,';
 
