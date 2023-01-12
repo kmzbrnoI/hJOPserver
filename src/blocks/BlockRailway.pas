@@ -337,6 +337,11 @@ begin
   Self.RecalcTracks();
   Self.CheckTUExist();
   Self.InitTUs();
+
+  if (Self.linkerA = nil) then
+    Self.Log('Není návaznost na úvazku A', ltError);
+  if (Self.linkerB = nil) then
+    Self.Log('Není návaznost na úvazku B', ltError);
 end;
 
 // change je vyvolano i pri zmene obsazenosti jakehokoliv useku v trati
@@ -521,9 +526,8 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkRailway.GetRBP(): Boolean;
-var blkRT: TBlkRT;
 begin
-  for blkRT in Self.tracks do
+  for var blkRT: TBlkRT in Self.tracks do
     if (blkRT.bpError) then
       Exit(true);
   Result := false;
@@ -738,14 +742,14 @@ begin
     var track := Blocks.GetBlkByID(Self.m_settings.trackIds[i]);
     if ((track = nil) or (track.typ <> btRT)) then
     begin
-      Log('Trat ' + Self.name + ' obsahuje referenci na TU ID ' + IntToStr(Self.m_settings.trackIds[i]) +
+      Self.Log('Obsahuje referenci na TU ID ' + IntToStr(Self.m_settings.trackIds[i]) +
         ', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', ltError);
       Self.m_settings.trackIds.Delete(i);
       continue;
     end;
     if ((TBlkRT(track).inRailway <> -1) and (TBlkRT(track).inRailway <> Self.id)) then
     begin
-      Log('Trat ' + Self.name + ': TU ID ' + IntToStr(Self.m_settings.trackIds[i]) + ' jiz referuje na trat ID ' +
+      Self.Log('TU ID ' + IntToStr(Self.m_settings.trackIds[i]) + ' jiz referuje na trat ID ' +
         IntToStr(TBlkRT(track).inRailway) + ', odstranuji referenci', ltError);
       Self.m_settings.trackIds.Delete(i);
     end;

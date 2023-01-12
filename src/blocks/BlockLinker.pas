@@ -69,6 +69,7 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
+    procedure AfterLoad(); override;
 
     procedure Change(now: Boolean = false); override;
     procedure ChangeFromTrat();
@@ -112,7 +113,8 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert, TrainDb,
-  TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack, TCPAreasRef;
+  TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack, TCPAreasRef,
+  Logging;
 
 constructor TBlkLinker.Create(index: Integer);
 begin
@@ -162,6 +164,14 @@ begin
   Self.m_state.enabled := false;
   Self.m_state.emLock := false;
   Self.Change(true);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkLinker.AfterLoad();
+begin
+  if (Self.parent = nil) then
+    Self.Log('Není návaznost na trať', ltError);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
