@@ -100,7 +100,7 @@ uses GetSystems, FileSystem, TechnologieRCS, Block, Area, DataBloky;
 procedure TF_BlkSignal.EditBlock(BlokIndex: Integer);
 begin
   Self.openIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(BlokIndex) as TBlkSignal;
   Self.CommonOpenForm();
 
   if (Self.isNewBlock) then

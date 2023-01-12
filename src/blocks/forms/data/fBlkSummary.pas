@@ -61,7 +61,7 @@ uses GetSystems, TechnologieRCS, AreaDb, Area, Block, FileSystem,
 procedure TF_BlkSummary.EditBlock(BlokIndex: Integer);
 begin
   Self.openIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(BlokIndex) as TBlkSummary;
   Self.CommonOpenForm();
 
   if (isNewBlock) then

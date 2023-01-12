@@ -45,7 +45,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area;
 procedure TF_BlkLock.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkLock;
   Self.CommonOpenForm();
 
   if (isNewBlock) then

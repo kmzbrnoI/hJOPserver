@@ -49,7 +49,7 @@ uses BlockDb, Block, DataBloky, ownStrUtils;
 procedure TF_BlkAC.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkAC;
   Self.CommonOpenForm();
 
   if (isNewBlock) then

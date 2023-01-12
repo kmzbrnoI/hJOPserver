@@ -151,7 +151,7 @@ end;
 procedure TF_BlkPst.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkPst;
   Self.CommonOpenForm();
 
   if (Self.isNewBlock) then

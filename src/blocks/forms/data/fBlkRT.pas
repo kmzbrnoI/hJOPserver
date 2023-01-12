@@ -137,7 +137,7 @@ end;
 procedure TF_BlkRT.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkRT;
   Self.CommonOpenForm();
 
   if (Self.isNewBlock) then

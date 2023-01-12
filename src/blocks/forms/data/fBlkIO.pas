@@ -67,7 +67,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky;
 procedure TF_BlkIO.EditBlock(BlokIndex: Integer);
 begin
   Self.openIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(BlokIndex) as TBlkIO;
   Self.CommonOpenForm();
 
   if (Self.isNewBlock) then

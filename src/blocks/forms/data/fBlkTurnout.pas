@@ -127,7 +127,7 @@ end;
 
 procedure TF_BlkTurnout.EditBlock(blockIndex: Integer);
 begin
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkTurnout;
   Self.openIndex := blockIndex;
 
   Self.CommonOpenForm();

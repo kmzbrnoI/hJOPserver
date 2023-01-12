@@ -63,7 +63,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area, RC
 procedure TF_BlkDisconnector.EditBlock(BlokIndex: Integer);
 begin
   Self.openIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(BlokIndex) as TBlkDisconnector;
   Self.CommonOpenForm();
 
   if (isNewBlock) then

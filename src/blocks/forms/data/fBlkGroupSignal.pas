@@ -87,7 +87,7 @@ end;
 procedure TF_BlkGroupSignal.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkGroupSignal;
 
   if (Self.isNewBlock) then
     Self.NewOpenForm()

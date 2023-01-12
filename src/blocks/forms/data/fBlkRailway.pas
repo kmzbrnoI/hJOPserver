@@ -87,10 +87,9 @@ begin
 end;
 
 procedure TF_BlkRailway.EditBlock(blockIndex: Integer);
-var blk: TBlk;
 begin
   Self.isNewBlock := false;
-  Blocks.GetBlkByIndex(blockIndex, blk);
+  var blk := Blocks.GetBlkByIndex(blockIndex);
 
   if (blk = nil) then
     raise Exception.Create('Blok '+IntToStr(blockIndex)+' neexistuje!');

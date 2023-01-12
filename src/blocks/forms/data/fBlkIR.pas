@@ -50,7 +50,7 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky;
 procedure TF_BlkIR.EditBlock(blockIndex: Integer);
 begin
   Self.openIndex := blockIndex;
-  Blocks.GetBlkByIndex(blockIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkIR;
   Self.CommonOpenForm();
 
   if (Self.isNewBlock) then

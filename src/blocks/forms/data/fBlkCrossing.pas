@@ -105,7 +105,7 @@ uses GetSystems, TechnologieRCS, AreaDb, Area, Block, FileSystem, DataBloky;
 procedure TF_BlkCrossing.EditBlock(BlokIndex: Integer);
 begin
   Self.openIndex := BlokIndex;
-  Blocks.GetBlkByIndex(BlokIndex, TBlk(Self.block));
+  Self.block := Blocks.GetBlkByIndex(BlokIndex) as TBlkCrossing;
   Self.CommonOpenForm();
 
   if (Self.isNewBlock) then

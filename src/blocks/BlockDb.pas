@@ -50,7 +50,7 @@ type
     function Add(glob: TBlkSettings): TBlk;
     procedure Delete(index: Integer);
 
-    function GetBlkByIndex(index: Integer; var Blk: TBlk): Integer;
+    function GetBlkByIndex(index: Integer): TBlk;
     function SetBlk(index: Integer; data: TBlk): Integer;
 
     procedure Enable();
@@ -461,14 +461,11 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlocks.GetBlkByIndex(index: Integer; var Blk: TBlk): Integer;
+function TBlocks.GetBlkByIndex(index: Integer): TBlk;
 begin
-  Blk := nil;
   if ((index < 0) or (index >= Self.data.count)) then
-    Exit(1);
-
-  Blk := Self.data[index];
-  Result := 0;
+    Exit(nil);
+  Result := Self.data[index];
 end;
 
 function TBlocks.SetBlk(index: Integer; data: TBlk): Integer;
@@ -553,7 +550,7 @@ end;
 
 function TBlocks.GetBlkByID(id: Integer): TBlk;
 begin
-  Self.GetBlkByIndex(Self.GetBlkIndex(id), Result);
+  Result := Self.GetBlkByIndex(Self.GetBlkIndex(id));
 end;
 
 function TBlocks.GetBlkTrackOrRTByID(id: Integer): TBlkTrack;

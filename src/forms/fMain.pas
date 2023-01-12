@@ -2508,11 +2508,11 @@ begin
 end;
 
 procedure TF_Main.MI_HoukClick(Sender: TObject);
-var blk: TBlk;
 begin
   if (Self.LV_Blocks.Selected = nil) then
     Exit();
-  if (Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex, blk) <> 0) then
+  var blk := Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex);
+  if (blk = nil) then
     Exit();
   if ((blk.typ <> btTrack) and (blk.typ <> btRT)) then
     Exit();
@@ -2568,7 +2568,8 @@ var blk: TBlk;
 begin
   if (LV_Blocks.Selected = nil) then
     Exit();
-  if (Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex, blk) <> 0) then
+  blk := Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex);
+  if (blk = nil) then
     Exit();
 
   case (blk.typ) of
@@ -2974,7 +2975,8 @@ procedure TF_Main.LV_BlocksCustomDrawItem(Sender: TCustomListView; Item: TListIt
   var DefaultDraw: Boolean);
 var blk: TBlk;
 begin
-  if (Blocks.GetBlkByIndex(Item.Index, blk) <> 0) then
+  blk := Blocks.GetBlkByIndex(Item.Index);
+  if (blk = nil) then
     Exit();
 
   case (blk.typ) of
@@ -3157,7 +3159,8 @@ var blk: TBlk;
 begin
   if (LV_Blocks.Selected = nil) then
     Exit();
-  if (Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex, blk) <> 0) then
+  blk := Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex);
+  if (blk = nil) then
     Exit();
 
   try

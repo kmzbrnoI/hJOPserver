@@ -87,7 +87,7 @@ procedure TBlocksTablePainter.UpdateLine(line: Integer);
 var blk: TBlk;
     glob: TBlkSettings;
 begin
-  Blocks.GetBlkByIndex(line, blk);
+  blk := Blocks.GetBlkByIndex(line);
   if (blk = nil) then
     Exit();
 
