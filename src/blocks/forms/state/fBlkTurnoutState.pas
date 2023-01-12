@@ -33,10 +33,9 @@ type
     procedure Refresh();
     procedure Apply();
 
-  private const
-
   public
     procedure Open(turnout: TBlkTurnout);
+
   end;
 
 var

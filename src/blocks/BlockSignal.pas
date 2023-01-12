@@ -246,6 +246,7 @@ type
     property trackId: Integer read m_spnl.trackId write SetTrackId;
     property direction: THVSite read m_spnl.direction write m_spnl.direction;
 
+    property state: TBlkSignalState read m_state;
     property signal: TBlkSignalCode read m_state.signal write mSetSignal;
     property targetSignal: TBlkSignalCode read GetTargetSignal;
     property selected: TBlkSignalSelection read m_state.selected write SetSelected;

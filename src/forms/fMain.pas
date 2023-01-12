@@ -490,7 +490,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
   BlockLock, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
   fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
   AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB, fBlkCrossingState,
-  Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal, fBlkPst, BlockPst;
+  Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal, fBlkPst, BlockPst, fBlkSignalState;
 
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1549,7 +1549,7 @@ begin
     if (blk = nil) then
       Exit();
 
-    Self.MI_BlockState.Enabled := (blk <> nil) and ((blk.typ = btTurnout) or (blk.typ = btTrack) or (blk.typ = btRT) or (blk.typ = btCrossing));
+    Self.MI_BlockState.Enabled := (blk <> nil) and ((blk.typ = btTurnout) or (blk.typ = btTrack) or (blk.typ = btRT) or (blk.typ = btCrossing) or (blk.typ = btSignal));
     Self.MI_Houk.Enabled := (blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT));
     Self.MI_Prop.Enabled := true;
   end;
@@ -2585,7 +2585,9 @@ begin
     btRailway:
       F_BlkRailwayState.Open(blk as TBlkRailway);
     btCrossing:
-      F_BlkCrossingState.Open(blk as TBlkCrossing)
+      F_BlkCrossingState.Open(blk as TBlkCrossing);
+    btSignal:
+      F_BlkSignalState.Open(blk as TBlkSignal);
   end;
 end;
 

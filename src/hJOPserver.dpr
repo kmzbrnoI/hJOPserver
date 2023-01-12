@@ -162,7 +162,8 @@ uses
   TrainSpeed in 'trains\TrainSpeed.pas',
   fTrainSpeed in 'forms\fTrainSpeed.pas' {F_TrainSpeed},
   ConfSeq in 'ConfSeq.pas',
-  fBlkCrossingState in 'blocks\forms\state\fBlkCrossingState.pas' {F_BlkCrossingState};
+  fBlkCrossingState in 'blocks\forms\state\fBlkCrossingState.pas' {F_BlkCrossingState},
+  fBlkSignalState in 'blocks\forms\state\fBlkSignalState.pas' {F_BlkSignalState};
 
 {$R *.res}
 
@@ -187,6 +188,7 @@ var
   Application.CreateForm(TF_BlkPst, F_BlkPst);
   Application.CreateForm(TF_TrainSpeed, F_TrainSpeed);
   Application.CreateForm(TF_BlkCrossingState, F_BlkCrossingState);
+  Application.CreateForm(TF_BlkSignalState, F_BlkSignalState);
   F_Splash.AddStav('Vytvářím okna...');
 
   Application.CreateForm(TF_Console, F_Console);
