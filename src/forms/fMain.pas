@@ -1542,11 +1542,16 @@ procedure TF_Main.PM_BlokyPopup(Sender: TObject);
 begin
   if (Self.LV_Blocks.Selected = nil) then
   begin
-    for var i := 0 to (Sender as TPopupMenu).Items.Count - 1 do
-      (Sender as TPopupMenu).Items.Items[i].Enabled := false;
+    for var item in (Sender as TPopupMenu).Items do
+      item.Enabled := false;
   end else begin
-    for var i := 0 to (Sender as TPopupMenu).Items.Count - 1 do
-      (Sender as TPopupMenu).Items.Items[i].Enabled := true;
+    var blk := Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex);
+    if (blk = nil) then
+      Exit();
+
+    Self.MI_BlockState.Enabled := (blk <> nil) and ((blk.typ = btTurnout) or (blk.typ = btTrack) or (blk.typ = btRT) or (blk.typ = btCrossing));
+    Self.MI_Houk.Enabled := (blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT));
+    Self.MI_Prop.Enabled := true;
   end;
 end;
 
