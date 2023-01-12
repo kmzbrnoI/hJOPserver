@@ -104,15 +104,14 @@ uses GetSystems, TechnologieRCS, AreaDb, Area, Block, FileSystem, DataBloky;
 
 procedure TF_BlkCrossing.EditBlock(BlokIndex: Integer);
 begin
+  Self.isNewBlock := false;
   Self.openIndex := BlokIndex;
   Self.block := Blocks.GetBlkByIndex(BlokIndex) as TBlkCrossing;
+  if (block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(BlokIndex)+' neexistuje!');
+
   Self.CommonOpenForm();
-
-  if (Self.isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditOpenForm();
-
+  Self.EditOpenForm();
   Self.ShowModal();
 end;
 
@@ -490,7 +489,12 @@ end;
 procedure TF_BlkCrossing.NewBlock();
 begin
   Self.isNewBlock := true;
-  Self.EditBlock(Blocks.Count);
+  Self.openIndex := -1;
+  Self.block := nil;
+
+  Self.CommonOpenForm();
+  Self.NewOpenForm();
+  Self.ShowModal();
 end;
 
 procedure TF_BlkCrossing.SaveTracks();

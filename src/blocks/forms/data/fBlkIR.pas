@@ -49,15 +49,14 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky;
 
 procedure TF_BlkIR.EditBlock(blockIndex: Integer);
 begin
+  Self.isNewBlock := false;
   Self.openIndex := blockIndex;
   Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkIR;
+  if (block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(blockIndex)+' neexistuje!');
+
   Self.CommonOpenForm();
-
-  if (Self.isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditOpenForm();
-
+  Self.EditOpenForm();
   Self.ShowModal();
 end;
 
@@ -114,7 +113,12 @@ end;
 procedure TF_BlkIR.NewBlock();
 begin
   Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
+  Self.openIndex := -1;
+  Self.block := nil;
+
+  Self.CommonOpenForm();
+  Self.NewOpenForm();
+  Self.ShowModal();
 end;
 
 procedure TF_BlkIR.B_StornoClick(Sender: TObject);

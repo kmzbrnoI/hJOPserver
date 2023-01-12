@@ -127,15 +127,25 @@ end;
 
 procedure TF_BlkTurnout.EditBlock(blockIndex: Integer);
 begin
-  Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkTurnout;
+  Self.isNewBlock := false;
   Self.openIndex := blockIndex;
+  Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkTurnout;
+  if (Self.block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(blockIndex)+' neexistuje!');
 
   Self.CommonOpenForm();
-  if (Self.isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditOpenForm();
+  Self.EditOpenForm();
+  Self.ShowModal();
+end;
 
+procedure TF_BlkTurnout.NewBlock();
+begin
+  Self.isNewBlock := true;
+  Self.openIndex := -1;
+  Self.block := nil;
+
+  Self.CommonOpenForm();
+  Self.NewOpenForm();
   Self.ShowModal();
 end;
 
@@ -376,12 +386,6 @@ begin
     Self.CHB_npMinus.Enabled := (Self.CB_NeprofilIds.Count > 0);
   end;
 
-end;
-
-procedure TF_BlkTurnout.NewBlock();
-begin
-  Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkTurnout.B_StornoClick(Sender: TObject);

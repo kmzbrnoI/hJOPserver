@@ -62,15 +62,25 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area, RC
 
 procedure TF_BlkDisconnector.EditBlock(BlokIndex: Integer);
 begin
+  Self.isNewBlock := false;
   Self.openIndex := BlokIndex;
   Self.block := Blocks.GetBlkByIndex(BlokIndex) as TBlkDisconnector;
+  if (Self.block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(BlokIndex)+' neexistuje!');
+
   Self.CommonOpenForm();
+  Self.EditOpenForm();
+  Self.ShowModal();
+end;
 
-  if (isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditOpenForm();
+procedure TF_BlkDisconnector.NewBlock();
+begin
+  Self.isNewBlock := true;
+  Self.openIndex := -1;
+  Self.block := nil;
 
+  Self.CommonOpenForm();
+  Self.NewOpenForm();
   Self.ShowModal();
 end;
 
@@ -175,12 +185,6 @@ end;
 procedure TF_BlkDisconnector.CommonOpenForm;
 begin
   Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
-end;
-
-procedure TF_BlkDisconnector.NewBlock;
-begin
-  Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkDisconnector.B_StornoClick(Sender: TObject);

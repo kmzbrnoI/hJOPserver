@@ -66,15 +66,25 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky;
 
 procedure TF_BlkIO.EditBlock(BlokIndex: Integer);
 begin
+  Self.isNewBlock := false;
   Self.openIndex := BlokIndex;
   Self.block := Blocks.GetBlkByIndex(BlokIndex) as TBlkIO;
+  if (Self.block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(BlokIndex)+' neexistuje!');
+
   Self.CommonOpenForm();
+  Self.EditOpenForm();
+  Self.ShowModal();
+end;
 
-  if (Self.isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditOpenForm();
+procedure TF_BlkIO.NewBlock();
+begin
+  Self.isNewBlock := true;
+  Self.openIndex := -1;
+  Self.block := nil;
 
+  Self.CommonOpenForm();
+  Self.NewOpenForm();
   Self.ShowModal();
 end;
 
@@ -174,12 +184,6 @@ procedure TF_BlkIO.CommonOpenForm();
 begin
   Self.SE_RCS_Input_Module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCS_Output_Module.MaxValue := RCSi.maxModuleAddrSafe;
-end;
-
-procedure TF_BlkIO.NewBlock();
-begin
-  Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkIO.B_StornoClick(Sender: TObject);

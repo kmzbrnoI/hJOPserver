@@ -44,15 +44,25 @@ uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky, Area;
 
 procedure TF_BlkLock.EditBlock(blockIndex: Integer);
 begin
+  Self.isNewBlock := false;
   Self.openIndex := blockIndex;
   Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkLock;
+  if (Self.block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(blockIndex)+' neexistuje!');
+
   Self.CommonOpenForm();
+  Self.EditForm();
+  Self.ShowModal();
+end;
 
-  if (isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditForm();
+procedure TF_BlkLock.NewBlock();
+begin
+  Self.isNewBlock := true;
+  Self.openIndex := -1;
+  Self.block := nil;
 
+  Self.CommonOpenForm();
+  Self.NewOpenForm();
   Self.ShowModal();
 end;
 
@@ -80,12 +90,6 @@ end;
 procedure TF_BlkLock.CommonOpenForm();
 begin
 
-end;
-
-procedure TF_BlkLock.NewBlock();
-begin
-  Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkLock.B_StornoClick(Sender: TObject);

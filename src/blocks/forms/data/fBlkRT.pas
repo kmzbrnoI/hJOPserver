@@ -136,15 +136,25 @@ end;
 
 procedure TF_BlkRT.EditBlock(blockIndex: Integer);
 begin
+  Self.isNewBlock := false;
   Self.openIndex := blockIndex;
   Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkRT;
+  if (Self.block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(blockIndex)+' neexistuje!');
+
   Self.CommonOpenForm();
+  Self.EditOpenForm();
+  Self.ShowModal();
+end;
 
-  if (Self.isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditOpenForm();
+procedure TF_BlkRT.NewBlock();
+begin
+  Self.isNewBlock := true;
+  Self.openIndex := -1;
+  Self.block := nil;
 
+  Self.CommonOpenForm();
+  Self.NewOpenForm();
   Self.ShowModal();
 end;
 
@@ -154,12 +164,6 @@ begin
   Self.SE_Port2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port1.Value);
   Self.SE_Port3.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board3.Value, Self.SE_Port1.Value);
   Self.SE_Port4.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port1.Value);
-end;
-
-procedure TF_BlkRT.NewBlock();
-begin
-  Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkRT.NewOpenForm();

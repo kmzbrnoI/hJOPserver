@@ -150,15 +150,14 @@ end;
 
 procedure TF_BlkPst.EditBlock(blockIndex: Integer);
 begin
+  Self.isNewBlock := false;
   Self.openIndex := blockIndex;
   Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkPst;
+  if (Self.block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(blockIndex)+' neexistuje!');
+
   Self.CommonOpenForm();
-
-  if (Self.isNewBlock) then
-    Self.NewBlkOpenForm()
-  else
-    Self.NormalOpenForm();
-
+  Self.NormalOpenForm();
   Self.ShowModal();
 end;
 
@@ -331,7 +330,12 @@ end;
 procedure TF_BlkPst.NewBlock();
 begin
   Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
+  Self.openIndex := -1;
+  Self.block := nil;
+
+  Self.CommonOpenForm();
+  Self.NewBlkOpenForm();
+  Self.ShowModal();
 end;
 
 procedure TF_BlkPst.B_ApplyClick(Sender: TObject);

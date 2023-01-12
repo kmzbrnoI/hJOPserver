@@ -48,15 +48,25 @@ uses BlockDb, Block, DataBloky, ownStrUtils;
 
 procedure TF_BlkAC.EditBlock(blockIndex: Integer);
 begin
+  Self.isNewBlock := false;
   Self.openIndex := blockIndex;
   Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkAC;
+  if (Self.block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(blockIndex)+' neexistuje!');
+
   Self.CommonOpenForm();
+  Self.EditOpenForm();
+  Self.ShowModal();
+end;
 
-  if (isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditOpenForm();
+procedure TF_BlkAC.NewBlock();
+begin
+  Self.isNewBlock := true;
+  Self.openIndex := -1;
+  Self.block := nil;
 
+  Self.CommonOpenForm();
+  Self.NewOpenForm();
   Self.ShowModal();
 end;
 
@@ -88,12 +98,6 @@ end;
 procedure TF_BlkAC.CommonOpenForm();
 begin
 
-end;
-
-procedure TF_BlkAC.NewBlock();
-begin
-  Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
 end;
 
 procedure TF_BlkAC.B_StornoClick(Sender: TObject);

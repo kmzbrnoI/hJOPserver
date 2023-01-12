@@ -86,14 +86,13 @@ end;
 
 procedure TF_BlkGroupSignal.EditBlock(blockIndex: Integer);
 begin
+  Self.isNewBlock := false;
   Self.openIndex := blockIndex;
   Self.block := Blocks.GetBlkByIndex(blockIndex) as TBlkGroupSignal;
+  if (Self.block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(blockIndex)+' neexistuje!');
 
-  if (Self.isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditOpenForm();
-
+  Self.EditOpenForm();
   Self.ShowModal();
 end;
 
@@ -186,7 +185,11 @@ end;
 procedure TF_BlkGroupSignal.NewBlock();
 begin
   Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
+  Self.openIndex := -1;
+  Self.block := nil;
+
+  Self.NewOpenForm();
+  Self.ShowModal();
 end;
 
 procedure TF_BlkGroupSignal.B_BlkAddClick(Sender: TObject);

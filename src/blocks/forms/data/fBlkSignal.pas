@@ -99,15 +99,14 @@ uses GetSystems, FileSystem, TechnologieRCS, Block, Area, DataBloky;
 
 procedure TF_BlkSignal.EditBlock(BlokIndex: Integer);
 begin
+  Self.isNewBlock := false;
   Self.openIndex := BlokIndex;
   Self.block := Blocks.GetBlkByIndex(BlokIndex) as TBlkSignal;
+  if (block = nil) then
+    raise Exception.Create('Blok #'+IntToStr(BlokIndex)+' neexistuje!');
+
   Self.CommonOpenForm();
-
-  if (Self.isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditOpenForm();
-
+  Self.EditOpenForm();
   Self.ShowModal();
 end;
 
@@ -235,7 +234,12 @@ end;
 procedure TF_BlkSignal.NewBlock();
 begin
   Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
+  Self.openIndex := -1;
+  Self.block := nil;
+
+  Self.CommonOpenForm();
+  Self.NewOpenForm();
+  Self.ShowModal();
 end;
 
 procedure TF_BlkSignal.B_StornoClick(Sender: TObject);
