@@ -491,13 +491,7 @@ end;
 function TBlkLinker.GetParent(): TBlk;
 begin
   if (Self.m_parent = nil) then
-  begin
-    var tmp := Blocks.GetBlkByID(Self.m_settings.parent);
-    if (tmp.typ = TBlkType.btRailway) then
-      Self.m_parent := tmp
-    else
-      Exit(nil);
-  end;
+    Self.m_parent := Blocks.GetBlkRailwayByID(Self.m_settings.parent);
   Result := Self.m_parent;
 end;
 
