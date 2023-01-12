@@ -52,7 +52,6 @@ type
     railway: TBlkRailway;
     linkerA: TBlkLinker;
     linkerB: TBlkLinker;
-    blkIndex: Integer;
     CB_TrackIds: TList<Integer>;
 
     procedure CommonOpenForm();
@@ -90,7 +89,6 @@ end;
 procedure TF_BlkRailway.EditBlock(blockIndex: Integer);
 var blk: TBlk;
 begin
-  Self.blkIndex := blockIndex;
   Blocks.GetBlkByIndex(blockIndex, blk);
 
   if (blk <> nil) then
@@ -387,7 +385,6 @@ end;
 
 procedure TF_BlkRailway.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Self.blkIndex := -1;
   Self.isNewBlock := false;
   BlocksTablePainter.UpdateTable();
 end;
