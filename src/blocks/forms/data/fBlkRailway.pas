@@ -89,33 +89,42 @@ end;
 procedure TF_BlkRailway.EditBlock(blockIndex: Integer);
 var blk: TBlk;
 begin
+  Self.isNewBlock := false;
   Blocks.GetBlkByIndex(blockIndex, blk);
 
-  if (blk <> nil) then
-  begin
-    case (blk.typ) of
-      btRailway:
-        Self.railway := Blk as TBlkRailway;
-      btLinker:
-        Self.railway := (Blk as TBlkLinker).parent as TBlkRailway;
-    end;
-    Self.linkerA := Self.railway.linkerA as TBlkLinker;
-    Self.linkerB := Self.railway.linkerB as TBlkLinker;
+  if (blk = nil) then
+    raise Exception.Create('Blok '+IntToStr(blockIndex)+' neexistuje!');
+
+  Self.railway := nil;
+  case (blk.typ) of
+    btRailway:
+      Self.railway := Blk as TBlkRailway;
+    btLinker:
+      Self.railway := (Blk as TBlkLinker).parent as TBlkRailway;
   end;
 
-  Self.CommonOpenForm();
-  if (isNewBlock) then
-    Self.NewOpenForm()
-  else
-    Self.EditOpenForm();
+  if (Self.railway = nil) then
+    raise Exception.Create('Nelze získat trať!');
 
+  Self.linkerA := Self.railway.linkerA as TBlkLinker;
+  Self.linkerB := Self.railway.linkerB as TBlkLinker;
+
+  if (Self.linkerA = nil) then
+    raise Exception.Create('Nelze získat úvazku A!');
+  if (Self.linkerB = nil) then
+    raise Exception.Create('Nelze získat úvazku B!');
+
+  Self.CommonOpenForm();
+  Self.EditOpenForm();
   Self.ShowModal();
 end;
 
 procedure TF_BlkRailway.NewBlock();
 begin
   Self.isNewBlock := true;
-  Self.EditBlock(Blocks.count);
+  Self.CommonOpenForm();
+  Self.NewOpenForm();
+  Self.ShowModal();
 end;
 
 procedure TF_BlkRailway.NewOpenForm();

@@ -3160,35 +3160,40 @@ begin
   if (Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex, blk) <> 0) then
     Exit();
 
-  case (blk.typ) of
-    btTurnout:
-      F_BlkTurnout.EditBlock(Self.LV_Blocks.ItemIndex);
-    btTrack:
-      F_BlkTrack.EditBlock(Self.LV_Blocks.ItemIndex);
-    btIR:
-      F_BlkIR.EditBlock(Self.LV_Blocks.ItemIndex);
-    btSignal:
-      F_BlkSignal.EditBlock(Self.LV_Blocks.ItemIndex);
-    btCrossing:
-      F_BlkCrossing.EditBlock(Self.LV_Blocks.ItemIndex);
-    btRailway, btLinker:
-      F_BlkRailway.EditBlock(Self.LV_Blocks.ItemIndex);
-    btLock:
-      F_BlkLock.EditBlock(Self.LV_Blocks.ItemIndex);
-    btDisconnector:
-      F_BlkDisconnector.EditBlock(Self.LV_Blocks.ItemIndex);
-    btRT:
-      F_BlkRT.EditBlock(Self.LV_Blocks.ItemIndex);
-    btIO:
-      F_BlkIO.EditBlock(Self.LV_Blocks.ItemIndex);
-    btSummary:
-      F_BlkSummary.EditBlock(Self.LV_Blocks.ItemIndex);
-    btAC:
-      F_BlkAC.EditBlock(Self.LV_Blocks.ItemIndex);
-    btGroupSignal:
-      F_BlkGroupSignal.EditBlock(Self.LV_Blocks.ItemIndex);
-    btPst:
-      F_BlkPst.EditBlock(Self.LV_Blocks.ItemIndex);
+  try
+    case (blk.typ) of
+      btTurnout:
+        F_BlkTurnout.EditBlock(Self.LV_Blocks.ItemIndex);
+      btTrack:
+        F_BlkTrack.EditBlock(Self.LV_Blocks.ItemIndex);
+      btIR:
+        F_BlkIR.EditBlock(Self.LV_Blocks.ItemIndex);
+      btSignal:
+        F_BlkSignal.EditBlock(Self.LV_Blocks.ItemIndex);
+      btCrossing:
+        F_BlkCrossing.EditBlock(Self.LV_Blocks.ItemIndex);
+      btRailway, btLinker:
+        F_BlkRailway.EditBlock(Self.LV_Blocks.ItemIndex);
+      btLock:
+        F_BlkLock.EditBlock(Self.LV_Blocks.ItemIndex);
+      btDisconnector:
+        F_BlkDisconnector.EditBlock(Self.LV_Blocks.ItemIndex);
+      btRT:
+        F_BlkRT.EditBlock(Self.LV_Blocks.ItemIndex);
+      btIO:
+        F_BlkIO.EditBlock(Self.LV_Blocks.ItemIndex);
+      btSummary:
+        F_BlkSummary.EditBlock(Self.LV_Blocks.ItemIndex);
+      btAC:
+        F_BlkAC.EditBlock(Self.LV_Blocks.ItemIndex);
+      btGroupSignal:
+        F_BlkGroupSignal.EditBlock(Self.LV_Blocks.ItemIndex);
+      btPst:
+        F_BlkPst.EditBlock(Self.LV_Blocks.ItemIndex);
+    end;
+  except
+    on E:Exception do
+      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
   end;
 end;
 

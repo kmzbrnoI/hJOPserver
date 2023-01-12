@@ -299,7 +299,6 @@ object F_BlkRailway: TF_BlkRailway
       Align = alBottom
       Caption = ' P'#345'idat/upravit/smazat tra'#357'ov'#253' '#250'sek  '
       TabOrder = 0
-      ExplicitTop = 217
       object B_Track_Add: TButton
         Left = 176
         Top = 15
@@ -369,8 +368,6 @@ object F_BlkRailway: TF_BlkRailway
       OnChange = LV_TracksChange
       OnDragDrop = LV_TracksDragDrop
       OnDragOver = LV_TracksDragOver
-      ExplicitTop = 55
-      ExplicitHeight = 162
     end
   end
 end
