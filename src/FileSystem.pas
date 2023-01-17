@@ -342,8 +342,19 @@ begin
 
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
   try
-    F_Options.LB_Timer.ItemIndex := ini.ReadInteger('SystemCfg', 'TimerInterval', 4);
+    var interval := ini.ReadInteger('SystemCfg', 'mainTimerIntervalMs', 100);
+    case (interval) of
+      25: F_Options.LB_Timer.ItemIndex := 0;
+      50: F_Options.LB_Timer.ItemIndex := 1;
+      100: F_Options.LB_Timer.ItemIndex := 2;
+      200: F_Options.LB_Timer.ItemIndex := 3;
+      250: F_Options.LB_Timer.ItemIndex := 4;
+      500: F_Options.LB_Timer.ItemIndex := 5;
+    else
+      F_Options.LB_Timer.ItemIndex := 2;
+    end;
     F_Options.LB_TimerClick(Self);
+
     F_Options.CHB_povolit_spusteni.Checked := ini.ReadBool('SystemCfg', 'AutSpusteni', false);
     if (F_Options.CHB_povolit_spusteni.Checked) then
       F_Main.KomunikacePocitani := 1;
@@ -425,7 +436,7 @@ begin
   try
     ModCas.SaveData(ini);
 
-    ini.WriteInteger('SystemCfg', 'TimerInterval', F_Options.LB_Timer.ItemIndex);
+    ini.WriteInteger('SystemCfg', 'mainTimerIntervalMs', F_Main.T_Main.Interval);
     ini.WriteBool('SystemCfg', 'AutSpusteni', F_Options.CHB_povolit_spusteni.Checked);
     ini.WriteInteger('SystemCfg', 'scale', GlobalConfig.scale);
 
