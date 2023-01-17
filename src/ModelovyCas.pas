@@ -98,16 +98,16 @@ end;
 
 procedure TModCas.LoadData(var ini: TMemIniFile);
 begin
-  Self.fspeed := ini.ReadFloat('ModCas', 'speed', 5);
-  Self.dateTime := StrToTime(ini.ReadString('ModCas', 'cas', '00:00:00'));
-  Self.fused := ini.ReadBool('ModCas', 'used', true);
+  Self.fspeed := ini.ReadFloat(_INI_SECTION, 'speed', 5);
+  Self.dateTime := StrToTime(ini.ReadString(_INI_SECTION, 'cas', '00:00:00'));
+  Self.fused := ini.ReadBool(_INI_SECTION, 'used', true);
 end;
 
 procedure TModCas.SaveData(var ini: TMemIniFile);
 begin
-  ini.WriteString('ModCas', 'speed', Self.strSpeed);
-  ini.WriteString('ModCas', 'cas', TimeToStr(Self.time));
-  ini.WriteBool('ModCas', 'used', Self.used);
+  ini.WriteString(_INI_SECTION, 'speed', Self.strSpeed);
+  ini.WriteString(_INI_SECTION, 'cas', TimeToStr(Self.time));
+  ini.WriteBool(_INI_SECTION, 'used', Self.used);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
