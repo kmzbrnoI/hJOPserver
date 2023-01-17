@@ -436,12 +436,14 @@ begin
   try
     ModCas.SaveData(ini);
 
+    ini.EraseSection('SystemCfg');
     ini.WriteInteger('SystemCfg', 'mainTimerIntervalMs', F_Main.T_Main.Interval);
     ini.WriteBool('SystemCfg', 'AutSpusteni', F_Options.CHB_povolit_spusteni.Checked);
     ini.WriteInteger('SystemCfg', 'scale', GlobalConfig.scale);
 
     SS.SaveData(ini);
 
+    ini.EraseSection('autosave');
     ini.WriteBool('autosave', 'enabled', GlobalConfig.autosave);
     ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', GlobalConfig.autosave_period));
 

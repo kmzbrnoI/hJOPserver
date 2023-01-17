@@ -105,6 +105,7 @@ end;
 
 procedure TModCas.SaveData(var ini: TMemIniFile);
 begin
+  ini.EraseSection('ModCas');
   ini.WriteString('ModCas', 'speed', Self.strSpeed);
   ini.WriteString('ModCas', 'cas', TimeToStr(Self.time));
   ini.WriteBool('ModCas', 'used', Self.used);

@@ -74,20 +74,33 @@ end;
 
 procedure TSS.SaveData(ini: TMemIniFile);
 begin
+  ini.EraseSection(_INIFILE_SECTION);
   ini.WriteBool(_INIFILE_SECTION, 'enabled', Self.config.enabled);
-  ini.WriteInteger(_INIFILE_SECTION, 'RCSAdr', Self.config.RCSAdr);
-  ini.WriteInteger(_INIFILE_SECTION, 'AutRezim', Self.config.AC_id);
 
-  ini.WriteInteger(_INIFILE_SECTION, 'IN_Start', Self.config.IN_Start);
-  ini.WriteInteger(_INIFILE_SECTION, 'IN_Pause', Self.config.IN_Pause);
-  ini.WriteInteger(_INIFILE_SECTION, 'IN_Stop', Self.config.IN_Stop);
-  ini.WriteInteger(_INIFILE_SECTION, 'IN_Repeat', Self.config.IN_Repeat);
-  ini.WriteInteger(_INIFILE_SECTION, 'IN_Reset', Self.config.IN_Reset);
+  if (Self.config.RCSAdr > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'RCSAdr', Self.config.RCSAdr);
+  if (Self.config.AC_id > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'AutRezim', Self.config.AC_id);
 
-  ini.WriteInteger(_INIFILE_SECTION, 'OUT_Ready', Self.config.OUT_Ready);
-  ini.WriteInteger(_INIFILE_SECTION, 'OUT_Start', Self.config.OUT_Start);
-  ini.WriteInteger(_INIFILE_SECTION, 'OUT_Stop', Self.config.OUT_Stop);
-  ini.WriteInteger(_INIFILE_SECTION, 'OUT_Repeat', Self.config.OUT_Repeat);
+  if (Self.config.IN_Start > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'IN_Start', Self.config.IN_Start);
+  if (Self.config.IN_Pause > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'IN_Pause', Self.config.IN_Pause);
+  if (Self.config.IN_Stop > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'IN_Stop', Self.config.IN_Stop);
+  if (Self.config.IN_Repeat > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'IN_Repeat', Self.config.IN_Repeat);
+  if (Self.config.IN_Reset > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'IN_Reset', Self.config.IN_Reset);
+
+  if (Self.config.OUT_Ready > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'OUT_Ready', Self.config.OUT_Ready);
+  if (Self.config.OUT_Start > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'OUT_Start', Self.config.OUT_Start);
+  if (Self.config.OUT_Stop > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'OUT_Stop', Self.config.OUT_Stop);
+  if (Self.config.OUT_Repeat > -1) then
+    ini.WriteInteger(_INIFILE_SECTION, 'OUT_Repeat', Self.config.OUT_Repeat);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
