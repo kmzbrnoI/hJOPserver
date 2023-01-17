@@ -95,7 +95,7 @@ object F_Options: TF_Options
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_SS
+    ActivePage = TS_Options
     Align = alTop
     MultiLine = True
     TabOrder = 2
@@ -335,15 +335,12 @@ object F_Options: TF_Options
             Margins.Bottom = 2
             ItemHeight = 13
             Items.Strings = (
-              '10'
-              '20'
               '25'
               '50'
               '100'
               '200'
               '250'
-              '500'
-              '1000')
+              '500')
             TabOrder = 0
             OnClick = LB_TimerClick
           end
