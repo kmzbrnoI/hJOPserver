@@ -22,7 +22,6 @@ type
     procedure B_SaveClick(Sender: TObject);
     procedure B_InputSimClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure FormShow(Sender: TObject);
     procedure CHB_JC_SimulatorClick(Sender: TObject);
     procedure CHB_Trat_SimClick(Sender: TObject);
     procedure CHB_SimVyhybkyClick(Sender: TObject);
@@ -32,9 +31,10 @@ type
     procedure CHB_Show_Block_IdClick(Sender: TObject);
     procedure B_JC_Single_IterClick(Sender: TObject);
     procedure B_Trat_Single_IterClick(Sender: TObject);
+
   public
     procedure LoadData(ini: TMemIniFile);
-    procedure SaveData(ini: TMemIniFile);
+
   end;
 
 var
@@ -47,7 +47,6 @@ uses Diagnostics, Simulation, fSettings, TechnologieRCS, Logging;
 {$R *.dfm}
 
 procedure TF_Admin.LoadData(ini: TMemIniFile);
-const SECTION = 'AdminData';
 begin
   Self.CHB_SimSoupravaUsek.Checked := diag.simSoupravaObsaz;
   Self.CHB_JC_Simulator.Checked := JCSimulator.timer.Enabled;
@@ -56,13 +55,6 @@ begin
   Self.CHB_SimInput.Checked := diag.simInputs;
   Self.CHB_Zaver.Checked := diag.showZaver;
   Self.CHB_Show_Block_Id.Checked := diag.showBlockId;
-end;
-
-procedure TF_Admin.SaveData(ini: TMemIniFile);
-const SECTION = 'AdminData';
-begin
-  ini.WriteInteger(SECTION, 'FormLeft', F_Admin.Left);
-  ini.WriteInteger(SECTION, 'FormTop', F_Admin.Top);
 end;
 
 procedure TF_Admin.B_JC_Single_IterClick(Sender: TObject);
@@ -77,7 +69,6 @@ begin
   ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
   try
     ini.EraseSection(SECTION);
-    Self.SaveData(ini);
     diag.SaveData(ini, SECTION);
     ini.UpdateFile();
   finally
@@ -131,18 +122,6 @@ begin
   begin
     Self.FormStyle := fsNormal;
     Self.Visible := false;
-  end;
-end;
-
-procedure TF_Admin.FormShow(Sender: TObject);
-var ini: TMemIniFile;
-begin
-  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
-  try
-    F_Admin.Left := ini.ReadInteger('AdminData', 'FormLeft', F_Admin.Left);
-    F_Admin.Top := ini.ReadInteger('AdminData', 'FormTop', F_Admin.Top);
-  finally
-    ini.Free;
   end;
 end;
 
