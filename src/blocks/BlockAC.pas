@@ -525,7 +525,7 @@ begin
 
   if (not Self.m_state.panelsShowingState.Contains(pnl)) then
     Self.m_state.panelsShowingState.Add(pnl);
-  PanelServer.InfoWindow(pnl, Self.PanelSTAVClosed, Area, 'Zobrazení stavu AC', GetObjsList(Self), conds)
+  PanelServer.InfoWindow(pnl, Self.PanelSTAVClosed, Area, 'Zobrazení stavu AC', GetObjsList(Self), conds);
 end;
 
 procedure TBlkAC.PanelSTAVClosed(Sender: TIdContext; success: Boolean);
