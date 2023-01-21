@@ -160,6 +160,8 @@ type
      function InfoWindowItems(): TList<TConfSeqItem>;
      function StrArrowDirection(): string;
 
+     procedure CallChangeToTracks();
+
      property index: Integer read findex;
      property sdata: TTrainData read data;
 
@@ -773,6 +775,7 @@ begin
     Self.EnableSpeedOverride(0, true);
 
   Self.Log('Nouzové zastavení', ltMessage);
+  Self.CallChangeToTracks();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -935,9 +938,13 @@ begin
   if (not Self._speedOverride.isOverride) then
     raise ENotOverriden.Create('Speed not overriden');
 
+  var wasEmStop := Self.emergencyStopped;
   Self._emergencyStopped := false;
   Self._speedOverride.isOverride := false;
   Self.speed := Self._speedOverride.speed;
+
+  if (wasEmStop) then
+    Self.CallChangeToTracks();
 end;
 
 function TTrain.IsSpeedOverride(): Boolean;
@@ -1547,5 +1554,16 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrain.CallChangeToTracks();
+begin
+ var tracks := Blocks.GetBlkWithTrain(Self);
+ try
+   for var track in tracks do
+     track.Change();
+ finally
+   tracks.Free();
+ end;
+end;
 
 end.//unit
