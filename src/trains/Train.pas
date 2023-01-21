@@ -1405,10 +1405,13 @@ begin
   track := TBlkTrack(SenderTrack);
   train_count := Blocks.GetBlkWithTrain(Self).Count;
 
+  if (Self.speed > 0) then
+    Result := Result + 'STOP vlak>,';
+  if (Self.emergencyStopped) then
+    Result := Result + 'STOP vlak<,';
+
   if (track.CanStandTrain()) then
     Result := Result + 'EDIT vlak,';
-  if (Self.speed > 0) then
-    Result := Result + '!STOP vlak,';
   Result := Result + 'INFO vlak,';
   if ((track.CanStandTrain()) or (train_count <= 1)) then
     Result := Result + '!ZRUŠ vlak,';
@@ -1435,7 +1438,7 @@ begin
       Result := Result + '!VEZMI vlak,';
   end;
 
-  if ((Self._speedOverride.isOverride) and (Self._speedOverride.allowRestore)) then
+  if ((Self._speedOverride.isOverride) and (Self._speedOverride.allowRestore) and (not Self.emergencyStopped)) then
     Result := Result + 'JEĎ vlak,';
 
   if (track.CanStandTrain()) then

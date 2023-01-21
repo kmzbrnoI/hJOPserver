@@ -108,7 +108,8 @@ type
     procedure MenuRegVEZMITrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuRUCTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuMAUSTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuSTOPTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTOPTrainOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTOPTrainOffClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuJedTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1254,7 +1255,7 @@ begin
   PanelServer.SendLn(SenderPnl, str);
 end;
 
-procedure TBlkTrack.MenuSTOPTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuSTOPTrainOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or
       (TPanelConnData(SenderPnl.Data).train_menu_index >= Self.trains.Count)) then
@@ -1262,7 +1263,12 @@ begin
 
   var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
   train.EmergencyStop();
-  Self.Change()
+  Self.Change();
+end;
+
+procedure TBlkTrack.MenuSTOPTrainOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  Self.MenuJedTrainClick(SenderPnl, SenderOR);
 end;
 
 procedure TBlkTrack.MenuJedTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1584,8 +1590,10 @@ begin
     Self.MenuRUCTrainClick(SenderPnl, SenderOR)
   else if (item = 'MAUS vlak') then
     Self.MenuMAUSTrainClick(SenderPnl, SenderOR)
-  else if (item = 'STOP vlak') then
-    Self.MenuSTOPTrainClick(SenderPnl, SenderOR)
+  else if (item = 'STOP vlak>') then
+    Self.MenuSTOPTrainOnClick(SenderPnl, SenderOR)
+  else if (item = 'STOP vlak<') then
+    Self.MenuSTOPTrainOffClick(SenderPnl, SenderOR)
   else if (item = 'JEĎ vlak') then
     Self.MenuJEDTrainClick(SenderPnl, SenderOR)
   else if (item = 'STIT') then
