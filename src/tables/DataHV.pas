@@ -124,8 +124,8 @@ begin
       Self.LV.Items[line].SubItems[6] := 'sudý';
   end;
 
-  Self.LV.Items[line].SubItems[20] := Format('%5.2f', [state.traveled_forward]);
-  Self.LV.Items[line].SubItems[21] := Format('%5.2f', [state.traveled_backward]);
+  Self.LV.Items[line].SubItems[20] := Format('%.2f', [state.traveled_forward]);
+  Self.LV.Items[line].SubItems[21] := Format('%.2f', [state.traveled_backward]);
 
   if (state.area <> nil) then
     Self.LV.Items[line].SubItems[7] := state.area.name
