@@ -1406,11 +1406,10 @@ begin
   train_count := Blocks.GetBlkWithTrain(Self).Count;
 
   if (track.CanStandTrain()) then
-    Result := Result + 'EDIT vlak,'
-  else
-    Result := Result + 'INFO vlak,';
+    Result := Result + 'EDIT vlak,';
   if (Self.speed > 0) then
     Result := Result + '!STOP vlak,';
+  Result := Result + 'INFO vlak,';
   if ((track.CanStandTrain()) or (train_count <= 1)) then
     Result := Result + '!ZRUŠ vlak,';
   if (train_count > 1) then
@@ -1513,8 +1512,31 @@ begin
       Result.Add(CSCondition('Poznámka: '+ Self.data.note));
 
     for var i: Integer := 0 to Self.HVs.Count-1 do
+    begin
       if (HVDb[Self.HVs[i]] <> nil) then
-        Result.Add(CSCondition('HV '+IntToStr(i+1)+': '+ HVDb[Self.HVs[i]].NiceName()));
+      begin
+        var hv := HVDb[Self.HVs[i]];
+
+        var comment: string := '';
+        if (hv.ruc) then
+          comment := 'Ruční řízení jízdy i funkcí'
+        else if (hv.state.regulators.Count > 0) then
+          comment := 'Ruční ovládání funkcí, jízdu řídí hJOP'
+        else
+          comment := 'Jízdu i funkce řídí hJOP';
+
+        Result.Add(CSCondition('HV '+IntToStr(i+1)+': '+ hv.NiceName() + '  # ' + comment));
+
+        for var regulator in hv.state.regulators do
+        begin
+          var user := TPanelConnData(regulator.conn.Data).regulator_user;
+          if (hv.ruc) then
+            Result.Add(CSCondition('  Ruční řízení jízdy - '+user.fullName))
+          else
+            Result.Add(CSCondition('  Ovládání funkcí - '+user.fullName));
+        end;
+      end;
+    end;
 
   except
     Result.Free();
