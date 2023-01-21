@@ -183,10 +183,6 @@ end;
 
 procedure TTCPRegulator.ParseLoko(Sender: TIDContext; parsed: TStrings);
 var HV: THV;
-  left, right, i: Integer;
-  Data: TStrings;
-  Func: TFunctions;
-  LokResponseData: Pointer;
 begin
   parsed[3] := UpperCase(parsed[3]);
 
@@ -223,7 +219,7 @@ begin
       if ((not(Sender.Data as TPanelConnData).regulator_user.root) and (not HV.IsReg(Sender))) then
       begin
         // je loko uz na nejakem nerootovskem (!) ovladaci -> odmitnout
-        for i := 0 to HV.state.regulators.Count - 1 do
+        for var i := 0 to HV.state.regulators.Count - 1 do
         begin
           if (not HV.state.regulators[i].root) then
           begin
@@ -293,23 +289,31 @@ begin
 
   if (parsed[3] = 'F') then
   begin
-    Data := TStringList.Create();
-    try
-      ExtractStrings(['-'], [], PChar(parsed[4]), Data);
-      left := StrToInt(Data[0]);
-      if (Data.Count > 1) then
-        right := StrToInt(Data[1])
-      else
-        right := left;
-    finally
-      Data.Free();
+    var left: Integer := 0;
+    var right: Integer := 0;
+
+    begin
+      var strings: TStrings := TStringList.Create();
+      try
+        ExtractStrings(['-'], [], PChar(parsed[4]), strings);
+        left := StrToInt(strings[0]);
+        if (strings.Count > 1) then
+          right := StrToInt(strings[1])
+        else
+          right := left;
+      finally
+        strings.Free();
+      end;
     end;
 
-    Func := HV.slotFunctions;
-    for i := left to right do
-      Func[i] := ownConvert.StrToBool(parsed[5][i - left + 1]);
-    HV.state.functions := Func;
+    begin
+      var func: TFunctions := HV.slotFunctions;
+      for var i := left to right do
+        func[i] := ownConvert.StrToBool(parsed[5][i - left + 1]);
+      HV.state.functions := func;
+    end;
 
+    var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
     TLokResponseData(LokResponseData^).addr := HV.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
@@ -320,6 +324,7 @@ begin
 
   if (parsed[3] = 'STOP') then
   begin
+    var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
     TLokResponseData(LokResponseData^).addr := HV.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
@@ -345,6 +350,7 @@ begin
 
   if (parsed[3] = 'SP') then
   begin
+    var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
     TLokResponseData(LokResponseData^).addr := HV.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
@@ -356,6 +362,7 @@ begin
 
   if (parsed[3] = 'SPD') then
   begin
+    var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
     TLokResponseData(LokResponseData^).addr := HV.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
@@ -367,6 +374,7 @@ begin
 
   if (parsed[3] = 'SP-S') then
   begin
+    var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
     TLokResponseData(LokResponseData^).addr := HV.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
@@ -378,6 +386,7 @@ begin
 
   if (parsed[3] = 'SPD-S') then
   begin
+    var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
     TLokResponseData(LokResponseData^).addr := HV.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
@@ -389,6 +398,7 @@ begin
 
   if (parsed[3] = 'D') then
   begin
+    var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
     TLokResponseData(LokResponseData^).addr := HV.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
@@ -519,15 +529,14 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TTCPRegulator.LokUpdateRuc(HV: THV);
-var i: Integer;
-  state: string;
+var state: string;
 begin
   if (HV.ruc) then
     state := '1'
   else
     state := '0';
 
-  for i := 0 to HV.state.regulators.Count - 1 do
+  for var i := 0 to HV.state.regulators.Count - 1 do
     PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;' + IntToStr(HV.addr) + ';TOTAL;' + state);
 end;
 
@@ -535,24 +544,21 @@ end;
 
 // prirazeni lokomotivy regulatoru
 procedure TTCPRegulator.LokToRegulator(Regulator: TIDContext; HV: THV);
-var pom: Boolean;
-  i: Integer;
-  reg: THVRegulator;
-  timeout: Integer;
-  tmpHV: THV;
+var found: Boolean;
+    reg: THVRegulator;
 begin
   // je tento regulator uz v seznamu regulatoru?
-  pom := false;
-  for i := 0 to HV.state.regulators.Count - 1 do
+  found := false;
+  for var i := 0 to HV.state.regulators.Count - 1 do
     if (HV.state.regulators[i].conn = Regulator) then
     begin
-      pom := true;
+      found := true;
       reg := HV.state.regulators[i];
       break;
     end;
 
   // ne -> pridat do seznamu regulatoru
-  if (not pom) then
+  if (not found) then
   begin
     reg.conn := Regulator;
     HV.ruc := HV.ruc or (HV.state.train = -1);
@@ -576,7 +582,7 @@ begin
     end;
 
     // timeout 3000ms = 3s
-    timeout := 0;
+    var timeout: Integer := 0;
     while ((not HV.acquired) or (HV.pom = TPomStatus.progr) or (HV.pom = TPomStatus.error)) do
     begin
       Sleep(1);
@@ -601,17 +607,17 @@ begin
 
   // pridani loko do seznamu autorizovanych loko klientem
 
-  pom := false;
-  for tmpHV in TPanelConnData(Regulator.Data).regulator_loks do
+  found := false;
+  for var tmpHV in TPanelConnData(Regulator.Data).regulator_loks do
   begin
     if (tmpHV = HV) then
     begin
-      pom := true;
+      found := true;
       break;
     end;
   end;
 
-  if (not pom) then
+  if (not found) then
   begin
     // pridani nove loko do seznamu
     TPanelConnData(Regulator.Data).regulator_loks.Add(HV);
