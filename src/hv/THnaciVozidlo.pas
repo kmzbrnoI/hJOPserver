@@ -249,6 +249,7 @@ type
 
     procedure RegulatorAdd(reg: THVRegulator);
     procedure RegulatorRemove(reg: THVRegulator);
+    function DriverFullNames(): string;
 
     class function CharToHVFuncType(c: char): THVFuncType;
     class function HVFuncTypeToChar(t: THVFuncType): char;
@@ -797,19 +798,11 @@ begin
     if (Self.ruc) then
     begin
       var msg := 'RUC;' + IntToStr(Self.addr) + ';RUČ. ' + IntToStr(Self.addr) + ' (' + train + ')';
-      var userfullnames := TList<string>.Create();
-      try
-        for var reg in Self.state.regulators do
-          if (TPanelConnData(reg.conn.Data).regulator_user <> nil) then
-            userfullnames.Add(TPanelConnData(reg.conn.Data).regulator_user.fullName);
-        var userstring: string := SerializeStrList(userfullnames, true);
-        if (userstring <> '') then
-           msg := msg + ' - ' + userstring;
+      var drivers: string := Self.DriverFullNames();
+      if (drivers <> '') then
+         msg := msg + ' - ' + drivers;
 
-        Self.state.Area.BroadcastData(msg);
-      finally
-        userfullnames.Free();
-      end;
+      Self.state.Area.BroadcastData(msg);
     end else begin
       // loko neni v rucnim rizeni -> oznamit klientovi
       if (send_remove) then
@@ -1835,6 +1828,21 @@ procedure THV.RegulatorRemove(reg: THVRegulator);
 begin
   Self.state.regulators.Remove(reg);
   Self.UpdatePanelRuc(true);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function THV.DriverFullNames(): string;
+begin
+  var userfullnames := TList<string>.Create();
+  try
+    for var reg in Self.state.regulators do
+      if (TPanelConnData(reg.conn.Data).regulator_user <> nil) then
+        userfullnames.Add(TPanelConnData(reg.conn.Data).regulator_user.fullName);
+    Result := SerializeStrList(userfullnames, true);
+  finally
+    userfullnames.Free();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

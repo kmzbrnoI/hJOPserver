@@ -381,9 +381,9 @@ begin
 
     barHVManual:
       begin
-        result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
-        result[1] := GetUPOLine('Hnací vozidlo v ručním řízení');
-        result[2] := GetUPOLine(IntToStr(barrier.param) + ' : ' + HVDb[barrier.param].name);
+        result[0] := GetUPOLine('Hnací vozidlo v ručním řízení', taCenter, clBlack, clYellow);
+        result[1] := GetUPOLine(IntToStr(barrier.param) + ' : ' + HVDb[barrier.param].name);
+        result[2] := GetUPOLine('Řídí: '+HVDb[barrier.param].DriverFullNames());
       end;
 
     barHVNotAllManual:
