@@ -725,7 +725,7 @@ begin
   // zjistime RUC u vsech hnacich vozidel
   for var addr: Integer := 0 to _MAX_ADDR - 1 do
     if ((HVDb[addr] <> nil) and (HVDb[addr].state.Area = Self)) then
-      HVDb[addr].UpdateRuc(false);
+      HVDb[addr].UpdatePanelRuc(false);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

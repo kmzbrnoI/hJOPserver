@@ -198,7 +198,7 @@ type
 
     function MoveToArea(Area: TArea): Integer;
     function GetPanelLokString(mode: TLokStringMode = normal): string; // vrati HV ve standardnim formatu pro klienta
-    procedure UpdateRuc(send_remove: Boolean = true);
+    procedure UpdatePanelRuc(send_remove: Boolean = true);
     // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
 
     procedure RemoveRegulator(conn: TIdContext); // smaze regulator -- klienta; je volano jen jako callback regulatoru!
@@ -247,6 +247,9 @@ type
     procedure OnPredictedSignalChange();
     function PredictedSignalStr(): string;
 
+    procedure RegulatorAdd(reg: THVRegulator);
+    procedure RegulatorRemove(reg: THVRegulator);
+
     class function CharToHVFuncType(c: char): THVFuncType;
     class function HVFuncTypeToChar(t: THVFuncType): char;
 
@@ -280,7 +283,7 @@ implementation
 
 uses ownStrUtils, AreaDb, THVDatabase, TrainDb, DataHV, fRegulator, BlockDb,
   RegulatorTCP, fMain, PTUtils, TCPServerPanel, appEv, Logging, TechnologieTrakce,
-  ownConvert, BlockSignal, IfThenElse;
+  ownConvert, BlockSignal, IfThenElse, TCPAreasRef;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -634,7 +637,7 @@ begin
   Self.state.Area := Area;
 
   // RUC do nove stanice
-  Self.UpdateRuc(false);
+  Self.UpdatePanelRuc(false);
 
   Self.changed := true;
   Result := 0;
@@ -774,7 +777,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.UpdateRuc(send_remove: Boolean = true);
+procedure THV.UpdatePanelRuc(send_remove: Boolean = true);
 var train: string;
 begin
   if (Self.data.typ = THVType.car) then
@@ -792,11 +795,26 @@ begin
     Exit();
   end else begin
     if (Self.ruc) then
-      Self.state.Area.BroadcastData('RUC;' + IntToStr(Self.addr) + ';RUČ. ' + IntToStr(Self.addr) + ' (' + train + ')')
-    else
+    begin
+      var msg := 'RUC;' + IntToStr(Self.addr) + ';RUČ. ' + IntToStr(Self.addr) + ' (' + train + ')';
+      var userfullnames := TList<string>.Create();
+      try
+        for var reg in Self.state.regulators do
+          if (TPanelConnData(reg.conn.Data).regulator_user <> nil) then
+            userfullnames.Add(TPanelConnData(reg.conn.Data).regulator_user.fullName);
+        var userstring: string := SerializeStrList(userfullnames, true);
+        if (userstring <> '') then
+           msg := msg + ' - ' + userstring;
+
+        Self.state.Area.BroadcastData(msg);
+      finally
+        userfullnames.Free();
+      end;
+    end else begin
       // loko neni v rucnim rizeni -> oznamit klientovi
       if (send_remove) then
         Self.state.Area.BroadcastData('RUC-RM;' + IntToStr(Self.addr));
+    end;
   end;
 end;
 
@@ -806,6 +824,7 @@ end;
 procedure THV.RemoveRegulator(conn: TIdContext);
 begin
   for var i: Integer := 0 to Self.state.regulators.Count - 1 do
+  begin
     if (Self.state.regulators[i].conn = conn) then
     begin
       Self.state.regulators.Delete(i);
@@ -817,8 +836,10 @@ begin
         Self.CheckRelease();
       end;
 
+      Self.UpdatePanelRuc(true);
       Exit();
     end;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -895,7 +916,7 @@ begin
   TCPRegulator.LokUpdateRuc(Self);
 
   // aktualizace informaci do panelu
-  Self.UpdateRuc();
+  Self.UpdatePanelRuc();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1523,7 +1544,7 @@ begin
   if (Self.train > -1) then
     Blocks.ChangeTrackWithTrain(Trains[Self.train]);
 
-  Self.UpdateRuc();
+  Self.UpdatePanelRuc();
 
   // odesleme do regulatoru info o uspesne autorizaci
   // to je dobre tehdy, kdyz je loko prebirano z centraly
@@ -1699,7 +1720,7 @@ begin
   TCPRegulator.LokStolen(Self);
   if (Self.train > -1) then
     Blocks.ChangeTrackWithTrain(Trains[Self.train]);
-  Self.UpdateRuc();
+  Self.UpdatePanelRuc();
 
   Self.SetPom(TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());
   Self.changed := true;
@@ -1800,6 +1821,20 @@ end;
 function THV.GetAddrStr(): String;
 begin
   Result := IntToStr(Self.addr);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure THV.RegulatorAdd(reg: THVRegulator);
+begin
+  Self.state.regulators.Add(reg);
+  Self.UpdatePanelRuc(false);
+end;
+
+procedure THV.RegulatorRemove(reg: THVRegulator);
+begin
+  Self.state.regulators.Remove(reg);
+  Self.UpdatePanelRuc(true);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

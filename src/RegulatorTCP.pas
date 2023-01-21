@@ -563,7 +563,7 @@ begin
     reg.conn := Regulator;
     HV.ruc := HV.ruc or (HV.state.train = -1);
     reg.root := (Regulator.Data as TPanelConnData).regulator_user.root;
-    HV.state.regulators.Add(reg);
+    HV.RegulatorAdd(reg);
   end;
 
   // Je loko prevzato?
@@ -577,7 +577,7 @@ begin
       begin
         PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(HV.addr) + ';AUTH;not;Převzetí z centrály se nezdařilo :' +
           E.Message);
-        HV.state.regulators.Remove(reg);
+        HV.RegulatorRemove(reg);
       end;
     end;
 
@@ -587,12 +587,12 @@ begin
     begin
       Sleep(1);
       timeout := timeout + 1;
-      Application.ProcessMessages;
+      Application.ProcessMessages();
 
       if (timeout > 3000) then
       begin
         PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(HV.addr) + ';AUTH;not;Převzetí z centrály se nezdařilo');
-        HV.state.regulators.Remove(reg);
+        HV.RegulatorRemove(reg);
         Exit();
       end;
     end; // while
@@ -648,7 +648,7 @@ begin
   if (not contextDestroyed) then
   begin
     authLog('reg', 'logout', TPanelConnData(reg.Data).regulator_user.username, 'Logout from regulator');
-    TPanelConnData(reg.Data).Regulator := false;
+    TPanelConnData(reg.Data).regulator := false;
     TPanelConnData(reg.Data).regulator_user := nil;
     TPanelConnData(reg.Data).regulator_loks.Clear();
   end;

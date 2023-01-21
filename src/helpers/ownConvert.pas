@@ -14,6 +14,7 @@ function StrToColor(str: string): TColor;
 function ColorToStr(color: TColor): string;
 
 function SerializeIntList(l: TList<Integer>): string;
+function SerializeStrList(l: TList<string>; space: Boolean = false): string;
 
 function GetObjsList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TList<TObject>;
 
@@ -70,6 +71,15 @@ begin
     Result := Result + IntToStr(l[i]) + ',';
   if (l.Count > 0) then
     Result := Result + IntToStr(l[l.Count-1]);
+end;
+
+function SerializeStrList(l: TList<string>; space: Boolean = false): string;
+begin
+  Result := '';
+  for var i := 0 to l.Count-2 do
+    Result := Result + l[i] + ',' + IfThen(space, ' ', '');
+  if (l.Count > 0) then
+    Result := Result + l[l.Count-1];
 end;
 
 function GetObjsList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TList<TObject>;
