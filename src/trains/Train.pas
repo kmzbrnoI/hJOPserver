@@ -161,6 +161,8 @@ type
      function StrArrowDirection(): string;
 
      procedure CallChangeToTracks();
+     procedure RucUPO(AContext: TIdContext; ref: TObject = nil; callbackOk: TNotifyEvent = nil; callbackEsc: TNotifyEvent = nil);
+     function IsAnyHVRuc(): Boolean;
 
      property index: Integer read findex;
      property sdata: TTrainData read data;
@@ -198,7 +200,7 @@ uses THVDatabase, ownStrUtils, TrainDb, BlockTrack, DataSpr, appEv,
       DataHV, AreaDb, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
       fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
-      TCPAreasRef;
+      TCPAreasRef, UPO, JCBarriers;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1565,5 +1567,28 @@ begin
    tracks.Free();
  end;
 end;
+
+procedure TTrain.RucUPO(AContext: TIdContext; ref: TObject = nil; callbackOk: TNotifyEvent = nil; callbackEsc: TNotifyEvent = nil);
+begin
+  var UPO := TList<TUPOItem>.Create();
+  try
+    for var addr: Integer in Self.HVs do
+      if ((Assigned(HVDb[addr])) and (HVDb[addr].ruc)) then
+        UPO.Add(JCBarriers.JCBarrierToMessage(JCBarrier(barHVManual, nil, addr)));
+    PanelServer.UPO(AContext, UPO, false, callbackOk, callbackEsc, ref);
+  finally
+    UPO.Free();
+  end;
+end;
+
+function TTrain.IsAnyHVRuc(): Boolean;
+begin
+  for var addr: Integer in Self.HVs do
+    if ((Assigned(HVDb[addr])) and (HVDb[addr].ruc)) then
+      Exit(true);
+  Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
 
 end.//unit

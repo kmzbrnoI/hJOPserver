@@ -125,6 +125,7 @@ type
     procedure PotvrDeleteTrain(Sender: TIdContext; success: Boolean);
     procedure PotvrUvolTrain(Sender: TIdContext; success: Boolean);
     procedure PotvrRegVezmiTrain(Sender: TIdContext; success: Boolean);
+    procedure PotvrSTOPTrainOff(Sender: TObject);
 
     procedure MenuObsazClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuUvolClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1263,11 +1264,24 @@ begin
 
   var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
   train.EmergencyStop();
+
+  if (train.IsAnyHVRuc()) then
+    train.RucUPO(SenderPnl);
 end;
 
 procedure TBlkTrack.MenuSTOPTrainOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.MenuJedTrainClick(SenderPnl, SenderOR);
+  if (train.IsAnyHVRuc()) then
+    train.RucUPO(SenderPnl, SenderOR, Self.PotvrSTOPTrainOff)
+  else
+    Self.MenuJedTrainClick(SenderPnl, SenderOR);
+end;
+
+procedure TBlkTrack.PotvrSTOPTrainOff(Sender: TObject);
+begin
+  var SenderPnl: TIdContext := TIdContext(Sender);
+  if ((SenderPnl.data as TPanelConnData).UPO_ref <> nil) then
+    Self.MenuJedTrainClick(SenderPnl, (SenderPnl.data as TPanelConnData).UPO_ref);
 end;
 
 procedure TBlkTrack.MenuJedTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
