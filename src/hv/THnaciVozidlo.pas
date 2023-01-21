@@ -520,8 +520,8 @@ begin
   else
     ini.WriteString(addr, 'stanice', '');
 
-  ini.WriteFloat(addr, 'najeto_vpred_metru', Self.state.traveled_forward);
-  ini.WriteFloat(addr, 'najeto_vzad_metru', Self.state.traveled_backward);
+  ini.WriteString(addr, 'najeto_vpred_metru', Format('%.2f', [Self.state.traveled_forward]));
+  ini.WriteString(addr, 'najeto_vzad_metru', Format('%.2f', [Self.state.traveled_backward]));
 
   ini.WriteInteger(addr, 'stanoviste_a', Integer(Self.state.siteA));
 
