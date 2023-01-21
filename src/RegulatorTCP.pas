@@ -405,7 +405,7 @@ end;
 procedure TTCPRegulator.ClientAuthorise(conn: TIDContext; state: Boolean; user: TObject; comment: string = '');
 var str: string;
 begin
-  (conn.Data as TPanelConnData).Regulator := state;
+  (conn.Data as TPanelConnData).regulator := state;
   (conn.Data as TPanelConnData).regulator_user := TUser(user);
 
   if (state) then
