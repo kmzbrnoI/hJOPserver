@@ -63,5 +63,12 @@ object F_TrainSpeed: TF_TrainSpeed
       Caption = 'Smazat'
       OnClick = MI_DeleteClick
     end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object MI_Help: TMenuItem
+      Caption = 'N'#225'pov'#283'da'
+      OnClick = MI_HelpClick
+    end
   end
 end
