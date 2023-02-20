@@ -613,7 +613,7 @@ function TBlocks.GetBlkLockByID(id: Integer): TBlkLock;
 begin
   Result := nil;
   var blk: TBlk := Self.GetBlkByID(id);
-  if ((blk <> nil) and (blk.typ = btLinker)) then
+  if ((blk <> nil) and (blk.typ = btLock)) then
     Result := TBlkLock(blk);
 end;
 
