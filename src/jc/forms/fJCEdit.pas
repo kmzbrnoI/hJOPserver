@@ -781,8 +781,11 @@ begin
     Self.fTrainSpeedGo.Clear();
     Self.fTrainSpeedStop.Clear();
   end else begin
-    Self.fTrainSpeedGo.Fill(Self.JCData.speedsGo);
-    Self.fTrainSpeedStop.Fill(Self.JCData.speedsStop);
+    if ((Self.JCData.speedsGo <> nil) and (Self.JCData.speedsStop <> nil)) then
+    begin
+      Self.fTrainSpeedGo.Fill(Self.JCData.speedsGo);
+      Self.fTrainSpeedStop.Fill(Self.JCData.speedsStop);
+    end;
   end;
 
   Self.CB_Signal_Signal.Clear();
