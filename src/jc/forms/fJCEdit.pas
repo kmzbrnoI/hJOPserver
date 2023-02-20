@@ -176,6 +176,8 @@ begin
   Self.JCData.crossings := nil;
   Self.JCData.vb := nil;
   Self.JCData.locks := nil;
+  Self.JCData.speedsGo := nil;
+  Self.JCData.speedsStop := nil;
 
   Self.E_Name.Text := '';
   if (JCDb.Count > 0) then

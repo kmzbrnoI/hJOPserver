@@ -103,12 +103,15 @@ procedure TF_TrainSpeed.Fill(tss: TList<TTrainSpeed>);
 begin
   Self.ELVHide();
   Self.LV_Speeds.Clear();
-  for var ts: TTrainSpeed in tss do
+  if (tss <> nil) then
   begin
-    var LI: TListItem := Self.LV_Speeds.Items.Add();
-    LI.Caption := IntToStr(ts.speed);
-    LI.SubItems.Add(ts.trainTypeRe);
-    LI.SubItems.Add(ts.hvTransienceRe);
+    for var ts: TTrainSpeed in tss do
+    begin
+      var LI: TListItem := Self.LV_Speeds.Items.Add();
+      LI.Caption := IntToStr(ts.speed);
+      LI.SubItems.Add(ts.trainTypeRe);
+      LI.SubItems.Add(ts.hvTransienceRe);
+    end;
   end;
 end;
 
