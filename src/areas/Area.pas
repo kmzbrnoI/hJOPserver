@@ -16,7 +16,7 @@ interface
 uses IniFiles, SysUtils, Classes, Graphics, Menus, announcement,
   IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms, AreaLighting,
   Generics.Collections, AreaStack, Windows, Generics.Defaults,
-  JsonDataObjects;
+  JsonDataObjects, Logging;
 
 const
   _MAX_CON_PNL = 16; // max number of panels connected to single area
@@ -155,6 +155,8 @@ type
 
     function AnySuperuserConnected(): Boolean;
 
+    procedure Log(text: string; typ: LogType);
+
   public
     stack: TORStack;
     changed: Boolean;
@@ -272,7 +274,7 @@ implementation
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, Logging, TechnologieJC,
+uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, TechnologieJC,
   TJCDatabase, ownConvert, TCPServerPanel, AreaDb, block, THVDatabase, TrainDb,
   UserDb, THnaciVozidlo, Trakce, user, TCPAreasRef, fRegulator, RegulatorTCP,
   ownStrUtils, train, changeEvent, TechnologieTrakce, ConfSeq;
@@ -390,7 +392,8 @@ begin
         try
           Self.m_data.lights.Add(TAreaLighting.Create(lightsStr));
         except
-
+          on E:Exception do
+            Self.Log('Načítání osvětlení: '+E.Message, ltError);
         end;
       end;
     end;
@@ -2150,6 +2153,13 @@ begin
   for var areaPanel in Self.connected do
     if (areaPanel.rights = TAreaRights.superuser) then
       Exit(true);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TArea.Log(text: string; typ: LogType);
+begin
+  Logging.log(Self.id + ': ' + text, typ);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
