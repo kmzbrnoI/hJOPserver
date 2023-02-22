@@ -1306,6 +1306,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // Returns speed train should have based on its presence in railways.
+// Returns true iff train speed should be controlled by railway.
 function TTrain.GetRailwaySpeed(var speed: Cardinal): Boolean;
 begin
  if (Self.front = nil) then
@@ -1313,6 +1314,7 @@ begin
 
  var rtsSpeed: Integer := -1;
  var tracks := Blocks.GetBlkWithTrain(Self);
+ var onlyInRailway: Boolean := true;
  try
    for var track in tracks do
    begin
@@ -1322,6 +1324,7 @@ begin
        rtsSpeed := ite(rtsSpeed = -1, rtSpeed, Min(rtsSpeed, rtSpeed));
      end else begin
        // assert TBlk(track).typ = btTrack
+       onlyInRailway := false;
        var turnouts: TList<TBlk> := Blocks.GetTurnoutsAtTrack(TBlk(track).id);
        try
          if (turnouts.Count > 0) then
@@ -1335,9 +1338,10 @@ begin
    tracks.Free();
  end;
 
- if (rtsSpeed = -1) then
+ if ((rtsSpeed = -1) or (not onlyInRailway)) then
  begin
-   // train not in railway -> it could be in path going to track
+   // train not in railway -> it could be on path going to railway
+   // or it could be on path entering area
    var jc := JCDb.FindActiveJCWithTrack(TBlk(Self.front).id);
    if (jc = nil) then
      Exit(false);
@@ -1365,7 +1369,7 @@ begin
    if (Cardinal(Self.wantedSpeed) <> speed) then
      Self.speed := speed;
  end else begin
-   // Already slowed down -> do not increase speed, just decrese
+   // Already slowed down -> do not increase speed, just decrease
    if (Cardinal(Self.wantedSpeed) > speed) then
      Self.speed := speed;
  end;
