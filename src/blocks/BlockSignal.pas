@@ -1507,6 +1507,9 @@ begin
         if ((Train.wantedSpeed > 0) and (Train.direction <> Self.m_spnl.direction)) then
           Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
 
+        // Aby se nezrychlilo napr. pri uvolneni predchoziho useku v trati
+        track.slowingReady := false;
+
         case (Self.dnJC.data.nextSignalType) of
           TJCNextSignalType.signal:
             begin
@@ -1514,7 +1517,7 @@ begin
 
               if ((signal <> nil) and (signal.IsGoSignal()) and (not Train.IsPOdj(Self.dnJC.lastTrack))) then
               begin
-                // na konci JC budeme stat
+                // na konci JC jedeme dal
                 var speed: Cardinal;
                 var success: Boolean;
                 if (Self.dnJC.data.speedsGo.Count > 0) then // if go speeds empty, use stop speeds
@@ -1524,7 +1527,7 @@ begin
                 if ((success) and (Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.m_spnl.direction)) then
                   Train.SetSpeedDirection(speed, Self.m_spnl.direction);
               end else begin
-                // na konci JC jedeme dal
+                // na konci JC stojime
                 var speed: Cardinal;
                 if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed)) then // if success
                   if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.m_spnl.direction)) then
