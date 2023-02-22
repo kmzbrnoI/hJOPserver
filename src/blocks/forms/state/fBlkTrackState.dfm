@@ -264,7 +264,6 @@ object F_BlkTrackState: TF_BlkTrackState
       Align = alBottom
       Caption = ' P'#345'idat soupravu '
       TabOrder = 2
-      ExplicitTop = 87
       object Label5: TLabel
         Left = 9
         Top = 17
@@ -309,5 +308,14 @@ object F_BlkTrackState: TF_BlkTrackState
     Caption = 'DCC'
     Enabled = False
     TabOrder = 12
+  end
+  object CHB_SlowingReady: TCheckBox
+    Left = 8
+    Top = 242
+    Width = 97
+    Height = 17
+    Caption = 'Slowing Ready'
+    Enabled = False
+    TabOrder = 13
   end
 end

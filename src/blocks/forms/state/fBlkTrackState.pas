@@ -35,6 +35,7 @@ type
     B_Train_Add: TButton;
     CHB_NUZ: TCheckBox;
     CHB_DCC: TCheckBox;
+    CHB_SlowingReady: TCheckBox;
     procedure B_RefreshClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
     procedure B_Train_DeleteClick(Sender: TObject);
@@ -84,6 +85,7 @@ begin
   Self.M_Lockout.Text := Self.track.lockout;
 
   Self.CHB_DCC.Checked := Self.track.DCC;
+  Self.CHB_SlowingReady.Checked := Self.track.slowingReady;
 end;
 
 procedure TF_BlkTrackState.Apply();
