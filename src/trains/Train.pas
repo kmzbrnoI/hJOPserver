@@ -1315,23 +1315,22 @@ begin
  var rtsSpeed: Integer := -1;
  var tracks := Blocks.GetBlkWithTrain(Self);
  var onlyInRailway: Boolean := true;
+ var jc: TJC := nil;
  try
-   for var track in tracks do
+   for var track: TBlk in tracks do
    begin
-     if (TBlk(track).typ = btRT) then
+     if (track.typ = btRT) then
      begin
        var rtSpeed := TBlkRT(track).Speed(Self);
        rtsSpeed := ite(rtsSpeed = -1, rtSpeed, Min(rtsSpeed, rtSpeed));
      end else begin
        // assert TBlk(track).typ = btTrack
        onlyInRailway := false;
-       var turnouts: TList<TBlk> := Blocks.GetTurnoutsAtTrack(TBlk(track).id);
-       try
-         if (turnouts.Count > 0) then
-           Exit(false);
-       finally
-         turnouts.Free();
-       end;
+       var _jc: TJC := JCDb.FindActiveJCWithTrack(track.id);
+       if (jc = nil) then
+         jc := _jc
+       else if ((_jc <> nil) and (jc <> _jc)) then
+         Exit(false); // train in different paths -> definitelly should not be controlled by railway
      end;
    end;
  finally
@@ -1342,11 +1341,32 @@ begin
  begin
    // train not in railway -> it could be on path going to railway
    // or it could be on path entering area
-   var jc := JCDb.FindActiveJCWithTrack(TBlk(Self.front).id);
    if (jc = nil) then
      Exit(false);
    if (jc.lastTrack.typ <> btRT) then
      Exit(false);
+
+   // all tracks from this one to the end cannot contain turnouts
+   begin
+     var found: Boolean := false;
+     for var i: Integer := 0 to jc.data.tracks.Count-1 do
+     begin
+       var trackId: Integer := jc.data.tracks[i];
+       if ((not found) and (TBlk(Self.front).id = trackId)) then
+         found := true;
+       if ((found) and (i < jc.data.tracks.Count-1)) then
+       begin
+         // do not consider last track -> could be in railway track with turnout
+         var turnouts: TList<TBlk> := Blocks.GetTurnoutsAtTrack(trackId);
+         if (turnouts.Count > 0) then
+           Exit(false);
+         turnouts.Free();
+       end;
+     end;
+
+     if (not found) then
+       Exit(false);
+   end;
 
    rtsSpeed := TBlkRT(jc.lastTrack).speed(Self);
  end;
