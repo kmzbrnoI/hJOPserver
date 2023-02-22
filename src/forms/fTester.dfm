@@ -46,7 +46,7 @@ object F_Tester: TF_Tester
   object L_1: TLabel
     Left = 7
     Top = 7
-    Width = 66
+    Width = 63
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
@@ -84,9 +84,6 @@ object F_Tester: TF_Tester
       Style = csDropDownList
       TabOrder = 0
       OnChange = CB_AddrInChange
-      ExplicitLeft = 24
-      ExplicitTop = 24
-      ExplicitWidth = 145
     end
     object P_Inputs: TPanel
       Left = 2
@@ -139,9 +136,6 @@ object F_Tester: TF_Tester
       Style = csDropDownList
       TabOrder = 0
       OnChange = CB_AddrOutChange
-      ExplicitLeft = 4
-      ExplicitTop = 23
-      ExplicitWidth = 118
     end
     object P_Outputs: TPanel
       Left = 2

@@ -365,7 +365,7 @@ end;
 procedure TF_Tester.CreateInputs(rcsAddr: Integer);
 begin
   Self.inputs.Clear();
-  for var i := 0 to RCSi.GetModuleInputsCountSafe(rcsAddr)-1 do
+  for var i := 0 to Integer(RCSi.GetModuleInputsCountSafe(rcsAddr))-1 do
     Self.inputs.Add(TIOGUI.Create(Self.P_Inputs, i, nil));
   Self.FormResize(Self);
 end;
@@ -373,7 +373,7 @@ end;
 procedure TF_Tester.CreateOutputs(rcsAddr: Integer);
 begin
   Self.outputs.Clear();
-  for var i := 0 to RCSi.GetModuleOutputsCountSafe(rcsAddr)-1 do
+  for var i := 0 to Integer(RCSi.GetModuleOutputsCountSafe(rcsAddr))-1 do
     Self.outputs.Add(TIOGUI.Create(Self.P_Outputs, i, Self.SOutputMouseUp));
   Self.FormResize(Self);
 end;
