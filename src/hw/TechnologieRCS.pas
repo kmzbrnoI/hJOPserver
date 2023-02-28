@@ -307,14 +307,21 @@ begin
   if (not Self.log) then
     Exit();
 
-  if (logLevel = TRCSLogLevel.llErrors) then
-    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, llError, lsRCS)
-  else if (logLevel = TRCSLogLevel.llWarnings) then
-    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, llWarning, lsRCS)
-  else if (logLevel = TRCSLogLevel.llDebug) then
-    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, llDebug, lsRCS)
+  var systemLogLevel: TLogLevel;
+  case (logLevel) of
+    TRCSLogLevel.llErrors:
+      systemLogLevel := TLogLevel.llError;
+    TRCSLogLevel.llWarnings:
+      systemLogLevel := TLogLevel.llWarning;
+    TRCSLogLevel.llRawCommands:
+      systemLogLevel := TLogLevel.llDetail;
+    TRCSLogLevel.llDebug:
+      systemLogLevel := TLogLevel.llDebug;
   else
-    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, llInfo, lsRCS);
+    systemLogLevel := TLogLevel.llInfo;
+  end;
+
+  Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, systemLogLevel, lsRCS);
 end;
 
 procedure TRCS.DllOnModuleChanged(Sender: TObject; module: Cardinal);
