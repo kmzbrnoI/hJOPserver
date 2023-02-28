@@ -31,7 +31,6 @@ type
     lsTrainMove,
     lsUsers,
     lsStack,
-    lsRailway,
     lsPT
   );
 
@@ -106,8 +105,6 @@ begin
       Result := RGB($F0, $F0, $D0);
     lsStack:
       Result := clWhite;
-    lsRailway:
-      Result := clHotLight;
     lsPT:
       Result := RGB($F0, $FF, $F0);
   else
@@ -156,8 +153,6 @@ begin
       Result := 'Uživatelé';
     lsStack:
       Result := 'Zásobník';
-    lsRailway:
-      Result := 'Trať';
     lsPT:
       Result := 'PT';
   else
