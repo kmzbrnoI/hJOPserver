@@ -3508,7 +3508,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Technologie
+    ActivePage = TS_log
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -5506,9 +5506,9 @@ object F_Main: TF_Main
       ImageIndex = 3
       object LV_log: TListView
         Left = 0
-        Top = 24
+        Top = 40
         Width = 1289
-        Height = 590
+        Height = 574
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5521,7 +5521,10 @@ object F_Main: TF_Main
             Width = 100
           end
           item
-            Caption = 'Typ'
+            Caption = #218'rove'#328
+          end
+          item
+            Caption = 'Zdroj'
             Width = 100
           end
           item
@@ -5543,12 +5546,14 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnCustomDrawItem = LV_logCustomDrawItem
         OnDblClick = LV_logDblClick
+        ExplicitTop = 24
+        ExplicitHeight = 590
       end
-      object Panel2: TPanel
+      object P_log: TPanel
         Left = 0
         Top = 0
         Width = 1289
-        Height = 24
+        Height = 40
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5558,39 +5563,69 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        object CHB_Mainlog_File: TCheckBox
-          Left = 8
-          Top = 2
-          Width = 126
-          Height = 17
-          Caption = 'Logovat do souboru'
-          TabOrder = 0
+        object Label3: TLabel
+          Left = 11
+          Top = 1
+          Width = 78
+          Height = 13
+          Caption = 'Loglevel soubor:'
         end
-        object CHB_mainlog_table: TCheckBox
-          Left = 140
-          Top = 2
-          Width = 122
-          Height = 17
-          Caption = 'Logovat do tabulky'
-          TabOrder = 1
+        object Label4: TLabel
+          Left = 176
+          Top = 1
+          Width = 81
+          Height = 13
+          Caption = 'Loglevel tabulka:'
         end
-        object CHB_rcslog: TCheckBox
-          Left = 264
+        object CHB_log_rcs: TCheckBox
+          Left = 341
           Top = 2
           Width = 97
           Height = 17
           Caption = 'Logovat RCS'
           TabOrder = 2
-          OnClick = CHB_rcslogClick
+          OnClick = CHB_log_rcsClick
         end
-        object CHB_Log_Auth: TCheckBox
-          Left = 360
-          Top = 2
+        object CHB_log_auth: TCheckBox
+          Left = 341
+          Top = 18
           Width = 217
           Height = 17
           Caption = 'Logovat p'#345#237'stupy do syst'#233'mu do souboru'
           TabOrder = 3
-          OnClick = CHB_Log_AuthClick
+          OnClick = CHB_log_authClick
+        end
+        object CB_global_loglevel_file: TComboBox
+          Left = 11
+          Top = 14
+          Width = 145
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 0
+          OnChange = CB_centrala_loglevel_fileChange
+          Items.Strings = (
+            '0 '#8211' '#382#225'dn'#233' zpr'#225'vy'
+            '1 '#8211' chyby'
+            '2 '#8211' varov'#225'n'#237
+            '3 '#8211' zpr'#225'vy '
+            '4 '#8211' detaily'
+            '5 '#8211' debug')
+        end
+        object CB_global_loglevel_table: TComboBox
+          Left = 176
+          Top = 14
+          Width = 145
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 1
+          OnChange = CB_centrala_loglevel_tableChange
+          Items.Strings = (
+            '0 - '#382#225'dn'#233' zpr'#225'vy'
+            '1 - chyby'
+            '2 - varov'#225'n'#237
+            '3 - zpr'#225'vy '
+            '4 - detaily'
+            '5 - debug')
         end
       end
     end

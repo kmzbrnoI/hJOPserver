@@ -392,7 +392,7 @@ end;
 procedure TF_Options.LB_TimerClick(Sender: TObject);
 begin
   F_Main.T_Main.Interval := StrToInt(LB_Timer.Items.Strings[LB_Timer.ItemIndex]);
-  Log('Primární smyčka nastavena na ' + LB_Timer.Items.Strings[LB_Timer.ItemIndex] + ' ms', ltMessage);
+  Log('Primární smyčka nastavena na ' + LB_Timer.Items.Strings[LB_Timer.ItemIndex] + ' ms', TLogLevel.llInfo);
 end;
 
 procedure TF_Options.FormShow(Sender: TObject);

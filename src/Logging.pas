@@ -12,31 +12,44 @@ const
   _AUTH_LOG_PATH = 'log\auth';
 
 type
-  LogType = (
-    ltMessage,
-    ltError,
-    ltJC,
-    ltData,
-    ltRCS,
-    ltSystem,
-    ltConsole,
-    ltTrainMove,
-    ltUsers,
-    ltStack,
-    ltRailway,
-    ltPT
+  TLogLevel = (
+    llNone = 0,
+    llError = 1,
+    llWarning = 2,
+    llInfo = 3,
+    llDetail = 4,
+    llDebug = 5
+  );
+
+  TLogSource = (
+    lsAny,
+    lsSystem,
+    lsJC,
+    lsData,
+    lsRCS,
+    lsConsole,
+    lsTrainMove,
+    lsUsers,
+    lsStack,
+    lsRailway,
+    lsPT
   );
 
 procedure logInit();
 
-procedure Log(text: string; typ: LogType); overload;
-procedure Log(text: TStrings; typ: LogType); overload;
+procedure log(text: string; level: TLogLevel; source: TLogSource = lsAny); overload;
+procedure log(text: TStrings; level: TLogLevel; source: TLogSource = lsAny); overload;
 
 procedure authLog(system, operation, user, Text: string);
 
 var
-  log_err_flag: Boolean; // true iff last log is an error
+  log_last_error: Boolean; // true iff last log is an error
   auth_logging: Boolean; // if logging auth log
+
+function logColor(level: TLogLevel; source: TLogSource): TColor;
+function logLevelStr(level: TLogLevel): string;
+function logSourceStr(source: TLogSource): string;
+procedure intLog(text: string; level: TLogLevel; source: TLogSource; multiline: Boolean = false);
 
 implementation
 
@@ -49,87 +62,112 @@ begin
   try
     if not DirectoryExists(_MAIN_LOG_PATH) then
       if not SysUtils.ForceDirectories(ExpandFileName(_MAIN_LOG_PATH)) then
-        Log('ERR: Nelze vytvořit složku ' + _MAIN_LOG_PATH, ltError);
+        Log('ERR: Nelze vytvořit složku ' + _MAIN_LOG_PATH, llError);
     if not DirectoryExists(_AUTH_LOG_PATH) then
       if not SysUtils.ForceDirectories(ExpandFileName(_AUTH_LOG_PATH)) then
-        Log('ERR: Nelze vytvořit složku ' + _AUTH_LOG_PATH, ltError);
+        Log('ERR: Nelze vytvořit složku ' + _AUTH_LOG_PATH, llError);
   except
     on e: Exception do
       AppEvents.LogException(e);
   end;
 
-  Log('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$', ltMessage);
-  Log('Datum ' + FormatDateTime('dd.mm.yyyy', Now), ltMessage);
-  Log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', ltMessage);
+  Log('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$', llInfo);
+  Log('Datum ' + FormatDateTime('dd.mm.yyyy', Now), llInfo);
+  Log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', llInfo);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function GetLogColor(typ: LogType): TColor;
+function logColor(level: TLogLevel; source: TLogSource): TColor;
 begin
-  case (typ) of
-    ltMessage:
+  case (level) of
+    llError:
+      Exit(fMain._TABLE_COLOR_RED);
+    llWarning:
+      Exit(fMain._TABLE_COLOR_YELLOW);
+  end;
+
+  case (source) of
+    lsAny:
       Result := clWhite;
-    ltError:
-      Result := fMain._TABLE_COLOR_RED;
-    ltJC:
+    lsSystem:
       Result := RGB($FF, $FF, $D0);
-    ltData:
+    lsJC:
+      Result := RGB($FF, $FF, $D0);
+    lsData:
       Result := fMain._TABLE_COLOR_BLUE;
-    ltRCS:
+    lsRCS:
       Result := fMain._TABLE_COLOR_GREEN;
-    ltSystem:
-      Result := RGB($FF, $FF, $D0);
-    ltConsole:
+    lsConsole:
       Result := RGB($C0, $C0, $FF);
-    ltTrainMove:
+    lsTrainMove:
       Result := RGB($CA, $FF, $CA);
-    ltUsers:
+    lsUsers:
       Result := RGB($F0, $F0, $D0);
-    ltRailway:
+    lsStack:
+      Result := clWhite;
+    lsRailway:
       Result := clHotLight;
-    ltPT:
+    lsPT:
       Result := RGB($F0, $FF, $F0);
   else
     Result := clWhite;
   end;
 end;
 
-function GetLogTyp(Typ: LogType): string;
+function logLevelStr(level: TLogLevel): string;
 begin
-  case Typ of
-    ltMessage:
-      Result := 'Zpráva';
-    ltError:
-      Result := 'Chyba';
-    ltJC:
-      Result := 'Jízdní cesty';
-    ltData:
-      Result := 'Data';
-    ltRCS:
-      Result := 'RCS';
-    ltSystem:
-      Result := 'SYSTEM';
-    ltConsole:
-      Result := 'Konzole';
-    ltTrainMove:
-      Result := 'Předávání souprav';
-    ltUsers:
-      Result := 'Uživatelé';
-    ltRailway:
-      Result := 'Trať';
-    ltStack:
-      Result := 'Zásobník JC';
-    ltPT:
-      Result := 'PT server';
+  case (level) of
+    llNone:
+      Result := '-';
+    llError:
+      Result := 'error';
+    llWarning:
+      Result := 'warning';
+    llInfo:
+      Result := 'info';
+    llDetail:
+      Result := 'detail';
+    llDebug:
+      Result := 'debug';
   else
-    Result := 'Neznámý typ';
+    Result := '?';
+  end;
+end;
+
+function logSourceStr(source: TLogSource): string;
+begin
+  case (source) of
+    lsAny:
+      Result := '';
+    lsSystem:
+      Result := 'SYSTEM';
+    lsJC:
+      Result := 'JC';
+    lsData:
+      Result := 'Data';
+    lsRCS:
+      Result := 'RCS';
+    lsConsole:
+      Result := 'Konzole';
+    lsTrainMove:
+      Result := 'Předávání souprav';
+    lsUsers:
+      Result := 'Uživatelé';
+    lsStack:
+      Result := 'Zásobník';
+    lsRailway:
+      Result := 'Trať';
+    lsPT:
+      Result := 'PT';
+  else
+    Result := '?';
   end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure intLog(text: string; typ: LogType; multiline: Boolean = false);
+procedure intLog(text: string; level: TLogLevel; source: TLogSource; multiline: Boolean = false);
 var f: TextFile;
   xTime, xDate: string;
 begin
@@ -140,19 +178,20 @@ begin
   DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
   if (multiline) then
     xTime := '';
-  log_err_flag := (Typ = ltError);
+  log_last_error := (level = llError);
 
   if (F_Main.LV_log.Items.Count > _MAX_LOGTABLE_ITEMS) then
     F_Main.LV_log.Clear();
 
   try
-    if (F_Main.CHB_mainlog_table.Checked) then
+    if (Integer(level) <= F_Main.CB_global_loglevel_table.ItemIndex) then
     begin
       var LI: TListItem := F_Main.LV_log.Items.Insert(0);
-      LI.Data := Pointer(GetLogColor(Typ));
+      LI.Data := Pointer(logColor(level, source));
       LI.Caption := xTime;
-      LI.SubItems.Add(GetLogTyp(Typ));
-      LI.SubItems.Add(Text);
+      LI.SubItems.Add(logLevelStr(level));
+      LI.SubItems.Add(logSourceStr(source));
+      LI.SubItems.Add(text);
     end;
     if (not multiline) then
     begin
@@ -164,7 +203,7 @@ begin
   end;
 
   try
-    if (F_Main.CHB_Mainlog_File.Checked) then
+    if (Integer(level) <= F_Main.CB_global_loglevel_file.ItemIndex) then
     begin
       AssignFile(f, _MAIN_LOG_PATH + '\' + xDate + '.log');
       if (FileExists(_MAIN_LOG_PATH + '\' + xDate + '.log')) then
@@ -172,7 +211,7 @@ begin
       else
         Rewrite(f);
 
-      var output := xTime + ' [' + GetLogTyp(Typ) + '] ' + Text + #13#10;
+      var output := xTime + ' [' + logLevelStr(level) + '] (' + logSourceStr(source) + ') ' + text + #13#10;
       for var b in TEncoding.UTF8.GetBytes(output) do
         Write(f, AnsiChar(b));
 
@@ -185,19 +224,19 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure Log(text: string; typ: LogType); overload;
+procedure Log(text: string; level: TLogLevel; source: TLogSource); overload;
 begin
-  intLog(text, typ, false);
+  intLog(text, level, source, false);
 end;
 
-procedure Log(text: TStrings; typ: LogType); overload;
+procedure Log(text: TStrings; level: TLogLevel; source: TLogSource); overload;
 begin
   if (Text.Count = 0) then
     Exit();
 
-  intLog(text[0], typ, false);
+  intLog(text[0], level, source, false);
   for var i := 1 to Text.Count - 1 do
-    intLog(' -> ' + text[i], typ, true);
+    intLog(' -> ' + text[i], level, source, true);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -235,7 +274,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 initialization
-
-auth_logging := false;
+  auth_logging := false;
 
 end.

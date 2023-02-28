@@ -1198,7 +1198,7 @@ begin
   Self.m_state.senderOR := senderOR;
   Self.m_state.senderPnl := senderPnl;
 
-  Self.Log('Požadavek na aktivaci Pst, kontroluji podmínky...', ltMessage);
+  Self.Log('Požadavek na aktivaci Pst, kontroluji podmínky...', llInfo);
 
   var barriers: TJCBarriers := TJCBarriers.Create();
   var UPO: TUPOItems := TList<TUPOItem>.Create;
@@ -1217,7 +1217,7 @@ begin
 
     if (critical) then
     begin
-      Self.Log('Celkem ' + IntToStr(barriers.Count) + ' bariér, ukončuji přebírání PSt', ltMessage);
+      Self.Log('Celkem ' + IntToStr(barriers.Count) + ' bariér, ukončuji přebírání PSt', llInfo);
       if (senderPnl <> nil) then
         PanelServer.UPO(Self.m_state.senderPnl, UPO, true, nil, nil, Self);
       Exit();
@@ -1226,7 +1226,7 @@ begin
       // barriers to confirm
       if ((barriers.Count > 0) and (senderPnl <> nil)) then
       begin
-        Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...', ltMessage);
+        Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...', llInfo);
         for var i: Integer := 0 to barriers.Count - 1 do
           UPO.Add(Self.BarrierToMessage(barriers[i]));
 
@@ -1260,7 +1260,7 @@ end;
 
 procedure TBlkPst.BarriersUPOOKCallback(Sender: TObject);
 begin
-  Self.Log('Upozornění schválena, kontroluji znovu bariéry...', ltMessage);
+  Self.Log('Upozornění schválena, kontroluji znovu bariéry...', llInfo);
 
   var critical: Boolean := false;
   var barriers: TJCBarriers := TJCBarriers.Create();
@@ -1277,7 +1277,7 @@ begin
 
     if (critical) then
     begin
-      Self.Log('Nelze převít PSt - objevily se kritické bariéry', ltMessage);
+      Self.Log('Nelze převít PSt - objevily se kritické bariéry', llInfo);
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
         PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
           (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
@@ -1294,7 +1294,7 @@ begin
 
     if (conditions.Count > 0) then
     begin
-      Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...', ltMessage);
+      Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...', llInfo);
 
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
         PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.BarriersCSCallback, (Self.m_state.senderOR as TArea),
@@ -1312,7 +1312,7 @@ procedure TBlkPst.BarriersCSCallback(Sender: TIdContext; success: Boolean);
 begin
   if (not success) then
   begin
-    Self.Log('Potvrzovací sekvence nepotvrzena, zrušeno předávání PSt', ltMessage);
+    Self.Log('Potvrzovací sekvence nepotvrzena, zrušeno předávání PSt', llInfo);
     Exit();
   end;
 
@@ -1333,7 +1333,7 @@ begin
     // behem potvrzovani se mohly vyskytnout
     if (critical) then
     begin
-      Self.Log('Nelze predat rizeni - kritické bariéry', ltMessage);
+      Self.Log('Nelze predat rizeni - kritické bariéry', llInfo);
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
         PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze předat řízení ' + Self.name + ' - kritické bariéry',
           (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
@@ -1350,7 +1350,7 @@ end;
 procedure TBlkPst.MoveRefugees();
 begin
   Self.status := pstRefuging;
-  Self.Log('Pst připraveno, nastavuji odvraty...', ltMessage);
+  Self.Log('Pst připraveno, nastavuji odvraty...', llInfo);
 
   // Move all refugees at once, we suppose there is not many of them...
   // In case of many refugees one could implement window refuging in future...
@@ -1370,14 +1370,14 @@ procedure TBlkPst.RefugeeMoved(Sender: TObject);
 begin
   if (Self.AllRefugeesInPosition()) then
   begin
-    Self.Log('Všechny odvraty nastaveny, PSt připraveno na převzetí.', ltMessage);
+    Self.Log('Všechny odvraty nastaveny, PSt připraveno na převzetí.', llInfo);
     Self.status := pstTakeReady;
   end;
 end;
 
 procedure TBlkPst.RefugeeNotMoved(Sender: TObject; error: TTurnoutSetError);
 begin
-  Self.Log('Nepřestavena '+(Sender as TBlkTurnout).name, ltMessage);
+  Self.Log('Nepřestavena '+(Sender as TBlkTurnout).name, llInfo);
   if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
     PanelServer.BottomError(Self.m_state.senderPnl, 'Nepřestavena ' + (Sender as TBlkTurnout).name + ': ' +
       TBlkTurnout.SetErrorToMsg(error), (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');

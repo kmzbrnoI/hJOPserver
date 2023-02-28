@@ -193,7 +193,7 @@ type
     function GetLastTrack(): TBlk;
     function PSts(): TList<TBlk>;
 
-    procedure Log(msg: string; typ: LogType = ltJC);
+    procedure Log(msg: string; level: TLogLevel = llInfo; source: TLogSource = lsJC);
 
   public
 
@@ -1010,9 +1010,9 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.Log(msg: string; typ: LogType = ltJC);
+procedure TJC.Log(msg: string; level: TLogLevel; source: TLogSource);
 begin
-  Logging.Log('JC ' + Self.name + ': ' + msg, typ);
+  Logging.Log('JC ' + Self.name + ': ' + msg, level, source);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2231,7 +2231,7 @@ begin
       begin
         var train := track.Train;
         track.RemoveTrains();
-        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + track.name, ltTrainMove);
+        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + track.name, llInfo, lsTrainMove);
         if (Self.lastTrack.typ = TBlkType.btRT) then
           train.UpdateRailwaySpeed();
       end;
@@ -2274,11 +2274,11 @@ begin
         var train: TTrain := Self.GetTrain(signal, signalTrack);
         if (train = TBlkTrack(track).Train) then
         begin
-          Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, ltTrainMove);
+          Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, llInfo, lsTrainMove);
           (signalTrack as TBlkTrack).RemoveTrain(train);
         end;
 
-        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, ltTrainMove);
+        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, llInfo, lsTrainMove);
         track.RemoveTrains();
       end;
     end;
@@ -2293,7 +2293,7 @@ begin
       begin
         var train: TTrain := Self.GetTrain(signal, signalTrack);
         signalTrack.RemoveTrain(train);
-        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, ltTrainMove);
+        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, llInfo, lsTrainMove);
       end;
 
       Self.destroyEndBlock := 0;
@@ -2337,7 +2337,7 @@ begin
       if ((Self.typ = TJCType.Train) and (train <> nil)) then
       begin
         signalTrack.RemoveTrain(train);
-        Self.Log('Smazana souprava ' + Train.name + ' z bloku ' + signalTrack.name, ltTrainMove);
+        Self.Log('Smazana souprava ' + Train.name + ' z bloku ' + signalTrack.name, llInfo, lsTrainMove);
       end;
 
       if ((signalTrack.typ = btRT) and (TBlkRT(signalTrack).railway <> nil) and (TBlkRT(signalTrack).bpInBlk)) then
@@ -2417,7 +2417,7 @@ begin
   trackNext.AddTrainL(Train);
   trackNext.Train.front := trackNext;
   trackNext.houkEvEnabled := true;
-  Self.Log('Predana souprava ' + trackNext.Train.name + ' z bloku ' + trackActual.name + ' do bloku ' + trackNext.name, ltTrainMove);
+  Self.Log('Predana souprava ' + trackNext.Train.name + ' z bloku ' + trackActual.name + ' do bloku ' + trackNext.name, llInfo, lsTrainMove);
 
   Self.CheckLoopBlock(trackNext);
 end;
@@ -2438,7 +2438,7 @@ begin
 
     (blk as TBlkTrack).Train.ChangeDirection();
     Self.Log('Obsazen smyckovy usek ' + blk.name + ' - menim smer loko v souprave ' + (blk as TBlkTrack).Train.name,
-      ltTrainMove);
+      llInfo, lsTrainMove);
   end;
 end;
 
@@ -2533,7 +2533,7 @@ begin
     begin
       Self.m_data.speedsGo.Clear();
       Self.m_data.speedsStop.Clear();
-      Self.Log('Nelze nacist rychlosti: '+E.Message, ltError);
+      Self.Log('Nelze nacist rychlosti: '+E.Message, llError, lsData);
     end;
   end;
 

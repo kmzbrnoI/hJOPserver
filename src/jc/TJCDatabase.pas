@@ -118,7 +118,7 @@ procedure TJCDb.LoadData(const filename: string);
 var ini: TMemIniFile;
   sections: TStrings;
 begin
-  Log('Načítám JC - ' + filename, ltData);
+  Log('Načítám JC - ' + filename, llInfo, lsData);
 
   Self.ffilename := filename;
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -153,14 +153,14 @@ begin
   end;
 
   Self.FillJCsStartSignal();
-  Log('Načteno ' + IntToStr(Self.JCs.Count) + ' JC', ltData);
+  Log('Načteno ' + IntToStr(Self.JCs.Count) + ' JC', llInfo, lsData);
 end;
 
 // save data to ini file:
 procedure TJCDb.SaveData(const filename: string);
 var ini: TMemIniFile;
 begin
-  Log('Ukládám JC - ' + filename, ltData);
+  Log('Ukládám JC - ' + filename, llInfo, lsData);
 
   DeleteFile(PChar(filename));
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -173,7 +173,7 @@ begin
     ini.Free();
   end;
 
-  Log('JC uloženy', ltData);
+  Log('JC uloženy', llInfo, lsData);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -196,7 +196,7 @@ begin
     except
       on E: Exception do
       begin
-        if (not log_err_flag) then
+        if (not log_last_error) then
           AppEvents.LogException(E, 'JC ' + JC.name + ' update error');
         if (JC.activating) then
           JC.CancelActivating('Vyjímka', true)
@@ -308,7 +308,7 @@ begin
     lastBlock.jcEnd := TZaver.no;
     TPanelConnData(SenderPnl.Data).DeleteLastPathBlock();
     PanelServer.SendInfoMsg(SenderPnl, 'Cesta nenalezena v závěrové tabulce');
-    Log('Nelze postavit JC -  nenalezena v zaverove tabulce', ltJC);
+    Log('Nelze postavit JC -  nenalezena v zaverove tabulce', llInfo, lsJC);
   end;
 end;
 

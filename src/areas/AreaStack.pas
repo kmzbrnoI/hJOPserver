@@ -169,7 +169,7 @@ begin
     end;
   except
     on e: Exception do
-      Log('Server: stack data parse error : ' + e.Message, ltError);
+      Log('Server: stack data parse error : ' + e.Message, llError, lsStack);
   end;
 end;
 
@@ -294,7 +294,7 @@ procedure TORStack.AddCmd(cmd: TORStackCmd);
 begin
   if (Self.m_stack.count >= _MAX_STACK_JC) then
   begin
-    Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - zásobník je plný, nelze přidat další příkaz', ltStack);
+    Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - zásobník je plný, nelze přidat další příkaz', llWarning, lsStack);
     raise Exception.Create('Zásobník je plný');
   end;
 
@@ -309,7 +309,7 @@ begin
   Self.m_stack.Add(cmd);
   (Self.m_area as TArea).BroadcastData('ZAS;ADD;' + IntToStr(cmd.id) + '|' + description);
   Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - : přidán příkaz ' + description + ', id = ' +
-    IntToStr(cmd.id), ltStack);
+    IntToStr(cmd.id), llInfo, lsStack);
   (Self.m_area as TArea).changed := true;
 end;
 
@@ -377,12 +377,12 @@ begin
       begin
         (Self.m_area as TArea).BroadcastData('ZAS;PV');
         Self.UPOenabled := false;
-        Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - PV', ltStack);
+        Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - PV', llInfo, lsStack);
       end;
     TORStackMode.VZ:
       begin
         (Self.m_area as TArea).BroadcastData('ZAS;VZ');
-        Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - VZ', ltStack);
+        Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - VZ', llInfo, lsStack);
       end;
   end; // case
 
@@ -482,7 +482,7 @@ begin
 
   // zadne bariery -> stavim jizdni cestu
 
-  Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + JC.name + ' : podmínky splněny, stavím', ltStack);
+  Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + JC.name + ' : podmínky splněny, stavím', llInfo, lsStack);
 
   // pokud nejsou zadne bariery, stavime jizdni cestu
   (Self.m_area as TArea).BroadcastData('ZAS;FIRST;0');
@@ -607,7 +607,7 @@ begin
     if ((Self.m_stack[i].ClassType = TORStackCmdJC) and ((Self.m_stack[i] as TORStackCmdJC).JC = JC)) then
     begin
       Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + ((Self.m_stack[i] as TORStackCmdJC).JC as TJC)
-        .name + ' : smazána ze zásobníku, id = ' + IntToStr(Self.m_stack[i].id), ltStack);
+        .name + ' : smazána ze zásobníku, id = ' + IntToStr(Self.m_stack[i].id), llInfo, lsStack);
       Self.RemoveFromStack(i);
       Exit();
     end;

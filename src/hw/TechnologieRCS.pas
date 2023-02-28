@@ -187,7 +187,7 @@ begin
 
   TRCSIFace(Self).LoadLib(filename, Self.configDir + '\' + ChangeFileExt(libName, '.ini'));
 
-  Logging.Log('Načtena knihovna ' + libName + ', RCS API v'+Self.apiVersionStr(), ltRCS);
+  Logging.Log('Načtena knihovna ' + libName + ', RCS API v'+Self.apiVersionStr(), llInfo, lsRCS);
 
   // kontrola bindnuti vsech eventu
 
@@ -268,7 +268,7 @@ begin
     on E: Exception do
     begin
       F_Main.LogStatus('ERR: RCS: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message);
-      Logging.Log('Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message, ltError);
+      Logging.Log('Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message, llError, lsRCS);
     end;
   end;
 end;
@@ -288,7 +288,7 @@ end;
 
 procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg: PChar);
 begin
-  Logging.Log('RCS ERR: ' + errMsg + ' (' + IntToStr(errValue) + ':' + IntToStr(errAddr) + ')', ltRCS);
+  Logging.Log('RCS ERR: ' + errMsg + ' (' + IntToStr(errValue) + ':' + IntToStr(errAddr) + ')', llError, lsRCS);
 
   if (SystemData.Status = TSystemStatus.starting) then
     SystemData.Status := TSystemStatus.null;
@@ -308,9 +308,13 @@ begin
     Exit();
 
   if (logLevel = TRCSLogLevel.llErrors) then
-    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, ltError)
+    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, llError, lsRCS)
+  else if (logLevel = TRCSLogLevel.llWarnings) then
+    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, llWarning, lsRCS)
+  else if (logLevel = TRCSLogLevel.llDebug) then
+    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, llDebug, lsRCS)
   else
-    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, ltRCS);
+    Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, llInfo, lsRCS);
 end;
 
 procedure TRCS.DllOnModuleChanged(Sender: TObject; module: Cardinal);

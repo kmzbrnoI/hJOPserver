@@ -92,7 +92,7 @@ procedure TTrainDb.LoadData(const filename: string);
 var ini: TMemIniFile;
     sections: TStrings;
 begin
- Log('Načítám soupravy: '+filename, ltData);
+ Log('Načítám soupravy: '+filename, llInfo, lsData);
  Self.ffilename := filename;
 
  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -106,7 +106,7 @@ begin
    for var i := 0 to sections.Count-1 do
      Self.trains[i] := TTrain.Create(ini, sections[i], i);
 
-   Log('Načteno '+IntToStr(sections.Count)+' souprav', ltData);
+   Log('Načteno '+IntToStr(sections.Count)+' souprav', llInfo, lsData);
  finally
    FreeAndNil(ini);
    FreeAndNil(sections);
@@ -119,7 +119,7 @@ end;
 procedure TTrainDb.SaveData(const filename: string);
 var ini: TMemIniFile;
 begin
- Log('Ukládám soupravy: '+filename, ltData);
+ Log('Ukládám soupravy: '+filename, llInfo, lsData);
 
  if (FileExists(filename)) then
    DeleteFile(PChar(filename));
@@ -133,7 +133,7 @@ begin
    FreeAndNil(ini);
  end;
 
- Log('Uloženo '+IntToStr(Self.Count)+' souprav', ltData);
+ Log('Uloženo '+IntToStr(Self.Count)+' souprav', llInfo, lsData);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

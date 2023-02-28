@@ -171,9 +171,9 @@ end;
 procedure TBlkLinker.AfterLoad();
 begin
   if (Self.parent = nil) then
-    Self.Log('Není návaznost na trať', ltError);
+    Self.Log('Není návaznost na trať', llWarning);
   if (Self.areas.Count <> 1) then
-    Self.Log('Není v právě jedné dopravně', ltError);
+    Self.Log('Není v právě jedné dopravně', llWarning);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

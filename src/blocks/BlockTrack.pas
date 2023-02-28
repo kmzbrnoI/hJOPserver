@@ -350,8 +350,8 @@ begin
   Self.m_settings.maxTrains := ini_tech.ReadInteger(section, 'maxSpr', _DEFAULT_MAX_TRAINS);
 
   if (Boosters[Self.m_settings.boosterId] = nil) then
-    Log('WARNING: Blok ' + Self.name + ' (' + IntToStr(Self.id) + ') nemá návaznost na validní zesilovač',
-      ltError);
+    Log('Blok ' + Self.name + ' (' + IntToStr(Self.id) + ') nemá návaznost na validní zesilovač',
+      llWarning, lsData);
 
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
   Self.m_state.lockout := ini_stat.ReadString(section, 'vyl', '');
@@ -366,20 +366,20 @@ begin
       if (trainIndex > -1) then
         Self.m_state.trains.Add(trainIndex)
       else
-        Log('WARNING: souprava ' + s + ' na bloku ' + Self.name + ' neexistuje, mažu soupravu', ltData);
+        Log('Souprava ' + s + ' na bloku ' + Self.name + ' neexistuje, mažu soupravu', llWarning, lsData);
     end;
 
     // houkaci udalosti
     try
       Self.LoadHoukEventToList(Self.m_settings.houkEvL, ini_tech, section, 'houkL');
     except
-      Log('Nepodařilo se načíst houkací události L bloku ' + Self.name, ltError);
+      Log('Nepodařilo se načíst houkací události L bloku ' + Self.name, llWarning, lsData);
     end;
 
     try
       Self.LoadHoukEventToList(Self.m_settings.houkEvS, ini_tech, section, 'houkS');
     except
-      Log('Nepodařilo se načíst houkací události S bloku ' + Self.name, ltError);
+      Log('Nepodařilo se načíst houkací události S bloku ' + Self.name, llWarning, lsData);
     end;
   finally
     strs.free();
@@ -1347,7 +1347,7 @@ begin
   except
     on E: Exception do
     begin
-      Log('Nepodařilo se spustit staniční hlášení : ' + E.Message, ltError);
+      Log('Nepodařilo se spustit staniční hlášení : ' + E.Message, llError);
       PanelServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TArea(SenderOR).ShortName,
         'TECHNOLOGIE');
     end;
@@ -1375,7 +1375,7 @@ begin
   except
     on E: Exception do
     begin
-      Log('Nepodařilo se spustit staniční hlášení : ' + E.Message, ltError);
+      Log('Nepodařilo se spustit staniční hlášení : ' + E.Message, llError);
       PanelServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TArea(SenderOR).ShortName,
         'TECHNOLOGIE');
     end;
@@ -1402,7 +1402,7 @@ begin
   except
     on E: Exception do
     begin
-      Log('Nepodařilo se spustit staniční hlášení : ' + E.Message, ltError);
+      Log('Nepodařilo se spustit staniční hlášení : ' + E.Message, llError);
       PanelServer.BottomError(SenderPnl, 'Nepodařilo se spustit staniční hlášení!', TArea(SenderOR).ShortName,
         'TECHNOLOGIE');
     end;
@@ -1843,7 +1843,7 @@ begin
       try
         list.Add(THoukEv.Create(data));
       except
-        Log('Nepodarilo se nacist houkaci udalost ' + Data + ' bloku ' + Self.name, ltError);
+        Log('Nepodarilo se nacist houkaci udalost ' + Data + ' bloku ' + Self.name, llError);
         Exit();
       end;
 

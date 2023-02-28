@@ -1110,7 +1110,7 @@ end;
 procedure TPanelServer.BottomError(AContext: TIdContext; err: string; stanice: string; tech: string);
 begin
   Self.SendLn(AContext, '-;BOTTOMERR;{' + err + '};{' + stanice + '};{' + tech + '};');
-  Log(tech + ': ' + stanice + ': ' + err, ltError);
+  Log(tech + ': ' + stanice + ': ' + err, llWarning);
 end;
 
 procedure TPanelServer.UPO(AContext: TIdContext; items: TUPOItems; critical: Boolean; callbackOK: TNotifyEvent;

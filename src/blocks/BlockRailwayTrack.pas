@@ -313,14 +313,14 @@ begin
     begin
       Self.m_rtSettings.speedsL.Clear();
       Self.m_rtSettings.speedsS.Clear();
-      Self.Log('Nelze nacist rychlosti: '+E.Message, ltError);
+      Self.Log('Nelze nacist rychlosti: '+E.Message, llError, lsData);
     end;
   end;
 
   Self.bpInBlk := ini_stat.ReadBool(section, 'bpInBlk', false);
 
   if (Self.m_rtSettings.speedsL.Count = 0) then
-    Self.Log('Nenačtena traťová rychlost', ltError);
+    Self.Log('Nenačtena traťová rychlost', llError, lsData);
 
   if ((ini_tech.ReadString(section, 'zast_ev_lichy_zast', '') <> '') or
     (ini_tech.ReadString(section, 'zast_ev_sudy_zast', '') <> '')) then

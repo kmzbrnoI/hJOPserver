@@ -53,7 +53,7 @@ type
     ftable_index: Integer;
     ffrozen: Boolean;
 
-    procedure Log(text: string; typ: LogType);
+    procedure Log(text: string; level: TLogLevel; source: TLogSource = lsAny);
 
     class function LoadRCS(ini: TMemIniFile; section: string): TRCSAddrs;
     class procedure SaveRCS(ini: TMemIniFile; section: string; data: TRCSAddrs);
@@ -516,9 +516,9 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlk.Log(text: string; typ: LogType);
+procedure TBlk.Log(text: string; level: TLogLevel; source: TLogSource);
 begin
-  Logging.Log(Self.name + ': ' + text, typ);
+  Logging.Log(Self.name + ': ' + text, level, source);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

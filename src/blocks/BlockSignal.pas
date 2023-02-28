@@ -637,7 +637,7 @@ begin
   if ((Self.signal = ncPrivol) and (code = ncStuj)) then
   begin
     // STUJ po privolavacce -> vypnout zvukovou vyzvu
-    Self.Log('Zhasnuta PN', ltMessage);
+    Self.Log('Zhasnuta PN', TLogLevel.llInfo);
     for var area: TArea in Self.m_areas do
       Area.pnBlkCnt := area.pnBlkCnt - 1;
   end;
@@ -1342,7 +1342,7 @@ begin
     Self.m_state.falling := true;
     Self.m_state.fallingStart := now;
     Log('Návěstidlo ' + Self.m_globSettings.name + ': spoždění pádu ' + IntToStr(Self.m_settings.fallDelay) +
-      ' s', ltJC);
+      ' s', TLogLevel.llInfo, lsJC);
   end else begin
     Self.signal := ncStuj;
   end;
@@ -1692,7 +1692,7 @@ begin
 
       if ((barriers.Count > 0) and (senderPnl <> nil)) then
       begin
-        Self.Log('PN: celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...', ltMessage);
+        Self.Log('PN: celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...', TLogLevel.llInfo, lsJC);
         for var i: Integer := 0 to barriers.Count - 1 do
           UPO.Add(JCBarriers.JCBarrierToMessage(barriers[i]));
 
@@ -1744,7 +1744,7 @@ begin
   begin
     Self.m_state.selected := TBlkSignalSelection.none;
     Self.signal := ncPrivol;
-    Self.Log('Rozsvícena PN bez podpory zab. zař. / prodloužena PN', ltMessage);
+    Self.Log('Rozsvícena PN bez podpory zab. zař. / prodloužena PN', TLogLevel.llInfo, lsJC);
   end else begin
     Self.selected := TBlkSignalSelection.none;
   end;

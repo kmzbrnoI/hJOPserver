@@ -102,7 +102,7 @@ begin
   except
     on E: Exception do
     begin
-      Log('Nelze vytvorit discover UDPserver : ' + E.Message, ltError);
+      Log('Nelze vytvorit discover UDPserver : ' + E.Message, llError);
     end;
   end;
 
@@ -135,7 +135,7 @@ begin
     end;
   except
     on E: Exception do
-      Log('Vyjimka TUDPDiscover.OnUDPServerRead : ' + E.Message, ltError);
+      Log('Vyjimka TUDPDiscover.OnUDPServerRead : ' + E.Message, llError);
   end;
 end;
 /// /////////////////////////////////////////////////////////////////////////////
@@ -167,7 +167,7 @@ begin
     ABinding.Broadcast(data, port, broadcasts[ABinding.IP]);
   except
     on E: Exception do
-      Log('Vyjimka TUDPDiscover.SendDisc : ' + E.Message, ltError);
+      Log('Vyjimka TUDPDiscover.SendDisc : ' + E.Message, llError);
   end;
 end;
 
@@ -216,7 +216,7 @@ begin
     Self.UDPserver.Active := true;
   except
     on E: Exception do
-      Log('Vyjimka TUDPDiscover.UpdateBindings : ' + E.Message, ltError);
+      Log('Vyjimka TUDPDiscover.UpdateBindings : ' + E.Message, llError);
   end;
 end;
 

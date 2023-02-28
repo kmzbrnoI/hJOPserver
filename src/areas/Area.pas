@@ -155,7 +155,7 @@ type
 
     function AnySuperuserConnected(): Boolean;
 
-    procedure Log(text: string; typ: LogType);
+    procedure Log(text: string; level: TLogLevel; source: TLogSource = lsAny);
 
   public
     stack: TORStack;
@@ -393,7 +393,7 @@ begin
           Self.m_data.lights.Add(TAreaLighting.Create(lightsStr));
         except
           on E:Exception do
-            Self.Log('Načítání osvětlení: '+E.Message, ltError);
+            Self.Log('Načítání osvětlení: '+E.Message, llError, lsData);
         end;
       end;
     end;
@@ -2157,9 +2157,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.Log(text: string; typ: LogType);
+procedure TArea.Log(text: string; level: TLogLevel; source: TLogSource);
 begin
-  Logging.log(Self.id + ': ' + text, typ);
+  Logging.log(Self.id + ': ' + text, level, source);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

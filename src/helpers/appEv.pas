@@ -58,7 +58,7 @@ begin
   for var i := 0 to JclLastExceptStackList.Count-1 do
     if (GetLocationInfo(JclLastExceptStackList.Items[i].CallerAddr).LineNumber <> 0) then
       Self.str.Add(GetLocationInfoStr(JclLastExceptStackList.Items[i].CallerAddr));
-  Log(Self.str, ltError);
+  Log(Self.str, llError);
  except
 
  end;

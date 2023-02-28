@@ -1207,7 +1207,7 @@ begin
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
-    Log('LOKO ' + Self.name + ' ukradena, nenastavuji rychlost', ltMessage);
+    Log('LOKO ' + Self.name + ' ukradena, nenastavuji rychlost', llInfo);
     if (Assigned(err.Callback)) then
       err.Callback(Self, err.data);
     Exit();
@@ -1259,7 +1259,7 @@ begin
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
-    Log('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', ltMessage);
+    Log('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', llInfo);
     if (Assigned(err.Callback)) then
       err.Callback(Self, err.data);
     Exit();
@@ -1300,7 +1300,7 @@ begin
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
-    Log('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', ltMessage);
+    Log('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', llInfo);
     if (Assigned(err.Callback)) then
       err.Callback(Self, err.data);
     Exit();

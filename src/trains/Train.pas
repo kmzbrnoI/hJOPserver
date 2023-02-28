@@ -100,7 +100,7 @@ type
      procedure UpdateTrainFromJson(train: TJsonObject; ok: TCb; err: TCb);
      class procedure PtHVsListToDict(train: TJsonObject);
 
-     procedure Log(msg: string; typ: LogType);
+     procedure Log(msg: string; level: TLogLevel; source: TLogSource = lsAny);
 
    public
 
@@ -725,12 +725,12 @@ begin
 
    if (HVDb[addr].ruc) then
     begin
-     Self.Log('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', ltData);
+     Self.Log('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', llInfo);
      continue;
     end;
    if (HVDb[addr].stolen) then
     begin
-     Self.Log('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', ltMessage);
+     Self.Log('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', llInfo);
      continue;
     end;
 
@@ -750,7 +750,7 @@ begin
       ((Self.front as TBlkTrack).trains[(Self.front as TBlkTrack).trainMoving] = Self.index)) then
   (Self.front as TBlkTrack).trainMoving := -1;
 
- Self.Log('rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), ltMessage);
+ Self.Log('rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), llInfo);
  Self.changed := true;
 end;
 
@@ -776,7 +776,7 @@ begin
   if (not Self.IsSpeedOverride()) then
     Self.EnableSpeedOverride(0, true);
 
-  Self.Log('Nouzové zastavení', ltMessage);
+  Self.Log('Nouzové zastavení', llInfo);
   Self.CallChangeToTracks();
 end;
 
@@ -880,7 +880,7 @@ end;
 // zmena smeru pri naslapu na smyckovy blok
 procedure TTrain.ChangeDirection();
 begin
- Self.Log('Změna směru', ltTrainMove);
+ Self.Log('Změna směru', llInfo);
 
  // zmenit orintaci stanoviste A hnacich vozidel
  for var addr in Self.HVs do
@@ -983,7 +983,7 @@ end;
 
 procedure TTrain.ToggleHouk(desc: string);
 begin
- Self.Log('Aktivuji houkání ' + desc, ltMessage);
+ Self.Log('Aktivuji houkání ' + desc, llInfo);
 
  for var addr in Self.HVs do
   begin
@@ -996,9 +996,9 @@ end;
 procedure TTrain.SetHoukState(desc: string; state: Boolean);
 begin
  if (state) then
-   Self.Log('Aktivuji funkci ' + desc, ltMessage)
+   Self.Log('Aktivuji funkci ' + desc, llInfo)
  else
-   Self.Log('Deaktivuji funkci ' + desc, ltMessage);
+   Self.Log('Deaktivuji funkci ' + desc, llInfo);
 
  for var addr in Self.HVs do
   begin
@@ -1504,9 +1504,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.Log(msg: string; typ: LogType);
+procedure TTrain.Log(msg: string; level: TLogLevel; source: TLogSource);
 begin
-  Logging.log('Souprava ' + Self.name + ': ' + msg, typ);
+  Logging.log('Souprava ' + Self.name + ': ' + msg, level, source);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

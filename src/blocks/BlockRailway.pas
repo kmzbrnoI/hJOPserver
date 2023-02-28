@@ -339,9 +339,9 @@ begin
   Self.InitTUs();
 
   if (Self.linkerA = nil) then
-    Self.Log('Není návaznost na úvazku A', ltError);
+    Self.Log('Není návaznost na úvazku A', llError);
   if (Self.linkerB = nil) then
-    Self.Log('Není návaznost na úvazku B', ltError);
+    Self.Log('Není návaznost na úvazku B', llError);
 end;
 
 // change je vyvolano i pri zmene obsazenosti jakehokoliv useku v trati
@@ -572,7 +572,7 @@ begin
   if (not Train.IsTimeDefined()) then
     Train.time := timeHelper.hJOPnow();
 
-  Log('Trať ' + Self.m_globSettings.name + ' : přidána souprava ' + Train.Train.name, ltTrainMove);
+  Log('Trať ' + Self.m_globSettings.name + ' : přidána souprava ' + Train.Train.name, llInfo, lsTrainMove);
 
   Self.Change();
 end;
@@ -591,7 +591,7 @@ begin
   if (Self.IsTrain(Train)) then
   begin
     Self.m_state.trains.Delete(Self.GetTrainIndex(Train));
-    Log('Trať ' + Self.m_globSettings.name + ' : smazána souprava ' + Train.name, ltTrainMove);
+    Log('Trať ' + Self.m_globSettings.name + ' : smazána souprava ' + Train.name, llInfo, lsTrainMove);
     toChange := true;
   end;
 
@@ -639,7 +639,7 @@ begin
   end; // case
 
   Log('Trať ' + Self.m_globSettings.name + ' : souprava ' + Train.name + ' : stanice změněna na ' +
-    (Train.station as TArea).name, ltTrainMove);
+    (Train.station as TArea).name, llInfo, lsTrainMove);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -743,14 +743,14 @@ begin
     if ((track = nil) or (track.typ <> btRT)) then
     begin
       Self.Log('Obsahuje referenci na TU ID ' + IntToStr(Self.m_settings.trackIds[i]) +
-        ', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', ltError);
+        ', tento blok ale bud neexistuje, nebo neni typu TU, odstranuji referenci', llError);
       Self.m_settings.trackIds.Delete(i);
       continue;
     end;
     if ((TBlkRT(track).inRailway <> -1) and (TBlkRT(track).inRailway <> Self.id)) then
     begin
       Self.Log('TU ID ' + IntToStr(Self.m_settings.trackIds[i]) + ' jiz referuje na trat ID ' +
-        IntToStr(TBlkRT(track).inRailway) + ', odstranuji referenci', ltError);
+        IntToStr(TBlkRT(track).inRailway) + ', odstranuji referenci', llError);
       Self.m_settings.trackIds.Delete(i);
     end;
   end;
