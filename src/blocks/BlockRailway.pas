@@ -659,7 +659,7 @@ end;
 function TBlkRailway.GetSignalA(): TBlk;
 var blkRT: TBlkRT;
 begin
-  if (Self.tracks.Count = 0) then
+  if ((Self.tracks.Count = 0) or (Self.linkerA = nil) or (Self.linkerA.areas.Count = 0)) then
     Exit(nil);
 
   if ((Self.m_signalA = nil) or ((Self.m_signalA as TBlkSignal).trackId <> Self.tracks[0].id)) then
@@ -673,7 +673,7 @@ begin
     begin
       if (blk.typ <> btSignal) then
         continue;
-      if ((TBlkSignal(blk).trackId = Self.tracks[0].id) and (blk.areas[0] = Self.linkerA.areas[0]) and
+      if ((TBlkSignal(blk).trackId = Self.tracks[0].id) and (blk.areas.Count > 0) and (blk.areas[0] = Self.linkerA.areas[0]) and
         ((blkRT = nil) or (blk.id <> blkRT.GetSettings.signalLid))) then
       begin
         Self.m_signalA := blk;
@@ -689,7 +689,7 @@ end;
 function TBlkRailway.GetSignalB(): TBlk;
 var blkRT: TBlkRT;
 begin
-  if (Self.tracks.Count = 0) then
+  if ((Self.tracks.Count = 0) or (Self.linkerB = nil) or (Self.linkerB.areas.Count = 0)) then
     Exit(nil);
 
   if ((Self.m_signalB = nil) or ((Self.m_signalB as TBlkSignal).trackId <> Self.tracks[Self.tracks.Count - 1].id)) then
@@ -703,7 +703,7 @@ begin
     begin
       if (blk.typ <> btSignal) then
         continue;
-      if ((TBlkSignal(blk).trackId = Self.tracks[Self.tracks.Count - 1].id) and (blk.areas[0] = Self.linkerB.areas[0])
+      if ((TBlkSignal(blk).trackId = Self.tracks[Self.tracks.Count - 1].id) and (blk.areas.Count > 0) and (blk.areas[0] = Self.linkerB.areas[0])
         and ((blkRT = nil) or (blk.id <> blkRT.GetSettings.signalSid))) then
       begin
         Self.m_signalB := blk;
