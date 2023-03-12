@@ -171,7 +171,8 @@ begin
     ini_tech.WriteBool(section, 'RCSni', Self.m_settings.RCSinputNeeded);
   end;
 
-  ini_tech.WriteBool(section, 'activateOnStart', Self.m_settings.setOutputOnStart);
+  if (Self.m_settings.setOutputOnStart) then
+    ini_tech.WriteBool(section, 'activateOnStart', true);
   if (Self.nullable) then
     ini_tech.WriteInteger(section, 'nullTime', Self.m_settings.nullAfterSec);
 end;
@@ -339,7 +340,7 @@ begin
       try
         Self.Activate();
       except
-        PanelServer.BottomError(SenderPnl, 'Nepodaøilo se aktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
+        PanelServer.BottomError(SenderPnl, 'Nepodaï¿½ilo se aktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
       end
     end
     else
@@ -351,7 +352,7 @@ begin
       try
         Self.Deactivate();
       except
-        PanelServer.BottomError(SenderPnl, 'Nepodaøilo se deaktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
+        PanelServer.BottomError(SenderPnl, 'Nepodaï¿½ilo se deaktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
       end
     end;
   end;
@@ -525,7 +526,7 @@ begin
   try
     RCSi.SetInput(Self.m_settings.RCSinput, ownConvert.BoolToInt(target));
   except
-    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TArea(SenderOR).shortName,
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavenï¿½ RCS vstupï¿½!', TArea(SenderOR).shortName,
       'SIMULACE');
   end;
 end;
