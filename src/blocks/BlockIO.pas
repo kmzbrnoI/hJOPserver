@@ -129,10 +129,10 @@ begin
   if (Self.m_settings.isRCSOutput) then
   begin
     Self.m_settings.RCSoutput := RCSFromIni(ini_tech, section, 'RCSout', 'RCSb0', 'RCSp0');
-    Self.m_settings.RCSoutputNeeded := ini_tech.ReadBool(section, 'RCSn0', true);
+    Self.m_settings.RCSoutputNeeded := ini_tech.ReadBool(section, 'RCSno', true) or ini_tech.ReadBool(section, 'RCSn0', true);
   end;
 
-  Self.m_settings.isRCSinput := (ini_tech.ReadString(section, 'RCSin', '') <> '') or (ini_tech.ReadInteger(section, 'RCSbi', -1) <> -1);
+  Self.m_settings.isRCSinput := (ini_tech.ReadString(section, 'RCSin', '') <> '') or (ini_tech.ReadInteger(section, 'RCSbi', -1) <> -1); // old format
   if (Self.m_settings.isRCSinput) then
   begin
     Self.m_settings.RCSinput := RCSFromIni(ini_tech, section, 'RCSin', 'RCSbi', 'RCSpi');
@@ -163,7 +163,7 @@ begin
   if (Self.isRCSOutput) then
   begin
     ini_tech.WriteString(section, 'RCSout', Self.m_settings.RCSoutput.ToString());
-    ini_tech.WriteBool(section, 'RCSn0', Self.m_settings.RCSoutputNeeded);
+    ini_tech.WriteBool(section, 'RCSno', Self.m_settings.RCSoutputNeeded);
   end;
   if (Self.isRCSinput) then
   begin
@@ -340,7 +340,7 @@ begin
       try
         Self.Activate();
       except
-        PanelServer.BottomError(SenderPnl, 'Nepodaï¿½ilo se aktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
+        PanelServer.BottomError(SenderPnl, 'Nepodaøilo se aktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
       end
     end
     else
@@ -352,7 +352,7 @@ begin
       try
         Self.Deactivate();
       except
-        PanelServer.BottomError(SenderPnl, 'Nepodaï¿½ilo se deaktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
+        PanelServer.BottomError(SenderPnl, 'Nepodaøilo se deaktivovat blok', TArea(SenderOR).shortName, 'TECHNOLOGIE');
       end
     end;
   end;
@@ -526,7 +526,7 @@ begin
   try
     RCSi.SetInput(Self.m_settings.RCSinput, ownConvert.BoolToInt(target));
   except
-    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavenï¿½ RCS vstupï¿½!', TArea(SenderOR).shortName,
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TArea(SenderOR).shortName,
       'SIMULACE');
   end;
 end;
