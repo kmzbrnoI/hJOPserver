@@ -224,7 +224,7 @@ object F_UserEdit: TF_UserEdit
         end
         item
           Caption = 'Opr'#225'vn'#283'n'#237
-          Width = 120
+          Width = 130
         end>
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clBlack
@@ -256,8 +256,8 @@ object F_UserEdit: TF_UserEdit
       OnChange = CB_RightsChange
       Items.Strings = (
         #382#225'dn'#233' opr'#225'vn'#283'n'#237
-        'opr'#225'vn'#283'n'#237' ke '#269'ten'#237
-        'opr'#225'vn'#283'n'#237' k z'#225'pisu'
+        'opr'#225'vn'#283'n'#237' k pozorov'#225'n'#237
+        'opr'#225'vn'#283'n'#237' k '#345#237'zen'#237
         'superu'#382'ivatel')
     end
   end
