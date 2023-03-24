@@ -140,11 +140,11 @@ begin
     TAreaRights.null:
       Self.LV_ORs.Canvas.Brush.Color := clWhite;
     TAreaRights.read, TAreaRights.other:
-      Self.LV_ORs.Canvas.Brush.Color := $FFFFAA;
+      Self.LV_ORs.Canvas.Brush.Color := _TABLE_COLOR_BLUE;
     TAreaRights.write:
-      Self.LV_ORs.Canvas.Brush.Color := $AAFFFF;
+      Self.LV_ORs.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
     TAreaRights.superuser:
-      Self.LV_ORs.Canvas.Brush.Color := $AAAAFF;
+      Self.LV_ORs.Canvas.Brush.Color := _TABLE_COLOR_RED;
   end; // case
 end;
 
