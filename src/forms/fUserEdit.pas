@@ -90,8 +90,6 @@ begin
 end;
 
 procedure TF_UserEdit.LV_ORsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
-var rights, rights2: TAreaRights;
-  i: Integer;
 begin
   if (Self.LV_ORs.SelCount = 0) then
   begin
@@ -103,20 +101,24 @@ begin
     if (Self.LV_ORs.SelCount = 1) then
     begin
       // 1 vybrana polozka
+      var rights: TAreaRights;
       if (Self.openUser.areas.TryGetValue(Self.LV_ORs.Selected.Caption, rights)) then
         Self.CB_Rights.ItemIndex := Integer(rights)
       else
-        Self.CB_Rights.ItemIndex := -1;
+        Self.CB_Rights.ItemIndex := 0;
     end else begin
       // vic vybranych polozek -> pokud jsou opravenni stejna, vyplnime, jinak -1
 
-      for i := 0 to Self.LV_ORs.Items.Count - 1 do
+      var rights: TAreaRights;
+      for var i := 0 to Self.LV_ORs.Items.Count - 1 do
         if (Self.LV_ORs.Items[i].Selected) then
           Self.openUser.areas.TryGetValue(Self.LV_ORs.Items[i].Caption, rights);
 
-      for i := 0 to Self.LV_ORs.Items.Count - 1 do
+      for var i := 0 to Self.LV_ORs.Items.Count - 1 do
+      begin
         if (Self.LV_ORs.Items[i].Selected) then
         begin
+          var rights2: TAreaRights;
           Self.openUser.areas.TryGetValue(Self.LV_ORs.Items[i].Caption, rights2);
           if (rights2 <> rights) then
           begin
@@ -124,6 +126,7 @@ begin
             Exit();
           end;
         end;
+      end;
 
       Self.CB_Rights.ItemHeight := Integer(rights);
     end; // else SelCount > 1
