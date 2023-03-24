@@ -1066,13 +1066,16 @@ begin
         barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
       else if (coupling.outputLocked) then
         barriers.Add(JCBarrier(barTurnoutLocked, coupling));
+      if (coupling.lockout <> '') then
+        barriers.Add(JCBarrier(barBlockLockout, coupling));
+      if (coupling.note <> '') then
+        barriers.Add(JCBarrier(barBlockNote, coupling));
+      if (coupling.PstIs()) then
+        barriers.Add(JCBarrier(barTurnoutPst, coupling));
 
       if (coupling.occupied = TTrackState.occupied) then
         barriers.Add(JCBarrier(barTrackOccupied, coupling));
     end;
-
-    if ((coupling <> nil) and (coupling.PstIs())) then
-      barriers.Add(JCBarrier(barTurnoutPst, coupling));
   end;
 
   // refugees

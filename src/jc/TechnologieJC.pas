@@ -595,19 +595,25 @@ begin
 
     // coupling
     var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnout.GetSettings.coupling));
-    if ((coupling <> nil) and (turnout.position <> turnoutZav.position)) then
+    if (coupling <> nil) then
     begin
-      if (coupling.emLock) then
-        barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
-      else if (coupling.outputLocked) then
-        barriers.Add(JCBarrier(barTurnoutLocked, coupling));
+      if (turnout.position <> turnoutZav.position) then
+      begin
+        if (coupling.emLock) then
+          barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
+        else if (coupling.outputLocked) then
+          barriers.Add(JCBarrier(barTurnoutLocked, coupling));
+      end;
 
       if (coupling.occupied = TTrackState.occupied) then
         barriers.Add(JCBarrier(barTrackOccupied, coupling));
+      if (coupling.lockout <> '') then
+        barriers.Add(JCBarrier(barBlockLockout, coupling));
+      if (coupling.note <> '') then
+        barriers.Add(JCBarrier(barBlockNote, coupling));
+      if (coupling.PstIs()) then
+        barriers.Add(JCBarrier(barTurnoutPst, coupling));
     end;
-
-    if ((coupling <> nil) and (coupling.PstIs())) then
-      barriers.Add(JCBarrier(barTurnoutPst, coupling));
 
     if ((turnoutZav.position = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil) and
       (TBlkTrack(turnout.npBlokPlus).occupied <> TTrackState.Free)) then
@@ -906,16 +912,23 @@ begin
     var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnout.GetSettings.coupling));
     // pokud nemam ja polohu, predpokladam, ze spojka bude muset byt prestavena -> musi byt volna, bez zaveru, ...
     // kontrolovat zaver z useku eni potreba - pokud je problem se zaverem, vyvstane uz na useku JC, jinak je vyhybka v poloze, ktere zaver nevadi
-    if ((coupling <> nil) and (turnout.position <> turnoutZav.position)) then
+    if (coupling <> nil) then
     begin
-      if (TBlkTurnout(coupling).emLock) then
-        barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
-      else if (TBlkTurnout(coupling).outputLocked) then
-        barriers.Add(JCBarrier(barTurnoutLocked, coupling));
-    end;
+      if (turnout.position <> turnoutZav.position) then
+      begin
+        if (TBlkTurnout(coupling).emLock) then
+          barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
+        else if (TBlkTurnout(coupling).outputLocked) then
+          barriers.Add(JCBarrier(barTurnoutLocked, coupling));
+      end;
 
-    if ((coupling <> nil) and (coupling.PstIs())) then
-      barriers.Add(JCBarrier(barTurnoutPst, coupling));
+      if (coupling.lockout <> '') then
+        barriers.Add(JCBarrier(barBlockLockout, coupling));
+      if (coupling.note <> '') then
+        barriers.Add(JCBarrier(barBlockNote, coupling));
+      if (coupling.PstIs()) then
+        barriers.Add(JCBarrier(barTurnoutPst, coupling));
+    end;
   end;
 
   // crossings

@@ -189,8 +189,8 @@ type
     procedure NpObsazChange(Sender: TObject; data: Integer);
     procedure MapNpEvents();
 
-    procedure StitVylUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
-      UPO_EscCallback: TNotifyEvent);
+    procedure MovingUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
+      UPO_EscCallback: TNotifyEvent);  // returns if UPO was performed
 
     class function CombineCouplingInputs(first: TRCSInputState; second: TRCSInputState): TRCSInputState;
 
@@ -290,7 +290,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
-  IfThenElse, RCSErrors, BlockPst, FileSystem, ConfSeq;
+  IfThenElse, RCSErrors, BlockPst, FileSystem, ConfSeq, JCBarriers;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin
@@ -1028,46 +1028,22 @@ end;
 
 procedure TBlkTurnout.MenuPlusClick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
-  if ((Self.note <> '') or (Self.lockout <> '')) then
-    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPOPlusClick, nil)
-  else
-  begin
-    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
-    Self.UPOPlusClick(SenderPnl);
-  end;
+  Self.MovingUPO(SenderPnl, SenderOR, Self.UPOPlusClick, nil);
 end;
 
 procedure TBlkTurnout.MenuMinusClick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
-  if ((Self.note <> '') or (Self.lockout <> '')) then
-    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPOMinusClick, nil)
-  else
-  begin
-    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
-    Self.UPOMinusClick(SenderPnl);
-  end;
+  Self.MovingUPO(SenderPnl, SenderOR, Self.UPOMinusClick, nil);
 end;
 
 procedure TBlkTurnout.MenuNSPlusClick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
-  if ((Self.note <> '') or (Self.lockout <> '')) then
-    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPONSPlusClick, nil)
-  else
-  begin
-    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
-    Self.UPONSPlusClick(SenderPnl);
-  end;
+  Self.MovingUPO(SenderPnl, SenderOR, Self.UPONSPlusClick, nil);
 end;
 
 procedure TBlkTurnout.MenuNSMinusClick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
-  if ((Self.note <> '') or (Self.lockout <> '')) then
-    Self.StitVylUPO(SenderPnl, SenderOR, Self.UPONSMinusClick, nil)
-  else
-  begin
-    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
-    Self.UPONSMinusClick(SenderPnl);
-  end;
+  Self.MovingUPO(SenderPnl, SenderOR, Self.UPONSMinusClick, nil);
 end;
 
 procedure TBlkTurnout.UPOPlusClick(Sender: TObject);
@@ -1706,7 +1682,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.StitVylUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
+procedure TBlkTurnout.MovingUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
   UPO_EscCallback: TNotifyEvent);
 var UPO: TUPOItems;
   item: TUPOItem;
@@ -1714,38 +1690,25 @@ begin
   UPO := TList<TUPOItem>.Create;
   try
     if (Self.note <> '') then
-    begin
-      item[0] := GetUPOLine('ŠTÍTEK ' + Self.m_globSettings.name, taCenter, clBlack, clTeal);
-      var lines: TStrings := GetLines(Self.note, _UPO_LINE_LEN);
-
-      try
-        item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-        if (lines.Count > 1) then
-          item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-      finally
-        lines.Free();
-      end;
-
-      UPO.Add(item);
-    end;
-
+      UPO.Add(JCBarrierToMessage(JCBarrier(barBlockNote, Self)));
     if (Self.lockout <> '') then
+      UPO.Add(JCBarrierToMessage(JCBarrier(barBlockLockout, Self)));
+    if (Self.coupling <> nil) then
     begin
-      item[0] := GetUPOLine('VÝLUKA ' + Self.m_globSettings.name, taCenter, clBlack, clOlive);
-      var lines: TStrings := GetLines(Self.lockout, _UPO_LINE_LEN);
-
-      try
-        item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-        if (lines.Count > 1) then
-          item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-      finally
-        lines.Free();
-      end;
-
-      UPO.Add(item);
+      if (Self.coupling.note <> '') then
+        UPO.Add(JCBarrierToMessage(JCBarrier(barBlockNote, Self.coupling)));
+      if (Self.coupling.lockout <> '') then
+        UPO.Add(JCBarrierToMessage(JCBarrier(barBlockLockout, Self.coupling)));
     end;
 
-    PanelServer.UPO(SenderPnl, UPO, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+    if (UPO.Count > 0) then
+    begin
+      PanelServer.UPO(SenderPnl, UPO, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+    end else if (Assigned(UPO_OKCallback)) then begin
+      TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
+      UPO_OKCallback(SenderPnl);
+    end;
+
   finally
     UPO.Free();
   end;
