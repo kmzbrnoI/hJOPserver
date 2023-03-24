@@ -38,23 +38,21 @@ constructor TUsersTableData.Create(LV: TListView);
 begin
   inherited Create();
   Self.LV := LV;
-end; // ctor
+end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TUsersTableData.LoadToTable();
-var i, j: Integer;
-  LI: TListItem;
 begin
   F_Main.E_Dataload_Users.text := UsrDB.filenameData;
   F_Main.E_dataload_users_stat.text := UsrDB.filenameStat;
   Self.LV.Clear();
 
-  for i := 0 to UsrDB.Count - 1 do
+  for var i := 0 to UsrDB.Count - 1 do
   begin
-    LI := Self.LV.Items.Add;
+    var LI: TListItem := Self.LV.Items.Add();
     LI.Caption := IntToStr(i);
-    for j := 0 to Self.LV.Columns.Count - 2 do
+    for var j := 0 to Self.LV.Columns.Count - 2 do
       LI.SubItems.Add('');
   end;
 
@@ -107,14 +105,11 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TUsersTableData.AddUser();
-var LI: TListItem;
-  j: Integer;
 begin
-  LI := Self.LV.Items.Add;
+  var LI: TListItem := Self.LV.Items.Add();
   LI.Caption := IntToStr(Self.LV.Items.Count);
-  for j := 0 to Self.LV.Columns.Count - 2 do
+  for var j := 0 to Self.LV.Columns.Count - 2 do
     LI.SubItems.Add('');
-
   Self.UpdateLine(Self.LV.Items.Count - 1);
 end;
 
@@ -128,7 +123,6 @@ end;
 initialization
 
 finalization
-
-UsersTableData.Free();
+  UsersTableData.Free();
 
 end.// unit
