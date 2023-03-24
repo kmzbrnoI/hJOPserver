@@ -3508,11 +3508,12 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_log
+    ActivePage = TS_Users
     Align = alClient
     MultiLine = True
     TabOrder = 2
     OnChange = PC_1Change
+    ExplicitTop = 29
     object TS_Technologie: TTabSheet
       Margins.Left = 2
       Margins.Top = 2
@@ -4774,16 +4775,25 @@ object F_Main: TF_Main
             Width = 150
           end
           item
-            Caption = 'Jm'#233'no + p'#345#237'jmen'#237
+            Caption = 'Jm'#233'no a p'#345#237'jmen'#237
             Width = 100
           end
           item
-            Caption = 'Opr'#225'vn'#283'n'#237
-            Width = 200
+            Caption = 'Opr'#225'vn'#283'n'#237' k pozorov'#225'n'#237
+            Width = 150
+          end
+          item
+            Caption = 'Opr'#225'vn'#283'n'#237' k '#345#237'zen'#237
+            Width = 150
+          end
+          item
+            Caption = 'Opr'#225'vn'#283'n'#237' super'#382'ivatel'
+            Width = 150
           end
           item
             Alignment = taCenter
             Caption = 'Regul'#225'tor'
+            Width = 60
           end
           item
             Alignment = taCenter
@@ -4792,7 +4802,7 @@ object F_Main: TF_Main
           end
           item
             Caption = 'Pozn'#225'mka'
-            Width = 100
+            Width = 150
           end
           item
             Caption = 'Posledn'#237' prihl'#225#353'en'#237
@@ -5546,8 +5556,6 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnCustomDrawItem = LV_logCustomDrawItem
         OnDblClick = LV_logDblClick
-        ExplicitTop = 24
-        ExplicitHeight = 590
       end
       object P_log: TPanel
         Left = 0

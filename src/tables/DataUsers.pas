@@ -16,7 +16,7 @@ type
     procedure LoadToTable();
     procedure UpdateTable();
 
-    procedure UpdateLine(line: Integer);
+    procedure UpdateLine(linei: Integer);
 
     procedure AddUser();
     procedure RemoveUser(index: Integer);
@@ -62,46 +62,46 @@ begin
 end;
 
 procedure TUsersTableData.UpdateTable();
-var i: Integer;
 begin
-  for i := 0 to UsrDB.Count - 1 do
+  for var i := 0 to UsrDB.Count - 1 do
     Self.UpdateLine(i);
 end;
 
-procedure TUsersTableData.UpdateLine(line: Integer);
-var User: TUser;
-  str: string;
-  Area: TArea;
+procedure TUsersTableData.UpdateLine(linei: Integer);
+var user: TUser;
+    line: TListItem;
 begin
-  User := UsrDB.GetUser(line);
+  user := UsrDB.GetUser(linei);
+  line := Self.LV.Items[linei];
 
-  Self.LV.Items[line].Caption := IntToStr(line);
-  Self.LV.Items[line].SubItems[0] := User.username;
-  Self.LV.Items[line].SubItems[1] := User.fullName;
-  Self.LV.Items[line].SubItems[3] := ownConvert.BoolToTick(User.regulator);
-  Self.LV.Items[line].SubItems[4] := ownConvert.BoolToTick(User.root);
-  Self.LV.Items[line].SubItems[5] := EscapeNewline(User.note);
-  Self.LV.Items[line].SubItems[6] := FormatDateTime('yyyy-mm-dd hh:nn:ss', User.lastlogin);
+  line.Caption := IntToStr(linei);
+  line.SubItems[0] := User.username;
+  line.SubItems[1] := User.fullName;
+  line.SubItems[2] := ''; // read
+  line.SubItems[3] := ''; // write
+  line.SubItems[4] := ''; // superuser
+  line.SubItems[5] := ownConvert.BoolToTick(User.regulator);
+  line.SubItems[6] := ownConvert.BoolToTick(User.root);
+  line.SubItems[7] := EscapeNewline(User.note);
+  line.SubItems[8] := FormatDateTime('yyyy-mm-dd hh:nn:ss', User.lastlogin);
 
-  str := '';
-  for Area in Areas do
+  for var area: TArea in Areas do
   begin
-    if ((User.Areas.ContainsKey(Area.id)) and (User.Areas[Area.id] > TAreaRights.null)) then
+    if (user.Areas.ContainsKey(Area.id)) then
     begin
-      str := str + Area.shortName + ':';
-      case User.Areas[Area.id] of
-        TAreaRights.read, TAreaRights.other:
-          str := str + 'R';
+      case (user.Areas[area.id]) of
+        TAreaRights.read:
+          line.SubItems[2] := line.SubItems[2] + area.id + ', ';
         TAreaRights.write:
-          str := str + 'W';
+          line.SubItems[3] := line.SubItems[3] + area.id + ', ';
         TAreaRights.superuser:
-          str := str + 'S';
+          line.SubItems[4] := line.SubItems[4] + area.id + ', ';
       end;
-      str := str + ', ';
     end;
   end;
 
-  Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str) - 2);
+  for var i := 2 to 4 do
+    line.SubItems[i] := LeftStr(line.SubItems[i], Length(line.SubItems[i])-2);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
