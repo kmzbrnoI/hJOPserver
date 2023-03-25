@@ -202,6 +202,7 @@ type
     destructor Destroy(); override;
 
     function IsGoSignal(jctype: TJCType = TJCType.Train): Boolean; overload;
+    function IsTargetGoSignal(jctype: TJCType = TJCType.Train): Boolean;
     function IsOpakVystraha(): Boolean;
     class function IsGoSignal(Navest: TBlkSignalCode; jctype: TJCType = TJCType.Train): Boolean; overload;
 
@@ -1620,6 +1621,14 @@ begin
   if ((Self.signal = ncChanging) and (TBlkSignal.IsGoSignal(Self.m_state.targetSignal, jctype))) then
     // navest se meni na nejakou povolovaci -> ridim se jeste tou starou
     Result := TBlkSignal.IsGoSignal(Self.m_state.signalOld, jctype)
+  else
+    Result := TBlkSignal.IsGoSignal(Self.signal, jctype);
+end;
+
+function TBlkSignal.IsTargetGoSignal(jctype: TJCType = TJCType.Train): Boolean;
+begin
+  if (Self.changing) then
+    Result := TBlkSignal.IsGoSignal(Self.targetSignal, jctype)
   else
     Result := TBlkSignal.IsGoSignal(Self.signal, jctype);
 end;

@@ -523,14 +523,12 @@ begin
   for var JC: TJC in Self.JCs do
   begin
     if ((JC.typ = TJCType.shunt) or (JC.data.nextSignalType <> TJCNextSignalType.signal) or
-      (JC.data.nextSignalId <> signal.id) or (not JC.active)) then
-      continue;
+      (JC.data.nextSignalId <> signal.id) or ((not JC.active) and (not JC.activating))) then
+      continue; // musime prenest navest i na predchozi JC, kde se momentalne stavi navestidlo na volnoznak
 
     var prevSignal := Blocks.GetBlkSignalByID(JC.data.signalId);
 
-    if (not prevSignal.IsGoSignal()) then
-      continue;
-    if (prevSignal.changing) then
+    if (not prevSignal.IsTargetGoSignal()) then
       continue;
 
     var code: TBlkSignalCode := ncStuj;
