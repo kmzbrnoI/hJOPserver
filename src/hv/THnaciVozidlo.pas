@@ -524,8 +524,10 @@ begin
   else
     ini.WriteString(addr, 'stanice', '');
 
-  ini.WriteString(addr, 'najeto_vpred_metru', Format('%.2f', [Self.state.traveled_forward]));
-  ini.WriteString(addr, 'najeto_vzad_metru', Format('%.2f', [Self.state.traveled_backward]));
+  var fmt := TFormatSettings.Create();
+  fmt.DecimalSeparator := '.';
+  ini.WriteString(addr, 'najeto_vpred_metru', Format('%.2f', [Self.state.traveled_forward], fmt));
+  ini.WriteString(addr, 'najeto_vzad_metru', Format('%.2f', [Self.state.traveled_backward], fmt));
 
   ini.WriteInteger(addr, 'stanoviste_a', Integer(Self.state.siteA));
 
