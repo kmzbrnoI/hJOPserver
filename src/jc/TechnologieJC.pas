@@ -1036,7 +1036,7 @@ end;
 function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; bariery_out: TJCBarriers; from_stack: TObject = nil;
   nc: Boolean = false; fromAB: Boolean = false; abAfter: Boolean = false): Integer;
 begin
-  Result := 0;
+  Result := 1; // error by default
   Self.m_state.timeOut := Now + EncodeTime(0, _JC_INITPOTVR_TIMEOUT_SEC div 60, _JC_INITPOTVR_TIMEOUT_SEC mod 60, 0);
 
   Self.m_state.from_stack := from_stack;
@@ -1081,9 +1081,10 @@ begin
         Self.step := stepCritBarriers;
         PanelServer.UPO(Self.m_state.senderPnl, UPO, true, nil, Self.CritBarieraEsc, Self);
       end;
-      Exit(1);
+      Result := 1;
     end else begin
       // bariery k potvrzeni
+      // kdyz je neni komu oznamit, cesta se rovnou stavi
       if (((barriers.Count > 0) or ((nc) and (from_stack <> nil))) and (senderPnl <> nil)) then
       begin
         Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...');
@@ -1102,13 +1103,14 @@ begin
 
         PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
         Self.step := stepConfBarriers;
-        Exit(0);
+        Result := 1;
+      end else begin
+        // v jzdni ceste nejsou zadne bariery -> stavim
+        Self.Log('Žádné bariéry, stavím');
+        Self.SetInitStep();
+        Result := 0;
       end;
     end;
-
-    // v jzdni ceste nejsou zadne bariery -> stavim
-    Self.Log('Žádné bariéry, stavím');
-    Self.SetInitStep();
   except
     on E:Exception do
     begin
