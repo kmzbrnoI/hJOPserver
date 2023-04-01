@@ -1712,7 +1712,7 @@ begin
   PanelServer.SendInfoMsg(SenderPnl, 'Souprava ' + Train.name + ' přesunuta na ' + Self.m_globSettings.name + '.');
 
   if (Blocks.GetBlkWithTrain(Train).Count = 1) then
-    Train.front := Self;
+    train.front := Self;
 
   for var signal: TBlk in (blk as TBlkTrack).signalJCRef do
     Blocks.TrainPrediction(signal as TBlkSignal);
@@ -2206,9 +2206,9 @@ end;
 // kontroluje, zda-li se nenazime vlozit pred soupravu v pohybu
 function TBlkTrack.CanTrainSpeedInsert(index: Integer): Boolean;
 begin
-  Result := not((Self.trains.Count > 0) and (((index = 0) and (TrainDb.trains[Self.trains[index]].wantedSpeed > 0) and
+  Result := not ((Self.trains.Count > 0) and (((index = 0) and ((TrainDb.trains[Self.trains[index]].wantedSpeed > 0) or (TrainDb.trains[Self.trains[index]].IsSpeedOverride())) and
     (TrainDb.trains[Self.trains[index]].direction = THVSite.even)) or ((index = Self.trains.Count) and
-    (TrainDb.trains[Self.trains[index - 1]].wantedSpeed > 0) and
+    ((TrainDb.trains[Self.trains[index - 1]].wantedSpeed > 0) or (TrainDb.trains[Self.trains[index - 1]].IsSpeedOverride())) and
     (TrainDb.trains[Self.trains[index - 1]].direction = THVSite.odd))));
 end;
 
