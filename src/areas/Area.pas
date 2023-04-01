@@ -641,18 +641,24 @@ begin
     // check if other panels are connected
     // only single panel could be connected with write rights
     var anotherWriteI: Integer := Self.AnyotherWriteConnected(Sender);
+    var anotherPanel: TAreaPanel;
+    if (anotherWriteI > -1) then
+      anotherPanel := Self.connected[anotherWriteI];
 
-    if ((rights = TAreaRights.write) and (anotherWriteI > -1) and (Self.connected[anotherWriteI].user = username)) then
+    if ((rights = TAreaRights.write) and (anotherWriteI > -1) and (anotherPanel.user = username)) then
     begin
       // same user authorizes -> change his other panel to read
-      var panel := Self.connected[anotherWriteI];
-      panel.rights := TAreaRights.read;
-      Self.connected[anotherWriteI] := panel;
+      anotherPanel.rights := TAreaRights.read;
+      Self.connected[anotherWriteI] := anotherPanel;
       PanelServer.GUIQueueLineToRefresh(anotherWriteI);
       // ORAuthoriseResponse is sent in UpdateReadersAuth
     end else if ((rights < TAreaRights.superuser) and (anotherWriteI > -1)) then begin
       rights := TAreaRights.other; // this value is never saved to db ('read' if saved, see PanelDbAdd)
-      msg := 'Panel již připojen!';
+      msg := 'Panel již připojen: ';
+      var _user: TUser := UsrDB.GetUser(anotherPanel.user);
+      if (_user <> nil) then
+        msg := msg + _user.fullName + ', ';
+      msg := msg + anotherPanel.Panel.Connection.Socket.Binding.PeerIP + '!';
     end else begin
       msg := 'Úspěšně autorizováno';
     end;

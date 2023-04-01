@@ -3508,12 +3508,11 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Users
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
     OnChange = PC_1Change
-    ExplicitTop = 29
     object TS_Technologie: TTabSheet
       Margins.Left = 2
       Margins.Top = 2

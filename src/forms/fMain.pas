@@ -2764,11 +2764,9 @@ begin
 end;
 
 procedure TF_Main.PM_ClientsPopup(Sender: TObject);
-var i: Integer;
 begin
-  for i := 0 to F_Main.PM_Clients.Items.Count - 1 do
-    F_Main.PM_Clients.Items[i].Enabled := (F_Main.LV_Clients.Selected <> nil) and
-      (PanelServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil);
+  for var item in F_Main.PM_Clients.Items do
+    item.Enabled := (F_Main.LV_Clients.Selected <> nil) and (PanelServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil);
 end;
 
 procedure TF_Main.PM_ConsoleClick(Sender: TObject);
