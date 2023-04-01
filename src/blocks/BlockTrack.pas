@@ -1271,6 +1271,11 @@ end;
 
 procedure TBlkTrack.MenuSTOPTrainOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
+  if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
+    Self.trains.Count)) then
+    Exit();
+
+  var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
   if (train.IsAnyHVRuc()) then
     train.RucUPO(SenderPnl, SenderOR, Self.PotvrSTOPTrainOff)
   else
