@@ -154,6 +154,7 @@ type
     procedure UpdateReadersAuth(exception: TIdContext = nil);
 
     function AnySuperuserConnected(): Boolean;
+    function AnyotherWriteConnected(Sender: TIdContext): Integer;
 
     procedure Log(text: string; level: TLogLevel; source: TLogSource = lsAny);
 
@@ -627,7 +628,7 @@ begin
     if (rights > userRights) then
       rights := userRights;
 
-    if ((not GetFunctions.GetSystemStart) and (rights > read) and (rights < superuser)) then
+    if ((not GetFunctions.GetSystemStart) and (rights > TAreaRights.read) and (rights < TAreaRights.superuser)) then
     begin
       // superuser can authorize write even with systems turned off
       Self.PanelDbAdd(Sender, TAreaRights.read, username);
@@ -637,32 +638,23 @@ begin
       Exit();
     end;
 
-    msg := 'Úspěšně autorizováno';
-
     // check if other panels are connected
     // only single panel could be connected with write rights
-    if (rights = TAreaRights.write) then
+    var anotherWriteI: Integer := Self.AnyotherWriteConnected(Sender);
+
+    if ((rights = TAreaRights.write) and (anotherWriteI > -1) and (Self.connected[anotherWriteI].user = username)) then
     begin
-      // ... omitting superuser ...
-      for var i: Integer := 0 to Self.connected.Count - 1 do
-      begin
-        if ((Self.connected[i].rights = TAreaRights.write) and (Self.connected[i].Panel <> Sender)) then // intentionally omitting superuser
-        begin
-          // same user authorizes -> change his other panel to read
-          if (Self.connected[i].user = username) then
-          begin
-            var panel := Self.connected[i];
-            panel.rights := TAreaRights.read;
-            Self.connected[i] := panel;
-            PanelServer.GUIQueueLineToRefresh(i);
-            // ORAuthoriseResponse is sent in UpdateReadersAuth
-          end else begin
-            rights := TAreaRights.other; // this value is never saved to db ('read' if saved, see PanelDbAdd)
-            msg := 'Panel již připojen!';
-            Break;
-          end;
-        end;
-      end;
+      // same user authorizes -> change his other panel to read
+      var panel := Self.connected[anotherWriteI];
+      panel.rights := TAreaRights.read;
+      Self.connected[anotherWriteI] := panel;
+      PanelServer.GUIQueueLineToRefresh(anotherWriteI);
+      // ORAuthoriseResponse is sent in UpdateReadersAuth
+    end else if ((rights < TAreaRights.superuser) and (anotherWriteI > -1)) then begin
+      rights := TAreaRights.other; // this value is never saved to db ('read' if saved, see PanelDbAdd)
+      msg := 'Panel již připojen!';
+    end else begin
+      msg := 'Úspěšně autorizováno';
     end;
 
     Self.PanelDbAdd(Sender, rights, username);
@@ -2150,9 +2142,18 @@ end;
 function TArea.AnySuperuserConnected(): Boolean;
 begin
   Result := false;
-  for var areaPanel in Self.connected do
+  for var areaPanel: TAreaPanel in Self.connected do
     if (areaPanel.rights = TAreaRights.superuser) then
       Exit(true);
+end;
+
+function TArea.AnyotherWriteConnected(Sender: TIdContext): Integer;
+begin
+  // Intentionally omitting superuser
+  Result := -1;
+  for var i: Integer := 0 to Self.connected.Count-1 do
+    if ((Self.connected[i].Panel <> Sender) and (Self.connected[i].rights = TAreaRights.write)) then
+      Exit(i);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
