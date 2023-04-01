@@ -74,8 +74,8 @@ end;
 function TTrainSpeed.Match(train: TTrain): Boolean;
 begin
   // The 2nd part of the condition is because an empty string is not matched by '.*'
-  if ((not TRegEx.IsMatch(train.typ, '^'+Self.trainTypeRe+'$')) and
-      ((train.typ <> '') or (not TRegEx.IsMatch(' ', '^'+Self.trainTypeRe+'$')))) then
+  if ((not TRegEx.IsMatch(train.typ, '^('+Self.trainTypeRe+')$')) and
+      ((train.typ <> '') or (not TRegEx.IsMatch(' ', '^('+Self.trainTypeRe+')$')))) then
     Exit(false);
 
   if (train.HVs.Count = 0) then
