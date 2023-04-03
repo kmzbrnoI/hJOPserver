@@ -560,7 +560,7 @@ begin
 
     // osetreni rozjeti vlaku z nejakeho pochybneho duvodu
     // pokud se souprava rozjede, koncim zastavku
-    if (Self.train.wantedSpeed <> 0) then
+    if ((Self.train.speed <> 0) or (not Self.Train.IsSpeedOverride())) then
     begin
       Self.m_rtState.stopStopped := false;
       Self.Change(); // change je dulezite volat kvuli menu

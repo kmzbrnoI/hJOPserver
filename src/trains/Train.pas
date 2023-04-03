@@ -142,6 +142,7 @@ type
      function IsAnyLokoInRegulator(): Boolean;
      procedure ForceRemoveAllRegulators();
      procedure EmergencyStop();
+     procedure EmergencyStopRelease();
      function HasAnyHVNote(): Boolean;
 
      procedure UpdateRailwaySpeed();
@@ -702,14 +703,12 @@ begin
 
  dir_changed := (Self.direction <> dir);
  Self.data.direction := dir;
- if (Self._speedOverride.isOverride) then
- begin
-   Self._speedOverride.speed := speed;
-   Exit();
- end;
-
  Self.data.wantedSpeed := speed;
- if (speed > Self.maxSpeed) then
+ if (Self.emergencyStopped) then
+   Self.data.speed := 0
+ else if (Self.IsSpeedOverride()) then
+   Self.data.speed := Self._speedOverride.speed
+ else if (speed > Self.maxSpeed) then
    Self.data.speed := Self.maxSpeed
  else
    Self.data.speed := speed;
@@ -750,7 +749,7 @@ begin
       ((Self.front as TBlkTrack).trains[(Self.front as TBlkTrack).trainMoving] = Self.index)) then
   (Self.front as TBlkTrack).trainMoving := -1;
 
- Self.Log('rychlost '+IntToStr(speed)+', směr : '+IntToStr(Integer(dir)), llInfo);
+ Self.Log('rychlost want='+IntToStr(speed)+', real='+IntToStr(Self.speed)+', směr : '+IntToStr(Integer(dir)), llInfo);
  Self.changed := true;
 end;
 
@@ -773,10 +772,18 @@ begin
   for var addr in Self.HVs do
     HVDb[addr].EmergencyStop(TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
 
-  if (not Self.IsSpeedOverride()) then
-    Self.EnableSpeedOverride(0, true);
-
   Self.Log('Nouzové zastavení', llInfo);
+  Self.SetSpeedDirection(Self.wantedSpeed, Self.direction);
+  Self.CallChangeToTracks();
+end;
+
+procedure TTrain.EmergencyStopRelease();
+begin
+  if (not Self.emergencyStopped) then
+    raise ENotOverriden.Create('Loco not emergency stopeed');
+
+  Self._emergencyStopped := false;
+  Self.SetSpeedDirection(Self.wantedSpeed, Self.direction);
   Self.CallChangeToTracks();
 end;
 
@@ -927,12 +934,10 @@ begin
   if (Self._speedOverride.isOverride) then
     raise EAlreadyOverriden.Create('Speed already overriden');
 
-  var _speed :=  Self.speed;
-  Self.speed := newSpeed;
-
   Self._speedOverride.isOverride := true;
   Self._speedOverride.allowRestore := allowRestore;
-  Self._speedOverride.speed := _speed;
+  Self._speedOverride.speed := newSpeed;
+  Self.SetSpeedDirection(Self.wantedSpeed, Self.direction);
 end;
 
 procedure TTrain.DisableSpeedOverride();
@@ -940,13 +945,8 @@ begin
   if (not Self._speedOverride.isOverride) then
     raise ENotOverriden.Create('Speed not overriden');
 
-  var wasEmStop := Self.emergencyStopped;
-  Self._emergencyStopped := false;
   Self._speedOverride.isOverride := false;
-  Self.speed := Self._speedOverride.speed;
-
-  if (wasEmStop) then
-    Self.CallChangeToTracks();
+  Self.SetSpeedDirection(Self.wantedSpeed, Self.direction);
 end;
 
 function TTrain.IsSpeedOverride(): Boolean;
@@ -1460,7 +1460,7 @@ begin
 
   if (track.trainMoving = SenderTrackI) then
     Result := Result + 'PŘESUŇ vlak<,'
-  else if ((not track.IsTrainMoving()) and (Self.wantedSpeed = 0)) then
+  else if ((not track.IsTrainMoving()) and ((Self.wantedSpeed = 0) or (Self.emergencyStopped))) then
     Result := Result + 'PŘESUŇ vlak>,';
 
   if (Self.stolen) then

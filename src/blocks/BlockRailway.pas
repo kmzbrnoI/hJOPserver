@@ -1171,13 +1171,12 @@ begin
       bpError := true;
 
   var blk := Self.Train.front as TBlk;
-  var stopsInHalt := ((blk <> nil) and (blk.typ = btRT) and (TBlkRT(blk).rtState.stopStopped));
 
   if (trainPredict) then
     fg := clYellow
   else if (bpError) then
     fg := clAqua
-  else if ((Self.Train.speed = 0) and (not stopsInHalt)) then
+  else if (Self.Train.wantedSpeed = 0) then
     fg := clRed;
 
   if ((Self.Train.HasAnyHVNote()) or (Self.Train.sdata.note <> '')) then

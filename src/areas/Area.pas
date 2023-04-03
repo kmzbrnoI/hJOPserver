@@ -857,9 +857,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TArea.PanelTrainChange(Sender: TIDContext; trainstr: TStrings);
-var
-  track: TBlkTrack;
-  train: TTrain;
 begin
   if (not IsWritable(Sender)) then
   begin
@@ -883,8 +880,8 @@ begin
     end else begin
 
       // uprava soupravy
-      track := (TPanelConnData(Sender.data).train_usek as TBlkTrack);
-      train := TPanelConnData(Sender.data).train_edit;
+      var track: TBlkTrack := (TPanelConnData(Sender.data).train_usek as TBlkTrack);
+      var train: TTrain := TPanelConnData(Sender.data).train_edit;
 
       if (not track.IsTrain(TPanelConnData(Sender.data).train_edit.index)) then
       begin
@@ -894,7 +891,7 @@ begin
 
       if ((train.front <> track) and (train.wantedSpeed > 0)) then
       begin
-        Self.SendLn(Sender, 'SPR-EDIT-ERR;Nelze editovat soupravu, která odjela a je v pohybu');
+        Self.SendLn(Sender, 'SPR-EDIT-ERR;Nelze upravit soupravu, která odjela a je v pohybu');
         Exit();
       end;
 
@@ -1451,9 +1448,7 @@ begin
 end;
 
 procedure TArea.PanelHVEdit(Sender: TIDContext; str: string);
-var
-  data: TStrings;
-  addr: Integer;
+var addr: Integer;
 begin
   if (Self.PanelDbRights(Sender) < write) then
   begin
@@ -1461,8 +1456,7 @@ begin
     Exit();
   end;
 
-  data := nil;
-  data := TStringList.Create();
+  var data: TStrings := TStringList.Create();
   addr := 0;
   try
     ExtractStringsEx(['|'], [], str, data);

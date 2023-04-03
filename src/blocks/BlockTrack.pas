@@ -670,7 +670,7 @@ begin
 
   // reseni zruseni PRESUN soupravy, ktera jede
   if ((Self.IsTrainMoving()) and ((not Self.IsTrain(Self.trains[Self.trainMoving])) or
-    (TrainDb.trains[Self.trains[Self.trainMoving]].wantedSpeed > 0))) then
+    ((TrainDb.trains[Self.trains[Self.trainMoving]].wantedSpeed > 0) and (not TrainDb.trains[Self.trains[Self.trainMoving]].emergencyStopped)))) then
     Self.trainMoving := -1;
 
   // pousteni houkani na houkaci udalosti
@@ -1279,14 +1279,18 @@ begin
   if (train.IsAnyHVRuc()) then
     train.RucUPO(SenderPnl, SenderOR, Self.PotvrSTOPTrainOff)
   else
-    Self.MenuJedTrainClick(SenderPnl, SenderOR);
+    train.EmergencyStopRelease();
 end;
 
 procedure TBlkTrack.PotvrSTOPTrainOff(Sender: TObject);
 begin
   var SenderPnl: TIdContext := TIdContext(Sender);
-  if ((SenderPnl.data as TPanelConnData).UPO_ref <> nil) then
-    Self.MenuJedTrainClick(SenderPnl, (SenderPnl.data as TPanelConnData).UPO_ref);
+  if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
+    Self.trains.Count)) then
+    Exit();
+
+  var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
+  train.EmergencyStopRelease();
 end;
 
 procedure TBlkTrack.MenuJedTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1717,7 +1721,12 @@ begin
   PanelServer.SendInfoMsg(SenderPnl, 'Souprava ' + Train.name + ' přesunuta na ' + Self.m_globSettings.name + '.');
 
   if (Blocks.GetBlkWithTrain(Train).Count = 1) then
+  begin
     train.front := Self;
+    train.speed := 0; // train could be moving from emergency stop to e.g. middle of track occupied from both sides with trains -> must stop
+    for var signal in Self.signalJCRef do
+      TBlkSignal(signal).UpdateTrainSpeed(true); // if any active signal has affect to train speed, let it affect
+  end;
 
   for var signal: TBlk in (blk as TBlkTrack).signalJCRef do
     Blocks.TrainPrediction(signal as TBlkSignal);
@@ -2211,9 +2220,9 @@ end;
 // kontroluje, zda-li se nenazime vlozit pred soupravu v pohybu
 function TBlkTrack.CanTrainSpeedInsert(index: Integer): Boolean;
 begin
-  Result := not ((Self.trains.Count > 0) and (((index = 0) and ((TrainDb.trains[Self.trains[index]].wantedSpeed > 0) or (TrainDb.trains[Self.trains[index]].IsSpeedOverride())) and
+  Result := not ((Self.trains.Count > 0) and (((index = 0) and (TrainDb.trains[Self.trains[index]].wantedSpeed > 0) and
     (TrainDb.trains[Self.trains[index]].direction = THVSite.even)) or ((index = Self.trains.Count) and
-    ((TrainDb.trains[Self.trains[index - 1]].wantedSpeed > 0) or (TrainDb.trains[Self.trains[index - 1]].IsSpeedOverride())) and
+    (TrainDb.trains[Self.trains[index - 1]].wantedSpeed > 0) and
     (TrainDb.trains[Self.trains[index - 1]].direction = THVSite.odd))));
 end;
 
