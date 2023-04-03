@@ -1729,7 +1729,10 @@ begin
   end;
 
   for var signal: TBlk in (blk as TBlkTrack).signalJCRef do
+  begin
     Blocks.TrainPrediction(signal as TBlkSignal);
+    TBlkSignal(signal).UpdateTrainSpeed(true);
+  end;
 
   if (blk <> Self) then
     for var signal: TBlk in Self.signalJCRef do
