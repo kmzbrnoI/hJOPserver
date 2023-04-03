@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, SysUtils, Classes, Forms, THnaciVozidlo, JsonDataObjects,
      Generics.Collections, predvidanyOdjezd, Block, Trakce, Math, IdContext,
-     Logging, Area, ConfSeq;
+     Logging, Area, ConfSeq, UPO;
 
 const
   _MAX_TRAIN_HV = 4;
@@ -162,6 +162,7 @@ type
      function StrArrowDirection(): string;
 
      procedure CallChangeToTracks();
+     function RucBarriers(): TList<TUPOItem>;
      procedure RucUPO(AContext: TIdContext; ref: TObject = nil; callbackOk: TNotifyEvent = nil; callbackEsc: TNotifyEvent = nil);
      function IsAnyHVRuc(): Boolean;
 
@@ -201,7 +202,7 @@ uses THVDatabase, ownStrUtils, TrainDb, BlockTrack, DataSpr, appEv,
       DataHV, AreaDb, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
       fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
-      TCPAreasRef, UPO, JCBarriers;
+      TCPAreasRef, JCBarriers;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1592,13 +1593,18 @@ begin
  end;
 end;
 
+function TTrain.RucBarriers(): TList<TUPOItem>;
+begin
+  Result := TList<TUPOItem>.Create();
+  for var addr: Integer in Self.HVs do
+    if ((Assigned(HVDb[addr])) and (HVDb[addr].ruc)) then
+      Result.Add(JCBarriers.JCBarrierToMessage(JCBarrier(barHVManual, nil, addr)));
+end;
+
 procedure TTrain.RucUPO(AContext: TIdContext; ref: TObject = nil; callbackOk: TNotifyEvent = nil; callbackEsc: TNotifyEvent = nil);
 begin
-  var UPO := TList<TUPOItem>.Create();
+  var UPO := Self.RucBarriers();
   try
-    for var addr: Integer in Self.HVs do
-      if ((Assigned(HVDb[addr])) and (HVDb[addr].ruc)) then
-        UPO.Add(JCBarriers.JCBarrierToMessage(JCBarrier(barHVManual, nil, addr)));
     PanelServer.UPO(AContext, UPO, false, callbackOk, callbackEsc, ref);
   finally
     UPO.Free();

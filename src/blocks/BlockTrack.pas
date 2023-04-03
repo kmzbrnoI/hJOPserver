@@ -289,7 +289,7 @@ implementation
 
 uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, THVDatabase, Math,
-  Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils,
+  Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO,
   announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef, ConfSeq,
   Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase, BlockPst, IfThenElse;
 
@@ -1276,10 +1276,24 @@ begin
     Exit();
 
   var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
-  if (train.IsAnyHVRuc()) then
-    train.RucUPO(SenderPnl, SenderOR, Self.PotvrSTOPTrainOff)
-  else
-    train.EmergencyStopRelease();
+  var UPO := train.RucBarriers();
+  try
+    if (train.wantedSpeed > 0) then
+    begin
+      var item: TUPOItem;
+      item[0] := GetUPOLine('Pozor !', taCenter, clBlack, clYellow);
+      item[1] := GetUPOLine('Souprava bude uvedena do pohybu!');
+      item[2] := GetUPOLine(train.name);
+      UPO.Add(item);
+    end;
+
+    if (UPO.Count > 0) then
+      PanelServer.UPO(SenderPnl, UPO, false, Self.PotvrSTOPTrainOff, nil, SenderOR)
+    else
+      train.EmergencyStopRelease();
+  finally
+    UPO.Free();
+  end;
 end;
 
 procedure TBlkTrack.PotvrSTOPTrainOff(Sender: TObject);
