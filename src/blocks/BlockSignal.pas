@@ -597,19 +597,13 @@ begin
 
   // nastaveni vystupu
   try
-    if (Self.m_settings.RCSAddrs.Count > 0) then
-    begin
-      if (Self.m_settings.outputType = scom) then
-      begin
+    case (Self.m_settings.outputType) of
+      TBlkSignalOutputType.scom:
         RCSi.SetOutputs(Self.m_settings.RCSAddrs, Integer(code));
-      end else begin
-        case (code) of
-          ncStuj, ncVse, ncPrivol, ncZhasnuto:
-            RCSi.SetOutputs(Self.m_settings.RCSAddrs, 0);
-        else
-          RCSi.SetOutputs(Self.m_settings.RCSAddrs, 1);
-        end;
-      end; // else
+      TBlkSignalOutputType.binary:
+        RCSi.SetOutputs(Self.m_settings.RCSAddrs, Integer(TBlkSignal.IsGoSignal(code, TJCType.train)));
+    else
+      RCSi.SetOutputs(Self.m_settings.RCSAddrs, Integer(TBlkSignalCode.ncStuj));
     end;
   except
     if (Assigned(changeCallbackErr)) then
