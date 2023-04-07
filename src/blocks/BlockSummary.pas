@@ -72,7 +72,7 @@ type
 
 implementation
 
-uses BlockCrossing, BlockDb, AreaDb, Graphics, ownConvert;
+uses BlockCrossing, BlockDb, AreaDb, Graphics, ownConvert, Diagnostics;
 
 constructor TBlkSummary.Create(index: Integer);
 begin
@@ -192,9 +192,13 @@ begin
   if (not Self.enabled) then
     Exit();
 
-  if ((itemindex - 2 >= 0) and (itemindex - 2 < Self.m_settings.crossings.Count)) then
+  var crosIndex: Integer := itemindex - 2;
+  if (diag.showBlockId) then
+    crosIndex := crosIndex - 1;
+
+  if ((crosIndex >= 0) and (crosIndex < Self.m_settings.crossings.Count)) then
   begin
-    var crossing := Blocks.GetBlkCrossingByID(Self.m_settings.crossings[itemindex - 2]);
+    var crossing := Blocks.GetBlkCrossingByID(Self.m_settings.crossings[crosIndex]);
     if (crossing <> nil) then
       PanelServer.Menu(SenderPnl, crossing, SenderOR as TArea, crossing.ShowPanelMenu(SenderPnl, SenderOR,
         TAreaRights.write));
