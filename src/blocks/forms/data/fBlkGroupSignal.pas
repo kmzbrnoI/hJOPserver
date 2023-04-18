@@ -122,12 +122,12 @@ end;
 
 procedure TF_BlkGroupSignal.SE_RCSmodule1Exit(Sender: TObject);
 begin
-  Self.SE_RCSport1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
+  Self.SE_RCSport1.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
 end;
 
 procedure TF_BlkGroupSignal.SE_RCSmodule2Exit(Sender: TObject);
 begin
-  Self.SE_RCSport2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
+  Self.SE_RCSport2.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
 end;
 
 procedure TF_BlkGroupSignal.EditOpenForm();

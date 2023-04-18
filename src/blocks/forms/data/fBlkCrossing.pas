@@ -117,18 +117,18 @@ end;
 
 procedure TF_BlkCrossing.SE_RCS_boardExit(Sender: TObject);
 begin
-  Self.SE_out_close_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_out_close_board.Value,
+  Self.SE_out_close_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_close_board.Value,
     Self.SE_out_close_port.Value);
-  Self.SE_out_open_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_out_open_board.Value,
+  Self.SE_out_open_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_open_board.Value,
     Self.SE_out_open_port.Value);
-  Self.SE_out_bp_board.MaxValue := TBlocks.SEPortMaxValue(Self.SE_out_bp_board.Value, Self.SE_out_bp_port.Value);
+  Self.SE_out_bp_board.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_bp_board.Value, Self.SE_out_bp_port.Value);
 
-  Self.SE_in_close_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_in_close_board.Value,
+  Self.SE_in_close_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_close_board.Value,
     Self.SE_in_close_port.Value);
-  Self.SE_in_open_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_in_open_board.Value, Self.SE_in_open_port.Value);
-  Self.SE_in_caution_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_in_caution_board.Value,
+  Self.SE_in_open_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_open_board.Value, Self.SE_in_open_port.Value);
+  Self.SE_in_caution_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_caution_board.Value,
     Self.SE_in_caution_port.Value);
-  Self.SE_in_annulation_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_in_annulation_board.Value,
+  Self.SE_in_annulation_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_annulation_board.Value,
     Self.SE_in_annulation_port.Value);
 end;
 

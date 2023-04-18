@@ -582,22 +582,22 @@ end;
 
 procedure TF_BlkSignal.SE_Cont_ModuleExit(Sender: TObject);
 begin
-  Self.SE_Cont_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Cont_Module.Value, Self.SE_Cont_Port.Value);
+  Self.SE_Cont_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Cont_Module.Value, Self.SE_Cont_Port.Value);
 end;
 
 procedure TF_BlkSignal.SE_Ind_ModuleExit(Sender: TObject);
 begin
-  Self.SE_Ind_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Ind_Module.Value, Self.SE_Ind_Port.Value);
+  Self.SE_Ind_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_Ind_Module.Value, Self.SE_Ind_Port.Value);
 end;
 
 procedure TF_BlkSignal.SE_RCSmodule1Exit(Sender: TObject);
 begin
-  Self.SE_RCSport1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
+  Self.SE_RCSport1.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCSmodule1.Value, Self.SE_RCSport1.Value);
 end;
 
 procedure TF_BlkSignal.SE_RCSmodule2Exit(Sender: TObject);
 begin
-  Self.SE_RCSport2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
+  Self.SE_RCSport2.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCSmodule2.Value, Self.SE_RCSport2.Value);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

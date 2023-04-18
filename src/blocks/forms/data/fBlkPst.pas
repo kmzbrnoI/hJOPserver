@@ -279,31 +279,31 @@ end;
 
 procedure TF_BlkPst.SE_RCS_Active_ModuleExit(Sender: TObject);
 begin
-  Self.SE_RCS_Active_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Active_Module.Value,
+  Self.SE_RCS_Active_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCS_Active_Module.Value,
     Self.SE_RCS_Active_Port.Value);
 end;
 
 procedure TF_BlkPst.SE_RCS_Horn_ModuleExit(Sender: TObject);
 begin
-  Self.SE_RCS_Horn_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Horn_Module.Value,
+  Self.SE_RCS_Horn_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCS_Horn_Module.Value,
     Self.SE_RCS_Horn_Port.Value);
 end;
 
 procedure TF_BlkPst.SE_RCS_Indication_ModuleExit(Sender: TObject);
 begin
-  Self.SE_RCS_Indication_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Indication_Module.Value,
+  Self.SE_RCS_Indication_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCS_Indication_Module.Value,
     Self.SE_RCS_Indication_Port.Value);
 end;
 
 procedure TF_BlkPst.SE_RCS_Release_ModuleExit(Sender: TObject);
 begin
-  Self.SE_RCS_Release_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Release_Module.Value,
+  Self.SE_RCS_Release_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_RCS_Release_Module.Value,
     Self.SE_RCS_Release_Port.Value);
 end;
 
 procedure TF_BlkPst.SE_RCS_Take_ModuleExit(Sender: TObject);
 begin
-  Self.SE_RCS_Take_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Take_Module.Value,
+  Self.SE_RCS_Take_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_RCS_Take_Module.Value,
     Self.SE_RCS_Take_Port.Value);
 end;
 

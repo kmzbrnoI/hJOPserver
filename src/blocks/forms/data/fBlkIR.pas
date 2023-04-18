@@ -62,7 +62,7 @@ end;
 
 procedure TF_BlkIR.SE_moduleExit(Sender: TObject);
 begin
-  Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
+  Self.SE_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
 procedure TF_BlkIR.NewOpenForm();

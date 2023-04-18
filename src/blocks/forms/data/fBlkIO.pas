@@ -90,13 +90,13 @@ end;
 
 procedure TF_BlkIO.SE_RCS_Input_ModuleExit(Sender: TObject);
 begin
-  Self.SE_RCS_Input_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Input_Module.Value,
+  Self.SE_RCS_Input_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_RCS_Input_Module.Value,
     Self.SE_RCS_Input_Port.Value);
 end;
 
 procedure TF_BlkIO.SE_RCS_Output_ModuleExit(Sender: TObject);
 begin
-  Self.SE_RCS_Output_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_RCS_Output_Module.Value,
+  Self.SE_RCS_Output_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCS_Output_Module.Value,
     Self.SE_RCS_Output_Port.Value);
 end;
 

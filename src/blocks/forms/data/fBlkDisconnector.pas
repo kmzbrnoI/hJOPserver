@@ -86,12 +86,12 @@ end;
 
 procedure TF_BlkDisconnector.SE_Cont_ModuleExit(Sender: TObject);
 begin
-  Self.SE_Cont_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Cont_Module.Value, Self.SE_Cont_Port.Value);
+  Self.SE_Cont_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Cont_Module.Value, Self.SE_Cont_Port.Value);
 end;
 
 procedure TF_BlkDisconnector.SE_moduleExit(Sender: TObject);
 begin
-  Self.SE_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
+  Self.SE_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
 end;
 
 procedure TF_BlkDisconnector.NewOpenForm();

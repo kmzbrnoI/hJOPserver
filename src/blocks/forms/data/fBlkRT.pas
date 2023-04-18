@@ -160,10 +160,10 @@ end;
 
 procedure TF_BlkRT.SE_RCS_BoardExit(Sender: TObject);
 begin
-  Self.SE_Port1.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
-  Self.SE_Port2.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board2.Value, Self.SE_Port1.Value);
-  Self.SE_Port3.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board3.Value, Self.SE_Port1.Value);
-  Self.SE_Port4.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Board4.Value, Self.SE_Port1.Value);
+  Self.SE_Port1.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Board1.Value, Self.SE_Port1.Value);
+  Self.SE_Port2.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Board2.Value, Self.SE_Port1.Value);
+  Self.SE_Port3.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Board3.Value, Self.SE_Port1.Value);
+  Self.SE_Port4.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Board4.Value, Self.SE_Port1.Value);
 end;
 
 procedure TF_BlkRT.NewOpenForm();

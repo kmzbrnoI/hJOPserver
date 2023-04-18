@@ -151,31 +151,31 @@ end;
 
 procedure TF_BlkTurnout.SE_Cont_Minus_ModuleExit(Sender: TObject);
 begin
-  Self.SE_Cont_Minus_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Cont_Minus_Module.Value, Self.SE_Cont_Minus_Port.Value);
+  Self.SE_Cont_Minus_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Cont_Minus_Module.Value, Self.SE_Cont_Minus_Port.Value);
 end;
 
 procedure TF_BlkTurnout.SE_Cont_Plus_ModuleExit(Sender: TObject);
 begin
-  Self.SE_Cont_Plus_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Cont_Plus_Module.Value, Self.SE_Cont_Plus_Port.Value);
+  Self.SE_Cont_Plus_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Cont_Plus_Module.Value, Self.SE_Cont_Plus_Port.Value);
 end;
 
 procedure TF_BlkTurnout.SE_Ind_Minus_ModuleExit(Sender: TObject);
 begin
-  Self.SE_Ind_Minus_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Ind_Minus_Module.Value, Self.SE_Ind_Minus_Port.Value);
+  Self.SE_Ind_Minus_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_Ind_Minus_Module.Value, Self.SE_Ind_Minus_Port.Value);
 end;
 
 procedure TF_BlkTurnout.SE_Ind_Plus_ModuleExit(Sender: TObject);
 begin
-  Self.SE_Ind_Plus_Port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Ind_Plus_Module.Value, Self.SE_Ind_Plus_Port.Value);
+  Self.SE_Ind_Plus_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_Ind_Plus_Module.Value, Self.SE_Ind_Plus_Port.Value);
 end;
 
 procedure TF_BlkTurnout.SE_moduleExit(Sender: TObject);
 begin
-  Self.SE_Out_Plus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Out_Plus_module.Value, Self.SE_Out_Plus_port.Value);
-  Self.SE_Out_Minus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_Out_Minus_module.Value,
+  Self.SE_Out_Plus_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_Out_Plus_module.Value, Self.SE_Out_Plus_port.Value);
+  Self.SE_Out_Minus_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_Out_Minus_module.Value,
     Self.SE_Out_Minus_port.Value);
-  Self.SE_In_Plus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_In_Plus_module.Value, Self.SE_In_Plus_port.Value);
-  Self.SE_In_Minus_port.MaxValue := TBlocks.SEPortMaxValue(Self.SE_In_Minus_module.Value, Self.SE_In_Minus_port.Value);
+  Self.SE_In_Plus_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_In_Plus_module.Value, Self.SE_In_Plus_port.Value);
+  Self.SE_In_Minus_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_In_Minus_module.Value, Self.SE_In_Minus_port.Value);
 end;
 
 procedure TF_BlkTurnout.NewOpenForm();
