@@ -48,12 +48,12 @@ type
   // Technologie RCS
   TRCS = class(TRCSIFace)
   public const
+    _MODULE_DEFAULT_IO = 256; // cannot be more than Max(TRCSAddr.port)+1
 
   private const
     _DEFAULT_LIB = 'simulator.dll';
     _INIFILE_SECTNAME = 'RCS';
     _DEFAULT_CONFIG_PATH = 'lib-conf';
-    _MODULE_DEFAULT_IO = 16;
 
   private
     boards: TObjectDictionary<Cardinal, TRCSBoard>;

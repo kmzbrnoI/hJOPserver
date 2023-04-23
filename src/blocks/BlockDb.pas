@@ -1127,7 +1127,7 @@ var tmpMax: Integer;
 begin
   tmpMax := Max(Integer(RCSi.GetModuleInputsCountSafe(addr)) - 1, 0);
   if (currentValue > tmpMax) then
-    Result := 255 // max value defined in TechnologieRCS.TRCSAddr.port
+    Result := TRCS._MODULE_DEFAULT_IO-1
   else
     Result := tmpMax;
 end;
@@ -1137,7 +1137,7 @@ var tmpMax: Integer;
 begin
   tmpMax := Max(Integer(RCSi.GetModuleOutputsCountSafe(addr)) - 1, 0);
   if (currentValue > tmpMax) then
-    Result := 255 // max value defined in TechnologieRCS.TRCSAddr.port
+    Result := TRCS._MODULE_DEFAULT_IO-1
   else
     Result := tmpMax;
 end;
