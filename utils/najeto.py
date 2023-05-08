@@ -67,7 +67,7 @@ if __name__ == '__main__':
             forward: float = round(hv.end_forward - hv.start_forward, 2)
             backward: float = round(hv.end_backward - hv.start_backward, 2)
             assert (forward*backward) >= 0, f'HV {hv.address} has different signs for directions!'
-            if forward > 0 and backward > 0:
+            if forward > 0 or backward > 0:
                 writer.writerow([hv.address, hv.name, hv.owner, forward, backward])
-            elif forward < 0 and backward < 0:
+            elif forward < 0 or backward < 0:
                 print(f'Omitting {hv.address} ({hv.name}) - negative diff')
