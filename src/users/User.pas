@@ -75,7 +75,7 @@ type
     function ComparePasswd(plain: string): Boolean; overload;
     class function ComparePasswd(plain: string; hash: string; salt: string): Boolean; overload;
     // check password match; return true iff match
-    class function GenerateHash(plain: AnsiString): string;
+    class function GenerateHash(plain: string): string;
     class function NameComparer(): IComparer<TUser>;
   end; // class TUser
 
@@ -201,7 +201,7 @@ procedure TUser.SetPasswd(passwd: string);
 begin
   // hash password 2 times
   Self.fsalt := Self.GenSalt();
-  Self.fpasswd := TUser.GenerateHash(AnsiString(TUser.GenerateHash(AnsiString(passwd)) + Self.fsalt));
+  Self.fpasswd := TUser.GenerateHash(TUser.GenerateHash(passwd) + Self.fsalt);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -227,10 +227,10 @@ end;
 
 class function TUser.ComparePasswd(plain: string; hash: string; salt: string): Boolean;
 begin
-  Result := (hash = TUser.GenerateHash(AnsiString(LowerCase(plain + salt))));
+  Result := (hash = TUser.GenerateHash(LowerCase(plain + salt)));
 end;
 
-class function TUser.GenerateHash(plain: AnsiString): string;
+class function TUser.GenerateHash(plain: string): string;
 begin
   Result := LowerCase(System.hash.THashSHA2.GetHashString(plain, SHA256));
 end;
