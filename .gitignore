@@ -57,5 +57,6 @@ __history/
 # Castalia statistics file
 *.stat
 
-outunit/
-output/
+outunit
+output
+releases
