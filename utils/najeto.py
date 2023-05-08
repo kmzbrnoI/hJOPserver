@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Calculate elapsed distance based on hJOP HV csv output.
 """
@@ -19,7 +21,7 @@ class HV:
 
 if __name__ == '__main__':
     if len(sys.argv) < 4:
-        sys.stderr.write(f'Usage: {sys.argv[0]} start.csv end.csv output.csv')
+        sys.stderr.write(f'Usage: {sys.argv[0]} start.csv end.csv output.csv\n')
         sys.exit(1)
 
     start_fn, end_fn, out_fn = sys.argv[1:]
