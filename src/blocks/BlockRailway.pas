@@ -1170,8 +1170,6 @@ begin
     if (blkRT.Train = Self.Train) and (blkRT.bpError) then
       bpError := true;
 
-  var blk := Self.Train.front as TBlk;
-
   if (trainPredict) then
     fg := clYellow
   else if (bpError) then

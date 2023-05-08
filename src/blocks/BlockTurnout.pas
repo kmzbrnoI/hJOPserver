@@ -1685,9 +1685,8 @@ end;
 procedure TBlkTurnout.MovingUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
   UPO_EscCallback: TNotifyEvent);
 var UPO: TUPOItems;
-  item: TUPOItem;
 begin
-  UPO := TList<TUPOItem>.Create;
+  UPO := TList<TUPOItem>.Create();
   try
     if (Self.note <> '') then
       UPO.Add(JCBarrierToMessage(JCBarrier(barBlockNote, Self)));

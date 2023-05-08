@@ -8,7 +8,7 @@ uses Windows, SysUtils, Forms, jclPEImage;
  function LastBuildDate(): string;
  function LastBuildTime(): string;
 
- const _RELEASE: Boolean = false;
+ const _RELEASE: Boolean = true;
 
 implementation
 
