@@ -1797,7 +1797,10 @@ begin
     signal := TBlkSignal(Trains[Self.train].PredictedSignal());
     if (signal <> nil) then
     begin
-      Result := signal.name + ';' + IntToStr(Integer(signal.targetSignal));
+      var code: TBlkSignalCode := signal.targetSignal;
+      if ((code = ncPosunZaj) or (code = ncPosunNezaj)) then
+        code := ncStuj; // do not transmit shunting allowed signals
+      Result := signal.name + ';' + IntToStr(Integer(code));
     end
     else
       Result := '-;-';
