@@ -225,11 +225,15 @@ uses
 
   LogInit();
   if (not FileExists(_INIDATA_FN)) then
+  begin
+    Logging.log(_INIDATA_FN + ' neexistuje, vytvářím adresářovou strukturu...', llWarning);
     Config.CreateCfgDirs();
+  end;
 
   var inidata: TMemIniFile := nil;
   try
     inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
+
     F_splash.AddStav('Načítám preload knihovny...');
     try
       preload.Preload(inidata, 'LD_Preload');

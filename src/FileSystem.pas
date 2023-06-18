@@ -70,6 +70,11 @@ var read, read2: string;
 begin
   F_Splash.AddStav('Načítám konfiguraci...');
 
+  if (not inidata.SectionExists(_INIDATA_PATHS_DATA_SECTION)) then
+    Logging.log(_INIDATA_FN + ': neexistuje sekce ' + _INIDATA_PATHS_DATA_SECTION, llWarning);
+  if (not inidata.SectionExists(_INIDATA_PATHS_STATE_SECTION)) then
+    Logging.log(_INIDATA_FN + ': neexistuje sekce ' + _INIDATA_PATHS_STATE_SECTION, llWarning);
+
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', 'data\konfigurace.ini');
   try
     GlobalConfig.LoadCfgFromFile(read);
@@ -201,7 +206,6 @@ begin
 end;
 
 procedure TConfig.CompleteSaveToFile(inidata: TMemIniFile);
-var tmpStr: string;
 begin
   inidata.EraseSection(_INIDATA_PATHS_DATA_SECTION);
   inidata.EraseSection(_INIDATA_PATHS_STATE_SECTION);
@@ -317,6 +321,7 @@ begin
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_HV_state.Text);
     inidata.WriteBool('Log', 'console', F_Options.CHB_Log_console.Checked);
 
+    var tmpStr: string;
     if (Areas.status_filename = '') then
       tmpStr := 'stav\or_stav.ini'
     else
