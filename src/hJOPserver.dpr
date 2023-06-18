@@ -167,9 +167,6 @@ uses
 
 {$R *.res}
 
-var
-  inidata: TMemIniFile;
-
  begin
   F_Main := nil;
   Application.OnException := AppEvents.OnAppException;
@@ -230,6 +227,7 @@ var
   if (not FileExists(_INIDATA_FN)) then
     Config.CreateCfgDirs();
 
+  var inidata: TMemIniFile := nil;
   try
     inidata := TMeminifile.Create(_INIDATA_FN, TEncoding.UTF8);
     F_splash.AddStav('Načítám preload knihovny...');
@@ -241,16 +239,13 @@ var
     end;
 
     F_splash.AddStav('Načítám data...');
-    try
-      Config.CompleteLoadFromFile(inidata);
-    finally
-      inidata.UpdateFile();
-      inidata.Free();
-    end;
+    Config.CompleteLoadFromFile(inidata);
   except
     on E:Exception do
       AppEvents.LogException(E, 'CompleteLoadFromFile');
   end;
+  if (inidata <> nil) then
+    inidata.Free();
 
   F_Main.OnStart();
   F_splash.Close();
