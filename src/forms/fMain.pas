@@ -1979,13 +1979,13 @@ begin
           AppEvents.LogException(E, 'Save Trakce');
       end;
 
-      ini.WriteInteger('Log', 'main-file-loglevel', Self.CB_global_loglevel_file.ItemIndex);
-      ini.WriteInteger('Log', 'main-table-loglevel', Self.CB_global_loglevel_table.ItemIndex);
-      ini.WriteBool('Log', 'rcs', Self.CHB_log_rcs.Checked);
-      ini.WriteBool('Log', 'auth', Self.CHB_log_auth.Checked);
+      ini.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-file-loglevel', Self.CB_global_loglevel_file.ItemIndex);
+      ini.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-table-loglevel', Self.CB_global_loglevel_table.ItemIndex);
+      ini.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'rcs', Self.CHB_log_rcs.Checked);
+      ini.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'auth', Self.CHB_log_auth.Checked);
 
-    finally
       ini.UpdateFile();
+    finally
       ini.Free();
     end;
   except
@@ -2000,8 +2000,8 @@ begin
       ModCas.SaveData(ini);
       ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.AllNames());
       ini.WriteBool('RCS', 'ShowOnlyActive', Self.CHB_RCS_Show_Only_Active.Checked);
-    finally
       ini.UpdateFile();
+    finally
       ini.Free();
     end;
   except
@@ -2632,10 +2632,10 @@ var inidata: TMemIniFile;
 begin
   inidata := TMemIniFile.Create(_INIDATA_FN, TEncoding.UTF8);
   try
-    Self.CB_global_loglevel_file.ItemIndex := inidata.ReadInteger('Log', 'main-file-loglevel', 3);
-    Self.CB_global_loglevel_table.ItemIndex := inidata.ReadInteger('Log', 'main-table-loglevel', 3);
-    Self.CHB_log_rcs.Checked := inidata.ReadBool('Log', 'rcs', false);
-    Self.CHB_log_auth.Checked := inidata.ReadBool('Log', 'auth', false);
+    Self.CB_global_loglevel_file.ItemIndex := inidata.ReadInteger(_INIDATA_PATHS_LOG_SECTION, 'main-file-loglevel', 3);
+    Self.CB_global_loglevel_table.ItemIndex := inidata.ReadInteger(_INIDATA_PATHS_LOG_SECTION, 'main-table-loglevel', 3);
+    Self.CHB_log_rcs.Checked := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'rcs', false);
+    Self.CHB_log_auth.Checked := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'auth', false);
 
     RCSi.Log := Self.CHB_log_rcs.Checked;
     Logging.auth_logging := Self.CHB_Log_Auth.Checked;

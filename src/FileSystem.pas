@@ -8,6 +8,7 @@ uses
 const
   _INIDATA_PATHS_DATA_SECTION = 'PathsData';
   _INIDATA_PATHS_STATE_SECTION = 'PathsState';
+  _INIDATA_PATHS_LOG_SECTION = 'Log';
 
 type
   EFileNotFound = class(Exception);
@@ -83,7 +84,7 @@ begin
       AppEvents.LogException(e);
   end;
 
-  F_Options.CHB_Log_console.Checked := inidata.ReadBool('Log', 'console', true);
+  F_Options.CHB_Log_console.Checked := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'console', true);
 
   F_Splash.AddStav('Načítám uživatele...');
   try
@@ -319,7 +320,7 @@ begin
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'users', UsrDB.filenameStat);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'lok', F_Main.E_dataload_HV_dir.Text);
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_HV_state.Text);
-    inidata.WriteBool('Log', 'console', F_Options.CHB_Log_console.Checked);
+    inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'console', F_Options.CHB_Log_console.Checked);
 
     var tmpStr: string;
     if (Areas.status_filename = '') then
