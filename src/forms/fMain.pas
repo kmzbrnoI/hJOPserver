@@ -1556,7 +1556,7 @@ begin
     if (blk = nil) then
       Exit();
 
-    Self.MI_BlockState.Enabled := (blk <> nil) and ((blk.typ = btTurnout) or (blk.typ = btTrack) or (blk.typ = btRT) or (blk.typ = btCrossing) or (blk.typ = btSignal));
+    Self.MI_BlockState.Enabled := (blk <> nil) and ((blk.typ = btTurnout) or (blk.typ = btTrack) or (blk.typ = btRT) or (blk.typ = btCrossing) or (blk.typ = btSignal) or (blk.typ = btRailway));
     Self.MI_Houk.Enabled := (blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT));
     Self.MI_Prop.Enabled := true;
   end;
