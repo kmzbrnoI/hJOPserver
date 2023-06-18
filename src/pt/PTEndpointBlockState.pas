@@ -92,7 +92,7 @@ begin
 
  if (not reqJson.Contains('blockState')) then
   begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce blokStav');
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce blockState');
    Exit();
   end;
 

@@ -183,6 +183,7 @@ type
 
     function CurrentEventIndex(): Integer;
     function CanIDoRNZ(): Boolean;
+    function CanSTUJ(): Boolean;
 
     procedure UnregisterAllEvents();
     function IsChanging(): Boolean;
@@ -274,6 +275,7 @@ type
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
+    procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); override;
 
   end;
 
@@ -300,7 +302,7 @@ uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSigna
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
   predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO, TCPAreasRef,
-  TrainSpeed, ConfSeq;
+  TrainSpeed, ConfSeq, PTUtils;
 
 constructor TBlkSignal.Create(index: Integer);
 begin
@@ -1210,7 +1212,7 @@ begin
     Result := Result + '-,';
   end;
 
-  if ((Self.signal > ncStuj) and (not Self.autoblok)) then
+  if (Self.CanSTUJ()) then
     Result := Result + 'STUJ,';
 
   if (Self.signal = ncPrivol) then
@@ -1838,6 +1840,11 @@ begin
   Result := Self.m_state.toRnz.Count > 0;
 end;
 
+function TBlkSignal.CanSTUJ(): Boolean;
+begin
+  Result := (Self.targetSignal <> ncStuj) and (Self.targetSignal <> ncZhasnuto) and (not Self.autoblok);
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSignal.RemoveBlkFromRnz(blkId: Integer);
@@ -1879,7 +1886,54 @@ end;
 procedure TBlkSignal.GetPtState(json: TJsonObject);
 begin
   json['signal'] := Self.signal;
+  json['targetSignal'] := Self.targetSignal;
+  json['selected'] := Self.selected;
+  json['ab'] := Self.ab;
+  json['zam'] := Self.ZAM;
+  if (Self.ABJC <> nil) then
+    json['abjc'] := Self.ABJC.id;
+  if (Self.privol <> nil) then
+    json['pnjc'] := Self.privol.id;
 end;
+
+procedure TBlkSignal.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
+begin
+  if (reqJson.Contains('signal')) then
+  begin
+    if (not Self.enabled) then
+    begin
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Neaktivni blok');
+      inherited;
+      Exit();
+    end;
+
+    if (reqJson.I['signal'] = Integer(TBlkSignalCode.ncStuj)) then
+    begin
+      if (Self.targetSignal <> ncStuj) then
+      begin
+        if (Self.CanSTUJ()) then
+          Self.signal := ncStuj
+        else
+          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Nelze prestavit do STUJ');
+      end;
+    end else if (reqJson.I['signal'] = Integer(TBlkSignalCode.ncPrivol)) then
+    begin
+      if (Self.targetSignal <> ncPrivol) then
+      begin
+        if ((Self.m_spnl.symbolType = TBlkSignalSymbol.main) and (Self.targetSignal = ncStuj) and
+            (JCDb.FindJCActivating(Self.id) = nil) and (not Self.autoblok) and ((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1))) then
+        begin
+          Self.signal := ncPrivol;
+        end else
+          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Nelze rozsvitit PN');
+      end;
+    end else
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Nepodorovana navest');
+  end;
+
+  inherited;
+end;
+
 
 /// /////////////////////////////////////////////////////////////////////////////
 
