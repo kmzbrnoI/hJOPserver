@@ -362,7 +362,7 @@ begin
 
     F_Options.CHB_povolit_spusteni.Checked := ini.ReadBool('SystemCfg', 'AutSpusteni', false);
     if (F_Options.CHB_povolit_spusteni.Checked) then
-      F_Main.KomunikacePocitani := 1;
+      F_Main.autostart.state := asEnabled;
     GlobalConfig.scale := ini.ReadInteger('SystemCfg', 'scale', 120);
 
     ModCas.LoadData(ini);

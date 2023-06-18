@@ -37,7 +37,7 @@ end;
 procedure TF_AutoStartSystems.B_AbortClick(Sender: TObject);
 begin
   Log('Automaticke pripojovani k systemum selhalo - vstup uzivatele', llInfo);
-  F_Main.KomunikacePocitani := 0;
+  F_Main.autostart.state := asDisabled;
   F_AutoStartSystems.Close;
 end;
 

@@ -42,6 +42,8 @@ const
 
 type
 
+  TAutostartState = (asDisabled, asEnabled, asWaiting);
+
   TF_Main = class(TForm)
     T_Main: TTimer;
     Menu_1: TMainMenu;
@@ -400,7 +402,6 @@ type
     procedure LV_SoupravyCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
   private
-    KomunikaceGo: TdateTime;
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
 
@@ -412,7 +413,11 @@ type
     procedure WMEndSession(var Msg: TWMEndSession); message WM_ENDSESSION;
 
   public
-    KomunikacePocitani: Shortint;
+    autostart: record
+      goTime: TDateTime;
+      state: TAutostartState;
+    end;
+
     CloseMessage: Boolean; // jestli se ptat uzivatele na ukonceni SW
     NUZClose: Boolean; // flag hard ukonceni SW bez kontroly pripojeni k systemum a zobrazeni dialogu
     sb1Log: Boolean;
@@ -420,9 +425,9 @@ type
     procedure CloseForm();
     procedure RepaintObjects();
     procedure LoadIniLibData();
-    procedure DetekujAutSpusteniSystemu();
+    procedure AutostartUpdate();
     procedure OnStart();
-    procedure VypisDatumCas();
+    procedure ShowDateTime();
     procedure LogStatus(str: string);
     procedure DisableRemoveButtons();
     procedure SetCallMethod(Method: TNotifyEvent);
@@ -1469,9 +1474,9 @@ procedure TF_Main.T_MainTimer(Sender: TObject);
 begin
   try
     SS.Update();
-    DetekujAutSpusteniSystemu;
+    AutostartUpdate();
     Blocks.Update();
-    VypisDatumCas();
+    ShowDateTime();
     ModCas.Update();
     JCDb.Update();
     MultiJCDb.Update();
@@ -2639,36 +2644,35 @@ begin
   end;
 end;
 
-procedure TF_Main.DetekujAutSpusteniSystemu();
+procedure TF_Main.AutostartUpdate();
 begin
-  if (KomunikacePocitani <> 0) then
+  if (Self.autostart.state = asDisabled) then
+    Exit();
+  if (GetFunctions.GetSystemStart()) then
   begin
-    if (not GetFunctions.GetSystemStart) then
+    Self.autostart.state := asDisabled;
+    Exit();
+  end;
+
+  F_AutoStartSystems.L_Cas.Caption := FormatDateTime('ss', Now - Self.autostart.goTime);
+  if (Self.autostart.state = asEnabled) then
+  begin
+    Log('Probiha automaticke pripojovani k systemum - t=6s', llInfo);
+    F_AutoStartSystems.Show();
+    Self.autostart.goTime := Now + EncodeTime(0, 0, 6, 0);
+    Self.autostart.state := asWaiting;
+  end else if (Self.autostart.state = asWaiting) then begin           
+    if (Round((Now - Self.autostart.goTime) * 24 * 3600) = 0) then
     begin
-      F_AutoStartSystems.L_Cas.Caption := FormatDateTime('ss', Now - KomunikaceGo);
-      if (not F_AutoStartSystems.Showing) then
-      begin
-        Log('Probiha automaticke pripojovani k systemum - t=6s', llInfo);
-        F_AutoStartSystems.Show;
-      end;
-      if (KomunikacePocitani = 1) then
-      begin
-        KomunikaceGo := Now + EncodeTime(0, 0, 6, 0);
-        KomunikacePocitani := 2;
-      end else begin
-        if (Round((Now - KomunikaceGo) * 24 * 3600) = 0) then
-        begin
-          Log('Automaticke pripojovani k systemum - t=0 - zapinam systemy', llInfo);
-          F_AutoStartSystems.Close;
-          KomunikacePocitani := 0;
-          F_Main.A_System_StartExecute(nil);
-        end;
-      end; // else not KomunikacePocitani
-    end; // if (not GetFunctions.GetSystemStart) and ...
-  end; // if KomunikacePocitani <> -1
+      Log('Automaticke pripojovani k systemum - t=0 - zapinam systemy', llInfo);
+      F_AutoStartSystems.Close();
+      Self.autostart.state := asDisabled;
+      F_Main.A_System_StartExecute(nil);
+    end;
+  end;
 end;
 
-procedure TF_Main.VypisDatumCas();
+procedure TF_Main.ShowDateTime();
 begin
   P_Date.Caption := FormatDateTime('dd. mm. yyyy', Now);
   P_Time.Caption := FormatDateTime('hh:mm:ss', Now);
