@@ -158,7 +158,7 @@ type
 implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCS, UPO,
-  Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert, FileSystem;
+  Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert, Config;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin

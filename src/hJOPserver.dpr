@@ -38,7 +38,7 @@ uses
   ownConvert in 'helpers\ownConvert.pas',
   TechnologieRCS in 'hw\TechnologieRCS.pas',
   TechnologieJC in 'jc\TechnologieJC.pas',
-  FileSystem in 'FileSystem.pas',
+  Config in 'Config.pas',
   fConsole in 'forms\fConsole.pas' {F_Console},
   Block in 'blocks\Block.pas',
   BlockTurnout in 'blocks\BlockTurnout.pas',

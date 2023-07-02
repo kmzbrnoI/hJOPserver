@@ -112,7 +112,6 @@ uses fMain, DataHV, area, appEv, Trakce, TechnologieTrakce;
 /// /////////////////////////////////////////////////////////////////////////////
 
 constructor THVDb.Create();
-var i: Integer;
 begin
   inherited Create();
 
@@ -125,17 +124,16 @@ begin
   Self.mAcquiring := false;
   Self.mReleasing := false;
 
-  // ukazatele nastavit na nil
-  for i := 0 to _MAX_ADDR - 1 do
+  for var i := 0 to _MAX_ADDR - 1 do
     Self.HVs[i] := nil;
-end; // ctor
+end;
 
 destructor THVDb.Destroy();
 begin
   Self.tLocoUpdate.Free();
   Self.Clear();
   inherited;
-end; // dtor
+end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

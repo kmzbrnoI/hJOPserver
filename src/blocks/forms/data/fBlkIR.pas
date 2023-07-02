@@ -43,7 +43,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BlockDb, Block, DataBloky;
+uses GetSystems, TechnologieRCS, BlockDb, Block, DataBloky;
 
 {$R *.dfm}
 

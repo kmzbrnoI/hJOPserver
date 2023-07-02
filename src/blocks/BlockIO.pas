@@ -107,7 +107,7 @@ type
 
 implementation
 
-uses AreaDb, TCPServerPanel, ownConvert, FileSystem;
+uses AreaDb, TCPServerPanel, ownConvert, Config;
 
 constructor TBlkIO.Create(index: Integer);
 begin

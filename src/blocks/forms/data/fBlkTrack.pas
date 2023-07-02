@@ -63,7 +63,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, BoosterDb, DataBloky,
+uses GetSystems, TechnologieRCS, BoosterDb, DataBloky,
   Booster, Area;
 
 {$R *.dfm}

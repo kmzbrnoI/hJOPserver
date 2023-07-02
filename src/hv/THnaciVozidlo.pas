@@ -49,7 +49,7 @@
 interface
 
 uses Trakce, Classes, SysUtils, Area, Generics.Collections, IdContext,
-  IniFiles, JsonDataObjects, FileSystem, Math;
+  IniFiles, JsonDataObjects, Math;
 
 const
   _HV_FUNC_MAX = 28; // maximalni funkcni cislo; funkce zacinaji na cisle 0
@@ -284,7 +284,7 @@ implementation
 
 uses ownStrUtils, AreaDb, THVDatabase, TrainDb, DataHV, fRegulator, BlockDb,
   RegulatorTCP, fMain, PTUtils, TCPServerPanel, appEv, Logging, TechnologieTrakce,
-  ownConvert, BlockSignal, IfThenElse, TCPAreasRef;
+  ownConvert, BlockSignal, IfThenElse, TCPAreasRef, Config;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

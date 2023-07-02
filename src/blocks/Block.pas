@@ -138,7 +138,7 @@ type
 
 implementation
 
-uses BlockDb, DataBloky, appEv, ownStrUtils, Diagnostics, FileSystem;
+uses BlockDb, DataBloky, appEv, ownStrUtils, Diagnostics, Config;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

@@ -107,7 +107,7 @@ var
 
 implementation
 
-uses GetSystems, FileSystem, TechnologieRCS, Block, DataBloky, Area, ifThenElse;
+uses GetSystems, TechnologieRCS, Block, DataBloky, Area, ifThenElse;
 
 {$R *.dfm}
 

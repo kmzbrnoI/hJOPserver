@@ -57,7 +57,7 @@ var
 
 implementation
 
-uses Logging, TCPServerPanel, THVDatabase, appEv, FileSystem, PTUtils, ownStrUtils;
+uses Logging, TCPServerPanel, THVDatabase, appEv, PTUtils, ownStrUtils, Config;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

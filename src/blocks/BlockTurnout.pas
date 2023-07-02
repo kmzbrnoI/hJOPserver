@@ -290,7 +290,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
-  IfThenElse, RCSErrors, BlockPst, FileSystem, ConfSeq, JCBarriers;
+  IfThenElse, RCSErrors, BlockPst, ConfSeq, JCBarriers, Config;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin

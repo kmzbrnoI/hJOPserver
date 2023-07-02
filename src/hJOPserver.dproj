@@ -211,7 +211,7 @@
         <DCCReference Include="helpers\ownConvert.pas"/>
         <DCCReference Include="hw\TechnologieRCS.pas"/>
         <DCCReference Include="jc\TechnologieJC.pas"/>
-        <DCCReference Include="FileSystem.pas"/>
+        <DCCReference Include="Config.pas"/>
         <DCCReference Include="forms\fConsole.pas">
             <Form>F_Console</Form>
         </DCCReference>
