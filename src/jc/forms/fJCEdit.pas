@@ -883,7 +883,7 @@ begin
     begin
       if ((block.typ = btSignal) and ((TBlkSignal(block).track = nil) or
         (TBlkSignal(block).track.id = lastTrackId) or
-        ((railway <> nil) and (railway.HasAutoblokSignal(block))))) then
+        ((railway <> nil) and ((railway.HasAutoblokSignal(block)) or (block = railway.signalA) or (block = railway.signalB))))) then
       begin
         Self.CB_Next_Signal.Items.Add(block.name);
         Self.CB_NextSignalIds.Add(block.id);
