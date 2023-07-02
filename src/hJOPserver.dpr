@@ -163,7 +163,8 @@ uses
   fTrainSpeed in 'forms\fTrainSpeed.pas' {F_TrainSpeed},
   ConfSeq in 'ConfSeq.pas',
   fBlkCrossingState in 'blocks\forms\state\fBlkCrossingState.pas' {F_BlkCrossingState},
-  fBlkSignalState in 'blocks\forms\state\fBlkSignalState.pas' {F_BlkSignalState};
+  fBlkSignalState in 'blocks\forms\state\fBlkSignalState.pas' {F_BlkSignalState},
+  PTEndpointStatus in 'pt\PTEndpointStatus.pas';
 
 {$R *.res}
 

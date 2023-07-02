@@ -112,7 +112,7 @@ uses Logging, appEv, fMain,
       PTEndpointBlock, PTEndpointBlocks, PTEndpointBlockState, PTEndpointJC,
       PTEndpointLok, PTEndpointLoks, PTEndpointLokState, PTEndpointJCs,
       PTEndpointJCStav, PTEndpointTrains, PTEndpointTrain, PTEndpointUsers,
-      PTEndpointUser, PTEndpointAreas, PTEndpointArea;
+      PTEndpointUser, PTEndpointAreas, PTEndpointArea, PTEndpointStatus;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -192,6 +192,7 @@ begin
  Self.endpoints.Add(TPTEndpointUserAuth.Create());
  Self.endpoints.Add(TPTEndpointAreas.Create());
  Self.endpoints.Add(TPTEndpointArea.Create());
+ Self.endpoints.Add(TPTEndpointStatus.Create());
 end;
 
 destructor TPtServer.Destroy();

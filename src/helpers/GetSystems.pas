@@ -45,7 +45,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TGetFunctions.GetSystemStart: Boolean;
+function TGetFunctions.GetSystemStart(): Boolean;
  begin
   try
     Result := ((TrakceI.ConnectedSafe()) and (RCSi.ready) and (PanelServer.openned) and (RCSi.NoExStarted));
