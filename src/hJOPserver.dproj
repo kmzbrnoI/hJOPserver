@@ -243,7 +243,7 @@
         <DCCReference Include="blocks\BlockLinker.pas"/>
         <DCCReference Include="trains\Train.pas"/>
         <DCCReference Include="trains\TrainDb.pas"/>
-        <DCCReference Include="tables\DataSpr.pas"/>
+        <DCCReference Include="tables\DataTrains.pas"/>
         <DCCReference Include="users\User.pas"/>
         <DCCReference Include="users\UserDb.pas"/>
         <DCCReference Include="tables\DataUsers.pas"/>

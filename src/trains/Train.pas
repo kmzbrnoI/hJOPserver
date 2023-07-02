@@ -10,6 +10,7 @@ uses IniFiles, SysUtils, Classes, Forms, THnaciVozidlo, JsonDataObjects,
 
 const
   _MAX_TRAIN_HV = 4;
+  _TRAVELED_REFRESH_PERIOD_MS = 980;
 
 type
   ENotInRailway = class(Exception);
@@ -73,6 +74,8 @@ type
     fAcquiring: Boolean;
     _speedOverride: TTrainSpeedOverride;
     _emergencyStopped: Boolean;
+    _traveled: Real; // never decreasing (for distance rrEvents); in meters
+    _nextTraveledChange: TDateTime;
 
      procedure Init(index: Integer);
      procedure LoadFromFile(ini: TMemIniFile; const section: string);
@@ -166,6 +169,8 @@ type
      procedure RucUPO(AContext: TIdContext; ref: TObject = nil; callbackOk: TNotifyEvent = nil; callbackEsc: TNotifyEvent = nil);
      function IsAnyHVRuc(): Boolean;
 
+     procedure UpdateTraveled(msSinceLastUpdate: Cardinal);
+
      property index: Integer read findex;
      property sdata: TTrainData read data;
 
@@ -190,6 +195,7 @@ type
      property maxSpeedStep: Cardinal read GetMaxSpeedStep;
      property acquiring: Boolean read fAcquiring;
      property emergencyStopped: Boolean read _emergencyStopped;
+     property traveled: Real read _traveled;
 
      // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
      class procedure UvolV(old: TTrainHVs; new: TTrainHVs);
@@ -198,11 +204,11 @@ type
 
 implementation
 
-uses THVDatabase, ownStrUtils, TrainDb, BlockTrack, DataSpr, appEv,
+uses THVDatabase, ownStrUtils, TrainDb, BlockTrack, appEv,
       DataHV, AreaDb, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
       fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
-      TCPAreasRef, JCBarriers;
+      TCPAreasRef, JCBarriers, Config;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -244,6 +250,8 @@ begin
  Self.data.announcementPlayed := false;
  Self.fAcquiring := false;
  Self._emergencyStopped := false;
+ Self._traveled := 0;
+ Self._nextTraveledChange := 0;
 end;
 
 destructor TTrain.Destroy();
@@ -1270,6 +1278,7 @@ begin
  if (Self.data.areaTo <> nil) then
    json['areaTo'] := TArea(Self.data.areaTo).id;
  json['announcement'] := Self.data.announcement;
+ json.F['traveled'] := Self.traveled;
 
  for blkId in Self.data.podj.Keys do
    Self.data.podj[blkId].GetPtData(json.O['podj'].O[IntToStr(blkId)]);
@@ -1617,6 +1626,22 @@ begin
     if ((Assigned(HVDb[addr])) and (HVDb[addr].ruc)) then
       Exit(true);
   Result := false;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrain.UpdateTraveled(msSinceLastUpdate: Cardinal);
+begin
+  if (Self.speed = 0) then
+    Exit();
+
+  Self._traveled := Self._traveled + (Self.speed * Integer(msSinceLastUpdate) / (3.6 * GlobalConfig.scale * 1000));
+
+  if (Now > Self._nextTraveledChange) then
+  begin
+    Self.changed := true;
+    Self._nextTraveledChange := Now + EncodeTime(0, 0, _TRAVELED_REFRESH_PERIOD_MS div 1000, _TRAVELED_REFRESH_PERIOD_MS mod 1000);
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -4313,6 +4313,9 @@ object F_Main: TF_Main
           end
           item
             Caption = 'Stani'#269'n'#237' hl'#225#353'en'#237
+          end
+          item
+            Caption = 'Najeto metr'#367
           end>
         DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET

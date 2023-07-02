@@ -1486,6 +1486,7 @@ begin
     RCSd.Update();
     TrakceI.Update();
     ABlist.Update();
+    trains.UpdateTraveled(Self.T_Main.Interval);
   except
     on E: Exception do
     begin

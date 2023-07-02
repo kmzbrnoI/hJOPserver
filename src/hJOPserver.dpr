@@ -66,7 +66,7 @@ uses
   BlockLinker in 'blocks\BlockLinker.pas',
   Train in 'trains\Train.pas',
   TrainDb in 'trains\TrainDb.pas',
-  DataSpr in 'tables\DataSpr.pas',
+  DataTrains in 'tables\DataTrains.pas',
   User in 'users\User.pas',
   UserDb in 'users\UserDb.pas',
   DataUsers in 'tables\DataUsers.pas',
