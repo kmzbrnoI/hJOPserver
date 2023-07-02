@@ -34,6 +34,7 @@ type
       sprUsekIndex: Integer; ok: TCb; err: TCb): TTrain; overload;
     function Add(Train: TJsonObject; ok: TCb; err: TCb): TTrain; overload;
     procedure Remove(index: Integer);
+    function Exists(i: Cardinal): Boolean;
 
     function GetTrainNameByIndex(index: Integer): string;
     function GetTrainIndexByName(name: string): Integer;
@@ -244,6 +245,13 @@ begin
   PanelServer.OnRemoveTrain(Self.trains[index]);
   FreeAndNil(Self.trains[index]);
   TrainTableData.reload := true;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TTrainDb.Exists(i: Cardinal): Boolean;
+begin
+  Result := (i < _MAX_TRAIN) and (Self.trains[i] <> nil);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

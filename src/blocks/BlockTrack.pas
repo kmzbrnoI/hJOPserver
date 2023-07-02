@@ -249,7 +249,7 @@ type
     property signalS: TBlk read GetSignalS; // warning: slow getter!
 
     property trainI: Integer read GetTrainI;
-    property Train: TTrain read GetTrain;
+    property train: TTrain read GetTrain;
     property trainIL: Integer read GetTrainIL;
     property trainL: TTrain read GetTrainL;
     property trainIS: Integer read GetTrainIS;
@@ -1920,7 +1920,7 @@ begin
     if (Self.m_state.currentHoukEv >= list.Count) then
       Self.houkEvEnabled := false
     else
-      list[Self.m_state.currentHoukEv].Register();
+      list[Self.m_state.currentHoukEv].Register(Self.trainL.index);
   end;
 end;
 
@@ -1942,7 +1942,7 @@ begin
 
     // aktivace prvni houkaci udalosti
     Self.m_state.currentHoukEv := 0;
-    Self.GetHoukList()[0].Register();
+    Self.GetHoukList()[0].Register(Self.trainL.index);
   end else begin
     Self.m_state.currentHoukEv := -1;
 

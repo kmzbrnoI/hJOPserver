@@ -148,6 +148,30 @@ object F_RREv: TF_RREv
       TabOrder = 1
     end
   end
+  object GB_Distance: TGroupBox
+    Left = 8
+    Top = 90
+    Width = 145
+    Height = 110
+    Caption = ' Vzd'#225'lenost '
+    TabOrder = 6
+    object Label7: TLabel
+      Left = 120
+      Top = 28
+      Width = 13
+      Height = 13
+      Caption = 'cm'
+    end
+    object E_Distance: TEdit
+      Left = 13
+      Top = 21
+      Width = 101
+      Height = 21
+      NumbersOnly = True
+      TabOrder = 0
+      Text = 'E_Distance'
+    end
+  end
   object CB_Type: TComboBox
     Left = 8
     Top = 19
@@ -159,7 +183,8 @@ object F_RREv: TF_RREv
     Items.Strings = (
       #218'sek'
       'IR '#269'idlo'
-      #268'as')
+      #268'as'
+      'Vzd'#225'lenost')
   end
   object CB_Track: TComboBox
     Left = 8

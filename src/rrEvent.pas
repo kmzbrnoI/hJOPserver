@@ -6,12 +6,16 @@ unit rrEvent;
   Typy udalosti:
   - obsazeni/uvolneni casti useku
   - zmena stavu IR cidla
-  - uplynuti urcite doby
+  - uplynuti casu
+  - ujeti vzdalenosti (od obsazeni casti useku)
 
   Definicni string udalosti:
   - usek: "typ,state,part[,track]"
   - IR: "typ,state,irid[,track]"
   - cas: "typ,timeSec[,track]"
+  - vzdalenost: "typ,distCm[,track]"
+
+  Libovolna 'part' = "*" (v definicnim stringu)
 }
 
 interface
@@ -19,15 +23,15 @@ interface
 uses Classes, SysUtils, StrUtils;
 
 type
-  TRREvType = (rrtTrack = 1, rrtIR = 2, rrtTime = 3);
+  TRREvType = (rrtTrack = 1, rrtIR = 2, rrtTime = 3, rrtDist = 4);
 
   TRREvData = record
     trackId: Integer;
 
     case typ: TRREvType of
       rrtTrack:
-        (trackPart: Cardinal;
-          trackState: Boolean;
+        (trackState: Boolean;
+         trackPart: Integer; // -1 = any part
         );
 
       rrtIR:
@@ -38,20 +42,33 @@ type
       rrtTime:
         (time: TTime;
         );
+
+      rrtDist:
+        (distanceCm: Cardinal;
+        );
   end;
 
   TRREvState = record
     triggerTime: TDateTime;
+    triggedTrainI: Integer;
+    registerDist: Real;
+    triggerDist: Real;
     enabled: Boolean;
   end;
 
   TRREv = class
+  const
+    _RR_ANY_TRACK: Integer = -1;
+
   private
     m_data: TRREvData;
     m_state: TRREvState;
     m_trackAllowed: Boolean;
 
     procedure LoadFromDefStr(data: string);
+
+    class function TrackPartFromFile(part: string): Integer;
+    class function TrackPartToFile(trackPart: Integer): string;
 
   public
 
@@ -60,7 +77,7 @@ type
 
     function GetDefStr(): string;
 
-    procedure Register();
+    procedure Register(traini: Cardinal);
     procedure Unregister();
 
     // Sender must be a valid "Usek" blok.
@@ -77,7 +94,8 @@ type
 
 implementation
 
-uses BlockDb, Block, BlockIR, BlockTrack, ownConvert, ownStrUtils, IfThenElse;
+uses BlockDb, Block, BlockIR, BlockTrack, ownConvert, ownStrUtils, IfThenElse,
+  TrainDb, Train;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -86,7 +104,7 @@ begin
   inherited Create();
   Self.m_trackAllowed := trackAllowed;
   Self.m_state.enabled := false;
-  LoadFromDefStr(data);
+  Self.LoadFromDefStr(data);
 end;
 
 constructor TRREv.Create(trackAllowed: Boolean; data: TRREvData);
@@ -101,7 +119,6 @@ end;
 
 procedure TRREv.LoadFromDefStr(data: string);
 var strs: TStrings;
-  tmpTime: Cardinal;
 begin
   strs := TStringList.Create();
 
@@ -114,7 +131,7 @@ begin
       rrtTrack:
         begin
           Self.m_data.trackState := ownConvert.StrToBool(strs[1]);
-          Self.m_data.trackPart := StrToInt(strs[2]);
+          Self.m_data.trackPart := Self.TrackPartFromFile(strs[2]);
           if (strs.Count > 3) then
             Self.m_data.trackId := StrToInt(strs[3])
           else
@@ -135,7 +152,7 @@ begin
         begin
           if (StrToIntDef(strs[1], -1) <> -1) then
           begin
-            tmpTime := StrToInt(strs[1]);
+            var tmpTime: Integer := StrToInt(strs[1]);
             Self.m_data.time := EncodeTime(0, tmpTime div 60, tmpTime mod 60, 0);
           end else begin
             Self.m_data.time := EncodeTime(0, StrToInt(LeftStr(strs[1], 2)), StrToInt(Copy(strs[1], 4, 2)),
@@ -144,6 +161,16 @@ begin
 
           if (strs.Count > 2) then
             Self.m_data.trackId := StrToInt(strs[2])
+          else
+            Self.m_data.trackId := -1;
+        end;
+
+      rrtDist:
+        begin
+          Self.m_data.distanceCm := StrToInt(strs[1]);
+          Self.m_data.trackPart := Self.TrackPartFromFile(strs[2]);
+          if (strs.Count > 3) then
+            Self.m_data.trackId := StrToInt(strs[3])
           else
             Self.m_data.trackId := -1;
         end;
@@ -159,13 +186,16 @@ begin
 
   case (Self.m_data.typ) of
     rrtTrack:
-      Result := Result + IntToStr(ownConvert.BoolToInt(m_data.trackState)) + ',' + IntToStr(m_data.trackPart);
+      Result := Result + IntToStr(ownConvert.BoolToInt(Self.m_data.trackState)) + ',' + Self.TrackPartToFile(Self.m_data.trackPart);
 
     rrtIR:
-      Result := Result + IntToStr(ownConvert.BoolToInt(m_data.irState)) + ',' + IntToStr(m_data.irId);
+      Result := Result + IntToStr(ownConvert.BoolToInt(Self.m_data.irState)) + ',' + IntToStr(Self.m_data.irId);
 
     rrtTime:
-      Result := Result + FormatDateTime('nn:ss.z', m_data.time);
+      Result := Result + FormatDateTime('nn:ss.z', Self.m_data.time);
+
+    rrtDist:
+      Result := Result + IntToStr(Self.m_data.distanceCm) + ',' + Self.TrackPartToFile(Self.m_data.trackPart);
   end;
 
   if ((Self.trackAllowed) and (Self.m_data.trackId > -1)) then
@@ -174,10 +204,23 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TRREv.Register();
+procedure TRREv.Register(traini: Cardinal);
 begin
+  Self.m_state.triggedTrainI := traini;
+
   if (Self.m_data.typ = rrtTime) then
-    Self.m_state.triggerTime := Now + m_data.time;
+    Self.m_state.triggerTime := Now + m_data.time
+  else if (Self.m_data.typ = rrtDist) then
+  begin
+    if (trains.Exists(traini)) then
+    begin
+      Self.m_state.registerDist := trains[traini].traveled;
+      Self.m_state.triggerDist := trains[traini].traveled + (Self.m_data.distanceCm / 100)
+    end else begin
+      Self.m_state.registerDist := 0;
+      Self.m_state.triggerDist := 0;
+    end;
+  end;
 
   Self.m_state.enabled := true;
 end;
@@ -188,6 +231,19 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
+
+function TrackPartState(track: TBlkTrack; trackPart: Integer): TTrackState;
+begin
+  if (trackPart = TRREv._RR_ANY_TRACK) then
+  begin
+    Result := track.occupied;
+  end else begin
+    if ((trackPart >= 0) and (trackPart < track.sectionsState.Count)) then
+      Result := track.sectionsState[trackPart]
+    else
+      Result := TTrackState.none;
+  end;
+end;
 
 function TRREv.IsTriggerred(Sender: TObject; safeState: Boolean): Boolean;
 begin
@@ -210,31 +266,26 @@ begin
             Exit();
           end;
 
-          if (Integer(m_data.trackPart) < track.sectionsState.Count) then
-          begin
-            case (track.sectionsState[m_data.trackPart]) of
-              TTrackState.occupied:
-                Result := m_data.trackState;
-              TTrackState.Free:
-                Result := not m_data.trackState;
-            else
-              Result := safeState;
-            end;
-          end
+          case (TrackPartState(track, Self.m_data.trackPart)) of
+            TTrackState.occupied:
+              Result := Self.m_data.trackState;
+            TTrackState.Free:
+              Result := not Self.m_data.trackState;
           else
             Result := safeState;
+          end;
         end;
 
       rrtIR:
         begin
-          var ir: TBlkIR := Blocks.GetBlkIrByID(m_data.irId);
+          var ir: TBlkIR := Blocks.GetBlkIrByID(Self.m_data.irId);
           if (ir = nil) then
             Exit(safeState);
           case (ir.occupied) of
             TIROccupationState.occupied:
-              Result := m_data.irState;
+              Result := Self.m_data.irState;
             TIROccupationState.Free:
-              Result := not m_data.irState;
+              Result := not Self.m_data.irState;
           else
             Result := safeState;
           end;
@@ -244,6 +295,15 @@ begin
         begin
           Result := (Now >= Self.m_state.triggerTime);
         end;
+
+      rrtDist:
+        begin
+          if (not trains.Exists(Self.m_state.triggedTrainI)) then
+            Exit(safeState);
+
+          var train: TTrain := trains[Self.m_state.triggedTrainI];
+          Result := ((train.traveled >= Self.m_state.triggerDist) or (train.traveled < Self.m_state.registerDist));
+        end
     else
       Result := safeState;
     end;
@@ -251,7 +311,6 @@ begin
   except
     Result := safeState;
   end;
-
 end;
 
 function TRREv.Track(Sender: TObject): TObject;
@@ -260,6 +319,24 @@ begin
     Result := Blocks.GetBlkTrackOrRTByID(Self.m_data.trackId)
   else
     Result := Sender;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+class function TRREv.TrackPartFromFile(part: string): Integer;
+begin
+  if (part = '*') then
+    Result := _RR_ANY_TRACK
+  else
+    Result := StrToInt(part);
+end;
+
+class function TRREv.TrackPartToFile(trackPart: Integer): string;
+begin
+  if (trackPart = _RR_ANY_TRACK) then
+    Result := '*'
+  else
+    Result := IntToStr(trackPart);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

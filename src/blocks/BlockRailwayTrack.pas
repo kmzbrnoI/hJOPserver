@@ -491,7 +491,7 @@ begin
             if (Self.m_rtSettings.stop.evL.slow.enabled) then
             begin
               if (not Self.m_rtSettings.stop.evL.slow.ev.enabled) then
-                Self.m_rtSettings.stop.evL.slow.ev.Register();
+                Self.m_rtSettings.stop.evL.slow.ev.Register(Self.train.index);
 
               if ((Self.m_rtSettings.stop.evL.slow.enabled) and
                 (Self.train.wantedSpeed > Self.m_rtSettings.stop.evL.slow.speed) and
@@ -510,7 +510,7 @@ begin
             if (Self.m_rtSettings.stop.evS.slow.enabled) then
             begin
               if (not Self.m_rtSettings.stop.evS.slow.ev.enabled) then
-                Self.m_rtSettings.stop.evS.slow.ev.Register();
+                Self.m_rtSettings.stop.evS.slow.ev.Register(Self.train.index);
 
               if ((Self.train.wantedSpeed > Self.m_rtSettings.stop.evS.slow.speed) and
                 (Self.m_rtSettings.stop.evS.slow.ev.IsTriggerred(Self, true))) then
@@ -533,7 +533,7 @@ begin
       THVSite.odd:
         begin
           if (not Self.m_rtSettings.stop.evL.stop.enabled) then
-            Self.m_rtSettings.stop.evL.stop.Register();
+            Self.m_rtSettings.stop.evL.stop.Register(Self.train.index);
 
           if (Self.m_rtSettings.stop.evL.stop.IsTriggerred(Self, true)) then
           begin
@@ -546,7 +546,7 @@ begin
       THVSite.even:
         begin
           if (not Self.m_rtSettings.stop.evS.stop.enabled) then
-            Self.m_rtSettings.stop.evS.stop.Register();
+            Self.m_rtSettings.stop.evS.stop.Register(Self.train.index);
 
           if (Self.m_rtSettings.stop.evS.stop.IsTriggerred(Self, true)) then
           begin
@@ -560,7 +560,7 @@ begin
 
     // osetreni rozjeti vlaku z nejakeho pochybneho duvodu
     // pokud se souprava rozjede, koncim zastavku
-    if ((Self.train.speed <> 0) or (not Self.Train.IsSpeedOverride())) then
+    if ((Self.train.speed <> 0) or (not Self.train.IsSpeedOverride())) then
     begin
       Self.m_rtState.stopStopped := false;
       Self.Change(); // change je dulezite volat kvuli menu
@@ -739,7 +739,7 @@ begin
   // kontrola zmeny OR trati, ve ktere jen jeden blok
   if (((Self.railway as TBlkRailway).direction >= TRailwayDirection.AtoB) and (Self.prevRT = nil) and
     (Self.nextRT = nil)) then
-    TBlkRailway(Self.railway).TrainChangeOR(Self.Train);
+    TBlkRailway(Self.railway).TrainChangeOR(Self.train);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -753,7 +753,7 @@ end;
 procedure TBlkRT.RemoveTrain(index: Integer);
 var oldTrain: TTrain;
 begin
-  oldTrain := Self.Train;
+  oldTrain := Self.train;
 
   inherited;
 
@@ -819,9 +819,9 @@ begin
     if (Self.IsTrain()) then
     begin
       conditions.Add(CSCondition(Self, 'Smazání soupravy ' + Self.train.name + ' z úseku'));
-      if ((Self.railway <> nil) and (not TBlkRailway(Self.railway).IsTrainInMoreTUs(Self.Train))) then
+      if ((Self.railway <> nil) and (not TBlkRailway(Self.railway).IsTrainInMoreTUs(Self.train))) then
         conditions.Add(CSCondition(Self.railway, 'Smazání soupravy ' + Self.train.name + ' z tratě'));
-      if (Blocks.GetBlkWithTrain(Self.Train).Count = 1) then
+      if (Blocks.GetBlkWithTrain(Self.train).Count = 1) then
         conditions.Add(CSCondition(Self, 'Smazání soupravy ' + Self.train.name + ' z kolejiště'));
     end;
 
@@ -992,7 +992,7 @@ begin
         begin
           // souprava vstoupila do posledniho bloku trati
           // zmena stanic soupravy a hnacich vozidel v ni
-          TBlkRailway(Self.railway).TrainChangeOR(Self.Train);
+          TBlkRailway(Self.railway).TrainChangeOR(Self.train);
         end;
       end else begin
         Self.AddTrainL(Self.prevRT.trainI);
@@ -1004,7 +1004,7 @@ begin
   end;
 
   // uvolnovani soupravy z TU (pokud je jiz predana do dalsiho TU)
-  if ((Self.bpInBlk) and (Self.nextRT <> nil) and (Self.nextRT.Train = Self.Train) and
+  if ((Self.bpInBlk) and (Self.nextRT <> nil) and (Self.nextRT.Train = Self.train) and
     (Self.occupied = TTrackState.Free) and (Self.nextRT.occupied = TTrackState.occupied)) then
   begin
     Self.bpInBlk := false;

@@ -1430,7 +1430,7 @@ begin
         ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(slowTrack))) and (slowTrain.direction = Self.m_spnl.direction)) then
     begin
       if (not signalEv.slow.ev.enabled) then
-        signalEv.slow.ev.Register();
+        signalEv.slow.ev.Register(slowTrain.index);
 
       if (signalEv.slow.ev.IsTriggerred(slowTrack, true)) then
       begin
@@ -1471,7 +1471,7 @@ begin
   end;
 
   if (not signalEv.stop.enabled) then
-    signalEv.stop.Register();
+    signalEv.stop.Register(train.index);
 
   if ((signalEv.stop.IsTriggerred(track, true)) or (force)) then
   // podminka IsTriggerred take resi to, ze usek musi byt obsazeny (tudiz resi vypadek useku)

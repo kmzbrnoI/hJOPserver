@@ -37,7 +37,7 @@ type
 
     function GetDefString(): string;
 
-    procedure Register();
+    procedure Register(traini: Cardinal);
     procedure Unregister();
     function CheckTriggerred(Sender: TObject): Boolean; // returns true when event triggerred
 
@@ -118,9 +118,9 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THoukEv.Register();
+procedure THoukEv.Register(traini: Cardinal);
 begin
-  m_event.Register();
+  m_event.Register(traini);
 end;
 
 procedure THoukEv.Unregister();

@@ -32,6 +32,9 @@ type
     CB_IR: TComboBox;
     CB_Track: TComboBox;
     CHB_Track: TCheckBox;
+    GB_Distance: TGroupBox;
+    E_Distance: TEdit;
+    Label7: TLabel;
     procedure CB_TypeChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -107,6 +110,7 @@ begin
   Self.GB_Track.Visible := (Self.CB_Type.ItemIndex = 0);
   Self.GB_IR.Visible := (Self.CB_Type.ItemIndex = 1);
   Self.GB_Time.Visible := (Self.CB_Type.ItemIndex = 2);
+  Self.GB_Distance.Visible := (Self.CB_Type.ItemIndex = 3);
 end;
 
 procedure TF_RREv.CHB_TrackClick(Sender: TObject);
@@ -130,6 +134,7 @@ begin
 
   Self.GB_IR.Top := Self.GB_Track.Top;
   Self.GB_Time.Top := Self.GB_Track.Top;
+  Self.GB_Distance.Top := Self.GB_Track.Top;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -147,6 +152,7 @@ begin
   Self.CB_IR_State.ItemIndex := 1;
   Self.ME_Time.Text := '00:00.0';
   Self.CB_TypeChange(Self.CB_Type);
+  Self.E_Distance.Text := '0';
   Self.UpdateTrackParts();
 end;
 
@@ -180,6 +186,12 @@ begin
       begin
         Self.CB_Type.ItemIndex := 2;
         Self.ME_Time.Text := FormatDateTime('nn:ss.z', ev.data.time);
+      end;
+
+    rrtDist:
+      begin
+        Self.CB_Type.ItemIndex := 3;
+        Self.E_Distance.Text := IntToStr(ev.data.distanceCm);
       end;
   end;
 
@@ -217,6 +229,12 @@ begin
         data.time := EncodeTime(0, StrToInt(LeftStr(Self.ME_Time.Text, 2)), StrToInt(Copy(Self.ME_Time.Text, 4, 2)),
           StrToInt(RightStr(Self.ME_Time.Text, 1)));
       end;
+
+    3:
+      begin
+        data.typ := rrtDist;
+        data.distanceCm := StrToInt(Self.E_Distance.Text);
+      end;
   end;
 
   Result := TRREv.Create(Self.trackEnabled, data);
@@ -238,6 +256,8 @@ begin
     1:
       if ((Self.CB_IR.ItemIndex < 0) or (Self.CB_IR_State.ItemIndex < 0)) then
         Exit(false);
+
+    3: Result := (StrToIntDef(Self.E_Distance.Text, -1) <> -1);
   end;
 
   Result := true;
@@ -256,6 +276,7 @@ begin
   Self.CB_Track_State.Enabled := state;
   Self.CB_IR_State.Enabled := state;
   Self.ME_Time.Enabled := state;
+  Self.E_Distance.Enabled := state;
 
   if (not state) then
   begin
@@ -266,6 +287,7 @@ begin
     Self.CB_Track_State.ItemIndex := -1;
     Self.CB_IR_State.ItemIndex := -1;
     Self.ME_Time.Text := '00:00.0';
+    Self.E_Distance.Text := '0';
   end;
 end;
 
