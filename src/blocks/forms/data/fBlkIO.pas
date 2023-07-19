@@ -31,6 +31,7 @@ type
     CHB_RCS_Output: TCheckBox;
     CHB_RCS_Output_Needed: TCheckBox;
     CHB_RCS_Input_Needed: TCheckBox;
+    CHB_AllowOutChange: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -123,6 +124,7 @@ begin
   Self.CHB_Nullable.Checked := false;
   Self.CHB_NullableClick(Self);
   Self.SE_Null_Time.Value := 0;
+  Self.CHB_AllowOutChange.Checked := false;
 
   Self.Caption := 'Nový blok Výstup';
   Self.ActiveControl := Self.E_Name;
@@ -175,6 +177,7 @@ begin
   Self.CHB_Nullable.Checked := Self.block.nullable;
   Self.SE_Null_Time.Value := settings.nullAfterSec;
   Self.CHB_NullableClick(Self);
+  Self.CHB_AllowOutChange.Checked := settings.allowOutChange;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (IO)';
   Self.ActiveControl := Self.B_Save;
@@ -289,6 +292,8 @@ begin
     settings.nullAfterSec := Self.SE_Null_Time.Value
   else
     settings.nullAfterSec := 0;
+
+  settings.allowOutChange := Self.CHB_AllowOutChange.Checked;
 
   Self.block.SetSettings(settings);
   Self.Close();

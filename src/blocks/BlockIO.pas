@@ -23,6 +23,7 @@ type
     isRCSOutput: Boolean;
     RCSoutputNeeded: Boolean;
     RCSoutput: TRCSAddr;
+    allowOutChange: Boolean;
 
     setOutputOnStart: Boolean;
     nullAfterSec: Integer;
@@ -96,6 +97,7 @@ type
     property RCSoutputNeeded: Boolean read m_settings.RCSoutputNeeded;
     property RCSinputNeeded: Boolean read m_settings.RCSinputNeeded;
     property enabled: Boolean read m_state.enabled;
+    property allowOutChange: Boolean read m_settings.allowOutChange;
     property activeOutput: Boolean read IsActiveOutput;
     property activeInput: Boolean read IsActiveInput;
     property nullable: Boolean read IsNullable;
@@ -126,6 +128,7 @@ begin
   Self.m_settings.isRCSinput := false;
 
   Self.m_settings.isRCSOutput := (ini_tech.ReadString(section, 'RCSout', '') <> '') or (ini_tech.ReadInteger(section, 'RCSb0', -1) <> -1);
+  Self.m_settings.allowOutChange := ini_tech.ReadBool(section, 'allowOutChange', Self.m_settings.isRCSOutput);
   if (Self.m_settings.isRCSOutput) then
   begin
     Self.m_settings.RCSoutput := RCSFromIni(ini_tech, section, 'RCSout', 'RCSb0', 'RCSp0');
@@ -165,6 +168,9 @@ begin
     ini_tech.WriteString(section, 'RCSout', Self.m_settings.RCSoutput.ToString());
     ini_tech.WriteBool(section, 'RCSno', Self.m_settings.RCSoutputNeeded);
   end;
+  if ((Self.isRCSOutput <> Self.allowOutChange)) then
+     ini_tech.WriteBool(section, 'allowOutChange', Self.m_settings.allowOutChange);
+
   if (Self.isRCSinput) then
   begin
     ini_tech.WriteString(section, 'RCSin', Self.m_settings.RCSinput.ToString());
@@ -299,6 +305,10 @@ begin
     except
 
     end;
+  end else if (Self.allowOutChange) then
+  begin
+    Self.m_state.outputState := TRCSOutputState.osEnabled;
+    Self.Change();
   end;
 
   if (Self.nullable) then
@@ -320,6 +330,10 @@ begin
     except
 
     end;
+  end else if (Self.allowOutChange) then
+  begin
+    Self.m_state.outputState := TRCSOutputState.osDisabled;
+    Self.Change();
   end;
 
   Self.Update();
@@ -335,7 +349,7 @@ begin
 
   if (Button = TPanelButton.ENTER) then
   begin
-    if (Self.enabled) then
+    if ((Self.enabled) and (Self.allowOutChange)) then
     begin
       try
         Self.Activate();
@@ -408,6 +422,7 @@ begin
   json['nullable'] := Self.nullable;
   if (Self.nullable) then
     json['nullTime'] := Self.m_settings.nullAfterSec;
+  json['allowOutChange'] := Self.allowOutChange;
 end;
 
 procedure TBlkIO.GetPtState(json: TJsonObject);
@@ -422,7 +437,7 @@ begin
   if (not Self.enabled) then
     Exit();
 
-  if (reqJson.Contains('activeOutput')) then
+  if ((reqJson.Contains('activeOutput')) and (Self.allowOutChange)) then
   begin
     if ((reqJson.B['activeOutput']) and (not Self.activeOutput)) then
       Self.Activate()
@@ -468,7 +483,7 @@ end;
 function TBlkIO.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
   Result := inherited;
-  if (Self.enabled) then
+  if ((Self.enabled) and (Self.allowOutChange)) then
   begin
     if (Self.activeOutput) then
       Result := Result + 'AKTIV<,'

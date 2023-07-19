@@ -4,7 +4,7 @@ object F_BlkIO: TF_BlkIO
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (IO)'
-  ClientHeight = 404
+  ClientHeight = 429
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -68,7 +68,7 @@ object F_BlkIO: TF_BlkIO
   end
   object GB_RCS_Input: TGroupBox
     Left = 7
-    Top = 132
+    Top = 148
     Width = 304
     Height = 114
     Margins.Left = 2
@@ -76,7 +76,7 @@ object F_BlkIO: TF_BlkIO
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' RCS vstup '
-    TabOrder = 5
+    TabOrder = 6
     object L_IR04: TLabel
       Left = 16
       Top = 56
@@ -148,7 +148,7 @@ object F_BlkIO: TF_BlkIO
   end
   object B_Storno: TButton
     Left = 151
-    Top = 373
+    Top = 398
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -156,12 +156,12 @@ object F_BlkIO: TF_BlkIO
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 7
+    TabOrder = 8
     OnClick = B_StornoClick
   end
   object B_Save: TButton
     Left = 240
-    Top = 373
+    Top = 398
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -170,7 +170,7 @@ object F_BlkIO: TF_BlkIO
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 8
+    TabOrder = 9
     OnClick = B_SaveClick
   end
   object CHB_Activate_On_Start: TCheckBox
@@ -202,7 +202,7 @@ object F_BlkIO: TF_BlkIO
   end
   object GB_RCS_Output: TGroupBox
     Left = 10
-    Top = 250
+    Top = 266
     Width = 304
     Height = 111
     Margins.Left = 2
@@ -210,7 +210,7 @@ object F_BlkIO: TF_BlkIO
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' RCS v'#253'stup '
-    TabOrder = 6
+    TabOrder = 7
     object Label1: TLabel
       Left = 13
       Top = 56
@@ -279,5 +279,13 @@ object F_BlkIO: TF_BlkIO
       Caption = 'Deaktivovat blok p'#345'i ztr'#225't'#283' RCS v'#253'stupu'
       TabOrder = 1
     end
+  end
+  object CHB_AllowOutChange: TCheckBox
+    Left = 8
+    Top = 120
+    Width = 184
+    Height = 17
+    Caption = 'Povolit de/aktivaci bloku z panelu'
+    TabOrder = 5
   end
 end
