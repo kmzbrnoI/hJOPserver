@@ -80,7 +80,7 @@ type
   TJCCrossingZav = record
     crossingId: Integer;
     closeTracks: TList<Integer>; // pokud se prejezd nezavira, je seznam prazdny
-    openTrack: Integer; // pokud se prejezd nezavira, je nedefinovany
+    openTrack: Integer; // pokud se prejezd nezavira, je -1
   end;
 
   /// ////////////////////////////////////////////////////////////////////////
@@ -130,6 +130,7 @@ type
     ab: Boolean; // po postaveni JC automaticky zavest AB
     crossingWasClosed: Boolean; // jiz byl vydan povel k zavreni prejezdu
     lastTrackOrRailwayOccupied: Boolean; // je obsazen posledni usek JC, nestavit navestidlo a nezavirat prejezdy
+    crossingsToClose: TList<Boolean>; // seznam prejezdu k zavreni pri aktivaci
   end;
 
   ENavChanged = procedure(Sender: TObject; origNav: TBlk) of object;
@@ -138,8 +139,8 @@ type
 
   TJC = class
   private const
-    _def_jc_staveni: TJCstate = (step: stepDefault; destroyBlock: _JC_DESTROY_NONE; destroyEndBlock: _JC_DESTROY_NONE;
-      ab: false; crossingWasClosed: false;);
+    _def_jc_state: TJCstate = (step: stepDefault; destroyBlock: _JC_DESTROY_NONE; destroyEndBlock: _JC_DESTROY_NONE;
+      ab: false; crossingWasClosed: false; crossingsToClose: nil; );
 
   private
     m_data: TJCdata;
@@ -280,8 +281,9 @@ begin
 
   Self.m_data.id := -1;
   Self.changed := true;
-  Self.m_state := _def_jc_staveni;
+  Self.m_state := _def_jc_state;
   Self.m_state.ncBariery := TList<TJCBarrier>.Create();
+  Self.m_state.crossingsToClose := TList<Boolean>.Create();
 
   Self.m_data := NewJCData();
 end;
@@ -291,15 +293,19 @@ begin
   inherited Create();
 
   Self.m_data := data;
-  Self.m_state := _def_jc_staveni;
+  Self.m_state := _def_jc_state;
   if (not Assigned(Self.m_state.ncBariery)) then
     Self.m_state.ncBariery := TList<TJCBarrier>.Create();
+  if (not Assigned(Self.m_state.crossingsToClose)) then
+    Self.m_state.crossingsToClose := TList<Boolean>.Create();
 end;
 
 destructor TJC.Destroy();
 begin
   if (Assigned(Self.m_state.ncBariery)) then
     FreeAndNil(Self.m_state.ncBariery);
+  if (Assigned(Self.m_state.crossingsToClose)) then
+    FreeAndNil(Self.m_state.crossingsToClose);
   FreeJCData(Self.m_data);
 
   inherited;
@@ -1459,23 +1465,19 @@ begin
         // crossings
         Self.m_state.crossingWasClosed := true;
         var anyClosed: Boolean := false;
+        Self.DetermineCrossingsToClose(Self.m_state.crossingsToClose);
+
         for var i: Integer := 0 to Self.m_data.crossings.Count - 1 do
         begin
           var crossingZav: TJCCrossingZav := Self.m_data.crossings[i];
-          if (crossingZav.closeTracks.Count = 0) then
+          if (crossingZav.openTrack = -1) then
             continue;
 
           var crossing: TBlkCrossing := TBlkCrossing(Blocks.GetBlkByID(crossingZav.crossingId));
-          var closed: Boolean := false;
 
-          // prejezd uzavirame jen v pripade, ze nejaky z jeho aktivacnich bloku je obsazen
-          // v pripade posunove cesty uzavirame vzdy
-
-          if (Self.typ = TJCType.shunt) then
+          if (Self.m_state.crossingsToClose[i]) then
           begin
-            // posunova cesta:
-            Self.Log('Krok 12 : prejezd ' + crossing.name + ' - uzaviram');
-
+            Self.LogStep('Prejezd ' + crossing.name + ' - uzaviram');
             crossing.zaver := true;
 
             // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
@@ -1485,37 +1487,10 @@ begin
               CreateChangeEvent(ceCaller.NullPrejezdZaver, crossingZav.crossingId)
             );
 
-            closed := true;
             anyClosed := true;
           end else begin
+            Self.LogStep('Prejezd ' + crossing.name + ' - zadny aktivacni usek neobsazen - nechavam otevreny');
 
-            // vlakova cesta:
-            for var closeTrackId: Integer in crossingZav.closeTracks do
-            begin
-              var closeTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(closeTrackId));
-              if (closeTrack.occupied = TTrackState.occupied) then
-              begin
-                Self.Log('Krok 12 : prejezd ' + crossing.name + ' - aktivacni usek ' + closeTrack.name +
-                  ' obsazen - uzaviram');
-
-                crossing.zaver := true;
-
-                // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
-                var openTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(crossingZav.openTrack));
-                openTrack.AddChangeEvent(
-                  openTrack.eventsOnZaverReleaseOrAB,
-                  CreateChangeEvent(ceCaller.NullPrejezdZaver, crossingZav.crossingId)
-                );
-
-                closed := true;
-                anyClosed := true;
-                break;
-              end;
-            end; // for j
-          end; // else posunova cesta
-
-          if (not closed) then
-          begin
             // prejezd neuzaviram -> pridam pozadavek na zavreni pri obsazeni do vsech aktivacnich useku
             for var closeTrackId: Integer in crossingZav.closeTracks do
             begin
@@ -1523,10 +1498,8 @@ begin
               if (not closeTrack.eventsOnOccupy.Contains(CreateChangeEvent(Self.TrackCloseCrossing, i))) then
                 closeTrack.AddChangeEvent(closeTrack.eventsOnOccupy, CreateChangeEvent(Self.TrackCloseCrossing, i));
             end;
-
-            Self.Log('Krok 12 : prejezd ' + crossing.name + ' - zadny aktivacni usek neobsazen - nechavam otevreny');
           end;
-        end; // for i
+        end;
 
         if (anyClosed) then
         begin
@@ -1540,17 +1513,15 @@ begin
     stepJcWaitCross:
       begin
         // kontrola stavu prejezdu
-        for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
+        for var i: Integer := 0 to Self.m_data.crossings.Count-1 do
         begin
-          if (crossingZav.closeTracks.Count = 0) then
+          if (not Self.m_state.crossingsToClose[i]) then
             continue;
 
-          var crossing: TBlkCrossing := TBlkCrossing(Blocks.GetBlkByID(crossingZav.crossingId));
-
+          var crossing: TBlkCrossing := TBlkCrossing(Blocks.GetBlkByID(Self.m_data.crossings[i].crossingId));
           if (crossing.state <> TBlkCrossingBasicState.closed) then
             Exit();
-          Self.Log('Krok 13 : prejezd ' + crossing.name + ' uzavren');
-        end; // for i
+        end;
 
         Self.LogStep('Vsechny pozadovane prejezdy uzavreny');
         Self.step := stepJcFinalZaver;
@@ -2691,34 +2662,22 @@ begin
 
   var speedsGo: string := TTrainSpeed.IniStr(Self.m_data.speedsGo);
   if (speedsGo <> '') then
-    ini.WriteString(section, 'rychDalsiN', speedsGo)
-  else
-    ini.DeleteKey(section, 'rychDalsiN');
+    ini.WriteString(section, 'rychDalsiN', speedsGo);
 
   var speedsStop: string := TTrainSpeed.IniStr(Self.m_data.speedsStop);
   if (speedsStop <> '') then
-    ini.WriteString(section, 'rychNoDalsiN', speedsStop)
-  else
-    ini.DeleteKey(section, 'rychNoDalsiN');
+    ini.WriteString(section, 'rychNoDalsiN', speedsStop);
 
   if ((Self.m_data.typ = TJCType.shunt) and (Self.m_data.signalCode <> Integer(ncPosunZaj))) then
-    ini.WriteInteger(section, 'navest', Integer(Self.m_data.signalCode))
-  else
-    ini.DeleteKey(section, 'navest');
+    ini.WriteInteger(section, 'navest', Integer(Self.m_data.signalCode));
 
-  if (Self.m_data.turn = Self.IsAnyTurnoutMinus) then
-    ini.DeleteKey(section, 'odbocka')
-  else
+  if (Self.m_data.turn <> Self.IsAnyTurnoutMinus) then
     ini.WriteBool(section, 'odbocka', Self.m_data.turn);
 
-  if (not Self.m_data.nzv) then
-    ini.DeleteKey(section, 'nzv')
-  else
+  if (Self.m_data.nzv) then
     ini.WriteBool(section, 'nzv', true);
 
-  if (Self.m_data.signalFallTrackI = 0) then
-    ini.DeleteKey(section, 'rusNavestUsek')
-  else
+  if (Self.m_data.signalFallTrackI > 0) then
     ini.WriteInteger(section, 'rusNavestUsek', Self.m_data.signalFallTrackI);
 
   if (Self.m_data.railwayId > -1) then
@@ -2734,32 +2693,30 @@ begin
 
   // turnouts
   var turnoutsStr := '';
-  for var i: Integer := 0 to Self.m_data.turnouts.Count - 1 do
-    turnoutsStr := turnoutsStr + '(' + IntToStr(Self.m_data.turnouts[i].Block) + ',' +
-      IntToStr(Integer(Self.m_data.turnouts[i].position)) + ')';
+  for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
+    turnoutsStr := turnoutsStr + '(' + IntToStr(turnoutZav.Block) + ',' + IntToStr(Integer(turnoutZav.position)) + ')';
   if (turnoutsStr <> '') then
     ini.WriteString(section, 'vyhybky', turnoutsStr);
 
   // refugees
   var refugeesStr: string := '';
-  for var i: Integer := 0 to Self.m_data.refuges.Count - 1 do
-    refugeesStr := refugeesStr + '(' + IntToStr(Self.m_data.refuges[i].Block) + ',' +
-      IntToStr(Integer(Self.m_data.refuges[i].position)) + ',' + IntToStr(Self.m_data.refuges[i].ref_blk) + ')';
+  for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
+    refugeesStr := refugeesStr + '(' + IntToStr(refugeeZav.Block) + ',' +
+      IntToStr(Integer(refugeeZav.position)) + ',' + IntToStr(refugeeZav.ref_blk) + ')';
   if (refugeesStr <> '') then
     ini.WriteString(section, 'odvraty', refugeesStr);
 
   // crossings
   var crossingsStr: string := '';
-  for var i: Integer := 0 to Self.m_data.crossings.Count - 1 do
+  for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
   begin
-    crossingsStr := crossingsStr + '(' + IntToStr(Self.m_data.crossings[i].crossingId);
+    crossingsStr := crossingsStr + '(' + IntToStr(crossingZav.crossingId);
+    if (crossingZav.openTrack > -1) then
+      crossingsStr := crossingsStr + ',' + IntToStr(crossingZav.openTrack) + ',';
 
-    if (Self.m_data.crossings[i].closeTracks.Count > 0) then
-    begin
-      crossingsStr := crossingsStr + ',' + IntToStr(Self.m_data.crossings[i].openTrack) + ',';
-      for var j: Integer := 0 to Self.m_data.crossings[i].closeTracks.Count - 1 do
-        crossingsStr := crossingsStr + IntToStr(Self.m_data.crossings[i].closeTracks[j]) + ',';
-    end;
+    if (crossingZav.closeTracks.Count > 0) then
+      for var closeTrackId: Integer in crossingZav.closeTracks do
+        crossingsStr := crossingsStr + IntToStr(closeTrackId) + ',';
 
     if (crossingsStr[Length(crossingsStr)] = ',') then
       crossingsStr[Length(crossingsStr)] := ')'
@@ -2771,8 +2728,8 @@ begin
 
   // locks
   var locksStr: string := '';
-  for var i: Integer := 0 to Self.m_data.locks.Count - 1 do
-    locksStr := locksStr + '(' + IntToStr(Self.m_data.locks[i].Block) + ';' + IntToStr(Self.m_data.locks[i].ref_blk) + ')';
+  for var lockZav: TJCRefZav in Self.m_data.locks do
+    locksStr := locksStr + '(' + IntToStr(lockZav.Block) + ';' + IntToStr(lockZav.ref_blk) + ')';
   if (locksStr <> '') then
     ini.WriteString(section, 'podm-zamky', locksStr);
 
@@ -3629,6 +3586,39 @@ begin
     end;
   except
     Result.Free();
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.DetermineCrossingsToClose(var toClose: TList<Boolean>);
+begin
+  toClose.Clear();
+
+  for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
+  begin
+    if (crossingZav.openTrack = -1) then
+    begin
+      toClose.Add(False);
+      continue;
+    end;
+
+    var crossing: TBlkCrossing := TBlkCrossing(Blocks.GetBlkByID(crossingZav.crossingId));
+
+    // prejezd uzavirame jen v pripade, ze nejaky z jeho aktivacnich bloku je obsazen
+    // v pripade posunove cesty uzavirame vzdy
+    if ((Self.typ = TJCType.shunt) or (crossingZav.closeTracks.Count = 0)) then
+    begin
+      toClose.Add(True);
+    end else begin
+      // vlakova cesta:
+      var anyOccupied: Boolean := false;
+      for var closeTrackId: Integer in crossingZav.closeTracks do
+        if (TBlkTrack(Blocks.GetBlkByID(closeTrackId)).occupied = TTrackState.occupied) then
+          anyOccupied := true;
+
+      toClose.Add(anyOccupied);
+    end;
   end;
 end;
 
