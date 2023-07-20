@@ -5511,6 +5511,13 @@ object F_Main: TF_Main
           Height = 13
           Caption = 'Interval hlavn'#237'ho '#269'asova'#269'e:'
         end
+        object Label14: TLabel
+          Left = 245
+          Top = 88
+          Width = 194
+          Height = 13
+          Caption = 'V JC z'#225'rove'#328' p'#345'estavovat max. v'#253'hybek:'
+        end
         object CHB_Log_console: TCheckBox
           Left = 246
           Top = 15
@@ -5539,12 +5546,12 @@ object F_Main: TF_Main
           TabOrder = 2
         end
         object GB_Autosave: TGroupBox
-          Left = 245
-          Top = 85
+          Left = 246
+          Top = 117
           Width = 301
           Height = 59
           Caption = ' Automatick'#233' ulo'#382'en'#237' stavu koleji'#353't'#283' '
-          TabOrder = 4
+          TabOrder = 5
           object Label5: TLabel
             Left = 94
             Top = 18
@@ -5585,12 +5592,12 @@ object F_Main: TF_Main
           end
         end
         object GB_Scale: TGroupBox
-          Left = 245
-          Top = 150
+          Left = 246
+          Top = 182
           Width = 301
           Height = 72
           Caption = ' M'#283#345#237'tko koleji'#353't'#283' '
-          TabOrder = 5
+          TabOrder = 6
           object Label6: TLabel
             Left = 14
             Top = 20
@@ -5681,16 +5688,16 @@ object F_Main: TF_Main
           Height = 25
           Caption = 'Pou'#382#237't'
           Default = True
-          TabOrder = 7
+          TabOrder = 8
           OnClick = B_ConfigApplyClick
         end
         object GB_Times: TGroupBox
-          Left = 246
-          Top = 228
+          Left = 247
+          Top = 260
           Width = 299
           Height = 141
           Caption = ' '#268'asy (v sekund'#225'ch) '
-          TabOrder = 6
+          TabOrder = 7
           object Label10: TLabel
             Left = 14
             Top = 24
@@ -5759,6 +5766,16 @@ object F_Main: TF_Main
             TabOrder = 3
             Value = 0
           end
+        end
+        object SE_jcMaxMovingTurnouts: TSpinEdit
+          Left = 445
+          Top = 89
+          Width = 99
+          Height = 22
+          MaxValue = 100
+          MinValue = 1
+          TabOrder = 4
+          Value = 0
         end
       end
     end

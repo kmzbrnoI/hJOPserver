@@ -22,7 +22,6 @@ const
   _JC_TIMEOUT_SEC = 30; // timeout pro staveni jizdni cesty (vlakove i posunove v sekundach)
   _JC_PRJ_TIMEOUT_SEC = 50; // timeout pri staveni JC pro zavirani prejezdu v ceste
   _NC_TIMEOUT_MIN = 1; // timeout pro staveni nouzove cesty (vlakove i posunove) v minutach
-  _JC_MAX_VYH_STAVENI = 4; // kolik vyhybek se muze stavit zaroven v JC
 
   _JC_DESTROY_NC = -6;
   _JC_DESTROY_NONE = -5;
@@ -271,7 +270,7 @@ implementation
 uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
-  BlockPSt, appEv, ConfSeq, BlockDb;
+  BlockPSt, appEv, ConfSeq, BlockDb, Config;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -1331,7 +1330,7 @@ begin
 
           if (turnout.position <> TTurnoutPosition(turnoutZav.position)) then
           begin
-            if (stavim >= _JC_MAX_VYH_STAVENI) then
+            if (stavim >= GlobalConfig.jcMaxMovingTurnouts) then
             begin
               if (nextTurnout = -1) then
                 nextTurnout := i;
@@ -1354,7 +1353,7 @@ begin
           // nastaveni odvratu
           if (refugee.position <> TTurnoutPosition(refugeeZav.position)) then
           begin
-            if (stavim >= _JC_MAX_VYH_STAVENI) then
+            if (stavim >= GlobalConfig.jcMaxMovingTurnouts) then
             begin
               if (nextTurnout = -1) then
                 nextTurnout := i;
@@ -1716,7 +1715,7 @@ begin
 
         Self.m_state.nextTurnout := 0;
 
-        while ((Self.m_state.nextTurnout <> -1) and (Self.m_state.nextTurnout < _JC_MAX_VYH_STAVENI) and
+        while ((Self.m_state.nextTurnout <> -1) and (Self.m_state.nextTurnout < GlobalConfig.jcMaxMovingTurnouts) and
           (Self.m_state.nextTurnout < Self.m_data.turnouts.Count)) do
         begin
           var turnoutZav: TJCTurnoutZav := Self.m_data.turnouts[Self.m_state.nextTurnout];

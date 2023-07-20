@@ -303,6 +303,8 @@ type
     SE_timeRCPC: TSpinEdit;
     Label13: TLabel;
     SE_timeNUZ: TSpinEdit;
+    Label14: TLabel;
+    SE_jcMaxMovingTurnouts: TSpinEdit;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_RCS_libClick(Sender: TObject);
@@ -3462,6 +3464,8 @@ begin
   Self.SE_timeRCVC.Value := GlobalConfig.times.rcVcOccupied;
   Self.SE_timeRCPC.Value := GlobalConfig.times.rcPcOccupied;
   Self.SE_timeNUZ.Value := GlobalConfig.times.nuz;
+
+  Self.SE_jcMaxMovingTurnouts.Value := GlobalConfig.jcMaxMovingTurnouts;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3508,6 +3512,8 @@ begin
   GlobalConfig.times.rcVcOccupied := Self.SE_timeRCVC.Value;
   GlobalConfig.times.rcPcOccupied := Self.SE_timeRCPC.Value;
   GlobalConfig.times.nuz := Self.SE_timeNUZ.Value;
+
+  GlobalConfig.jcMaxMovingTurnouts := Self.SE_jcMaxMovingTurnouts.Value;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

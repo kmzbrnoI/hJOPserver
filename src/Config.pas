@@ -19,6 +19,7 @@ type
     _TIME_DEFAULT_RC_VC = 20;
     _TIME_DEFAULT_RC_PC = 10;
     _TIME_DEFAULT_NUZ = 20;
+    _JC_DEFAULT_MAX_MOVING_TURNOUTS = 4;
 
   public
     autosave: Boolean;
@@ -28,6 +29,7 @@ type
     autosave_next: TDateTime;
     autostart: Boolean;
     consoleLog: Boolean;
+    jcMaxMovingTurnouts: Cardinal;
 
     times: record // in seconds
       rcFree: Cardinal;
@@ -397,6 +399,10 @@ begin
     Self.times.rcPcOccupied := ini.ReadInteger('times', 'rcPcOccupied', _TIME_DEFAULT_RC_PC);
     Self.times.nuz := ini.ReadInteger('times', 'nuz', _TIME_DEFAULT_NUZ);
 
+    Self.jcMaxMovingTurnouts := ini.ReadInteger('JC', 'maxMovingTurnouts', _JC_DEFAULT_MAX_MOVING_TURNOUTS);
+    if (Self.jcMaxMovingTurnouts < 1) then
+      Self.jcMaxMovingTurnouts := 1;
+
     Log('Globální konfigurace načtena', TLogLevel.llInfo, lsData);
   finally
     ini.Free();
@@ -461,6 +467,8 @@ begin
     ini.WriteInteger('times', 'rcVcOccupied', Self.times.rcVcOccupied);
     ini.WriteInteger('times', 'rcPcOccupied', Self.times.rcPcOccupied);
     ini.WriteInteger('times', 'nuz', Self.times.nuz);
+
+    ini.WriteInteger('JC', 'maxMovingTurnouts', Self.jcMaxMovingTurnouts);
   finally
     ini.UpdateFile();
     ini.Free();
