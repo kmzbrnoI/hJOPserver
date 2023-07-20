@@ -44,7 +44,7 @@ var
 implementation
 
 uses fSettings, fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
-  AreaDb, BlockDb, BoosterDb, SnadnSpusteni, THVDatabase,
+  AreaDb, BlockDb, BoosterDb, THVDatabase,
   TCPServerPT, Logging, TCPServerPanel, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
   DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce, fTester,
   TechnologieTrakce, TJCDatabase;
@@ -362,7 +362,6 @@ begin
     Self.scale := ini.ReadInteger('SystemCfg', 'scale', 120);
 
     ModCas.LoadData(ini);
-    SS.LoadData(ini);
     FuncNames.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
     F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
 
@@ -441,8 +440,6 @@ begin
     ini.WriteInteger('SystemCfg', 'mainTimerIntervalMs', F_Main.T_Main.Interval);
     ini.WriteBool('SystemCfg', 'AutSpusteni', F_Options.CHB_povolit_spusteni.Checked);
     ini.WriteInteger('SystemCfg', 'scale', GlobalConfig.scale);
-
-    SS.SaveData(ini);
 
     ini.EraseSection('autosave');
     ini.WriteBool('autosave', 'enabled', GlobalConfig.autosave);

@@ -228,7 +228,6 @@
         <DCCReference Include="blocks\forms\state\fBlkTurnoutState.pas">
             <Form>F_BlkTurnoutState</Form>
         </DCCReference>
-        <DCCReference Include="SnadnSpusteni.pas"/>
         <DCCReference Include="jc\TJCDatabase.pas"/>
         <DCCReference Include="hv\THVDatabase.pas"/>
         <DCCReference Include="hv\THnaciVozidlo.pas"/>

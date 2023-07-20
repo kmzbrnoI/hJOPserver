@@ -491,7 +491,7 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
   TechnologieRCS, TechnologieJC, Config, fConsole, AreaDb, BlockDb,
   Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area,
-  SnadnSpusteni, BlockSummary, BlockCrossing, TJCDatabase, Logging,
+  BlockSummary, BlockCrossing, TJCDatabase, Logging,
   TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
   fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkCrossing,
   fBlkSignal, fBlkRailway, BlockLinker, TrainDb, DataTrains, DataUsers, fUserEdit, UserDb,
@@ -1475,7 +1475,6 @@ end;
 procedure TF_Main.T_MainTimer(Sender: TObject);
 begin
   try
-    SS.Update();
     AutostartUpdate();
     Blocks.Update();
     ShowDateTime();

@@ -50,7 +50,6 @@ uses
   Booster in 'boosters\Booster.pas',
   BoosterDb in 'boosters\BoosterDb.pas',
   fBlkTurnoutState in 'blocks\forms\state\fBlkTurnoutState.pas' {F_BlkTurnoutState},
-  SnadnSpusteni in 'SnadnSpusteni.pas',
   TJCDatabase in 'jc\TJCDatabase.pas',
   THVDatabase in 'hv\THVDatabase.pas',
   THnaciVozidlo in 'hv\THnaciVozidlo.pas',
