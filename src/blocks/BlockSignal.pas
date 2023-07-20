@@ -173,7 +173,7 @@ type
 
     procedure PrivolDKClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton);
     procedure PrivokDKPotvrSekv(Sender: TIdContext; success: Boolean);
-    procedure PrivolBarriers(var barriers: TList<TJCBarrier>; SenderArea: TArea);
+    procedure PrivolBarriers(var barriers: TJCBarriers; SenderArea: TArea);
     procedure PrivolBarriersConfirmed(Sender: TObject);
     procedure PrivolBarriersRejected(Sender: TObject);
     procedure RNZPotvrSekv(Sender: TIdContext; success: Boolean);
@@ -1717,7 +1717,7 @@ begin
   end;
 end;
 
-procedure TBlkSignal.PrivolBarriers(var barriers: TList<TJCBarrier>; SenderArea: TArea);
+procedure TBlkSignal.PrivolBarriers(var barriers: TJCBarriers; SenderArea: TArea);
 begin
   var privol: TBlksList := Blocks.GetNavPrivol(SenderArea);
   for var i: Integer := 0 to privol.Count - 1 do

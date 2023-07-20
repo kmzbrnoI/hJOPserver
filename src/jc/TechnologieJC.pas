@@ -181,9 +181,9 @@ type
     procedure TurnoutMovedJCPC(Sender: TObject);
     procedure SignalError(Sender: TObject);
 
-    procedure BarriersVCPC(var barriers: TList<TJCBarrier>);
-    procedure BarriersNC(var barriers: TList<TJCBarrier>);
-    procedure BarriersNCToAccept(var bariery: TList<TJCBarrier>);
+    procedure BarriersVCPC(var barriers: TJCBarriers);
+    procedure BarriersNC(var barriers: TJCBarriers);
+    procedure BarriersNCToAccept(var bariery: TJCBarriers);
 
     function GetTrain(signal: TBlk = nil; track: TBlk = nil): TTrain; // vraci cislo soupravy na useku pred navestidlem
 
@@ -282,7 +282,7 @@ begin
   Self.m_data.id := -1;
   Self.changed := true;
   Self.m_state := _def_jc_state;
-  Self.m_state.ncBariery := TList<TJCBarrier>.Create();
+  Self.m_state.ncBariery := TJCBarriers.Create();
   Self.m_state.crossingsToClose := TList<Boolean>.Create();
 
   Self.m_data := NewJCData();
@@ -295,7 +295,7 @@ begin
   Self.m_data := data;
   Self.m_state := _def_jc_state;
   if (not Assigned(Self.m_state.ncBariery)) then
-    Self.m_state.ncBariery := TList<TJCBarrier>.Create();
+    Self.m_state.ncBariery := TJCBarriers.Create();
   if (not Assigned(Self.m_state.crossingsToClose)) then
     Self.m_state.crossingsToClose := TList<Boolean>.Create();
 end;
@@ -356,7 +356,7 @@ end;
 // tzv. kriticke bariery jsou vzdy na zacatu Listu
 function TJC.barriers(nc: Boolean = false): TJCBarriers;
 begin
-  result := TList<TJCBarrier>.Create();
+  result := TJCBarriers.Create();
 
   if (Self.activating) then
     result.Add(JCBarrier(barProcessing));
@@ -507,7 +507,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.BarriersVCPC(var barriers: TList<TJCBarrier>);
+procedure TJC.BarriersVCPC(var barriers: TJCBarriers);
 begin
   // signal
   var signal: TBlkSignal := TBlkSignal(Blocks.GetBlkByID(Self.m_data.signalId));
@@ -609,7 +609,7 @@ begin
       if (turnout.position <> turnoutZav.position) then
       begin
         if (coupling.occupied = TTrackState.occupied) then
-          barriers.Add(JCBarrier(barTrackOccupied, coupling))
+          barriers.Add(JCBarrier(barTrackOccupied, coupling.parent))
         else if (coupling.emLock) then
           barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
         else if (coupling.outputLocked) then
@@ -859,7 +859,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.BarriersNC(var barriers: TList<TJCBarrier>);
+procedure TJC.BarriersNC(var barriers: TJCBarriers);
 begin
   { nouzovou cestu nelze postavit pres:
     1) useky se zaverem
@@ -3127,7 +3127,7 @@ end;
 // generuje podminky branici postaveni nouzove posunove ceste
 // tyto podminky jsou prubezne zobrazovany dispecerovi v potvrzovaci sekvenci
 
-procedure TJC.BarriersNCToAccept(var bariery: TList<TJCBarrier>);
+procedure TJC.BarriersNCToAccept(var bariery: TJCBarriers);
 begin
   // signal
   var signal := Blocks.GetBlkByID(Self.m_data.signalId);

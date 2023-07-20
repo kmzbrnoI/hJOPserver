@@ -96,9 +96,12 @@ type
     typ: TJCBarType;
     block: TBlk;
     param: Integer; // typically id of block when block not found (block = nil)
+    class operator Equal(a, b: TJCBarrier): Boolean;
   end;
 
-  TJCBarriers = TList<TJCBarrier>;
+  TJCBarriers = class(TList<TJCBarrier>)
+    function Add(const Value: TJCBarrier): Integer;
+  end;
 
   function BarriersToConfSeq(barriers: TJCBarriers): TConfSeqItems;
   function CriticalBarrier(typ: TJCBarType): Boolean;
@@ -113,6 +116,19 @@ implementation
 
 uses Graphics, Classes, SysUtils, BlockTurnout, BlockTrack, BlockPst, BlockLock,
   BlockCrossing, BlockLinker, BlockDisconnector, THVDatabase, TrainDb;
+
+class operator TJCBarrier.Equal(a, b: TJCBarrier): Boolean;
+begin
+  Result := ((a.typ = b.typ) and (a.block = b.block) and (a.param = b.param));
+end;
+
+function TJCBarriers.Add(const Value: TJCBarrier): Integer;
+begin
+  if (not Self.Contains(Value)) then
+    Result := inherited Add(Value)
+  else
+    Result := 1;
+end;
 
 function BarriersToConfSeq(barriers: TJCBarriers): TConfSeqItems;
 begin

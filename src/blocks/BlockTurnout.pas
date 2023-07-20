@@ -202,6 +202,7 @@ type
     procedure PositionError();
 
     function SelfMenuNS(): Boolean;
+    function GetParent(): TBlkTrack;
 
   public
     constructor Create(index: Integer);
@@ -261,6 +262,7 @@ type
     property posDetection: Boolean read m_settings.posDetection;
     property outputLocked: Boolean read GetOutputLocked;
     property coupling: TBlkTurnout read GetCoupling;
+    property parent: TBlkTrack read GetParent;
 
     property movingPlus: Boolean read m_state.movingPlus write m_state.movingPlus;
     property movingMinus: Boolean read m_state.movingMinus write m_state.movingMinus;
@@ -548,14 +550,16 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.GetTrackZaver(): TZaver;
+function TBlkTurnout.GetParent(): TBlkTrack;
 begin
-  if (Self.m_spnl.track = -1) then
-    Exit(TZaver.no);
-
   if (((Self.m_parent = nil) and (Self.m_spnl.track <> -1)) or (Self.m_parent.id <> Self.m_spnl.track)) then
     Self.m_parent := Blocks.GetBlkTrackOrRTByID(Self.m_spnl.track);
-  if (Self.m_parent <> nil) then
+  Result := Self.m_parent;
+end;
+
+function TBlkTurnout.GetTrackZaver(): TZaver;
+begin
+  if (Self.parent <> nil) then
     Result := Self.m_parent.zaver
   else
     Result := TZaver.no;
@@ -571,18 +575,16 @@ end;
 
 function TBlkTurnout.GetNUZ(): Boolean;
 begin
-  var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_spnl.track);
-  if ((track = nil) or (track.typ <> btTrack)) then
+  if ((Self.parent = nil) or (Self.parent.typ <> btTrack)) then
     Exit(false);
-  Result := track.NUZ;
+  Result := Self.parent.NUZ;
 end;
 
 function TBlkTurnout.GetOccupied(): TTrackState;
 begin
-  var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_spnl.track);
-  if (track = nil) then
+  if (Self.parent = nil) then
     Exit(TTrackState.none);
-  Result := track.occupied;
+  Result := Self.parent.occupied;
 end;
 
 function TBlkTurnout.GetOutputLocked(): Boolean;

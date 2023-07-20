@@ -89,7 +89,7 @@ type
     procedure CSNPStDone(Sender: TIDContext; success: Boolean);
     procedure CSZavOffDone(Sender: TIDContext; success: Boolean);
 
-    procedure ActivationBarriers(var barriers: TList<TJCBarrier>);
+    procedure ActivationBarriers(var barriers: TJCBarriers);
     procedure Activate(senderPnl: TIdContext; senderOR: TObject);
     class function WarningBarrier(typ: TJCBarType): Boolean;
     class function BarrierToMessage(barrier: TJCBarrier): TUPOItem;
@@ -984,7 +984,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPst.ActivationBarriers(var barriers: TList<TJCBarrier>);
+procedure TBlkPst.ActivationBarriers(var barriers: TJCBarriers);
 begin
   if (Self.note <> '') then
     barriers.Add(JCBarrier(barBlockNote, Self));
