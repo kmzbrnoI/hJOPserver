@@ -4,7 +4,7 @@ object F_Admin: TF_Admin
   AlphaBlendValue = 100
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Diagnostick'#233' rozhran'#237' hJOP'
+  Caption = 'Simulace a diagnostika'
   ClientHeight = 175
   ClientWidth = 417
   Color = clBtnFace

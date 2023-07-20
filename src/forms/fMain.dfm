@@ -5927,6 +5927,11 @@ object F_Main: TF_Main
         Caption = 'Konzole'
         OnClick = PM_ConsoleClick
       end
+      object MI_SimulationDiagnostics: TMenuItem
+        Caption = 'Simulace a diagnostika'
+        ShortCut = 115
+        OnClick = MI_SimulationDiagnosticsClick
+      end
     end
     object MI_File: TMenuItem
       Caption = 'Soubor'
@@ -5969,7 +5974,7 @@ object F_Main: TF_Main
       object PM_Help_RP: TMenuItem
         Caption = 'O programu'
         ImageIndex = 15
-        ShortCut = 16496
+        ShortCut = 112
         OnClick = PM_Help_RPClick
       end
     end

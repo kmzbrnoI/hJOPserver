@@ -275,6 +275,7 @@ type
     CB_global_loglevel_file: TComboBox;
     Label4: TLabel;
     CB_global_loglevel_table: TComboBox;
+    MI_SimulationDiagnostics: TMenuItem;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
@@ -401,6 +402,7 @@ type
     procedure LV_logDblClick(Sender: TObject);
     procedure LV_SoupravyCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
+    procedure MI_SimulationDiagnosticsClick(Sender: TObject);
   private
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
@@ -1745,13 +1747,6 @@ begin
           VK_ESCAPE:
             if (F_About.Showing) then
               F_About.Close;
-
-          VK_F4:
-            begin
-              // zobrazeni debug okna
-              F_Admin.Show();
-              Handled := true;
-            end;
         end; // case
       end;
   end;
@@ -2574,6 +2569,11 @@ begin
   end;
 
   Screen.Cursor := crDefault;
+end;
+
+procedure TF_Main.MI_SimulationDiagnosticsClick(Sender: TObject);
+begin
+  F_Admin.Show();
 end;
 
 procedure TF_Main.MI_BlockStateClick(Sender: TObject);
