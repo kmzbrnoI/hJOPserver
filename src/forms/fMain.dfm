@@ -3508,7 +3508,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Technologie
+    ActivePage = TS_Config
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -5464,6 +5464,228 @@ object F_Main: TF_Main
         OnChange = LV_ABChange
       end
     end
+    object TS_Config: TTabSheet
+      Caption = 'Konfigurace'
+      ImageIndex = 14
+      object P_ConfigHeader: TPanel
+        Left = 0
+        Top = 0
+        Width = 1289
+        Height = 40
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Align = alTop
+        BevelOuter = bvNone
+        Color = clWhite
+        ParentBackground = False
+        TabOrder = 0
+        ExplicitTop = 8
+        object E_configFilename: TEdit
+          Left = 9
+          Top = 9
+          Width = 313
+          Height = 21
+          Hint = 'cesta k souboru klonfigurace'
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          ParentColor = True
+          ReadOnly = True
+          TabOrder = 0
+        end
+      end
+      object P_Config: TPanel
+        Left = 9
+        Top = 45
+        Width = 560
+        Height = 548
+        BevelOuter = bvNone
+        TabOrder = 1
+        object Label9: TLabel
+          Left = 245
+          Top = 58
+          Width = 132
+          Height = 13
+          Caption = 'Interval hlavn'#237'ho '#269'asova'#269'e:'
+        end
+        object CHB_Log_console: TCheckBox
+          Left = 246
+          Top = 15
+          Width = 107
+          Height = 17
+          Hint = 'Ukl'#225'd'#225'n'#237' logu vyuziti prihlasovani'
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Caption = 'Logovat konzoli'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 0
+        end
+        object CHB_autostart: TCheckBox
+          Left = 246
+          Top = 36
+          Width = 243
+          Height = 17
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Caption = 'Po startu programu automaticky spustit syst'#233'my'
+          TabOrder = 1
+        end
+        object GB_Autosave: TGroupBox
+          Left = 245
+          Top = 85
+          Width = 301
+          Height = 59
+          Caption = ' Automatick'#233' ulo'#382'en'#237' stavu koleji'#353't'#283' '
+          TabOrder = 2
+          object Label5: TLabel
+            Left = 94
+            Top = 18
+            Width = 77
+            Height = 13
+            Caption = 'Perioda (mm:ss):'
+          end
+          object CHB_Autosave: TCheckBox
+            Left = 14
+            Top = 16
+            Width = 57
+            Height = 17
+            Caption = 'Povolit'
+            TabOrder = 0
+          end
+          object ME_autosave_period: TMaskEdit
+            Left = 192
+            Top = 18
+            Width = 89
+            Height = 24
+            Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            EditMask = '!90:00;1;_'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -13
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            MaxLength = 5
+            ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+            Text = '00:00'
+          end
+        end
+        object GB_Scale: TGroupBox
+          Left = 245
+          Top = 150
+          Width = 301
+          Height = 72
+          Caption = ' M'#283#345#237'tko koleji'#353't'#283' '
+          TabOrder = 3
+          object Label6: TLabel
+            Left = 14
+            Top = 20
+            Width = 267
+            Height = 13
+            Caption = 'Pro v'#253'po'#269'et ujet'#233' vzd'#225'lenosti a rychlosti hnac'#237'ch vozidel'
+          end
+          object Label8: TLabel
+            Left = 17
+            Top = 39
+            Width = 14
+            Height = 20
+            Caption = '1:'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -16
+            Font.Name = 'MS Sans Serif'
+            Font.Style = []
+            ParentFont = False
+          end
+          object E_Scale: TEdit
+            Left = 36
+            Top = 39
+            Width = 55
+            Height = 21
+            NumbersOnly = True
+            TabOrder = 0
+            Text = '1'
+          end
+        end
+        object CB_MainTimerInterval: TComboBox
+          Left = 399
+          Top = 58
+          Width = 145
+          Height = 21
+          Style = csDropDownList
+          TabOrder = 4
+          Items.Strings = (
+            '25 ms'
+            '50 ms'
+            '100 ms'
+            '200 ms'
+            '250 ms'
+            '500 ms')
+        end
+        object GB_Speeds: TGroupBox
+          Left = 9
+          Top = 0
+          Width = 214
+          Height = 545
+          Caption = ' Rychlostn'#237' tabulka '
+          TabOrder = 5
+          object LV_DigiRych: TListView
+            Left = 2
+            Top = 15
+            Width = 210
+            Height = 528
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Align = alClient
+            Color = clWhite
+            Columns = <
+              item
+                Caption = 'Stupe'#328
+              end
+              item
+                Caption = 'Rychlost'
+                Width = 100
+              end>
+            GridLines = True
+            ReadOnly = True
+            RowSelect = True
+            TabOrder = 0
+            ViewStyle = vsReport
+            OnDblClick = LV_DigiRychDblClick
+            ExplicitLeft = -33
+            ExplicitTop = -176
+            ExplicitWidth = 247
+            ExplicitHeight = 457
+          end
+        end
+        object B_ConfigApply: TButton
+          Left = 471
+          Top = 520
+          Width = 75
+          Height = 25
+          Caption = 'Pou'#382#237't'
+          Default = True
+          TabOrder = 6
+          OnClick = B_ConfigApplyClick
+        end
+      end
+    end
     object TS_FuncsVyznam: TTabSheet
       Caption = 'V'#253'znamy funkc'#237
       ImageIndex = 13
@@ -5908,20 +6130,11 @@ object F_Main: TF_Main
     end
     object MI_Provoz: TMenuItem
       Caption = 'Provoz'
-      object PM_Nastaveni: TMenuItem
-        Caption = 'Nastaven'#237
-        ImageIndex = 53
-        ShortCut = 16463
-        OnClick = PM_NastaveniClick
-      end
       object PM_ResetV: TMenuItem
         Caption = 'P'#345'estavit v'#253'hybky do z'#225'kladn'#237' polohy'
         Enabled = False
         ImageIndex = 27
         OnClick = PM_ResetVClick
-      end
-      object N7: TMenuItem
-        Caption = '-'
       end
       object PM_Console: TMenuItem
         Caption = 'Konzole'

@@ -149,9 +149,6 @@
         <DCCReference Include="forms\fMain.pas">
             <Form>F_Main</Form>
         </DCCReference>
-        <DCCReference Include="forms\fSettings.pas">
-            <Form>F_Options</Form>
-        </DCCReference>
         <DCCReference Include="forms\fNastaveni_Casu.pas">
             <Form>F_ModCasSet</Form>
         </DCCReference>

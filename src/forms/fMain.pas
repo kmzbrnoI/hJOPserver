@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, Trakce,
   inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils,
-  ComObj, TechnologieTrakce, BoosterDb, System.Actions, System.ImageList;
+  ComObj, TechnologieTrakce, BoosterDb, System.Actions, System.ImageList,
+  Vcl.Mask;
 
 const
   _SB_LOG = 0;
@@ -52,7 +53,6 @@ type
     MI_RCS_Stop: TMenuItem;
     MI_RCS_Options: TMenuItem;
     MI_Provoz: TMenuItem;
-    PM_Nastaveni: TMenuItem;
     PM_ResetV: TMenuItem;
     SB1: TStatusBar;
     N1: TMenuItem;
@@ -98,7 +98,6 @@ type
     PM_SaveFormPos: TMenuItem;
     IL_Bloky: TImageList;
     IL_RCS: TImageList;
-    N7: TMenuItem;
     PM_Console: TMenuItem;
     AL_Main: TActionList;
     A_RCS_Go: TAction;
@@ -276,8 +275,26 @@ type
     Label4: TLabel;
     CB_global_loglevel_table: TComboBox;
     MI_SimulationDiagnostics: TMenuItem;
+    TS_Config: TTabSheet;
+    P_ConfigHeader: TPanel;
+    E_configFilename: TEdit;
+    P_Config: TPanel;
+    CHB_Log_console: TCheckBox;
+    CHB_autostart: TCheckBox;
+    GB_Autosave: TGroupBox;
+    Label5: TLabel;
+    CHB_Autosave: TCheckBox;
+    ME_autosave_period: TMaskEdit;
+    GB_Scale: TGroupBox;
+    Label6: TLabel;
+    Label8: TLabel;
+    E_Scale: TEdit;
+    CB_MainTimerInterval: TComboBox;
+    Label9: TLabel;
+    GB_Speeds: TGroupBox;
+    LV_DigiRych: TListView;
+    B_ConfigApply: TButton;
     procedure T_MainTimer(Sender: TObject);
-    procedure PM_NastaveniClick(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_RCS_libClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -403,6 +420,8 @@ type
     procedure LV_SoupravyCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure MI_SimulationDiagnosticsClick(Sender: TObject);
+    procedure B_ConfigApplyClick(Sender: TObject);
+    procedure LV_DigiRychDblClick(Sender: TObject);
   private
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
@@ -472,6 +491,9 @@ type
     procedure OnTrkLocoReleased(Sender: TObject);
     procedure OnTrkAllFunctionTurnedOff(Sender: TObject; Data: Pointer);
 
+    // GlobalConfig
+    procedure FillGlobalConfig();
+
   end; // public
 
   TSystemStatus = (null, starting, stopping); // stav startovani / vypinani systemu
@@ -486,7 +508,7 @@ var
 
 implementation
 
-uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
+uses fTester, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
   fAbout, version, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
   TechnologieRCS, TechnologieJC, Config, fConsole, AreaDb, BlockDb,
@@ -499,7 +521,8 @@ uses fTester, fSettings, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
   BlockLock, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
   fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
   AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB, fBlkCrossingState,
-  Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal, fBlkPst, BlockPst, fBlkSignalState;
+  Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal, fBlkPst, BlockPst, fBlkSignalState,
+  fRychlostiEdit;
 
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1512,11 +1535,6 @@ begin
   F_ModCasSet.OpenForm();
 end;
 
-procedure TF_Main.PM_NastaveniClick(Sender: TObject);
-begin
-  F_Options.Show;
-end;
-
 procedure TF_Main.PM_PropertiesClick(Sender: TObject);
 begin
   if (LV_HV.Selected <> nil) then
@@ -1989,7 +2007,7 @@ begin
   end;
 
   try
-    ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Options.E_dataload.Text),
+    ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_configFilename.Text),
       TEncoding.UTF8);
     try
       ModCas.SaveData(ini);
@@ -2472,22 +2490,25 @@ end;
 
 procedure TF_Main.RepaintObjects();
 begin
-  SB1.Panels.Items[0].Width := F_Main.ClientWidth - SB1.Panels.Items[1].Width - SB1.Panels.Items[2].Width -
-    SB1.Panels.Items[3].Width - SB1.Panels.Items[4].Width - SB1.Panels.Items[5].Width;
-  P_Zrychleni.Left := F_Main.ClientWidth - P_Zrychleni.Width - 5;
-  P_Time_modelovy.Left := P_Zrychleni.Left - P_Time_modelovy.Width - 5;
-  P_Time.Left := P_Time_modelovy.Left - P_Time.Width - 5;
-  P_Date.Left := P_Time.Left - P_Date.Width - 5;
+  Self.SB1.Panels.Items[0].Width := Self.ClientWidth - Self.SB1.Panels.Items[1].Width - Self.SB1.Panels.Items[2].Width -
+    Self.SB1.Panels.Items[3].Width - Self.SB1.Panels.Items[4].Width - Self.SB1.Panels.Items[5].Width;
+  Self.P_Zrychleni.Left := Self.ClientWidth - Self.P_Zrychleni.Width - 5;
+  Self.P_Time_modelovy.Left := Self.P_Zrychleni.Left - Self.P_Time_modelovy.Width - 5;
+  Self.P_Time.Left := Self.P_Time_modelovy.Left - Self.P_Time.Width - 5;
+  Self.P_Date.Left := Self.P_Time.Left - Self.P_Date.Width - 5;
 
-  GB_Connected_Panels.Height := TS_Technologie.Height - GB_Connected_Panels.Top - 10;
+  Self.GB_Connected_Panels.Height := Self.TS_Technologie.Height - Self.GB_Connected_Panels.Top - 10;
 
-  GB_Connected_Panels.Width := TS_Technologie.ClientWidth - 2 * GB_Connected_Panels.Left;
-  GB_Log.Width := TS_Technologie.Width - GB_Log.Left - GB_stav_technologie.Left;
+  Self.GB_Connected_Panels.Width := Self.TS_Technologie.ClientWidth - 2*Self.GB_Connected_Panels.Left;
+  Self.GB_Log.Width := Self.TS_Technologie.Width - Self.GB_Log.Left - Self.GB_stav_technologie.Left;
+
+  Self.P_Config.Top := ((Self.TS_Config.Height-Self.P_ConfigHeader.Height) div 2) - (Self.P_Config.Height div 2) + Self.P_ConfigHeader.Height;
+  Self.P_Config.Left := (Self.TS_Config.Width div 2) - (Self.P_Config.Width div 2);
 end;
 
 procedure TF_Main.FormResize(Sender: TObject);
 begin
-  RepaintObjects;
+  Self.RepaintObjects();
 end;
 
 procedure TF_Main.FormShow(Sender: TObject);
@@ -2704,6 +2725,7 @@ begin
 
   PanelServer.GUIInitTable();
   ModCas.UpdateGUIColors();
+  Self.FillGlobalConfig();
 
   Self.Visible := true;
 
@@ -3404,6 +3426,77 @@ begin
     Result := single + ' ' + Result
   else
     Result := multiple + ' ' + Result;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.FillGlobalConfig();
+begin
+  Self.ME_autosave_period.Text := FormatDateTime('nn:ss', GlobalConfig.autosave_period);
+  Self.CHB_Autosave.Checked := GlobalConfig.autosave;
+  Self.E_Scale.Text := IntToStr(GlobalConfig.scale);
+  Self.CHB_autostart.Checked := GlobalConfig.autostart;
+  Self.CHB_Log_console.Checked := GlobalConfig.consoleLog;
+
+  case (Self.T_Main.Interval) of
+    25: Self.CB_MainTimerInterval.ItemIndex := 0;
+    50: Self.CB_MainTimerInterval.ItemIndex := 1;
+    100: Self.CB_MainTimerInterval.ItemIndex := 2;
+    200: Self.CB_MainTimerInterval.ItemIndex := 3;
+    250: Self.CB_MainTimerInterval.ItemIndex := 4;
+    500: Self.CB_MainTimerInterval.ItemIndex := 5;
+  else
+    Self.CB_MainTimerInterval.ItemIndex := -1;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.B_ConfigApplyClick(Sender: TObject);
+begin
+  try
+    GlobalConfig.scale := StrToInt(Self.E_Scale.Text);
+  except
+    on E: Exception do
+    begin
+      Application.MessageBox(PChar('Nepodařilo se načíst měřítko:' + #13#10 + E.Message), 'Chyba',
+        MB_OK OR MB_ICONWARNING);
+      Exit();
+    end;
+  end;
+
+  GlobalConfig.autosave := Self.CHB_Autosave.Checked;
+  GlobalConfig.autostart := Self.CHB_autostart.Checked;
+  GlobalConfig.consoleLog := Self.CHB_Log_console.Checked;
+
+  if (Self.CHB_Autosave.Checked) then
+  begin
+    try
+      GlobalConfig.autosave_period := EncodeTime(0, StrToInt(LeftStr(Self.ME_autosave_period.Text, 2)),
+        StrToInt(Copy(Self.ME_autosave_period.Text, 4, 2)), 0);
+    except
+      GlobalConfig.autosave := False;
+      Application.MessageBox('Nepodařilo se načíst čas automatického uložení', 'Chyba', MB_OK OR MB_ICONERROR);
+    end;
+  end;
+
+  case (Self.CB_MainTimerInterval.ItemIndex) of
+    0: Self.T_Main.Interval := 25;
+    1: Self.T_Main.Interval := 50;
+    2: Self.T_Main.Interval := 100;
+    3: Self.T_Main.Interval := 200;
+    4: Self.T_Main.Interval := 250;
+    5: Self.T_Main.Interval := 500;
+  end;
+  Log('Primární smyčka nastavena na ' + IntToStr(Self.T_Main.Interval) + ' ms', TLogLevel.llInfo);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TF_Main.LV_DigiRychDblClick(Sender: TObject);
+begin
+  if (Self.LV_DigiRych.Selected <> nil) then
+    F_RychlostiEdit.OpenForm(Self.LV_DigiRych.ItemIndex);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

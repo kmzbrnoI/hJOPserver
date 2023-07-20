@@ -32,8 +32,8 @@ var
 
 implementation
 
-uses fMain, fSettings, TechnologieRCS, GetSystems, TechnologieTrakce,
-  Logging, Block, BlockTrack, BlockDb;
+uses fMain, TechnologieRCS, GetSystems, TechnologieTrakce,
+  Logging, Block, BlockTrack, BlockDb, Config;
 
 {$R *.dfm}
 
@@ -62,7 +62,7 @@ begin
     M_console.Lines.strings[M_console.Lines.Count - 1] := M_console.Lines.strings[M_console.Lines.Count - 1] +
       E_console.Text;
 
-    if (F_Options.CHB_Log_console.Checked) then
+    if (GlobalConfig.consoleLog) then
       Log('Console: ' + E_console.Text, llInfo, lsConsole);
 
     if (strings.Count <> 0) then

@@ -13,7 +13,6 @@ uses
   libPreload in 'libPreload.pas',
   fTester in 'forms\fTester.pas' {F_Tester},
   fMain in 'forms\fMain.pas' {F_Main},
-  fSettings in 'forms\fSettings.pas' {F_Options},
   fNastaveni_Casu in 'forms\fNastaveni_Casu.pas' {F_ModCasSet},
   fRegulator in 'hv\forms\fRegulator.pas' {F_DigiReg},
   fSplash in 'forms\fSplash.pas' {F_splash},
@@ -213,7 +212,6 @@ uses
   Application.CreateForm(TF_BlkTrackState, F_BlkTrackState);
   Application.CreateForm(TF_SystemInfo, F_SystemInfo);
   Application.CreateForm(TF_Admin, F_Admin);
-  Application.CreateForm(TF_Options, F_Options);
   Application.CreateForm(TF_Tester, F_Tester);
   Application.CreateForm(TF_Booster_Edit, F_Booster_Edit);
   Application.CreateForm(TF_BlkRailway, F_BlkRailway);

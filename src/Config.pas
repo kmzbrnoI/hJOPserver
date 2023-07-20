@@ -19,6 +19,8 @@ type
     scale: Cardinal;
     ptAutoStart: Boolean;
     autosave_next: TDateTime;
+    autostart: Boolean;
+    consoleLog: Boolean;
 
     procedure LoadCfgFromFile(filename: string);
     procedure LoadCfgPtServer(ini: TMemIniFile);
@@ -43,7 +45,7 @@ var
 
 implementation
 
-uses fSettings, fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
+uses fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
   AreaDb, BlockDb, BoosterDb, THVDatabase,
   TCPServerPT, Logging, TCPServerPanel, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
   DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce, fTester,
@@ -79,7 +81,7 @@ begin
       AppEvents.LogException(e);
   end;
 
-  F_Options.CHB_Log_console.Checked := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'console', true);
+  GlobalConfig.consoleLog := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'console', true);
 
   F_Splash.AddStav('Načítám uživatele...');
   try
@@ -198,7 +200,7 @@ begin
   end;
 
   F_Splash.AddStav('Načítám vedlejší databáze...');
-  TrakceI.LoadSpeedTable('data\rychlosti.csv', F_Options.LV_DigiRych);
+  TrakceI.LoadSpeedTable('data\rychlosti.csv', F_Main.LV_DigiRych);
 end;
 
 procedure CompleteSaveToFile(inidata: TMemIniFile);
@@ -229,7 +231,7 @@ begin
   end;
 
   try
-    GlobalConfig.SaveCfgToFile(F_Options.E_dataload.Text);
+    GlobalConfig.SaveCfgToFile(F_Main.E_configFilename.Text);
   except
     on e: Exception do
       AppEvents.LogException(e);
@@ -303,7 +305,7 @@ begin
   Log('Kompletní ukládání dat dokončeno', TLogLevel.llInfo, lsData);
 
   try
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Options.E_dataload.Text);
+    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Main.E_configFilename.Text);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'spnl', F_Main.E_dataload_spnl.Text);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'bloky', Blocks.filename);
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'bloky', Blocks.fstatus);
@@ -315,7 +317,7 @@ begin
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'users', UsrDB.filenameStat);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'lok', F_Main.E_dataload_HV_dir.Text);
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_HV_state.Text);
-    inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'console', F_Options.CHB_Log_console.Checked);
+    inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'console', GlobalConfig.consoleLog);
 
     var tmpStr: string;
     if (Areas.status_filename = '') then
@@ -339,25 +341,13 @@ var str: string;
   ini: TMemIniFile;
 begin
   Log('Načítám globální konfiguraci: ' + filename, TLogLevel.llInfo, lsData);
-  F_Options.E_dataload.Text := filename;
+  F_Main.E_configFilename.Text := filename;
 
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
   try
-    var interval := ini.ReadInteger('SystemCfg', 'mainTimerIntervalMs', 100);
-    case (interval) of
-      25: F_Options.LB_Timer.ItemIndex := 0;
-      50: F_Options.LB_Timer.ItemIndex := 1;
-      100: F_Options.LB_Timer.ItemIndex := 2;
-      200: F_Options.LB_Timer.ItemIndex := 3;
-      250: F_Options.LB_Timer.ItemIndex := 4;
-      500: F_Options.LB_Timer.ItemIndex := 5;
-    else
-      F_Options.LB_Timer.ItemIndex := 2;
-    end;
-    F_Options.LB_TimerClick(Self);
-
-    F_Options.CHB_povolit_spusteni.Checked := ini.ReadBool('SystemCfg', 'AutSpusteni', false);
-    if (F_Options.CHB_povolit_spusteni.Checked) then
+    F_Main.T_Main.Interval := ini.ReadInteger('SystemCfg', 'mainTimerIntervalMs', 100);
+    Self.autostart := ini.ReadBool('SystemCfg', 'AutSpusteni', false);
+    if (GlobalConfig.autostart) then
       F_Main.autostart.state := asEnabled;
     Self.scale := ini.ReadInteger('SystemCfg', 'scale', 120);
 
@@ -438,12 +428,12 @@ begin
 
     ini.EraseSection('SystemCfg');
     ini.WriteInteger('SystemCfg', 'mainTimerIntervalMs', F_Main.T_Main.Interval);
-    ini.WriteBool('SystemCfg', 'AutSpusteni', F_Options.CHB_povolit_spusteni.Checked);
-    ini.WriteInteger('SystemCfg', 'scale', GlobalConfig.scale);
+    ini.WriteBool('SystemCfg', 'AutSpusteni', Self.autostart);
+    ini.WriteInteger('SystemCfg', 'scale', Self.scale);
 
     ini.EraseSection('autosave');
-    ini.WriteBool('autosave', 'enabled', GlobalConfig.autosave);
-    ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', GlobalConfig.autosave_period));
+    ini.WriteBool('autosave', 'enabled', Self.autosave);
+    ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', Self.autosave_period));
 
     ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.AllNames());
     ini.WriteBool('RCS', 'ShowOnlyActive', F_Main.CHB_RCS_Show_Only_Active.Checked);
@@ -469,8 +459,6 @@ begin
     for var obj in objs do
     begin
       var aComponent := Application.FindComponent(obj);
-      if (aComponent = nil) then
-        aComponent := F_Options.FindComponent(obj);
       if (aComponent = nil) then
         aComponent := F_Main.FindComponent(obj);
 
@@ -518,12 +506,6 @@ begin
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
   try
-    for var i := 0 to F_Options.ComponentCount - 1 do
-      if (F_Options.Components[i] is TListView) then
-        for var j := 0 to (F_Options.Components[i] as TListView).Columns.Count - 1 do
-          ini.WriteInteger(F_Options.Components[i].Name, IntToStr(j), (F_Options.Components[i] as TListView)
-            .Columns.Items[j].Width);
-
     for var i := 0 to F_Main.ComponentCount - 1 do
       if (F_Main.Components[i] is TListView) then
         for var j := 0 to (F_Main.Components[i] as TListView).Columns.Count - 1 do

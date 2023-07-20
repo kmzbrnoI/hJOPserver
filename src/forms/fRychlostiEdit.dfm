@@ -46,7 +46,6 @@ object F_RychlostiEdit: TF_RychlostiEdit
     MinValue = 0
     TabOrder = 0
     Value = 0
-    OnKeyUp = SE_RychlostKeyUp
   end
   object B_Save: TButton
     Left = 152
@@ -58,6 +57,7 @@ object F_RychlostiEdit: TF_RychlostiEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
+    Default = True
     TabOrder = 1
     OnClick = B_SaveClick
   end

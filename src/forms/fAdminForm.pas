@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses Diagnostics, Simulation, fSettings, TechnologieRCS, Logging;
+uses Diagnostics, Simulation, fMain, TechnologieRCS, Logging;
 
 {$R *.dfm}
 
@@ -66,7 +66,7 @@ procedure TF_Admin.B_SaveClick(Sender: TObject);
 var ini: TMemIniFile;
 const SECTION = 'AdminData';
 begin
-  ini := TMemIniFile.Create(F_Options.E_dataload.Text, TEncoding.UTF8);
+  ini := TMemIniFile.Create(F_Main.E_configFilename.Text, TEncoding.UTF8);
   try
     ini.EraseSection(SECTION);
     diag.SaveData(ini, SECTION);
