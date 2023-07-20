@@ -14,6 +14,13 @@ type
   EFileNotFound = class(Exception);
 
   TGlobalConfig = class
+  const
+    _TIME_DEFAULT_RC = 3;
+    _TIME_DEFAULT_RC_VC = 20;
+    _TIME_DEFAULT_RC_PC = 10;
+    _TIME_DEFAULT_NUZ = 20;
+
+  public
     autosave: Boolean;
     autosave_period: TTime;
     scale: Cardinal;
@@ -22,9 +29,16 @@ type
     autostart: Boolean;
     consoleLog: Boolean;
 
-    procedure LoadCfgFromFile(filename: string);
+    times: record // in seconds
+      rcFree: Cardinal;
+      rcVcOccupied: Cardinal;
+      rcPcOccupied: Cardinal;
+      nuz: Cardinal;
+    end;
+
+    procedure LoadFromFile(filename: string);
     procedure LoadCfgPtServer(ini: TMemIniFile);
-    procedure SaveCfgToFile(filename: string);
+    procedure SaveToFile(filename: string);
   end;
 
   TFormData = class
@@ -75,7 +89,7 @@ begin
 
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', 'data\konfigurace.ini');
   try
-    GlobalConfig.LoadCfgFromFile(read);
+    GlobalConfig.LoadFromFile(read);
   except
     on e: Exception do
       AppEvents.LogException(e);
@@ -231,7 +245,7 @@ begin
   end;
 
   try
-    GlobalConfig.SaveCfgToFile(F_Main.E_configFilename.Text);
+    GlobalConfig.SaveToFile(F_Main.E_configFilename.Text);
   except
     on e: Exception do
       AppEvents.LogException(e);
@@ -336,7 +350,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TGlobalConfig.LoadCfgFromFile(filename: string);
+procedure TGlobalConfig.LoadFromFile(filename: string);
 var str: string;
   ini: TMemIniFile;
 begin
@@ -347,7 +361,7 @@ begin
   try
     F_Main.T_Main.Interval := ini.ReadInteger('SystemCfg', 'mainTimerIntervalMs', 100);
     Self.autostart := ini.ReadBool('SystemCfg', 'AutSpusteni', false);
-    if (GlobalConfig.autostart) then
+    if (Self.autostart) then
       F_Main.autostart.state := asEnabled;
     Self.scale := ini.ReadInteger('SystemCfg', 'scale', 120);
 
@@ -360,10 +374,10 @@ begin
     Self.LoadCfgPtServer(ini);
 
     // autosave
-    GlobalConfig.autosave := ini.ReadBool('autosave', 'enabled', true);
+    Self.autosave := ini.ReadBool('autosave', 'enabled', true);
     str := ini.ReadString('autosave', 'period', '00:30');
-    GlobalConfig.autosave_period := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
-    if (GlobalConfig.autosave) then
+    Self.autosave_period := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
+    if (Self.autosave) then
       Self.autosave_next := Now + Self.autosave_period;
 
     // UDP discovery
@@ -377,6 +391,11 @@ begin
       on e: Exception do
         AppEvents.LogException(e);
     end;
+
+    Self.times.rcFree := ini.ReadInteger('times', 'rcFree', _TIME_DEFAULT_RC);
+    Self.times.rcVcOccupied := ini.ReadInteger('times', 'rcVcOccupied', _TIME_DEFAULT_RC_VC);
+    Self.times.rcPcOccupied := ini.ReadInteger('times', 'rcPcOccupied', _TIME_DEFAULT_RC_PC);
+    Self.times.nuz := ini.ReadInteger('times', 'nuz', _TIME_DEFAULT_NUZ);
 
     Log('Globální konfigurace načtena', TLogLevel.llInfo, lsData);
   finally
@@ -418,7 +437,7 @@ begin
   end;
 end;
 
-procedure TGlobalConfig.SaveCfgToFile(filename: string);
+procedure TGlobalConfig.SaveToFile(filename: string);
 var ini: TMemIniFile;
 begin
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -437,6 +456,11 @@ begin
 
     ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.AllNames());
     ini.WriteBool('RCS', 'ShowOnlyActive', F_Main.CHB_RCS_Show_Only_Active.Checked);
+
+    ini.WriteInteger('times', 'rcFree', Self.times.rcFree);
+    ini.WriteInteger('times', 'rcVcOccupied', Self.times.rcVcOccupied);
+    ini.WriteInteger('times', 'rcPcOccupied', Self.times.rcPcOccupied);
+    ini.WriteInteger('times', 'nuz', Self.times.nuz);
   finally
     ini.UpdateFile();
     ini.Free();

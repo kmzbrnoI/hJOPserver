@@ -278,7 +278,7 @@ implementation
 uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, TechnologieJC,
   TJCDatabase, ownConvert, TCPServerPanel, AreaDb, block, THVDatabase, TrainDb,
   UserDb, THnaciVozidlo, Trakce, user, TCPAreasRef, fRegulator, RegulatorTCP,
-  ownStrUtils, train, changeEvent, TechnologieTrakce, ConfSeq;
+  ownStrUtils, train, changeEvent, TechnologieTrakce, ConfSeq, Config, timeHelper;
 
 function IsReadable(right: TAreaRights): Boolean;
 begin
@@ -997,7 +997,6 @@ begin
   else
     id := 0;
 
-  // pridat mereni casu do vsech OR:
   Self.BroadcastData('CAS;START;' + IntToStr(id) + ';' + FormatDateTime('s', len) + ';');
 
   mc.start := Now;
@@ -1069,7 +1068,7 @@ begin
   end;
 
   Self.BroadcastData('NUZ;2;');
-  Self.m_state.NUZtimerId := Self.AddCountdown(Self.NUZTimeOut, EncodeTime(0, 0, 20, 0));
+  Self.m_state.NUZtimerId := Self.AddCountdown(Self.NUZTimeOut, EncodeTimeSec(GlobalConfig.times.nuz));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

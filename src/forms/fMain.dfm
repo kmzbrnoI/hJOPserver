@@ -5524,7 +5524,7 @@ object F_Main: TF_Main
           Caption = 'Logovat konzoli'
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 0
+          TabOrder = 1
         end
         object CHB_autostart: TCheckBox
           Left = 246
@@ -5536,7 +5536,7 @@ object F_Main: TF_Main
           Margins.Right = 2
           Margins.Bottom = 2
           Caption = 'Po startu programu automaticky spustit syst'#233'my'
-          TabOrder = 1
+          TabOrder = 2
         end
         object GB_Autosave: TGroupBox
           Left = 245
@@ -5544,7 +5544,7 @@ object F_Main: TF_Main
           Width = 301
           Height = 59
           Caption = ' Automatick'#233' ulo'#382'en'#237' stavu koleji'#353't'#283' '
-          TabOrder = 2
+          TabOrder = 4
           object Label5: TLabel
             Left = 94
             Top = 18
@@ -5590,7 +5590,7 @@ object F_Main: TF_Main
           Width = 301
           Height = 72
           Caption = ' M'#283#345#237'tko koleji'#353't'#283' '
-          TabOrder = 3
+          TabOrder = 5
           object Label6: TLabel
             Left = 14
             Top = 20
@@ -5627,7 +5627,7 @@ object F_Main: TF_Main
           Width = 145
           Height = 21
           Style = csDropDownList
-          TabOrder = 4
+          TabOrder = 3
           Items.Strings = (
             '25 ms'
             '50 ms'
@@ -5642,7 +5642,7 @@ object F_Main: TF_Main
           Width = 214
           Height = 545
           Caption = ' Rychlostn'#237' tabulka '
-          TabOrder = 5
+          TabOrder = 0
           object LV_DigiRych: TListView
             Left = 2
             Top = 15
@@ -5681,8 +5681,84 @@ object F_Main: TF_Main
           Height = 25
           Caption = 'Pou'#382#237't'
           Default = True
-          TabOrder = 6
+          TabOrder = 7
           OnClick = B_ConfigApplyClick
+        end
+        object GB_Times: TGroupBox
+          Left = 246
+          Top = 228
+          Width = 299
+          Height = 141
+          Caption = ' '#268'asy (v sekund'#225'ch) '
+          TabOrder = 6
+          object Label10: TLabel
+            Left = 14
+            Top = 24
+            Width = 163
+            Height = 13
+            Caption = 'Ru'#353'en'#237' j'#237'zdn'#237' cesty p'#345'i voln'#233'm KO:'
+          end
+          object Label11: TLabel
+            Left = 14
+            Top = 52
+            Width = 144
+            Height = 13
+            Caption = 'Ru'#353'en'#237' VC p'#345'i obsazen'#233'm KO:'
+          end
+          object Label12: TLabel
+            Left = 14
+            Top = 80
+            Width = 144
+            Height = 13
+            Caption = 'Ru'#353'en'#237' PC p'#345'i obsazen'#233'm KO:'
+          end
+          object Label13: TLabel
+            Left = 14
+            Top = 108
+            Width = 125
+            Height = 13
+            Caption = 'Nouzov'#233' uvoln'#283'n'#237' z'#225'v'#283'r'#367':'
+          end
+          object SE_timeRC: TSpinEdit
+            Left = 192
+            Top = 24
+            Width = 89
+            Height = 22
+            MaxValue = 600
+            MinValue = 0
+            TabOrder = 0
+            Value = 0
+          end
+          object SE_timeRCVC: TSpinEdit
+            Left = 192
+            Top = 52
+            Width = 89
+            Height = 22
+            MaxValue = 600
+            MinValue = 0
+            TabOrder = 1
+            Value = 0
+          end
+          object SE_timeRCPC: TSpinEdit
+            Left = 192
+            Top = 80
+            Width = 89
+            Height = 22
+            MaxValue = 600
+            MinValue = 0
+            TabOrder = 2
+            Value = 0
+          end
+          object SE_timeNUZ: TSpinEdit
+            Left = 192
+            Top = 108
+            Width = 89
+            Height = 22
+            MaxValue = 600
+            MinValue = 0
+            TabOrder = 3
+            Value = 0
+          end
         end
       end
     end

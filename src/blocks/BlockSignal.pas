@@ -885,36 +885,29 @@ end;
 
 procedure TBlkSignal.MenuRCClick(SenderPnl: TIdContext; SenderOR: TObject);
 var JC: TJC;
-  Blk: TBlk;
 begin
   if ((Self.dnJC = nil) or (Self.RCinProgress())) then
     Exit();
 
   JC := Self.dnJC;
 
-  Blk := Self.track;
-  if ((Blk = nil) or ((Blk.typ <> btTrack) and (Blk.typ <> btRT))) then
+  var track: TBlkTrack := Self.track as TBlkTrack;
+  if ((track <> nil) and ((track.typ = btTrack) or (track.typ = btRT)) and
+      (track.GetSettings().RCSAddrs.Count > 0) and (track.occupied = TTrackState.Free)) then
   begin
-    // pokud blok pred JC neni -> 30 sekund
-    Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 0, 30, 0));
+    // pokud neni blok pred JC obsazen -> 2 sekundy
+    Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTimeSec(GlobalConfig.times.rcFree));
   end else begin
-    if (((Blk as TBlkTrack).occupied = TTrackState.Free) and ((Blk as TBlkTrack).GetSettings().RCSAddrs.Count > 0)) then
-    begin
-      // pokud neni blok pred JC obsazen -> 2 sekundy
-      Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 0, 2, 0));
-    end else begin
-      // pokud je obsazen, zalezi na typu jizdni cesty
-      case (JC.typ) of
-        TJCType.Train:
-          Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 0, 15, 0));
-          // vlakova cesta : 20 sekund
-        TJCType.shunt:
-          Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 0, 5, 0));
-          // posunova cesta: 10 sekund
-      else
-        Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTime(0, 1, 0, 0));
-        // nejaka divna cesta: 1 minuta
-      end;
+    // pokud je obsazen, zalezi na typu jizdni cesty
+    case (JC.typ) of
+      TJCType.Train:
+        Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTimeSec(GlobalConfig.times.rcVcOccupied));
+      TJCType.shunt:
+        Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTimeSec(GlobalConfig.times.rcPcOccupied));
+    else
+      // nejaka divna cesta
+      Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel,
+        EncodeTimeSec(Max(GlobalConfig.times.rcVcOccupied, GlobalConfig.times.rcPcOccupied)));
     end;
   end;
 

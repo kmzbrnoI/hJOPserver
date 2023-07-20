@@ -7,7 +7,7 @@ uses
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, Trakce,
   inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils,
   ComObj, TechnologieTrakce, BoosterDb, System.Actions, System.ImageList,
-  Vcl.Mask;
+  Vcl.Mask, Vcl.Samples.Spin;
 
 const
   _SB_LOG = 0;
@@ -294,6 +294,15 @@ type
     GB_Speeds: TGroupBox;
     LV_DigiRych: TListView;
     B_ConfigApply: TButton;
+    GB_Times: TGroupBox;
+    Label10: TLabel;
+    SE_timeRC: TSpinEdit;
+    Label11: TLabel;
+    SE_timeRCVC: TSpinEdit;
+    Label12: TLabel;
+    SE_timeRCPC: TSpinEdit;
+    Label13: TLabel;
+    SE_timeNUZ: TSpinEdit;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_RCS_libClick(Sender: TObject);
@@ -3448,6 +3457,11 @@ begin
   else
     Self.CB_MainTimerInterval.ItemIndex := -1;
   end;
+
+  Self.SE_timeRC.Value := GlobalConfig.times.rcFree;
+  Self.SE_timeRCVC.Value := GlobalConfig.times.rcVcOccupied;
+  Self.SE_timeRCPC.Value := GlobalConfig.times.rcPcOccupied;
+  Self.SE_timeNUZ.Value := GlobalConfig.times.nuz;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3489,6 +3503,11 @@ begin
     5: Self.T_Main.Interval := 500;
   end;
   Log('Primární smyčka nastavena na ' + IntToStr(Self.T_Main.Interval) + ' ms', TLogLevel.llInfo);
+
+  GlobalConfig.times.rcFree := Self.SE_timeRC.Value;
+  GlobalConfig.times.rcVcOccupied := Self.SE_timeRCVC.Value;
+  GlobalConfig.times.rcPcOccupied := Self.SE_timeRCPC.Value;
+  GlobalConfig.times.nuz := Self.SE_timeNUZ.Value;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
