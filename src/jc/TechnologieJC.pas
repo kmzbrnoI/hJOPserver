@@ -1223,7 +1223,6 @@ begin
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
         PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
           (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
-      barriers.Free();
       Exit();
     end;
 
@@ -1388,6 +1387,27 @@ begin
           // nastaveni zaveru zamku
           var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZav.Block));
           lock.zaver := true;
+        end;
+
+        // trat
+        // zruseni redukce posledniho bloku jizdni cesty je navazano na zruseni zaveru trati
+        // -> jakmile dojde ke zruseni zaveru posledniho bloku, dojde ke zruseni zaveru trati
+        if (Self.m_data.railwayId > -1) then
+        begin
+          Self.LogStep('Nastavuji zaver trati');
+          var railway: TBlkRailway := TBlkRailway(Blocks.GetBlkByID(Self.m_data.railwayId));
+
+          if (railway.zaver) then
+          begin
+            Self.CancelActivating('Nesouhlas');
+            Exit();
+          end;
+          railway.zaver := true;
+          railway.direction := Self.m_data.railwayDir;
+
+          // zruseni zaveru posledniho bloku JC priradime zruseni zaveru trati
+          Self.lastTrack.AddChangeEvent(TBlkTrack(Self.lastTrack).eventsOnZaverReleaseOrAB,
+            CreateChangeEvent(ceCaller.NullTratZaver, Self.m_data.railwayId));
         end;
 
         Self.step := stepJcTurnoutsMoving;
@@ -1604,32 +1624,15 @@ begin
           Exit();
         end;
 
-        // trat
-        // zruseni redukce posledniho bloku jizdni cesty je navazano na zruseni zaveru trati
-        // -> jakmile dojde ke zruseni zaveru posledniho bloku, dojde ke zruseni zaveru trati
-        if (Self.m_data.railwayId > -1) then
+        if ((Self.m_data.railwayId > -1) and (Self.typ = TJCType.shunt)) then
         begin
           var railway: TBlkRailway := TBlkRailway(Blocks.GetBlkByID(Self.m_data.railwayId));
-
-          if (Self.typ = TJCType.Train) then
-            railway.zaver := true;
-
-          // posledni blok posunove cesty je trat = posun mezi dopravnami -> zavedeme zakaz odjezdu do trati
-          if (Self.typ = TJCType.shunt) then
-          begin
-            case (Self.m_data.railwayDir) of
-              TRailwayDirection.AtoB:
-                TBlkLinker(railway.linkerA).departureForbidden := true;
-              TRailwayDirection.BtoA:
-                TBlkLinker(railway.linkerB).departureForbidden := true;
-            end;
+          case (Self.m_data.railwayDir) of
+            TRailwayDirection.AtoB:
+              TBlkLinker(railway.linkerA).departureForbidden := true;
+            TRailwayDirection.BtoA:
+              TBlkLinker(railway.linkerB).departureForbidden := true;
           end;
-
-          railway.direction := Self.m_data.railwayDir;
-
-          // zruseni zaveru posledniho bloku JC priradime zruseni zaveru trati
-          Self.lastTrack.AddChangeEvent(TBlkTrack(Self.lastTrack).eventsOnZaverReleaseOrAB,
-            CreateChangeEvent(ceCaller.NullTratZaver, Self.m_data.railwayId));
         end;
 
         if ((signal.ZAM) or (Self.m_state.lastTrackOrRailwayOccupied)) then
