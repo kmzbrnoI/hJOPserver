@@ -13,6 +13,8 @@ function RealDelta(future: TTime): TTime;
 // Vrati aktualni cas podle toho, jestli je aktivni modelovy/skutecny.
 function hJOPnow(): TTime;
 
+function EncodeTimeSec(sec: Cardinal): TTime;
+
 implementation
 
 uses SysUtils, ModelovyCas;
@@ -33,6 +35,11 @@ begin
    Result := ModCas.dateTime
  else
    Result := Now;
+end;
+
+function EncodeTimeSec(sec: Cardinal): TTime;
+begin
+  Result := EncodeTime(sec div 3600, sec div 60, sec mod 60, 0);
 end;
 
 end.

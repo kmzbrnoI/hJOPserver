@@ -95,7 +95,7 @@ type
 implementation
 
 uses BlockDb, Block, BlockIR, BlockTrack, ownConvert, ownStrUtils, IfThenElse,
-  TrainDb, Train;
+  TrainDb, Train, timeHelper;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -153,7 +153,7 @@ begin
           if (StrToIntDef(strs[1], -1) <> -1) then
           begin
             var tmpTime: Integer := StrToInt(strs[1]);
-            Self.m_data.time := EncodeTime(0, tmpTime div 60, tmpTime mod 60, 0);
+            Self.m_data.time := EncodeTimeSec(tmpTime);
           end else begin
             Self.m_data.time := EncodeTime(0, StrToInt(LeftStr(strs[1], 2)), StrToInt(Copy(strs[1], 4, 2)),
               StrToInt(RightStr(strs[1], 1)));

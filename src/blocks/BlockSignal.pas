@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, rrEvent,
+uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, rrEvent, System.Math,
   TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo, JCBarriers,
   Area, StrUtils, JsonDataObjects, TechnologieRCS, Train, RegularExpressions;
 
@@ -302,7 +302,7 @@ uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSigna
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
   predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO, TCPAreasRef,
-  TrainSpeed, ConfSeq, PTUtils;
+  TrainSpeed, ConfSeq, PTUtils, timeHelper, Config;
 
 constructor TBlkSignal.Create(index: Integer);
 begin
@@ -1352,7 +1352,7 @@ begin
   if (not Self.m_state.falling) then
     Exit();
 
-  if (Self.m_state.fallingStart + EncodeTime(0, Self.m_settings.fallDelay div 60, Self.m_settings.fallDelay mod 60, 0)
+  if (Self.m_state.fallingStart + EncodeTimeSec(Self.m_settings.fallDelay)
     < now) then
   begin
     Self.signal := ncStuj;

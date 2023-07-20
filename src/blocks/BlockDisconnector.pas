@@ -121,7 +121,7 @@ type
 implementation
 
 uses TCPServerPanel, ownConvert, Graphics, PTUtils, IfThenElse, BlockPst,
-    RCSErrors, UPO;
+    RCSErrors, UPO, timeHelper;
 
 constructor TBlkDisconnector.Create(index: Integer);
 begin
@@ -360,10 +360,8 @@ begin
 
   if (state = TBlkDiscBasicState.active) then
   begin
-    Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
-                                             Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
-    Self.m_state.warning := Now + EncodeTime(0, (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) div 60,
-                                             (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) mod 60, 0);
+    Self.m_state.finish := Now + EncodeTimeSec(Self._ACTIVE_TO_DISABLE_TIME_SEC);
+    Self.m_state.warning := Now + EncodeTimeSec(Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC);
   end;
 
   Self.UpdateOutput();
@@ -421,10 +419,8 @@ end;
 
 procedure TBlkDisconnector.Prolong();
 begin
-  Self.m_state.finish := Now + EncodeTime(0, Self._ACTIVE_TO_DISABLE_TIME_SEC div 60,
-                                           Self._ACTIVE_TO_DISABLE_TIME_SEC mod 60, 0);
-  Self.m_state.warning := Now + EncodeTime(0, (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) div 60,
-                                           (Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC) mod 60, 0);
+  Self.m_state.finish := Now + EncodeTimeSec(Self._ACTIVE_TO_DISABLE_TIME_SEC);
+  Self.m_state.warning := Now + EncodeTimeSec(Self._ACTIVE_TO_DISABLE_TIME_SEC-Self._WARNING_TIME_SEC);
   Self.state := TBlkDiscBasicState.active;
 end;
 

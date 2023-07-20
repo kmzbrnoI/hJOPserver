@@ -109,7 +109,7 @@ type
 
 implementation
 
-uses AreaDb, TCPServerPanel, ownConvert, Config;
+uses AreaDb, TCPServerPanel, ownConvert, Config, timeHelper;
 
 constructor TBlkIO.Create(index: Integer);
 begin
@@ -312,8 +312,7 @@ begin
   end;
 
   if (Self.nullable) then
-    Self.m_state.nullTime := Now + EncodeTime(0, Self.m_settings.nullAfterSec div 60,
-      Self.m_settings.nullAfterSec mod 60, 0);
+    Self.m_state.nullTime := Now + EncodeTimeSec(Self.m_settings.nullAfterSec);
 
   Self.Update();
 end;

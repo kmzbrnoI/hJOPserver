@@ -1052,7 +1052,7 @@ function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; bariery_out: TJC
   nc: Boolean = false; fromAB: Boolean = false; abAfter: Boolean = false): Integer;
 begin
   Result := 1; // error by default
-  Self.m_state.timeOut := Now + EncodeTime(0, _JC_INITPOTVR_TIMEOUT_SEC div 60, _JC_INITPOTVR_TIMEOUT_SEC mod 60, 0);
+  Self.m_state.timeOut := Now + EncodeTimeSec(_JC_INITPOTVR_TIMEOUT_SEC);
 
   Self.m_state.from_stack := from_stack;
   Self.m_state.senderOR := senderOR;
@@ -1524,7 +1524,7 @@ begin
         if (anyClosed) then
         begin
           Self.step := stepJcWaitCross;
-          Self.m_state.timeOut := Now + EncodeTime(0, _JC_PRJ_TIMEOUT_SEC div 60, _JC_PRJ_TIMEOUT_SEC mod 60, 0);
+          Self.m_state.timeOut := Now + EncodeTimeSec(_JC_PRJ_TIMEOUT_SEC);
         end
         else
           Self.step := stepJcFinalZaver;
@@ -2906,7 +2906,7 @@ begin
     Self.m_state.senderOR := senderOR;
   if (senderPnl <> nil) then
     Self.m_state.senderPnl := senderPnl;
-  Self.m_state.timeOut := Now + EncodeTime(0, _JC_TIMEOUT_SEC div 60, _JC_TIMEOUT_SEC mod 60, 0);
+  Self.m_state.timeOut := Now + EncodeTimeSec(_JC_TIMEOUT_SEC);
 
   if (Self.m_state.crossingWasClosed) then
     Self.step := stepJcFinalZaver
@@ -3432,7 +3432,7 @@ begin
     Self.m_state.timeOut := Now + EncodeTime(0, _NC_TIMEOUT_MIN, 0, 0);
   end else begin
     Self.step := stepJcInit;
-    Self.m_state.timeOut := Now + EncodeTime(0, _JC_TIMEOUT_SEC div 60, _JC_TIMEOUT_SEC mod 60, 0);
+    Self.m_state.timeOut := Now + EncodeTimeSec(_JC_TIMEOUT_SEC);
   end;
 end;
 
