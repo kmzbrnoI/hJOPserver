@@ -194,6 +194,9 @@ type
     function PSts(): TList<TBlk>;
 
     procedure Log(msg: string; level: TLogLevel = llInfo; source: TLogSource = lsJC);
+    procedure LogStep(msg: string; level: TLogLevel = llInfo; source: TLogSource = lsJC);
+
+    procedure DetermineCrossingsToClose(var toClose: TList<Boolean>);
 
   public
 
@@ -1029,6 +1032,11 @@ begin
   Logging.Log('JC ' + Self.name + ': ' + msg, level, source);
 end;
 
+procedure TJC.LogStep(msg: string; level: TLogLevel; source: TLogSource);
+begin
+  Self.Log('krok '+IntToStr(Integer(Self.step))+': '+msg, level, source);
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 // stavi konkretni jizdni cestu
@@ -1300,14 +1308,14 @@ begin
           end;
         end;
 
-        Self.Log('Useky: nastavuji staveci zavery');
+        Self.LogStep('Useky: nastavuji staveci zavery');
         for var trackZav: Integer in Self.m_data.tracks do
         begin
           var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackZav));
           track.zaver := TZaver.staveni;
         end;
 
-        Self.Log('Vyhybky: zamykam do pozadovanych poloh');
+        Self.LogStep('Vyhybky: zamykam do pozadovanych poloh');
         Self.m_state.nextTurnout := -1;
         var stavim: Cardinal := 0;
         var nextTurnout: Integer := -1;
@@ -1365,7 +1373,7 @@ begin
 
         Self.m_state.nextTurnout := nextTurnout;
 
-        Self.Log('Zamky: nastavuji zavery');
+        Self.LogStep('Zamky: nastavuji zavery');
         for var refZav: TJCRefZav in Self.m_data.locks do
         begin
           var refTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(refZav.ref_blk));
@@ -1377,7 +1385,7 @@ begin
         end;
 
         Self.step := stepJcTurnoutsMoving;
-        Self.Log('Vyhybky: poloha: detekce');
+        Self.LogStep('Vyhybky: poloha: detekce');
       end; // case 0
 
     stepJcTurnoutsMoving:
@@ -1395,17 +1403,17 @@ begin
             Exit();
         end;
 
-        Self.Log('Krok 11 : vyhybky: poloha: OK');
+        Self.LogStep('Vyhybky: poloha: OK');
         Self.m_state.nextTurnout := -1;
 
-        Self.Log('Krok 11: useky: nastavuji nouzovy zaver');
+        Self.LogStep('Useky: nastavuji nouzovy zaver');
         for var trackZav: Integer in Self.m_data.tracks do
         begin
           var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackZav));
           track.zaver := TZaver.nouz;
         end;
 
-        Self.Log('Krok 11: useky: kontroluji volnost useku s neprofilovymi styky, zapevnuji neprofilove useky');
+        Self.LogStep('Useky: kontroluji volnost useku s neprofilovymi styky, zapevnuji neprofilove useky');
         for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
         begin
           var neprofil: TBlkTrack := nil;
@@ -1423,7 +1431,7 @@ begin
               if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
                 PanelServer.BottomError(Self.m_state.senderPnl, 'Neuvolněn ' + neprofil.name,
                   (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
-              Self.Log('Krok 14 : Neprofilovy usek ' + neprofil.name + ' neuvolnen!');
+              Self.LogStep('Krok 14 : Neprofilovy usek ' + neprofil.name + ' neuvolnen!');
               Self.CancelActivating();
               Exit();
             end;
@@ -1527,7 +1535,6 @@ begin
         end
         else
           Self.step := stepJcFinalZaver;
-
       end;
 
     stepJcWaitCross:
@@ -1545,12 +1552,13 @@ begin
           Self.Log('Krok 13 : prejezd ' + crossing.name + ' uzavren');
         end; // for i
 
+        Self.LogStep('Vsechny pozadovane prejezdy uzavreny');
         Self.step := stepJcFinalZaver;
       end;
 
     stepJcFinalZaver:
       begin
-        Self.Log('Krok 14 : useky: nastavit validni zaver');
+        Self.LogStep('Useky: nastavit validni zaver');
 
         for var i: Integer := 0 to Self.m_data.tracks.Count - 1 do
         begin
@@ -1570,10 +1578,10 @@ begin
 
         if ((signal.ZAM) or (Self.m_state.lastTrackOrRailwayOccupied)) then
         begin
-          Self.Log('Krok 14 : navestidlo: nestavim');
+          Self.LogStep('Navestidlo: nestavim');
           Self.step := stepJcFinish;
         end else begin
-          Self.Log('Krok 14 : navestidlo: stavim...');
+          Self.LogStep('Navestidlo: stavim...');
           Self.SetSignalSignal();
           Self.step := stepJcSignalWait;
         end;
@@ -1621,7 +1629,7 @@ begin
             signal.signal := ncStuj;
           // Send to all areas because DN could be from any source (last track freed etc.)
           Self.signal.BottomErrorBroadcast('Podmínky pro '+Self.name+' nesplněny!', 'TECHNOLOGIE');
-          Self.Log('Krok 16 : Podmínky pro JC nesplněny!');
+          Self.LogStep('Podmínky pro JC nesplněny!');
           Exit();
         end;
 
@@ -1674,7 +1682,7 @@ begin
         if ((Self.m_state.ab) and (not signal.ab)) then
           signal.ABJC := Self;
 
-        Self.Log('Postavena JC ' + Self.name);
+        Self.LogStep('Postavena JC ' + Self.name);
       end;
 
     stepJcLastTrackWait:
@@ -1703,7 +1711,7 @@ begin
     stepNcInit:
       begin
         // vsem usekum nastavime staveci zaver:
-        Self.Log('Krok 100: useky: nastavuji staveci zavery');
+        Self.LogStep('Useky: nastavuji staveci zavery');
         for var trackZav: Integer in Self.m_data.tracks do
         begin
           var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackZav));
@@ -1713,7 +1721,7 @@ begin
         // nastavit nouzovy zaver uvazky
         if (Self.m_data.railwayId > -1) then
         begin
-          Self.Log('Krok 100: trat: nastavuji nouzovy zaver uvazky');
+          Self.LogStep('Trat: nastavuji nouzovy zaver uvazky');
           var railway: TBlkRailway := TBlkRailway(Blocks.GetBlkByID(Self.m_data.railwayId));
 
           // najdeme si uvazku, ktera je v OR navestidla a te nastavime nouzovy zaver
@@ -1730,7 +1738,7 @@ begin
         end;
 
         // nastavit vyhybky do pozadovanych poloh:
-        Self.Log('Krok 100: vyhybky: nastavuji do pozadovanych poloh');
+        Self.LogStep('Vyhybky: nastavuji do pozadovanych poloh');
 
         Self.m_state.nextTurnout := 0;
 
@@ -1749,7 +1757,7 @@ begin
         // For simplicity solve odvrat just in callback
         // This may be a little bit slower, but will generally work fine
 
-        Self.Log('Krok 100: prejezdy: uzaviram');
+        Self.LogStep('Prejezdy: uzaviram');
         for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
         begin
           if (crossingZav.closeTracks.Count = 0) then
@@ -1783,7 +1791,7 @@ begin
         Self.m_state.ncBarieryCntLast := -1; // tady je potreba mit cislo < 0
 
         Self.step := stepNcBarrierUpdate;
-      end; // case 100
+      end;
 
     stepNcBarrierUpdate:
       begin
@@ -1796,7 +1804,7 @@ begin
         // kontrolujeme rozdilnost seznamu:
         if (Self.m_state.ncBariery.Count <> Self.m_state.ncBarieryCntLast) then
         begin
-          Self.Log('Krok 101: zmena potvr., odesilam aktualni seznam');
+          Self.LogStep('Zmena potvr., odesilam aktualni seznam');
           var str: string;
           if (Self.typ = TJCType.Train) then
             str := 'Zapnutí přivolávací návěsti'
@@ -1839,7 +1847,7 @@ begin
         // potrvzovaci sekvence potvrzena -> stavim navestidlo, ...
 
         Self.m_state.nextTurnout := -1;
-        Self.Log('Krok 102: useky: rusim zavery');
+        Self.LogStep('Useky: rusim zavery');
         for var trackZav: Integer in Self.m_data.tracks do
         begin
           var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackZav));
@@ -1852,7 +1860,7 @@ begin
         if ((Self.typ = TJCType.Train) and (signal.enabled)) then
         begin
           Self.SetSignalSignal();
-          Self.Log('Krok 102 : navestidlo: nastavuji na privolavaci navest...');
+          Self.LogStep('Navestidlo: nastavuji na privolavaci navest...');
           Self.step := stepNcSignalWait;
         end
         else
@@ -1863,7 +1871,7 @@ begin
       begin
         if (signal.signal = ncPrivol) then
         begin
-          Self.Log('Krok 103 : navestidlo postaveno');
+          Self.LogStep('Navestidlo postaveno');
           Self.step := stepNcFinish;
         end;
       end;
@@ -1964,8 +1972,8 @@ begin
           end;
         end; // if typ = vlak
 
-        Self.Log('Postavena NC ' + Self.name);
-      end; // case 102
+        Self.LogStep('Postavena NC ' + Self.name);
+      end;
   end; // case
 end;
 
