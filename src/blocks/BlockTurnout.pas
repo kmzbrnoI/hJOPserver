@@ -200,6 +200,8 @@ type
     procedure PstCheckActive();
     procedure PositionError();
 
+    function SelfMenuNS(): Boolean;
+
   public
     constructor Create(index: Integer);
     destructor Destroy(); override;
@@ -901,8 +903,7 @@ begin
         callback_err(Self, vseLocked);
       Exit();
     end;
-    if (((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied)))
-      and (not nouz)) then
+    if (((Self.SelfMenuNS()) or ((coupling <> nil) and (coupling.SelfMenuNS()))) and (not nouz)) then
     begin
       if (Assigned(callback_err)) then
         callback_err(Self, vseOccupied);
@@ -1229,8 +1230,7 @@ begin
   begin
     // na vyhybce neni zaver a menu neni redukovane
 
-    if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))
-        or (Self.PstIsActive()) or ((coupling <> nil) and (coupling.PstIsActive()))) then
+    if ((Self.SelfMenuNS()) or ((coupling <> nil) and (coupling.SelfMenuNS()))) then
     begin
       if (Self.m_state.position = plus) then
         Result := Result + '!NS-,';
@@ -2037,6 +2037,11 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkTurnout.SelfMenuNS(): Boolean;
+begin
+  Result := ((Self.occupied = TTrackState.occupied) and (Self.lock = nil)) or (Self.PstIsActive());
+end;
 
 end.
 
