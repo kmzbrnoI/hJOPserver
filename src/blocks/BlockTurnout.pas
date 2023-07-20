@@ -127,6 +127,7 @@ type
     m_npPlus: TBlk;
     m_npMinus: TBlk;
 
+    function GetTrackZaver(): TZaver;
     function GetZaver(): TZaver;
     function GetNUZ(): Boolean;
     function GetOccupied(): TTrackState;
@@ -183,7 +184,7 @@ type
     function GetNpPlus(): TBlk;
     function GetNpMinus(): TBlk;
     function GetCoupling(): TBlkTurnout;
-    function ShouldBeLocked(withZamek: Boolean = true): Boolean;
+    function ShouldBeLocked(withLock: Boolean = true): Boolean;
     function ShouldBeLockedIgnoreStaveni(): Boolean;
 
     procedure NpObsazChange(Sender: TObject; data: Integer);
@@ -547,17 +548,25 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.GetZaver(): TZaver;
+function TBlkTurnout.GetTrackZaver(): TZaver;
 begin
   if (Self.m_spnl.track = -1) then
     Exit(TZaver.no);
 
-  if (((Self.m_parent = nil) and (Self.m_spnl.track <> -1)) or ((Self.m_parent.id <> Self.m_spnl.track))) then
+  if (((Self.m_parent = nil) and (Self.m_spnl.track <> -1)) or (Self.m_parent.id <> Self.m_spnl.track)) then
     Self.m_parent := Blocks.GetBlkTrackOrRTByID(Self.m_spnl.track);
   if (Self.m_parent <> nil) then
     Result := Self.m_parent.zaver
   else
     Result := TZaver.no;
+end;
+
+function TBlkTurnout.GetZaver(): TZaver;
+begin
+  if (Self.lock <> nil) then
+    Result := TZaver.no
+  else
+    Result := Self.GetTrackZaver();
 end;
 
 function TBlkTurnout.GetNUZ(): Boolean;
@@ -1745,7 +1754,7 @@ begin
 
     if (Self.occupied = TTrackState.Free) then
     begin
-      case (Self.zaver) of
+      case (Self.GetTrackZaver()) of
         vlak:
           fg := clLime;
         posun:
@@ -1867,14 +1876,14 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.ShouldBeLocked(withZamek: Boolean): Boolean;
+function TBlkTurnout.ShouldBeLocked(withLock: Boolean): Boolean;
 begin
   Result := (Self.zaver > TZaver.no) or (Self.emLock) or (Self.intentionalLocked) or
-    ((withZamek) and (Self.LockLocked()));
+    ((withLock) and (Self.LockLocked()));
 
   if (Self.coupling <> nil) then
     Result := Result or (Self.coupling.zaver > TZaver.no) or (Self.coupling.emLock) or (Self.coupling.intentionalLocked)
-      or ((withZamek) and (Self.coupling.LockLocked()));
+      or ((withLock) and (Self.coupling.LockLocked()));
 end;
 
 function TBlkTurnout.ShouldBeLockedIgnoreStaveni(): Boolean;
