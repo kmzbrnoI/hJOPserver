@@ -31,25 +31,25 @@ implementation
 
 {$R *.dfm}
 
-uses fMain, version;
+uses fMain, version, SysUtils;
 
 procedure TF_splash.FormCreate(Sender: TObject);
 begin
-  F_splash.Show;
-  Application.ProcessMessages;
+  Self.Show();
+  Application.ProcessMessages();
 end;
 
 procedure TF_splash.FormShow(Sender: TObject);
 begin
-  ST_Version.Caption := 'Verze ' + VersionStr(Application.ExeName);
-  L_BuildTime.Caption := LastBuildDate + '  ' + LastBuildTime;
+  Self.ST_Version.Caption := 'Verze ' + VersionStr(Application.ExeName);
+  Self.L_BuildTime.Caption := FormatDateTime('dd.mm.yyyy hh:nn:ss', BuildDateTime());
 end;
 
 procedure TF_splash.AddStav(Text: string);
 begin
-  F_splash.L_Nacitani.Caption := Text;
-  F_splash.PB_Prubeh.Position := F_splash.PB_Prubeh.Position + 1;
-  F_splash.Refresh;
+  Self.L_Nacitani.Caption := Text;
+  Self.PB_Prubeh.Position := F_splash.PB_Prubeh.Position + 1;
+  Self.Refresh();
 end;
 
 end.// unit

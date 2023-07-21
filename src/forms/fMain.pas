@@ -1735,8 +1735,9 @@ begin
 
   Self.LoadIniLibData();
 
-  F_Main.Caption := 'hJOPserver – v' + VersionStr(Application.ExeName) + ' (build ' + LastBuildDate + ')';
-  F_Main.SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
+  Self.Caption := 'hJOPserver – v' + VersionStr(Application.ExeName) +
+    ' (build ' + FormatDateTime('dd.mm.yyyy', BuildDateTime()) + ')';
+  Self.SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 end;
 
 procedure TF_Main.FormDestroy(Sender: TObject);

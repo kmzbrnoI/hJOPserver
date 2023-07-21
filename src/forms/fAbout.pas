@@ -50,7 +50,7 @@ begin
   Self.ST_about5.Font.Color := clBlue;
   Self.ST_about3.Font.Color := clBlue;
 
-  Self.L_VApp.Caption := VersionStr(Application.ExeName) + ' (' + LastBuildDate + ' ' + LastBuildTime + ')';
+  Self.L_VApp.Caption := VersionStr(Application.ExeName) + ' (' + FormatDateTime('dd.mm.yyyy hh:nn:ss', BuildDateTime()) + ')';
 
   Self.L_VRCSLib.Caption := RCSi.Lib;
 
