@@ -627,7 +627,7 @@ begin
     Exit();
   end;
 
-  F_Main.S_RCS_open.Brush.Color := clBlue;
+  Self.S_RCS_open.Brush.Color := clBlue;
   Self.LogStatus('RCS: uzavírám zařízení...');
 
   Log('----- RCS CLOSING -----', llInfo, lsRCS);
@@ -675,7 +675,7 @@ begin
   end; // with F_Main do
 
   Self.LogStatus('RCS: Spouštím komunikaci...');
-  F_Main.S_RCS_start.Brush.Color := clBlue;
+  Self.S_RCS_start.Brush.Color := clBlue;
 
   Log('----- RCS STARTING -----', llInfo, lsRCS);
 
@@ -717,7 +717,7 @@ begin
   end; // with F_Main do
 
   Self.LogStatus('RCS: Otevírám zařízení, hledám moduly...');
-  F_Main.S_RCS_open.Brush.Color := clBlue;
+  Self.S_RCS_open.Brush.Color := clBlue;
 
   Log('----- RCS OPENING -----', llInfo, lsRCS);
 
@@ -739,11 +739,11 @@ procedure TF_Main.A_RCS_StopExecute(Sender: TObject);
 begin
   if ((SystemData.Status = stopping) and (not RCSi.NoExStarted)) then
   begin
-    F_Main.A_RCS_CloseExecute(nil);
+    Self.A_RCS_CloseExecute(nil);
     Exit();
   end;
 
-  F_Main.S_RCS_start.Brush.Color := clGray;
+  Self.S_RCS_start.Brush.Color := clGray;
   Self.LogStatus('RCS: zastavuji komunikaci...');
 
   Log('----- RCS STOPPING -----', llInfo, lsRCS);
@@ -794,7 +794,7 @@ end;
 
 procedure TF_Main.OnRCSScanned(Sender: TObject);
 begin
-  F_Main.S_RCS_start.Brush.Color := clLime;
+  Self.S_RCS_start.Brush.Color := clLime;
   RCSTableData.UpdateTable();
 
   Log('----- RCS SCANNED -----', llInfo, lsRCS);
@@ -823,9 +823,9 @@ begin
   if (F_Tester.Showing) then
     F_Tester.Close();
 
-  F_Main.S_RCS_start.Brush.Color := clRed;
+  Self.S_RCS_start.Brush.Color := clRed;
 
-  with (F_Main) do
+  with (Self) do
   begin
     A_RCS_Go.Enabled := true;
     A_RCS_Stop.Enabled := false;
@@ -843,7 +843,7 @@ begin
 
   RCSTableData.UpdateTable();
 
-  if ((F_Main.Showing) and (F_Main.PC_1.ActivePage = F_Main.TS_Bloky)) then
+  if ((Self.Showing) and (Self.PC_1.ActivePage = F_Main.TS_Bloky)) then
     BlocksTablePainter.UpdateTable();
 
   PanelServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
@@ -866,7 +866,7 @@ begin
   Self.MI_RCS_Libs.Enabled := false;
   Self.UpdateSystemButtons();
 
-  F_Main.S_RCS_open.Brush.Color := clLime;
+  Self.S_RCS_open.Brush.Color := clLime;
 
   try
     Log('----- RCS OPEN OK : ' + IntToStr(RCSi.GetModuleCount) + ' modules -----', llInfo, lsRCS);
@@ -921,8 +921,8 @@ begin
   end;
   Trains.StopAllTrains();
 
-  F_Main.S_RCS_open.Brush.Color := clRed;
-  F_Main.S_RCS_start.Brush.Color := clRed;
+  Self.S_RCS_open.Brush.Color := clRed;
+  Self.S_RCS_start.Brush.Color := clRed;
 
   Log('----- RCS CLOSE OK -----', llInfo, lsRCS);
 
@@ -951,7 +951,7 @@ begin
   Self.A_RCS_Open.Enabled := true;
   Self.UpdateSystemButtons();
 
-  F_Main.S_RCS_open.Brush.Color := clRed;
+  Self.S_RCS_open.Brush.Color := clRed;
 
   SystemData.Status := TSystemStatus.null;
 
@@ -970,7 +970,7 @@ begin
   A_RCS_Stop.Enabled := false;
   A_RCS_Open.Enabled := true;
 
-  F_Main.S_RCS_open.Brush.Color := clRed;
+  Self.S_RCS_open.Brush.Color := clRed;
 
   SystemData.Status := null;
 
@@ -1175,7 +1175,7 @@ procedure TF_Main.A_Trk_DisconnectExecute(Sender: TObject);
 begin
   if ((SystemData.Status = stopping) and (not TrakceI.ConnectedSafe())) then
   begin
-    F_Main.A_RCS_StopExecute(nil);
+    Self.A_RCS_StopExecute(nil);
     Exit();
   end;
 
@@ -1194,33 +1194,32 @@ begin
 end;
 
 procedure TF_Main.A_Locos_AcquireExecute(Sender: TObject);
-var addr: Cardinal;
 begin
-  F_Main.LogStatus('Loko: přebírám...');
-  F_Main.S_locos_acquired.Brush.Color := clBlue;
-  F_Main.G_locos_acquired.ForeColor := clBlue;
+  Self.LogStatus('Loko: přebírám...');
+  Self.S_locos_acquired.Brush.Color := clBlue;
+  Self.G_locos_acquired.ForeColor := clBlue;
 
-  F_Main.G_locos_acquired.MaxValue := 0;
-  for addr := 0 to THVDatabase._MAX_ADDR - 1 do
+  Self.G_locos_acquired.MaxValue := 0;
+  for var addr := 0 to THVDatabase._MAX_ADDR - 1 do
     if (HVDb[addr] <> nil) and (HVDb[addr].ShouldAcquire()) then
-      F_Main.G_locos_acquired.MaxValue := F_Main.G_locos_acquired.MaxValue + 1;
-  if (F_Main.G_locos_acquired.MaxValue = 0) then
-    F_Main.G_locos_acquired.MaxValue := 1;
+      Self.G_locos_acquired.MaxValue := Self.G_locos_acquired.MaxValue + 1;
+  if (Self.G_locos_acquired.MaxValue = 0) then
+    Self.G_locos_acquired.MaxValue := 1;
 
   HVDb.TrakceAcquireAllUsed(Self.OnTrkAllAcquired, Self.OnTrkAcquireError, Self.OnTrkLocoAcquired);
 end;
 
 procedure TF_Main.A_Locos_ReleaseExecute(Sender: TObject);
 begin
-  F_Main.LogStatus('Loko: odhlašuji...');
-  F_Main.S_locos_acquired.Brush.Color := clBlue;
-  F_Main.G_locos_acquired.ForeColor := clBlue;
+  Self.LogStatus('Loko: odhlašuji...');
+  Self.S_locos_acquired.Brush.Color := clBlue;
+  Self.G_locos_acquired.ForeColor := clBlue;
   HVDb.TrakceReleaseAllUsed(Self.OnTrkAllReleased, Self.OnTrkLocoReleased);
 end;
 
 procedure TF_Main.OnTrkAllAcquired(Sender: TObject);
 begin
-  F_Main.LogStatus('Loko: všechna loko převzata');
+  Self.LogStatus('Loko: všechna loko převzata');
 
   Self.S_locos_acquired.Brush.Color := clLime;
   Self.A_Locos_Acquire.Enabled := false;
@@ -1230,7 +1229,7 @@ begin
   Self.G_locos_acquired.ForeColor := clLime;
 
   if (SystemData.Status = starting) then
-    F_Main.A_PanelServer_StartExecute(nil);
+    Self.A_PanelServer_StartExecute(nil);
 end;
 
 procedure TF_Main.OnTrkAcquireError(Sender: TObject);
@@ -1242,8 +1241,8 @@ begin
   if (SystemData.Status = TSystemStatus.starting) then
   begin
     SystemData.Status := TSystemStatus.null;
-    F_Main.A_System_Start.Enabled := true;
-    F_Main.A_System_Stop.Enabled := true;
+    Self.A_System_Start.Enabled := true;
+    Self.A_System_Stop.Enabled := true;
   end;
 
   Application.MessageBox('Nepodařilo se převzít všechny lokomotivy, více informací v logu.', 'Chyba',
@@ -1252,7 +1251,7 @@ end;
 
 procedure TF_Main.OnTrkAllReleased(Sender: TObject);
 begin
-  F_Main.LogStatus('Loko: všechna loko odhlášena');
+  Self.LogStatus('Loko: všechna loko odhlášena');
 
   Self.S_locos_acquired.Brush.Color := clRed;
 
@@ -1263,7 +1262,7 @@ begin
   Self.G_locos_acquired.ForeColor := clBlue;
 
   if (SystemData.Status = stopping) then
-    F_Main.SetCallMethod(F_Main.A_Trk_DisconnectExecute);
+    Self.SetCallMethod(F_Main.A_Trk_DisconnectExecute);
 end;
 
 procedure TF_Main.OnTrkLocoAcquired(Sender: TObject);
@@ -1428,8 +1427,8 @@ begin
   if (SystemData.Status = TSystemStatus.starting) then
   begin
     SystemData.Status := TSystemStatus.null;
-    F_Main.A_System_Start.Enabled := true;
-    F_Main.A_System_Stop.Enabled := true;
+    Self.A_System_Start.Enabled := true;
+    Self.A_System_Stop.Enabled := true;
   end;
 
   TrakceI.opening := false;
@@ -1454,7 +1453,7 @@ begin
   begin
     // je DCC
     TrakceI.DCCGoTime := Now;
-    F_Main.S_DCC.Brush.Color := clLime;
+    Self.S_DCC.Brush.Color := clLime;
     Self.LogStatus('DCC: go');
 
     if (TrakceI.ConnectedSafe()) then
@@ -1568,7 +1567,7 @@ begin
     ZesTableData.UpdateTable();
   if (PC_1.ActivePage = TS_Soupravy) then
     TrainTableData.UpdateTable();
-  if (PC_1.ActivePage = F_Main.TS_HV) then
+  if (PC_1.ActivePage = Self.TS_HV) then
     HVTableData.UpdateTable();
   if (PC_1.ActivePage = TS_Stanice) then
     ORsTableData.UpdateTable(true);
@@ -1647,7 +1646,7 @@ begin
         Log('Pokus o zavření okna bez ukončení komunikace se systémy', llWarning);
         if (Application.MessageBox('Program není odpojen od systémů, odpojit od systémů?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
-          F_Main.A_System_StopExecute(Self);
+          Self.A_System_StopExecute(Self);
       end;
 
     TCloseInfo.ci_rcs:
@@ -1854,7 +1853,7 @@ begin
 
     Self.CloseMessage := false;
     Self.NUZClose := true;
-    F_Main.Close();
+    Self.Close();
   end;
   inherited;
 end;
@@ -1949,24 +1948,24 @@ begin
   end;
 
   try
-    HVDb.SaveState(F_Main.E_dataload_HV_state.Text + '_');
+    HVDb.SaveState(Self.E_dataload_HV_state.Text + '_');
 
-    if (FileExists(F_Main.E_dataload_HV_state.Text)) then
-      DeleteFile(F_Main.E_dataload_HV_state.Text);
-    MoveFile(PChar(F_Main.E_dataload_HV_state.Text + '_'), PChar(F_Main.E_dataload_HV_state.Text));
-    DeleteFile(F_Main.E_dataload_HV_state.Text + '_');
+    if (FileExists(Self.E_dataload_HV_state.Text)) then
+      DeleteFile(Self.E_dataload_HV_state.Text);
+    MoveFile(PChar(Self.E_dataload_HV_state.Text + '_'), PChar(Self.E_dataload_HV_state.Text));
+    DeleteFile(Self.E_dataload_HV_state.Text + '_');
   except
     on E: Exception do
       AppEvents.LogException(E, 'HvDb.SaveToDir');
   end;
 
   try
-    Trains.SaveData(F_Main.E_dataload_soupr.Text + '_');
+    Trains.SaveData(Self.E_dataload_soupr.Text + '_');
 
-    if (FileExists(F_Main.E_dataload_soupr.Text)) then
-      DeleteFile(F_Main.E_dataload_soupr.Text);
-    MoveFile(PChar(F_Main.E_dataload_soupr.Text + '_'), PChar(F_Main.E_dataload_soupr.Text));
-    DeleteFile(F_Main.E_dataload_soupr.Text + '_');
+    if (FileExists(Self.E_dataload_soupr.Text)) then
+      DeleteFile(Self.E_dataload_soupr.Text);
+    MoveFile(PChar(Self.E_dataload_soupr.Text + '_'), PChar(Self.E_dataload_soupr.Text));
+    DeleteFile(Self.E_dataload_soupr.Text + '_');
   except
     on E: Exception do
       AppEvents.LogException(E, 'Trains.SaveData');
@@ -2018,7 +2017,7 @@ begin
   end;
 
   try
-    ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), F_Main.E_configFilename.Text),
+    ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), Self.E_configFilename.Text),
       TEncoding.UTF8);
     try
       ModCas.SaveData(ini);
@@ -2426,21 +2425,21 @@ begin
     // update tables
     if (Self.Showing) then
     begin
-      if (F_Main.PC_1.ActivePage = F_Main.TS_Bloky) then
+      if (Self.PC_1.ActivePage = Self.TS_Bloky) then
         BlocksTablePainter.UpdateTable();
-      if (F_Main.PC_1.ActivePage = F_Main.TS_Soupravy) then
+      if (Self.PC_1.ActivePage = Self.TS_Soupravy) then
         TrainTableData.UpdateTable();
-      if (F_Main.PC_1.ActivePage = F_Main.TS_Zesilovace) then
+      if (Self.PC_1.ActivePage = Self.TS_Zesilovace) then
         ZesTableData.UpdateTable();
-      if (F_Main.PC_1.ActivePage = F_Main.TS_HV) then
+      if (Self.PC_1.ActivePage = Self.TS_HV) then
         HVTableData.UpdateTable();
-      if (F_Main.PC_1.ActivePage = F_Main.TS_VC) then
+      if (Self.PC_1.ActivePage = Self.TS_VC) then
         JCTableData.UpdateTable();
-      if (F_Main.PC_1.ActivePage = F_Main.TS_MultiJC) then
+      if (Self.PC_1.ActivePage = Self.TS_MultiJC) then
         MultiJCTableData.UpdateTable();
-      if (F_Main.PC_1.ActivePage = F_Main.TS_Stanice) then
+      if (Self.PC_1.ActivePage = Self.TS_Stanice) then
         ORsTableData.UpdateTable();
-      if (F_Main.PC_1.ActivePage = F_Main.TS_Technologie) then
+      if (Self.PC_1.ActivePage = Self.TS_Technologie) then
         PanelServer.GUIRefreshFromQueue();
 
       ABTableData.Update();
@@ -2461,7 +2460,7 @@ procedure TF_Main.T_clear_log_msgTimer(Sender: TObject);
 begin
   if (Self.sb1Log) then
   begin
-    F_Main.SB1.Panels.Items[_SB_LOG].Text := '';
+    Self.SB1.Panels.Items[_SB_LOG].Text := '';
     Self.sb1Log := false;
   end;
 end;
@@ -2535,7 +2534,7 @@ end;
 
 procedure TF_Main.MI_DisconnectClick(Sender: TObject);
 begin
-  if (PanelServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil) then
+  if (PanelServer.GetClient(Self.LV_Clients.ItemIndex) <> nil) then
   begin
     try
       PanelServer.DisconnectClient(PanelServer.GetClient(Self.LV_Clients.ItemIndex).connection);
@@ -2751,14 +2750,14 @@ begin
   Self.CB_centrala_loglevel_table.ItemIndex := Integer(TrakceI.logLevelTable);
 
   if (TrakceI.Lib = '') then
-    F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-'
+    Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-'
   else
-    F_Main.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(TrakceI.Lib);
+    Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(TrakceI.Lib);
 
   if (RCSi.Lib = '') then
-    F_Main.SB1.Panels.Items[_SB_RCS_LIB].Text := '-'
+    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := '-'
   else
-    F_Main.SB1.Panels.Items[_SB_RCS_LIB].Text := ExtractFileName(RCSi.Lib);
+    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := ExtractFileName(RCSi.Lib);
 
   try
     if ((RCSi.ready) and (diag.simInputs) and (RCSi.Simulation)) then
@@ -2802,8 +2801,8 @@ end;
 
 procedure TF_Main.PM_ClientsPopup(Sender: TObject);
 begin
-  for var item in F_Main.PM_Clients.Items do
-    item.Enabled := (F_Main.LV_Clients.Selected <> nil) and (PanelServer.GetClient(F_Main.LV_Clients.ItemIndex) <> nil);
+  for var item in Self.PM_Clients.Items do
+    item.Enabled := (Self.LV_Clients.Selected <> nil) and (PanelServer.GetClient(Self.LV_Clients.ItemIndex) <> nil);
 end;
 
 procedure TF_Main.PM_ConsoleClick(Sender: TObject);
