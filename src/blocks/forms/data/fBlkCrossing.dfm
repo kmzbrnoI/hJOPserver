@@ -4,7 +4,7 @@ object F_BlkCrossing: TF_BlkCrossing
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 489
+  ClientHeight = 521
   ClientWidth = 691
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -54,7 +54,7 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object B_save_P: TButton
     Left = 7
-    Top = 456
+    Top = 488
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -68,7 +68,7 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object B_Storno: TButton
     Left = 93
-    Top = 456
+    Top = 488
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -97,7 +97,7 @@ object F_BlkCrossing: TF_BlkCrossing
     Left = 8
     Top = 64
     Width = 353
-    Height = 326
+    Height = 419
     Caption = ' RCS '
     TabOrder = 2
     object L_P01: TLabel
@@ -126,7 +126,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Left = 14
       Top = 32
       Width = 323
-      Height = 133
+      Height = 231
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -157,7 +157,7 @@ object F_BlkCrossing: TF_BlkCrossing
       end
       object Label10: TLabel
         Left = 10
-        Top = 74
+        Top = 73
         Width = 40
         Height = 13
         Margins.Left = 2
@@ -172,6 +172,39 @@ object F_BlkCrossing: TF_BlkCrossing
         Width = 100
         Height = 13
         Caption = 'Typ v'#253'stupu pozitiva:'
+      end
+      object Label13: TLabel
+        Left = 10
+        Top = 126
+        Width = 59
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Z'#225'vory dol'#367':'
+      end
+      object Label14: TLabel
+        Left = 10
+        Top = 152
+        Width = 72
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Z'#225'vory nahoru:'
+      end
+      object Label15: TLabel
+        Left = 10
+        Top = 178
+        Width = 40
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Zvonek:'
       end
       object SE_out_open_port: TSpinEdit
         Left = 242
@@ -296,10 +329,129 @@ object F_BlkCrossing: TF_BlkCrossing
           'inverzn'#237
           'kmitav'#253)
       end
+      object CHB_RCS_Barriers_Down: TCheckBox
+        Left = 143
+        Top = 126
+        Width = 16
+        Height = 17
+        TabOrder = 10
+        OnClick = CHB_RCS_Barriers_DownClick
+      end
+      object SE_out_barriers_down_board: TSpinEdit
+        Left = 162
+        Top = 126
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 191
+        MinValue = 0
+        TabOrder = 11
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
+      object SE_out_barriers_down_port: TSpinEdit
+        Left = 242
+        Top = 126
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 12
+        Value = 0
+      end
+      object CHB_RCS_Barriers_Up: TCheckBox
+        Left = 143
+        Top = 152
+        Width = 16
+        Height = 17
+        TabOrder = 13
+        OnClick = CHB_RCS_Barriers_UpClick
+      end
+      object SE_out_barriers_up_board: TSpinEdit
+        Left = 162
+        Top = 152
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 191
+        MinValue = 0
+        TabOrder = 14
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
+      object SE_out_barriers_up_port: TSpinEdit
+        Left = 242
+        Top = 152
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 15
+        Value = 0
+      end
+      object CHB_RCS_Ring: TCheckBox
+        Left = 143
+        Top = 178
+        Width = 16
+        Height = 17
+        TabOrder = 16
+        OnClick = CHB_RCS_RingClick
+      end
+      object SE_out_ring_board: TSpinEdit
+        Left = 162
+        Top = 178
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 191
+        MinValue = 0
+        TabOrder = 17
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
+      object SE_out_ring_port: TSpinEdit
+        Left = 242
+        Top = 178
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 18
+        Value = 0
+      end
+      object CHB_Ring_Active_Down: TCheckBox
+        Left = 13
+        Top = 201
+        Width = 180
+        Height = 17
+        Caption = 'Zvonek aktivn'#237' p'#345'i z'#225'vor'#225'ch dole'
+        TabOrder = 19
+      end
     end
     object GB_RCS_In: TGroupBox
       Left = 14
-      Top = 172
+      Top = 267
       Width = 323
       Height = 134
       Margins.Left = 2

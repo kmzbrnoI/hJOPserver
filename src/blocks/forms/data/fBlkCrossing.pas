@@ -72,6 +72,19 @@ type
     CHB_RCS_Caution: TCheckBox;
     Label12: TLabel;
     CB_Positive_Type: TComboBox;
+    Label13: TLabel;
+    CHB_RCS_Barriers_Down: TCheckBox;
+    SE_out_barriers_down_board: TSpinEdit;
+    SE_out_barriers_down_port: TSpinEdit;
+    Label14: TLabel;
+    CHB_RCS_Barriers_Up: TCheckBox;
+    SE_out_barriers_up_board: TSpinEdit;
+    SE_out_barriers_up_port: TSpinEdit;
+    Label15: TLabel;
+    CHB_RCS_Ring: TCheckBox;
+    SE_out_ring_board: TSpinEdit;
+    SE_out_ring_port: TSpinEdit;
+    CHB_Ring_Active_Down: TCheckBox;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -86,6 +99,9 @@ type
     procedure CHB_RCS_ClosedClick(Sender: TObject);
     procedure CHB_RCS_OpenClick(Sender: TObject);
     procedure CHB_RCS_CautionClick(Sender: TObject);
+    procedure CHB_RCS_Barriers_DownClick(Sender: TObject);
+    procedure CHB_RCS_Barriers_UpClick(Sender: TObject);
+    procedure CHB_RCS_RingClick(Sender: TObject);
   private
     openIndex: Integer;
     block: TBlkCrossing;
@@ -130,6 +146,9 @@ begin
   Self.SE_out_close_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_close_board.Value, Self.SE_out_close_port.Value);
   Self.SE_out_open_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_open_board.Value, Self.SE_out_open_port.Value);
   Self.SE_out_positive_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_positive_board.Value, Self.SE_out_positive_port.Value);
+  Self.SE_out_barriers_down_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_barriers_down_board.Value, Self.SE_out_barriers_down_port.Value);
+  Self.SE_out_barriers_up_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_barriers_up_board.Value, Self.SE_out_barriers_up_port.Value);
+  Self.SE_out_ring_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_ring_board.Value, Self.SE_out_ring_port.Value);
 
   Self.SE_in_close_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_close_board.Value, Self.SE_in_close_port.Value);
   Self.SE_in_open_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_open_board.Value, Self.SE_in_open_port.Value);
@@ -177,6 +196,10 @@ begin
     settings.RCSOutputs.close := RCSOptionalFromUI(Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port, addrs);
     settings.RCSOutputs.emOpen := RCSOptionalFromUI(Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port, addrs);
     settings.RCSOutputs.positive := RCSOptionalFromUI(Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port, addrs);
+    settings.RCSOutputs.barriersDown := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port, addrs);
+    settings.RCSOutputs.barriersUp := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port, addrs);
+    settings.RCSOutputs.bell := RCSOptionalFromUI(Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port, addrs);
+
     settings.RCSInputs.open := RCSOptionalFromUI(Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port, addrs);
     settings.RCSInputs.closed := RCSOptionalFromUI(Self.CHB_RCS_Close, Self.SE_in_close_board, Self.SE_in_close_port, addrs);
     settings.RCSInputs.caution := RCSOptionalFromUI(Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port, addrs);
@@ -184,6 +207,7 @@ begin
 
     settings.RCSOutputs.positiveInvert := (Self.CB_Positive_Type.ItemIndex = 1);
     settings.RCSOutputs.positiveFlick := (Self.CB_Positive_Type.ItemIndex = 2);
+    settings.RCSOutputs.bellActiveDown := Self.CHB_Ring_Active_Down.Checked;
 
     Self.block.SetSettings(settings);
 
@@ -303,6 +327,28 @@ begin
   end;
 end;
 
+procedure TF_BlkCrossing.CHB_RCS_Barriers_DownClick(Sender: TObject);
+begin
+  Self.SE_out_barriers_down_board.Enabled := Self.CHB_RCS_Barriers_Down.Checked;
+  Self.SE_out_barriers_down_port.Enabled := Self.CHB_RCS_Barriers_Down.Checked;
+  if (not Self.CHB_RCS_Barriers_Down.Checked) then
+  begin
+    Self.SE_out_barriers_down_board.Value := 0;
+    Self.SE_out_barriers_down_port.Value := 0;
+  end;
+end;
+
+procedure TF_BlkCrossing.CHB_RCS_Barriers_UpClick(Sender: TObject);
+begin
+  Self.SE_out_barriers_up_board.Enabled := Self.CHB_RCS_Barriers_Up.Checked;
+  Self.SE_out_barriers_up_port.Enabled := Self.CHB_RCS_Barriers_Up.Checked;
+  if (not Self.CHB_RCS_Barriers_Up.Checked) then
+  begin
+    Self.SE_out_barriers_up_board.Value := 0;
+    Self.SE_out_barriers_up_port.Value := 0;
+  end;
+end;
+
 procedure TF_BlkCrossing.CHB_RCS_NOTClick(Sender: TObject);
 begin
   Self.SE_out_open_board.Enabled := Self.CHB_RCS_NOT.Checked;
@@ -335,6 +381,19 @@ begin
     Self.SE_out_positive_board.Value := 0;
     Self.SE_out_positive_port.Value := 0;
     Self.CB_Positive_Type.ItemIndex := -1;
+  end;
+end;
+
+procedure TF_BlkCrossing.CHB_RCS_RingClick(Sender: TObject);
+begin
+  Self.SE_out_ring_board.Enabled := Self.CHB_RCS_Ring.Checked;
+  Self.SE_out_ring_port.Enabled := Self.CHB_RCS_Ring.Checked;
+  Self.CHB_Ring_Active_Down.Enabled := Self.CHB_RCS_Ring.Checked;
+  if (not Self.CHB_RCS_Ring.Checked) then
+  begin
+    Self.SE_out_ring_board.Value := 0;
+    Self.SE_out_ring_port.Value := 0;
+    Self.CHB_Ring_Active_Down.Checked := False;
   end;
 end;
 
@@ -373,10 +432,6 @@ end;
 
 procedure TF_BlkCrossing.CommonOpenForm();
 begin
-  Self.SE_out_close_board.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_in_close_board.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_in_open_board.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_in_caution_board.MaxValue := RCSi.maxModuleAddrSafe;
 end;
 
 procedure TF_BlkCrossing.EditOpenForm();
@@ -392,6 +447,10 @@ begin
   RCSOptionalToUI(settings.RCSOutputs.close, Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port);
   RCSOptionalToUI(settings.RCSOutputs.emOpen, Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port);
   RCSOptionalToUI(settings.RCSOutputs.positive, Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port);
+  RCSOptionalToUI(settings.RCSOutputs.barriersDown, Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port);
+  RCSOptionalToUI(settings.RCSOutputs.barriersUp, Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port);
+  RCSOptionalToUI(settings.RCSOutputs.bell, Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port);
+
   RCSOptionalToUI(settings.RCSInputs.open, Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port);
   RCSOptionalToUI(settings.RCSInputs.closed, Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port);
   RCSOptionalToUI(settings.RCSInputs.caution, Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port);
@@ -410,6 +469,8 @@ begin
   end else begin
     Self.CB_Positive_Type.ItemIndex := -1;
   end;
+
+  Self.CHB_Ring_Active_Down.Checked := settings.RCSOutputs.bellActiveDown;
 
   Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
   Self.tracks.AddRange(Self.block.tracks);
@@ -436,6 +497,10 @@ begin
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port);
+  RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port);
+  RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port);
+  RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port);
+
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port);

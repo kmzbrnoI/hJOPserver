@@ -22,6 +22,10 @@ type
     positive: TRCSAddrOptional;
     positiveInvert: Boolean;
     positiveFlick: Boolean;
+    barriersDown: TRCSAddrOptional;
+    barriersUp: TRCSAddrOptional;
+    bell: TRCSAddrOptional;
+    bellActiveDown: Boolean;
   end;
 
   TBlkCrossingSettings = record
@@ -60,6 +64,10 @@ type
     _SECT_RCSOPOSITIVE_INVERT = 'RCSOpositiveInv';
     _SECT_RCSOPOSITIVE_FLICK = 'RCSOpositiveFlick';
     _SECT_RCSOBLOCKPOSITIVE = 'RCSOblockPositive';
+    _SECT_RCSOBARRIERS_DOWN = 'RCSObarriersDown';
+    _SECT_RCSOBARRIERS_UP = 'RCSObarriersUp';
+    _SECT_RCSOBELL = 'RCSObell';
+    _SECT_RCSOBELL_ACTIVE_DOWN = 'RCSObellActiveDown';
     _SECT_TRACKS = 'tracks';
 
     _UZ_UPOZ_MIN = 4; // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
@@ -205,6 +213,11 @@ begin
   Self.m_settings.RCSOutputs.positiveInvert := ini_tech.ReadBool(section, _SECT_RCSOPOSITIVE_INVERT, False);
   Self.m_settings.RCSOutputs.positiveFlick := ini_tech.ReadBool(section, _SECT_RCSOPOSITIVE_FLICK, False);
 
+  Self.m_settings.RCSOutputs.barriersDown := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBARRIERS_DOWN);
+  Self.m_settings.RCSOutputs.barriersUp := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBARRIERS_UP);
+  Self.m_settings.RCSOutputs.bell := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBELL);
+  Self.m_settings.RCSOutputs.bellActiveDown := ini_tech.ReadBool(section, _SECT_RCSOBELL_ACTIVE_DOWN, False);
+
   Self.tracks.Clear();
   var notracks: Integer := ini_tech.ReadInteger(section, _SECT_TRACKS, 0);
   for var i: Integer := 0 to notracks - 1 do
@@ -255,6 +268,16 @@ begin
       ini_tech.WriteBool(section, _SECT_RCSOPOSITIVE_INVERT, Self.m_settings.RCSOutputs.positiveInvert);
     if (Self.m_settings.RCSOutputs.positiveFlick) then
       ini_tech.WriteBool(section, _SECT_RCSOPOSITIVE_FLICK, Self.m_settings.RCSOutputs.positiveFlick);
+  end;
+
+  if (Self.m_settings.RCSOutputs.barriersDown.enabled) then
+    ini_tech.WriteString(section, _SECT_RCSOBARRIERS_DOWN, Self.m_settings.RCSOutputs.barriersDown.addr.ToString());
+  if (Self.m_settings.RCSOutputs.barriersUp.enabled) then
+    ini_tech.WriteString(section, _SECT_RCSOBARRIERS_UP, Self.m_settings.RCSOutputs.barriersUp.addr.ToString());
+  if (Self.m_settings.RCSOutputs.bell.enabled) then
+  begin
+    ini_tech.WriteString(section, _SECT_RCSOBELL, Self.m_settings.RCSOutputs.bell.addr.ToString());
+    ini_tech.WriteBool(section, _SECT_RCSOBELL_ACTIVE_DOWN, Self.m_settings.RCSOutputs.bellActiveDown);
   end;
 
   if (Self.tracks.Count > 0) then
@@ -312,6 +335,13 @@ begin
     Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.emOpen.addr);
   if (Self.m_settings.RCSOutputs.positive.enabled) then
     Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.positive.addr);
+
+  if (Self.m_settings.RCSOutputs.barriersDown.enabled) then
+    Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.barriersDown.addr);
+  if (Self.m_settings.RCSOutputs.barriersUp.enabled) then
+    Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.barriersUp.addr);
+  if (Self.m_settings.RCSOutputs.bell.enabled) then
+    Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.bell.addr);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -886,6 +916,18 @@ begin
     if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.emOpen.addr.board)) then
       Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.emOpen.addr.board);
 
+  if (Self.m_settings.RCSOutputs.barriersDown.enabled) then
+    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.barriersDown.addr.board)) then
+      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.barriersDown.addr.board);
+
+  if (Self.m_settings.RCSOutputs.barriersUp.enabled) then
+    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.barriersUp.addr.board)) then
+      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.barriersUp.addr.board);
+
+  if (Self.m_settings.RCSOutputs.bell.enabled) then
+    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.bell.addr.board)) then
+      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.bell.addr.board);
+
   Self.m_state.rcsModules.Sort();
 end;
 
@@ -951,6 +993,21 @@ begin
     TBlk.RCStoJSON(Self.m_settings.RCSOutputs.close.addr, json['rcs']['close']);
   if (Self.m_settings.RCSOutputs.emOpen.enabled) then
     TBlk.RCStoJSON(Self.m_settings.RCSOutputs.emOpen.addr, json['rcs']['emOpen']);
+  if (Self.m_settings.RCSOutputs.positive.enabled) then
+  begin
+    TBlk.RCStoJSON(Self.m_settings.RCSOutputs.positive.addr, json['rcs']['positive']);
+    json['rcs'].B['positiveInvert'] := Self.m_settings.RCSOutputs.positiveInvert;
+    json['rcs'].B['positiveFlick'] := Self.m_settings.RCSOutputs.positiveFlick;
+  end;
+  if (Self.m_settings.RCSOutputs.barriersDown.enabled) then
+    TBlk.RCStoJSON(Self.m_settings.RCSOutputs.barriersDown.addr, json['rcs']['barriersDown']);
+  if (Self.m_settings.RCSOutputs.barriersUp.enabled) then
+    TBlk.RCStoJSON(Self.m_settings.RCSOutputs.barriersUp.addr, json['rcs']['barriersUp']);
+  if (Self.m_settings.RCSOutputs.bell.enabled) then
+  begin
+    TBlk.RCStoJSON(Self.m_settings.RCSOutputs.bell.addr, json['rcs']['bell']);
+    json['rcs'].B['bellActiveDown'] := Self.m_settings.RCSOutputs.bellActiveDown;
+  end;
 
   if (includeState) then
     Self.GetPtState(json['blockState']);
