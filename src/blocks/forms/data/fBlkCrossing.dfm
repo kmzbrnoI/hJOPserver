@@ -97,7 +97,7 @@ object F_BlkCrossing: TF_BlkCrossing
     Left = 8
     Top = 64
     Width = 353
-    Height = 285
+    Height = 326
     Caption = ' RCS '
     TabOrder = 2
     object L_P01: TLabel
@@ -126,7 +126,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Left = 14
       Top = 32
       Width = 323
-      Height = 106
+      Height = 133
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -158,13 +158,20 @@ object F_BlkCrossing: TF_BlkCrossing
       object Label10: TLabel
         Left = 10
         Top = 74
-        Width = 89
+        Width = 40
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Blokov'#225'n'#237' pozitivy:'
+        Caption = 'Pozitiva:'
+      end
+      object Label12: TLabel
+        Left = 10
+        Top = 100
+        Width = 100
+        Height = 13
+        Caption = 'Typ v'#253'stupu pozitiva:'
       end
       object SE_out_open_port: TSpinEdit
         Left = 242
@@ -232,15 +239,15 @@ object F_BlkCrossing: TF_BlkCrossing
         TabOrder = 3
         OnClick = CHB_RCS_NOTClick
       end
-      object CHB_RCS_BP: TCheckBox
+      object CHB_RCS_Positive: TCheckBox
         Left = 143
         Top = 73
         Width = 16
         Height = 17
         TabOrder = 6
-        OnClick = CHB_RCS_BPClick
+        OnClick = CHB_RCS_PositiveClick
       end
-      object SE_out_bp_board: TSpinEdit
+      object SE_out_positive_board: TSpinEdit
         Left = 162
         Top = 73
         Width = 65
@@ -255,7 +262,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
         OnExit = SE_RCS_boardExit
       end
-      object SE_out_bp_port: TSpinEdit
+      object SE_out_positive_port: TSpinEdit
         Left = 242
         Top = 73
         Width = 65
@@ -277,10 +284,22 @@ object F_BlkCrossing: TF_BlkCrossing
         TabOrder = 0
         OnClick = CHB_RCS_CloseClick
       end
+      object CB_Positive_Type: TComboBox
+        Left = 162
+        Top = 100
+        Width = 145
+        Height = 21
+        Style = csDropDownList
+        TabOrder = 9
+        Items.Strings = (
+          'standardn'#237
+          'inverzn'#237
+          'kmitav'#253)
+      end
     end
     object GB_RCS_In: TGroupBox
       Left = 14
-      Top = 143
+      Top = 172
       Width = 323
       Height = 134
       Margins.Left = 2

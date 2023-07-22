@@ -19,7 +19,9 @@ type
   TBlkCrossingRCSOutputs = record
     close: TRCSAddrOptional;
     emOpen: TRCSAddrOptional;
-    blockPositive: TRCSAddrOptional;
+    positive: TRCSAddrOptional;
+    positiveInvert: Boolean;
+    positiveFlick: Boolean;
   end;
 
   TBlkCrossingSettings = record
@@ -54,6 +56,9 @@ type
     _SECT_RCSIANNULATION = 'RCSIannulation';
     _SECT_RCSOCLOSE = 'RCSOclose';
     _SECT_RCSOEMOPEN = 'RCSOemOpen';
+    _SECT_RCSOPOSITIVE = 'RCSOpositive';
+    _SECT_RCSOPOSITIVE_INVERT = 'RCSOpositiveInv';
+    _SECT_RCSOPOSITIVE_FLICK = 'RCSOpositiveFlick';
     _SECT_RCSOBLOCKPOSITIVE = 'RCSOblockPositive';
     _SECT_TRACKS = 'tracks';
 
@@ -79,6 +84,7 @@ type
     function TrackClosed(): Boolean;
     function TrackPositiveLight(): Boolean;
     function GetAnnulation(): Boolean;
+    function GetPositive(): Boolean;
 
     procedure MenuUZClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZUZClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -136,6 +142,7 @@ type
     property lockout: string read m_state.lockout write SetLockout;
     property zaver: Boolean read GetZaver write SetZaver;
     property annulation: Boolean read GetAnnulation;
+    property positive: Boolean read GetPositive;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
@@ -191,8 +198,12 @@ begin
   Self.m_settings.RCSInputs.annulation := RCSOptionalFromIni(ini_tech, section, _SECT_RCSIANNULATION, 'RCSam', 'RCSa');
 
   Self.m_settings.RCSOutputs.close := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOCLOSE, 'RCSOzm', 'RCSOz');
-  Self.m_settings.RCSOutputs.emOpen := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOEMOPEN, 'RCSOnotm', 'RCSOnot');;
-  Self.m_settings.RCSOutputs.blockPositive := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBLOCKPOSITIVE, 'RCSObpm', 'RCSObp');;
+  Self.m_settings.RCSOutputs.emOpen := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOEMOPEN, 'RCSOnotm', 'RCSOnot');
+  Self.m_settings.RCSOutputs.positive := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOPOSITIVE);
+  if (not Self.m_settings.RCSOutputs.positive.enabled) then // backward compatibility
+    Self.m_settings.RCSOutputs.positive := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBLOCKPOSITIVE, 'RCSObpm', 'RCSObp');
+  Self.m_settings.RCSOutputs.positiveInvert := ini_tech.ReadBool(section, _SECT_RCSOPOSITIVE_INVERT, False);
+  Self.m_settings.RCSOutputs.positiveFlick := ini_tech.ReadBool(section, _SECT_RCSOPOSITIVE_FLICK, False);
 
   Self.tracks.Clear();
   var notracks: Integer := ini_tech.ReadInteger(section, _SECT_TRACKS, 0);
@@ -237,8 +248,14 @@ begin
     ini_tech.WriteString(section, _SECT_RCSOCLOSE, Self.m_settings.RCSOutputs.close.addr.ToString());
   if (Self.m_settings.RCSOutputs.emOpen.enabled) then
     ini_tech.WriteString(section, _SECT_RCSOEMOPEN, Self.m_settings.RCSOutputs.emOpen.addr.ToString());
-  if (Self.m_settings.RCSOutputs.blockPositive.enabled) then
-    ini_tech.WriteString(section, _SECT_RCSOBLOCKPOSITIVE, Self.m_settings.RCSOutputs.blockPositive.addr.ToString());
+  if (Self.m_settings.RCSOutputs.positive.enabled) then
+  begin
+    ini_tech.WriteString(section, _SECT_RCSOPOSITIVE, Self.m_settings.RCSOutputs.positive.addr.ToString());
+    if (Self.m_settings.RCSOutputs.positiveInvert) then
+      ini_tech.WriteBool(section, _SECT_RCSOPOSITIVE_INVERT, Self.m_settings.RCSOutputs.positiveInvert);
+    if (Self.m_settings.RCSOutputs.positiveFlick) then
+      ini_tech.WriteBool(section, _SECT_RCSOPOSITIVE_FLICK, Self.m_settings.RCSOutputs.positiveFlick);
+  end;
 
   if (Self.tracks.Count > 0) then
     ini_tech.WriteInteger(section, _SECT_TRACKS, Self.tracks.Count);
@@ -293,8 +310,8 @@ begin
     Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.close.addr);
   if (Self.m_settings.RCSOutputs.emOpen.enabled) then
     Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.emOpen.addr);
-  if (Self.m_settings.RCSOutputs.blockPositive.enabled) then
-    Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.blockPositive.addr);
+  if (Self.m_settings.RCSOutputs.positive.enabled) then
+    Result := Result or (portType = TRCSIOType.output) and (addr = Self.m_settings.RCSOutputs.positive.addr);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -334,12 +351,6 @@ begin
     begin
       Self.BottomErrorBroadcast('Porucha přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
       JCDb.Cancel(Self);
-    end;
-
-    if (Self.m_state.basicState = disabled) then
-    begin
-      // wake-up
-      Self.UpdateOutputs();
     end;
 
     Self.m_state.basicState := new_state;
@@ -382,11 +393,7 @@ begin
   end;
 
   if (changed) then
-  begin
-    Self.UpdateOutputs();
-    if (diag.showZaver) then
-      Self.Change();
-  end;
+    Self.Change();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -394,6 +401,7 @@ end;
 procedure TBlkCrossing.Change(now: Boolean = false);
 begin
   inherited;
+  Self.UpdateOutputs();
 
   try
     for var sh: TBlk in Self.m_state.shs do
@@ -444,8 +452,18 @@ begin
                              (not Self.m_state.pcEmOpen)));
     if (Self.m_settings.RCSOutputs.emOpen.enabled) then
       RCSi.SetOutput(Self.m_settings.RCSOutputs.emOpen.addr, ownConvert.BoolToInt(Self.m_state.pcEmOpen));
-    if (Self.m_settings.RCSOutputs.blockPositive.enabled) then
-      RCSi.SetOutput(Self.m_settings.RCSOutputs.blockPositive.addr, ownConvert.BoolToInt(not Self.TrackPositiveLight));
+    if (Self.m_settings.RCSOutputs.positive.enabled) then
+    begin
+      if (Self.m_settings.RCSOutputs.positiveFlick) then
+      begin
+        if (Self.positive) then
+          RCSi.SetOutput(Self.m_settings.RCSOutputs.positive.addr, TRCSOutputState.osf33)
+        else
+          RCSi.SetOutput(Self.m_settings.RCSOutputs.positive.addr, TRCSOutputState.osDisabled);
+      end else begin
+        RCSi.SetOutput(Self.m_settings.RCSOutputs.positive.addr, ownConvert.BoolToInt(Self.positive xor Self.m_settings.RCSOutputs.positiveInvert));
+      end;
+    end;
   except
 
   end;
@@ -477,7 +495,6 @@ procedure TBlkCrossing.SetLockout(lockout: string);
 begin
   Self.m_state.lockout := lockout;
   Self.Change();
-  Self.UpdateOutputs();
 end;
 
 procedure TBlkCrossing.SetEmOpen(state: Boolean);
@@ -493,7 +510,6 @@ begin
 
   Self.m_state.pcEmOpen := state;
   Self.Change();
-  Self.UpdateOutputs();
 end;
 
 procedure TBlkCrossing.SetClosed(state: Boolean);
@@ -507,7 +523,6 @@ begin
 
   Self.m_state.pcClosed := state;
   Self.Change();
-  Self.UpdateOutputs();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -635,7 +650,6 @@ end;
 procedure TBlkCrossing.MenuAdminNUZClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   Self.m_state.zaver := 0;
-  Self.UpdateOutputs();
   Self.Change();
 end;
 
@@ -778,7 +792,6 @@ begin
       Self.m_state.closeStart := now;
       Self.SetEmOpen(false);
 
-      Self.UpdateOutputs();
       Self.Change();
     end;
   end else begin
@@ -787,7 +800,6 @@ begin
     if (Self.m_state.zaver <= 0) then
     begin
       // posledni odstraneni zaveru
-      Self.UpdateOutputs();
       Self.Change();
     end;
   end;
@@ -1005,6 +1017,13 @@ begin
     for var track: TBlkCrossingTrack in Self.tracks do
       if (track.anullation) then
         Exit(true);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkCrossing.GetPositive(): Boolean;
+begin
+  Result := (Self.state = TBlkCrossingBasicState.open) and (Self.TrackPositiveLight()) and (not Self.pcClosed) and (not Self.pcEmOpen);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

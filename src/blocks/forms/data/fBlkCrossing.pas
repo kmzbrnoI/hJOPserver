@@ -60,9 +60,9 @@ type
     CHB_RCS_Anullation: TCheckBox;
     CHB_RCS_NOT: TCheckBox;
     Label10: TLabel;
-    CHB_RCS_BP: TCheckBox;
-    SE_out_bp_board: TSpinEdit;
-    SE_out_bp_port: TSpinEdit;
+    CHB_RCS_Positive: TCheckBox;
+    SE_out_positive_board: TSpinEdit;
+    SE_out_positive_port: TSpinEdit;
     CB_Track_Open_RL: TComboBox;
     CB_Track_Open_LR: TComboBox;
     Label11: TLabel;
@@ -70,6 +70,8 @@ type
     CHB_RCS_Closed: TCheckBox;
     CHB_RCS_Open: TCheckBox;
     CHB_RCS_Caution: TCheckBox;
+    Label12: TLabel;
+    CB_Positive_Type: TComboBox;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -79,7 +81,7 @@ type
     procedure B_Track_DeleteClick(Sender: TObject);
     procedure CHB_RCS_AnullationClick(Sender: TObject);
     procedure CHB_RCS_NOTClick(Sender: TObject);
-    procedure CHB_RCS_BPClick(Sender: TObject);
+    procedure CHB_RCS_PositiveClick(Sender: TObject);
     procedure CHB_RCS_CloseClick(Sender: TObject);
     procedure CHB_RCS_ClosedClick(Sender: TObject);
     procedure CHB_RCS_OpenClick(Sender: TObject);
@@ -125,19 +127,14 @@ end;
 
 procedure TF_BlkCrossing.SE_RCS_boardExit(Sender: TObject);
 begin
-  Self.SE_out_close_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_close_board.Value,
-    Self.SE_out_close_port.Value);
-  Self.SE_out_open_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_open_board.Value,
-    Self.SE_out_open_port.Value);
-  Self.SE_out_bp_board.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_bp_board.Value, Self.SE_out_bp_port.Value);
+  Self.SE_out_close_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_close_board.Value, Self.SE_out_close_port.Value);
+  Self.SE_out_open_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_open_board.Value, Self.SE_out_open_port.Value);
+  Self.SE_out_positive_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_positive_board.Value, Self.SE_out_positive_port.Value);
 
-  Self.SE_in_close_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_close_board.Value,
-    Self.SE_in_close_port.Value);
+  Self.SE_in_close_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_close_board.Value, Self.SE_in_close_port.Value);
   Self.SE_in_open_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_open_board.Value, Self.SE_in_open_port.Value);
-  Self.SE_in_caution_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_caution_board.Value,
-    Self.SE_in_caution_port.Value);
-  Self.SE_in_annulation_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_annulation_board.Value,
-    Self.SE_in_annulation_port.Value);
+  Self.SE_in_caution_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_caution_board.Value, Self.SE_in_caution_port.Value);
+  Self.SE_in_annulation_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_annulation_board.Value, Self.SE_in_annulation_port.Value);
 end;
 
 procedure TF_BlkCrossing.B_save_PClick(Sender: TObject);
@@ -179,11 +176,14 @@ begin
   try
     settings.RCSOutputs.close := RCSOptionalFromUI(Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port, addrs);
     settings.RCSOutputs.emOpen := RCSOptionalFromUI(Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port, addrs);
-    settings.RCSOutputs.blockPositive := RCSOptionalFromUI(Self.CHB_RCS_BP, Self.SE_out_bp_board, Self.SE_out_bp_port, addrs);
+    settings.RCSOutputs.positive := RCSOptionalFromUI(Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port, addrs);
     settings.RCSInputs.open := RCSOptionalFromUI(Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port, addrs);
     settings.RCSInputs.closed := RCSOptionalFromUI(Self.CHB_RCS_Close, Self.SE_in_close_board, Self.SE_in_close_port, addrs);
     settings.RCSInputs.caution := RCSOptionalFromUI(Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port, addrs);
     settings.RCSInputs.annulation := RCSOptionalFromUI(Self.CHB_RCS_Anullation, Self.SE_in_annulation_board, Self.SE_in_annulation_port, addrs);
+
+    settings.RCSOutputs.positiveInvert := (Self.CB_Positive_Type.ItemIndex = 1);
+    settings.RCSOutputs.positiveFlick := (Self.CB_Positive_Type.ItemIndex = 2);
 
     Self.block.SetSettings(settings);
 
@@ -325,14 +325,16 @@ begin
   end;
 end;
 
-procedure TF_BlkCrossing.CHB_RCS_BPClick(Sender: TObject);
+procedure TF_BlkCrossing.CHB_RCS_PositiveClick(Sender: TObject);
 begin
-  Self.SE_out_bp_board.Enabled := Self.CHB_RCS_BP.Checked;
-  Self.SE_out_bp_port.Enabled := Self.CHB_RCS_BP.Checked;
-  if (not Self.CHB_RCS_BP.Checked) then
+  Self.SE_out_positive_board.Enabled := Self.CHB_RCS_Positive.Checked;
+  Self.SE_out_positive_port.Enabled := Self.CHB_RCS_Positive.Checked;
+  Self.CB_Positive_Type.Enabled := Self.CHB_RCS_Positive.Checked;
+  if (not Self.CHB_RCS_Positive.Checked) then
   begin
-    Self.SE_out_bp_board.Value := 0;
-    Self.SE_out_bp_port.Value := 0;
+    Self.SE_out_positive_board.Value := 0;
+    Self.SE_out_positive_port.Value := 0;
+    Self.CB_Positive_Type.ItemIndex := -1;
   end;
 end;
 
@@ -389,13 +391,25 @@ begin
 
   RCSOptionalToUI(settings.RCSOutputs.close, Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port);
   RCSOptionalToUI(settings.RCSOutputs.emOpen, Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port);
-  RCSOptionalToUI(settings.RCSOutputs.blockPositive, Self.CHB_RCS_BP, Self.SE_out_bp_board, Self.SE_out_bp_port);
+  RCSOptionalToUI(settings.RCSOutputs.positive, Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port);
   RCSOptionalToUI(settings.RCSInputs.open, Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port);
   RCSOptionalToUI(settings.RCSInputs.closed, Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port);
   RCSOptionalToUI(settings.RCSInputs.caution, Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port);
   RCSOptionalToUI(settings.RCSInputs.annulation, Self.CHB_RCS_Anullation, Self.SE_in_caution_port, Self.SE_in_annulation_port);
 
   Self.SE_RCS_boardExit(Self);
+
+  if (settings.RCSOutputs.positive.enabled) then
+  begin
+    if (settings.RCSOutputs.positiveInvert) then
+      Self.CB_Positive_Type.ItemIndex := 1
+    else if (settings.RCSOutputs.positiveFlick) then
+      Self.CB_Positive_Type.ItemIndex := 2
+    else
+      Self.CB_Positive_Type.ItemIndex := 0;
+  end else begin
+    Self.CB_Positive_Type.ItemIndex := -1;
+  end;
 
   Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
   Self.tracks.AddRange(Self.block.tracks);
@@ -421,7 +435,7 @@ begin
 
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port);
-  RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_BP, Self.SE_out_bp_board, Self.SE_out_bp_port);
+  RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port);
