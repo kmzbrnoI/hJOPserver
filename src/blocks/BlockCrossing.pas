@@ -31,6 +31,7 @@ type
   TBlkCrossingSettings = record
     RCSInputs: TBlkCrossingRCSInputs;
     RCSOutputs: TBlkCrossingRCSOutputs;
+    preringTime: Cardinal; // in seconds
   end;
 
   TBlkCrossingBasicState = (disabled = -5, none = -1, open = 0, caution = 1, closed = 2);
@@ -68,6 +69,7 @@ type
     _SECT_RCSOBARRIERS_UP = 'RCSObarriersUp';
     _SECT_RCSOBELL = 'RCSObell';
     _SECT_RCSOBELL_ACTIVE_DOWN = 'RCSObellActiveDown';
+    _SECT_PRERING_TIME = 'preringTime';
     _SECT_TRACKS = 'tracks';
 
     _UZ_UPOZ_MIN = 4; // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
@@ -218,6 +220,8 @@ begin
   Self.m_settings.RCSOutputs.bell := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBELL);
   Self.m_settings.RCSOutputs.bellActiveDown := ini_tech.ReadBool(section, _SECT_RCSOBELL_ACTIVE_DOWN, False);
 
+  Self.m_settings.preringTime := ini_tech.ReadInteger(section, _SECT_PRERING_TIME, 0);
+
   Self.tracks.Clear();
   var notracks: Integer := ini_tech.ReadInteger(section, _SECT_TRACKS, 0);
   for var i: Integer := 0 to notracks - 1 do
@@ -279,6 +283,9 @@ begin
     ini_tech.WriteString(section, _SECT_RCSOBELL, Self.m_settings.RCSOutputs.bell.addr.ToString());
     ini_tech.WriteBool(section, _SECT_RCSOBELL_ACTIVE_DOWN, Self.m_settings.RCSOutputs.bellActiveDown);
   end;
+
+  if (Self.m_settings.preringTime > 0) then
+    ini_tech.WriteInteger(section, _SECT_PRERING_TIME, Self.m_settings.preringTime);
 
   if (Self.tracks.Count > 0) then
     ini_tech.WriteInteger(section, _SECT_TRACKS, Self.tracks.Count);

@@ -85,6 +85,8 @@ type
     SE_out_ring_board: TSpinEdit;
     SE_out_ring_port: TSpinEdit;
     CHB_Ring_Active_Down: TCheckBox;
+    SE_Prering_Time: TSpinEdit;
+    Label16: TLabel;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -208,6 +210,8 @@ begin
     settings.RCSOutputs.positiveInvert := (Self.CB_Positive_Type.ItemIndex = 1);
     settings.RCSOutputs.positiveFlick := (Self.CB_Positive_Type.ItemIndex = 2);
     settings.RCSOutputs.bellActiveDown := Self.CHB_Ring_Active_Down.Checked;
+
+    settings.preringTime := Self.SE_Prering_Time.Value;
 
     Self.block.SetSettings(settings);
 
@@ -443,6 +447,7 @@ begin
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
+  Self.SE_Prering_Time.Value := settings.preringTime;
 
   RCSOptionalToUI(settings.RCSOutputs.close, Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port);
   RCSOptionalToUI(settings.RCSOutputs.emOpen, Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port);
@@ -493,6 +498,7 @@ procedure TF_BlkCrossing.NewOpenForm();
 begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.Count - 1) + 1;
+  Self.SE_Prering_Time.Value := 0;
 
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port);

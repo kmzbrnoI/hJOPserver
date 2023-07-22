@@ -4,7 +4,7 @@ object F_BlkCrossing: TF_BlkCrossing
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 521
+  ClientHeight = 554
   ClientWidth = 691
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -40,10 +40,21 @@ object F_BlkCrossing: TF_BlkCrossing
     Margins.Bottom = 2
     Caption = 'ID'
   end
+  object Label16: TLabel
+    Left = 9
+    Top = 72
+    Width = 105
+    Height = 13
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'P'#345'edzv'#225'n'#283'c'#237' doba [s]:'
+  end
   object E_Name: TEdit
-    Left = 120
+    Left = 136
     Top = 7
-    Width = 241
+    Width = 225
     Height = 21
     Margins.Left = 2
     Margins.Top = 2
@@ -54,7 +65,7 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object B_save_P: TButton
     Left = 7
-    Top = 488
+    Top = 520
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -63,12 +74,12 @@ object F_BlkCrossing: TF_BlkCrossing
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 4
+    TabOrder = 5
     OnClick = B_save_PClick
   end
   object B_Storno: TButton
     Left = 93
-    Top = 488
+    Top = 520
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -76,13 +87,13 @@ object F_BlkCrossing: TF_BlkCrossing
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 5
+    TabOrder = 6
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
-    Left = 120
+    Left = 136
     Top = 37
-    Width = 241
+    Width = 225
     Height = 22
     Margins.Left = 2
     Margins.Top = 2
@@ -95,11 +106,11 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object GB_RCS: TGroupBox
     Left = 8
-    Top = 64
+    Top = 96
     Width = 353
     Height = 419
     Caption = ' RCS '
-    TabOrder = 2
+    TabOrder = 3
     object L_P01: TLabel
       Left = 178
       Top = 15
@@ -660,7 +671,7 @@ object F_BlkCrossing: TF_BlkCrossing
     Width = 307
     Height = 472
     Caption = ' Uzav'#237'r'#225'n'#237' p'#345'ejezdu '#345#237'zen'#233' z hJOP '
-    TabOrder = 3
+    TabOrder = 4
     object Label2: TLabel
       Left = 16
       Top = 42
@@ -844,5 +855,19 @@ object F_BlkCrossing: TF_BlkCrossing
           'Uvoln'#283'n'#237' vzdalovac'#237'ho '#250'seku')
       end
     end
+  end
+  object SE_Prering_Time: TSpinEdit
+    Left = 136
+    Top = 69
+    Width = 225
+    Height = 22
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    MaxValue = 600
+    MinValue = 0
+    TabOrder = 2
+    Value = 1
   end
 end
