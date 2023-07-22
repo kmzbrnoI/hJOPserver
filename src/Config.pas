@@ -3,7 +3,8 @@
 interface
 
 uses
-  SysUtils, Classes, Forms, IniFiles, ComCtrls, StrUtils, TechnologieRCS;
+  SysUtils, Classes, Forms, IniFiles, ComCtrls, StrUtils, TechnologieRCS, Spin,
+  StdCtrls, Generics.Collections;
 
 const
   _INIDATA_PATHS_DATA_SECTION = 'PathsData';
@@ -50,6 +51,10 @@ type
   end;
 
   function RCSFromIni(ini: TMemIniFile; section: string; key: string; oldboard: string = ''; oldport: string = ''): TRCSAddr;
+  function RCSOptionalFromIni(ini: TMemIniFile; section: string; key: string; oldboard: string = ''; oldport: string = ''): TRCSAddrOptional;
+  function RCSOptionalFromUI(enabled: TCheckBox; board: TSpinEdit; port: TSpinEdit; rcs: TList<TRCSAddr> = nil): TRCSAddrOptional;
+  procedure RCSOptionalToUI(const addr: TRCSAddrOptional; var enabled: TCheckBox; var board: TSpinEdit; var port: TSpinEdit);
+
   procedure CreateCfgDirs();
   procedure CompleteLoadFromFile(inidata: TMemIniFile);
   procedure CompleteSaveToFile(inidata: TMemIniFile);
@@ -602,6 +607,51 @@ begin
       raise Exception.Create('Unable to load old RCS!');
     Result.board := ini.ReadInteger(section, oldboard, 0);
     Result.port := ini.ReadInteger(section, oldport, 0);
+  end;
+end;
+
+function RCSOptionalFromIni(ini: TMemIniFile; section: string; key: string; oldboard: string; oldport: string): TRCSAddrOptional;
+begin
+  if ((ini.ReadString(section, key, '') = '') and (ini.ReadString(section, oldboard, '') = '')
+      and (ini.ReadString(section, oldport, '') = '')) then
+  begin
+    Result.enabled := False;
+    Result.addr.board := 0;
+    Result.addr.port := 0;
+    Exit();
+  end;
+
+  Result.enabled := True;
+  Result.addr := RCSFromIni(ini, section, key, oldboard, oldport);
+end;
+
+function RCSOptionalFromUI(enabled: TCheckBox; board: TSpinEdit; port: TSpinEdit; rcs: TList<TRCSAddr>): TRCSAddrOptional;
+begin
+  Result.enabled := enabled.Checked;
+  if (Result.enabled) then
+  begin
+    Result.addr.board := board.Value;
+    Result.addr.port := port.Value;
+    if (rcs <> nil) then
+      rcs.Add(Result.addr);
+  end else begin
+    Result.addr.board := 0;
+    Result.addr.port := 0;
+  end;
+end;
+
+procedure RCSOptionalToUI(const addr: TRCSAddrOptional; var enabled: TCheckBox; var board: TSpinEdit; var port: TSpinEdit);
+begin
+  enabled.Checked := addr.enabled;
+  if (Assigned(enabled.OnClick)) then
+    enabled.OnClick(enabled);
+  board.MaxValue := RCSi.maxModuleAddrSafe;
+  if (addr.addr.board > Cardinal(board.MaxValue)) then
+    board.MaxValue := 0;
+  if (addr.enabled) then
+  begin
+    board.Value := addr.addr.board;
+    port.Value := addr.addr.port;
   end;
 end;
 

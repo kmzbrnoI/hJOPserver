@@ -34,6 +34,11 @@ type
     function ToString(): string;
   end;
 
+  TRCSAddrOptional = record
+    addr: TRCSAddr;
+    enabled: Boolean;
+  end;
+
   TRCSBoard = class // jedna RCS deska
     needed: Boolean; // jestli jed eska potrebna pro technologii (tj. jeslti na ni referuji nejake bloky atp.)
     inputChangedEv: TList<TRCSBoardChangeEvent>;
@@ -118,6 +123,8 @@ type
 
     property generalError: Boolean read fGeneralError;
     class function RCSAddr(board: Cardinal; port: Byte): TRCSAddr;
+    class function RCSOptionalAddr(board: Cardinal; port: Byte): TRCSAddrOptional; overload;
+    class function RCSOptionalAddrDisabled(): TRCSAddrOptional; overload;
 
     // events
     property AfterClose: TNotifyEvent read fAfterClose write fAfterClose;
@@ -211,21 +218,21 @@ end;
 
 procedure TRCS.InputSim();
 begin
-  // nastaveni vyhybek do +
+  // vychozi stav bloku
   for var blk: TBlk in Blocks do
   begin
     try
       if ((Blk.GetGlobalSettings.typ = btTurnout) and ((Blk as TBlkTurnout).posDetection)) then
         Self.SetInput(TBlkTurnout(Blk).rcsInPlus, 1);
-      if (Blk.typ = btCrossing) then
-        Self.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open, 1);
+      if ((Blk.typ = btCrossing) and (TBlkCrossing(Blk).GetSettings().RCSInputs.open.enabled)) then
+        Self.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open.addr, 1);
       if ((diag.simSoupravaObsaz) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain()) and
         ((Blk as TBlkTrack).GetSettings().RCSAddrs.Count > 0)) then
         Self.SetInput(TBlkTrack(Blk).GetSettings().RCSAddrs[0], 1);
     except
 
     end;
-  end; // for cyklus
+  end;
 
   // defaultni stav zesilovacu
   for var booster: TBooster in Boosters.sorted do
@@ -465,6 +472,18 @@ class function TRCS.RCSAddr(board: Cardinal; port: Byte): TRCSAddr;
 begin
   Result.board := board;
   Result.port := port;
+end;
+
+class function TRCS.RCSOptionalAddr(board: Cardinal; port: Byte): TRCSAddrOptional;
+begin
+  Result.enabled := True;
+  Result.addr := RCSAddr(board, port);
+end;
+
+class function TRCS.RCSOptionalAddrDisabled(): TRCSAddrOptional;
+begin
+  Result.enabled := False;
+  Result.addr := RCSAddr(0, 0);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

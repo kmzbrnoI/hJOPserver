@@ -5,7 +5,7 @@ object F_BlkCrossing: TF_BlkCrossing
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
   ClientHeight = 489
-  ClientWidth = 651
+  ClientWidth = 691
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -42,8 +42,8 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object E_Name: TEdit
     Left = 120
-    Top = 8
-    Width = 211
+    Top = 7
+    Width = 241
     Height = 21
     Margins.Left = 2
     Margins.Top = 2
@@ -82,7 +82,7 @@ object F_BlkCrossing: TF_BlkCrossing
   object SE_ID: TSpinEdit
     Left = 120
     Top = 37
-    Width = 211
+    Width = 241
     Height = 22
     Margins.Left = 2
     Margins.Top = 2
@@ -96,12 +96,12 @@ object F_BlkCrossing: TF_BlkCrossing
   object GB_RCS: TGroupBox
     Left = 8
     Top = 64
-    Width = 321
+    Width = 353
     Height = 285
     Caption = ' RCS '
     TabOrder = 2
     object L_P01: TLabel
-      Left = 144
+      Left = 178
       Top = 15
       Width = 29
       Height = 13
@@ -112,7 +112,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Caption = 'Modul'
     end
     object Label1: TLabel
-      Left = 222
+      Left = 256
       Top = 15
       Width = 19
       Height = 13
@@ -125,7 +125,7 @@ object F_BlkCrossing: TF_BlkCrossing
     object GB_RCS_Out: TGroupBox
       Left = 14
       Top = 32
-      Width = 291
+      Width = 323
       Height = 106
       Margins.Left = 2
       Margins.Top = 2
@@ -134,7 +134,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Caption = ' V'#253'stupy '
       TabOrder = 0
       object L_P04: TLabel
-        Left = 15
+        Left = 10
         Top = 48
         Width = 89
         Height = 13
@@ -145,18 +145,18 @@ object F_BlkCrossing: TF_BlkCrossing
         Caption = 'Nouzov'#233' otev'#345'en'#237':'
       end
       object L_P05: TLabel
-        Left = 15
+        Left = 10
         Top = 23
-        Width = 69
+        Width = 92
         Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Caption = 'Zav'#345#237't prejezd:'
+        Caption = 'Uzav'#345'en'#237' / blika'#269'e:'
       end
       object Label10: TLabel
-        Left = 15
+        Left = 10
         Top = 74
         Width = 89
         Height = 13
@@ -167,7 +167,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Caption = 'Blokov'#225'n'#237' pozitivy:'
       end
       object SE_out_open_port: TSpinEdit
-        Left = 208
+        Left = 242
         Top = 47
         Width = 65
         Height = 22
@@ -177,11 +177,11 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Bottom = 2
         MaxValue = 0
         MinValue = 0
-        TabOrder = 4
+        TabOrder = 5
         Value = 0
       end
       object SE_out_close_port: TSpinEdit
-        Left = 208
+        Left = 242
         Top = 21
         Width = 65
         Height = 22
@@ -191,11 +191,11 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Bottom = 2
         MaxValue = 0
         MinValue = 0
-        TabOrder = 1
+        TabOrder = 2
         Value = 0
       end
       object SE_out_open_board: TSpinEdit
-        Left = 128
+        Left = 162
         Top = 47
         Width = 65
         Height = 22
@@ -205,12 +205,12 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Bottom = 2
         MaxValue = 191
         MinValue = 0
-        TabOrder = 3
+        TabOrder = 4
         Value = 0
         OnExit = SE_RCS_boardExit
       end
       object SE_out_close_board: TSpinEdit
-        Left = 128
+        Left = 162
         Top = 21
         Width = 65
         Height = 22
@@ -220,28 +220,28 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Bottom = 2
         MaxValue = 191
         MinValue = 0
-        TabOrder = 0
+        TabOrder = 1
         Value = 0
         OnExit = SE_RCS_boardExit
       end
       object CHB_RCS_NOT: TCheckBox
-        Left = 108
+        Left = 143
         Top = 47
         Width = 16
         Height = 17
-        TabOrder = 2
+        TabOrder = 3
         OnClick = CHB_RCS_NOTClick
       end
       object CHB_RCS_BP: TCheckBox
-        Left = 109
-        Top = 74
+        Left = 143
+        Top = 73
         Width = 16
         Height = 17
-        TabOrder = 5
+        TabOrder = 6
         OnClick = CHB_RCS_BPClick
       end
       object SE_out_bp_board: TSpinEdit
-        Left = 128
+        Left = 162
         Top = 73
         Width = 65
         Height = 22
@@ -251,125 +251,13 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Bottom = 2
         MaxValue = 191
         MinValue = 0
-        TabOrder = 6
+        TabOrder = 7
         Value = 0
         OnExit = SE_RCS_boardExit
       end
       object SE_out_bp_port: TSpinEdit
-        Left = 208
+        Left = 242
         Top = 73
-        Width = 65
-        Height = 22
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        MaxValue = 0
-        MinValue = 0
-        TabOrder = 7
-        Value = 0
-      end
-    end
-    object GB_RCS_In: TGroupBox
-      Left = 14
-      Top = 143
-      Width = 291
-      Height = 134
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = ' Vstupy '
-      TabOrder = 1
-      object L_P07: TLabel
-        Left = 15
-        Top = 24
-        Width = 44
-        Height = 13
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Caption = 'Zav'#345'eno:'
-      end
-      object L_P08: TLabel
-        Left = 15
-        Top = 50
-        Width = 48
-        Height = 13
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Caption = 'Otev'#345'eno:'
-      end
-      object L_P09: TLabel
-        Left = 15
-        Top = 76
-        Width = 44
-        Height = 13
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Caption = 'V'#253'straha:'
-      end
-      object L_P10: TLabel
-        Left = 15
-        Top = 102
-        Width = 42
-        Height = 13
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Caption = 'Anulace:'
-      end
-      object SE_in_close_port: TSpinEdit
-        Left = 208
-        Top = 24
-        Width = 65
-        Height = 22
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        MaxValue = 0
-        MinValue = 0
-        TabOrder = 1
-        Value = 0
-      end
-      object SE_in_open_port: TSpinEdit
-        Left = 208
-        Top = 50
-        Width = 65
-        Height = 22
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        MaxValue = 0
-        MinValue = 0
-        TabOrder = 3
-        Value = 0
-      end
-      object SE_in_caution_port: TSpinEdit
-        Left = 208
-        Top = 76
-        Width = 65
-        Height = 22
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        MaxValue = 0
-        MinValue = 0
-        TabOrder = 5
-        Value = 0
-      end
-      object SE_in_annulation_port: TSpinEdit
-        Left = 208
-        Top = 102
         Width = 65
         Height = 22
         Margins.Left = 2
@@ -381,24 +269,73 @@ object F_BlkCrossing: TF_BlkCrossing
         TabOrder = 8
         Value = 0
       end
-      object SE_in_close_board: TSpinEdit
-        Left = 128
+      object CHB_RCS_Close: TCheckBox
+        Left = 143
+        Top = 22
+        Width = 15
+        Height = 17
+        TabOrder = 0
+        OnClick = CHB_RCS_CloseClick
+      end
+    end
+    object GB_RCS_In: TGroupBox
+      Left = 14
+      Top = 143
+      Width = 323
+      Height = 134
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = ' Vstupy '
+      TabOrder = 1
+      object L_P07: TLabel
+        Left = 10
         Top = 24
-        Width = 65
-        Height = 22
+        Width = 109
+        Height = 13
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 0
-        MinValue = 0
-        TabOrder = 0
-        Value = 0
-        OnExit = SE_RCS_boardExit
+        Caption = 'Zav'#345'eno / z'#225'vory dole:'
       end
-      object SE_in_open_board: TSpinEdit
-        Left = 128
+      object L_P08: TLabel
+        Left = 10
         Top = 50
+        Width = 127
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Otev'#345'eno / z'#225'vory naho'#345'e:'
+      end
+      object L_P09: TLabel
+        Left = 10
+        Top = 76
+        Width = 44
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'V'#253'straha:'
+      end
+      object L_P10: TLabel
+        Left = 10
+        Top = 102
+        Width = 42
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Anulace:'
+      end
+      object SE_in_close_port: TSpinEdit
+        Left = 242
+        Top = 24
         Width = 65
         Height = 22
         Margins.Left = 2
@@ -409,11 +346,67 @@ object F_BlkCrossing: TF_BlkCrossing
         MinValue = 0
         TabOrder = 2
         Value = 0
+      end
+      object SE_in_open_port: TSpinEdit
+        Left = 242
+        Top = 50
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 5
+        Value = 0
+      end
+      object SE_in_caution_port: TSpinEdit
+        Left = 242
+        Top = 76
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 8
+        Value = 0
+      end
+      object SE_in_annulation_port: TSpinEdit
+        Left = 242
+        Top = 102
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 11
+        Value = 0
+      end
+      object SE_in_close_board: TSpinEdit
+        Left = 162
+        Top = 24
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 1
+        Value = 0
         OnExit = SE_RCS_boardExit
       end
-      object SE_in_caution_board: TSpinEdit
-        Left = 128
-        Top = 76
+      object SE_in_open_board: TSpinEdit
+        Left = 162
+        Top = 50
         Width = 65
         Height = 22
         Margins.Left = 2
@@ -426,9 +419,9 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
         OnExit = SE_RCS_boardExit
       end
-      object SE_in_annulation_board: TSpinEdit
-        Left = 128
-        Top = 102
+      object SE_in_caution_board: TSpinEdit
+        Left = 162
+        Top = 76
         Width = 65
         Height = 22
         Margins.Left = 2
@@ -441,22 +434,61 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
         OnExit = SE_RCS_boardExit
       end
+      object SE_in_annulation_board: TSpinEdit
+        Left = 162
+        Top = 102
+        Width = 65
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        MaxValue = 0
+        MinValue = 0
+        TabOrder = 10
+        Value = 0
+        OnExit = SE_RCS_boardExit
+      end
       object CHB_RCS_Anullation: TCheckBox
-        Left = 108
+        Left = 142
         Top = 101
         Width = 16
         Height = 17
-        TabOrder = 6
+        TabOrder = 9
         OnClick = CHB_RCS_AnullationClick
+      end
+      object CHB_RCS_Closed: TCheckBox
+        Left = 142
+        Top = 24
+        Width = 16
+        Height = 17
+        TabOrder = 0
+        OnClick = CHB_RCS_ClosedClick
+      end
+      object CHB_RCS_Open: TCheckBox
+        Left = 142
+        Top = 50
+        Width = 16
+        Height = 17
+        TabOrder = 3
+        OnClick = CHB_RCS_OpenClick
+      end
+      object CHB_RCS_Caution: TCheckBox
+        Left = 142
+        Top = 76
+        Width = 16
+        Height = 17
+        TabOrder = 6
+        OnClick = CHB_RCS_CautionClick
       end
     end
   end
   object GB_JOP_control: TGroupBox
-    Left = 336
+    Left = 376
     Top = 9
     Width = 307
     Height = 472
-    Caption = ' P'#345'ejezd '#345#237'zen'#253' pouze z hJOP '
+    Caption = ' Uzav'#237'r'#225'n'#237' p'#345'ejezdu '#345#237'zen'#233' z hJOP '
     TabOrder = 3
     object Label2: TLabel
       Left = 16
