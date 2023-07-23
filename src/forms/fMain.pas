@@ -2936,7 +2936,7 @@ end;
 procedure TF_Main.LV_SoupravyCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
-  if (Item.Index >= Trains.count) then
+  if ((Item.Index >= Trains.count) or (Trains[Item.Index] = nil)) then
     Exit();
 
   if (Trains[Item.Index].emergencyStopped) then
