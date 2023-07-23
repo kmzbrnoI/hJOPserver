@@ -224,12 +224,14 @@ begin
           TBlkCrossingBasicState.none:
             Self.LV.Items[line].SubItems[3] := 'none';
           TBlkCrossingBasicState.open:
-            Self.LV.Items[line].SubItems[3] := 'otevřeno';
+            Self.LV.Items[line].SubItems[3] := 'otevřen';
           TBlkCrossingBasicState.caution:
             Self.LV.Items[line].SubItems[3] := 'výstraha';
           TBlkCrossingBasicState.closed:
-            Self.LV.Items[line].SubItems[3] := 'uzavřeno';
-        end; // case obsazeno
+            Self.LV.Items[line].SubItems[3] := 'uzavřen';
+        else
+          Self.LV.Items[line].SubItems[3] := '???';
+        end;
 
         Self.LV.Items[line].SubItems[5] := (Blk as TBlkCrossing).note;
         Self.LV.Items[line].SubItems[6] := '';

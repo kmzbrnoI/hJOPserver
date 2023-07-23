@@ -80,7 +80,7 @@ procedure TF_BlkCrossingState.Refresh();
 begin
   var state: TBlkCrossingState := Self.crossing.fullState;
 
-  case (state.basicState) of
+  case (state.state) of
     TBlkCrossingBasicState.disabled: Self.CB_State.ItemIndex := 0;
     TBlkCrossingBasicState.none: Self.CB_State.ItemIndex := 1;
     TBlkCrossingBasicState.open: Self.CB_State.ItemIndex := 2;

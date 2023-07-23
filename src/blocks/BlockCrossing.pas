@@ -34,25 +34,41 @@ type
     preringTime: Cardinal; // in seconds
   end;
 
-  TBlkCrossingBasicState = (disabled = -5, none = -1, open = 0, caution = 1, closed = 2);
+  TBlkCrossingPanelState = (
+    psDisabled = -5,
+    psNone = -1,
+    psOpen = 0,
+    psCaution = 1,
+    psClosed = 2,
+    psAnnulation = 3
+  );
+
+  TBlkCrossingBasicState = (
+    disabled = -5,
+    none = -1,
+    open = 0,
+    caution = 1,
+    closed = 2
+  );
 
   TBlkCrossingState = record
-    basicState: TBlkCrossingBasicState;
+    state: TBlkCrossingBasicState;
     annulationOld: Boolean;
     note, lockout: string;
     pcEmOpen, pcClosed: Boolean;
     // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
     zaver: Integer; // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
-    closeStart: TDateTime;
+    cautionStart: TDateTime;
     shs: TList<TBlk>; // seznam souctovych hlasek, kam hlasi prejezd stav
     rcsModules: TList<Cardinal>; // seznam RCS modulu, ktere vyuziva prejezd
+    lastInputValid: TDateTime;
   end;
 
   EPrjNOT = class(Exception);
 
   TBlkCrossing = class(TBlk)
   const
-    _def_crossing_state: TBlkCrossingState = (basicState: disabled; note: ''; lockout: ''; pcEmOpen: false; pcClosed: false;
+    _def_crossing_state: TBlkCrossingState = (state: disabled; note: ''; lockout: ''; pcEmOpen: false; pcClosed: false;
       zaver: 0;);
 
     _SECT_RCSICLOSED = 'RCSIclosed';
@@ -73,6 +89,7 @@ type
     _SECT_TRACKS = 'tracks';
 
     _UZ_UPOZ_MIN = 4; // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
+    _INVALID_INPUT_TOLER_SEC = 1;
 
   private
     m_settings: TBlkCrossingSettings;
@@ -81,9 +98,9 @@ type
     procedure SetNote(note: string);
     procedure SetLockout(lockout: string);
 
-    function UpdateInputs(): TBlkCrossingBasicState;
     procedure UpdateOutputs();
     procedure UpdateTracks();
+    function UpdateState(): TBlkCrossingBasicState;
 
     procedure SetEmOpen(state: Boolean);
     procedure SetClosed(state: Boolean);
@@ -91,10 +108,18 @@ type
     procedure SetZaver(zaver: Boolean);
     function GetZaver(): Boolean;
 
+    function IsSignalClosed(): Boolean;
+    function IsSignalCaution(): Boolean;
+    function IsSignalOpen(): Boolean;
+
     function TrackClosed(): Boolean;
     function TrackPositiveLight(): Boolean;
-    function GetAnnulation(): Boolean;
-    function GetPositive(): Boolean;
+    function IsAnnulation(): Boolean;
+    function IsPositive(): Boolean;
+    function IsEnabled(): Boolean;
+    function IsPreringElapsed(): Boolean;
+    function IsInputValid(): Boolean;
+    function RCSModulesAvailable(): Boolean;
 
     procedure MenuUZClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZUZClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -144,15 +169,19 @@ type
     procedure AddSH(Sender: TBlk);
     procedure RemoveSH(Sender: TBlk);
 
-    property state: TBlkCrossingBasicState read m_state.basicState;
+    function WantClose(): Boolean;
+    function IsCloseOutput(): Boolean;
+
+    property state: TBlkCrossingBasicState read m_state.state;
     property fullState: TBlkCrossingState read m_state;
     property pcEmOpen: Boolean read m_state.pcEmOpen write SetEmOpen;
     property pcClosed: Boolean read m_state.pcClosed write SetClosed;
     property note: string read m_state.note write SetNote;
     property lockout: string read m_state.lockout write SetLockout;
     property zaver: Boolean read GetZaver write SetZaver;
-    property annulation: Boolean read GetAnnulation;
-    property positive: Boolean read GetPositive;
+    property annulation: Boolean read IsAnnulation;
+    property positive: Boolean read IsPositive;
+    property enabled: Boolean read IsEnabled;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
@@ -172,7 +201,7 @@ type
 implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCS, UPO,
-  Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert, Config;
+  Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert, Config, timeHelper;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
@@ -311,14 +340,16 @@ begin
     Exit();
   end;
 
-  Self.m_state.basicState := TBlkCrossingBasicState.none;
+  Self.m_state.state := TBlkCrossingBasicState.none;
   Self.m_state.annulationOld := Self.annulation;
+  if (Self.IsInputValid()) then
+    Self.m_state.lastInputValid := Now;
   Self.Change();
 end;
 
 procedure TBlkCrossing.Disable();
 begin
-  Self.m_state.basicState := disabled;
+  Self.m_state.state := TBlkCrossingBasicState.disabled;
   Self.m_state.shs.Clear();
   Self.Change(true);
 end;
@@ -354,43 +385,44 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkCrossing.Update();
-var available: Boolean;
 begin
-  available := true;
-  try
-    for var module: Cardinal in Self.m_state.rcsModules do
-      available := available and RCSi.IsNonFailedModule(module);
-  except
-    available := false;
-  end;
+  var available := Self.RCSModulesAvailable();
 
-  if ((not available) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
+  if ((not available) and (Self.m_state.state <> TBlkCrossingBasicState.disabled)) then
   begin
-    Self.m_state.basicState := TBlkCrossingBasicState.disabled;
+    Self.m_state.state := TBlkCrossingBasicState.disabled;
     JCDb.Cancel(Self);
     Self.Change(true);
   end;
 
-  var new_state: TBlkCrossingBasicState := Self.UpdateInputs();
-
-  if ((Self.m_state.basicState <> new_state) and ((Self.m_state.basicState <> TBlkCrossingBasicState.disabled) or
-    (new_state <> TBlkCrossingBasicState.none))) then
+  if ((available) and (Self.m_state.state = TBlkCrossingBasicState.disabled)) then
   begin
-    // kontrola necekaneho otevreni prejezdu, pokud je v JC
-    // necekaniy stav = prejezd je pod zaverem a na vstupu se objevi cokoliv jineho, nez "uzavreno"
-    if ((Self.zaver) and (Self.m_state.basicState = TBlkCrossingBasicState.closed)) then
-    begin
-      Self.BottomErrorBroadcast('Ztráta dohledu na přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
-      JCDb.Cancel(Self);
-    end;
+    Self.m_state.state := TBlkCrossingBasicState.none;
+    Self.Change();
+  end;
 
-    if ((new_state = TBlkCrossingBasicState.none) and (Self.m_state.basicState <> TBlkCrossingBasicState.disabled)) then
+  if (Self.m_state.state = TBlkCrossingBasicState.disabled) then
+    Exit();
+
+  var new_state: TBlkCrossingBasicState := Self.m_state.state;
+
+  if (Self.IsInputValid()) then
+  begin
+    Self.m_state.lastInputValid := Now;
+    new_state := Self.UpdateState();
+  end;
+  if (Now >= Self.m_state.lastInputValid+EncodeTimeSec(_INVALID_INPUT_TOLER_SEC)) then
+    new_state := TBlkCrossingBasicState.none;
+
+  if (Self.m_state.state <> new_state) then
+  begin
+    if ((new_state = TBlkCrossingBasicState.none) and (Self.m_state.state <> TBlkCrossingBasicState.disabled)) then
     begin
       Self.BottomErrorBroadcast('Porucha přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
       JCDb.Cancel(Self);
     end;
 
-    Self.m_state.basicState := new_state;
+    Self.m_state.state := new_state;
     Self.Change();
   end;
 
@@ -401,18 +433,68 @@ begin
   end;
 
   // kontrola prilis dlouho uzavreneho prejezdu
-  if ((Self.zaver) or (Self.m_state.pcClosed)) then
+  if (Self.IsCloseOutput()) then
   begin
-    if (now > Self.m_state.closeStart + EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
+    if (now > Self.m_state.cautionStart + EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
     begin
       Self.BottomErrorBroadcast(Self.m_globSettings.name + ' uzavřen déle, jak ' + IntToStr(_UZ_UPOZ_MIN) + ' min',
           'VAROVÁNÍ');
-      Self.m_state.closeStart := now;
+      Self.m_state.cautionStart := now;
     end;
   end;
 
   Self.UpdateTracks();
   inherited Update();
+end;
+
+function TBlkCrossing.UpdateState(): TBlkCrossingBasicState;
+begin
+  Result := Self.m_state.state;
+
+  case (Self.m_state.state) of
+    TBlkCrossingBasicState.none: begin
+      if (Self.IsSignalClosed()) then
+        Result := TBlkCrossingBasicState.closed
+      else if (Self.IsSignalOpen()) then
+        Result := TBlkCrossingBasicState.open
+      else if (Self.IsSignalCaution()) then
+        Result := TBlkCrossingBasicState.caution;
+    end;
+
+    TBlkCrossingBasicState.open: begin
+      if ((Self.WantClose()) or (Self.IsSignalCaution())) then
+      begin
+        Result := TBlkCrossingBasicState.caution;
+        Self.m_state.cautionStart := Now;
+      end else if ((Self.IsSignalClosed()) and (Self.IsSignalCaution())) then
+        Result := TBlkCrossingBasicState.closed
+      else if (not Self.IsSignalOpen()) then
+        Result := TBlkCrossingBasicState.none;
+    end;
+
+    TBlkCrossingBasicState.caution: begin
+      if ((Self.IsSignalClosed()) and (Self.IsSignalCaution())) then
+        Result := TBlkCrossingBasicState.closed
+      else if (Self.IsSignalOpen()) then
+        Result := TBlkCrossingBasicState.open
+      else if (not Self.IsSignalCaution()) then
+        Result := TBlkCrossingBasicState.none;
+    end;
+
+    TBlkCrossingBasicState.closed: begin
+      if ((not Self.IsSignalClosed()) and (Self.WantClose)) then
+      begin
+        Result := TBlkCrossingBasicState.caution;
+        if (Self.zaver) then
+        begin
+          Self.BottomErrorBroadcast('Ztráta dohledu na přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+          JCDb.Cancel(Self);
+        end;
+      end else if (not Self.IsSignalClosed()) then
+        Result := TBlkCrossingBasicState.caution;
+    end;
+  end;
+
 end;
 
 procedure TBlkCrossing.UpdateTracks();
@@ -450,43 +532,11 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkCrossing.UpdateInputs(): TBlkCrossingBasicState;
-var tmpInputs: record
-      closed: Boolean;
-      open: Boolean;
-      caution: Boolean;
-    end;
-begin
-  // get data from RCS
-  try
-    tmpInputs.closed := (Self.m_settings.RCSInputs.closed.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOn);
-    tmpInputs.open := (Self.m_settings.RCSInputs.open.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn);
-    tmpInputs.caution := (Self.m_settings.RCSInputs.caution.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOn);
-  except
-    // prejezd prejde do poruchoveho stavu
-    tmpInputs.closed := false;
-    tmpInputs.open := false;
-    tmpInputs.caution := false;
-  end;
-
-  if (tmpInputs.closed) then
-    Exit(TBlkCrossingBasicState.closed);
-  if (tmpInputs.caution) then
-    Exit(TBlkCrossingBasicState.caution);
-  if (tmpInputs.open) then
-    Exit(TBlkCrossingBasicState.open);
-
-  // without data
-  Result := none;
-end;
-
 procedure TBlkCrossing.UpdateOutputs();
 begin
   try
     if (Self.m_settings.RCSOutputs.close.enabled) then
-      RCSi.SetOutput(Self.m_settings.RCSOutputs.close.addr,
-        ownConvert.BoolToInt(((Self.m_state.pcClosed) or (Self.zaver) or (Self.TrackClosed())) and
-                             (not Self.m_state.pcEmOpen)));
+      RCSi.SetOutput(Self.m_settings.RCSOutputs.close.addr, ownConvert.BoolToInt(Self.IsCloseOutput()));
     if (Self.m_settings.RCSOutputs.emOpen.enabled) then
       RCSi.SetOutput(Self.m_settings.RCSOutputs.emOpen.addr, ownConvert.BoolToInt(Self.m_state.pcEmOpen));
     if (Self.m_settings.RCSOutputs.positive.enabled) then
@@ -555,7 +605,7 @@ begin
   begin
     if (Self.pcEmOpen) then
       raise EPrjNOT.Create('Prejezd nouzove otevren, nelze uzavrit!');
-    Self.m_state.closeStart := now;
+    Self.m_state.cautionStart := now;
   end;
 
   Self.m_state.pcClosed := state;
@@ -639,7 +689,7 @@ end;
 
 procedure TBlkCrossing.MenuAdminZavreno(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.SetSimInputs(true, false, false, SenderPnl, SenderOR);
+  Self.SetSimInputs(true, true, false, SenderPnl, SenderOR);
 end;
 
 procedure TBlkCrossing.MenuAdminOtevreno(SenderPnl: TIdContext; SenderOR: TObject);
@@ -712,7 +762,7 @@ function TBlkCrossing.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; ri
 begin
   Result := inherited;
 
-  if (Self.m_state.basicState <> TBlkCrossingBasicState.disabled) then
+  if (Self.m_state.state <> TBlkCrossingBasicState.disabled) then
   begin
     if (not Self.m_state.pcEmOpen) then
     begin
@@ -826,7 +876,7 @@ begin
     if (Self.m_state.zaver = 1) then
     begin
       // prvni udeleni zaveru
-      Self.m_state.closeStart := now;
+      Self.m_state.cautionStart := now;
       Self.SetEmOpen(false);
 
       Self.Change();
@@ -978,8 +1028,12 @@ begin
       end;
   end;
 
+  var panelState: TBlkCrossingPanelState := TBlkCrossingPanelState(Self.state);
+  if ((Self.state = TBlkCrossingBasicState.open) and (Self.annulation)) then
+     panelState := TBlkCrossingPanelState.psAnnulation;
+
   Result := Result + ownConvert.ColorToStr(fg) + ';' + ownConvert.ColorToStr(bg) + ';0;' +
-    IntToStr(Integer(Self.state)) + ';';
+    IntToStr(Integer(panelState)) + ';';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1022,7 +1076,7 @@ end;
 
 procedure TBlkCrossing.GetPtState(json: TJsonObject);
 begin
-  case (Self.m_state.basicState) of
+  case (Self.m_state.state) of
     TBlkCrossingBasicState.disabled:
       json['state'] := 'disabled';
     TBlkCrossingBasicState.none:
@@ -1065,7 +1119,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkCrossing.GetAnnulation(): Boolean;
+function TBlkCrossing.IsAnnulation(): Boolean;
 begin
   Result := false;
   if (Self.m_settings.RCSInputs.annulation.enabled and RCSi.Started) then
@@ -1085,9 +1139,110 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkCrossing.GetPositive(): Boolean;
+function TBlkCrossing.IsSignalClosed(): Boolean;
+begin
+  Result := Self.IsPreringElapsed();
+
+  if (Self.m_settings.RCSInputs.closed.enabled) then
+  begin
+    try
+      Result := Result and (RCSi.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOn);
+    except
+      Exit(False);
+    end;
+  end else begin
+    Result := Result and Self.WantClose();
+  end;
+end;
+
+function TBlkCrossing.IsSignalCaution(): Boolean;
+begin
+  Result := (Self.IsCloseOutput());
+
+  if (Self.m_settings.RCSInputs.caution.enabled) then
+  begin
+    try
+      Result := Result or (RCSi.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOn);
+    except
+      Exit();
+    end;
+  end;
+end;
+
+function TBlkCrossing.IsSignalOpen(): Boolean;
+begin
+  Result := (not Self.WantClose());
+
+  if ((Result) and (Self.m_settings.RCSInputs.open.enabled)) then
+  begin
+    try
+      Result := Result and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn);
+    except
+      Exit(False);
+    end;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkCrossing.IsPositive(): Boolean;
 begin
   Result := (Self.state = TBlkCrossingBasicState.open) and (Self.TrackPositiveLight()) and (not Self.pcClosed) and (not Self.pcEmOpen);
+end;
+
+function TBlkCrossing.IsEnabled(): Boolean;
+begin
+  Result := (Self.m_state.state > TBlkCrossingBasicState.disabled);
+end;
+
+function TBlkCrossing.IsPreringElapsed(): Boolean;
+begin
+  Result := (Now >= Self.m_state.cautionStart+EncodeTimeSec(Self.m_settings.preringTime));
+end;
+
+function TBlkCrossing.WantClose(): Boolean;
+begin
+  Result := ((Self.pcClosed) or (Self.zaver) or (Self.TrackClosed())) and (not Self.m_state.pcEmOpen);
+end;
+
+function TBlkCrossing.IsCloseOutput(): Boolean;
+begin
+  Result := (Self.WantClose()); { or (Self.state = TBlkCrossingBasicState.opening))} // TODO resolve with other output
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkCrossing.IsInputValid(): Boolean;
+begin
+  try
+    if (((Self.m_settings.RCSInputs.open.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn)) and
+        ((Self.m_settings.RCSInputs.closed.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOn))) then
+      Exit(False);
+    if (((Self.m_settings.RCSInputs.open.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn)) and
+        ((Self.m_settings.RCSInputs.caution.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOn))) then
+      Exit(False);
+    if (((Self.m_settings.RCSInputs.open.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOff)) and
+        ((Self.m_settings.RCSInputs.closed.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOff)) and
+        ((Self.m_settings.RCSInputs.caution.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOff))) then
+      Exit(False);
+  except
+    Exit(False);
+  end;
+
+  Result := True;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkCrossing.RCSModulesAvailable(): Boolean;
+begin
+  Result := True;
+  try
+    for var module: Cardinal in Self.m_state.rcsModules do
+      Result := Result and RCSi.IsNonFailedModule(module);
+  except
+    Result := false;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -2946,15 +2946,11 @@ begin
 end;
 
 procedure TF_Main.LV_StaniceChange(Sender: TObject; Item: TListItem; Change: TItemChange);
-var Area: TArea;
 begin
   if (Self.LV_Stanice.Selected <> nil) then
   begin
-    Area := Areas[Self.LV_Stanice.ItemIndex];
-    if (Area.stack.Count > 0) then
-      Self.B_RemoveStack.Enabled := true
-    else
-      Self.B_RemoveStack.Enabled := false;
+    var area := Areas[Self.LV_Stanice.ItemIndex];
+    Self.B_RemoveStack.Enabled := (area.stack.Count > 0);
   end else begin
     Self.B_RemoveStack.Enabled := false;
   end;
@@ -3085,17 +3081,17 @@ begin
     /// ///////////////////
     btCrossing:
       begin
-        case ((blk as TBlkCrossing).State) of
+        case ((blk as TBlkCrossing).state) of
           TBlkCrossingBasicState.disabled:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
           TBlkCrossingBasicState.none:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
-          TBlkCrossingBasicState.Open:
+          TBlkCrossingBasicState.open:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
-          TBlkCrossingBasicState.caution:
+          TBlkCrossingBasicState.caution, TBlkCrossingBasicState.closed:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
-          TBlkCrossingBasicState.closed:
-            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_PINKY;
+        else
+          LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
         end;
       end;
 

@@ -5481,7 +5481,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 0
-        ExplicitTop = 8
         object E_configFilename: TEdit
           Left = 9
           Top = 9
@@ -5675,10 +5674,6 @@ object F_Main: TF_Main
             TabOrder = 0
             ViewStyle = vsReport
             OnDblClick = LV_DigiRychDblClick
-            ExplicitLeft = -33
-            ExplicitTop = -176
-            ExplicitWidth = 247
-            ExplicitHeight = 457
           end
         end
         object B_ConfigApply: TButton
@@ -5775,7 +5770,7 @@ object F_Main: TF_Main
           MaxValue = 100
           MinValue = 1
           TabOrder = 4
-          Value = 0
+          Value = 1
         end
       end
     end
