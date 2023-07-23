@@ -59,6 +59,7 @@ type
     // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
     zaver: Integer; // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
     cautionStart: TDateTime;
+    barriersClosed: Boolean;
     shs: TList<TBlk>; // seznam souctovych hlasek, kam hlasi prejezd stav
     rcsModules: TList<Cardinal>; // seznam RCS modulu, ktere vyuziva prejezd
     lastInputValid: TDateTime;
@@ -414,6 +415,12 @@ begin
   if (Now >= Self.m_state.lastInputValid+EncodeTimeSec(_INVALID_INPUT_TOLER_SEC)) then
     new_state := TBlkCrossingBasicState.none;
 
+  if ((Self.state = TBlkCrossingBasicState.caution) and (Self.IsPreringElapsed()) and (not Self.m_state.barriersClosed)) then
+  begin
+    Self.m_state.barriersClosed := true;
+    Self.Change();
+  end;
+
   if (Self.m_state.state <> new_state) then
   begin
     if ((new_state = TBlkCrossingBasicState.none) and (Self.m_state.state <> TBlkCrossingBasicState.disabled)) then
@@ -462,6 +469,7 @@ begin
     end;
 
     TBlkCrossingBasicState.open: begin
+      Self.m_state.barriersClosed := False;
       if ((Self.WantClose()) or (Self.IsSignalCaution())) then
       begin
         Result := TBlkCrossingBasicState.caution;
@@ -539,6 +547,20 @@ begin
       RCSi.SetOutput(Self.m_settings.RCSOutputs.close.addr, ownConvert.BoolToInt(Self.IsCloseOutput()));
     if (Self.m_settings.RCSOutputs.emOpen.enabled) then
       RCSi.SetOutput(Self.m_settings.RCSOutputs.emOpen.addr, ownConvert.BoolToInt(Self.m_state.pcEmOpen));
+
+    var barriersToDown: Boolean := (Self.WantClose() and Self.IsPreringElapsed());
+    if (Self.m_settings.RCSOutputs.barriersDown.enabled) then
+      RCSi.SetOutput(Self.m_settings.RCSOutputs.barriersDown.addr, ownConvert.BoolToInt(barriersToDown));
+    if (Self.m_settings.RCSOutputs.barriersUp.enabled) then
+      RCSi.SetOutput(Self.m_settings.RCSOutputs.barriersUp.addr, ownConvert.BoolToInt(not barriersToDown));
+
+    if (Self.m_settings.RCSOutputs.bell.enabled) then
+    begin
+      RCSi.SetOutput(Self.m_settings.RCSOutputs.bell.addr, ownConvert.BoolToInt(
+        (Self.state = TBlkCrossingBasicState.caution) or ((Self.state = TBlkCrossingBasicState.closed) and (Self.m_settings.RCSOutputs.bellActiveDown))
+      ));
+    end;
+
     if (Self.m_settings.RCSOutputs.positive.enabled) then
     begin
       if (Self.m_settings.RCSOutputs.positiveFlick) then
@@ -606,6 +628,7 @@ begin
     if (Self.pcEmOpen) then
       raise EPrjNOT.Create('Prejezd nouzove otevren, nelze uzavrit!');
     Self.m_state.cautionStart := now;
+    Self.m_state.barriersClosed := False;
   end;
 
   Self.m_state.pcClosed := state;
@@ -877,6 +900,7 @@ begin
     begin
       // prvni udeleni zaveru
       Self.m_state.cautionStart := now;
+      Self.m_state.barriersClosed := False;
       Self.SetEmOpen(false);
 
       Self.Change();

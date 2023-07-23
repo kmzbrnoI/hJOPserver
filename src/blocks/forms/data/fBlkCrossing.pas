@@ -237,14 +237,14 @@ begin
     for var i := 0 to addrs.Count - 1 do
     begin
       var typ: TRCSIOType;
-      if (i < 2) then
+      if (i < 6) then
         typ := TRCSIOType.output
       else
         typ := TRCSIOType.input;
 
       var another := Blocks.AnotherBlockUsesRCS(addrs[i], Self.block, typ);
       if (another <> nil) then
-        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addrs[i].board.ToString() + '.' + #13#10;
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addrs[i].ToString() + '.' + #13#10;
     end;
 
     if (messages <> '') then
