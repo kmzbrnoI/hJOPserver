@@ -59,6 +59,7 @@ type
     // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
     zaver: Integer; // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
     cautionStart: TDateTime;
+    warningTimeout: TDateTime;
     barriersClosed: Boolean;
     shs: TList<TBlk>; // seznam souctovych hlasek, kam hlasi prejezd stav
     rcsModules: TList<Cardinal>; // seznam RCS modulu, ktere vyuziva prejezd
@@ -144,6 +145,7 @@ type
     procedure NoteUPO(SenderPnl: TIdContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
       UPO_EscCallback: TNotifyEvent);
     procedure FillRCSModules();
+    procedure SetState(new: TBlkCrossingBasicState);
 
   public
     tracks: TObjectList<TBlkCrossingTrack>;
@@ -417,21 +419,11 @@ begin
 
   if ((Self.state = TBlkCrossingBasicState.caution) and (Self.IsPreringElapsed()) and (not Self.m_state.barriersClosed)) then
   begin
-    Self.m_state.barriersClosed := true;
+    Self.m_state.barriersClosed := True;
     Self.Change();
   end;
 
-  if (Self.m_state.state <> new_state) then
-  begin
-    if ((new_state = TBlkCrossingBasicState.none) and (Self.m_state.state <> TBlkCrossingBasicState.disabled)) then
-    begin
-      Self.BottomErrorBroadcast('Porucha přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
-      JCDb.Cancel(Self);
-    end;
-
-    Self.m_state.state := new_state;
-    Self.Change();
-  end;
+  Self.SetState(new_state);
 
   if (Self.m_state.annulationOld <> Self.annulation) then
   begin
@@ -442,11 +434,11 @@ begin
   // kontrola prilis dlouho uzavreneho prejezdu
   if (Self.IsCloseOutput()) then
   begin
-    if (now > Self.m_state.cautionStart + EncodeTime(0, _UZ_UPOZ_MIN, 0, 0)) then
+    if (now > Self.m_state.warningTimeout) then
     begin
       Self.BottomErrorBroadcast(Self.m_globSettings.name + ' uzavřen déle, jak ' + IntToStr(_UZ_UPOZ_MIN) + ' min',
           'VAROVÁNÍ');
-      Self.m_state.cautionStart := now;
+      Self.m_state.warningTimeout := Now + EncodeTime(0, _UZ_UPOZ_MIN, 0, 0);
     end;
   end;
 
@@ -471,39 +463,28 @@ begin
     TBlkCrossingBasicState.open: begin
       Self.m_state.barriersClosed := False;
       if ((Self.WantClose()) or (Self.IsSignalCaution())) then
-      begin
-        Result := TBlkCrossingBasicState.caution;
-        Self.m_state.cautionStart := Now;
-      end else if ((Self.IsSignalClosed()) and (Self.IsSignalCaution())) then
+        Result := TBlkCrossingBasicState.caution
+      else if ((Self.IsSignalClosed()) and (Self.IsSignalCaution())) then
         Result := TBlkCrossingBasicState.closed
     end;
 
     TBlkCrossingBasicState.caution: begin
       if ((Self.IsSignalClosed()) and (Self.IsSignalCaution())) then
         Result := TBlkCrossingBasicState.closed
-      else if (not Self.IsSignalCaution()) then
-      begin
-        if (Self.IsSignalOpen()) then
-          Result := TBlkCrossingBasicState.open
-        else
-          Result := TBlkCrossingBasicState.none;
-      end;
+      else if ((not Self.IsSignalCaution()) and (Self.IsSignalOpen())) then
+        Result := TBlkCrossingBasicState.open;
     end;
 
     TBlkCrossingBasicState.closed: begin
       if ((not Self.IsSignalClosed()) and (Self.WantClose)) then
       begin
         Result := TBlkCrossingBasicState.caution;
-        if (Self.zaver) then
-        begin
-          Self.BottomErrorBroadcast('Ztráta dohledu na přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
-          JCDb.Cancel(Self);
-        end;
+        Self.BottomErrorBroadcast('Ztráta dohledu na přejezdu : ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+        JCDb.Cancel(Self);
       end else if (not Self.IsSignalClosed()) then
         Result := TBlkCrossingBasicState.caution;
     end;
   end;
-
 end;
 
 procedure TBlkCrossing.UpdateTracks();
@@ -609,6 +590,8 @@ end;
 
 procedure TBlkCrossing.SetEmOpen(state: Boolean);
 begin
+  if (Self.m_state.pcEmOpen = state) then
+    Exit();
   if ((Self.zaver) and (state)) then
     Exit();
 
@@ -624,13 +607,11 @@ end;
 
 procedure TBlkCrossing.SetClosed(state: Boolean);
 begin
-  if (state) then
-  begin
-    if (Self.pcEmOpen) then
-      raise EPrjNOT.Create('Prejezd nouzove otevren, nelze uzavrit!');
-    Self.m_state.cautionStart := now;
-    Self.m_state.barriersClosed := False;
-  end;
+  if (Self.m_state.pcClosed = state) then
+    Exit();
+
+  if ((state) and (Self.pcEmOpen)) then
+    raise EPrjNOT.Create('Prejezd nouzove otevren, nelze uzavrit!');
 
   Self.m_state.pcClosed := state;
   Self.Change();
@@ -900,10 +881,7 @@ begin
     if (Self.m_state.zaver = 1) then
     begin
       // prvni udeleni zaveru
-      Self.m_state.cautionStart := now;
-      Self.m_state.barriersClosed := False;
-      Self.SetEmOpen(false);
-
+      Self.SetEmOpen(False);
       Self.Change();
     end;
   end else begin
@@ -1268,5 +1246,27 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkCrossing.SetState(new: TBlkCrossingBasicState);
+begin
+  if (new = Self.state) then
+    Exit();
+
+  if ((new = TBlkCrossingBasicState.none) and (Self.state <> TBlkCrossingBasicState.disabled)) then
+  begin
+    Self.BottomErrorBroadcast('Porucha přejezdu ' + Self.m_globSettings.name, 'TECHNOLOGIE');
+    JCDb.Cancel(Self);
+  end;
+
+  if (new = TBlkCrossingBasicState.caution) then // going to 'closed'
+  begin
+    Self.m_state.cautionStart := Now;
+    Self.m_state.warningTimeout := Now + EncodeTime(0, _UZ_UPOZ_MIN, 0, 0);
+    Self.m_state.barriersClosed := False;
+  end;
+
+  Self.m_state.state := new;
+  Self.Change();
+end;
 
 end.// unit

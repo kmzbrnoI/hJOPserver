@@ -203,7 +203,7 @@ begin
     settings.RCSOutputs.bell := RCSOptionalFromUI(Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port, addrs);
 
     settings.RCSInputs.open := RCSOptionalFromUI(Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port, addrs);
-    settings.RCSInputs.closed := RCSOptionalFromUI(Self.CHB_RCS_Close, Self.SE_in_close_board, Self.SE_in_close_port, addrs);
+    settings.RCSInputs.closed := RCSOptionalFromUI(Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port, addrs);
     settings.RCSInputs.caution := RCSOptionalFromUI(Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port, addrs);
     settings.RCSInputs.annulation := RCSOptionalFromUI(Self.CHB_RCS_Anullation, Self.SE_in_annulation_board, Self.SE_in_annulation_port, addrs);
 
