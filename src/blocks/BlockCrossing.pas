@@ -18,6 +18,7 @@ type
 
   TBlkCrossingRCSOutputs = record
     close: TRCSAddrOptional;
+    lights: TRCSAddrOptional;
     emOpen: TRCSAddrOptional;
     positive: TRCSAddrOptional;
     positiveInvert: Boolean;
@@ -78,6 +79,7 @@ type
     _SECT_RCSICAUTION = 'RCSIcaution';
     _SECT_RCSIANNULATION = 'RCSIannulation';
     _SECT_RCSOCLOSE = 'RCSOclose';
+    _SECT_RCSOLIGHTS = 'RCSOlights';
     _SECT_RCSOEMOPEN = 'RCSOemOpen';
     _SECT_RCSOPOSITIVE = 'RCSOpositive';
     _SECT_RCSOPOSITIVE_INVERT = 'RCSOpositiveInv';
@@ -173,7 +175,6 @@ type
     procedure RemoveSH(Sender: TBlk);
 
     function WantClose(): Boolean;
-    function IsCloseOutput(): Boolean;
 
     property state: TBlkCrossingBasicState read m_state.state;
     property fullState: TBlkCrossingState read m_state;
@@ -241,6 +242,7 @@ begin
 
   Self.m_settings.RCSOutputs.close := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOCLOSE, 'RCSOzm', 'RCSOz');
   Self.m_settings.RCSOutputs.emOpen := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOEMOPEN, 'RCSOnotm', 'RCSOnot');
+  Self.m_settings.RCSOutputs.lights := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOLIGHTS);
   Self.m_settings.RCSOutputs.positive := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOPOSITIVE);
   if (not Self.m_settings.RCSOutputs.positive.enabled) then // backward compatibility
     Self.m_settings.RCSOutputs.positive := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBLOCKPOSITIVE, 'RCSObpm', 'RCSObp');
@@ -297,6 +299,8 @@ begin
     ini_tech.WriteString(section, _SECT_RCSOCLOSE, Self.m_settings.RCSOutputs.close.addr.ToString());
   if (Self.m_settings.RCSOutputs.emOpen.enabled) then
     ini_tech.WriteString(section, _SECT_RCSOEMOPEN, Self.m_settings.RCSOutputs.emOpen.addr.ToString());
+  if (Self.m_settings.RCSOutputs.lights.enabled) then
+    ini_tech.WriteString(section, _SECT_RCSOLIGHTS, Self.m_settings.RCSOutputs.lights.addr.ToString());
   if (Self.m_settings.RCSOutputs.positive.enabled) then
   begin
     ini_tech.WriteString(section, _SECT_RCSOPOSITIVE, Self.m_settings.RCSOutputs.positive.addr.ToString());
@@ -432,7 +436,7 @@ begin
   end;
 
   // kontrola prilis dlouho uzavreneho prejezdu
-  if (Self.IsCloseOutput()) then
+  if (Self.WantClose()) then
   begin
     if (now > Self.m_state.warningTimeout) then
     begin
@@ -526,9 +530,14 @@ procedure TBlkCrossing.UpdateOutputs();
 begin
   try
     if (Self.m_settings.RCSOutputs.close.enabled) then
-      RCSi.SetOutput(Self.m_settings.RCSOutputs.close.addr, ownConvert.BoolToInt(Self.IsCloseOutput()));
+      RCSi.SetOutput(Self.m_settings.RCSOutputs.close.addr, ownConvert.BoolToInt(Self.WantClose()));
     if (Self.m_settings.RCSOutputs.emOpen.enabled) then
       RCSi.SetOutput(Self.m_settings.RCSOutputs.emOpen.addr, ownConvert.BoolToInt(Self.m_state.pcEmOpen));
+
+    if (Self.m_settings.RCSOutputs.lights.enabled) then
+      RCSi.SetOutput(Self.m_settings.RCSOutputs.lights.addr, ownConvert.BoolToInt(
+        (Self.state = TBlkCrossingBasicState.caution) or (Self.state = TBlkCrossingBasicState.closed)
+      ));
 
     var barriersToDown: Boolean := (Self.WantClose() and Self.IsPreringElapsed());
     if (Self.m_settings.RCSOutputs.barriersDown.enabled) then
@@ -1160,7 +1169,7 @@ end;
 
 function TBlkCrossing.IsSignalCaution(): Boolean;
 begin
-  Result := (Self.IsCloseOutput());
+  Result := (Self.WantClose());
 
   if (Self.m_settings.RCSInputs.caution.enabled) then
   begin
@@ -1206,11 +1215,6 @@ end;
 function TBlkCrossing.WantClose(): Boolean;
 begin
   Result := ((Self.pcClosed) or (Self.zaver) or (Self.TrackClosed())) and (not Self.m_state.pcEmOpen);
-end;
-
-function TBlkCrossing.IsCloseOutput(): Boolean;
-begin
-  Result := (Self.WantClose()); { or (Self.state = TBlkCrossingBasicState.opening))} // TODO resolve with other output
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

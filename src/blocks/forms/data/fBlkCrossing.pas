@@ -87,6 +87,10 @@ type
     CHB_Ring_Active_Down: TCheckBox;
     SE_Prering_Time: TSpinEdit;
     Label16: TLabel;
+    SE_out_lights_port: TSpinEdit;
+    SE_out_lights_board: TSpinEdit;
+    CHB_RCS_Lights: TCheckBox;
+    Label17: TLabel;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -104,6 +108,7 @@ type
     procedure CHB_RCS_Barriers_DownClick(Sender: TObject);
     procedure CHB_RCS_Barriers_UpClick(Sender: TObject);
     procedure CHB_RCS_RingClick(Sender: TObject);
+    procedure CHB_RCS_LightsClick(Sender: TObject);
   private
     openIndex: Integer;
     block: TBlkCrossing;
@@ -151,6 +156,7 @@ begin
   Self.SE_out_barriers_down_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_barriers_down_board.Value, Self.SE_out_barriers_down_port.Value);
   Self.SE_out_barriers_up_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_barriers_up_board.Value, Self.SE_out_barriers_up_port.Value);
   Self.SE_out_ring_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_ring_board.Value, Self.SE_out_ring_port.Value);
+  Self.SE_out_lights_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_lights_board.Value, Self.SE_out_lights_port.Value);
 
   Self.SE_in_close_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_close_board.Value, Self.SE_in_close_port.Value);
   Self.SE_in_open_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_open_board.Value, Self.SE_in_open_port.Value);
@@ -201,6 +207,7 @@ begin
     settings.RCSOutputs.barriersDown := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port, addrs);
     settings.RCSOutputs.barriersUp := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port, addrs);
     settings.RCSOutputs.bell := RCSOptionalFromUI(Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port, addrs);
+    settings.RCSOutputs.lights := RCSOptionalFromUI(Self.CHB_RCS_Lights, Self.SE_out_lights_board, Self.SE_out_lights_port, addrs);
 
     settings.RCSInputs.open := RCSOptionalFromUI(Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port, addrs);
     settings.RCSInputs.closed := RCSOptionalFromUI(Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port, addrs);
@@ -237,7 +244,7 @@ begin
     for var i := 0 to addrs.Count - 1 do
     begin
       var typ: TRCSIOType;
-      if (i < 6) then
+      if (i < 7) then
         typ := TRCSIOType.output
       else
         typ := TRCSIOType.input;
@@ -307,7 +314,6 @@ begin
     Self.CB_Track_Open_RL.ItemIndex := -1;
     Self.ME_Track_Anul_Time.Text := '00:00';
   end;
-
 end;
 
 procedure TF_BlkCrossing.CHB_JOP_controlClick(Sender: TObject);
@@ -434,6 +440,17 @@ begin
   end;
 end;
 
+procedure TF_BlkCrossing.CHB_RCS_LightsClick(Sender: TObject);
+begin
+  Self.SE_out_lights_board.Enabled := Self.CHB_RCS_Lights.Checked;
+  Self.SE_out_lights_port.Enabled := Self.CHB_RCS_Lights.Checked;
+  if (not Self.CHB_RCS_Lights.Checked) then
+  begin
+    Self.SE_out_lights_board.Value := 0;
+    Self.SE_out_lights_port.Value := 0;
+  end;
+end;
+
 procedure TF_BlkCrossing.CommonOpenForm();
 begin
 end;
@@ -455,6 +472,7 @@ begin
   RCSOptionalToUI(settings.RCSOutputs.barriersDown, Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port);
   RCSOptionalToUI(settings.RCSOutputs.barriersUp, Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port);
   RCSOptionalToUI(settings.RCSOutputs.bell, Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port);
+  RCSOptionalToUI(settings.RCSOutputs.lights, Self.CHB_RCS_Lights, Self.SE_out_lights_board, Self.SE_out_lights_port);
 
   RCSOptionalToUI(settings.RCSInputs.open, Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port);
   RCSOptionalToUI(settings.RCSInputs.closed, Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port);
@@ -506,6 +524,7 @@ begin
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port);
+  RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Lights, Self.SE_out_lights_board, Self.SE_out_lights_port);
 
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port);
