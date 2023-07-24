@@ -169,9 +169,7 @@ object F_BlkCrossingState: TF_BlkCrossingState
       'disabled'
       'none'
       'open'
-      'prering'
-      'barriersClosing'
-      'closed'
-      'opening')
+      'caution'
+      'closed')
   end
 end

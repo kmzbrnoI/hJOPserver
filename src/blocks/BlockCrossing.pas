@@ -476,17 +476,18 @@ begin
         Self.m_state.cautionStart := Now;
       end else if ((Self.IsSignalClosed()) and (Self.IsSignalCaution())) then
         Result := TBlkCrossingBasicState.closed
-      else if (not Self.IsSignalOpen()) then
-        Result := TBlkCrossingBasicState.none;
     end;
 
     TBlkCrossingBasicState.caution: begin
       if ((Self.IsSignalClosed()) and (Self.IsSignalCaution())) then
         Result := TBlkCrossingBasicState.closed
-      else if (Self.IsSignalOpen()) then
-        Result := TBlkCrossingBasicState.open
       else if (not Self.IsSignalCaution()) then
-        Result := TBlkCrossingBasicState.none;
+      begin
+        if (Self.IsSignalOpen()) then
+          Result := TBlkCrossingBasicState.open
+        else
+          Result := TBlkCrossingBasicState.none;
+      end;
     end;
 
     TBlkCrossingBasicState.closed: begin
@@ -1241,9 +1242,6 @@ begin
   try
     if (((Self.m_settings.RCSInputs.open.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn)) and
         ((Self.m_settings.RCSInputs.closed.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOn))) then
-      Exit(False);
-    if (((Self.m_settings.RCSInputs.open.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn)) and
-        ((Self.m_settings.RCSInputs.caution.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOn))) then
       Exit(False);
     if (((Self.m_settings.RCSInputs.open.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOff)) and
         ((Self.m_settings.RCSInputs.closed.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOff)) and
