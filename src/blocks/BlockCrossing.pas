@@ -447,6 +447,9 @@ begin
   end;
 
   Self.UpdateTracks();
+
+  if (Self.changed) then
+    Self.UpdateOutputs();
   inherited Update();
 end;
 
@@ -514,7 +517,6 @@ end;
 procedure TBlkCrossing.Change(now: Boolean = false);
 begin
   inherited;
-  Self.UpdateOutputs();
 
   try
     for var sh: TBlk in Self.m_state.shs do

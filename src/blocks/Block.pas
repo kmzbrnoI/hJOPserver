@@ -43,10 +43,8 @@ type
   private const
     _def_glob_settings: TBlkSettings = (name: ''; id: - 1;);
 
-  private
-    changed: Boolean;
-
   protected
+    changed: Boolean;
     m_globSettings: TBlkSettings;
     m_areas: TList<TArea>; // ve kterych OR se blok nachazi
     FOnChange: TOnBlkChange; // childs can call the event
