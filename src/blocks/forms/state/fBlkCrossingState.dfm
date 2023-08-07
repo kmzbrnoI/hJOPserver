@@ -167,7 +167,8 @@ object F_BlkCrossingState: TF_BlkCrossingState
     TabOrder = 0
     Items.Strings = (
       'disabled'
-      'none'
+      'unknown'
+      'error'
       'open'
       'caution'
       'closed')

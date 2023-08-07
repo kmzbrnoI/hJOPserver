@@ -91,6 +91,7 @@ type
     SE_out_lights_board: TSpinEdit;
     CHB_RCS_Lights: TCheckBox;
     Label17: TLabel;
+    CHB_Closed_Required: TCheckBox;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -219,6 +220,7 @@ begin
     settings.RCSOutputs.bellActiveDown := Self.CHB_Ring_Active_Down.Checked;
 
     settings.preringTime := Self.SE_Prering_Time.Value;
+    settings.closedRequired := Self.CHB_Closed_Required.Checked;
 
     Self.block.SetSettings(settings);
 
@@ -465,6 +467,7 @@ begin
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
   Self.SE_Prering_Time.Value := settings.preringTime;
+  Self.CHB_Closed_Required.Checked := settings.closedRequired;
 
   RCSOptionalToUI(settings.RCSOutputs.close, Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port);
   RCSOptionalToUI(settings.RCSOutputs.emOpen, Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port);
@@ -517,6 +520,7 @@ begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.Count - 1) + 1;
   Self.SE_Prering_Time.Value := 0;
+  Self.CHB_Closed_Required.Checked := False;
 
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port);

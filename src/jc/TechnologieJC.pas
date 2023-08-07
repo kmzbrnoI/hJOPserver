@@ -641,7 +641,7 @@ begin
     if (crossing.state = TBlkCrossingBasicState.disabled) then
       barriers.Add(JCBarrier(barBlockDisabled, crossing));
 
-    if (crossing.state <> TBlkCrossingBasicState.none) then
+    if (crossing.state <> TBlkCrossingBasicState.error) then
     begin
       if (crossing.pcEmOpen) then
         barriers.Add(JCBarrier(barCrosEmOpen, crossing));
@@ -1538,7 +1538,7 @@ begin
             continue;
 
           var crossing: TBlkCrossing := TBlkCrossing(Blocks.GetBlkByID(Self.m_data.crossings[i].crossingId));
-          if (crossing.state <> TBlkCrossingBasicState.closed) then
+          if (not crossing.safelyClosed) then
             Exit();
         end;
 
@@ -2764,7 +2764,7 @@ begin
           for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
           begin
             var crossing := TBlkCrossing(Blocks.GetBlkByID(crossingZav.crossingId));
-            if (crossing.state <> TBlkCrossingBasicState.closed) then
+            if (not crossing.safelyClosed) then
               if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
                 PanelServer.BottomError(Self.m_state.senderPnl, 'Neuzavřen ' + crossing.name,
                   (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
@@ -2866,9 +2866,9 @@ begin
   for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
   begin
     var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingZav.crossingId);
-    if ((crossing.state = TBlkCrossingBasicState.none) or (crossing.state = TBlkCrossingBasicState.disabled)) then
+    if ((crossing.state = TBlkCrossingBasicState.error) or (crossing.state = TBlkCrossingBasicState.disabled)) then
       Exit(false);
-    if ((crossing.Zaver) and (crossing.state <> TBlkCrossingBasicState.closed)) then
+    if ((crossing.Zaver) and (not crossing.safelyClosed)) then
       Exit(false);
   end; // for i
 
@@ -3197,13 +3197,13 @@ begin
   begin
     var crossing := TBlkCrossing(Blocks.GetBlkByID(crossingZav.crossingId));
 
-    if (crossing.state <> TBlkCrossingBasicState.none) then
+    if (crossing.state <> TBlkCrossingBasicState.error) then
     begin
       if (crossing.pcEmOpen) then
       begin
         bariery.Add(JCBarrier(barCrosEmOpen, crossing));
       end else begin
-        if (crossing.state <> TBlkCrossingBasicState.closed) then
+        if (not crossing.safelyClosed) then
           bariery.Add(JCBarrier(barCrosNotClosed, crossing));
       end;
     end

@@ -254,7 +254,7 @@ begin
   begin
     var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingid);
     if (crossing <> nil) then
-      if (crossing.state = TBlkCrossingBasicState.closed) then
+      if (crossing.safelyClosed) then
         Exit(true);
   end;
 end;
@@ -266,7 +266,7 @@ begin
   begin
     var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingid);
     if (crossing <> nil) then
-      if (crossing.state = TBlkCrossingBasicState.none) then
+      if (crossing.state = TBlkCrossingBasicState.error) then
         Exit(true);
   end;
 end;

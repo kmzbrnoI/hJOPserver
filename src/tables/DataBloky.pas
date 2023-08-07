@@ -221,8 +221,10 @@ begin
         case ((blk as TBlkCrossing).state) of
           TBlkCrossingBasicState.disabled:
             Self.LV.Items[line].SubItems[3] := 'disabled';
-          TBlkCrossingBasicState.none:
-            Self.LV.Items[line].SubItems[3] := 'none';
+          TBlkCrossingBasicState.unknown:
+            Self.LV.Items[line].SubItems[3] := 'unknown';
+          TBlkCrossingBasicState.error:
+            Self.LV.Items[line].SubItems[3] := 'error';
           TBlkCrossingBasicState.open:
             Self.LV.Items[line].SubItems[3] := 'otevřen';
           TBlkCrossingBasicState.caution:

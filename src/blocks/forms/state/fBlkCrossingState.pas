@@ -82,10 +82,11 @@ begin
 
   case (state.state) of
     TBlkCrossingBasicState.disabled: Self.CB_State.ItemIndex := 0;
-    TBlkCrossingBasicState.none: Self.CB_State.ItemIndex := 1;
-    TBlkCrossingBasicState.open: Self.CB_State.ItemIndex := 2;
-    TBlkCrossingBasicState.caution: Self.CB_State.ItemIndex := 3;
-    TBlkCrossingBasicState.closed: Self.CB_State.ItemIndex := 4;
+    TBlkCrossingBasicState.unknown: Self.CB_State.ItemIndex := 1;
+    TBlkCrossingBasicState.error: Self.CB_State.ItemIndex := 2;
+    TBlkCrossingBasicState.open: Self.CB_State.ItemIndex := 3;
+    TBlkCrossingBasicState.caution: Self.CB_State.ItemIndex := 4;
+    TBlkCrossingBasicState.closed: Self.CB_State.ItemIndex := 5;
   else
     Self.CB_State.ItemIndex := -1;
   end;

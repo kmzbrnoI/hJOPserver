@@ -4,7 +4,7 @@ object F_BlkCrossing: TF_BlkCrossing
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 577
+  ClientHeight = 601
   ClientWidth = 691
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -65,7 +65,7 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object B_save_P: TButton
     Left = 7
-    Top = 545
+    Top = 569
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -79,7 +79,7 @@ object F_BlkCrossing: TF_BlkCrossing
   end
   object B_Storno: TButton
     Left = 93
-    Top = 545
+    Top = 569
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -108,7 +108,7 @@ object F_BlkCrossing: TF_BlkCrossing
     Left = 8
     Top = 96
     Width = 353
-    Height = 441
+    Height = 465
     Caption = ' RCS '
     TabOrder = 3
     object L_P01: TLabel
@@ -512,7 +512,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Left = 14
       Top = 293
       Width = 323
-      Height = 134
+      Height = 156
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -710,6 +710,14 @@ object F_BlkCrossing: TF_BlkCrossing
         Height = 17
         TabOrder = 6
         OnClick = CHB_RCS_CautionClick
+      end
+      object CHB_Closed_Required: TCheckBox
+        Left = 10
+        Top = 124
+        Width = 310
+        Height = 17
+        Caption = 'Vy'#382'adovat aktivn'#237' vstup zav'#345'eno / z'#225'vory dole pro uzav'#345'en'#237
+        TabOrder = 12
       end
     end
   end

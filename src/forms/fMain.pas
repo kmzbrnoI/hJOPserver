@@ -3084,8 +3084,10 @@ begin
         case ((blk as TBlkCrossing).state) of
           TBlkCrossingBasicState.disabled:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
-          TBlkCrossingBasicState.none:
+          TBlkCrossingBasicState.unknown:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+          TBlkCrossingBasicState.error:
+            LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_RED;
           TBlkCrossingBasicState.open:
             LV_Blocks.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
           TBlkCrossingBasicState.caution, TBlkCrossingBasicState.closed:
