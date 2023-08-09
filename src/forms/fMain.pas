@@ -2830,9 +2830,9 @@ begin
   begin
     if (Item.SubItems[3] <> '0') then
       Self.LV_JC.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
-    else if (Item.SubItems[1] = '-6') then
-      Self.LV_JC.Canvas.Brush.Color := clAqua
-    else if (Item.SubItems[1] <> '-5') then
+    else if (Item.SubItems[1] = IntToStr(_JC_DESTROY_NC)) then
+      Self.LV_JC.Canvas.Brush.Color := _TABLE_COLOR_BLUE
+    else if (Item.SubItems[1] <> IntToStr(_JC_DESTROY_NONE)) then
       Self.LV_JC.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
   end;
 end;
