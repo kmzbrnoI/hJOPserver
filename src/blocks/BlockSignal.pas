@@ -996,8 +996,22 @@ begin
     for var blkId: Integer in Self.m_state.toRnz.Keys do
     begin
       var blk: TBlk := Blocks.GetBlkByID(blkId);
+
       if (blk <> nil) then
-        csItems.Add(CSItem(blk, 'Rušení NZ'));
+      begin
+        var justOne: Boolean := True; // print only blocks with just one em lock remaining
+        case (Blk.typ) of
+          btTurnout:
+              justOne := (TBlkTurnout(blk).state.locks = 1);
+          btLock:
+              justOne := (TBlkLock(blk).state.emLock = 1);
+          btPst:
+              justOne := (TBlkPst(blk).state.emLock = 1);
+        end;
+
+        if (justOne) then
+          csItems.Add(CSItem(blk, 'Rušení NZ'));
+      end;
     end;
 
     PanelServer.ConfirmationSequence(SenderPnl, Self.RNZPotvrSekv, SenderOR as TArea,
