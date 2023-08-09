@@ -3605,8 +3605,6 @@ begin
       continue;
     end;
 
-    var crossing: TBlkCrossing := TBlkCrossing(Blocks.GetBlkByID(crossingZav.crossingId));
-
     // prejezd uzavirame jen v pripade, ze nejaky z jeho aktivacnich bloku je obsazen
     // v pripade posunove cesty uzavirame vzdy
     if ((Self.typ = TJCType.shunt) or (crossingZav.closeTracks.Count = 0)) then
