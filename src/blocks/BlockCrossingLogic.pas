@@ -182,11 +182,11 @@ begin
   case (Self.state) of
     tsFree:
       begin
-        if ((Self.left.state = TTrackState.occupied) and (Self.middle.state = TTrackState.Free) and
-          (Self.right.state = TTrackState.Free)) then
+        if ((Self.left.state = TTrackState.occupied) and (Self.middle.state = TTrackState.free) and
+          (Self.right.state = TTrackState.free)) then
           Self.state := tsLRLeftOccupied
-        else if ((Self.right.state = TTrackState.occupied) and (Self.middle.state = TTrackState.Free) and
-          (Self.left.state = TTrackState.Free)) then
+        else if ((Self.right.state = TTrackState.occupied) and (Self.middle.state = TTrackState.free) and
+          (Self.left.state = TTrackState.free)) then
           Self.state := tsRLRightOccupied
         else if ((Self.left.state <> TTrackState.Free) or (Self.middle.state <> TTrackState.Free) or
           (Self.right.state <> TTrackState.Free)) then
@@ -195,14 +195,14 @@ begin
 
     tsUnexpectedOccupation:
       begin
-        if ((Self.left.state = TTrackState.Free) and (Self.middle.state = TTrackState.Free) and
-          (Self.right.state = TTrackState.Free)) then
+        if ((Self.left.state = TTrackState.free) and (Self.middle.state = TTrackState.free) and
+          (Self.right.state = TTrackState.free)) then
           Self.state := tsFree;
       end;
 
     tsLRLeftOccupied:
       begin
-        if ((Self.left.state <> TTrackState.occupied) or (Self.right.state <> TTrackState.Free)) then
+        if ((Self.left.state <> TTrackState.occupied) or (Self.right.state <> TTrackState.free)) then
           Self.state := tsUnexpectedOccupation
         else if (Self.middle.state = TTrackState.occupied) then
           Self.state := tsLRLeftMidOccupied
@@ -210,7 +210,7 @@ begin
 
     tsRLRightOccupied:
       begin
-        if ((Self.right.state <> TTrackState.occupied) or (Self.left.state <> TTrackState.Free)) then
+        if ((Self.right.state <> TTrackState.occupied) or (Self.left.state <> TTrackState.free)) then
           Self.state := tsUnexpectedOccupation
         else if (Self.middle.state = TTrackState.occupied) then
           Self.state := tsRLRightMidOccupied
@@ -220,7 +220,7 @@ begin
       begin
         if (Self.middle.state <> TTrackState.occupied) then
           Self.state := tsUnexpectedOccupation
-        else if (Self.left.state = TTrackState.Free) then
+        else if (Self.left.state = TTrackState.free) then
           Self.state := tsLRMidOccupied;
       end;
 
@@ -228,15 +228,15 @@ begin
       begin
         if (Self.middle.state <> TTrackState.occupied) then
           Self.state := tsUnexpectedOccupation
-        else if (Self.right.state = TTrackState.Free) then
+        else if (Self.right.state = TTrackState.free) then
           Self.state := tsRLMidOccupied;
       end;
 
     tsLRMidOccupied:
       begin
-        if (Self.left.state <> TTrackState.Free) then
+        if (Self.left.state <> TTrackState.free) then
           Self.state := tsUnexpectedOccupation
-        else if (Self.middle.state = TTrackState.Free) then
+        else if (Self.middle.state = TTrackState.free) then
         begin
           if (Self.right.state = TTrackState.occupied) then
           begin
@@ -250,9 +250,9 @@ begin
 
     tsRLMidOccupied:
       begin
-        if (Self.right.state <> TTrackState.Free) then
+        if (Self.right.state <> TTrackState.free) then
           Self.state := tsUnexpectedOccupation
-        else if (Self.middle.state = TTrackState.Free) then
+        else if (Self.middle.state = TTrackState.free) then
         begin
           if (Self.left.state = TTrackState.occupied) then
           begin
@@ -266,9 +266,9 @@ begin
 
     tsLROnlyRightOccupied:
       begin
-        if ((Self.left.state <> TTrackState.Free) or (Self.middle.state <> TTrackState.Free)) then
+        if ((Self.left.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free)) then
           Self.state := tsUnexpectedOccupation
-        else if (Self.right.state = TTrackState.Free) then
+        else if (Self.right.state = TTrackState.free) then
         begin
           if (Self.rightOut.state = TTrackState.occupied) then
             Self.state := tsLRRightOutOccupied
@@ -280,9 +280,9 @@ begin
 
     tsRLOnlyLeftOccupied:
       begin
-        if ((Self.right.state <> TTrackState.Free) or (Self.middle.state <> TTrackState.Free)) then
+        if ((Self.right.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free)) then
           Self.state := tsUnexpectedOccupation
-        else if (Self.left.state = TTrackState.Free) then
+        else if (Self.left.state = TTrackState.free) then
         begin
           if (Self.leftOut.state = TTrackState.occupied) then
             Self.state := tsRLLeftOutOccupied
@@ -294,7 +294,7 @@ begin
 
     tsLRRightOutOccupied:
       begin
-        if ((Self.left.state <> TTrackState.Free) or (Self.middle.state <> TTrackState.Free)) then
+        if ((Self.left.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free)) then
           Self.state := tsUnexpectedOccupation
         else if (Self.right.state = TTrackState.occupied) then
           Self.state := tsRLRightOccupied
@@ -302,7 +302,7 @@ begin
 
     tsRLLeftOutOccupied:
       begin
-        if ((Self.right.state <> TTrackState.Free) or (Self.middle.state <> TTrackState.Free)) then
+        if ((Self.right.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free)) then
           Self.state := tsUnexpectedOccupation
         else if (Self.left.state = TTrackState.occupied) then
           Self.state := tsLRLeftOccupied
@@ -316,8 +316,8 @@ end;
 function TBlkCrossingTrack.mShouldBeClosed(): Boolean;
 begin
   if (Self.state = tsUnexpectedOccupation) then
-    Exit((Self.left.state <> TTrackState.Free) or (Self.middle.state <> TTrackState.Free) or
-      (Self.right.state <> TTrackState.Free));
+    Exit((Self.left.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free) or
+      (Self.right.state <> TTrackState.free));
 
   case (Self.state) of
     tsLRLeftOccupied, tsLRLeftMidOccupied, tsLRMidOccupied, tsLROnlyRightOccupied, tsLRRightOutOccupied: begin
@@ -351,8 +351,8 @@ end;
 
 function TBlkCrossingTrack.mPositiveLight(): Boolean;
 begin
-  Result := (Self.left.state = TTrackState.Free) and (Self.middle.state = TTrackState.Free) and
-    (Self.right.state = TTrackState.Free);
+  Result := (Self.left.state = TTrackState.free) and (Self.middle.state = TTrackState.free) and
+    (Self.right.state = TTrackState.free);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -362,7 +362,7 @@ begin
   for var i: Integer := 0 to _SECT_COUNT - 1 do
   begin
     try
-      if (Self.sections[i].state <> TTrackState.Free) then
+      if (Self.sections[i].state <> TTrackState.free) then
         Exit(false);
     except
       Exit(false);
