@@ -643,26 +643,15 @@ end;
 
 procedure TBlkDisconnector.NoteUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
   UPO_EscCallback: TNotifyEvent);
-var UPO: TUPOItems;
+var upos: TUPOItems;
   item: TUPOItem;
 begin
-  UPO := TList<TUPOItem>.Create();
+  upos := TList<TUPOItem>.Create();
   try
-    item[0] := GetUPOLine('ŠTÍTEK ' + Self.m_globSettings.name, taCenter, clBlack, clTeal);
-    var lines: TStrings := GetLines(Self.note, _UPO_LINE_LEN);
-
-    try
-      item[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
-      if (lines.Count > 1) then
-        item[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
-    finally
-      lines.Free();
-    end;
-
-    UPO.Add(item);
-    PanelServer.UPO(SenderPnl, UPO, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+    upos.Add(UPO.NoteUPO(Self.name, Self.note));
+    PanelServer.UPO(SenderPnl, upos, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
   finally
-    UPO.Free();
+    upos.Free();
   end;
 end;
 

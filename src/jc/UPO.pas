@@ -32,6 +32,9 @@ function GetUPOLine(str: string; align: TAlignment = taCenter;
   fg: TColor = clNone; bg: TColor = clNone): TUPOLine;
 function GetLines(str: string; line_length: Integer): TStrings; // vrati pcet radku stringu \str v uporneni
 
+function NoteUPO(blockName: string; note: string): TUPOItem;
+procedure AddNoteUPO(blockName: string; note: string; var items: TUPOItems);
+
 implementation
 
 function GetUPOLine(str: string; align: TAlignment = taCenter; fg: TColor = clNone; bg: TColor = clNone): TUPOLine;
@@ -43,16 +46,41 @@ begin
 end;
 
 function GetLines(str: string; line_length: Integer): TStrings;
-var i: Integer;
 begin
   Result := TStringList.Create();
-
-  i := 1;
-  while (i <= Length(str)) do
-  begin
-    Result.Add(copy(str, i, Min(Length(str) - i + 1, line_length)));
-    i := i + Min(Length(str), line_length);
+  try
+    var i: Integer := 1;
+    while (i <= Length(str)) do
+    begin
+      Result.Add(copy(str, i, Min(Length(str) - i + 1, line_length)));
+      i := i + Min(Length(str), line_length);
+    end;
+  except
+    Result.Free();
+    raise;
   end;
+end;
+
+function NoteUPO(blockName: string; note: string): TUPOItem;
+begin
+  Result[0] := GetUPOLine('ŠTÍTEK ' + blockName, taCenter, clBlack, clTeal);
+  var lines := GetLines(note, _UPO_LINE_LEN);
+
+  try
+    Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+    if (lines.Count > 1) then
+      Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0)
+    else
+      Result[2] := GetUPOLine('', taLeftJustify, clYellow, $A0A0A0);
+  finally
+    lines.Free();
+  end;
+end;
+
+procedure AddNoteUPO(blockName: string; note: string; var items: TUPOItems);
+begin
+  if (note <> '') then
+    items.Add(NoteUPO(blockName, note));
 end;
 
 end.
