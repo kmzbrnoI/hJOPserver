@@ -28,6 +28,7 @@ type
 
     procedure Parse(str: string);
     function ToStr(): string;
+    procedure AddOccupiedTracksIds(var occupied: TList<Integer>);
 
     property state: TTrackState read GetBlockState;
     property changed: Boolean read GetChanged;
@@ -107,6 +108,14 @@ function TBlkTrackRefs.GetChanged(): Boolean;
 begin
   Result := (Self.stateLast <> Self.state);
   Self.stateLast := Self.state;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTrackRefs.AddOccupiedTracksIds(var occupied: TList<Integer>);
+begin
+  for var ref: TBlkTrackRef in Self.parts do
+    ref.AddOccupiedTracksId(occupied);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

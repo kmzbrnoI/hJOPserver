@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, Block, SysUtils, Menus, AreaDb, Classes, TechnologieRCS,
-  IdContext, Area, Generics.Collections, JsonDataObjects,
+  IdContext, Area, Generics.Collections, JsonDataObjects, ConfSeq,
   BlockCrossingLogic;
 
 type
@@ -154,6 +154,9 @@ type
     procedure FillRCSModules();
     procedure SetState(new: TBlkCrossingBasicState);
 
+    function OccupiedTrackIds(): TList<Integer>;
+    procedure CSAddOccupiedTracks(var items: TConfSeqItems);
+
   public
     tracks: TObjectList<TBlkCrossingTrack>;
 
@@ -211,7 +214,8 @@ type
 implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCS, UPO,
-  Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert, Config, timeHelper;
+  Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert, Config, timeHelper,
+  BlockTrack, BlockTrackRef;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
@@ -706,16 +710,30 @@ end;
 
 procedure TBlkCrossing.UPOZUZClick(Sender: TObject);
 begin
-  PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZUZCallBack,
-    (TPanelConnData(TIdContext(Sender).data).UPO_ref as TArea), 'Zrušení uzavření přejezdu',
-    GetObjsList(Self), nil);
+  var csItems := TList<TConfSeqItem>.Create();
+  try
+    Self.CSAddOccupiedTracks(csItems);
+
+    PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZUZCallBack,
+      (TPanelConnData(TIdContext(Sender).data).UPO_ref as TArea), 'Zrušení uzavření přejezdu',
+      GetObjsList(Self), csItems, True, False);
+  finally
+    csItems.Free();
+  end;
 end;
 
 procedure TBlkCrossing.UPONOTClick(Sender: TObject);
 begin
-  PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZNOTCallBack,
-    (TPanelConnData(TIdContext(Sender).data).UPO_ref as TArea), 'Nouzové otevření přejezdu',
-    GetObjsList(Self), nil);
+  var csItems := TList<TConfSeqItem>.Create();
+  try
+    Self.CSAddOccupiedTracks(csItems);
+
+    PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PanelZNOTCallBack,
+      (TPanelConnData(TIdContext(Sender).data).UPO_ref as TArea), 'Nouzové otevření přejezdu',
+      GetObjsList(Self), csItems, True, False);
+  finally
+    csItems.Free();
+  end;
 end;
 
 procedure TBlkCrossing.UPOZNOTClick(Sender: TObject);
@@ -1316,5 +1334,36 @@ begin
   else
     Result := ((Self.state = TBlkCrossingBasicState.closed) or (Self.state = TBlkCrossingBasicState.caution)) and (Self.IsPreringElapsed());
 end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkCrossing.OccupiedTrackIds(): TList<Integer>;
+begin
+  Result := TList<Integer>.Create();
+  try
+    for var track: TBlkCrossingTrack in Self.tracks do
+      track.AddOccupiedLMRTracksIds(Result);
+  except
+    Result.Free();
+    raise;
+  end;
+end;
+
+procedure TBlkCrossing.CSAddOccupiedTracks(var items: TConfSeqItems);
+begin
+  var occupiedIds: TList<Integer> := Self.OccupiedTrackIds();
+  try
+    for var id: Integer in occupiedIds do
+    begin
+      var blk := Blocks.GetBlkByID(id);
+      if (blk <> nil) then
+        items.Add(CSItem(blk, 'Obsazený kolejový úsek'));
+    end;
+  finally
+    occupiedIds.Free();
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
 
 end.// unit

@@ -62,6 +62,7 @@ type
     procedure Save(ini: TMemIniFile; section: string; prefix: string);
 
     procedure Update();
+    procedure AddOccupiedLMRTracksIds(var occupied: TList<Integer>);
 
     property state: TBlkCrossingTrackState read mState write SetState;
     property shouldBeClosed: Boolean read mShouldBeClosed;
@@ -383,6 +384,15 @@ function TBlkCrossingTrack.GetAnullation(): Boolean;
 begin
   Result := (((Self.state = tsRLOnlyLeftOccupied) and (Self.openingRL = toMiddleFree)) or
              ((Self.state = tsLROnlyRightOccupied) and (Self.openingLR = toMiddleFree)));
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkCrossingTrack.AddOccupiedLMRTracksIds(var occupied: TList<Integer>);
+begin
+  Self.left.AddOccupiedTracksIds(occupied);
+  Self.middle.AddOccupiedTracksIds(occupied);
+  Self.right.AddOccupiedTracksIds(occupied);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

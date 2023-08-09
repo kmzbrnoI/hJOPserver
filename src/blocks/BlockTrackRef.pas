@@ -7,7 +7,7 @@ unit BlockTrackRef;
 
 interface
 
-uses Block, BlockTrack, Classes, SysUtils;
+uses Block, BlockTrack, Classes, SysUtils, Generics.Collections;
 
 type
 
@@ -34,6 +34,7 @@ type
     constructor Create(blockId: Integer; partId: Integer); overload;
     constructor Create(str: string); overload;
     function ToStr(): string;
+    procedure AddOccupiedTracksId(var occupied: TList<Integer>);
 
     property isPart: Boolean read MIsPart;
     property Block: TBlkTrack read GetBlock;
@@ -124,6 +125,14 @@ begin
   end
   else
     Result := Self.Block.occupied;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkTrackRef.AddOccupiedTracksId(var occupied: TList<Integer>);
+begin
+  if ((Self.state = TTrackState.occupied) and (not occupied.Contains(Self.blockId))) then
+    occupied.Add(Self.blockId);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
