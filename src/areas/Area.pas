@@ -788,14 +788,12 @@ begin
   try
     for var blk: TBlk in Blocks do
     begin
-      if (Blk.typ <> btTrack) then
-        continue;
-      if (not(Blk as TBlkTrack).NUZ) then
-        continue;
-
-      for var area: TArea in (Blk as TBlkTrack).areas do
-        if (area = Self) then
-          csItems.Add(CSItem(Blk, 'Nouzové vybavování'));
+      if ((blk.typ = btTrack) and (TBlkTrack(blk).NUZ) and ((blk as TBlkTrack).areas.Contains(Self))) then
+      begin
+        csItems.Add(CSItem(blk, 'Nouzové vybavování'));
+        if (TBlkTrack(blk).occupied = TTrackState.occupied) then
+          csItems.Add(CSItem(blk, 'Kolejový úsek obsazen'));
+      end;
     end;
 
     PanelServer.ConfirmationSequence(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků',
