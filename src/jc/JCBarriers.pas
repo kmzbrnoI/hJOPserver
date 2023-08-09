@@ -132,63 +132,68 @@ end;
 
 function BarriersToConfSeq(barriers: TJCBarriers): TConfSeqItems;
 begin
-  result := TList<TConfSeqItem>.Create();
+  Result := TList<TConfSeqItem>.Create();
 
-  for var i: Integer := 0 to barriers.Count - 1 do
-  begin
-    case (barriers[i].typ) of
-      barBlockDisabled:
-        result.Add(CSCondition(barriers[i].Block, 'Blok neaktivní'));
+  try
+    for var barrier: TJCBarrier in barriers do
+    begin
+      case (barrier.typ) of
+        barBlockDisabled:
+          Result.Add(CSItem(barrier.block, 'Blok neaktivní'));
 
-      barTrackOccupied:
-        result.Add(CSCondition(barriers[i].Block, 'Úsek obsazen'));
-      barTrackTrain:
-        result.Add(CSCondition(barriers[i].Block, 'Úsek obsahuje soupravu'));
+        barTrackOccupied:
+          Result.Add(CSItem(barrier.block, 'Úsek obsazen'));
+        barTrackTrain:
+          Result.Add(CSItem(barrier.block, 'Úsek obsahuje soupravu'));
 
-      barCrosEmOpen:
-        result.Add(CSCondition(barriers[i].Block, 'Nouzově otevřen'));
-      barCrosError:
-        result.Add(CSCondition(barriers[i].Block, 'Porucha'));
-      barCrosNotClosed:
-        result.Add(CSCondition(barriers[i].Block, 'Neuzavřen'));
+        barCrosEmOpen:
+          Result.Add(CSItem(barrier.block, 'Nouzově otevřen'));
+        barCrosError:
+          Result.Add(CSItem(barrier.block, 'Porucha'));
+        barCrosNotClosed:
+          Result.Add(CSItem(barrier.block, 'Neuzavřen'));
 
-      barTurnoutNoPos:
-        result.Add(CSCondition(barriers[i].Block, 'Není správná poloha'));
-      barTurnoutEmLock:
-        result.Add(CSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
-      barTurnoutWrongPos:
-        result.Add(CSCondition(barriers[i].Block, 'Není správná poloha'));
+        barTurnoutNoPos:
+          Result.Add(CSItem(barrier.block, 'Není správná poloha'));
+        barTurnoutEmLock:
+          Result.Add(CSItem(barrier.block, 'Není zaveden nouzový závěr'));
+        barTurnoutWrongPos:
+          Result.Add(CSItem(barrier.block, 'Není správná poloha'));
 
-      barRailwayZAKVC, barRailwayZAKPC:
-        result.Add(CSCondition(barriers[i].Block, 'Zákaz odjezdu'));
-      barRailwayNoZAK:
-        result.Add(CSCondition(barriers[i].Block, 'Nezaveden zákaz odjezdu'));
-      barRailwayZaver:
-        result.Add(CSCondition(barriers[i].Block, 'Závěr'));
-      barRailwayNotReady:
-        result.Add(CSCondition(barriers[i].Block, 'Nepovoluje odjezd'));
-      barRailwayRequesting:
-        result.Add(CSCondition(barriers[i].Block, 'Probíhá žádost'));
-      barRailwayWrongDir:
-        result.Add(CSCondition(barriers[i].Block, 'Nesouhlas'));
-      barRailwayNoBp:
-        result.Add(CSCondition(barriers[i].Block, 'Bloková podmínka nezavedena'));
-      barRailwayNoTrainMove:
-        result.Add(CSCondition(barriers[i].Block, 'Nedojde k přenosu čísla vlaku'));
-      barRailwayMoveEnd:
-        result.Add(CSCondition(barriers[i].Block, 'Vlak bude přenesen až na konec trati'));
+        barRailwayZAKVC, barRailwayZAKPC:
+          Result.Add(CSItem(barrier.block, 'Zákaz odjezdu'));
+        barRailwayNoZAK:
+          Result.Add(CSItem(barrier.block, 'Nezaveden zákaz odjezdu'));
+        barRailwayZaver:
+          Result.Add(CSItem(barrier.block, 'Závěr'));
+        barRailwayNotReady:
+          Result.Add(CSItem(barrier.block, 'Nepovoluje odjezd'));
+        barRailwayRequesting:
+          Result.Add(CSItem(barrier.block, 'Probíhá žádost'));
+        barRailwayWrongDir:
+          Result.Add(CSItem(barrier.block, 'Nesouhlas'));
+        barRailwayNoBp:
+          Result.Add(CSItem(barrier.block, 'Bloková podmínka nezavedena'));
+        barRailwayNoTrainMove:
+          Result.Add(CSItem(barrier.block, 'Nedojde k přenosu čísla vlaku'));
+        barRailwayMoveEnd:
+          Result.Add(CSItem(barrier.block, 'Vlak bude přenesen až na konec trati'));
 
-      barLockNotLocked:
-        result.Add(CSCondition(barriers[i].Block, 'Neuzamčen'));
-      barLockEmLock:
-        result.Add(CSCondition(barriers[i].Block, 'Není zaveden nouzový závěr'));
+        barLockNotLocked:
+          Result.Add(CSItem(barrier.block, 'Neuzamčen'));
+        barLockEmLock:
+          Result.Add(CSItem(barrier.block, 'Není zaveden nouzový závěr'));
 
-      barDiscActive:
-        result.Add(CSCondition(barriers[i].Block, 'Rozpojovač aktivní'));
+        barDiscActive:
+          Result.Add(CSItem(barrier.block, 'Rozpojovač aktivní'));
 
-      barControllerNotInBasicPos:
-        result.Add(CSCondition(barriers[i].Block, 'Volič není v základní poloze'));
+        barControllerNotInBasicPos:
+          Result.Add(CSItem(barrier.block, 'Volič není v základní poloze'));
+      end;
     end;
+  except
+    Result.Free();
+    raise;
   end;
 end;
 

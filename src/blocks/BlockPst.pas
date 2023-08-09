@@ -569,7 +569,7 @@ procedure TBlkPst.UPONPstDone(Sender: TObject);
 begin
   PanelServer.ConfirmationSequence(TIDContext(Sender), Self.CSNPStDone,
     (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové zrušení obsluhy PSt',
-    GetObjsList(Self), CSConditions(CSCondition(Self, 'Není základní poloha prvku PSt')));
+    GetObjsList(Self), CSItems(CSItem(Self, 'Není základní poloha prvku PSt')));
 end;
 
 procedure TBlkPst.CSNPStDone(Sender: TIDContext; success: Boolean);
@@ -1288,20 +1288,20 @@ begin
     end;
 
     // Confirmation sequence barriers?
-    var conditions: TList<TConfSeqItem> := TList<TConfSeqItem>.Create();
+    var csItems: TList<TConfSeqItem> := TList<TConfSeqItem>.Create();
     for var barrier in barriers do
     begin
       if (JCBarriers.IsCSBarrier(barrier.typ)) then
-        conditions.Add(CSCondition(barrier.block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+        csItems.Add(CSItem(barrier.block, JCBarriers.BarrierGetCSNote(barrier.typ)));
     end;
 
-    if (conditions.Count > 0) then
+    if (csItems.Count > 0) then
     begin
       Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...', llInfo);
 
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
         PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.BarriersCSCallback, (Self.m_state.senderOR as TArea),
-          'Předání obsluhy na PSt', GetObjsList(Self), conditions);
+          'Předání obsluhy na PSt', GetObjsList(Self), csItems);
     end else begin
       Self.MoveRefugees();
     end;

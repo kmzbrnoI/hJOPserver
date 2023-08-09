@@ -995,21 +995,21 @@ begin
 end;
 
 procedure TBlkSignal.MenuRNZClick(SenderPnl: TIdContext; SenderOR: TObject);
-var conditions: TList<TConfSeqItem>;
+var csItems: TList<TConfSeqItem>;
 begin
-  conditions := TList<TConfSeqItem>.Create();
+  csItems := TList<TConfSeqItem>.Create();
   try
     for var blkId: Integer in Self.m_state.toRnz.Keys do
     begin
       var blk: TBlk := Blocks.GetBlkByID(blkId);
       if (blk <> nil) then
-        conditions.Add(CSCondition(blk, 'Rušení NZ'));
+        csItems.Add(CSItem(blk, 'Rušení NZ'));
     end;
 
     PanelServer.ConfirmationSequence(SenderPnl, Self.RNZPotvrSekv, SenderOR as TArea,
-      'Zrušení nouzových závěrů po nouzové cestě', GetObjsList(Self), conditions, true, false);
+      'Zrušení nouzových závěrů po nouzové cestě', GetObjsList(Self), csItems, True, False);
   finally
-    conditions.Free();
+    csItems.Free();
   end;
 end;
 

@@ -7,35 +7,35 @@ uses Generics.Collections;
 type
   TConfSeqItem = record
     target: string;
-    condition: string;
+    note: string;
   end;
 
   TConfSeqItems = TList<TConfSeqItem>;
 
-  function CSCondition(block: TObject; condition: string = ''): TConfSeqItem; overload;
-  function CSCondition(target: string; condition: string = ''): TConfSeqItem; overload;
-  function CSConditions(condition: TConfSeqItem): TConfSeqItems;
+  function CSItem(block: TObject; note: string = ''): TConfSeqItem; overload;
+  function CSItem(target: string; note: string = ''): TConfSeqItem; overload;
+  function CSItems(item: TConfSeqItem): TConfSeqItems;
 
 implementation
 
 uses Block;
 
-function CSCondition(block: TObject; condition: string): TConfSeqItem;
+function CSItem(block: TObject; note: string): TConfSeqItem;
 begin
   Result.target := TBlk(block).name;
-  Result.condition := condition;
+  Result.note := note;
 end;
 
-function CSCondition(target: string; condition: string): TConfSeqItem;
+function CSItem(target: string; note: string): TConfSeqItem;
 begin
   Result.target := target;
-  Result.condition := condition;
+  Result.note := note;
 end;
 
-function CSConditions(condition: TConfSeqItem): TConfSeqItems;
+function CSItems(item: TConfSeqItem): TConfSeqItems;
 begin
   Result := TList<TConfSeqItem>.Create();
-  Result.Add(condition);
+  Result.Add(item);
 end;
 
 end.

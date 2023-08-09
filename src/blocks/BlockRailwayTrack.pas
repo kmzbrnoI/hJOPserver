@@ -812,23 +812,23 @@ begin
 end;
 
 procedure TBlkRT.MenuRBPClick(SenderPnl: TIdContext; SenderOR: TObject);
-var conditions: TConfSeqItems;
+var csItems: TConfSeqItems;
 begin
-  conditions := TList<TConfSeqItem>.Create();
+  csItems := TList<TConfSeqItem>.Create();
   try
     if (Self.IsTrain()) then
     begin
-      conditions.Add(CSCondition(Self, 'Smazání soupravy ' + Self.train.name + ' z úseku'));
+      csItems.Add(CSItem(Self, 'Smazání soupravy ' + Self.train.name + ' z úseku'));
       if ((Self.railway <> nil) and (not TBlkRailway(Self.railway).IsTrainInMoreTUs(Self.train))) then
-        conditions.Add(CSCondition(Self.railway, 'Smazání soupravy ' + Self.train.name + ' z tratě'));
+        csItems.Add(CSItem(Self.railway, 'Smazání soupravy ' + Self.train.name + ' z tratě'));
       if (Blocks.GetBlkWithTrain(Self.train).Count = 1) then
-        conditions.Add(CSCondition(Self, 'Smazání soupravy ' + Self.train.name + ' z kolejiště'));
+        csItems.Add(CSItem(Self, 'Smazání soupravy ' + Self.train.name + ' z kolejiště'));
     end;
 
     PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TArea,
-      'Zrušení poruchy blokové podmínky', GetObjsList(Self), conditions, true, false);
+      'Zrušení poruchy blokové podmínky', GetObjsList(Self), csItems, True, False);
   finally
-    conditions.Free();
+    csItems.Free();
   end;
 end;
 

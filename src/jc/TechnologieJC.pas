@@ -1226,22 +1226,22 @@ begin
     end;
 
     // existuji bariery na potvrzeni potvrzovaci sekvenci ?
-    var conditions: TList<TConfSeqItem> := TList<TConfSeqItem>.Create;
+    var csItems: TList<TConfSeqItem> := TList<TConfSeqItem>.Create;
     try
       for var barrier in barriers do
       begin
         if (JCBarriers.IsCSBarrier(barrier.typ)) then
-          conditions.Add(CSCondition(barrier.Block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+          csItems.Add(CSItem(barrier.Block, JCBarriers.BarrierGetCSNote(barrier.typ)));
       end;
 
-      if (conditions.Count > 0) then
+      if (csItems.Count > 0) then
       begin
         // ano, takoveto bariery existuji -> potvrzovaci sekvence
         Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...');
 
         if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
           PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.PS_vylCallback, (Self.m_state.senderOR as TArea),
-            'Jízdní cesta s potvrzením', GetObjsList(Self.signal, Self.lastTrack), conditions, true, false);
+            'Jízdní cesta s potvrzením', GetObjsList(Self.signal, Self.lastTrack), csItems, True, False);
 
         Self.step := stepConfSeq;
       end else begin
@@ -1249,7 +1249,7 @@ begin
         Self.SetInitStep();
       end;
     finally
-      conditions.Free();
+      csItems.Free();
     end;
 
   finally

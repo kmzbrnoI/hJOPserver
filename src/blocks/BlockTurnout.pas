@@ -1080,19 +1080,19 @@ begin
   Self.m_state.movingOR := TPanelConnData(TIDContext(Sender).data).UPO_ref;
 
   var blk := Blocks.GetBlkByID(Self.trackID);
-  var conditions := TList<TConfSeqItem>.Create();
+  var csItems := TList<TConfSeqItem>.Create();
 
   try
     if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
-      conditions.Add(CSCondition(Blk, 'Obsazený kolejový úsek'));
+      csItems.Add(CSItem(Blk, 'Obsazený kolejový úsek'));
     if ((Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
-      conditions.Add(CSCondition(Blk, 'Pod obsluhou PSt'));
+      csItems.Add(CSItem(Blk, 'Pod obsluhou PSt'));
 
     PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSPlus,
       (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy plus',
-      GetObjsList(Self), conditions, true, false);
+      GetObjsList(Self), csItems, True, False);
   finally
-    conditions.Free();
+    csItems.Free();
   end;
 end;
 
@@ -1102,19 +1102,19 @@ begin
   Self.m_state.movingOR := TPanelConnData(TIDContext(Sender).data).UPO_ref;
 
   var blk := Blocks.GetBlkByID(Self.trackID);
-  var conditions := TList<TConfSeqItem>.Create();
+  var csItems := TList<TConfSeqItem>.Create();
 
   try
     if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
-      conditions.Add(CSCondition(Blk, 'Obsazený kolejový úsek'));
+      csItems.Add(CSItem(Blk, 'Obsazený kolejový úsek'));
     if ((Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
-      conditions.Add(CSCondition(Blk, 'Pod obsluhou PSt'));
+      csItems.Add(CSItem(Blk, 'Pod obsluhou PSt'));
 
     PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSMinus,
       (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy mínus',
-      GetObjsList(Self), conditions, true, false);
+      GetObjsList(Self), csItems, True, False);
   finally
-    conditions.Free();
+    csItems.Free();
   end;
 end;
 

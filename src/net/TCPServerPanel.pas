@@ -99,11 +99,11 @@ type
     procedure Menu(AContext: TIdContext; Blk: TBlk; Area: TArea; Menu: string);
 
     procedure ConfirmationSequence(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
-      senders: TList<TObject>; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+      senders: TList<TObject>; lines: TConfSeqItems; free_senders: Boolean = true; free_lines: Boolean = true);
     procedure InfoWindow(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
-      senders: TList<TObject>; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+      senders: TList<TObject>; lines: TConfSeqItems; free_senders: Boolean = true; free_lines: Boolean = true);
     procedure CSWindow(AContext: TIdContext; mode: string; callback: TCSCallback; Area: TArea; event: string;
-      senders: TList<TObject>; conditions: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+      senders: TList<TObject>; lines: TConfSeqItems; free_senders: Boolean = true; free_lines: Boolean = true);
     procedure CSClose(AContext: TIdContext; msg: string = '');
     procedure CSWindowClose(AContext: TIdContext; mode: string; msg: string = '');
 
@@ -1001,19 +1001,19 @@ begin
 end;
 
 procedure TPanelServer.ConfirmationSequence(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
-  senders: TList<TObject>; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+  senders: TList<TObject>; lines: TConfSeqItems; free_senders: Boolean = true; free_lines: Boolean = true);
 begin
-  Self.CSWindow(AContext, 'PS', callback, Area, event, senders, podminky, free_senders, free_cond);
+  Self.CSWindow(AContext, 'PS', callback, Area, event, senders, lines, free_senders, free_lines);
 end;
 
 procedure TPanelServer.InfoWindow(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
-  senders: TList<TObject>; podminky: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+  senders: TList<TObject>; lines: TConfSeqItems; free_senders: Boolean = true; free_lines: Boolean = true);
 begin
-  Self.CSWindow(AContext, 'IS', callback, Area, event, senders, podminky, free_senders, free_cond);
+  Self.CSWindow(AContext, 'IS', callback, Area, event, senders, lines, free_senders, free_lines);
 end;
 
 procedure TPanelServer.CSWindow(AContext: TIdContext; mode: string; callback: TCSCallback; Area: TArea; event: string;
-  senders: TList<TObject>; conditions: TConfSeqItems; free_senders: Boolean = true; free_cond: Boolean = true);
+  senders: TList<TObject>; lines: TConfSeqItems; free_senders: Boolean = true; free_lines: Boolean = true);
 var str, areaName: string;
 begin
   str := '';
@@ -1033,9 +1033,9 @@ begin
 
   str := str + ';';
 
-  if (conditions <> nil) then
-    for var i: Integer := 0 to conditions.Count - 1 do
-      str := str + '[{' + conditions[i].target + '}|{' + conditions[i].condition + '}]';
+  if (lines <> nil) then
+    for var line: TConfSeqItem in lines do
+      str := str + '[{' + line.target + '}|{' + line.note + '}]';
 
   if (Area <> nil) then
     areaName := Area.name
@@ -1052,8 +1052,8 @@ begin
 
   if ((free_senders) and (Assigned(senders))) then
     senders.Free();
-  if ((free_cond) and (Assigned(conditions))) then
-    conditions.Free();
+  if ((free_lines) and (Assigned(lines))) then
+    lines.Free();
 end;
 
 procedure TPanelServer.CSClose(AContext: TIdContext; msg: string = '');

@@ -365,11 +365,11 @@ begin
     Exit();
 
   var train: TTrain := TrainDb.trains[railway.trainPredict.traini];
-  var conditions := train.InfoWindowItems();
+  var csItems := train.InfoWindowItems();
   try
-    PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, GetObjsList(Self), conditions, true, false);
+    PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, GetObjsList(Self), csItems, True, False);
   finally
-    conditions.Free();
+    csItems.Free();
   end;
 end;
 

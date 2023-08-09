@@ -1538,24 +1538,24 @@ function TTrain.InfoWindowItems(): TList<TConfSeqItem>;
 begin
   Result := TList<TConfSeqItem>.Create();
   try
-    Result.Add(CSCondition('Souprava '+Self.name));
-    Result.Add(CSCondition('Typ: '+Self.data.typ));
-    Result.Add(CSCondition('Délka: '+IntToStr(Self.data.length)+' cm'));
-    Result.Add(CSCondition('Počet vozů: '+IntToStr(Self.data.carsCount)));
-    Result.Add(CSCondition('Směr: '+Self.StrArrowDirection()));
+    Result.Add(CSItem('Souprava '+Self.name));
+    Result.Add(CSItem('Typ: '+Self.data.typ));
+    Result.Add(CSItem('Délka: '+IntToStr(Self.data.length)+' cm'));
+    Result.Add(CSItem('Počet vozů: '+IntToStr(Self.data.carsCount)));
+    Result.Add(CSItem('Směr: '+Self.StrArrowDirection()));
 
     if (Self.data.areaFrom <> nil) then
-      Result.Add(CSCondition('Výchozí stanice: '+TArea(Self.data.areaFrom).name))
+      Result.Add(CSItem('Výchozí stanice: '+TArea(Self.data.areaFrom).name))
     else
-      Result.Add(CSCondition('Výchozí stanice: nevyplněno'));
+      Result.Add(CSItem('Výchozí stanice: nevyplněno'));
 
     if (Self.data.areaTo <> nil) then
-      Result.Add(CSCondition('Cílová stanice: '+TArea(Self.data.areaTo).name))
+      Result.Add(CSItem('Cílová stanice: '+TArea(Self.data.areaTo).name))
     else
-      Result.Add(CSCondition('Cílová stanice: nevyplněno'));
+      Result.Add(CSItem('Cílová stanice: nevyplněno'));
 
     if (Self.data.note <> '') then
-      Result.Add(CSCondition('Poznámka: '+ Self.data.note));
+      Result.Add(CSItem('Poznámka: '+ Self.data.note));
 
     for var i: Integer := 0 to Self.HVs.Count-1 do
     begin
@@ -1571,21 +1571,22 @@ begin
         else
           comment := 'Jízdu i funkce řídí hJOP';
 
-        Result.Add(CSCondition('HV '+IntToStr(i+1)+': '+ hv.NiceName() + '  # ' + comment));
+        Result.Add(CSItem('HV '+IntToStr(i+1)+': '+ hv.NiceName() + '  # ' + comment));
 
         for var regulator in hv.state.regulators do
         begin
           var user := TPanelConnData(regulator.conn.Data).regulator_user;
           if (hv.ruc) then
-            Result.Add(CSCondition('  Ruční řízení jízdy - '+user.fullName))
+            Result.Add(CSItem('  Ruční řízení jízdy - '+user.fullName))
           else
-            Result.Add(CSCondition('  Ovládání funkcí - '+user.fullName));
+            Result.Add(CSItem('  Ovládání funkcí - '+user.fullName));
         end;
       end;
     end;
 
   except
     Result.Free();
+    raise;
   end;
 end;
 

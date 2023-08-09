@@ -962,31 +962,29 @@ begin
   if (train = nil) then
     Exit();
 
-  var conditions := train.InfoWindowItems();
+  var csItems := train.InfoWindowItems();
   try
-    PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, GetObjsList(Self), conditions, true, false);
+    PanelServer.InfoWindow(SenderPnl, nil, TArea(SenderOR), 'Vlak ' + train.name, GetObjsList(Self), csItems, True, False);
   finally
-    conditions.Free();
+    csItems.Free();
   end;
 end;
 
 procedure TBlkTrack.MenuDeleteTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
-var conditions: TConfSeqItems;
-  blk: TObject;
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
     Self.trains.Count)) then
     Exit();
 
-  conditions := TList<TConfSeqItem>.Create();
+  var csItems := TList<TConfSeqItem>.Create();
   try
-    for blk in Blocks.GetBlkWithTrain(TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]) do
-      conditions.Add(CSCondition(blk, 'Smazání soupravy z úseku'));
+    for var blk in Blocks.GetBlkWithTrain(TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]) do
+      csItems.Add(CSItem(blk, 'Smazání soupravy z úseku'));
     PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrDeleteTrain, SenderOR as TArea,
       'Smazání soupravy ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name,
-      GetObjsList(Self), conditions, true, false);
+      GetObjsList(Self), csItems, true, false);
   finally
-    conditions.Free();
+    csItems.Free();
   end;
 end;
 
@@ -1081,16 +1079,16 @@ begin
     Exit();
   var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
 
-  var conditions: TConfSeqItems := TConfSeqItems.Create();
+  var csItems: TConfSeqItems := TConfSeqItems.Create();
   try
     for var hvaddr: Integer in Train.HVs do
       if (HVDb[hvaddr] <> nil) then
-        conditions.Add(CSCondition(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
+        csItems.Add(CSItem(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
 
     PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrRegVezmiTrain, SenderOR as TArea,
-      'Nouzové převzetí hnacích vozidel do automatického řízení', GetObjsList(Self), conditions, true, false);
+      'Nouzové převzetí hnacích vozidel do automatického řízení', GetObjsList(Self), csItems, True, False);
   finally
-    conditions.Free();
+    csItems.Free();
   end;
 end;
 

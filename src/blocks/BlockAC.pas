@@ -508,20 +508,20 @@ var conds: TList<TConfSeqItem>;
 begin
   conds := TList<TConfSeqItem>.Create();
   if (Self.clientConnected) then
-    conds.Add(CSCondition('Klient: pøipojen', ''))
+    conds.Add(CSItem('Klient: pøipojen'))
   else
-    conds.Add(CSCondition('Klient: nepøipojen', ''));
+    conds.Add(CSItem('Klient: nepøipojen'));
   case (Self.acState) of
     TACState.stopped:
-      conds.Add(CSCondition('AC: zastaven', ''));
+      conds.Add(CSItem('AC: zastaven'));
     TACState.running:
-      conds.Add(CSCondition('AC: bìží', ''));
+      conds.Add(CSItem('AC: bìží'));
     TACState.paused:
-      conds.Add(CSCondition('AC: pozastaven', ''))
+      conds.Add(CSItem('AC: pozastaven'))
   end;
 
   for var str in Self.m_state.lines do
-    conds.Add(CSCondition(str, ''));
+    conds.Add(CSItem(str));
 
   if (not Self.m_state.panelsShowingState.Contains(pnl)) then
     Self.m_state.panelsShowingState.Add(pnl);

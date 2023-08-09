@@ -779,9 +779,9 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TArea.DkNUZStart(Sender: TIDContext);
-var conditions: TList<TConfSeqItem>;
+var csItems: TList<TConfSeqItem>;
 begin
-  conditions := TList<TConfSeqItem>.Create();
+  csItems := TList<TConfSeqItem>.Create();
   try
     for var blk: TBlk in Blocks do
     begin
@@ -792,13 +792,13 @@ begin
 
       for var area: TArea in (Blk as TBlkTrack).areas do
         if (area = Self) then
-          conditions.Add(CSCondition(Blk, 'Nouzové vybavování'));
+          csItems.Add(CSItem(Blk, 'Nouzové vybavování'));
     end;
 
     PanelServer.ConfirmationSequence(Sender, Self.NUZ_PS, Self, 'Nouzové uvolnění závěrů úseků',
-      GetObjsList(Self), conditions, true, false);
+      GetObjsList(Self), csItems, True, False);
   finally
-    conditions.Free();
+    csItems.Free();
   end;
 end;
 
