@@ -1117,6 +1117,21 @@ procedure TPanelServer.UPO(AContext: TIdContext; items: TUPOItems; critical: Boo
   callbackEsc: TNotifyEvent; ref: TObject);
 var str: string;
 begin
+  TPanelConnData(AContext.data).UPO_OK := callbackOK;
+  TPanelConnData(AContext.data).UPO_Esc := callbackEsc;
+  TPanelConnData(AContext.data).UPO_ref := ref;
+
+  if (items.Count = 0) then
+  begin
+    if (Assigned(callbackOK)) then
+      callbackOK(AContext);
+
+    TPanelConnData(AContext.data).UPO_OK := nil;
+    TPanelConnData(AContext.data).UPO_Esc := nil;
+    TPanelConnData(AContext.data).UPO_ref := nil;      
+    Exit();
+  end;
+
   if (critical) then
     str := '-;UPO-CRIT;{'
   else
@@ -1152,14 +1167,7 @@ begin
   end; // for i
   str := str + '}';
 
-  try
-    (AContext.data as TPanelConnData).UPO_OK := callbackOK;
-    (AContext.data as TPanelConnData).UPO_Esc := callbackEsc;
-    (AContext.data as TPanelConnData).UPO_ref := ref;
-    Self.SendLn(AContext, str);
-  except
-
-  end;
+  Self.SendLn(AContext, str);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

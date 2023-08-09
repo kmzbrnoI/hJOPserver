@@ -257,7 +257,7 @@ begin
       if ((Self.CB_IR.ItemIndex < 0) or (Self.CB_IR_State.ItemIndex < 0)) then
         Exit(false);
 
-    3: Result := (StrToIntDef(Self.E_Distance.Text, -1) <> -1);
+    3: Exit(StrToIntDef(Self.E_Distance.Text, -1) <> -1);
   end;
 
   Result := true;

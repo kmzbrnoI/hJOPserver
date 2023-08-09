@@ -99,10 +99,6 @@ type
     changeCallbackOk, changeCallbackErr: TNotifyEvent; // notifikace o nastaveni polohy navestidla
     changeEnd: TTime;
     psts: TList<TBlk>;
-
-    // For UPO when activating 'privolavacka' by DK click
-    upoSenderOR: TObject;
-    upoSenderPnl: TIdContext;
   end;
 
   TBlkSignalSpnl = record
@@ -118,8 +114,7 @@ type
       changeCallbackOk: nil; changeCallbackErr: nil;);
 
     // doba sviceni privolavaci navesti
-    _PRIVOL_MIN = 1;
-    _PRIVOL_SEC = 30;
+    _PRIVOL_SEC = 90;
 
     _SIG_DEFAULT_DELAY = 2;
     _SIG_CHANGE_DELAY_MSEC = 1000;
@@ -171,11 +166,10 @@ type
     procedure OnSignalSetOk();
     procedure OnSignalSetError();
 
-    procedure PrivolDKClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton);
-    procedure PrivokDKPotvrSekv(Sender: TIdContext; success: Boolean);
-    procedure PrivolBarriers(var barriers: TJCBarriers; SenderArea: TArea);
-    procedure PrivolBarriersConfirmed(Sender: TObject);
-    procedure PrivolBarriersRejected(Sender: TObject);
+    procedure PNDKClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton);
+    procedure PNDKConfSeq(Sender: TIdContext; success: Boolean);
+    procedure PNBarriersConfirmed(Sender: TObject);
+    procedure PNBarriersRejected(Sender: TObject);
     procedure RNZPotvrSekv(Sender: TIdContext; success: Boolean);
 
     function GetTrackId(): TBlk;
@@ -958,7 +952,7 @@ begin
   Self.selected := TBlkSignalSelection.NC;
 
   for var area: TArea in Self.areas do
-    Area.ORDKClickServer(Self.PrivolDKClick);
+    Area.ORDKClickServer(Self.PNDKClick);
 end;
 
 procedure TBlkSignal.MenuPNStopClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -990,7 +984,7 @@ end;
 
 procedure TBlkSignal.MenuPPNClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea,
+  PanelServer.ConfirmationSequence(SenderPnl, Self.PNDKConfSeq, SenderOR as TArea,
     'Prodloužení doby přivolávací návěsti', GetObjsList(Self), nil);
 end;
 
@@ -1019,7 +1013,7 @@ begin
   begin
     for var area: TArea in Self.areas do
       Area.ORDKClickClient();
-    PanelServer.ConfirmationSequence(SenderPnl, Self.PrivokDKPotvrSekv, SenderOR as TArea,
+    PanelServer.ConfirmationSequence(SenderPnl, Self.PNDKConfSeq, SenderOR as TArea,
       'Zapnutí přivolávací návěsti', GetObjsList(Self), nil);
   end;
 end;
@@ -1648,7 +1642,7 @@ end;
 
 procedure TBlkSignal.UpdatePrivol();
 begin
-  if ((Self.m_state.privolStart + EncodeTime(0, _PRIVOL_MIN, _PRIVOL_SEC, 0) < now + EncodeTime(0, 0, 30, 0)) and
+  if ((Self.m_state.privolStart + EncodeTimeSec(_PRIVOL_SEC) < now + EncodeTime(0, 0, 30, 0)) and
     (Self.m_state.privolTimerId = 0)) then
   begin
     // oznameni o brzkem ukonceni privolavaci navesti
@@ -1661,7 +1655,7 @@ begin
     end;
   end;
 
-  if (Self.m_state.privolStart + EncodeTime(0, _PRIVOL_MIN, _PRIVOL_SEC, 0) < now) then
+  if (Self.m_state.privolStart + EncodeTimeSec(_PRIVOL_SEC) < now) then
   begin
     // pad privolavaci navesti
     Self.signal := ncStuj;
@@ -1671,37 +1665,20 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // privolavaci navest bez podpory zabezpecovaciho zarizeni
-procedure TBlkSignal.PrivolDKClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton);
+procedure TBlkSignal.PNDKClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton);
 begin
   if (Button = ENTER) then
   begin
     for var area: TArea in Self.areas do
       Area.ORDKClickClient();
 
-    Self.m_state.upoSenderOR := SenderOR;
-    Self.m_state.upoSenderPnl := SenderPnl;
-
-    var barriers: TJCBarriers := TJCBarriers.Create();
-    var UPO: TUPOItems := TList<TUPOItem>.Create;
+    var upos := TList<TUPOItem>.Create();
     try
-      Self.PrivolBarriers(barriers, SenderOR as TArea);
-
-      // Only warning barriers implemented yet, no other are required
-
-      if ((barriers.Count > 0) and (senderPnl <> nil)) then
-      begin
-        Self.Log('PN: celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...', TLogLevel.llInfo, lsJC);
-        for var i: Integer := 0 to barriers.Count - 1 do
-          UPO.Add(JCBarriers.JCBarrierToMessage(barriers[i]));
-
-        PanelServer.UPO(SenderPnl, UPO, false, Self.PrivolBarriersConfirmed, Self.PrivolBarriersRejected, Self);
-      end else begin
-        Self.PrivolBarriersConfirmed(Self);
-      end;
-
+      TArea(SenderOR).AddPNsUPOs(upos);
+      TArea(SenderOR).AddNCsUPOs(upos);
+      PanelServer.UPO(SenderPnl, upos, false, Self.PNBarriersConfirmed, Self.PNBarriersRejected, SenderOR);
     finally
-      barriers.Free();
-      UPO.Free();
+      upos.Free();
     end;
 
   end else begin
@@ -1710,33 +1687,20 @@ begin
   end;
 end;
 
-procedure TBlkSignal.PrivolBarriers(var barriers: TJCBarriers; SenderArea: TArea);
+procedure TBlkSignal.PNBarriersConfirmed(Sender: TObject);
 begin
-  var privol: TBlksList := Blocks.GetNavPrivol(SenderArea);
-  for var i: Integer := 0 to privol.Count - 1 do
-    barriers.Add(JCBarrier(barPrivol, privol[i] as TBlk, (privol[i] as TBlk).id));
-end;
-
-procedure TBlkSignal.PrivolBarriersConfirmed(Sender: TObject);
-begin
-  if ((Self.m_state.upoSenderOR = nil) or (Self.m_state.upoSenderPnl = nil)) then
-    Exit();
-
-  PanelServer.ConfirmationSequence(Self.m_state.upoSenderPnl, Self.PrivokDKPotvrSekv, Self.m_state.upoSenderOR as TArea,
+  PanelServer.ConfirmationSequence(TIdContext(Sender), Self.PNDKConfSeq, (TPanelConnData(TIdContext(Sender).data).UPO_ref as TArea),
     'Zapnutí přivolávací návěsti', GetObjsList(Self), nil);
-
-  Self.m_state.upoSenderOR := nil;
-  Self.m_state.upoSenderPnl := nil;
 end;
 
-procedure TBlkSignal.PrivolBarriersRejected(Sender: TObject);
+procedure TBlkSignal.PNBarriersRejected(Sender: TObject);
 begin
   Self.selected := TBlkSignalSelection.none;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkSignal.PrivokDKPotvrSekv(Sender: TIdContext; success: Boolean);
+procedure TBlkSignal.PNDKConfSeq(Sender: TIdContext; success: Boolean);
 begin
   if (success) then
   begin

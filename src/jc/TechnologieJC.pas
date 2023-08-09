@@ -159,6 +159,7 @@ type
     procedure CheckLoopBlock(blk: TBlk);
     function IsActivating(): Boolean;
     function IsActive(): Boolean;
+    function IsNCActive(): Boolean;
 
     procedure PS_vylCallback(Sender: TIdContext; success: Boolean); // callback potvrzovaci sekvence na vyluku
     procedure UPO_OKCallback(Sender: TObject); // callback potvrzeni upozorneni
@@ -249,6 +250,7 @@ type
 
     property activating: Boolean read IsActivating;
     property active: Boolean read IsActive; // true pokud je postavena navest
+    property ncActive: Boolean read IsNCActive;
     property ab: Boolean read GetAB;
     property waitForLastTrackOrRailwayOccupy: Boolean read GetWaitFroLastTrackOrRailwayOccupied;
     property lastTrack: TBlk read GetLastTrack;
@@ -478,30 +480,30 @@ begin
     var lock: TBlkLock := Blocks.GetBlkLockByID(refZaver.Block);
     if (lock = nil) then
     begin
-      result.Insert(0, JCBarrier(barBlockNotExists, nil, refZaver.Block));
+      Result.Insert(0, JCBarrier(barBlockNotExists, nil, refZaver.Block));
       Exit();
     end;
 
     var lockRef: TBlkTrack := Blocks.GetBlkTrackOrRTByID(refZaver.ref_blk);
     if (lockRef = nil) then
     begin
-      result.Insert(0, JCBarrier(barBlockNotExists, nil, refZaver.ref_blk));
+      Result.Insert(0, JCBarrier(barBlockNotExists, nil, refZaver.ref_blk));
       Exit();
     end;
   end;
 
   if (nc) then
-    Self.BarriersNC(result)
+    Self.BarriersNC(Result)
   else
-    Self.BarriersVCPC(result);
+    Self.BarriersVCPC(Result);
 
-  var privol: TBlksList := Blocks.GetNavPrivol(Self.m_state.senderOR as TArea);
-
-  for var i: Integer := 0 to privol.Count - 1 do
-    result.Add(JCBarrier(barPrivol, privol[i] as TBlk, (privol[i] as TBlk).id));
-
-  if (Assigned(privol)) then
+  var privol: TBlksList := Blocks.PNSignals(Self.m_state.senderOR as TArea);
+  try
+    for var i: Integer := 0 to privol.Count - 1 do
+      Result.Add(JCBarrier(barPrivol, privol[i] as TBlk, (privol[i] as TBlk).id));
+  finally
     privol.Free();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1875,6 +1877,8 @@ begin
           var signalTrack: TBlkTrack := signal.track as TBlkTrack;
           var train: TTrain := Self.GetTrain(signal, signalTrack);
 
+          Self.m_state.destroyBlock := _JC_DESTROY_NC;
+
           // a)
           if ((lastTrack.typ = btTrack) and (TBlkTrack(Self.lastTrack).spnl.stationTrack) and
             (not TBlkTrack(Self.lastTrack).TrainsFull())) then
@@ -1896,7 +1900,6 @@ begin
               signalTrack.RemoveTrain(Train);
               train.front := Self.lastTrack;
             end;
-            Self.m_state.destroyBlock := _JC_DESTROY_NC;
           end;
 
           // b)
@@ -2374,16 +2377,16 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.DynamicCancelingNC();
-var railwayTrack, first: TBlkTrack;
+var signalTrack, first: TBlkTrack;
 begin
-  railwayTrack := TBlkRT((Self.signal as TBlkSignal).track);
+  signalTrack := TBlkRT((Self.signal as TBlkSignal).track);
   first := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[0]));
 
-  if ((first.occupied = TTrackState.occupied) and (railwayTrack.occupied = TTrackState.Free) and
-    (not railwayTrack.IsTrain())) then
+  if ((first.occupied = TTrackState.occupied) and (signalTrack.occupied = TTrackState.Free) and
+    (not signalTrack.IsTrain())) then
   begin
-    if (TBlkRT(railwayTrack).bpInBlk) then
-      TBlkRT(railwayTrack).ReleasedFromJC();
+    if ((signalTrack.typ = btRT) and (TBlkRT(signalTrack).railway <> nil) and (TBlkRT(signalTrack).bpInBlk)) then
+      TBlkRT(signalTrack).ReleasedFromJC();
   end;
 end;
 
@@ -2786,12 +2789,17 @@ end;
 
 function TJC.IsActivating(): Boolean;
 begin
-  result := ((Self.step > stepDefault) and (Self.step <> stepJcLastTrackWait));
+  Result := ((Self.step > stepDefault) and (Self.step <> stepJcLastTrackWait));
 end;
 
 function TJC.IsActive(): Boolean;
 begin
-  result := (Self.m_state.destroyBlock > _JC_DESTROY_NONE);
+  Result := (Self.m_state.destroyBlock > _JC_DESTROY_NONE);
+end;
+
+function TJC.IsNCActive(): Boolean;
+begin
+  Result := (Self.m_state.destroyBlock = _JC_DESTROY_NC);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

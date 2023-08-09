@@ -1155,7 +1155,7 @@ begin
       barriers.Add(JCBarrier(barControllerNotInBasicPos, signal));
   end;
 
-  var privol: TBlksList := Blocks.GetNavPrivol(Self.m_state.senderOR as TArea);
+  var privol: TBlksList := Blocks.PNSignals(Self.m_state.senderOR as TArea);
   for var i: Integer := 0 to privol.Count - 1 do
     barriers.Add(JCBarrier(barPrivol, privol[i] as TBlk, (privol[i] as TBlk).id));
 

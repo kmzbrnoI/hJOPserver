@@ -78,7 +78,7 @@ type
 
     function GetBlkTrackTrainMoving(obl: string): TBlk;
 
-    function GetNavPrivol(Area: TArea): TBlksList;
+    function PNSignals(Area: TArea): TBlksList;
 
     // send state of all blocks in area 'areaId' to 'conn'
     procedure GetAreaBlk(areaId: string; conn: TIdContext);
@@ -948,7 +948,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlocks.GetNavPrivol(Area: TArea): TBlksList;
+function TBlocks.PNSignals(Area: TArea): TBlksList;
 begin
   Result := TList<TBlk>.Create();
   try

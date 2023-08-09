@@ -1695,32 +1695,26 @@ end;
 
 procedure TBlkTurnout.MovingUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
   UPO_EscCallback: TNotifyEvent);
-var UPO: TUPOItems;
+var upos: TUPOItems;
 begin
-  UPO := TList<TUPOItem>.Create();
+  upos := TList<TUPOItem>.Create();
   try
     if (Self.note <> '') then
-      UPO.Add(JCBarrierToMessage(JCBarrier(barBlockNote, Self)));
+      upos.Add(JCBarrierToMessage(JCBarrier(barBlockNote, Self)));
     if (Self.lockout <> '') then
-      UPO.Add(JCBarrierToMessage(JCBarrier(barBlockLockout, Self)));
+      upos.Add(JCBarrierToMessage(JCBarrier(barBlockLockout, Self)));
     if (Self.coupling <> nil) then
     begin
       if (Self.coupling.note <> '') then
-        UPO.Add(JCBarrierToMessage(JCBarrier(barBlockNote, Self.coupling)));
+        upos.Add(JCBarrierToMessage(JCBarrier(barBlockNote, Self.coupling)));
       if (Self.coupling.lockout <> '') then
-        UPO.Add(JCBarrierToMessage(JCBarrier(barBlockLockout, Self.coupling)));
+        upos.Add(JCBarrierToMessage(JCBarrier(barBlockLockout, Self.coupling)));
     end;
 
-    if (UPO.Count > 0) then
-    begin
-      PanelServer.UPO(SenderPnl, UPO, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
-    end else if (Assigned(UPO_OKCallback)) then begin
-      TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
-      UPO_OKCallback(SenderPnl);
-    end;
+    PanelServer.UPO(SenderPnl, upos, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
 
   finally
-    UPO.Free();
+    upos.Free();
   end;
 end;
 

@@ -644,7 +644,6 @@ end;
 procedure TBlkDisconnector.NoteUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
   UPO_EscCallback: TNotifyEvent);
 var upos: TUPOItems;
-  item: TUPOItem;
 begin
   upos := TList<TUPOItem>.Create();
   try

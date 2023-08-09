@@ -385,9 +385,7 @@ begin
 
     barPrivol:
       begin
-        Result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
-        Result[1] := GetUPOLine('Svítí přivolávací návěst');
-        Result[2] := GetUPOLine(barrier.Block.name);
+        Result := UPO.PNUPO(barrier.block.name);
       end;
 
     barHVManual:

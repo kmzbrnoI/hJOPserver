@@ -149,8 +149,6 @@ type
     procedure MenuAdminNUZClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure NoteUPO(SenderPnl: TIdContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
-      UPO_EscCallback: TNotifyEvent);
     procedure FillRCSModules();
     procedure SetState(new: TBlkCrossingBasicState);
 
@@ -661,45 +659,53 @@ end;
 
 procedure TBlkCrossing.MenuUZClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  if (Self.note <> '') then
-    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOUZClick, nil)
-  else
-  begin
-    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
-    Self.UPOUZClick(SenderPnl);
+  var upos := TList<TUPOItem>.Create();
+  try
+    if (Self.note <> '') then
+      upos.Add(UPO.NoteUPO(Self.name, Self.note));
+    PanelServer.UPO(SenderPnl, upos, false, Self.UPOUZClick, nil, SenderOR);
+  finally
+    upos.Free();
   end;
 end;
 
 procedure TBlkCrossing.MenuZUZClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  if (Self.note <> '') then
-    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOZUZClick, nil)
-  else
-  begin
-    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
-    Self.UPOZUZClick(SenderPnl);
+  var upos := TList<TUPOItem>.Create();
+  try
+    if (Self.note <> '') then
+      upos.Add(UPO.NoteUPO(Self.name, Self.note));
+    TArea(SenderOR).AddPNsUPOs(upos);
+    TArea(SenderOR).AddNCsUPOs(upos);
+    PanelServer.UPO(SenderPnl, upos, false, Self.UPOZUZClick, nil, SenderOR);
+  finally
+    upos.Free();
   end;
 end;
 
 procedure TBlkCrossing.MenuNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  if (Self.note <> '') then
-    Self.NoteUPO(SenderPnl, SenderOR, Self.UPONOTClick, nil)
-  else
-  begin
-    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
-    Self.UPONOTClick(SenderPnl);
+  var upos := TList<TUPOItem>.Create();
+  try
+    if (Self.note <> '') then
+      upos.Add(UPO.NoteUPO(Self.name, Self.note));
+    TArea(SenderOR).AddPNsUPOs(upos);
+    TArea(SenderOR).AddNCsUPOs(upos);
+    PanelServer.UPO(SenderPnl, upos, false, Self.UPONOTClick, nil, SenderOR);
+  finally
+    upos.Free();
   end;
 end;
 
 procedure TBlkCrossing.MenuZNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  if (Self.note <> '') then
-    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOZNOTClick, nil)
-  else
-  begin
-    TPanelConnData(SenderPnl.data).UPO_ref := SenderOR;
-    Self.UPOZNOTClick(SenderPnl);
+  var upos := TList<TUPOItem>.Create();
+  try
+    if (Self.note <> '') then
+      upos.Add(UPO.NoteUPO(Self.name, Self.note));
+    PanelServer.UPO(SenderPnl, upos, false, Self.UPOZNOTClick, nil, SenderOR);
+  finally
+    upos.Free();
   end;
 end;
 
@@ -953,21 +959,6 @@ end;
 function TBlkCrossing.GetZaver(): Boolean;
 begin
   Result := (Self.m_state.zaver > 0);
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-procedure TBlkCrossing.NoteUPO(SenderPnl: TIdContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
-  UPO_EscCallback: TNotifyEvent);
-var upos: TUPOItems;
-begin
-  upos := TList<TUPOItem>.Create();
-  try
-    upos.Add(UPO.NoteUPO(Self.name, Self.note));
-    PanelServer.UPO(SenderPnl, upos, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
-  finally
-    upos.Free();
-  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

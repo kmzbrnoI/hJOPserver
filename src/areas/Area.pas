@@ -16,7 +16,7 @@ interface
 uses IniFiles, SysUtils, Classes, Graphics, Menus, announcement,
   IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms, AreaLighting,
   Generics.Collections, AreaStack, Windows, Generics.Defaults,
-  JsonDataObjects, Logging;
+  JsonDataObjects, Logging, UPO;
 
 const
   _MAX_CON_PNL = 16; // max number of panels connected to single area
@@ -246,6 +246,9 @@ type
 
     function IsReadable(panel: TIdContext): Boolean;
     function IsWritable(panel: TIdContext): Boolean;
+
+    procedure AddPNsUPOs(var upos: TUPOItems);
+    procedure AddNCsUPOs(var upos: TUPOItems);
 
     class function ORRightsToString(rights: TAreaRights): string;
 
@@ -2160,6 +2163,26 @@ end;
 procedure TArea.Log(text: string; level: TLogLevel; source: TLogSource);
 begin
   Logging.log(Self.id + ': ' + text, level, source);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TArea.AddPNsUPOs(var upos: TUPOItems);
+begin
+  var blocks: TList<TBlk> := Blocks.PNSignals(Self);
+  try
+    for var blk: TBlk in blocks do
+      upos.Add(UPO.PNUPO(blk.name));
+  finally
+    blocks.Free();
+  end;
+end;
+
+procedure TArea.AddNCsUPOs(var upos: TUPOItems);
+begin
+  for var path: TJC in JCDb do
+    if ((path.ncActive) and (path.signal <> nil) and (path.signal.areas.Contains(Self))) then
+      upos.Add(UPO.NCUPO(path.name));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

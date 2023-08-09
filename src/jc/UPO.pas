@@ -34,6 +34,8 @@ function GetLines(str: string; line_length: Integer): TStrings; // vrati pcet ra
 
 function NoteUPO(blockName: string; note: string): TUPOItem;
 procedure AddNoteUPO(blockName: string; note: string; var items: TUPOItems);
+function PNUPO(signalName: string): TUPOItem;
+function NCUPO(name: string): TUPOItem;
 
 implementation
 
@@ -81,6 +83,20 @@ procedure AddNoteUPO(blockName: string; note: string; var items: TUPOItems);
 begin
   if (note <> '') then
     items.Add(NoteUPO(blockName, note));
+end;
+
+function PNUPO(signalName: string): TUPOItem;
+begin
+  Result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
+  Result[1] := GetUPOLine('Svítí pøivolávací návìst');
+  Result[2] := GetUPOLine(signalName);
+end;
+
+function NCUPO(name: string): TUPOItem;
+begin
+  Result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
+  Result[1] := GetUPOLine('Postavená nouzová cesta');
+  Result[2] := GetUPOLine(name);
 end;
 
 end.
