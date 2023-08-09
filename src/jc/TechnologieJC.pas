@@ -3203,7 +3203,7 @@ begin
       begin
         bariery.Add(JCBarrier(barCrosEmOpen, crossing));
       end else begin
-        if (not crossing.safelyClosed) then
+        if ((crossingZav.closeTracks.Count > 0) and (not crossing.safelyClosed)) then
           bariery.Add(JCBarrier(barCrosNotClosed, crossing));
       end;
     end
