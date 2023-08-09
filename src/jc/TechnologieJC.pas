@@ -355,10 +355,10 @@ end;
 // tzv. kriticke bariery jsou vzdy na zacatu Listu
 function TJC.barriers(nc: Boolean = false): TJCBarriers;
 begin
-  result := TJCBarriers.Create();
+  Result := TJCBarriers.Create();
 
   if (Self.activating) then
-    result.Add(JCBarrier(barProcessing));
+    Result.Add(JCBarrier(barProcessing));
 
   // signal
   begin
@@ -366,19 +366,19 @@ begin
 
     if (signal = nil) then
     begin
-      result.Add(JCBarrier(barBlockNotExists, nil, Self.m_data.signalId));
+      Result.Add(JCBarrier(barBlockNotExists, nil, Self.m_data.signalId));
       Exit();
     end;
 
     if (Self.lastTrack = nil) then
     begin
-      result.Add(JCBarrier(barBlockNotExists, nil, 0));
+      Result.Add(JCBarrier(barBlockNotExists, nil, 0));
       Exit();
     end;
 
     if (TBlkSignal(signal).track = nil) then
     begin
-      result.Add(JCBarrier(barSignalNoTrack, signal));
+      Result.Add(JCBarrier(barSignalNoTrack, signal));
       Exit();
     end;
   end;
@@ -389,7 +389,7 @@ begin
     var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(turnoutZav.Block);
     if (turnout = nil) then
     begin
-      result.Add(JCBarrier(barBlockNotExists, nil, turnoutZav.Block));
+      Result.Add(JCBarrier(barBlockNotExists, nil, turnoutZav.Block));
       Exit();
     end;
   end;
@@ -400,7 +400,7 @@ begin
     var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackZav);
     if (track = nil) then
     begin
-      result.Add(JCBarrier(barBlockNotExists, nil, trackZav));
+      Result.Add(JCBarrier(barBlockNotExists, nil, trackZav));
       Exit();
     end;
   end;
@@ -411,7 +411,7 @@ begin
     var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(crossingZav.crossingId);
     if (crossing = nil) then
     begin
-      result.Insert(0, JCBarrier(barBlockNotExists, nil, crossingZav.crossingId));
+      Result.Insert(0, JCBarrier(barBlockNotExists, nil, crossingZav.crossingId));
       Exit();
     end;
 
@@ -421,7 +421,7 @@ begin
       var openTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(crossingZav.openTrack);
       if (openTrack = nil) then
       begin
-        result.Insert(0, JCBarrier(barBlockNotExists, openTrack));
+        Result.Insert(0, JCBarrier(barBlockNotExists, openTrack));
         Exit();
       end;
 
@@ -430,7 +430,7 @@ begin
         var closeTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackZav);
         if (closeTrack = nil) then
         begin
-          result.Insert(0, JCBarrier(barBlockNotExists, crossing));
+          Result.Insert(0, JCBarrier(barBlockNotExists, crossing));
           Exit();
         end;
       end;
@@ -443,14 +443,14 @@ begin
     var refugeeRef: TBlk := Blocks.GetBlkTrackOrRTByID(refugeeZav.ref_blk);
     if (refugeeRef = nil) then
     begin
-      result.Insert(0, JCBarrier(barBlockNotExists, nil, refugeeZav.ref_blk));
+      Result.Insert(0, JCBarrier(barBlockNotExists, nil, refugeeZav.ref_blk));
       Exit();
     end;
 
     var refugee: TBlkTurnout := Blocks.GetBlkTurnoutByID(refugeeZav.Block);
     if (refugee = nil) then
     begin
-      result.Insert(0, JCBarrier(barBlockNotExists, nil, refugeeZav.Block));
+      Result.Insert(0, JCBarrier(barBlockNotExists, nil, refugeeZav.Block));
       Exit();
     end;
   end;
@@ -460,14 +460,14 @@ begin
   begin
     if (Self.lastTrack.typ <> btRT) then
     begin
-      result.Add(JCBarrier(barBlockWrongType, Self.lastTrack));
+      Result.Add(JCBarrier(barBlockWrongType, Self.lastTrack));
       Exit();
     end;
 
     var railway: TBlkRailway := Blocks.GetBlkRailwayByID(Self.m_data.railwayId);
     if (railway = nil) then
     begin
-      result.Insert(0, JCBarrier(barBlockNotExists, nil, Self.m_data.railwayId));
+      Result.Insert(0, JCBarrier(barBlockNotExists, nil, Self.m_data.railwayId));
       Exit();
     end;
   end;
@@ -1143,7 +1143,7 @@ end;
 function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; from_stack: TObject = nil; nc: Boolean = false;
   fromAB: Boolean = false; abAfter: Boolean = false): Integer;
 begin
-  result := Self.Activate(senderPnl, senderOR, nil, from_stack, nc, fromAB, abAfter);
+  Result := Self.Activate(senderPnl, senderOR, nil, from_stack, nc, fromAB, abAfter);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2893,7 +2893,7 @@ begin
       Exit(false);
   end;
 
-  result := true;
+  Result := true;
 end;
 
 // DN provede zbytek staveni JC (prejezdy, finalizace)
@@ -3360,7 +3360,7 @@ begin
   if (signal = nil) then
     signal := Blocks.GetBlkSignalByID(Self.m_data.signalId);
 
-  result := TBlkSignal(signal).GetTrain(track);
+  Result := TBlkSignal(signal).GetTrain(track);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3368,7 +3368,7 @@ end;
 function TJC.GetAB(): Boolean;
 begin
   var signal := Blocks.GetBlkSignalByID(Self.m_data.signalId);
-  result := ((signal <> nil) and (signal.ABJC = Self));
+  Result := ((signal <> nil) and (signal.ABJC = Self));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3379,7 +3379,7 @@ begin
   for turnout in Self.m_data.turnouts do
     if (turnout.position = TTurnoutPosition.minus) then
       Exit(true);
-  result := false;
+  Result := false;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3439,7 +3439,7 @@ end;
 
 function TJC.GetWaitFroLastTrackOrRailwayOccupied(): Boolean;
 begin
-  result := (Self.step = stepJcLastTrackWait);
+  Result := (Self.step = stepJcLastTrackWait);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
