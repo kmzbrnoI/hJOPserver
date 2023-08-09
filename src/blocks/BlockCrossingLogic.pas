@@ -188,8 +188,14 @@ begin
         else if ((Self.right.state = TTrackState.occupied) and (Self.middle.state = TTrackState.free) and
           (Self.left.state = TTrackState.free)) then
           Self.state := tsRLRightOccupied
-        else if ((Self.left.state <> TTrackState.Free) or (Self.middle.state <> TTrackState.Free) or
-          (Self.right.state <> TTrackState.Free)) then
+        else if ((Self.leftOut.state = TTrackState.free) and (Self.middle.state = TTrackState.occupied) and
+          (Self.right.parts.Count = 0)) then
+          Self.state := tsRLMidOccupied
+        else if ((Self.leftOut.parts.Count = 0) and (Self.middle.state = TTrackState.occupied) and
+          (Self.right.state = TTrackState.free)) then
+          Self.state := tsLRMidOccupied
+        else if ((Self.left.state <> TTrackState.free) or (Self.middle.state <> TTrackState.free) or
+          (Self.right.state <> TTrackState.free)) then
           Self.state := tsUnexpectedOccupation;
       end;
 
