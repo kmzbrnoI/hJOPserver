@@ -207,7 +207,7 @@ begin
         if (not log_last_error) then
           AppEvents.LogException(E, 'JC ' + JC.name + ' update error');
         if (JC.activating) then
-          JC.CancelActivating('Vyjímka', true)
+          JC.CancelActivating('Vyjímka')
         else
           JC.CancelWithoutTrackRelease();
       end;
@@ -384,7 +384,7 @@ begin
     if (JC.active) then
       JC.Cancel()
     else if (JC.activating) then
-      JC.CancelActivating('Nouzové rušení stavění JC', true);
+      JC.CancelActivating('Nouzové rušení stavění JC');
   end;
 end;
 

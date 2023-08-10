@@ -1207,7 +1207,7 @@ begin
   if ((Self.prevRT = nil) and (Self.sectOccupied = TTrackState.occupied) and (TBlkRailway(Self.railway).zaver)) then
   begin
     var jc := JCDb.FindActiveJCWithTrack(Self.id);
-    if ((not jc.waitForLastTrackOrRailwayOccupy) and (jc.state.destroyBlock < jc.data.tracks.Count - 1)) then
+    if ((jc <> nil) and(not jc.waitForLastTrackOrRailwayOccupy) and (jc.state.destroyBlock < jc.data.tracks.Count - 1)) then
       JCDb.Cancel(Self);
   end;
 

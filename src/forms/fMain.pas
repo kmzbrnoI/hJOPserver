@@ -2242,7 +2242,7 @@ begin
 
   jc := JCDb.GetJCByIndex(Self.LV_JC.ItemIndex);
   if (jc.activating) then
-    jc.CancelActivating('Nouzové rušení stavění JC', true);
+    jc.CancelActivating('Nouzové rušení stavění JC');
 end;
 
 procedure TF_Main.B_lok_deleteClick(Sender: TObject);

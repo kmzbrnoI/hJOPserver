@@ -218,7 +218,7 @@ type
     procedure UpdateActivating();
     procedure UpdateTimeOut();
     // zrusi staveni a oduvodneni zaloguje a zobrazi dispecerovi
-    procedure CancelActivating(reason: string = ''; stack_remove: Boolean = false);
+    procedure CancelActivating(reason: string = ''; stackToPV: Boolean = True);
 
     procedure LoadData(ini: TMemIniFile; section: string);
     procedure SaveData(ini: TMemIniFile; section: string);
@@ -1172,7 +1172,7 @@ begin
 
   if (not success) then
   begin
-    Self.CancelActivating();
+    Self.CancelActivating('', False);
     Exit();
   end;
 
@@ -1277,7 +1277,7 @@ procedure TJC.UPO_EscCallback(Sender: TObject);
 begin
   if (Self.step = stepConfBarriers) then
   begin
-    Self.CancelActivating();
+    Self.CancelActivating('', False);
     Self.step := stepDefault;
   end;
 end;
@@ -1636,6 +1636,11 @@ begin
           // Send to all areas because DN could be from any source (last track freed etc.)
           Self.signal.BottomErrorBroadcast('Podmínky pro '+Self.name+' nesplněny!', 'TECHNOLOGIE');
           Self.LogStep('Podmínky pro JC nesplněny!');
+          if (Self.m_state.from_stack <> nil) then
+          begin
+            (Self.m_state.from_stack as TORStack).mode := TORStackMode.PV;
+            Self.m_state.from_stack := nil;
+          end;
           Exit();
         end;
 
@@ -1971,7 +1976,7 @@ end;
 
 // je volana, pokud behem staveni dojde k vyjimce
 // napriklad pri kontrole obsazenosti useku v JC apod.
-procedure TJC.CancelActivating(reason: string = ''; stack_remove: Boolean = false);
+procedure TJC.CancelActivating(reason: string = ''; stackToPV: Boolean = True);
 begin
   if (reason <> '') then
   begin
@@ -2007,10 +2012,11 @@ begin
   if (Self.m_state.senderPnl <> nil) then
     PanelServer.CancelUPO(Self.m_state.senderPnl, Self);
   if (Self.m_state.from_stack <> nil) then
-    if (stack_remove) then
-      (Self.m_state.from_stack as TORStack).RemoveJC(Self)
-    else if (Self.m_state.senderOR <> nil) then
-      (Self.m_state.senderOR as TArea).BroadcastData('ZAS;FIRST;1');
+  begin
+    if (stackToPV) then
+      (Self.m_state.from_stack as TORStack).mode := TORStackMode.PV;
+    (Self.m_state.from_stack as TORStack).firstEnabled := True;
+  end;
 
   Self.m_state.from_stack := nil;
 end;
@@ -2795,7 +2801,7 @@ begin
     end; // else case
 
     // timeout
-    Self.CancelActivating('Překročení času stavění JC', true); // toto je docasne reseni: cestu vymazeme ze zasobniku
+    Self.CancelActivating('Překročení času stavění JC');
   end; // if timeout
 end;
 
@@ -2992,7 +2998,7 @@ end;
 
 procedure TJC.CritBarieraEsc(Sender: TObject);
 begin
-  Self.CancelActivating('', true);
+  Self.CancelActivating('', False);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3069,7 +3075,7 @@ begin
   if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
     PanelServer.BottomError(Self.m_state.senderPnl, 'Nepřestavena ' + (Sender as TBlkTurnout).name + ': ' +
       TBlkTurnout.SetErrorToMsg(error), (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
-  Self.CancelActivating('', true);
+  Self.CancelActivating();
   Self.Cancel();
 end;
 
@@ -3141,7 +3147,7 @@ begin
   if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
     PanelServer.BottomError(Self.m_state.senderPnl, 'Návěstidlo ' + signal.name + ' nepostaveno',
       (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
-  Self.CancelActivating('', true);
+  Self.CancelActivating();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3323,7 +3329,7 @@ begin
     if (Self.step = stepNcBarrierUpdate) then
       Self.step := stepNcBarrierConfirmed;
   end else begin
-    Self.CancelActivating();
+    Self.CancelActivating('', False);
 
     // aktualizace stavu navestidla (zobrazeni RNZ)
     var blk := Blocks.GetBlkByID(Self.m_data.signalId);
