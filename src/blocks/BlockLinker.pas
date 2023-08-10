@@ -114,7 +114,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert, TrainDb,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack, TCPAreasRef,
-  Logging;
+  Logging, ConfSeq;
 
 constructor TBlkLinker.Create(index: Integer);
 begin
@@ -294,8 +294,15 @@ end;
 
 procedure TBlkLinker.MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TArea,
-    'Zrušení zákazu odjezdu na trať', GetObjsList(Self), nil);
+  var csItems := TList<TConfSeqItem>.Create();
+  try
+    if ((Self.parent <> nil) and (TBlkRailway(Self.parent).occupied)) then
+      csItems.Add(CSItem(Self.parent, 'Není volnost trati'));
+    PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAK, SenderOR as TArea,
+      'Zrušení zákazu odjezdu na trať', GetObjsList(Self), csItems, True, False);
+  finally
+    csItems.Free();
+  end;
 end;
 
 procedure TBlkLinker.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
