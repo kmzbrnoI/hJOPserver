@@ -1212,7 +1212,7 @@ begin
  if ((signal <> nil) and (signal.SymbolType = TBlkSignalSymbol.main)) then
    Exit(signal);
 
- var jc := JCDb.FindActiveJCWithTrack(frontblk.id);
+ var jc: TJC := JCDb.FindActiveJCWithTrack(frontblk.id);
  if (jc = nil) then
    Exit(nil);
 

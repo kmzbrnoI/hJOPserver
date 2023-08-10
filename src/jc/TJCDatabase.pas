@@ -12,6 +12,7 @@ uses TechnologieJC, Block, IniFiles, SysUtils, Windows, IdContext, System.Math,
 type
   EJCIdAlreadyExists = class(Exception);
   EJCInvalidPath = class(Exception);
+  TJCBlockFinder = function(jc: TJC; blockid: Integer): Boolean;
 
   TJCDb = class
   private
@@ -27,6 +28,9 @@ type
 
     procedure JCOnIDChanged(Sender: TObject);
     procedure JCOnNavChanged(Sender: TObject; origNav: TBlk);
+
+    function FindActiveJCs(finder: TJCContains; blockid: Integer): TList<TJC>;
+    function FindActiveNCs(finder: TJCContains; blockid: Integer): TList<TJC>;
 
   public
 
@@ -51,11 +55,15 @@ type
     function FindJCActivating(signalId: Integer): TJC;
     function IsJC(id: Integer; ignore_index: Integer = -1): Boolean;
 
-    function FindActiveJCWithTurnout(turnout_id: Integer): TList<TJC>;
-    function FindActiveJCWithTrack(trackId: Integer): TJC;
-    function FindActiveJCWithCrossing(blk_id: Integer): TList<TJC>;
-    function FindActiveJCWithRailway(trat_id: Integer): TJC;
-    function FindActiveJCWithLock(zam_id: Integer): TList<TJC>;
+    function FindActiveJCsWithTurnout(turnout_id: Integer): TList<TJC>;
+    function FindActiveNCsWithTurnout(turnout_id: Integer): TList<TJC>;
+    function FindActiveJCsWithRailway(trat_id: Integer): TList<TJC>;
+    function FindActiveNCsWithRailway(trat_id: Integer): TList<TJC>;
+    function FindActiveJCsWithLock(zam_id: Integer): TList<TJC>;
+    function FindActiveNCsWithLock(zam_id: Integer): TList<TJC>;
+    function FindActiveJCWithTrack(track_id: Integer): TJC;
+    function FindActiveJCsWithCrossing(blk_id: Integer): TList<TJC>;
+    function FindActiveNCsWithPSt(pst_id: Integer): TList<TJC>;
 
     // jakmile dojde ke zmene navesti navestidla nav, muze dojit k ovlivneni nejakeho jineho navestidla
     // tato fce zajisti, ze k ovlivneni dojde
@@ -90,7 +98,7 @@ implementation
 
 uses Logging, GetSystems, BlockTrack, Area, TCPServerPanel, BlockRailway,
   DataJC, AreaStack, AreaDb, TMultiJCDatabase, appEv, BlockTurnout,
-  BlockRailwayTrack, TCPAreasRef;
+  BlockRailwayTrack, TCPAreasRef, BlockPst;
 
 /// /////////////////////////////////////////////////////////////////////////////
 // TRIDA TJCDb
@@ -223,7 +231,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TJCDb.FindJC(blocks: TList<TBlk>): TJC;
-var blk: TBlk;
 begin
   if (blocks.Count < 2) then // at least signal and last track must be in blocks
     Exit(nil);
@@ -239,7 +246,7 @@ begin
     if (JC.signal <> startSignal) then // just for sure
       continue;
 
-    blk := BlockDb.Blocks.GetBlkByID(JC.data.tracks[JC.data.tracks.Count-1]);
+    var blk := BlockDb.Blocks.GetBlkByID(JC.data.tracks[JC.data.tracks.Count-1]);
     if (blk <> blocks[blocks.Count-1]) then
       continue;
 
@@ -401,112 +408,96 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// vyuzivani pri vypadku polohy vyhybky ke zruseni jizdni cesty
-// muze vracet vic jizdnich cest - jeden odvrat muze byt u vic aktualne postavenych JC
-function TJCDb.FindActiveJCWithTurnout(turnout_id: Integer): TList<TJC>;
+function TJCDb.FindActiveJCs(finder: TJCContains; blockid: Integer): TList<TJC>;
 begin
   Result := TList<TJC>.Create();
   try
-    var blk: TBlk := Blocks.GetBlkByID(turnout_id);
-    var turnout: TBlkTurnout := TBlkTurnout(blk);
-
-    for var JC: TJC in Self.JCs do
-    begin
-      if (not JC.active) then
-        continue;
-
-      for var turnoutZav: TJCTurnoutZav in JC.data.turnouts do
-        if (turnoutZav.Block = turnout_id) then
-          Result.Add(JC);
-
-      for var refugeeZav: TJCRefugeeZav in JC.data.refuges do
-        if (refugeeZav.Block = turnout_id) then
-          Result.Add(JC);
-
-      if ((turnout <> nil) and (turnout.lock <> nil)) then
-        for var refZav: TJCRefZav in JC.data.locks do
-          if (refZav.Block = turnout.lock.id) then
-            Result.Add(JC);
-    end;
+    for var jc: TJC in Self.JCs do
+      if (jc.active) and (finder(jc, blockid)) then
+        Result.Add(jc);
   except
     Result.Free();
     raise;
   end;
 end;
 
-function TJCDb.FindActiveJCWithTrack(trackId: Integer): TJC;
-begin
-  Result := nil;
-
-  for var JC: TJC in Self.JCs do
-  begin
-    if (not JC.active) then
-      continue;
-
-    for var _trackId: Integer in JC.data.tracks do
-      if (_trackId = trackId) then
-        Exit(JC);
-
-    if (JC.data.railwayId > -1) then
-    begin
-      var railway: TBlk := Blocks.GetBlkByID(JC.data.railwayId);
-      if ((railway <> nil) and (railway.typ = btRailway)) then
-      begin
-        for var _trackId: Integer in TBlkRailway(railway).GetSettings().trackIds do
-        begin
-          var railwayTrack: TBlk := Blocks.GetBlkByID(_trackId);
-          if ((railwayTrack <> nil) and (railwayTrack.typ = btRT)) then
-            if ((TBlkRT(railwayTrack).signalCover = nil) and (railwayTrack.id = trackId)) then
-              Exit(JC);
-        end;
-      end;
-    end;
-
-  end;
-end;
-
-function TJCDb.FindActiveJCWithRailway(trat_id: Integer): TJC;
-begin
-  for var JC: TJC in Self.JCs do
-  begin
-    if (not JC.active) then
-      continue;
-    if (JC.data.railwayId = trat_id) then
-      Exit(JC);
-  end;
-
-  Result := nil;
-end;
-
-function TJCDb.FindActiveJCWithCrossing(blk_id: Integer): TList<TJC>;
+function TJCDb.FindActiveNCs(finder: TJCContains; blockid: Integer): TList<TJC>;
 begin
   Result := TList<TJC>.Create();
   try
-    for var JC: TJC in Self.JCs do
-    begin
-      if (not JC.active) then
-        continue;
-      for var crossingZav: TJCCrossingZav in JC.data.crossings do
-        if (crossingZav.crossingId = blk_id) then
-          Result.Add(JC);
-    end;
+    for var jc: TJC in Self.JCs do
+      if (jc.ncActive) and (finder(jc, blockid)) then
+        Result.Add(jc);
   except
     Result.Free();
     raise;
   end;
 end;
 
-function TJCDb.FindActiveJCWithLock(zam_id: Integer): TList<TJC>;
+/// /////////////////////////////////////////////////////////////////////////////
+
+
+function TJCDb.FindActiveJCsWithTurnout(turnout_id: Integer): TList<TJC>;
+begin
+  Result := Self.FindActiveJCs(TechnologieJC.ContainsTurnout, turnout_id);
+end;
+
+function TJCDb.FindActiveNCsWithTurnout(turnout_id: Integer): TList<TJC>;
+begin
+  Result := Self.FindActiveNCs(TechnologieJC.ContainsTurnout, turnout_id);
+end;
+
+function TJCDb.FindActiveJCWithTrack(track_id: Integer): TJC;
+begin
+  var jcs: TList<TJC> := Self.FindActiveJCs(TechnologieJC.ContainsTrackInclRailway, track_id);
+  try
+    if (jcs.Count > 0) then
+      Result := jcs[0]
+    else
+      Result := nil;
+  finally
+    jcs.Free();
+  end;
+end;
+
+function TJCDb.FindActiveJCsWithRailway(trat_id: Integer): TList<TJC>;
+begin
+  Result := Self.FindActiveJCs(TechnologieJC.ContainsRailway, trat_id);
+end;
+
+function TJCDb.FindActiveNCsWithRailway(trat_id: Integer): TList<TJC>;
+begin
+  Result := Self.FindActiveNCs(TechnologieJC.ContainsRailway, trat_id);
+end;
+
+function TJCDb.FindActiveJCsWithCrossing(blk_id: Integer): TList<TJC>;
+begin
+  Result := Self.FindActiveJCs(TechnologieJC.ContainsCrossing, blk_id);
+end;
+
+function TJCDb.FindActiveJCsWithLock(zam_id: Integer): TList<TJC>;
+begin
+  Result := Self.FindActiveJCs(ContainsLock, zam_id);
+end;
+
+function TJCDb.FindActiveNCsWithLock(zam_id: Integer): TList<TJC>;
+begin
+  Result := Self.FindActiveNCs(ContainsLock, zam_id);
+end;
+
+function TJCDb.FindActiveNCsWithPSt(pst_id: Integer): TList<TJC>;
 begin
   Result := TList<TJC>.Create();
   try
-    for var JC: TJC in Self.JCs do
+    var blk: TBlk := BlockDb.Blocks.GetBlkByID(pst_id);
+    if ((blk = nil) or (blk.typ <> btPst)) then
+      Exit();
+    var pst: TBlkPst := TBlkPst(blk);
+    for var trackid: Integer in pst.GetSettings().tracks do
     begin
-      if (not JC.active) then
-        continue;
-      for var lockZav: TJCRefZav in JC.data.locks do
-        if (lockZav.Block = zam_id) then
-          Result.Add(JC);
+      var jcs: TList<TJC> := Self.FindActiveNCs(TechnologieJC.ContainsTrackInclRailway, trackid);
+      Result.AddRange(jcs);
+      jcs.Free();
     end;
   except
     Result.Free();
@@ -567,44 +558,34 @@ end;
 
 // rusi cestu, ve ktere je zadany blok
 procedure TJCDb.Cancel(blk: TBlk);
-var JCs: TList<TJC>;
 begin
-  JCs := TList<TJC>.Create();
+  var JCs: TList<TJC> := nil;
   try
     case (blk.typ) of
       btTurnout:
-        begin
-          FreeAndNil(JCs);
-          JCs := JCDb.FindActiveJCWithTurnout(blk.id);
-        end;
+          JCs := JCDb.FindActiveJCsWithTurnout(blk.id);
       btCrossing:
-        begin
-          FreeAndNil(JCs);
-          JCs := JCDb.FindActiveJCWithCrossing(blk.id);
-        end;
+          JCs := JCDb.FindActiveJCsWithCrossing(blk.id);
       btTrack, btRT:
         begin
-          var JC: TJC := JCDb.FindActiveJCWithTrack(blk.id);
+          JCs := TList<TJC>.Create();
+          var JC := JCDb.FindActiveJCWithTrack(blk.id);
           if (JC <> nil) then
             JCs.Add(JC);
         end;
       btSignal:
         begin
+          JCs := TList<TJC>.Create();
           var JC: TJC := JCDb.FindJC(blk.id);
           if (JC <> nil) then
             JCs.Add(JC);
         end;
       btRailway:
-        begin
-          var JC: TJC := JCDb.FindActiveJCWithRailway(blk.id);
-          if (JC <> nil) then
-            JCs.Add(JC);
-        end;
+          JCs := JCDb.FindActiveJCsWithRailway(blk.id);
       btLock:
-        begin
-          FreeAndNil(JCs);
-          JCs := JCDb.FindActiveJCWithLock(blk.id);
-        end;
+          JCs := JCDb.FindActiveJCsWithLock(blk.id);
+    else
+      JCs := TList<TJC>.Create();
     end; // case
 
     for var JC: TJC in JCs do

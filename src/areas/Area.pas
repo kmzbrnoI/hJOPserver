@@ -1052,18 +1052,14 @@ begin
       if (Area = Self) then
       begin
         track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
-        var JC: TJC := JCDb.FindActiveJCWithTrack(Blk.id);
-
-        if (JC <> nil) then
-        begin
-          var signal: TBlkSignal := Blocks.GetBlkSignalByID(JC.data.signalId);
-          if ((signal.signal > ncStuj) and (signal.DNjc = JC)) then
-            PanelServer.BottomError(JC.state.SenderPnl, 'Chyba povolovací návěsti ' + signal.name, Self.shortName,
-              'TECHNOLOGIE');
-          JC.CancelWithoutTrackRelease();
-          if (signal.DNjc = JC) then
-            signal.DNjc := nil;
-        end;
+        var jc: TJC := JCDb.FindActiveJCWithTrack(Blk.id);
+        var signal: TBlkSignal := Blocks.GetBlkSignalByID(jc.data.signalId);
+        if ((signal.signal > ncStuj) and (signal.DNjc = jc)) then
+          PanelServer.BottomError(JC.state.SenderPnl, 'Chyba povolovací návěsti ' + signal.name, Self.shortName,
+            'TECHNOLOGIE');
+        jc.CancelWithoutTrackRelease();
+        if (signal.DNjc = jc) then
+          signal.DNjc := nil;
       end;
     end;
   end;

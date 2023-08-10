@@ -97,7 +97,7 @@ type
 
 implementation
 
-uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert,
+uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ConfSeq, TechnologieJC,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout;
 
 constructor TBlkLock.Create(index: Integer);
@@ -193,8 +193,19 @@ end;
 
 procedure TBlkLock.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TArea), 'Zrušení nouzového závěru',
-    GetObjsList(Self), nil);
+  var csItems := TList<TConfSeqItem>.Create();
+  var paths: TList<TJC> := nil;
+  try
+    paths := JCDb.FindActiveNCsWithLock(Self.id);
+    if (paths.Count > 0) then
+      csItems.Add(CSItem(Self, 'Nouzový závěr je v nouzové cestě'));
+    PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAV, (SenderOR as TArea), 'Zrušení nouzového závěru',
+      GetObjsList(Self), csItems, True, False);
+  finally
+    csItems.Free();
+    if (paths <> nil) then
+      paths.Free();
+  end;
 end;
 
 procedure TBlkLock.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);

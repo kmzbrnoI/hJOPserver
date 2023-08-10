@@ -297,7 +297,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
-  IfThenElse, RCSErrors, BlockPst, JCBarriers, Config;
+  IfThenElse, RCSErrors, BlockPst, JCBarriers, Config, TechnologieJC;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin
@@ -1143,8 +1143,19 @@ end;
 
 procedure TBlkTurnout.MenuZAVDisableClick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
-  PanelServer.ConfirmationSequence(SenderPnl, Self.PanelCSZAV, (SenderOR as TArea), 'Zrušení nouzového závěru',
-    GetObjsList(Self), nil);
+  var csItems := TList<TConfSeqItem>.Create();
+  var paths: TList<TJC> := nil;
+  try
+    paths := JCDb.FindActiveNCsWithTurnout(Self.id);
+    if (paths.Count > 0) then
+      csItems.Add(CSItem(Self, 'Nouzový závěr je v nouzové cestě'));
+    PanelServer.ConfirmationSequence(SenderPnl, Self.PanelCSZAV, (SenderOR as TArea), 'Zrušení nouzového závěru',
+      GetObjsList(Self), csItems, True, False);
+  finally
+    csItems.Free();
+    if (paths <> nil) then
+      paths.Free();
+  end;
 end;
 
 procedure TBlkTurnout.PanelCSZAV(Sender: TIDContext; success: Boolean);

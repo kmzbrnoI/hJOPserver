@@ -241,6 +241,12 @@ type
     procedure GetPtState(json: TJsonObject);
     procedure PostPtActivate(reqJson: TJsonObject; respJson: TJsonObject);
 
+    function ContainsTrackInclRailway(blockid: Integer): Boolean;
+    function ContainsLock(blockid: Integer): Boolean;
+    function ContainsTurnout(blockid: Integer): Boolean;
+    function ContainsRailway(blockid: Integer): Boolean;
+    function ContainsCrossing(blockid: Integer): Boolean;
+
     property data: TJCdata read m_data write SetData;
     property state: TJCstate read m_state;
 
@@ -264,8 +270,16 @@ type
     property OnSignalChanged: ENavChanged read fOnSignalChanged write fOnSignalChanged;
   end;
 
+  TJCContains = function(jc:TJC; blockid: Integer): Boolean;
+
   function NewJCData(): TJCdata;
   procedure FreeJCData(jcdata: TJCData);
+
+  function ContainsTrackInclRailway(jc: TJC; blockid: Integer): Boolean;
+  function ContainsLock(jc: TJC; blockid: Integer): Boolean;
+  function ContainsTurnout(jc: TJC; blockid: Integer): Boolean;
+  function ContainsRailway(jc: TJC; blockid: Integer): Boolean;
+  function ContainsCrossing(jc: TJC; blockid: Integer): Boolean;
 
 implementation
 
@@ -3596,6 +3610,7 @@ begin
     end;
   except
     Result.Free();
+    raise;
   end;
 end;
 
@@ -3628,6 +3643,101 @@ begin
       toClose.Add(anyOccupied);
     end;
   end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TJC.ContainsTrackInclRailway(blockid: Integer): Boolean;
+begin
+  for var _trackId: Integer in Self.data.tracks do
+    if (_trackId = blockid) then
+      Exit(True);
+
+  // Also tracks in neighbouringRailway
+  if (Self.data.railwayId > -1) then
+  begin
+    var railway: TBlk := Blocks.GetBlkByID(Self.data.railwayId);
+    if ((railway <> nil) and (railway.typ = btRailway)) then
+    begin
+      for var _trackId: Integer in TBlkRailway(railway).GetSettings().trackIds do
+      begin
+        var railwayTrack: TBlk := Blocks.GetBlkByID(_trackId);
+        if ((railwayTrack <> nil) and (railwayTrack.typ = btRT)) then
+          if ((TBlkRT(railwayTrack).signalCover = nil) and (railwayTrack.id = blockid)) then
+            Exit(True);
+      end;
+    end;
+  end;
+
+  Result := False;
+end;
+
+function TJC.ContainsLock(blockid: Integer): Boolean;
+begin
+  for var lockZav: TJCRefZav in Self.data.locks do
+    if (lockZav.Block = blockid) then
+      Exit(True);
+  Result := False;
+end;
+
+function TJC.ContainsTurnout(blockid: Integer): Boolean;
+begin
+  var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(blockid));
+
+  for var turnoutZav: TJCTurnoutZav in Self.data.turnouts do
+    if (turnoutZav.Block = turnout.id) then
+      Exit(True);
+
+  for var refugeeZav: TJCRefugeeZav in Self.data.refuges do
+    if (refugeeZav.Block = turnout.id) then
+      Exit(True);
+
+  if ((turnout <> nil) and (turnout.lock <> nil)) then
+    for var refZav: TJCRefZav in Self.data.locks do
+      if (refZav.Block = turnout.lock.id) then
+        Exit(True);
+
+  Result := False;
+end;
+
+function TJC.ContainsRailway(blockid: Integer): Boolean;
+begin
+  Result := (Self.data.railwayId = blockid);
+end;
+
+function TJC.ContainsCrossing(blockid: Integer): Boolean;
+begin
+  for var crossingZav: TJCCrossingZav in Self.data.crossings do
+    if (crossingZav.crossingId = blockid) then
+      Exit(True);
+  Result := False;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function ContainsTrackInclRailway(jc: TJC; blockid: Integer): Boolean;
+begin
+  Result := jc.ContainsTrackInclRailway(blockid);
+end;
+
+function ContainsLock(jc: TJC; blockid: Integer): Boolean;
+begin
+  Result := jc.ContainsLock(blockid);
+end;
+
+function ContainsTurnout(jc: TJC; blockid: Integer): Boolean;
+begin
+  Result := jc.ContainsTurnout(blockid);
+end;
+
+function ContainsRailway(jc: TJC; blockid: Integer): Boolean;
+begin
+  Result := jc.ContainsRailway(blockid);
+end;
+
+function ContainsCrossing(jc: TJC; blockid: Integer): Boolean;
+begin
+  Result := jc.ContainsCrossing(blockid);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

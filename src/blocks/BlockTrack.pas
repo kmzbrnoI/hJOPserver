@@ -2248,8 +2248,6 @@ end;
 procedure TBlkTrack.POdjChanged(trainId: Integer; var podj: TPOdj);
 var Train: Integer;
   was: Boolean;
-  nav: TBlk;
-  jc: TJC;
 begin
   if ((not Self.trains.Contains(trainId)) and (trainId <> Self.m_state.trainPredict)) then
     raise Exception.Create('Souprava již není na úseku!');
@@ -2266,13 +2264,13 @@ begin
   begin
     // PODJ bylo odstraneno -> rozjet soupravu pred navestidlem i kdyz neni na zastavovaci udalosti
     // aktualizaci rychlosti pro vsechny signalJCRef bychom nemeli nic pokazit
-    for nav in Self.signalJCRef do
-      TBlkSignal(nav).UpdateTrainSpeed(true);
+    for var signal: TBlk in Self.signalJCRef do
+      TBlkSignal(signal).UpdateTrainSpeed(true);
   end;
 
   // Pri zruseni / zavedei PODJ aktualizovat rychlsot loko, ktera prijizdi,
   // protoze muze dojit ke zmene rychlosti
-  jc := JCDb.FindActiveJCWithTrack(Self.id);
+  var jc: TJC := JCDb.FindActiveJCWithTrack(Self.id);
   if (jc <> nil) then
     TBlkSignal(jc.signal).UpdateTrainSpeed(true);
 

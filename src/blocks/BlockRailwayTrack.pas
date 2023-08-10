@@ -1206,9 +1206,8 @@ begin
   // navest autobloku)
   if ((Self.prevRT = nil) and (Self.sectOccupied = TTrackState.occupied) and (TBlkRailway(Self.railway).zaver)) then
   begin
-    var jc: TJC := JCDb.FindActiveJCWithTrack(Self.id);
-    if ((jc <> nil) and (not jc.waitForLastTrackOrRailwayOccupy) and (jc.state.destroyBlock < jc.data.tracks.Count - 1))
-    then
+    var jc := JCDb.FindActiveJCWithTrack(Self.id);
+    if ((not jc.waitForLastTrackOrRailwayOccupy) and (jc.state.destroyBlock < jc.data.tracks.Count - 1)) then
       JCDb.Cancel(Self);
   end;
 

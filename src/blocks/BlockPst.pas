@@ -153,7 +153,8 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
-  RCSErrors, RCS, TCPAreasRef, BlockSignal, Logging, BlockDisconnector, ConfSeq;
+  RCSErrors, RCS, TCPAreasRef, BlockSignal, Logging, BlockDisconnector, ConfSeq,
+  TechnologieJC;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -599,8 +600,19 @@ end;
 
 procedure TBlkPst.MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  PanelServer.ConfirmationSequence(SenderPnl, Self.CSZavOffDone, (SenderOR as TArea), 'Zrušení nouzového závěru',
-    GetObjsList(Self), nil);
+  var csItems := TList<TConfSeqItem>.Create();
+  var paths: TList<TJC> := nil;
+  try
+    paths := JCDb.FindActiveNCsWithPSt(Self.id);
+    if (paths.Count > 0) then
+      csItems.Add(CSItem(Self, 'Nouzový závěr je v nouzové cestě'));
+    PanelServer.ConfirmationSequence(SenderPnl, Self.CSZavOffDone, (SenderOR as TArea), 'Zrušení nouzového závěru',
+      GetObjsList(Self), csItems, True, False);
+  finally
+    csItems.Free();
+    if (paths <> nil) then
+      paths.Free();
+  end;
 end;
 
 procedure TBlkPst.CSZavOffDone(Sender: TIDContext; success: Boolean);
