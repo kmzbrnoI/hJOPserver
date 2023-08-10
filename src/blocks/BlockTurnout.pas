@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, Block, SysUtils, BlockTrack, Menus, AreaDb,
+uses IniFiles, Block, SysUtils, BlockTrack, Menus, AreaDb, ConfSeq,
   Classes, IdContext, Generics.Collections, JsonDataObjects, RCS,
   Area, TechnologieRCS;
 
@@ -204,6 +204,8 @@ type
     function SelfMenuNS(): Boolean;
     function GetParent(): TBlkTrack;
 
+    procedure AddNSItems(var items: TList<TConfSeqItem>);
+
   public
     constructor Create(index: Integer);
     destructor Destroy(); override;
@@ -295,7 +297,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
-  IfThenElse, RCSErrors, BlockPst, ConfSeq, JCBarriers, Config;
+  IfThenElse, RCSErrors, BlockPst, JCBarriers, Config;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin
@@ -1074,20 +1076,30 @@ begin
   Self.SetPosition(TTurnoutPosition.minus, false, false, nil, Self.PanelMovingErr);
 end;
 
+procedure TBlkTurnout.AddNSItems(var items: TList<TConfSeqItem>);
+begin
+  if (Self.occupied = TTrackState.occupied) then
+    items.Add(CSItem(Self.parent, 'Obsazený kolejový úsek'));
+  if ((coupling <> nil) and (coupling.occupied = TTrackState.occupied)) then
+    items.Add(CSItem(coupling.parent, 'Obsazený kolejový úsek'));
+  if ((Self.parent <> nil) and (not Self.parent.occupAvailable)) then
+    items.Add(CSItem(Self.parent, 'Neindikovaný kolejový úsek'));
+  if ((coupling <> nil) and (coupling.parent <> nil) and (not coupling.parent.occupAvailable)) then
+    items.Add(CSItem(coupling.parent, 'Neindikovaný kolejový úsek'));
+  if (Self.PstIs()) then
+    items.Add(CSItem(Self, 'Pod obsluhou PSt'));
+  if ((Self.coupling <> nil) and (coupling.PstIs())) then
+    items.Add(CSItem(Self.coupling, 'Pod obsluhou PSt'));
+end;
+
 procedure TBlkTurnout.UPONSPlusClick(Sender: TObject);
 begin
   Self.m_state.movingPanel := TIDContext(Sender);
   Self.m_state.movingOR := TPanelConnData(TIDContext(Sender).data).UPO_ref;
 
-  var blk := Blocks.GetBlkByID(Self.trackID);
   var csItems := TList<TConfSeqItem>.Create();
-
   try
-    if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
-      csItems.Add(CSItem(Blk, 'Obsazený kolejový úsek'));
-    if ((Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
-      csItems.Add(CSItem(Blk, 'Pod obsluhou PSt'));
-
+    Self.AddNSItems(csItems);
     PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSPlus,
       (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy plus',
       GetObjsList(Self), csItems, True, False);
@@ -1101,15 +1113,9 @@ begin
   Self.m_state.movingPanel := TIDContext(Sender);
   Self.m_state.movingOR := TPanelConnData(TIDContext(Sender).data).UPO_ref;
 
-  var blk := Blocks.GetBlkByID(Self.trackID);
   var csItems := TList<TConfSeqItem>.Create();
-
   try
-    if ((Self.occupied = TTrackState.occupied) or ((coupling <> nil) and (coupling.occupied = TTrackState.occupied))) then
-      csItems.Add(CSItem(Blk, 'Obsazený kolejový úsek'));
-    if ((Self.PstIs()) or ((coupling <> nil) and (coupling.PstIs()))) then
-      csItems.Add(CSItem(Blk, 'Pod obsluhou PSt'));
-
+    Self.AddNSItems(csItems);
     PanelServer.ConfirmationSequence(TIDContext(Sender), Self.PanelCSNSMinus,
       (TPanelConnData(TIDContext(Sender).data).UPO_ref as TArea), 'Nouzové stavění do polohy mínus',
       GetObjsList(Self), csItems, True, False);
@@ -2045,7 +2051,8 @@ end;
 
 function TBlkTurnout.SelfMenuNS(): Boolean;
 begin
-  Result := ((Self.occupied = TTrackState.occupied) and (Self.lock = nil)) or (Self.PstIsActive());
+  Result := ((Self.occupied = TTrackState.occupied) and (Self.lock = nil)) or (Self.PstIsActive()) or
+    ((Self.parent <> nil) and (not Self.parent.occupAvailable) and (Self.lock = nil));
 end;
 
 end.

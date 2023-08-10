@@ -90,6 +90,7 @@ type
     procedure SetTrainPredict(Train: TTrain);
     procedure SetJCend(jcEnd: TZaver);
     procedure SetTrainMoving(moving: Integer);
+    function IsOccupancyIndication(): Boolean;
 
     procedure SetPower(state: TBoosterSignal);
     procedure SetShortCircuit(state: TBoosterSignal);
@@ -237,6 +238,7 @@ type
     property spnl: TBlkTrackSpnl read m_spnl;
 
     property occupied: TTrackState read m_state.occupied;
+    property occupAvailable: Boolean read IsOccupancyIndication;
     property NUZ: Boolean read m_state.NUZ write SetNUZ;
     property zaver: TZaver read m_state.zaver write SetZaver;
     property note: string read m_state.note write SetNote;
@@ -1484,7 +1486,7 @@ begin
     Result := Result + train.Menu(SenderPnl, SenderOR, Self, 0) + '-,';
   end else begin
     var canAdd := ((Self.CanStandTrain()) and (((not Self.TrainsFull()) and ((Self.m_state.occupied = TTrackState.occupied)
-      or (Self.m_settings.RCSAddrs.Count = 0))) or // novy vlak
+      or (not Self.occupAvailable))) or // novy vlak
       (addStr = 'VLOŽ vlak,') // presun vlaku
       ));
 
@@ -2452,7 +2454,7 @@ begin
     fg := clYellow;
 
   // zaver
-  if (((Self.occupied) = TTrackState.free) and (Self.typ = btTrack) and (Self.GetSettings().RCSAddrs.Count > 0)) then
+  if (((Self.occupied) = TTrackState.free) and (Self.typ = btTrack) and (Self.occupAvailable)) then
   begin
     case (Self.zaver) of
       TZaver.vlak:
@@ -2687,6 +2689,13 @@ begin
   for var i := Self.m_state.psts.Count-1 downto 0 do
     if (TBlkPst(Self.m_state.psts[i]).status <= pstOff) then
       Self.PstRemove(self.m_state.psts[i]);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBLkTrack.IsOccupancyIndication(): Boolean;
+begin
+  Result := (Self.m_settings.RCSAddrs.Count > 0);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

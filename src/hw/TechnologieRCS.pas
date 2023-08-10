@@ -227,7 +227,7 @@ begin
       if ((Blk.typ = btCrossing) and (TBlkCrossing(Blk).GetSettings().RCSInputs.open.enabled)) then
         Self.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open.addr, 1);
       if ((diag.simSoupravaObsaz) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain()) and
-        ((Blk as TBlkTrack).GetSettings().RCSAddrs.Count > 0)) then
+        ((Blk as TBlkTrack).occupAvailable)) then
         Self.SetInput(TBlkTrack(Blk).GetSettings().RCSAddrs[0], 1);
     except
 
@@ -257,7 +257,7 @@ begin
   begin
     if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then
       continue;
-    if (((Blk as TBlkTrack).IsTrain()) and ((Blk as TBlkTrack).GetSettings().RCSAddrs.Count > 0)) then
+    if (((Blk as TBlkTrack).IsTrain()) and ((Blk as TBlkTrack).occupAvailable)) then
       Self.SetInput((Blk as TBlkTrack).GetSettings().RCSAddrs[0], 1);
   end;
 end;

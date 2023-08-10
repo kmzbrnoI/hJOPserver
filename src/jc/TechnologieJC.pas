@@ -2089,14 +2089,14 @@ begin
   // kontrola obsazenosti useku pred navestidlem
   var signalTrack: TBlkTrack := signal.track as TBlkTrack;
   if ((Self.destroyBlock = _JC_DESTROY_SIGNAL_TRACK) and ((signalTrack.occupied <> TTrackState.Free) or
-    (signalTrack.GetSettings.RCSAddrs.Count = 0))) then
+    (not signalTrack.occupAvailable))) then
   begin
     Self.destroyBlock := 0;
     Self.destroyEndBlock := _JC_DESTROY_SIGNAL_TRACK;
   end;
 
   // uvolneni prvniho useku pred navestidlem v posunove ceste je signalem pro zhasnuti navestidla
-  if ((signalTrack.GetSettings().RCSAddrs.Count > 0) and (signalTrack.occupied = TTrackState.Free) and (signal.targetSignal <> ncStuj) and
+  if ((signalTrack.occupAvailable) and (signalTrack.occupied = TTrackState.Free) and (signal.targetSignal <> ncStuj) and
     (Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK) and (Self.typ = TJCType.shunt) and (Self.destroyBlock >= 1)) then
   begin
     Self.Log('Uvolnen usek ' + signalTrack.name + ' : navestidlo ' + signal.name + ' nastaveno na STUJ');
@@ -2146,7 +2146,7 @@ begin
 
         // pokud jsme v predposlednim useku a posledni je nedetekovany, posuneme RozpadBlok jeste o jeden usek, aby se cesta mohla zrusit
         if (i = Self.m_data.tracks.Count - 2) then
-          if (TBlkTrack(Self.lastTrack).GetSettings().RCSAddrs.Count = 0) then
+          if (not TBlkTrack(Self.lastTrack).occupAvailable) then
             Self.destroyBlock := Self.destroyBlock + 1;
 
         if ((i = Self.m_data.tracks.Count - 1) and (Self.m_data.railwayId > -1)) then
@@ -2216,7 +2216,7 @@ begin
       nextTrack := nil;
 
     if ((track.Zaver = TZaver.nouz) and (track.occupied = TTrackState.Free) and
-      ((nextTrack = nil) or (nextTrack.occupied = TTrackState.occupied) or (nextTrack.GetSettings.RCSAddrs.Count = 0)))
+      ((nextTrack = nil) or (nextTrack.occupied = TTrackState.occupied) or (not nextTrack.occupAvailable)))
     then
     begin
       // cesta se rozpada...
@@ -2251,7 +2251,7 @@ begin
       nextTrack := nil;
 
     if ((track.Zaver = TZaver.nouz) and (track.occupied = TTrackState.Free) and
-      ((nextTrack = nil) or (nextTrack.occupied = TTrackState.occupied) or (nextTrack.GetSettings.RCSAddrs.Count = 0)))
+      ((nextTrack = nil) or (nextTrack.occupied = TTrackState.occupied) or (not nextTrack.occupAvailable)))
     then
     begin
       // uvolneni prvniho useku v posunove ceste je signalem pro zhasnuti navestidla
@@ -2287,7 +2287,7 @@ begin
   // mazani soupravy z useku pred navestidlem
   if ((Self.destroyBlock > 0) and (Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK)) then
   begin
-    if ((signalTrack.occupied = TTrackState.Free) and (signalTrack.GetSettings.RCSAddrs.Count > 0)) then
+    if ((signalTrack.occupied = TTrackState.Free) and (signalTrack.occupAvailable)) then
     begin
       if (signalTrack.IsTrain() and (Self.typ = TJCType.Train)) then
       begin

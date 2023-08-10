@@ -999,8 +999,8 @@ begin
 
       if (blk <> nil) then
       begin
-        var justOne: Boolean := True; // print only blocks with just one em lock remaining
-        case (Blk.typ) of
+        var justOne: Boolean := True; // print only blocks with just one em lock remaining (but decrease on all toRnz)
+        case (blk.typ) of
           btTurnout:
               justOne := (TBlkTurnout(blk).state.locks = 1);
           btLock:
