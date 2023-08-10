@@ -99,6 +99,7 @@ type
     changeCallbackOk, changeCallbackErr: TNotifyEvent; // notifikace o nastaveni polohy navestidla
     changeEnd: TTime;
     psts: TList<TBlk>;
+    dnArea: TObject;
   end;
 
   TBlkSignalSpnl = record
@@ -111,7 +112,7 @@ type
   const
     _def_signal_state: TBlkSignalState = (signal: ncDisabled; selected: none; beginAB: false; targetSignal: ncDisabled;
       ABJC: nil; ZAM: false; dnJC: nil; privolJC: nil; privolTimerId: 0; autoblok: false; RCtimer: - 1;
-      changeCallbackOk: nil; changeCallbackErr: nil;);
+      changeCallbackOk: nil; changeCallbackErr: nil; dnArea: nil; );
 
     // doba sviceni privolavaci navesti
     _PRIVOL_SEC = 90;
@@ -159,6 +160,8 @@ type
     procedure MenuAdminStopIR(SenderPnl: TIdContext; SenderOR: TObject; enabled: Boolean);
     procedure MenuAdminRadOnClick(SenderPnl: TIDContext; SenderOR: TObject);
     procedure MenuAdminRadOffClick(SenderPnl: TIDContext; SenderOR: TObject);
+
+    procedure DNCSCallback(Sender: TIDContext; success: Boolean);
 
     procedure UpdateFalling();
     procedure UpdatePrivol();
@@ -873,8 +876,35 @@ begin
     Self.m_state.RCtimer := -1;
   end;
 
-  Self.dnJC.DN(SenderPnl, SenderOR);
-  Blocks.TrainPrediction(Self);
+  Self.m_state.dnArea := SenderOR;
+
+  var barriers: TJCBarriers := Self.dnJC.barriers();
+  var csItems: TList<TConfSeqItem> := TList<TConfSeqItem>.Create();
+  try
+    for var barrier in barriers do
+      if (JCBarriers.IsCSBarrier(barrier.typ)) then
+        csItems.Add(CSItem(barrier.Block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+
+    if (csItems.Count > 0) then
+      PanelServer.ConfirmationSequence(SenderPnl, Self.DNCSCallback, TArea(SenderOR),
+        'Dodatečná návěst s potvrzením', GetObjsList(Self), csItems, True, False)
+    else
+      Self.DNCSCallback(SenderPnl, True);
+  finally
+    barriers.Free();
+    csItems.Free();
+  end;
+end;
+
+procedure TBlkSignal.DNCSCallback(Sender: TIDContext; success: Boolean);
+begin
+  if (success) then
+  begin
+    Self.dnJC.DN(Sender, Self.m_state.dnArea);
+    Blocks.TrainPrediction(Self);
+  end;
+
+  Self.m_state.dnArea := nil;
 end;
 
 procedure TBlkSignal.MenuRCClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1224,7 +1254,12 @@ begin
     // bud je cesta primo postavena, nebo je zrusena, ale podminky jsou vyhovujici pro DN
     // plati jen pro postavenou JC
     if ((not Self.ZAM) and (Self.signal = ncStuj) and (Self.dnJC.CanDN())) then
-      Result := Result + 'DN,';
+    begin
+      if (JCBarriers.IsAnyCSBarrier(Self.dnJC.barriers())) then
+        Result := Result + '!DN,'
+      else
+        Result := Result + 'DN,';
+    end;
 
     if (((Self.signal > ncStuj) or (Self.dnJC.CanDN()) or (Self.dnJC.destroyBlock < 1)) and (not Self.RCinProgress()))
     then

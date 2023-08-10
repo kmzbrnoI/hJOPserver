@@ -111,6 +111,7 @@ type
   function JCBarrierToMessage(barrier: TJCBarrier): TUPOItem;
   function JCWarningBarrier(typ: TJCBarType): Boolean;
   procedure BarrierToJson(const barrier: TJCBarrier; result: TJsonObject);
+  function IsAnyCSBarrier(barriers: TJCBarriers): Boolean;
 
 implementation
 
@@ -460,6 +461,14 @@ begin
 
   var upoItem := JCBarrierToMessage(barrier);
   Result['description'] := upoItem[0].str + ' ' + upoItem[1].str + ' ' + upoItem[2].str;
+end;
+
+function IsAnyCSBarrier(barriers: TJCBarriers): Boolean;
+begin
+  for var barrier: TJCBarrier in barriers do
+    if (IsCSBarrier(barrier.typ)) then
+      Exit(True);
+  Result := False;
 end;
 
 end.

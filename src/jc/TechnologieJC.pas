@@ -1242,13 +1242,11 @@ begin
     end;
 
     // existuji bariery na potvrzeni potvrzovaci sekvenci ?
-    var csItems: TList<TConfSeqItem> := TList<TConfSeqItem>.Create;
+    var csItems: TList<TConfSeqItem> := TList<TConfSeqItem>.Create();
     try
       for var barrier in barriers do
-      begin
         if (JCBarriers.IsCSBarrier(barrier.typ)) then
           csItems.Add(CSItem(barrier.Block, JCBarriers.BarrierGetCSNote(barrier.typ)));
-      end;
 
       if (csItems.Count > 0) then
       begin
