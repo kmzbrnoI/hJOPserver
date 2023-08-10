@@ -3295,7 +3295,7 @@ begin
     if (lock.keyReleased) then
       bariery.Add(JCBarrier(barLockNotLocked, lock));
 
-    if (lock.emLock) then
+    if (not lock.emLock) then
       bariery.Add(JCBarrier(barLockEmLock, lock));
   end;
 end;
