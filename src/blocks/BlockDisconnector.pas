@@ -121,7 +121,7 @@ type
 implementation
 
 uses TCPServerPanel, ownConvert, Graphics, PTUtils, IfThenElse, BlockPst,
-    RCSErrors, UPO, timeHelper;
+    RCSErrors, UPO, timeHelper, colorHelper;
 
 constructor TBlkDisconnector.Create(index: Integer);
 begin
@@ -394,20 +394,20 @@ begin
   bg := clBlack;
   case (Self.state) of
     TBlkDiscBasicState.disabled:
-      fg := clFuchsia;
+      fg := TJopColor.purple;
     TBlkDiscBasicState.inactive:
-      fg := $A0A0A0;
+      fg := TJopColor.grayDark;
     TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining, TBlkDiscBasicState.activeInfinite:
-      fg := clLime;
+      fg := TJopColor.green;
   else
-    fg := clFuchsia;
+    fg := TJopColor.purple;
   end;
 
-  if ((fg = $A0A0A0) and (Self.PstIs())) then
-    fg := clBlue;
+  if ((fg = TJopColor.grayDark) and (Self.PstIs())) then
+    fg := TJopColor.blue;
 
   if (Self.note <> '') then
-    bg := clTeal;
+    bg := TJopColor.turqDark;
 
   flicker := (Self.state = TBlkDiscBasicState.shortTimeRemaining);
 

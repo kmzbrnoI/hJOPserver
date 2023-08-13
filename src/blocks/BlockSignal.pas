@@ -299,7 +299,7 @@ uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSigna
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
   predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO, TCPAreasRef,
-  TrainSpeed, ConfSeq, PTUtils, timeHelper, Config;
+  TrainSpeed, ConfSeq, PTUtils, timeHelper, Config, colorHelper;
 
 constructor TBlkSignal.Create(index: Integer);
 begin
@@ -2023,29 +2023,29 @@ begin
 
   case (Self.selected) of
     TBlkSignalSelection.none:
-      okoli := clBlack;
+      okoli := TJopColor.black;
     TBlkSignalSelection.VC:
-      okoli := clGreen;
+      okoli := TJopColor.greenDark;
     TBlkSignalSelection.PC:
-      okoli := clWhite;
+      okoli := TJopColor.white;
     TBlkSignalSelection.NC, TBlkSignalSelection.PP:
-      okoli := clTeal;
+      okoli := TJopColor.turqDark;
   else
-    okoli := clBlack;
+    okoli := TJopColor.black;
   end;
 
   bg := okoli;
-  fg := $A0A0A0;
+  fg := TJopColor.grayDark;
 
   if (Self.ZAM) then
     case (Self.symbolType) of
       TBlkSignalSymbol.main:
-        fg := clRed;
+        fg := TJopColor.red;
       TBlkSignalSymbol.shunting:
-        fg := clBlue;
+        fg := TJopColor.blue;
     end;
   if (Self.canRNZ) then
-    fg := clTeal;
+    fg := TJopColor.turqDark;
 
   case (Self.signal) of
     ncStuj:
@@ -2053,20 +2053,20 @@ begin
       end;
     ncChanging, ncZhasnuto:
       begin
-        fg := clBlack;
-        bg := $A0A0A0;
+        fg := TJopColor.black;
+        bg := TJopColor.grayDark;
       end;
     ncVolno, ncVystraha, ncOcek40, ncVolno40, ncVystraha40, nc40Ocek40, ncOpakVolno, ncOpakVystraha, ncOpakOcek40,
       ncOpakVystraha40, ncOpak40Ocek40:
-      fg := clLime;
+      fg := TJopColor.green;
     ncPrivol, ncPosunZaj, ncPosunNezaj:
-      fg := clWhite;
+      fg := TJopColor.white;
     ncVse:
-      fg := clYellow;
+      fg := TJopColor.yellow;
   else
-    if (fg = $A0A0A0) then
-      fg := clBlack;
-    bg := clFuchsia;
+    if (fg = TJopColor.grayDark) then
+      fg := TJopColor.black;
+    bg := TJopColor.purple;
   end;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';' + ownConvert.ColorToStr(bg) + ';' +

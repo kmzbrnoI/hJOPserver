@@ -116,7 +116,7 @@ type
 implementation
 
 uses Graphics, Classes, SysUtils, BlockTurnout, BlockTrack, BlockPst, BlockLock,
-  BlockCrossing, BlockLinker, BlockDisconnector, THVDatabase, TrainDb;
+  BlockCrossing, BlockLinker, BlockDisconnector, THVDatabase, TrainDb, colorHelper;
 
 class operator TJCBarrier.Equal(a, b: TJCBarrier): Boolean;
 begin
@@ -260,7 +260,7 @@ begin
       barRailwayWrongDir, barRailwayZAKVC, barLockNotLocked, barDiscActive, barTurnoutWrongPos,
       barTrackPSt, barTurnoutPst, barRefugeePst, barControllerNotInBasicPos:
       begin
-        Result[0] := GetUPOLine('NEPŘÍPUSTNÉ', taCenter, clRed, clWhite);
+        Result[0] := GetUPOLine('NEPŘÍPUSTNÉ', taCenter, TJopColor.red, TJopColor.white);
         if (Assigned(barrier.Block)) then
           Result[2] := GetUPOLine(barrier.Block.name)
         else
@@ -270,9 +270,9 @@ begin
 
   case (barrier.typ) of
     barOk:
-      Result[0] := GetUPOLine('OK', taCenter, clBlue, $A0A0A0);
+      Result[0] := GetUPOLine('OK', taCenter, TJopColor.blue, TJopColor.grayDark);
     barProcessing:
-      Result[0] := GetUPOLine('Již se staví', taCenter, clBlue, $A0A0A0);
+      Result[0] := GetUPOLine('Již se staví', taCenter, TJopColor.blue, TJopColor.grayDark);
 
     barBlockDisabled:
       Result[1] := GetUPOLine('Blok neaktivní');
@@ -326,7 +326,7 @@ begin
       Result[1] := GetUPOLine('Nepovoluje odjezd');
     barRailwayOccupied:
       begin
-        Result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, clBlack, clYellow);
+        Result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, TJopColor.black, TJopColor.yellow);
         Result[1] := GetUPOLine('Trať obsazena');
         Result[2] := GetUPOLine(barrier.Block.name);
       end;
@@ -343,7 +343,7 @@ begin
 
     barBlockLockout:
       begin
-        Result[0] := GetUPOLine('VÝLUKA ' + barrier.Block.name, taCenter, clBlack, clOlive);
+        Result[0] := GetUPOLine('VÝLUKA ' + barrier.Block.name, taCenter, TJopColor.black, TJopColor.brown);
 
         var lockout: string := '-';
         case (barrier.block.typ) of
@@ -354,9 +354,9 @@ begin
 
         var lines := GetLines(lockout, _UPO_LINE_LEN);
         try
-          Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+          Result[1] := GetUPOLine(lines[0], taLeftJustify, TJopColor.yellow, TJopColor.grayDark);
           if (lines.Count > 1) then
-            Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0);
+            Result[2] := GetUPOLine(lines[1], taLeftJustify, TJopColor.yellow, TJopColor.grayDark);
         finally
           lines.Free();
         end;
@@ -379,7 +379,7 @@ begin
 
     barTrackLastOccupied:
       begin
-        Result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, clBlack, clYellow);
+        Result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, TJopColor.black, TJopColor.yellow);
         Result[1] := GetUPOLine('Kolejový úsek obsazen');
         Result[2] := GetUPOLine(barrier.Block.name);
       end;
@@ -391,35 +391,35 @@ begin
 
     barHVManual:
       begin
-        Result[0] := GetUPOLine('Hnací vozidlo v ručním řízení', taCenter, clBlack, clYellow);
+        Result[0] := GetUPOLine('Hnací vozidlo v ručním řízení', taCenter, TJopColor.black, TJopColor.yellow);
         Result[1] := GetUPOLine(IntToStr(barrier.param) + ' : ' + HVDb[barrier.param].name);
         Result[2] := GetUPOLine('Řídí: '+HVDb[barrier.param].DriverFullNames());
       end;
 
     barHVNotAllManual:
       begin
-        Result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
+        Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
         Result[1] := GetUPOLine('Ne všechna HV v ručním řízení');
         Result[2] := GetUPOLine('');
       end;
 
     barRailwayZAKPC:
       begin
-        Result[0] := GetUPOLine('ZAVEDEN ZÁKAZ ODJEZDU', taCenter, clRed, clWhite);
+        Result[0] := GetUPOLine('ZAVEDEN ZÁKAZ ODJEZDU', taCenter, TJopColor.red, TJopColor.white);
         Result[1] := GetUPOLine(barrier.Block.name);
         Result[2] := GetUPOLine('');
       end;
 
     barTrainWrongDir:
       begin
-        Result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
+        Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
         Result[1] := GetUPOLine('Jízda proti směru soupravy');
         Result[2] := GetUPOLine('Souprava ' + trains[barrier.param].name);
       end;
 
     barTrainNotFront:
       begin
-        Result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
+        Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
         Result[1] := GetUPOLine('Čelo vlaku je na jiném úseku');
         Result[2] := GetUPOLine('Souprava ' + trains[barrier.param].name);
       end;
@@ -431,7 +431,7 @@ begin
       Result[1] := GetUPOLine('Volič není v základní poloze');
 
   else
-    Result[0] := GetUPOLine('Neznámá bariéra', taCenter, clRed, clWhite);
+    Result[0] := GetUPOLine('Neznámá bariéra', taCenter, TJopColor.red, TJopColor.white);
   end;
 end;
 

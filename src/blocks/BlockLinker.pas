@@ -114,7 +114,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert, TrainDb,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack, TCPAreasRef,
-  Logging, ConfSeq, TechnologieJC;
+  Logging, ConfSeq, TechnologieJC, colorHelper;
 
 constructor TBlkLinker.Create(index: Integer);
 begin
@@ -638,24 +638,24 @@ begin
   railway := TBlkRailway(Self.parent);
   if (railway.direction = TRailwayDirection.disabled) then
   begin
-    fg := clBlack;
-    bg := clFuchsia;
+    fg := TJopColor.black;
+    bg := TJopColor.purple;
   end else begin
     if (Self.note <> '') then
-      bg := clTeal
+      bg := TJopColor.turqDark
     else
-      bg := clBlack;
+      bg := TJopColor.black;
 
     if (railway.RBPCan) then
-      fg := clRed
+      fg := TJopColor.red
     else if (railway.Zaver) then
-      fg := clBlue
+      fg := TJopColor.blue
     else if (railway.emLock) then
-      fg := clAqua
+      fg := TJopColor.turq
     else if (railway.occupied) then
-      fg := clBlue
+      fg := TJopColor.blue
     else
-      fg := $A0A0A0;
+      fg := TJopColor.grayDark;
   end;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';' + ownConvert.ColorToStr(bg) + ';' +

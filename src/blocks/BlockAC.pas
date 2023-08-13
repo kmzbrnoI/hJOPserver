@@ -105,7 +105,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, ownConvert, Diagnostics, ConfSeq,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout,
-  TCPServerPT, ownStrUtils;
+  TCPServerPT, ownStrUtils, colorHelper;
 
 constructor TBlkAC.Create(index: Integer);
 begin
@@ -280,12 +280,11 @@ end;
 
 function TBlkAC.PanelStateString(): string;
 var fg, bg: TColor;
-  flash: Boolean;
 begin
   Result := inherited;
 
-  bg := clBlack;
-  fg := $A0A0A0;
+  bg := TJopColor.black;
+  fg := TJopColor.grayDark;
 
   case (Self.m_state.state) of
     TACState.running, TACState.paused:
@@ -295,12 +294,12 @@ begin
   if (Self.stopped) then
   begin
     if (Self.clientConnected) then
-      fg := $A0A0A0
+      fg := TJopColor.grayDark
     else
-      fg := clFuchsia;
+      fg := TJopColor.purple;
   end;
 
-  flash := Self.running;
+  var flash: Boolean := Self.running;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';' + ownConvert.ColorToStr(bg) + ';' +
     IntToStr(ownConvert.BoolToInt(flash)) + ';';
@@ -436,7 +435,7 @@ begin
   end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 6) and (UpperCase(parsed[4]) = 'FG-COLOR')) then
   begin
     var color: TColor := ownConvert.StrToColor(parsed[5]);
-    if ((color <> clBlack) and (color <> $A0A0A0) and (color <> clFuchsia)) then
+    if ((color <> TJopColor.black) and (color <> TJopColor.grayDark) and (color <> TJopColor.purple)) then
       Self.SetFgColor(color);
   end else if ((UpperCase(parsed[3]) = 'CONTROL') and (parsed.Count >= 7) and (UpperCase(parsed[4]) = 'ERROR')) then
   begin

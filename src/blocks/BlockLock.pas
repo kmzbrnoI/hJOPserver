@@ -98,7 +98,7 @@ type
 implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ConfSeq, TechnologieJC,
-  TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout;
+  TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout, colorHelper;
 
 constructor TBlkLock.Create(index: Integer);
 begin
@@ -419,23 +419,23 @@ begin
   Result := inherited;
 
   if (Self.note <> '') then
-    bg := clTeal
+    bg := TJopColor.turqDark
   else
-    bg := clBlack;
+    bg := TJopColor.black;
 
   if ((diag.showZaver) and (Self.zaver)) then
-    bg := clGreen;
+    bg := TJopColor.greenDark;
 
   if (Self.error) then
   begin
     fg := bg;
-    bg := clBlue;
+    bg := TJopColor.blue;
   end else if (Self.keyReleased) then
-    fg := clBlue
+    fg := TJopColor.blue
   else if (Self.emLock) then
-    fg := clAqua
+    fg := TJopColor.turq
   else
-    fg := $A0A0A0;
+    fg := TJopColor.grayDark;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';';
   Result := Result + ownConvert.ColorToStr(bg) + ';0;';

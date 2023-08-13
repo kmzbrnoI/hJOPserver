@@ -286,7 +286,7 @@ implementation
 uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
-  BlockPSt, appEv, ConfSeq, BlockDb, Config;
+  BlockPSt, appEv, ConfSeq, BlockDb, Config, colorHelper;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -1125,7 +1125,7 @@ begin
         if ((nc) and (from_stack <> nil)) then
         begin
           var item: TUPOItem;
-          item[0] := GetUPOLine('Pozor !', taCenter, clYellow, $A0A0A0);
+          item[0] := GetUPOLine('Pozor !', taCenter, TJopColor.yellow, TJopColor.grayDark);
           item[1] := GetUPOLine('Stavění nouzové cesty.');
           item[2] := GetUPOLine('');
           UPO.Add(item);

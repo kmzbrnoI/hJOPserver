@@ -154,7 +154,7 @@ implementation
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
   RCSErrors, RCS, TCPAreasRef, BlockSignal, Logging, BlockDisconnector, ConfSeq,
-  TechnologieJC;
+  TechnologieJC, colorHelper;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -833,32 +833,32 @@ begin
   Result := inherited;
 
   if (Self.note <> '') then
-    bg := clTeal
+    bg := TJopColor.turqDark
   else
-    bg := clBlack;
+    bg := TJopColor.black;
 
   if ((diag.showZaver) and (Self.zaver)) then
-    bg := clGreen;
+    bg := TJopColor.greenDark;
 
   case (Self.status) of
-    pstOff, pstRefuging: fg := $A0A0A0;
-    pstTakeReady: fg := clWhite;
-    pstActive: fg := clBlue;
+    pstOff, pstRefuging: fg := TJopColor.grayDark;
+    pstTakeReady: fg := TJopColor.white;
+    pstActive: fg := TJopColor.blue;
   else
-    fg := clFuchsia;
+    fg := TJopColor.purple;
   end;
 
   if (Self.emLock) then
-    fg := clAqua;
+    fg := TJopColor.turq;
 
   if (Self.error) then
-    bg := clBlue;
+    bg := TJopColor.blue;
 
   if (Self.rcsError) then
-    fg := clFuchsia;
+    fg := TJopColor.purple;
 
-  if ((fg = clBlue) and (bg = clBlue)) then
-    fg := clBlack;
+  if ((fg = TJopColor.blue) and (bg = TJopColor.blue)) then
+    fg := TJopColor.black;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';';
   Result := Result + ownConvert.ColorToStr(bg) + ';0;';

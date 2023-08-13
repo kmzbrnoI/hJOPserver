@@ -72,7 +72,7 @@ type
 
 implementation
 
-uses BlockCrossing, BlockDb, AreaDb, Graphics, ownConvert, Diagnostics;
+uses BlockCrossing, BlockDb, AreaDb, Graphics, ownConvert, Diagnostics, colorHelper;
 
 constructor TBlkSummary.Create(index: Integer);
 begin
@@ -313,26 +313,26 @@ begin
   Result := inherited;
 
   // n.o. rail
-  fg := clTeal;
+  fg := TJopColor.turqDark;
   if (Self.annulation) then
-    fg := clWhite;
+    fg := TJopColor.white;
   Result := Result + ownConvert.ColorToStr(fg) + ';';
-  Result := Result + ownConvert.ColorToStr(clBlack) + ';0;';
+  Result := Result + ownConvert.ColorToStr(TJopColor.black) + ';0;';
 
   // left rectangle
-  fg := clGreen;
+  fg := TJopColor.greenDark;
   if ((Self.error) or (Self.emOpen)) then
-    fg := clRed;
+    fg := TJopColor.red;
   if (not Self.communication) then
-    fg := clFuchsia;
+    fg := TJopColor.purple;
   Result := Result + ownConvert.ColorToStr(fg) + ';';
 
   // right rectangle
-  fg := clBlack;
+  fg := TJopColor.black;
   if (Self.closed) then
-    fg := $A0A0A0;
+    fg := TJopColor.grayDark;
   if (Self.pcClosed) then
-    fg := clWhite;
+    fg := TJopColor.white;
   Result := Result + ownConvert.ColorToStr(fg) + ';';
 end;
 

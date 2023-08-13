@@ -297,7 +297,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
-  IfThenElse, RCSErrors, BlockPst, JCBarriers, Config, TechnologieJC;
+  IfThenElse, RCSErrors, BlockPst, JCBarriers, Config, TechnologieJC, colorHelper;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin
@@ -1754,13 +1754,13 @@ begin
   begin
     case (Self.occupied) of
       TTrackState.disabled:
-        fg := clFuchsia;
+        fg := TJopColor.purple;
       TTrackState.none:
-        fg := $A0A0A0;
+        fg := TJopColor.grayDark;
       TTrackState.Free:
-        fg := $A0A0A0;
+        fg := TJopColor.grayDark;
       TTrackState.occupied:
-        fg := clRed;
+        fg := TJopColor.red;
     else
       fg := clFuchsia;
     end;
@@ -1769,62 +1769,62 @@ begin
     begin
       case (Self.GetTrackZaver()) of
         vlak:
-          fg := clLime;
+          fg := TJopColor.green;
         posun:
-          fg := clWhite;
+          fg := TJopColor.white;
         nouz:
-          fg := clAqua;
+          fg := TJopColor.turq;
         ab:
-          fg := $707070;
+          fg := IfThen(diag.showZaver, TJopColor.gray, TJopColor.grayDark);
       end; // case
 
       // je soucasti vybarveneho neprofiloveho useku / pst
       begin
         var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.trackID);
-        if ((track <> nil) and (fg = $A0A0A0)) then
+        if ((track <> nil) and (fg = TJopColor.grayDark)) then
         begin
           if (track.IsNeprofilJC) then
-            fg := clYellow;
+            fg := TJopColor.yellow;
           if (track.PstIs()) then
-            fg := clBlue;
+            fg := TJopColor.blue;
         end;
       end;
     end;
 
     // do profilu vyhybky zasahuje obsazeny usek
-    if (((fg = $A0A0A0) or (fg = clRed)) and (Self.npBlokPlus <> nil) and (Self.position = TTurnoutPosition.plus) and
+    if (((fg = TJopColor.grayDark) or (fg = TJopColor.red)) and (Self.npBlokPlus <> nil) and (Self.position = TTurnoutPosition.plus) and
       (TBlkTrack(Self.npBlokPlus).occupied <> TTrackState.Free)) then
-      fg := clYellow;
+      fg := TJopColor.yellow;
 
     // do profilu vyhybky zasahuje obsazeny usek
-    if (((fg = $A0A0A0) or (fg = clRed)) and (Self.npBlokMinus <> nil) and (Self.position = TTurnoutPosition.minus) and
+    if (((fg = TJopColor.grayDark) or (fg = TJopColor.red)) and (Self.npBlokMinus <> nil) and (Self.position = TTurnoutPosition.minus) and
       (TBlkTrack(Self.npBlokMinus).occupied <> TTrackState.Free)) then
-      fg := clYellow;
+      fg := TJopColor.yellow;
 
   end else begin
     // nouzovy zaver vyhybky ma prioritu i nad obsazenim useku
-    fg := clAqua;
+    fg := TJopColor.turq;
   end;
 
   if (Self.position = TTurnoutPosition.disabled) then
-    fg := clFuchsia;
+    fg := TJopColor.purple;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';';
 
   // Pozadi
-  bg := clBlack;
+  bg := TJopColor.black;
   if (Self.note <> '') then
-    bg := clTeal;
+    bg := TJopColor.turqDark;
   if (Self.lockout <> '') then
-    bg := clOlive;
+    bg := TJopColor.brown;
   if (diag.showZaver) then
   begin
     if (Self.zaver > TZaver.no) then
-      bg := clGreen
+      bg := TJopColor.greenDark
     else if (Self.outputLocked) then
-      bg := clBlue
+      bg := TJopColor.blue
     else if (Self.ShouldBeLocked()) then
-      bg := clOlive;
+      bg := TJopColor.brown;
   end;
 
   Result := Result + ownConvert.ColorToStr(bg) + ';' + IntToStr(ownConvert.BoolToInt(Self.NUZ)) + ';' +

@@ -213,7 +213,7 @@ implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCS, UPO,
   Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert, Config, timeHelper,
-  BlockTrack, BlockTrackRef;
+  BlockTrack, BlockTrackRef, colorHelper;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
@@ -1027,36 +1027,36 @@ var fg, bg: TColor;
 begin
   Result := inherited;
 
-  bg := clBlack;
+  bg := TJopColor.black;
   if (Self.note <> '') then
-    bg := clTeal;
+    bg := TJopColor.turqDark;
 
   if (diag.showZaver) then
   begin
     if (Self.zaver) then
-      bg := clGreen
+      bg := TJopColor.greenDark
     else if (Self.TrackClosed()) then
-      bg := clBlue;
+      bg := TJopColor.blue;
   end;
 
   if (Self.pcEmOpen) then
-    fg := clRed
+    fg := TJopColor.red
   else if (Self.pcClosed) then
-    fg := clWhite
+    fg := TJopColor.white
   else
-    fg := $A0A0A0;
+    fg := TJopColor.grayDark;
 
   case (Self.state) of
     TBlkCrossingBasicState.disabled:
       begin
         fg := bg;
-        bg := clFuchsia;
+        bg := TJopColor.purple;
       end;
 
     TBlkCrossingBasicState.error:
       begin
         fg := bg;
-        bg := clRed;
+        bg := TJopColor.red;
       end;
   end;
 

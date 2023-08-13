@@ -109,7 +109,7 @@ type
 
 implementation
 
-uses AreaDb, TCPServerPanel, ownConvert, Config, timeHelper;
+uses AreaDb, TCPServerPanel, ownConvert, Config, timeHelper, colorHelper;
 
 constructor TBlkIO.Create(index: Integer);
 begin
@@ -378,27 +378,27 @@ var fg, bg: TColor;
 begin
   Result := inherited;
 
-  bg := clBlack;
+  bg := TJopColor.black;
   if (Self.note <> '') then
-    bg := clTeal;
+    bg := TJopColor.turqDark;
 
   if (not Self.enabled) then
-    fg := clFuchsia
+    fg := TJopColor.purple
   else if (Self.activeOutput) then
-    fg := clYellow
+    fg := TJopColor.yellow
   else if (Self.isRCSinput) then
   begin
     case (Self.m_state.inputState) of
       TRCSInputState.isOff:
-        fg := $A0A0A0;
+        fg := TJopColor.grayDark;
       TRCSInputState.isOn:
-        fg := clLime;
+        fg := TJopColor.green;
     else
-      fg := clFuchsia;
+      fg := TJopColor.purple;
     end;
   end
   else
-    fg := $A0A0A0;
+    fg := TJopColor.grayDark;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';';
   Result := Result + ownConvert.ColorToStr(bg) + ';0;';

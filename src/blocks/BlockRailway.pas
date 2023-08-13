@@ -202,7 +202,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, Area, BlockSignal, Logging,
   TJCDatabase, fMain, TCPServerPanel, BlockTrack, BlockLinker, TrainDb, THVDatabase,
-  appEv, timeHelper, ownConvert, Graphics;
+  appEv, timeHelper, ownConvert, Graphics, colorHelper;
 
 constructor TBlkRailway.Create(index: Integer);
 begin
@@ -1161,8 +1161,8 @@ var
   fg: TColor;
   bg: TColor;
 begin
-  fg := clWhite;
-  bg := clBlack;
+  fg := TJopColor.white;
+  bg := TJopColor.black;
 
   // Pozor, souprava muze byt ve vice usecich a mit poruchu BP jen v jednom z nich
   var bpError := false;
@@ -1171,14 +1171,14 @@ begin
       bpError := true;
 
   if (trainPredict) then
-    fg := clYellow
+    fg := TJopColor.yellow
   else if (bpError) then
-    fg := clAqua
+    fg := TJopColor.turq
   else if (Self.Train.wantedSpeed = 0) then
-    fg := clRed;
+    fg := TJopColor.red;
 
   if ((Self.Train.HasAnyHVNote()) or (Self.Train.sdata.note <> '')) then
-    bg := clTeal;
+    bg := TJopColor.turqDark;
 
   Result := Self.Train.name + '|';
   Result := Result + ownConvert.ColorToStr(fg) + '|';
@@ -1188,9 +1188,9 @@ begin
     Result := Result + FormatDateTime('nn', Self.mTime);
   Result := Result + '|';
   if (Self.predict) then
-    Result := Result + ownConvert.ColorToStr(clYellow) + '|'
+    Result := Result + ownConvert.ColorToStr(TJopColor.yellow) + '|'
   else
-    Result := Result + ownConvert.ColorToStr(clAqua) + '|';
+    Result := Result + ownConvert.ColorToStr(TJopColor.turq) + '|';
 
   Result := Result + '{';
   for var addr: Integer in Self.Train.HVs do

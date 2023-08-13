@@ -8,7 +8,7 @@ unit UPO;
 
 interface
 
-uses Graphics, Generics.Collections, Classes, System.Math;
+uses Graphics, Generics.Collections, Classes, System.Math, colorHelper;
 
 const
   _UPO_LINES = 3; // pocet radek upozorneni
@@ -65,15 +65,15 @@ end;
 
 function NoteUPO(blockName: string; note: string): TUPOItem;
 begin
-  Result[0] := GetUPOLine('ŠTÍTEK ' + blockName, taCenter, clBlack, clTeal);
+  Result[0] := GetUPOLine('ŠTÍTEK ' + blockName, taCenter, TJopColor.black, TJopColor.turqDark);
   var lines := GetLines(note, _UPO_LINE_LEN);
 
   try
-    Result[1] := GetUPOLine(lines[0], taLeftJustify, clYellow, $A0A0A0);
+    Result[1] := GetUPOLine(lines[0], taLeftJustify, TJopColor.yellow, TJopColor.grayDark);
     if (lines.Count > 1) then
-      Result[2] := GetUPOLine(lines[1], taLeftJustify, clYellow, $A0A0A0)
+      Result[2] := GetUPOLine(lines[1], taLeftJustify, TJopColor.yellow, TJopColor.grayDark)
     else
-      Result[2] := GetUPOLine('', taLeftJustify, clYellow, $A0A0A0);
+      Result[2] := GetUPOLine('', taLeftJustify, TJopColor.yellow, TJopColor.grayDark);
   finally
     lines.Free();
   end;
@@ -87,14 +87,14 @@ end;
 
 function PNUPO(signalName: string): TUPOItem;
 begin
-  Result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
+  Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine('Svítí pøivolávací návìst');
   Result[2] := GetUPOLine(signalName);
 end;
 
 function NCUPO(name: string): TUPOItem;
 begin
-  Result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
+  Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine('Postavená nouzová cesta');
   Result[2] := GetUPOLine(name);
 end;

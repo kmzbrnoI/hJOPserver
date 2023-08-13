@@ -293,7 +293,8 @@ uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, THVDatabase, Math,
   Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO,
   announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef, ConfSeq,
-  Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase, BlockPst, IfThenElse;
+  Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase, BlockPst, IfThenElse,
+  colorHelper;
 
 constructor TBlkTrack.Create(index: Integer);
 begin
@@ -2420,81 +2421,78 @@ begin
   // Pro blok trati se vola take
   Result := IntToStr(Integer(btTrack)) + ';' + IntToStr(Self.id) + ';';;
 
-  nebarVetve := $A0A0A0;
+  nebarVetve := TJopColor.grayDark;
 
   // --- Foreground ---
 
   case (Self.occupied) of
     TTrackState.disabled:
-      fg := clFuchsia;
+      fg := TJopColor.purple;
     TTrackState.none, TTrackState.free:
-      fg := ite(Self.PstIs(), clBlue, $A0A0A0);
+      fg := ite(Self.PstIs(), TJopColor.blue, TJopColor.grayDark);
     TTrackState.occupied:
-      fg := clRed;
+      fg := TJopColor.red;
   else
-    fg := clFuchsia;
+    fg := TJopColor.purple;
   end;
 
   if (Self.PstIs()) then
-    nebarVetve := clBlue;
+    nebarVetve := TJopColor.blue;
 
   // zobrazeni zakazu odjezdu do trati
-  if ((fg = $A0A0A0) and (Self.typ = btRT) and (TBlkRT(Self).inRailway > -1)) then
+  if ((fg = TJopColor.grayDark) and (Self.typ = btRT) and (TBlkRT(Self).inRailway > -1)) then
   begin
     var railway := Blocks.GetBlkRailwayByID(TBlkRT(Self).inRailway);
     if (railway <> nil) then
       if (railway.departureForbidden) then
-        fg := clBlue;
+        fg := TJopColor.blue;
   end;
 
   // neprofilove deleni v useku
-  if ((fg = $A0A0A0) and (Self.IsNeprofilJC())) then
-    fg := clYellow;
+  if ((fg = TJopColor.grayDark) and (Self.IsNeprofilJC())) then
+    fg := TJopColor.yellow;
 
   // zaver
   if (((Self.occupied) = TTrackState.free) and (Self.typ = btTrack) and (Self.occupAvailable)) then
   begin
     case (Self.zaver) of
       TZaver.vlak:
-        fg := clLime;
+        fg := TJopColor.green;
       TZaver.posun:
-        fg := clWhite;
+        fg := TJopColor.white;
       TZaver.nouz:
-        fg := clAqua;
+        fg := TJopColor.turq;
       TZaver.ab:
-        if (diag.showZaver) then
-          fg := $707070
-        else
-          fg := $A0A0A0;
+        fg := IfThen(diag.showZaver, TJopColor.gray, TJopColor.grayDark);
       TZaver.staveni:
         if (diag.showZaver) then
-          fg := clBlue;
+          fg := TJopColor.blue;
     end; // case
   end;
 
   // porucha BP v trati
   if ((Self.typ = btRT) and (TBlkRT(Self).bpError)) then
-    fg := clAqua;
+    fg := TJopColor.turq;
 
   if (fg = clYellow) then
-    nebarVetve := clYellow;
+    nebarVetve := TJopColor.yellow;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';';
 
   // --- Background ---
 
-  bg := clBlack;
+  bg := TJopColor.black;
   if (Self.note <> '') then
-    bg := clTeal;
+    bg := TJopColor.turqDark;
   if (Self.lockout <> '') then
-    bg := clOlive;
+    bg := TJopColor.brown;
 
   if (not Self.DCC) then
-    bg := clMaroon;
+    bg := TJopColor.redDark;
   if (Self.shortCircuit = TBoosterSignal.error) then
-    bg := clFuchsia;
+    bg := TJopColor.purple;
   if ((Self.power <> TBoosterSignal.ok) or (Self.shortCircuit = TBoosterSignal.undef)) then
-    bg := clBlue;
+    bg := TJopColor.blue;
 
   Result := Result + ownConvert.ColorToStr(bg) + ';';
 
@@ -2512,17 +2510,17 @@ begin
     sbg := bg;
 
     if (Self.occupied = TTrackState.free) then
-      sfg := clAqua;
+      sfg := TJopColor.turq;
 
     Result := Result + '(' + train.name + ';' +
       IntToStr(ownConvert.BoolToInt(train.sdata.dir_L)) +
       IntToStr(ownConvert.BoolToInt(train.sdata.dir_S)) + ';';
 
     if ((train.sdata.note <> '') or (train.HasAnyHVNote())) then
-      sbg := clTeal;
+      sbg := TJopColor.turqDark;
 
     if (train.areaTo = train.station) then
-      sbg := clSilver;
+      sbg := TJopColor.gray;
 
     // predvidany odjezd
     if (train.IsPOdj(Self)) then
@@ -2547,7 +2545,7 @@ begin
     sbg := bg;
 
     if ((Self.trainPredict.sdata.note <> '') or (Self.trainPredict.HasAnyHVNote())) then
-      sbg := clTeal;
+      sbg := TJopColor.turqDark;
 
     // Do not show end station as train text is not contrast compared to background
 
