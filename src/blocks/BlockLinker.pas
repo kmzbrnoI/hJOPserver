@@ -41,7 +41,7 @@ type
     procedure MenuOTSClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAKOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
     procedure MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 
@@ -99,7 +99,7 @@ type
     property request: Boolean read m_request write SetRequest;
     property emLock: Boolean read m_state.emLock write SetEmLock;
 
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure ShowUvazkaTrainMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; train_index: Integer);
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
@@ -114,7 +114,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert, TrainDb,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack, TCPAreasRef,
-  Logging, ConfSeq, TechnologieJC, colorHelper;
+  Logging, ConfSeq, TechnologieJC, colorHelper, IfThenElse;
 
 constructor TBlkLinker.Create(index: Integer);
 begin
@@ -305,9 +305,9 @@ begin
   end;
 end;
 
-procedure TBlkLinker.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLinker.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
 begin
-  PanelServer.note(SenderPnl, Self, Self.m_state.note);
+  PanelServer.note(SenderPnl, Self, Self.m_state.note, rights);
 end;
 
 procedure TBlkLinker.MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -406,32 +406,33 @@ begin
 
   Result := inherited;
 
-  if (Self.CanUTS()) then
-    Result := Result + 'UTS,OTS,';
+  if (IsWritable(rights)) then
+  begin
+    if (Self.CanUTS()) then
+      Result := Result + 'UTS,OTS,';
 
-  if (Self.request) then
-    Result := Result + 'ZTS<,';
+    if (Self.request) then
+      Result := Result + 'ZTS<,';
 
-  if ((Self.CanZTS()) or ((SenderOR as TArea).stack.mode = TORStackMode.VZ)) then
-    Result := Result + 'ZTS>,';
+    if ((Self.CanZTS()) or ((SenderOR as TArea).stack.mode = TORStackMode.VZ)) then
+      Result := Result + 'ZTS>,';
 
-  if ((not Self.CanUTS()) and ((SenderOR as TArea).stack.mode = TORStackMode.VZ)) then
-    Result := Result + 'UTS,';
+    if ((not Self.CanUTS()) and ((SenderOR as TArea).stack.mode = TORStackMode.VZ)) then
+      Result := Result + 'UTS,';
 
-  if (RightStr(Result, 2) <> '-,') then
-    Result := Result + '-,';
+    if (RightStr(Result, 2) <> '-,') then
+      Result := Result + '-,';
 
-  if (Self.emLock) then
-    Result := Result + '!ZAV<,'
-  else
-    Result := Result + 'ZAV>,';
+    Result := Result + ite(Self.emLock, '!ZAV<,', 'ZAV>,');
 
-  if (Self.CanZAKOff()) then
-    Result := Result + '!ZAK<,'
-  else if (Self.CanZAKOn()) then
-    Result := Result + 'ZAK>,';
+    if (Self.CanZAKOff()) then
+      Result := Result + '!ZAK<,'
+    else if (Self.CanZAKOn()) then
+      Result := Result + 'ZAK>,';
+  end;
 
-  Result := Result + 'STIT,';
+  if ((IsWritable(rights)) or (Self.note <> '')) then
+    Result := Result + 'STIT,';
 end;
 
 function TBlkLinker.AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; item: string): Boolean;
@@ -456,7 +457,7 @@ begin
     var blk: TBlk := railway.GetTrainTrack(train);
     if (blk = nil) then
       Exit();
-    TBlkTrack(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0); // it must be 0th train in the track, because it's railway track
+    TBlkTrack(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0, rights); // it must be 0th train in the track, because it's railway track
   end else if (railway.trainPredict <> nil) then begin
     Self.MenuTrainPredicted(SenderPnl, SenderOR);
   end;
@@ -495,7 +496,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkLinker.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkLinker.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (item = 'ZTS>') then
     Self.MenuZTSOnClick(SenderPnl, SenderOR)
@@ -510,7 +511,7 @@ begin
   else if (item = 'ZAK<') then
     Self.MenuZAKOffClick(SenderPnl, SenderOR)
   else if (item = 'STIT') then
-    Self.MenuStitClick(SenderPnl, SenderOR)
+    Self.MenuStitClick(SenderPnl, SenderOR, rights)
   else if (item = 'ZAV>') then
     Self.MenuZAVOnClick(SenderPnl, SenderOR)
   else if (item = 'ZAV<') then

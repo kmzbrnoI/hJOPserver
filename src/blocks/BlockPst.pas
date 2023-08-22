@@ -60,7 +60,7 @@ type
     procedure MenuPstEnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuPstDisClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuNPstClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
     procedure MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuHoukEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -136,7 +136,7 @@ type
     property error: Boolean read m_state.error write SetError;
     property rcsError: Boolean read m_state.rcsError write SetRcsError;
 
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
@@ -154,7 +154,7 @@ implementation
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
   RCSErrors, RCS, TCPAreasRef, BlockSignal, Logging, BlockDisconnector, ConfSeq,
-  TechnologieJC, colorHelper;
+  TechnologieJC, colorHelper, IfThenElse;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -582,9 +582,9 @@ begin
   end;
 end;
 
-procedure TBlkPst.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkPst.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
 begin
-  PanelServer.note(SenderPnl, Self, Self.note);
+  PanelServer.note(SenderPnl, Self, Self.note, rights);
 end;
 
 procedure TBlkPst.MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -667,38 +667,42 @@ function TBlkPst.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights:
 begin
   Result := inherited;
 
-  if ((Self.status = pstOff) and (not Self.zaver) and (not Self.emLock) and (not Self.rcsError)) then
-    Result := Result + 'PST>,'
-  else if ((Self.status = pstTakeReady) and (not Self.error)) then
-    Result := Result + 'PST<,'
-  else if ((Self.status = pstActive) or (Self.error)) then
-    Result := Result + '!NPST,';
+  if (IsWritable(rights)) then
+  begin
+    if ((Self.status = pstOff) and (not Self.zaver) and (not Self.emLock) and (not Self.rcsError)) then
+      Result := Result + 'PST>,'
+    else if ((Self.status = pstTakeReady) and (not Self.error)) then
+      Result := Result + 'PST<,'
+    else if ((Self.status = pstActive) or (Self.error)) then
+      Result := Result + '!NPST,';
 
-  try
-    var output := RCSi.GetOutputState(Self.m_settings.rcsOutHorn);
-    if ((output >= TRCSOutputState.osEnabled) and (output <= TRCSOutputState.osf600)) then
-      Result := Result + 'HOUK<,'
-    else if (output = TRCSOutputState.osDisabled) then
-      Result := Result + 'HOUK>,';
-  except
-    on E: RCSException do begin end;
+    try
+      var output := RCSi.GetOutputState(Self.m_settings.rcsOutHorn);
+      if ((output >= TRCSOutputState.osEnabled) and (output <= TRCSOutputState.osf600)) then
+        Result := Result + 'HOUK<,'
+      else if (output = TRCSOutputState.osDisabled) then
+        Result := Result + 'HOUK>,';
+    except
+      on E: RCSException do begin end;
+    end;
   end;
 
-  Result := Result + 'STIT,';
+  if ((IsWritable(rights)) or (Self.note <> '')) then
+    Result := Result + 'STIT,';
 
-  if (Self.emLock) then
-    Result := Result + '!ZAV<,'
-  else
-    Result := Result + 'ZAV>,';
-
-  if (RCSi.simulation) then
+  if (IsWritable(rights)) then
   begin
-    Result := Result + '-,';
+    Result := Result + ite(Self.emLock, '!ZAV<,', 'ZAV>,');
 
-    if (Self.status = pstTakeReady) then
-      Result := Result + '*PO>,'
-    else if (Self.status = pstActive) then
-      Result := Result + '*PO<,';
+    if (RCSi.simulation) then
+    begin
+      Result := Result + '-,';
+
+      if (Self.status = pstTakeReady) then
+        Result := Result + '*PO>,'
+      else if (Self.status = pstActive) then
+        Result := Result + '*PO<,';
+    end;
   end;
 end;
 
@@ -713,7 +717,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkPst.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkPst.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (not Self.enabled) then
     Exit();
@@ -725,7 +729,7 @@ begin
   else if (item = 'NPST') then
     Self.MenuNPstClick(SenderPnl, SenderOR)
   else if (item = 'STIT') then
-    Self.MenuSTITClick(SenderPnl, SenderOR)
+    Self.MenuSTITClick(SenderPnl, SenderOR, rights)
   else if (item = 'ZAV>') then
     Self.MenuZAVEnableClick(SenderPnl, SenderOR)
   else if (item = 'ZAV<') then

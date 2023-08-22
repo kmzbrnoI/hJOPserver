@@ -60,7 +60,7 @@ type
     property error: Boolean read IsError;
     property emOpen: Boolean read IsEmOpen;
 
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
@@ -187,7 +187,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkSummary.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkSummary.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (not Self.enabled) then
     Exit();
@@ -200,8 +200,7 @@ begin
   begin
     var crossing := Blocks.GetBlkCrossingByID(Self.m_settings.crossings[crosIndex]);
     if (crossing <> nil) then
-      PanelServer.Menu(SenderPnl, crossing, SenderOR as TArea, crossing.ShowPanelMenu(SenderPnl, SenderOR,
-        TAreaRights.write));
+      PanelServer.Menu(SenderPnl, crossing, SenderOR as TArea, crossing.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end;
 end;
 

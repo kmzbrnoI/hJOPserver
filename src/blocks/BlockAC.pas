@@ -91,7 +91,7 @@ type
     property client: TIdContext read m_state.client;
 
     // GUI:
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
@@ -234,15 +234,18 @@ function TBlkAC.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: 
 begin
   Result := inherited;
 
-  if ((Self.m_state.client <> nil) and (Self.stopped)) then
-    Result := Result + 'START,';
+  if (IsWritable(rights)) then
+  begin
+    if ((Self.m_state.client <> nil) and (Self.stopped)) then
+      Result := Result + 'START,';
 
-  if (Self.paused) then
-    Result := Result + 'POKRAÈ,';
-  if (Self.running) then
-    Result := Result + 'PAUZA,';
-  if (not Self.stopped) then
-    Result := Result + 'STOP,';
+    if (Self.paused) then
+      Result := Result + 'POKRAÈ,';
+    if (Self.running) then
+      Result := Result + 'PAUZA,';
+    if (not Self.stopped) then
+      Result := Result + 'STOP,';
+  end;
 
   Result := Result + 'STAV?,';
 end;
@@ -259,7 +262,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkAC.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkAC.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (not Self.enabled) then
     Exit();

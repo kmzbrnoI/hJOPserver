@@ -199,7 +199,7 @@ type
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
 
     procedure CreateNavRefs(); // navestidlum autobloku nastavi UsekPred a smer
     procedure RemoveTURefs(); // zrusi UsekPred navetidlum autobloku
@@ -634,6 +634,9 @@ function TBlkRT.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: 
 begin
   Result := inherited;
 
+  if (not IsWritable(rights)) then
+    Exit();
+
   var starI := Result.IndexOf('*');
   var debug: string := '';
   if (starI > -1) then
@@ -668,15 +671,18 @@ begin
 
     ENTER:
       begin
-        var handled := Self.MenuKCClick(SenderPnl, SenderOR);
-        // no train moving here
+        var handled := False;
+        if (IsWritable(rights)) then
+          handled := Self.MenuKCClick(SenderPnl, SenderOR);
         if (not handled) then
           PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
       end;
 
     F1:
       begin
-        var handled := Self.MenuVBClick(SenderPnl, SenderOR);
+        var handled := False;
+        if (IsWritable(rights)) then
+          handled := Self.MenuVBClick(SenderPnl, SenderOR);
         if (not handled) then
           PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights))
       end;
@@ -860,7 +866,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRT.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkRT.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if ((item = 'JEĎ vlak') and (Self.m_rtState.stopStopped)) then
     Self.MenuJEDTrainClick(SenderPnl, SenderOR)

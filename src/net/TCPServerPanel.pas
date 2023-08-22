@@ -94,8 +94,10 @@ type
 
     // volani funkci do panelu, ktere neprislusi OR, ale jednotlivym panelum
     procedure SendInfoMsg(AContext: TIdContext; msg: string);
-    procedure Note(AContext: TIdContext; Blk: TBlk; stit: string);
-    procedure Lockut(AContext: TIdContext; Blk: TBlk; vyl: string);
+    procedure Note(AContext: TIdContext; blk: TBlk; note: string); overload;
+    procedure Note(AContext: TIdContext; blk: TBlk; note: string; rights: TAreaRights); overload;
+    procedure Lockout(AContext: TIdContext; blk: TBlk; lockout: string); overload;
+    procedure Lockout(AContext: TIdContext; blk: TBlk; lockout: string; rights: TAreaRights); overload;
     procedure Menu(AContext: TIdContext; Blk: TBlk; Area: TArea; Menu: string);
 
     procedure ConfirmationSequence(AContext: TIdContext; callback: TCSCallback; Area: TArea; event: string;
@@ -671,7 +673,7 @@ begin
     F_Main.LV_Clients.items[orRef.index].SubItems[_LV_CLIENTS_COL_MENU] := '';
 
     var rights := orRef.menu_or.PanelDbRights(AContext);
-    if (not IsWritable(rights)) then
+    if (not IsReadable(rights)) then
     begin
       PanelServer.SendInfoMsg(AContext, TArea._COM_ACCESS_DENIED);
       Exit();
@@ -684,9 +686,9 @@ begin
     end;
 
     if (parsed.Count > 2) then
-      blk.PanelMenuClick(AContext, orRef.menu_or, parsed[2], StrToIntDef(parsed[3], -1))
+      blk.PanelMenuClick(AContext, orRef.menu_or, parsed[2], StrToIntDef(parsed[3], -1), rights)
     else
-      blk.PanelMenuClick(AContext, orRef.menu_or, parsed[2], -1);
+      blk.PanelMenuClick(AContext, orRef.menu_or, parsed[2], -1, rights);
   end
 
   else if (parsed[1] = 'CLICK') then
@@ -966,25 +968,59 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 // volani funkci ke klientovi
 
-procedure TPanelServer.Note(AContext: TIdContext; Blk: TBlk; stit: string);
+procedure TPanelServer.Note(AContext: TIdContext; blk: TBlk; note: string);
 begin
   try
     (AContext.data as TPanelConnData).Note := Blk;
-    Self.SendLn(AContext, '-;STIT;{' + Blk.name + '};{' + stit + '};');
+    Self.SendLn(AContext, '-;STIT;{' + Blk.name + '};{' + note + '};');
     F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_STIT] := Blk.name;
   except
 
   end;
 end;
 
-procedure TPanelServer.Lockut(AContext: TIdContext; Blk: TBlk; vyl: string);
+procedure TPanelServer.Note(AContext: TIdContext; blk: TBlk; note: string; rights: TAreaRights);
+begin
+  if (IsWritable(rights)) then
+  begin
+    Self.Note(AContext, Blk, note);
+  end else if (note <> '') then
+  begin
+    var upos := TList<TUPOItem>.Create();
+    try
+      upos.Add(NoteUPO(blk.name, note));
+      PanelServer.UPO(AContext, upos, True, nil, nil, nil);
+    finally
+      upos.Free();
+    end;
+  end;
+end;
+
+procedure TPanelServer.Lockout(AContext: TIdContext; blk: TBlk; lockout: string);
 begin
   try
     (AContext.data as TPanelConnData).lockout := Blk;
-    Self.SendLn(AContext, '-;VYL;{' + Blk.name + '};{' + vyl + '};');
+    Self.SendLn(AContext, '-;VYL;{' + Blk.name + '};{' + lockout + '};');
     F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_STIT] := Blk.name;
   except
 
+  end;
+end;
+
+procedure TPanelServer.Lockout(AContext: TIdContext; blk: TBlk; lockout: string; rights: TAreaRights);
+begin
+  if (IsWritable(rights)) then
+  begin
+    Self.Lockout(AContext, Blk, lockout);
+  end else if (lockout <> '') then
+  begin
+    var upos := TList<TUPOItem>.Create();
+    try
+      upos.Add(LockoutUPO(blk.name, lockout));
+      PanelServer.UPO(AContext, upos, True, nil, nil, nil);
+    finally
+      upos.Free();
+    end;
   end;
 end;
 

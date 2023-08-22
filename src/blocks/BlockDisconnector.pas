@@ -54,7 +54,7 @@ type
 
     procedure Prolong();
 
-    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
     procedure MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 
@@ -95,7 +95,7 @@ type
     procedure SetSettings(data: TBlkDiscSettings);
 
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
 
     function IsActiveByController(): Boolean;
 
@@ -284,11 +284,15 @@ begin
           TBlkDiscBasicState.disabled, TBlkDiscBasicState.activeInfinite:
             PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
           TBlkDiscBasicState.inactive:
-            if (not Self.PstIsActive()) then
-              Self.ActivateWithPossibleUPO(SenderPnl, SenderOR);
+            if ((IsWritable(rights)) and (not Self.PstIsActive())) then
+              Self.ActivateWithPossibleUPO(SenderPnl, SenderOR)
+            else
+              PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
           TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining:
-            if (not Self.PstIsActive()) then
-              Self.Prolong();
+            if ((IsWritable(rights)) and (not Self.PstIsActive())) then
+              Self.Prolong()
+            else
+              PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
         end;
       end;
 
@@ -296,7 +300,7 @@ begin
       begin
         case (Self.state) of
           TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining, TBlkDiscBasicState.activeInfinite:
-            if (not Self.IsActiveByController()) then
+            if ((IsWritable(rights)) and (not Self.IsActiveByController())) then
               Self.state := TBlkDiscBasicState.inactive;
         end;
       end;
@@ -308,16 +312,18 @@ end;
 function TBlkDisconnector.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
   Result := inherited;
-  if (not Self.IsActiveByController()) then
+  if ((IsWritable(rights)) and (not Self.IsActiveByController())) then
   begin
     if (Self.active) then
       Result := Result + 'AKTIV<,'
     else if ((Self.state <> TBlkDiscBasicState.disabled) and (not Self.PstIsActive())) then
       Result := Result + 'AKTIV>,';
   end;
-  Result := Result + 'STIT,';
 
-  if ((RCSi.simulation) and (Self.m_settings.rcsController.enabled)) then
+  if ((IsWritable(rights)) or (Self.note <> '')) then
+    Result := Result + 'STIT,';
+
+  if ((IsWritable(rights)) and (RCSi.simulation) and (Self.m_settings.rcsController.enabled)) then
   begin
     try
       if (RCSi.GetInput(Self.m_settings.rcsController.addr) = isOn) then
@@ -331,10 +337,10 @@ begin
   end;
 end;
 
-procedure TBlkDisconnector.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkDisconnector.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (item = 'STIT') then
-    Self.MenuStitClick(SenderPnl, SenderOR)
+    Self.MenuStitClick(SenderPnl, SenderOR, rights)
   else if (item = 'RAD>') then
     Self.MenuAdminRadOnClick(SenderPnl, SenderOR)
   else if (item = 'RAD<') then
@@ -480,9 +486,9 @@ begin
   Self.Change();
 end;
 
-procedure TBlkDisconnector.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkDisconnector.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
 begin
-  PanelServer.note(SenderPnl, Self, Self.fullState.note);
+  PanelServer.Note(SenderPnl, Self, Self.fullState.note, rights);
 end;
 
 procedure TBlkDisconnector.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);

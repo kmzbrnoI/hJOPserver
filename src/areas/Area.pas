@@ -736,7 +736,7 @@ end;
 
 procedure TArea.PanelClick(Sender: TIDContext; blokid: Integer; Button: TPanelButton; params: string = '');
 begin
-  if (not IsWritable(Sender)) then
+  if (not IsReadable(Sender)) then
   begin
     PanelServer.SendInfoMsg(Sender, _COM_ACCESS_DENIED);
     Exit();

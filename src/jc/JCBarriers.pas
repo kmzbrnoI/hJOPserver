@@ -343,23 +343,13 @@ begin
 
     barBlockLockout:
       begin
-        Result[0] := GetUPOLine('VÝLUKA ' + barrier.Block.name, taCenter, TJopColor.black, TJopColor.brown);
-
         var lockout: string := '-';
         case (barrier.block.typ) of
           btTurnout: lockout := TBlkTurnout(barrier.block).lockout;
           btTrack, btRT: lockout := TBlkTrack(barrier.block).lockout;
           btCrossing: lockout := TBlkCrossing(barrier.block).lockout;
         end;
-
-        var lines := GetLines(lockout, _UPO_LINE_LEN);
-        try
-          Result[1] := GetUPOLine(lines[0], taLeftJustify, TJopColor.yellow, TJopColor.grayDark);
-          if (lines.Count > 1) then
-            Result[2] := GetUPOLine(lines[1], taLeftJustify, TJopColor.yellow, TJopColor.grayDark);
-        finally
-          lines.Free();
-        end;
+        Result := LockoutUPO(barrier.Block.name, lockout);
       end;
 
     barBlockNote:

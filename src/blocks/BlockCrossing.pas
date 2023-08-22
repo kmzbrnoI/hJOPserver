@@ -134,7 +134,7 @@ type
     procedure MenuZUZClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
 
     procedure UPOUZClick(Sender: TObject);
     procedure UPOZUZClick(Sender: TObject);
@@ -194,7 +194,7 @@ type
     property enabled: Boolean read IsEnabled;
     property safelyClosed: Boolean read IsSafelyClosed;
 
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
@@ -747,9 +747,9 @@ begin
   Self.pcEmOpen := false;
 end;
 
-procedure TBlkCrossing.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkCrossing.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
 begin
-  PanelServer.note(SenderPnl, Self, Self.m_state.note);
+  PanelServer.note(SenderPnl, Self, Self.m_state.note, rights);
 end;
 
 procedure TBlkCrossing.MenuAdminZavreno(SenderPnl: TIdContext; SenderOR: TObject);
@@ -828,7 +828,7 @@ function TBlkCrossing.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; ri
 begin
   Result := inherited;
 
-  if (Self.m_state.state <> TBlkCrossingBasicState.disabled) then
+  if ((IsWritable(rights)) and (Self.m_state.state <> TBlkCrossingBasicState.disabled)) then
   begin
     if (not Self.m_state.pcEmOpen) then
     begin
@@ -850,11 +850,12 @@ begin
     end;
   end;
 
-  Result := Result + 'STIT,';
+  if ((IsWritable(rights)) or (Self.note <> '')) then
+    Result := Result + 'STIT,';
 
   // pokud mame knihovnu simulator, muzeme ridit stav useku
   // DEBUG nastroj
-  if (RCSi.simulation) then
+  if ((IsWritable(rights)) and (RCSi.simulation)) then
   begin
     Result := Result + '-,*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
     if (Self.m_settings.RCSInputs.annulation.enabled) then
@@ -886,7 +887,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkCrossing.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkCrossing.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (item = 'UZ') then
     Self.MenuUZClick(SenderPnl, SenderOR)
@@ -897,7 +898,7 @@ begin
   else if (item = 'NOT<') then
     Self.MenuZNOTClick(SenderPnl, SenderOR)
   else if (item = 'STIT') then
-    Self.MenuSTITClick(SenderPnl, SenderOR)
+    Self.MenuSTITClick(SenderPnl, SenderOR, rights)
   else if (item = 'NUZ>') then
     Self.MenuAdminNUZClick(SenderPnl, SenderOR)
   else if (item = 'ZAVŘENO') then

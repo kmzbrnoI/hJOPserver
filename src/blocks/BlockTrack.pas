@@ -112,8 +112,8 @@ type
     procedure MenuSTOPTrainOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuSTOPTrainOffClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuJedTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
+    procedure MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
     procedure MenuNUZStartClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuNUZStopClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuPRESUNTrainClick(SenderPnl: TIdContext; SenderOR: TObject; new_state: Boolean);
@@ -227,7 +227,7 @@ type
     procedure ClearPOdj();
     procedure PropagatePOdjToRailway();
 
-    procedure MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer);
+    procedure MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer; rights: TAreaRights);
 
     procedure PstAdd(pst: TBlk);
     procedure PstRemove(pst: TBlk);
@@ -268,7 +268,7 @@ type
 
     // GUI:
 
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
 
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
@@ -1113,14 +1113,14 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTrack.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
 begin
-  PanelServer.note(SenderPnl, Self, Self.state.note);
+  PanelServer.Note(SenderPnl, Self, Self.state.note, rights);
 end;
 
-procedure TBlkTrack.MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkTrack.MenuVylClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
 begin
-  PanelServer.Lockut(SenderPnl, Self, Self.state.lockout);
+  PanelServer.Lockout(SenderPnl, Self, Self.state.lockout, rights);
 end;
 
 // pokud volba nebyla uspesna, vraci false a v tom pripade je vyvolano menu
@@ -1454,7 +1454,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTrack.MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer);
+procedure TBlkTrack.MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer; rights: TAreaRights);
 var menu: string;
 begin
   TPanelConnData(SenderPnl.Data).train_menu_index := trainLocalI;
@@ -1462,7 +1462,7 @@ begin
   var train: TTrain := TrainDb.trains[Self.trains[trainLocalI]];
   menu := '$' + Self.m_globSettings.name + ',';
   menu := menu + '$Souprava ' + train.name + ',-,';
-  menu := menu + train.Menu(SenderPnl, SenderOR, Self, trainLocalI);
+  menu := menu + train.Menu(SenderPnl, SenderOR, Self, trainLocalI, rights);
 
   PanelServer.menu(SenderPnl, Self, (SenderOR as TArea), menu);
 end;
@@ -1484,9 +1484,9 @@ begin
   begin
     TPanelConnData(SenderPnl.Data).train_menu_index := 0;
     var train: TTrain := TrainDb.trains[Self.trains[0]];
-    Result := Result + train.Menu(SenderPnl, SenderOR, Self, 0) + '-,';
+    Result := Result + train.Menu(SenderPnl, SenderOR, Self, 0, rights) + '-,';
   end else begin
-    var canAdd := ((Self.CanStandTrain()) and (((not Self.TrainsFull()) and ((Self.m_state.occupied = TTrackState.occupied)
+    var canAdd := ((IsWritable(rights)) and (Self.CanStandTrain()) and (((not Self.TrainsFull()) and ((Self.m_state.occupied = TTrackState.occupied)
       or (not Self.occupAvailable))) or // novy vlak
       (addStr = 'VLOŽ vlak,') // presun vlaku
       ));
@@ -1506,69 +1506,81 @@ begin
   end;
 
   if ((Self.trainPredict <> nil) and (Self.spnl.stationTrack)) then
-    Result := Result + 'INFO vlak,PODJ,-,';
-
-  Result := Result + 'STIT,VYL,';
-
-  if (Self.m_state.NUZ) then
-    Result := Result + '-,NUZ<,';
-
-  if ((((not(SenderOR as TArea).NUZtimer) and (Integer(Self.m_state.zaver) > 0) and (Self.m_state.zaver <> TZaver.ab)
-    and (Self.m_state.zaver <> TZaver.staveni) and (Self.typ = btTrack)) or
-    (rights >= superuser)) and (not Self.m_state.NUZ)) then
-    Result := Result + '-,NUZ>,';
-
-  // 11 = KC
-  if (TPanelConnData(SenderPnl.Data).PathIsStartSignal()) then
   begin
-    if ((Self.CanBeKC(TPanelConnData(SenderPnl.Data).pathBlocks)) or Self.CanBeNextVB(TPanelConnData(SenderPnl.Data).pathBlocks)) then
-      Result := Result + '-,';
-    if (Self.CanBeKC(TPanelConnData(SenderPnl.Data).pathBlocks)) then
-      Result := Result + 'KC,';
-    if (Self.CanBeNextVB(TPanelConnData(SenderPnl.Data).pathBlocks)) then
-      Result := Result + 'VB,';
+    TPanelConnData(SenderPnl.Data).train_menu_index := 0;
+    Result := Result + 'INFO vlak,';
+    if (IsWritable(rights)) then
+      Result := Result + 'PODJ,-,';
+    Result := Result + '-,';
   end;
 
-  // pokud mame knihovnu simulator, muzeme ridit stav useku
-  // DEBUG nastroj
-  if (RCSi.simulation) then
+  if ((IsWritable(rights)) or (Self.note <> '')) then
+    Result := Result + 'STIT,';
+  if ((IsWritable(rights)) or (Self.lockout <> '')) then
+    Result := Result + 'VYL,';
+
+  if (IsWritable(rights)) then
   begin
-    Result := Result + '-,';
+    if (Self.m_state.NUZ) then
+      Result := Result + '-,NUZ<,';
 
-    for var m_state: TTrackState in Self.sectionsState do
+    if ((((not(SenderOR as TArea).NUZtimer) and (Integer(Self.m_state.zaver) > 0) and (Self.m_state.zaver <> TZaver.ab)
+      and (Self.m_state.zaver <> TZaver.staveni) and (Self.typ = btTrack)) or
+      (rights >= superuser)) and (not Self.m_state.NUZ)) then
+      Result := Result + '-,NUZ>,';
+
+    // 11 = KC
+    if (TPanelConnData(SenderPnl.Data).PathIsStartSignal()) then
     begin
-      if (m_state = TTrackState.free) then
-      begin
-        Result := Result + '*OBSAZ,';
-        break;
-      end;
+      if ((Self.CanBeKC(TPanelConnData(SenderPnl.Data).pathBlocks)) or Self.CanBeNextVB(TPanelConnData(SenderPnl.Data).pathBlocks)) then
+        Result := Result + '-,';
+      if (Self.CanBeKC(TPanelConnData(SenderPnl.Data).pathBlocks)) then
+        Result := Result + 'KC,';
+      if (Self.CanBeNextVB(TPanelConnData(SenderPnl.Data).pathBlocks)) then
+        Result := Result + 'VB,';
     end;
 
-    for var m_state: TTrackState in Self.sectionsState do
+    // pokud mame knihovnu simulator, muzeme ridit stav useku
+    // DEBUG nastroj
+    if (RCSi.simulation) then
     begin
-      if (m_state = TTrackState.occupied) then
-      begin
-        Result := Result + '*UVOL,';
-        break;
-      end;
-    end;
+      Result := Result + '-,';
 
-    if (Self.sectionsState.Count > 1) then
-    begin
-      for var i: Integer := 0 to Self.sectionsState.Count - 1 do
+      for var m_state: TTrackState in Self.sectionsState do
       begin
-        case (Self.sectionsState[i]) of
-          TTrackState.free:
-            Result := Result + '*DET' + IntToStr(i + 1) + '>,';
-          TTrackState.occupied:
-            Result := Result + '*DET' + IntToStr(i + 1) + '<,';
-        else
-          Result := Result + '*DET' + IntToStr(i + 1) + '>,';
-          Result := Result + '*DET' + IntToStr(i + 1) + '<,';
+        if (m_state = TTrackState.free) then
+        begin
+          Result := Result + '*OBSAZ,';
+          break;
         end;
       end;
-    end;
-  end; // if RCSi.lib = 2
+
+      for var m_state: TTrackState in Self.sectionsState do
+      begin
+        if (m_state = TTrackState.occupied) then
+        begin
+          Result := Result + '*UVOL,';
+          break;
+        end;
+      end;
+
+      if (Self.sectionsState.Count > 1) then
+      begin
+        for var i: Integer := 0 to Self.sectionsState.Count - 1 do
+        begin
+          case (Self.sectionsState[i]) of
+            TTrackState.free:
+              Result := Result + '*DET' + IntToStr(i + 1) + '>,';
+            TTrackState.occupied:
+              Result := Result + '*DET' + IntToStr(i + 1) + '<,';
+          else
+            Result := Result + '*DET' + IntToStr(i + 1) + '>,';
+            Result := Result + '*DET' + IntToStr(i + 1) + '<,';
+          end;
+        end;
+      end;
+    end; // if RCSi.lib = 2
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1582,16 +1594,22 @@ begin
 
     ENTER:
       begin
-        var handled := Self.MenuKCClick(SenderPnl, SenderOR);
-        if ((not handled) and ((Self.m_settings.maxTrains = 1) or (Self.trains.Count = 0))) then
-          handled := Self.MoveTrain(SenderPnl, SenderOR, 0);
+        var handled := False;
+        if (IsWritable(rights)) then
+        begin
+          handled := Self.MenuKCClick(SenderPnl, SenderOR);
+          if ((not handled) and ((Self.m_settings.maxTrains = 1) or (Self.trains.Count = 0))) then
+            handled := Self.MoveTrain(SenderPnl, SenderOR, 0);
+        end;
         if (not handled) then
           Self.ShowProperMenu(SenderPnl, (SenderOR as TArea), rights, params);
       end;
 
     F1:
       begin
-        var handled := Self.MenuVBClick(SenderPnl, SenderOR);
+        var handled := False;
+        if (IsWritable(rights)) then
+          handled := Self.MenuVBClick(SenderPnl, SenderOR);
         if (not handled) then
           Self.ShowProperMenu(SenderPnl, (SenderOR as TArea), rights, params)
       end;
@@ -1601,7 +1619,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkTrack.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkTrack.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (item = 'NOVÝ vlak') then
     Self.MenuNewTrainClick(SenderPnl, SenderOR, itemindex)
@@ -1632,9 +1650,9 @@ begin
   else if (item = 'JEĎ vlak') then
     Self.MenuJEDTrainClick(SenderPnl, SenderOR)
   else if (item = 'STIT') then
-    Self.MenuStitClick(SenderPnl, SenderOR)
+    Self.MenuStitClick(SenderPnl, SenderOR, rights)
   else if (item = 'VYL') then
-    Self.MenuVylClick(SenderPnl, SenderOR)
+    Self.MenuVylClick(SenderPnl, SenderOR, rights)
   else if (item = 'KC') then
     Self.MenuKCClick(SenderPnl, SenderOR)
   else if (item = 'VB') then
@@ -1663,7 +1681,7 @@ begin
     for var i: Integer := 0 to Self.trains.Count - 1 do
       if (item = TrainDb.trains[Self.trains[i]].name) then
       begin
-        Self.MenuSOUPRAVA(SenderPnl, SenderOR, i);
+        Self.MenuSOUPRAVA(SenderPnl, SenderOR, i, rights);
         break;
       end;
   end;
@@ -2224,12 +2242,12 @@ begin
   begin
     var i: Integer := StrToIntDef(params, -1);
     if ((i <> -1) and (i >= 0) and (i < Self.trains.Count)) then
-      Self.MenuSOUPRAVA(SenderPnl, (SenderOR as TArea), i)
+      Self.MenuSOUPRAVA(SenderPnl, (SenderOR as TArea), i, rights)
     else
-      PanelServer.menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+      PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end
   else
-    PanelServer.menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
+    PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2567,7 +2585,7 @@ begin
   if ((panelData.train_menu_index >= 0) and (panelData.train_menu_index < Self.trains.Count)) then
   begin
     var train: TTrain := TrainDb.trains[Self.trains[panelData.train_menu_index]];
-    var trainmenu: string := train.Menu(SenderPnl, SenderOR, Self, panelData.train_menu_index);
+    var trainmenu: string := train.Menu(SenderPnl, SenderOR, Self, panelData.train_menu_index, rights);
     if (trainmenu.Contains(item)) then
       Exit(true);
   end;

@@ -264,7 +264,7 @@ type
     property enabled: Boolean read IsEnabled;
     property groupMaster: TBlk read m_groupMaster write m_groupMaster;
 
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
@@ -1114,7 +1114,7 @@ begin
 
     ENTER:
       begin
-        if (((((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1)) and (JCDb.FindJCActivating(Self.id) = nil) and
+        if ((IsWritable(rights)) and ((((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1)) and (JCDb.FindJCActivating(Self.id) = nil) and
           (Self.signal <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self) and (Self.enabled)) and (not Self.PstIs())) or
           (TArea(SenderOR).stack.mode = VZ)) and (JCDb.IsAnyVC(Self))) then
         begin
@@ -1127,7 +1127,7 @@ begin
 
     F1:
       begin
-        if (((((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1)) and (JCDb.FindJCActivating(Self.id) = nil) and
+        if ((IsWritable(rights)) and ((((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1)) and (JCDb.FindJCActivating(Self.id) = nil) and
           (Self.signal <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)) and (Self.enabled) and (not Self.PstIs())) or
           ((SenderOR as TArea).stack.mode = VZ)) and (JCDb.IsAnyPC(Self))) then
         begin
@@ -1143,7 +1143,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkSignal.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkSignal.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (item = 'VC>') then
     Self.MenuVCStartClick(SenderPnl, SenderOR)
@@ -1199,7 +1199,7 @@ begin
   Result := inherited;
 
   // pokud je navestidlo trvale zamkle, neumoznime zadne volby
-  if (Self.m_settings.locked) then
+  if ((Self.m_settings.locked) or (not IsWritable(rights))) then
     Exit();
 
   if (((((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1)) and (JCDb.FindJCActivating(Self.id) = nil) and

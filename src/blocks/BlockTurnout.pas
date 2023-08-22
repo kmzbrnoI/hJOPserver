@@ -152,8 +152,8 @@ type
     procedure MenuMinusClick(SenderPnl: TIDContext; SenderOR: TObject);
     procedure MenuNSPlusClick(SenderPnl: TIDContext; SenderOR: TObject);
     procedure MenuNSMinusClick(SenderPnl: TIDContext; SenderOR: TObject);
-    procedure MenuStitClick(SenderPnl: TIDContext; SenderOR: TObject);
-    procedure MenuVylClick(SenderPnl: TIDContext; SenderOR: TObject);
+    procedure MenuStitClick(SenderPnl: TIDContext; SenderOR: TObject; rights: TAreaRights);
+    procedure MenuVylClick(SenderPnl: TIDContext; SenderOR: TObject; rights: TAreaRights);
     procedure MenuZAVEnableClick(SenderPnl: TIDContext; SenderOR: TObject);
     procedure MenuZAVDisableClick(SenderPnl: TIDContext; SenderOR: TObject);
 
@@ -275,7 +275,7 @@ type
     property rcsOutMinus: TRCSAddr read m_settings.rcs.outm;
 
     // Panel:
-    procedure PanelMenuClick(SenderPnl: TIDContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIDContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
     function ShowPanelMenu(SenderPnl: TIDContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIDContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
@@ -1124,14 +1124,14 @@ begin
   end;
 end;
 
-procedure TBlkTurnout.MenuStitClick(SenderPnl: TIDContext; SenderOR: TObject);
+procedure TBlkTurnout.MenuStitClick(SenderPnl: TIDContext; SenderOR: TObject; rights: TAreaRights);
 begin
-  PanelServer.note(SenderPnl, Self, Self.state.note);
+  PanelServer.Note(SenderPnl, Self, Self.state.note, rights);
 end;
 
-procedure TBlkTurnout.MenuVylClick(SenderPnl: TIDContext; SenderOR: TObject);
+procedure TBlkTurnout.MenuVylClick(SenderPnl: TIDContext; SenderOR: TObject; rights: TAreaRights);
 begin
-  PanelServer.Lockut(SenderPnl, Self, Self.state.lockout);
+  PanelServer.Lockout(SenderPnl, Self, Self.state.lockout, rights);
 end;
 
 procedure TBlkTurnout.MenuZAVEnableClick(SenderPnl: TIDContext; SenderOR: TObject);
@@ -1254,7 +1254,7 @@ begin
 
   coupling := Blocks.GetBlkTurnoutByID(Self.m_settings.coupling);
 
-  if (not Self.ShouldBeLocked()) then
+  if ((IsWritable(rights)) and (not Self.ShouldBeLocked())) then
   begin
     // na vyhybce neni zaver a menu neni redukovane
 
@@ -1276,48 +1276,54 @@ begin
     end;
   end;
 
-  Result := Result + 'STIT,VYL,';
+  if (IsWritable(rights) or (Self.note <> '')) then
+    Result := Result + 'STIT,';
+  if (IsWritable(rights) or (Self.lockout <> '')) then
+    Result := Result + 'VYL,';
 
-  if (Self.emLock) then
-    Result := Result + '!ZAV<,'
-  else if ((Self.position = TTurnoutPosition.plus) or (Self.position = TTurnoutPosition.minus)) then
-    Result := Result + 'ZAV>,';
-
-  if (rights = TAreaRights.superuser) then
+  if (IsWritable(rights)) then
   begin
-    Result := Result + '-,';
-    if (Self.intentionalLocked) then
-      Result := Result + '*ZRUŠ REDUKCI,';
-  end;
+    if (Self.emLock) then
+      Result := Result + '!ZAV<,'
+    else if ((Self.position = TTurnoutPosition.plus) or (Self.position = TTurnoutPosition.minus)) then
+      Result := Result + 'ZAV>,';
 
-  if (RCSi.simulation) then
-  begin
-    Result := Result + '-,';
-
-    if (Self.posDetection) then
+    if (rights = TAreaRights.superuser) then
     begin
-      if (Self.position <> TTurnoutPosition.plus) then
-        Result := Result + '*POL+,';
-      if (Self.position <> TTurnoutPosition.minus) then
-        Result := Result + '*POL-,';
-      if (Self.position <> TTurnoutPosition.none) then
-        Result := Result + '*NEPOL,';
+      Result := Result + '-,';
+      if (Self.intentionalLocked) then
+        Result := Result + '*ZRUŠ REDUKCI,';
     end;
 
-    if (Self.m_settings.controllers.enabled) then
+    if (RCSi.simulation) then
     begin
-      try
-        var plus := (RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = isOn);
-        var minus := (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) = isOn);
+      Result := Result + '-,';
 
-        if (not plus) then
-          Result := Result + '*RAD+,';
-        if (not minus) then
-          Result := Result + '*RAD-,';
-        if (plus or minus) then
-          Result := Result + '*RAD?,';
-      except
-        on E: RCSException do begin end;
+      if (Self.posDetection) then
+      begin
+        if (Self.position <> TTurnoutPosition.plus) then
+          Result := Result + '*POL+,';
+        if (Self.position <> TTurnoutPosition.minus) then
+          Result := Result + '*POL-,';
+        if (Self.position <> TTurnoutPosition.none) then
+          Result := Result + '*NEPOL,';
+      end;
+
+      if (Self.m_settings.controllers.enabled) then
+      begin
+        try
+          var plus := (RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = isOn);
+          var minus := (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) = isOn);
+
+          if (not plus) then
+            Result := Result + '*RAD+,';
+          if (not minus) then
+            Result := Result + '*RAD-,';
+          if (plus or minus) then
+            Result := Result + '*RAD?,';
+        except
+          on E: RCSException do begin end;
+        end;
       end;
     end;
   end;
@@ -1337,7 +1343,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkTurnout.PanelMenuClick(SenderPnl: TIDContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkTurnout.PanelMenuClick(SenderPnl: TIDContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (item = 'S+') then
     Self.MenuPlusClick(SenderPnl, SenderOR)
@@ -1348,9 +1354,9 @@ begin
   else if (item = 'NS-') then
     Self.MenuNSMinusClick(SenderPnl, SenderOR)
   else if (item = 'STIT') then
-    Self.MenuStitClick(SenderPnl, SenderOR)
+    Self.MenuStitClick(SenderPnl, SenderOR, rights)
   else if (item = 'VYL') then
-    Self.MenuVylClick(SenderPnl, SenderOR)
+    Self.MenuVylClick(SenderPnl, SenderOR, rights)
   else if (item = 'ZAV>') then
     Self.MenuZAVEnableClick(SenderPnl, SenderOR)
   else if (item = 'ZAV<') then

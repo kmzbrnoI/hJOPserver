@@ -159,7 +159,7 @@ type
      procedure GetPtData(json: TJsonObject);
      procedure PutPtData(reqJson: TJsonObject; respJson: TJsonObject);
 
-     function Menu(SenderPnl: TIdContext; SenderOR: TObject; SenderTrack: TBlk; SenderTrackI: Integer): string;
+     function Menu(SenderPnl: TIdContext; SenderOR: TObject; SenderTrack: TBlk; SenderTrackI: Integer; rights: TAreaRights): string;
      function MenuRailwayPredicted(): string;
      function InfoWindowItems(): TList<TConfSeqItem>;
      function StrArrowDirection(): string;
@@ -1440,7 +1440,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrain.Menu(SenderPnl: TIdContext; SenderOR: TObject; SenderTrack: TBlk; SenderTrackI: Integer): string;
+function TTrain.Menu(SenderPnl: TIdContext; SenderOR: TObject; SenderTrack: TBlk; SenderTrackI: Integer; rights: TAreaRights): string;
 var shPlay: announcementHelper.TAnnToPlay;
     train_count: Integer;
     track: TBlkTrack;
@@ -1450,60 +1450,69 @@ begin
 
   if (Self.speed > 0) then
     Result := Result + 'STOP vlak>,';
-  if (Self.emergencyStopped) then
-    Result := Result + 'STOP vlak<,';
 
-  if (track.CanStandTrain()) then
-    Result := Result + 'EDIT vlak,';
+  if (IsWritable(rights)) then
+  begin
+    if (Self.emergencyStopped) then
+      Result := Result + 'STOP vlak<,';
+
+    if (track.CanStandTrain()) then
+      Result := Result + 'EDIT vlak,';
+  end;
+
   Result := Result + 'INFO vlak,';
-  if ((track.CanStandTrain()) or (train_count <= 1)) then
-    Result := Result + '!ZRUŠ vlak,';
-  if (train_count > 1) then
-    Result := Result + '!UVOL vlak,';
 
-  if (Self.HVs.Count > 0) then
+  if (IsWritable(rights)) then
   begin
-    Result := Result + 'RUČ vlak,';
-    if (TPanelConnData(SenderPnl.Data).maus) then
-      Result := Result + 'MAUS vlak,';
-  end;
+    if ((track.CanStandTrain()) or (train_count <= 1)) then
+      Result := Result + '!ZRUŠ vlak,';
+    if (train_count > 1) then
+      Result := Result + '!UVOL vlak,';
 
-  if (track.trainMoving = SenderTrackI) then
-    Result := Result + 'PŘESUŇ vlak<,'
-  else if ((not track.IsTrainMoving()) and ((Self.wantedSpeed = 0) or (Self.emergencyStopped))) then
-    Result := Result + 'PŘESUŇ vlak>,';
-
-  if (Self.stolen) then
-    Result := Result + 'VEZMI vlak,'
-  else
-  begin
-    if (Self.IsAnyLokoInRegulator()) then
-      Result := Result + '!VEZMI vlak,';
-  end;
-
-  if ((Self._speedOverride.isOverride) and (Self._speedOverride.allowRestore) and (not Self.emergencyStopped)) then
-    Result := Result + 'JEĎ vlak,';
-
-  if (track.CanStandTrain()) then
-    Result := Result + 'PODJ,';
-
-  if ((Assigned(TArea(SenderOR).announcement)) and (TArea(SenderOR).announcement.available) and (Self.areaFrom <> nil)
-    and (Self.areaTo <> nil) and (Self.typ <> '')) then
-  begin
-    if ((track.spnl.stationTrack) and (Self.announcement)) then
-      Result := Result + 'HLÁŠENÍ odjezd,';
-
-    try
-      shPlay := announcementHelper.CanPlayArrival(Self, TArea(SenderOR));
-    except
-      on E: Exception do
-        AppEvents.LogException(E, 'CanPlayPrijezdSH');
+    if (Self.HVs.Count > 0) then
+    begin
+      Result := Result + 'RUČ vlak,';
+      if (TPanelConnData(SenderPnl.Data).maus) then
+        Result := Result + 'MAUS vlak,';
     end;
 
-    if ((shPlay.stationTrack <> nil) and ((shPlay.railway = nil) or (Self.IsPOdj(shPlay.stationTrack)))) then
-      Result := Result + 'HLÁŠENÍ příjezd,'
-    else if (shPlay.railway <> nil) then
-      Result := Result + 'HLÁŠENÍ průjezd,';
+    if (track.trainMoving = SenderTrackI) then
+      Result := Result + 'PŘESUŇ vlak<,'
+    else if ((not track.IsTrainMoving()) and ((Self.wantedSpeed = 0) or (Self.emergencyStopped))) then
+      Result := Result + 'PŘESUŇ vlak>,';
+
+    if (Self.stolen) then
+      Result := Result + 'VEZMI vlak,'
+    else
+    begin
+      if (Self.IsAnyLokoInRegulator()) then
+        Result := Result + '!VEZMI vlak,';
+    end;
+
+    if ((Self._speedOverride.isOverride) and (Self._speedOverride.allowRestore) and (not Self.emergencyStopped)) then
+      Result := Result + 'JEĎ vlak,';
+
+    if (track.CanStandTrain()) then
+      Result := Result + 'PODJ,';
+
+    if ((Assigned(TArea(SenderOR).announcement)) and (TArea(SenderOR).announcement.available) and (Self.areaFrom <> nil)
+      and (Self.areaTo <> nil) and (Self.typ <> '')) then
+    begin
+      if ((track.spnl.stationTrack) and (Self.announcement)) then
+        Result := Result + 'HLÁŠENÍ odjezd,';
+
+      try
+        shPlay := announcementHelper.CanPlayArrival(Self, TArea(SenderOR));
+      except
+        on E: Exception do
+          AppEvents.LogException(E, 'CanPlayPrijezdSH');
+      end;
+
+      if ((shPlay.stationTrack <> nil) and ((shPlay.railway = nil) or (Self.IsPOdj(shPlay.stationTrack)))) then
+        Result := Result + 'HLÁŠENÍ příjezd,'
+      else if (shPlay.railway <> nil) then
+        Result := Result + 'HLÁŠENÍ průjezd,';
+    end;
   end;
 end;
 

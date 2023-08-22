@@ -37,7 +37,7 @@ type
 
     procedure MenuUKClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZUKClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
     procedure MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 
@@ -82,7 +82,7 @@ type
     property keyReleased: Boolean read m_state.keyReleased write SetKeyRelesed;
     property error: Boolean read m_state.error write SetError;
 
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
@@ -98,7 +98,8 @@ type
 implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ConfSeq, TechnologieJC,
-  TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout, colorHelper;
+  TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout, colorHelper,
+  IfThenElse;
 
 constructor TBlkLock.Create(index: Integer);
 begin
@@ -181,9 +182,9 @@ begin
   Self.keyReleased := false;
 end;
 
-procedure TBlkLock.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkLock.MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
 begin
-  PanelServer.note(SenderPnl, Self, Self.note);
+  PanelServer.note(SenderPnl, Self, Self.note, rights);
 end;
 
 procedure TBlkLock.MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -224,19 +225,20 @@ function TBlkLock.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights
 begin
   Result := inherited;
 
-  if ((Self.keyReleased) and (Self.IsRightPosition())) then
-    Result := Result + 'ZUK,';
+  if (IsWritable(rights)) then
+  begin
+    if ((Self.keyReleased) and (Self.IsRightPosition())) then
+      Result := Result + 'ZUK,';
 
-  if ((not Self.zaver) and (not Self.emLock)) then
-    if (not Self.keyReleased) then
-      Result := Result + 'UK,';
+    if ((not Self.zaver) and (not Self.emLock)) then
+      if (not Self.keyReleased) then
+        Result := Result + 'UK,';
 
-  if (Self.emLock) then
-    Result := Result + '!ZAV<,'
-  else
-    Result := Result + 'ZAV>,';
+    Result := Result + ite(Self.emLock, '!ZAV<,', 'ZAV>,');
+  end;
 
-  Result := Result + 'STIT,';
+  if ((IsWritable(rights)) or (Self.note <> '')) then
+    Result := Result + 'STIT,';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -251,7 +253,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // toto se zavola pri kliku na jakoukoliv itemu menu tohoto bloku
-procedure TBlkLock.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkLock.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (not Self.m_state.enabled) then
     Exit();
@@ -261,7 +263,7 @@ begin
   else if (item = 'ZUK') then
     Self.MenuZUKClick(SenderPnl, SenderOR)
   else if (item = 'STIT') then
-    Self.MenuSTITClick(SenderPnl, SenderOR)
+    Self.MenuSTITClick(SenderPnl, SenderOR, rights)
   else if (item = 'ZAV>') then
     Self.MenuZAVEnableClick(SenderPnl, SenderOR)
   else if (item = 'ZAV<') then

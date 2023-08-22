@@ -34,6 +34,7 @@ function GetLines(str: string; line_length: Integer): TStrings; // vrati pcet ra
 
 function NoteUPO(blockName: string; note: string): TUPOItem;
 procedure AddNoteUPO(blockName: string; note: string; var items: TUPOItems);
+function LockoutUPO(blockName: string; lockout: string): TUPOItem;
 function PNUPO(signalName: string): TUPOItem;
 function NCUPO(name: string): TUPOItem;
 
@@ -83,6 +84,22 @@ procedure AddNoteUPO(blockName: string; note: string; var items: TUPOItems);
 begin
   if (note <> '') then
     items.Add(NoteUPO(blockName, note));
+end;
+
+function LockoutUPO(blockName: string; lockout: string): TUPOItem;
+begin
+  Result[0] := GetUPOLine('VÝLUKA ' + blockName, taCenter, TJopColor.black, TJopColor.brown);
+  var lines := GetLines(lockout, _UPO_LINE_LEN);
+
+  try
+    Result[1] := GetUPOLine(lines[0], taLeftJustify, TJopColor.yellow, TJopColor.grayDark);
+    if (lines.Count > 1) then
+      Result[2] := GetUPOLine(lines[1], taLeftJustify, TJopColor.yellow, TJopColor.grayDark)
+    else
+      Result[2] := GetUPOLine('', taLeftJustify, TJopColor.yellow, TJopColor.grayDark);
+  finally
+    lines.Free();
+  end;
 end;
 
 function PNUPO(signalName: string): TUPOItem;

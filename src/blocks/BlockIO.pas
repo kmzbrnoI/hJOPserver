@@ -56,7 +56,7 @@ type
 
     procedure SetNote(note: string);
 
-    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
     procedure MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAktivOffClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuInClick(SenderPnl: TIdContext; SenderOR: TObject; target: Boolean);
@@ -81,7 +81,7 @@ type
       params: string = ''); override;
     function PanelStateString(): string; override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
-    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer); override;
+    procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
 
     // ----- IO own functions -----
 
@@ -348,7 +348,7 @@ begin
 
   if (Button = TPanelButton.ENTER) then
   begin
-    if ((Self.enabled) and (Self.allowOutChange)) then
+    if ((IsWritable(rights)) and (Self.enabled) and (Self.allowOutChange)) then
     begin
       try
         Self.Activate();
@@ -360,7 +360,7 @@ begin
       PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end else if (Button = TPanelButton.ESCAPE) then
   begin
-    if (Self.enabled) then
+    if ((IsWritable(rights)) and (Self.enabled)) then
     begin
       try
         Self.Deactivate();
@@ -482,16 +482,18 @@ end;
 function TBlkIO.ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 begin
   Result := inherited;
-  if ((Self.enabled) and (Self.allowOutChange)) then
+  if ((IsWritable(rights)) and (Self.enabled) and (Self.allowOutChange)) then
   begin
     if (Self.activeOutput) then
       Result := Result + 'AKTIV<,'
     else
       Result := Result + 'AKTIV>,';
   end;
-  Result := Result + 'STIT,';
 
-  if ((RCSi.simulation) and (Self.isRCSinput)) then
+  if ((IsWritable(rights)) or (Self.note <> '')) then
+    Result := Result + 'STIT,';
+
+  if ((IsWritable(rights)) and (RCSi.simulation) and (Self.isRCSinput)) then
   begin
     if (Self.IsActiveInput) then
       Result := Result + '-,*IN<,'
@@ -500,10 +502,10 @@ begin
   end;
 end;
 
-procedure TBlkIO.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer);
+procedure TBlkIO.PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights);
 begin
   if (item = 'STIT') then
-    Self.MenuStitClick(SenderPnl, SenderOR)
+    Self.MenuStitClick(SenderPnl, SenderOR, rights)
   else if (item = 'AKTIV>') then
     Self.MenuAktivOnClick(SenderPnl, SenderOR)
   else if (item = 'AKTIV<') then
@@ -520,9 +522,9 @@ begin
   Self.Change();
 end;
 
-procedure TBlkIO.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkIO.MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
 begin
-  PanelServer.note(SenderPnl, Self, Self.note);
+  PanelServer.note(SenderPnl, Self, Self.note, rights);
 end;
 
 procedure TBlkIO.MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
