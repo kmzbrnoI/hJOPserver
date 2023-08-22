@@ -135,6 +135,7 @@ type
     procedure MenuNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZNOTClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuSTITClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
+    procedure MenuSTAVClick(SenderPnl: TIdContext; SenderOR: TObject);
 
     procedure UPOUZClick(Sender: TObject);
     procedure UPOZUZClick(Sender: TObject);
@@ -154,6 +155,8 @@ type
 
     function OccupiedTrackIds(): TList<Integer>;
     procedure CSAddOccupiedTracks(var items: TConfSeqItems);
+
+    procedure PanelShowState(pnl: TIdContext; area: TArea);
 
   public
     tracks: TObjectList<TBlkCrossingTrack>;
@@ -752,6 +755,11 @@ begin
   PanelServer.note(SenderPnl, Self, Self.m_state.note, rights);
 end;
 
+procedure TBlkCrossing.MenuSTAVClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  Self.PanelShowState(SenderPnl, SenderOR as TArea);
+end;
+
 procedure TBlkCrossing.MenuAdminZavreno(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   Self.SetSimInputs(true, true, false, SenderPnl, SenderOR);
@@ -853,6 +861,8 @@ begin
   if ((IsWritable(rights)) or (Self.note <> '')) then
     Result := Result + 'STIT,';
 
+  Result := Result + 'STAV?,';
+
   // pokud mame knihovnu simulator, muzeme ridit stav useku
   // DEBUG nastroj
   if ((IsWritable(rights)) and (RCSi.simulation)) then
@@ -899,6 +909,8 @@ begin
     Self.MenuZNOTClick(SenderPnl, SenderOR)
   else if (item = 'STIT') then
     Self.MenuSTITClick(SenderPnl, SenderOR, rights)
+  else if (item = 'STAV?') then
+    Self.MenuSTAVClick(SenderPnl, SenderOR)
   else if (item = 'NUZ>') then
     Self.MenuAdminNUZClick(SenderPnl, SenderOR)
   else if (item = 'ZAVŘENO') then
@@ -1336,6 +1348,41 @@ begin
     end;
   finally
     occupiedIds.Free();
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkCrossing.PanelShowState(pnl: TIdContext; area: TArea);
+var lines: TList<TConfSeqItem>;
+begin
+  lines := TList<TConfSeqItem>.Create();
+  try
+    case (Self.state) of
+      TBlkCrossingBasicState.disabled:
+        lines.Add(CSItem(Self, 'Blok přejezdu neaktivní'));
+      TBlkCrossingBasicState.unknown:
+        lines.Add(CSItem(Self, 'Neznámý stav přejezdu'));
+      TBlkCrossingBasicState.error:
+        lines.Add(CSItem(Self, 'Poruchový stav přejezdu'));
+      TBlkCrossingBasicState.open:
+        lines.Add(CSItem(Self, 'Přejezd otevřen'));
+      TBlkCrossingBasicState.caution, TBlkCrossingBasicState.closed:
+        lines.Add(CSItem(Self, 'Výstražný stav přejezdu'));
+    end;
+
+    if (Self.IsSafelyClosed()) then
+      lines.Add(CSItem(Self, 'Přejezd uzavřen'));
+    if (Self.annulation) then
+      lines.Add(CSItem(Self, 'Přejezd v anulaci'));
+    if (Self.pcEmOpen) then
+      lines.Add(CSItem(Self, 'Vydán pokyn k nouzovému otevření'));
+    if ((Self.pcClosed) or (Self.zaver)) then
+      lines.Add(CSItem(Self, 'Vydán pokyn k uzavření'));
+
+    PanelServer.InfoWindow(pnl, nil, area, 'Zobrazení stavu přejezdu', GetObjsList(Self), lines, True, False);
+  finally
+    lines.Free();
   end;
 end;
 
