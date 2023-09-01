@@ -1010,13 +1010,21 @@ begin
     if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.annulation.addr.board)) then
       Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.annulation.addr.board);
 
-  if (Self.m_settings.RCSInputs.closed.enabled) then
+  if (Self.m_settings.RCSOutputs.close.enabled) then
     if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.close.addr.board)) then
       Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.close.addr.board);
+
+  if (Self.m_settings.RCSOutputs.lights.enabled) then
+    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.lights.addr.board)) then
+      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.lights.addr.board);
 
   if (Self.m_settings.RCSOutputs.emOpen.enabled) then
     if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.emOpen.addr.board)) then
       Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.emOpen.addr.board);
+
+  if (Self.m_settings.RCSOutputs.positive.enabled) then
+    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.positive.addr.board)) then
+      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.positive.addr.board);
 
   if (Self.m_settings.RCSOutputs.barriersDown.enabled) then
     if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.barriersDown.addr.board)) then
