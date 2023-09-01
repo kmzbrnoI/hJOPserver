@@ -480,7 +480,7 @@ begin
   RCSOptionalToUI(settings.RCSInputs.open, Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port);
   RCSOptionalToUI(settings.RCSInputs.closed, Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port);
   RCSOptionalToUI(settings.RCSInputs.caution, Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port);
-  RCSOptionalToUI(settings.RCSInputs.annulation, Self.CHB_RCS_Anullation, Self.SE_in_caution_port, Self.SE_in_annulation_port);
+  RCSOptionalToUI(settings.RCSInputs.annulation, Self.CHB_RCS_Anullation, Self.SE_in_annulation_board, Self.SE_in_annulation_port);
 
   Self.SE_RCS_boardExit(Self);
 
