@@ -800,7 +800,8 @@ end;
 
 procedure TTrain.HVComErr(Sender: TObject; Data: Pointer);
 begin
- if (Self.data.area <> nil) then
+  TrakceI.emergency := True;
+  if (Self.data.area <> nil) then
    (Self.data.area as TArea).BlkWriteError(nil, 'Souprava '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
 end;
 

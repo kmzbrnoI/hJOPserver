@@ -1485,6 +1485,7 @@ end;
 procedure TPanelServer.DCCStop();
 begin
   for var i: Integer := 0 to _MAX_CLIENTS - 1 do
+  begin
     if (Assigned(Self.clients[i])) then
     begin
       if ((Self.DCCStopped = Self.clients[i].connection) and (TrakceI.TrackStatusSafe() = tsOff)) then
@@ -1492,6 +1493,7 @@ begin
       else
         Self.SendLn(Self.clients[i].connection, '-;DCC;DISABLED');
     end;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1499,6 +1501,7 @@ end;
 procedure TPanelServer.OnDCCCmdErr(Sender: TObject; data: Pointer);
 begin
   Self.BottomError(TIdContext(data), 'Centrála neodpověděla na příkaz', '-', 'CENTRÁLA');
+  TrakceI.emergency := True;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

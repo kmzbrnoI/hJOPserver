@@ -149,6 +149,7 @@ type
 
     procedure TrakceCallbackOk(Sender: TObject; data: Pointer);
     procedure TrakceCallbackErr(Sender: TObject; data: Pointer);
+    procedure TrakceCallbackEmergencyErr(Sender: TObject; data: Pointer);
     procedure TrakceCallbackCallEv(cb: PTCb);
     procedure SlotChanged(Sender: TObject; speedChanged: Boolean; dirChanged: Boolean; funcChanged: Boolean);
     procedure TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
@@ -1355,11 +1356,11 @@ begin
 
   try
     TrakceI.LocoEmergencyStop(Self.addr, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
-      TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
+      TTrakce.Callback(Self.TrakceCallbackEmergencyErr, cbErr));
   except
     on E: Exception do
     begin
-      Self.TrakceCallbackErr(Self, cbErr);
+      Self.TrakceCallbackEmergencyErr(Self, cbErr);
       AppEvents.LogException(E, 'THV.EmergencyStop');
     end;
   end;
@@ -1402,6 +1403,12 @@ begin
   Self.state.trakceError := true;
   Self.changed := true;
   RegCollector.LocoChanged(Self, Self.addr);
+end;
+
+procedure THV.TrakceCallbackEmergencyErr(Sender: TObject; data: Pointer);
+begin
+  TrakceI.emergency := True;
+  Self.TrakceCallbackErr(Sender, data);
 end;
 
 procedure THV.TrakceCallbackCallEv(cb: PTCb);

@@ -42,6 +42,7 @@ begin
   else
     trakceo.S['status'] := 'unknown';
   end;
+  trakceo.B['emergency'] := TrakceI.emergency;
 
   respJSON.O['panelserver'].B['running'] := PanelServer.openned;
 end;

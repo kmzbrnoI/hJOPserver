@@ -492,7 +492,9 @@ type
     procedure OnTrkStatusChange(Sender: TObject; trkStatus: TTrkStatus);
 
     procedure UpdateTrkLibsList();
+    procedure OnDCCGoOk(Sender: TObject; Data: Pointer);
     procedure OnDCCGoError(Sender: TObject; Data: Pointer);
+    procedure OnDCCStopOk(Sender: TObject; Data: Pointer);
     procedure OnDCCStopError(Sender: TObject; Data: Pointer);
 
     procedure OnTrkAllAcquired(Sender: TObject);
@@ -1286,7 +1288,7 @@ begin
   Self.LogStatus('DCC: zapínám');
 
   try
-    TrakceI.SetTrackStatus(tsOn, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCGoError));
+    TrakceI.SetTrackStatus(tsOn, TTrakce.Callback(Self.OnDCCGoOk), TTrakce.Callback(Self.OnDCCGoError));
   except
     on E: Exception do
     begin
@@ -1302,7 +1304,7 @@ begin
   Self.LogStatus('DCC: vypínám');
 
   try
-    TrakceI.SetTrackStatus(tsOff, TTrakce.Callback(), TTrakce.Callback(Self.OnDCCStopError));
+    TrakceI.SetTrackStatus(tsOff, TTrakce.Callback(Self.OnDCCStopOk), TTrakce.Callback(Self.OnDCCStopError));
   except
     on E: Exception do
     begin
@@ -1317,6 +1319,11 @@ begin
   F_FuncsSet.Show();
 end;
 
+procedure TF_Main.OnDCCGoOk(Sender: TObject; Data: Pointer);
+begin
+  TrakceI.emergency := False;
+end;
+
 procedure TF_Main.OnDCCGoError(Sender: TObject; Data: Pointer);
 begin
   SystemData.Status := TSystemStatus.null;
@@ -1328,9 +1335,15 @@ begin
   Application.MessageBox('Centrála neodpověděla na příkaz DCC START', 'Varování', MB_OK OR MB_ICONWARNING);
 end;
 
+procedure TF_Main.OnDCCStopOk(Sender: TObject; Data: Pointer);
+begin
+  TrakceI.emergency := False;
+end;
+
 procedure TF_Main.OnDCCStopError(Sender: TObject; Data: Pointer);
 begin
-  Self.LogStatus('DCC: STOP: ERR: cenrála neodpověděla na příkaz');
+  TrakceI.emergency := True;
+  Self.LogStatus('DCC: STOP: ERR: centrála neodpověděla na příkaz');
   Self.UpdateSystemButtons();
   Self.A_DCC_Go.Enabled := true;
   Self.A_DCC_Stop.Enabled := true;
