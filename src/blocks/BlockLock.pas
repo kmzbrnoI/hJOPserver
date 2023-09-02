@@ -68,7 +68,7 @@ type
 
     procedure Update(); override;
     procedure Change(now: Boolean = false); override;
-    // change do zamku je volano pri zmene zaveru jakekoliv vyhybky, kterou zaver obsluhuje
+    procedure ChangeFromTurnout(sender: TObject);
 
     // ----- lock own functions -----
 
@@ -139,7 +139,7 @@ begin
   // zamek se zamyka v Disable(), tady se totiz muze stat, ze uz ho nejaka vyhybka
   // nouzove odemkla (vyhybka, ktere Enable() se vola driv)
 
-  inherited Change();
+  Self.Change();
 end;
 
 procedure TBlkLock.Disable();
@@ -159,14 +159,28 @@ begin
   inherited Update();
 end;
 
-// change je volan z vyhybky pri zmene zaveru
+// change je volan z vyhybky
 procedure TBlkLock.Change(now: Boolean = false);
 begin
+  inherited Change(now);
+
   // porucha zamku -> zrusit postavenou JC
   if ((Self.zaver) and ((Self.keyReleased) or (Self.error))) then
     JCDb.Cancel(Self);
+end;
 
-  inherited Change(now);
+procedure TBlkLock.ChangeFromTurnout(sender: TObject);
+begin
+  var turnout: TBlkTurnout := TBlkTurnout(sender);
+
+  if (turnout.position <> turnout.GetSettings().lockPosition) then
+  begin
+    if (not Self.keyReleased) and (not Self.error) then
+      Self.error := true;
+  end else begin
+    if ((Self.error) and (Self.IsRightPosition())) then
+      Self.keyReleased := False; // restore 'locked' state
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -306,12 +320,9 @@ begin
     Inc(Self.m_state.emLock);
     if (Self.m_state.emLock = 1) then
     begin
-      if (Self.keyReleased) then
-      begin
-        Self.m_state.keyReleased := false;
-        Self.CallChangeToTurnout();
-      end;
-      inherited Change();
+      if ((Self.keyReleased) and (Self.IsRightPosition())) then
+        Self.keyReleased := false;
+      Self.Change();
     end;
   end else begin
     if (Self.m_state.emLock > 0) then
@@ -320,12 +331,8 @@ begin
     begin
       // pokud vyhybky nejsou ve spravne poloze, automaticky uvolnujeme klic
       if (not Self.IsRightPosition()) then
-        Self.keyReleased := true
-      else
-      begin
-        Self.CallChangeToTurnout();
-        inherited Change();
-      end;
+        Self.keyReleased := true;
+      Self.Change();
       Blocks.NouzZaverZrusen(Self);
     end;
   end;
@@ -346,7 +353,7 @@ begin
   begin
     Self.m_state.keyReleased := new;
     if (not new) then
-      Self.m_state.error := false;
+      Self.error := not Self.IsRightPosition();
     Self.CallChangeToTurnout();
     inherited Change();
   end;
@@ -355,15 +362,15 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkLock.CallChangeToTurnout();
-var list: TBlksList;
-  i: Integer;
+var blks: TBlksList;
 begin
-  list := Blocks.GetTurnoutWithLock(Self.id);
-
-  for i := 0 to list.Count - 1 do
-    (list[i] as TBlkTurnout).Change();
-
-  list.Free();
+  blks := Blocks.GetTurnoutWithLock(Self.id);
+  try
+    for var turnout: TBlk in blks do
+      turnout.Change();
+  finally
+    blks.Free();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -382,18 +389,17 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkLock.IsRightPosition(): Boolean;
-var list: TBlksList;
+var blks: TBlksList;
 begin
-  list := Blocks.GetTurnoutWithLock(Self.id);
+  blks := Blocks.GetTurnoutWithLock(Self.id);
+  try
+    for var blk: TBlk in blks do
+      if (TBlkTurnout(blk).position <> TBlkTurnout(blk).GetSettings().lockPosition) then
+        Exit(false);
+  finally
+    blks.Free();
+  end;
 
-  for var i: Integer := 0 to list.Count - 1 do
-    if (TBlkTurnout(list[i]).position <> (list[i] as TBlkTurnout).GetSettings().lockPosition) then
-    begin
-      list.Free();
-      Exit(false);
-    end;
-
-  list.Free();
   Result := true;
 end;
 
@@ -430,7 +436,10 @@ begin
 
   if (Self.error) then
   begin
-    fg := bg;
+    if (Self.emLock) then
+      fg := TJopColor.turq
+    else
+      fg := bg;
     bg := TJopColor.blue;
   end else if (Self.keyReleased) then
     fg := TJopColor.blue

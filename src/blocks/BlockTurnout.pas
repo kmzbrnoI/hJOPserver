@@ -140,7 +140,6 @@ type
 
     procedure UpdatePosition();
     procedure UpdateMovingTimeout();
-    procedure UpdateLock();
     procedure Unlock();
     function LockLocked(): Boolean;
 
@@ -536,7 +535,6 @@ begin
   Self.CheckNullOutput();
   Self.UpdatePosition();
   Self.UpdateMovingTimeout();
-  Self.UpdateLock();
   Self.ReadContollers();
 
   if (Self.m_state.position <> Self.m_state.positionOld) then
@@ -1423,6 +1421,9 @@ begin
 
   Self.ShowIndication();
 
+  if (Self.lock <> nil) then
+    TBlkLock(Self.lock).ChangeFromTurnout(Self);
+
   if (not changed) then
     inherited Change(now);
 end;
@@ -1520,16 +1521,6 @@ begin
     ((Self.m_npMinus <> nil) and (Self.m_npMinus.id <> Self.m_settings.npMinus))) then
     Self.m_npMinus := Blocks.GetBlkTrackOrRTByID(Self.m_settings.npMinus);
   Result := Self.m_npMinus;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-// pokud je na vyhybku zamek, vyhybka ma nespravnou polohu a klic je v zamku, vyhlasime poruchu zamku
-procedure TBlkTurnout.UpdateLock();
-begin
-  if (Self.LockLocked() and (not(Self.lock as TBlkLock).emLock) and (Self.position <> Self.m_settings.lockPosition) and
-    (not(Self.lock as TBlkLock).error)) then
-    (Self.lock as TBlkLock).error := true;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
