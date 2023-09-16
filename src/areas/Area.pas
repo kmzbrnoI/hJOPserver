@@ -1041,26 +1041,23 @@ begin
   // ruseni pripadnych jiznich cest:
   for var blk: TBlk in Blocks do
   begin
-    if (Blk.typ <> btTrack) then
+    if (blk.typ <> btTrack) then
       continue;
-    var track: TBlKTrack := Blk as TBlkTrack;
-    if (not track.NUZ) then
+    var track: TBlKTrack := (blk as TBlkTrack);
+    if ((not track.NUZ) or (not track.IsInArea(Self))) then
       continue;
 
-    for var area: TArea in track.areas do
+    track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
+    var jc: TJC := JCDb.FindActiveJCWithTrack(blk.id);
+    if (jc <> nil) then
     begin
-      if (Area = Self) then
-      begin
-        track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
-        var jc: TJC := JCDb.FindActiveJCWithTrack(Blk.id);
-        var signal: TBlkSignal := Blocks.GetBlkSignalByID(jc.data.signalId);
-        if ((signal.signal > ncStuj) and (signal.DNjc = jc)) then
-          PanelServer.BottomError(JC.state.SenderPnl, 'Chyba povolovací návěsti ' + signal.name, Self.shortName,
-            'TECHNOLOGIE');
-        jc.CancelWithoutTrackRelease();
-        if (signal.DNjc = jc) then
-          signal.DNjc := nil;
-      end;
+      var signal: TBlkSignal := Blocks.GetBlkSignalByID(jc.data.signalId);
+      if ((signal.signal > ncStuj) and (signal.DNjc = jc)) then
+        PanelServer.BottomError(JC.state.SenderPnl, 'Chyba povolovací návěsti ' + signal.name, Self.shortName,
+          'TECHNOLOGIE');
+      jc.CancelWithoutTrackRelease();
+      if (signal.DNjc = jc) then
+        signal.DNjc := nil;
     end;
   end;
 
