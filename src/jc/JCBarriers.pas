@@ -88,7 +88,8 @@ type
     barHVNotAllManual,
     barTrainWrongDir,
     barTrainNotFront,
-    barControllerNotInBasicPos
+    barControllerNotInBasicPos,
+    barControllerNotInBasicPosWarn
   );
 
 
@@ -189,6 +190,8 @@ begin
           Result.Add(CSItem(barrier.block, 'Rozpojovač aktivní'));
 
         barControllerNotInBasicPos:
+          Result.Add(CSItem(barrier.block, 'Volič není v základní poloze'));
+        barControllerNotInBasicPosWarn:
           Result.Add(CSItem(barrier.block, 'Volič není v základní poloze'));
       end;
     end;
@@ -396,7 +399,7 @@ begin
     barRailwayZAKPC:
       begin
         Result[0] := GetUPOLine('ZAVEDEN ZÁKAZ ODJEZDU', taCenter, TJopColor.red, TJopColor.white);
-        Result[1] := GetUPOLine(barrier.Block.name);
+        Result[1] := GetUPOLine(barrier.block.name);
         Result[2] := GetUPOLine('');
       end;
 
@@ -419,6 +422,13 @@ begin
 
     barControllerNotInBasicPos:
       Result[1] := GetUPOLine('Volič není v základní poloze');
+
+    barControllerNotInBasicPosWarn:
+      begin
+        Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
+        Result[1] := GetUPOLine('Volič není v základní poloze');
+        Result[2] := GetUPOLine(barrier.block.name);
+      end;
 
   else
     Result[0] := GetUPOLine('Neznámá bariéra', taCenter, TJopColor.red, TJopColor.white);

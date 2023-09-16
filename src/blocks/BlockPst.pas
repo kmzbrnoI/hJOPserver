@@ -90,7 +90,9 @@ type
     procedure CSZavOffDone(Sender: TIDContext; success: Boolean);
 
     procedure ActivationBarriers(var barriers: TJCBarriers);
+    procedure DeactivationBarriers(var barriers: TJCBarriers);
     procedure Activate(senderPnl: TIdContext; senderOR: TObject);
+    procedure Deactivate(senderPnl: TIdContext; senderOR: TObject);
     class function WarningBarrier(typ: TJCBarType): Boolean;
     class function BarrierToMessage(barrier: TJCBarrier): TUPOItem;
     procedure BarriersUPOOKCallback(Sender: TObject);
@@ -545,10 +547,7 @@ end;
 
 procedure TBlkPst.MenuPstDisClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  if (Self.note <> '') then
-    Self.NoteUPO(SenderPnl, SenderOR, Self.UPOPstDisDone, nil)
-  else
-    Self.UPOPstDisDone(SenderPnl);
+  Self.Deactivate(SenderPnl, SenderOR);
 end;
 
 procedure TBlkPst.MenuNPstClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1195,7 +1194,36 @@ begin
     if (not disc.ControllerInBasicPosition()) then
       barriers.Add(JCBarrier(barControllerNotInBasicPos, disc));
   end;
+end;
 
+procedure TBlkPst.DeactivationBarriers(var barriers: TJCBarriers);
+begin
+  if (Self.note <> '') then
+    barriers.Add(JCBarrier(barBlockNote, Self));
+
+  // turnouts
+  for var turnoutId in Self.m_settings.turnouts do
+  begin
+    var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(turnoutId);
+    if ((turnout <> nil) and (not turnout.ControllerInBasicPosition())) then
+      barriers.Add(JCBarrier(barControllerNotInBasicPosWarn, turnout));
+  end;
+
+  // signals
+  for var signalId in Self.m_settings.signals do
+  begin
+    var signal: TBlkSignal := Blocks.GetBlkSignalByID(signalId);
+    if ((signal <> nil) and (not signal.ControllerInBasicPosition())) then
+      barriers.Add(JCBarrier(barControllerNotInBasicPosWarn, signal));
+  end;
+
+  // disconnectors
+  for var discId in Self.m_settings.disconnectors do
+  begin
+    var disc: TBlkDisconnector := Blocks.GetBlkDisconnectorByID(discId);
+    if ((disc <> nil) and (not disc.ControllerInBasicPosition())) then
+      barriers.Add(JCBarrier(barControllerNotInBasicPosWarn, disc));
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1243,6 +1271,29 @@ begin
     end;
 
     Self.MoveRefugees();
+  finally
+    barriers.Free();
+    UPO.Free();
+  end;
+end;
+
+procedure TBlkPst.Deactivate(senderPnl: TIdContext; senderOR: TObject);
+begin
+  Self.m_state.senderOR := senderOR;
+  Self.m_state.senderPnl := senderPnl;
+
+  var barriers: TJCBarriers := TJCBarriers.Create();
+  var UPO: TUPOItems := TList<TUPOItem>.Create;
+  try
+    Self.DeactivationBarriers(barriers);
+    if ((barriers.Count > 0) and (senderPnl <> nil)) then
+    begin
+      for var i: Integer := 0 to barriers.Count - 1 do
+        UPO.Add(Self.BarrierToMessage(barriers[i]));
+      PanelServer.UPO(Self.m_state.senderPnl, UPO, False, Self.UPOPstDisDone, nil, Self);
+    end else begin
+      Self.UPOPstDisDone(senderPnl);
+    end;
   finally
     barriers.Free();
     UPO.Free();
