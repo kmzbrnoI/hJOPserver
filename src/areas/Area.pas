@@ -127,6 +127,7 @@ type
     // Main goal = turn on/off appropriate sounds in panel
     procedure AuthReadToWrite(Panel: TIDContext);
     procedure AuthWriteToRead(Panel: TIDContext);
+    procedure LastWriteDisconnected();
 
     procedure OnAnncmntAvailable(Sender: TObject; available: Boolean);
     procedure NUZPrematureZaverRelease(Sender: TObject; data: Integer);
@@ -152,9 +153,6 @@ type
 
     procedure AuthReadersTo(rights: TAreaRights; exception: TIdContext = nil);
     procedure UpdateReadersAuth(exception: TIdContext = nil);
-
-    function AnySuperuserConnected(): Boolean;
-    function AnyotherWriteConnected(Sender: TIdContext): Integer;
 
     procedure Log(text: string; level: TLogLevel; source: TLogSource = lsAny);
 
@@ -192,8 +190,11 @@ type
     // Sends data to all panels with rights >= min_rights
     // Uses '-' id as message prefix
     procedure BroadcastGlobalData(data: string; min_rights: TAreaRights = read);
-
     procedure BroadcastBottomError(err: string; tech: string; min_rights: TAreaRights = read; stanice: string = '');
+
+    function AnySuperuserConnected(): Boolean;
+    function AnyotherWriteConnected(Sender: TIdContext): Integer;
+    function AnyotherWriteOrMoreConnected(Sender: TIdContext): Boolean;
 
     // --- called from technological blocks ---
 
@@ -281,7 +282,8 @@ implementation
 uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, TechnologieJC,
   TJCDatabase, ownConvert, TCPServerPanel, AreaDb, block, THVDatabase, TrainDb,
   UserDb, THnaciVozidlo, Trakce, user, TCPAreasRef, fRegulator, RegulatorTCP,
-  ownStrUtils, train, changeEvent, TechnologieTrakce, ConfSeq, Config, timeHelper;
+  ownStrUtils, train, changeEvent, TechnologieTrakce, ConfSeq, Config, timeHelper,
+  BlockCrossing;
 
 function IsReadable(right: TAreaRights): Boolean;
 begin
@@ -491,24 +493,26 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 // Panel database maintainance
 
-procedure TArea.PanelDbAdd(Panel: TIDContext; rights: TAreaRights; user: string);
+procedure TArea.PanelDbAdd(panel: TIDContext; rights: TAreaRights; user: string);
 begin
   if (rights = TAreaRights.other) then
     rights := TAreaRights.read;
 
-  for var i: Integer := 0 to Self.connected.Count - 1 do
+  var panelI: Integer := Self.PanelDbIndex(panel);
+  if (panelI > -1) then
   begin
-    if (Self.connected[i].Panel = Panel) then
-    begin
-      // pokud uz je zaznam v databazi, pouze upravime tento zaznam
-      var pnl: TAreaPanel;
-      pnl := Self.connected[i];
-      pnl.rights := rights;
-      pnl.user := user;
-      Self.connected[i] := pnl;
-      authLog('or', 'reauth', user, Self.id + ' :: ' + Self.GetRightsString(rights));
-      Exit();
-    end;
+    // pokud uz je zaznam v databazi, pouze upravime tento zaznam
+    var pnl: TAreaPanel;
+    pnl := Self.connected[panelI];
+    var wrToRe: Boolean := ((Area.IsWritable(pnl.rights)) and (not Area.IsWritable(rights)));
+    pnl.rights := rights;
+    pnl.user := user;
+    Self.connected[panelI] := pnl;
+
+    if (wrToRe) then
+      Self.LastWriteDisconnected();
+    authLog('or', 'reauth', user, Self.id + ' :: ' + Self.GetRightsString(rights));
+    Exit();
   end;
 
   if (Self.connected.Count >= _MAX_CON_PNL) then
@@ -537,14 +541,15 @@ end;
 
 procedure TArea.PanelDbRemove(Panel: TIDContext; contextDestroyed: Boolean = false);
 begin
-  for var i: Integer := 0 to Self.connected.Count - 1 do
+  var panelI: Integer := Self.PanelDbIndex(Panel);
+  if (panelI > -1) then
   begin
-    if (Self.connected[i].Panel = Panel) then
-    begin
-      authLog('or', 'logout', Self.connected[i].user, Self.id);
-      Self.connected.Delete(i);
-      Break;
-    end;
+    var wrToRe: Boolean := ((Area.IsWritable(Self.connected[panelI].rights)) and (not Self.AnyotherWriteOrMoreConnected(Panel)));
+    authLog('or', 'logout', Self.connected[panelI].user, Self.id);
+    Self.connected.Delete(panelI);
+    if (wrToRe) then
+      Self.LastWriteDisconnected();
+    Exit();
   end;
 
   if (not contextDestroyed) then
@@ -558,11 +563,7 @@ var
 begin
   index := Self.PanelDbIndex(Panel);
   if (index < 0) then
-  begin
-    Result := TAreaRights.null;
-    Exit();
-  end;
-
+    Exit(TAreaRights.null);
   Result := Self.connected[index].rights;
 end;
 
@@ -1895,6 +1896,24 @@ begin
   TPanelConnData(Panel.Data).ClearAndHidePathBlocks();
 end;
 
+procedure TArea.LastWriteDisconnected();
+begin
+  for var block in Blocks do
+  begin
+    if ((not block.IsInArea(Self)) or (block.AnyWritableClientConnected())) then
+      continue;
+
+    if ((block.typ = TBlkType.btSignal) and (TBlkSignal(block).targetSignal = TBlkSignalCode.ncPrivol)) then
+      TBlkSignal(block).signal := ncStuj; // cancel PN
+
+    if ((block.typ = TBlkType.btTrack) and (TBlkTrack(block).NUZ)) then
+      TBlkTrack(block).NUZ := False; // cancel NUZ
+
+    if ((block.typ = TBlkType.btCrossing) and (TBlkCrossing(block).pcEmOpen)) then
+      TBlkCrossing(block).pcEmOpen := False; // cancel NOT
+  end;
+end;
+
 procedure TArea.AuthReadersTo(rights: TAreaRights; exception: TIdContext = nil);
 begin
   for var areaPanel in Self.connected do
@@ -2147,6 +2166,14 @@ begin
   for var i: Integer := 0 to Self.connected.Count-1 do
     if ((Self.connected[i].Panel <> Sender) and (Self.connected[i].rights = TAreaRights.write)) then
       Exit(i);
+end;
+
+function TArea.AnyotherWriteOrMoreConnected(Sender: TIdContext): Boolean;
+begin
+  for var i: Integer := 0 to Self.connected.Count-1 do
+    if ((Self.connected[i].Panel <> Sender) and (Area.IsWritable(Self.connected[i].rights))) then
+      Exit(True);
+  Result := False;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

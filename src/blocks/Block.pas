@@ -109,7 +109,8 @@ type
     procedure GetPtState(json: TJsonObject); virtual;
     procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); virtual;
 
-    function IsInArea(Area: TObject): Boolean;
+    function IsInArea(area: TArea): Boolean;
+    function AnyWritableClientConnected(): Boolean;
 
     procedure BottomErrorBroadcast(error: string; system: string; minRights: TAreaRights = TAreaRights.write);
 
@@ -453,9 +454,17 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlk.IsInArea(Area: TObject): Boolean;
+function TBlk.IsInArea(area: TArea): Boolean;
 begin
-  Result := Self.areas.Contains(Area as TArea);
+  Result := Self.areas.Contains(Area);
+end;
+
+function TBlk.AnyWritableClientConnected(): Boolean;
+begin
+  for var area in Self.areas do
+    if (area.AnyotherWriteOrMoreConnected(nil)) then
+      Exit(True);
+  Result := False;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
