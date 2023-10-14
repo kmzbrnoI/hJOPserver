@@ -3507,7 +3507,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Technologie
+    ActivePage = TS_Users
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -4802,6 +4802,10 @@ object F_Main: TF_Main
             Alignment = taCenter
             Caption = 'root'
             Width = 60
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Ban'
           end
           item
             Caption = 'Pozn'#225'mka'

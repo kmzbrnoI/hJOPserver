@@ -80,8 +80,9 @@ begin
   line.SubItems[4] := ''; // superuser
   line.SubItems[5] := ownConvert.BoolToTick(User.regulator);
   line.SubItems[6] := ownConvert.BoolToTick(User.root);
-  line.SubItems[7] := EscapeNewline(User.note);
-  line.SubItems[8] := FormatDateTime('yyyy-mm-dd hh:nn:ss', User.lastlogin);
+  line.SubItems[7] := IfThen(User.ban, 'X', '');
+  line.SubItems[8] := EscapeNewline(User.note);
+  line.SubItems[9] := FormatDateTime('yyyy-mm-dd hh:nn:ss', User.lastlogin);
 
   for var area: TArea in Areas do
   begin
