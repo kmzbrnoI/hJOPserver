@@ -1877,7 +1877,19 @@ end;
 procedure TF_Main.A_PanelServer_StartExecute(Sender: TObject);
 begin
   if ((SystemData.Status = starting) and (not Blocks.Enabled)) then
-    Blocks.Enable();
+  begin
+    try
+      Blocks.Enable();
+    except
+      on E: Exception do
+      begin
+        SystemData.Status := TSystemStatus.null;
+        Self.UpdateSystemButtons();
+        Application.MessageBox(PChar('Chyba při aktivaci bloků:' + #13#10 + E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+        Exit();
+      end;
+    end;
+  end;
 
   try
     PanelServer.Start();
@@ -1889,7 +1901,7 @@ begin
     begin
       SystemData.Status := TSystemStatus.null;
       Self.UpdateSystemButtons();
-      Application.MessageBox(PChar('Chyba při zapínání serveru:' + #13#10 + E.Message), 'Chyba',
+      Application.MessageBox(PChar('Chyba při zapínání panelServeru:' + #13#10 + E.Message), 'Chyba',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;

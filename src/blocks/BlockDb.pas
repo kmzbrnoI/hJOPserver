@@ -482,7 +482,18 @@ end;
 procedure TBlocks.Enable();
 begin
   for var blk: TBlk in Self.data do
-    blk.Enable();
+  begin
+    try
+      blk.Enable();
+    except
+      on E: Exception do
+      begin
+        E.Message := 'Blok ' + blk.idName + ': ' + E.Message;
+        raise;
+      end;
+    end;
+  end;
+
   Self.fenabled := true;
   BlocksTablePainter.reload := true;
   BlocksTablePainter.UpdateTable();

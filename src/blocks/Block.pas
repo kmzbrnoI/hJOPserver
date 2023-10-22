@@ -43,6 +43,9 @@ type
   private const
     _def_glob_settings: TBlkSettings = (name: ''; id: - 1;);
 
+  private
+    function GetIdName(): string;
+
   protected
     changed: Boolean;
     m_globSettings: TBlkSettings;
@@ -131,6 +134,7 @@ type
     property id: Integer read m_globSettings.id;
     property name: string read m_globSettings.name;
     property typ: TBlkType read m_globSettings.typ;
+    property idName: String read GetIdName;
   end;
 
   TBlksList = TList<TBlk>;
@@ -542,6 +546,13 @@ function TBlk.AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights:
 begin
   var menu: string := Self.ShowPanelMenu(SenderPnl, SenderOR, rights);
   Result := menu.Contains(item); // default = accept only those items present in menu now
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlk.GetIdName(): string;
+begin
+  Result := IntToStr(Self.id) + ' ' + Self.name;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
