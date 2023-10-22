@@ -552,7 +552,7 @@ end;
 
 function TBlkTurnout.GetParent(): TBlkTrack;
 begin
-  if (((Self.m_parent = nil) and (Self.m_spnl.track <> -1)) or (Self.m_parent.id <> Self.m_spnl.track)) then
+  if (((Self.m_parent = nil) and (Self.m_spnl.track <> -1)) or ((Self.m_parent <> nil) and (Self.m_parent.id <> Self.m_spnl.track))) then
     Self.m_parent := Blocks.GetBlkTrackOrRTByID(Self.m_spnl.track);
   Result := Self.m_parent;
 end;
