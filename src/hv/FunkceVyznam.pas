@@ -2,7 +2,7 @@
 
 {
   Trida TFuncsVyznam, resp. jeji instance FuncsFyznam si udrzuje seznam vyznamu
-  funkci hnacich vozidel platnych pro cele kolejiste. Polozkami senzmau jsou
+  funkci hnacich vozidel platnych pro cele kolejiste. Polozkami seznamu jsou
   napriklad "houkačka dlouhá", "trubka vlakvedoucího", ...
 
   Vyznamy jsou udrzovany v jednoduchem senzamu "vyznamy".
@@ -15,36 +15,27 @@ uses Generics.Collections, Classes, THnaciVozidlo, Generics.Defaults, SysUtils;
 type
   TGeneralEvent = procedure(Sender: TObject) of object;
 
-  TFuncName = class
-    name: string;
-    typ: THVFuncType;
-
-    constructor Create(str: string); overload;
-    constructor Create(name: string; typ: THVFuncType); overload;
-    function GetPanelStr(): string;
-
-    class function Comparer(): IComparer<TFuncName>;
-  end;
-
   TFuncNames = class
     private const
-      _MAX_FUNCS_VYZNAM = 50;
+      _MAX = 50;
 
     private
-      names: TObjectList<TFuncName>;
+      data: TDictionary<string, THVFuncType>;
       fOnChange: TGeneralEvent;
+
+       class function Entry(data: string): TPair<string, THVFuncType>;
 
     public
        constructor Create();
        destructor Destroy(); override;
 
-       procedure ParseWholeList(data: string);
-       procedure ParseNewItems(data: string);
-       function AllNames(separator: string = ','): string;
+       procedure Add(data: string);
        function IsName(name: string): Boolean;
-       function GetNameIndex(name: string): Integer;
+       procedure Clear();
+       function All(): TList<TPair<string, THVFuncType>>;
+       function PanelStr(separator: string = ','): string;
 
-       property Items: TObjectList<TFuncName> read names;
+       property dict: TDictionary<string, THVFuncType> read data;
        property OnChange: TGeneralEvent read fOnChange write fOnChange;
   end;
 
@@ -60,125 +51,93 @@ uses ownStrUtils;
 constructor TFuncNames.Create();
 begin
  inherited;
- Self.names := TObjectList<TFuncName>.Create();
+ Self.data := TDictionary<string, THVFuncType>.Create();
 end;
 
 destructor TFuncNames.Destroy();
 begin
- Self.names.Free();
+ Self.data.Free();
  inherited;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TFuncNames.ParseWholeList(data: string);
-var strs: TStrings;
-    str: string;
+procedure TFuncNames.Clear();
 begin
- Self.names.Clear();
+  Self.data.Clear();
+end;
+
+procedure TFuncNames.Add(data: string);
+var strs: TStrings;
+begin
  strs := TStringList.Create();
  try
    ExtractStringsEx([';', ','], [], data, strs);
-   for str in strs do
-     if (Self.names.Count < _MAX_FUNCS_VYZNAM) then
-       Self.names.Add(TFuncName.Create(str));
+   for var str: string in strs do
+   begin
+     if (Self.data.Count < _MAX) then
+     begin
+       var pair := TFuncNames.Entry(str);
+       Self.data.AddOrSetValue(pair.Key, pair.Value);
+     end;
+   end;
  finally
    strs.Free();
  end;
- Self.names.Sort(TFuncName.Comparer());
 
  if (Assigned(Self.OnChange)) then Self.OnChange(Self);
-end;
-
-procedure TFuncNames.ParseNewItems(data: string);
-var sl: TStrings;
-    str: string;
-begin
- sl := TStringList.Create();
- try
-   ExtractStringsEx([';', ','], [], data, sl);
-
-   for str in sl do
-    begin
-     if (Self.names.Count < _MAX_FUNCS_VYZNAM) then
-      begin
-        if (not Self.IsName(str)) then
-          Self.names.Add(TFuncName.Create(str))
-        else begin
-          Self.names.Delete(Self.GetNameIndex(str));
-          Self.names.Add(TFuncName.Create(str));
-        end;
-      end;
-    end;
- finally
-   sl.Free();
- end;
-
- Self.names.Sort(TFuncName.Comparer());
- if (Assigned(Self.OnChange)) then Self.OnChange(Self);
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-function TFuncNames.AllNames(separator: string = ','): string;
-begin
- Result := '';
- for var i := 0 to Self.names.Count-1 do
-   Result := Result + '{' + Self.names[i].GetPanelStr() + '}' + separator;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
-
-function TFuncNames.GetNameIndex(name: string): Integer;
-begin
- for var i := 0 to Self.names.Count-1 do
-   if (Self.names[i].name = name) then
-     Exit(i);
- Result := -1;
 end;
 
 function TFuncNames.IsName(name: string): Boolean;
 begin
- Result := (Self.GetNameIndex(name) > -1);
+ Result := Self.data.ContainsKey(name);
+end;
+
+function TFuncNames.All(): TList<TPair<string, THVFuncType>>;
+begin
+  Result := TList<TPair<string, THVFuncType>>.Create(Self.data.ToArray());
+  Result.Sort(TComparer<TPair<string, THVFuncType>>.Construct(
+    function(const Left, Right: TPair<string, THVFuncType>): Integer
+    begin
+      Result := CompareStr(Left.Key, Right.Key, loUserLocale);
+    end
+  ));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constructor TFuncName.Create(str: string);
+function TFuncNames.PanelStr(separator: string = ','): string;
+begin
+  var _all: TList<TPair<string, THVFuncType>> := Self.All();
+  try
+    Result := '';
+    for var entry in _all do
+      Result := Result + '{' + entry.Key + ':' + THV.HVFuncTypeToChar(entry.Value) + '}' + separator;
+  finally
+    _all.Free();
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TFuncNames.Entry(data: string): TPair<string, THVFuncType>;
 var strings: TStrings;
 begin
  strings := TStringList.Create();
  try
-   ExtractStringsEx([':'], [], str, strings);
-   Self.name := strings[0];
-   if (strings.Count > 1) then
-     Self.typ := THV.CharToHVFuncType(strings[1][1])
+   ExtractStringsEx([':'], [], data, strings);
+   if (strings.Count > 0) then
+     Result.Key := strings[0]
    else
-     Self.typ := THVFuncType.permanent;
+     Result.Key := '';
+
+   if (strings.Count > 1) and (Length(strings[1]) > 0) then
+     Result.Value := THV.CharToHVFuncType(strings[1][1])
+   else
+     Result.Value := THVFuncType.permanent;
  finally
    strings.Free();
  end;
-end;
-
-constructor TFuncName.Create(name: string; typ: THVFuncType);
-begin
- Self.name := name;
- Self.typ := typ;
-end;
-
-function TFuncName.GetPanelStr(): string;
-begin
- Result := Self.name + ':' + THV.HVFuncTypeToChar(Self.typ);
-end;
-
-class function TFuncName.Comparer(): IComparer<TFuncName>;
-begin
- Result := TComparer<TFuncName>.Construct(
-  function(const Left, Right: TFuncName): Integer
-   begin
-    Result := CompareStr(Left.name, Right.name, loUserLocale);
-   end
- );
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -189,4 +148,4 @@ initialization
 finalization
   FuncNames.Free();
 
-end.//unit
+end.

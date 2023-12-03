@@ -9,7 +9,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, houkEvent, frrEv, ExtCtrls;
+  Dialogs, StdCtrls, houkEvent, frrEv, ExtCtrls, Generics.Collections;
 
 type
   TF_HoukEv = class(TForm)
@@ -36,7 +36,7 @@ type
 
 implementation
 
-uses FunkceVyznam;
+uses FunkceVyznam, THnaciVozidlo;
 
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
@@ -76,11 +76,15 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_HoukEv.FillFuncs();
-var vyzn: TFuncName;
 begin
   Self.CB_Func.Clear();
-  for vyzn in FuncNames.Items do
-    Self.CB_Func.Items.Add(vyzn.name);
+  var all: TList<TPair<string, THVFuncType>> := FuncNames.All();
+  try
+    for var entry in all do
+      Self.CB_Func.Items.Add(entry.Key);
+  finally
+    all.Free();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

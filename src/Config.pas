@@ -373,7 +373,8 @@ begin
     Self.scale := ini.ReadInteger('SystemCfg', 'scale', 120);
 
     ModCas.LoadData(ini);
-    FuncNames.ParseWholeList(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
+    FuncNames.Clear();
+    FuncNames.Add(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
     F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
 
     PanelServer.port := ini.ReadInteger('PanelServer', 'port', _DEFAULT_PORT);
@@ -465,7 +466,7 @@ begin
     ini.WriteBool('autosave', 'enabled', Self.autosave);
     ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', Self.autosave_period));
 
-    ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.AllNames());
+    ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.PanelStr());
     ini.WriteBool('RCS', 'ShowOnlyActive', F_Main.CHB_RCS_Show_Only_Active.Checked);
 
     ini.WriteInteger('times', 'rcFree', Self.times.rcFree);

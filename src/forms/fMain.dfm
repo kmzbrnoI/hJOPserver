@@ -3507,7 +3507,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Users
+    ActivePage = TS_FuncsVyznam
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -5806,24 +5806,33 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        object B_Change: TButton
+        object B_FuncChange: TButton
           Left = 9
           Top = 6
           Width = 75
           Height = 25
           Caption = 'Ulo'#382'it'
           TabOrder = 0
-          OnClick = B_ChangeClick
+          OnClick = B_FuncChangeClick
         end
         object CHB_LoadChanges: TCheckBox
-          Left = 96
+          Left = 171
           Top = 10
           Width = 97
           Height = 17
           Caption = 'Na'#269#237'tat zm'#283'ny'
           Checked = True
           State = cbChecked
+          TabOrder = 2
+        end
+        object B_FuncUpdate: TButton
+          Left = 90
+          Top = 6
+          Width = 75
+          Height = 25
+          Caption = 'Aktualizovat'
           TabOrder = 1
+          OnClick = B_FuncUpdateClick
         end
       end
     end

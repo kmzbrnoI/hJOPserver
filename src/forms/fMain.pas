@@ -7,7 +7,7 @@ uses
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, Trakce,
   inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils,
   ComObj, TechnologieTrakce, BoosterDb, System.Actions, System.ImageList,
-  Vcl.Mask, Vcl.Samples.Spin;
+  Vcl.Mask, Vcl.Samples.Spin, Generics.Collections;
 
 const
   _SB_LOG = 0;
@@ -225,7 +225,7 @@ type
     TS_FuncsVyznam: TTabSheet;
     M_funcsVyznam: TMemo;
     P_funcsVyznamBg: TPanel;
-    B_Change: TButton;
+    B_FuncChange: TButton;
     CHB_LoadChanges: TCheckBox;
     AE_Main: TApplicationEvents;
     SD_HV_Stats: TSaveDialog;
@@ -305,6 +305,7 @@ type
     SE_timeNUZ: TSpinEdit;
     Label14: TLabel;
     SE_jcMaxMovingTurnouts: TSpinEdit;
+    B_FuncUpdate: TButton;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_RCS_libClick(Sender: TObject);
@@ -400,7 +401,7 @@ type
     procedure PM_ClientsPopup(Sender: TObject);
     procedure MI_DisconnectClick(Sender: TObject);
     procedure A_FuncsSetExecute(Sender: TObject);
-    procedure B_ChangeClick(Sender: TObject);
+    procedure B_FuncChangeClick(Sender: TObject);
     procedure LV_BlocksKeyPress(Sender: TObject; var Key: Char);
     procedure LV_JCKeyPress(Sender: TObject; var Key: Char);
     procedure LV_MultiJCKeyPress(Sender: TObject; var Key: Char);
@@ -433,12 +434,14 @@ type
     procedure MI_SimulationDiagnosticsClick(Sender: TObject);
     procedure B_ConfigApplyClick(Sender: TObject);
     procedure LV_DigiRychDblClick(Sender: TObject);
+    procedure B_FuncUpdateClick(Sender: TObject);
   private
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
 
     procedure UpdateCallMethod();
     procedure OnFuncNameChange(Sender: TObject);
+    procedure UpdateFuncMemo();
 
     procedure WMPowerBroadcast(var Msg: TMessage); message WM_POWERBROADCAST;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
@@ -535,7 +538,7 @@ uses fTester, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
   fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
   AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB, fBlkCrossingState,
   Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal, fBlkPst, BlockPst, fBlkSignalState,
-  fRychlostiEdit;
+  fRychlostiEdit, THnaciVozidlo;
 
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2047,7 +2050,7 @@ begin
       TEncoding.UTF8);
     try
       ModCas.SaveData(ini);
-      ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.AllNames());
+      ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.PanelStr());
       ini.WriteBool('RCS', 'ShowOnlyActive', Self.CHB_RCS_Show_Only_Active.Checked);
       ini.UpdateFile();
     finally
@@ -2150,7 +2153,7 @@ end;
 
 procedure TF_Main.B_BlkAddClick(Sender: TObject);
 begin
-  F_BlkNew.OpenForm;
+  F_BlkNew.OpenForm();
 end;
 
 procedure TF_Main.B_BlkDeleteClick(Sender: TObject);
@@ -2170,15 +2173,56 @@ begin
   end; // if MesageBox
 end;
 
-procedure TF_Main.B_ChangeClick(Sender: TObject);
-var Data: string;
+procedure TF_Main.B_FuncChangeClick(Sender: TObject);
 begin
-  Data := '';
-  for var i := 0 to Self.M_funcsVyznam.Lines.Count - 1 do
-    if (Self.M_funcsVyznam.Lines[i] <> '') then
-      Data := Data + '{' + Self.M_funcsVyznam.Lines[i] + '};';
-  FuncNames.ParseWholeList(Data);
-  PanelServer.BroadcastFuncsDescription();
+  Self.B_FuncChange.Enabled := False;
+  FuncNames.Clear();
+
+  try
+    try
+      for var line: string in Self.M_funcsVyznam.Lines do
+        if (line <> '') then
+          FuncNames.Add(line);
+    except
+      on E:Exception do
+      begin
+        Application.MessageBox(PChar('Nepodařilo se přidat!'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+        Exit();
+      end;
+    end;
+
+    Application.MessageBox('Úspěšně uloženo', 'OK', MB_OK OR MB_ICONINFORMATION);
+  finally
+    Self.B_FuncChange.Enabled := True;
+    PanelServer.BroadcastFuncsDescription();
+    Self.OnFuncNameChange(Self);
+  end;
+end;
+
+procedure TF_Main.B_FuncUpdateClick(Sender: TObject);
+begin
+  try
+    Self.B_FuncUpdate.Enabled := False;
+    Self.UpdateFuncMemo();
+    Application.MessageBox('Úspěšně aktualizováno', 'OK', MB_OK OR MB_ICONINFORMATION);
+  except
+    on E:Exception do
+      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+  end;
+
+  Self.B_FuncUpdate.Enabled := True;
+end;
+
+procedure TF_Main.UpdateFuncMemo();
+begin
+  var all: TList<TPair<string, THVFuncType>> := FuncNames.All();
+  try
+    Self.M_funcsVyznam.Clear();
+    for var entry in all do
+      Self.M_funcsVyznam.Lines.Add(entry.Key + ':' + THV.HVFuncTypeToChar(entry.Value));
+  finally
+    all.Free();
+  end;
 end;
 
 procedure TF_Main.B_ClearStatsClick(Sender: TObject);
@@ -2190,20 +2234,19 @@ end;
 
 procedure TF_Main.OnFuncNameChange(Sender: TObject);
 begin
-  if (not Self.CHB_LoadChanges.Checked) then
-    Exit();
-  Self.M_funcsVyznam.Clear();
-  for var name in FuncNames.Items do
-    Self.M_funcsVyznam.Lines.Add(name.GetPanelStr());
-
+  var all: TList<TPair<string, THVFuncType>> := FuncNames.All();
   var strs := TStringList.Create();
   try
-    for var name in FuncNames.Items do
-      strs.Add(name.name);
+    for var entry in all do
+      strs.Add(entry.Key);
     F_FuncsSet.UpdateFuncsList(strs);
   finally
+    all.Free();
     strs.Free();
   end;
+
+  if ((Self.CHB_LoadChanges.Checked) and (Self.B_FuncChange.Enabled)) then
+    Self.UpdateFuncMemo();
 end;
 
 procedure TF_Main.B_HVStats_ExportClick(Sender: TObject);
