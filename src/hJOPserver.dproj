@@ -111,10 +111,10 @@
         <DCC_BplOutput>..\x86-64\outunit\</DCC_BplOutput>
         <DCC_DcuOutput>..\x86-64\outunit\</DCC_DcuOutput>
         <DCC_ExeOutput>..\x86-64\output\</DCC_ExeOutput>
-        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.5.0.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.5.1.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_MinorVer>5</VerInfo_MinorVer>
-        <VerInfo_Release>0</VerInfo_Release>
+        <VerInfo_Release>1</VerInfo_Release>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>True</DCC_LocalDebugSymbols>
@@ -138,9 +138,9 @@
         <DCC_DcuOutput>..\x86-64\outunit\</DCC_DcuOutput>
         <DCC_ExeOutput>..\x86-64\output\</DCC_ExeOutput>
         <BT_BuildType>Debug</BT_BuildType>
-        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.4.3.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
-        <VerInfo_MinorVer>4</VerInfo_MinorVer>
-        <VerInfo_Release>3</VerInfo_Release>
+        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.5.1.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_MinorVer>5</VerInfo_MinorVer>
+        <VerInfo_Release>1</VerInfo_Release>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -451,15 +451,12 @@
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k270.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp270.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclBaseExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclBaseExpert270.bpl not found</Excluded_Packages>
-                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclDebugExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclDebugExpert270.bpl not found</Excluded_Packages>
-                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclProjectAnalysisExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclProjectAnalysisExpert270.bpl not found</Excluded_Packages>
-                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclFavoriteFoldersExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclFavoriteFoldersExpert270.bpl not found</Excluded_Packages>
-                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclRepositoryExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclRepositoryExpert270.bpl not found</Excluded_Packages>
-                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclSIMDViewExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclSIMDViewExpert270.bpl not found</Excluded_Packages>
-                    <Excluded_Packages Name="c:\vlak\delphi\components\jcl-build\x86\bpl\JclStackTraceViewerExpert270.bpl">File c:\vlak\delphi\components\jcl-build\x86\bpl\JclStackTraceViewerExpert270.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\JclFavoriteFoldersExpert280.bpl">JCL Open and Save IDE dialogs with favorite folders</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\JclRepositoryExpert280.bpl">JCL Package containing repository wizards</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\JclSIMDViewExpert280.bpl">JCL Debug Window of XMM registers</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\JclStackTraceViewerExpert280.bpl">JCL Stack Trace Viewer</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>

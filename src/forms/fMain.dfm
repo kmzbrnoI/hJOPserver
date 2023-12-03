@@ -4831,6 +4831,8 @@ object F_Main: TF_Main
         OnChange = LV_UsersChange
         OnDblClick = LV_UsersDblClick
         OnKeyPress = LV_UsersKeyPress
+        ExplicitWidth = 1285
+        ExplicitHeight = 573
       end
       object P_Users_pozadi: TPanel
         Left = 0
@@ -4846,6 +4848,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1285
         object P_Users_Left: TPanel
           Left = 0
           Top = 0

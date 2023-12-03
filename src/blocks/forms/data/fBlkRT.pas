@@ -104,12 +104,12 @@ begin
   Self.CB_SignalId := TList<Integer>.Create();
 
   Self.stopEven := TF_BlkRTStopEvent.Create(nil);
-  Self.stopEven.Parent := Self.TS_Zast_lichy;
+  Self.stopEven.Parent := Self.TS_Zast_sudy;
   Self.stopEven.Color := clWhite;
   Self.stopEven.Show();
 
   Self.stopOdd := TF_BlkRTStopEvent.Create(nil);
-  Self.stopOdd.Parent := Self.TS_Zast_sudy;
+  Self.stopOdd.Parent := Self.TS_Zast_lichy;
   Self.stopOdd.Color := clWhite;
   Self.stopOdd.Show();
 
@@ -392,23 +392,23 @@ begin
     Exit();
   end;
 
-  if (CHB_Stop_Odd.Checked) then
+  if (CHB_Stop_Even.Checked) then
   begin
     var str := Self.stopEven.Check();
     if (str <> '') then
     begin
-      Application.MessageBox(PChar('Zastavovací událost zastávky v lichém směru:' + #13#10 + str), 'Nelze uložit data',
+      Application.MessageBox(PChar('Zastavovací událost zastávky v sudém směru:' + #13#10 + str), 'Nelze uložit data',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
   end;
 
-  if (CHB_Stop_Even.Checked) then
+  if (CHB_Stop_Odd.Checked) then
   begin
     var str := Self.stopOdd.Check();
     if (str <> '') then
     begin
-      Application.MessageBox(PChar('Zastavovací událost zastávky v sudém směru:' + #13#10 + str), 'Nelze uložit data',
+      Application.MessageBox(PChar('Zastavovací událost zastávky v lichém směru:' + #13#10 + str), 'Nelze uložit data',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
