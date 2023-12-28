@@ -62,6 +62,12 @@ type
     neprofilJCcheck: TList<Integer>; // seznam id jizdnich cest, ktere na usek uvalily podminku neprofiloveho styku
     trains: TList<Integer>; // seznam souprav na useku ve smeru L --> S
     psts: TList<TBlk>;
+
+    pathCancelZaverTimer: record
+      running: Boolean;
+      finish: TDateTime;
+      zaver: TZaver;
+    end;
   end;
 
   TBlkTrackSpnl = record
@@ -74,7 +80,7 @@ type
   const
     _def_track_state: TBlkTrackState = (occupied: disabled; occupiedOld: disabled; zaver: no; NUZ: false; jcEnd: no;
       note: ''; lockout: ''; trainPredict: - 1; shortCircuit: TBoosterSignal.undef; power: TBoosterSignal.undef;
-      DCC: false; trainMoving: - 1; slowingReady: false; trainLost: false; currentHoukEv: - 1;);
+      DCC: false; trainMoving: - 1; slowingReady: false; trainLost: false; currentHoukEv: - 1; pathCancelZaverTimer: (running: False;));
 
     _DEFAULT_MAX_TRAINS = 1;
 
@@ -230,6 +236,7 @@ type
     procedure PropagatePOdjToRailway();
 
     procedure MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer; rights: TAreaRights);
+    procedure SetZaverWithPathTimer(zaver: TZaver);
 
     procedure PstAdd(pst: TBlk);
     procedure PstRemove(pst: TBlk);
@@ -689,6 +696,9 @@ begin
 
   // kontrola zmeny barev vlivem uplynuti casu predvidaneho odjezdu
   Self.CheckPOdjChanged();
+
+  if ((Self.m_state.pathCancelZaverTimer.running) and (Now >= Self.m_state.pathCancelZaverTimer.finish)) then
+    Self.zaver := Self.m_state.pathCancelZaverTimer.zaver;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -718,6 +728,8 @@ var old: TZaver;
 begin
   if (zaver = Self.zaver) then
     Exit();
+
+  Self.m_state.pathCancelZaverTimer.running := False;
 
   if ((Self.m_state.zaver > TZaver.no) and ((zaver = TZaver.no) or (zaver = TZaver.ab))) then
     Self.NUZ := false;
@@ -1531,8 +1543,8 @@ begin
     if (Self.m_state.NUZ) then
       Result := Result + '-,NUZ<,';
 
-    if ((((not(SenderOR as TArea).NUZtimer) and (Integer(Self.m_state.zaver) > 0) and (Self.m_state.zaver <> TZaver.ab)
-      and (Self.m_state.zaver <> TZaver.staveni) and (Self.typ = btTrack)) or
+    if ((((not(SenderOR as TArea).NUZtimer) and (Self.m_state.zaver > TZaver.no) and (Self.m_state.zaver <> TZaver.ab)
+      and (Self.m_state.zaver <> TZaver.staveni) and (Self.typ = btTrack) and (not Self.m_state.pathCancelZaverTimer.running)) or
       (rights >= superuser)) and (not Self.m_state.NUZ)) then
       Result := Result + '-,NUZ>,';
 
@@ -2724,6 +2736,13 @@ end;
 function TBlkTrack.GetTimeJCReleaseZaver(): TTime;
 begin
   Result := Max(Self.m_settings.jcReleaseZaver, GlobalConfig.times.jcReleaseZaver);
+end;
+
+procedure TBlkTrack.SetZaverWithPathTimer(zaver: TZaver);
+begin
+  Self.m_state.pathCancelZaverTimer.finish := Now + Self.timeJCReleaseZaver;
+  Self.m_state.pathCancelZaverTimer.zaver := zaver;
+  Self.m_state.pathCancelZaverTimer.running := True;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

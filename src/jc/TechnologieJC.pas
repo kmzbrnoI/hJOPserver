@@ -1734,7 +1734,7 @@ begin
 
         Self.m_state.nextTurnout := 0;
 
-        while ((Self.m_state.nextTurnout <> -1) and (Self.m_state.nextTurnout < GlobalConfig.jcMaxMovingTurnouts) and
+        while ((Self.m_state.nextTurnout <> -1) and (Self.m_state.nextTurnout < Integer(GlobalConfig.jcMaxMovingTurnouts)) and
           (Self.m_state.nextTurnout < Self.m_data.turnouts.Count)) do
         begin
           var turnoutZav: TJCTurnoutZav := Self.m_data.turnouts[Self.m_state.nextTurnout];
@@ -2239,9 +2239,9 @@ begin
     begin
       // cesta se rozpada...
       if (Self.ab) then
-        track.Zaver := TZaver.ab
+        track.SetZaverWithPathTimer(TZaver.ab)
       else
-        track.Zaver := TZaver.no;
+        track.SetZaverWithPathTimer(TZaver.no);
 
       Self.destroyEndBlock := Self.destroyEndBlock + 1;
 
@@ -2280,9 +2280,9 @@ begin
       end;
 
       if (Self.ab) then
-        TBlkTrack(track).Zaver := TZaver.ab
+        TBlkTrack(track).SetZaverWithPathTimer(TZaver.ab)
       else
-        TBlkTrack(track).Zaver := TZaver.no;
+        TBlkTrack(track).SetZaverWithPathTimer(TZaver.no);
 
       Self.destroyEndBlock := 1;
 
@@ -2345,9 +2345,9 @@ begin
       var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[0]));
 
       if (Self.ab) then
-        track.Zaver := TZaver.ab
+        track.SetZaverWithPathTimer(TZaver.ab)
       else
-        track.Zaver := TZaver.no;
+        track.SetZaverWithPathTimer(TZaver.no);
 
       var train: TTrain := Self.GetTrain(signal, signalTrack);
 
