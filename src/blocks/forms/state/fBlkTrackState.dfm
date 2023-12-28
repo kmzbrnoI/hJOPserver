@@ -13,11 +13,9 @@ object F_BlkTrackState: TF_BlkTrackState
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object L_Usek21: TLabel
     Left = 8
@@ -317,5 +315,14 @@ object F_BlkTrackState: TF_BlkTrackState
     Caption = 'Slowing Ready'
     Enabled = False
     TabOrder = 13
+  end
+  object CHB_PathCancelZaver: TCheckBox
+    Left = 8
+    Top = 265
+    Width = 201
+    Height = 17
+    Caption = 'Odpo'#269'et ru'#353'en'#237' z'#225'v'#283'ru j'#237'zdn'#237' cestou'
+    Enabled = False
+    TabOrder = 14
   end
 end

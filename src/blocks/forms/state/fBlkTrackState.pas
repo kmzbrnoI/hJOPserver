@@ -36,6 +36,7 @@ type
     CHB_NUZ: TCheckBox;
     CHB_DCC: TCheckBox;
     CHB_SlowingReady: TCheckBox;
+    CHB_PathCancelZaver: TCheckBox;
     procedure B_RefreshClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
     procedure B_Train_DeleteClick(Sender: TObject);
@@ -67,8 +68,8 @@ begin
 
   Self.CHB_NUZ.Checked := Self.track.NUZ;
 
-  CB_Booster_Short.ItemIndex := Integer(Self.track.shortCircuit) + 1;
-  CB_Booster_Power.ItemIndex := Integer(Self.track.power) + 1;
+  Self.CB_Booster_Short.ItemIndex := Integer(Self.track.shortCircuit) + 1;
+  Self.CB_Booster_Power.ItemIndex := Integer(Self.track.power) + 1;
 
   Self.LB_Trains.Clear();
   for var train in Self.track.trains do
@@ -86,6 +87,7 @@ begin
 
   Self.CHB_DCC.Checked := Self.track.DCC;
   Self.CHB_SlowingReady.Checked := Self.track.slowingReady;
+  Self.CHB_PathCancelZaver.Checked := Self.track.state.pathCancelZaverTimer.running;
 end;
 
 procedure TF_BlkTrackState.Apply();
