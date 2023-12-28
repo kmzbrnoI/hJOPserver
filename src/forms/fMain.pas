@@ -2080,6 +2080,12 @@ begin
     Self.LogStatus('ERR: Systém nelze spustit, Trakce není připravena k zapnutí systému');
     Exit();
   end;
+  if (AppEvents.lastException <> nil) then
+  begin
+    Application.MessageBox(PChar('Systém nelze spustit, v minulosti nastala kritická výjimka!'), 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+    Self.LogStatus('ERR: Systém nelze spustit, AppEvents hlásí výjimku');
+    Exit();
+  end;
 
   Self.LogStatus('Zapínám systémy...');
   SystemData.Status := starting;
