@@ -8,21 +8,22 @@ uses
   ActnList, AppEvnts, ComObj;
 
 const
-  _CONSOLE_V = '1.6';
+  _CONSOLE_V = '2.0';
 
 type
   TF_Console = class(TForm)
     M_console: TMemo;
     E_console: TEdit;
-    B_OK_console: TButton;
+    B_ok: TButton;
     PM_Console: TPopupMenu;
     PM_DeleteConsole: TMenuItem;
-    procedure E_consoleKeyPress(Sender: TObject; var Key: Char);
-    procedure B_OK_consoleClick(Sender: TObject);
+    procedure B_okClick(Sender: TObject);
     procedure PM_DeleteConsoleClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure FormResize(Sender: TObject);
   private
-    { Private declarations }
+    procedure Print(str: string);
+
   public
     { Public declarations }
   end;
@@ -32,97 +33,79 @@ var
 
 implementation
 
-uses fMain, TechnologieRCS, GetSystems, TechnologieTrakce,
+uses fMain, TechnologieRCS, GetSystems, TechnologieTrakce, appEv,
   Logging, Block, BlockTrack, BlockDb, Config;
 
 {$R *.dfm}
 
-procedure TF_Console.E_consoleKeyPress(Sender: TObject; var Key: Char);
-begin
-  if (Key = #13) then
-    B_OK_consoleClick(self);
-end;
-
 procedure TF_Console.FormCreate(Sender: TObject);
 begin
-  self.M_console.Lines.Add('Spustena konzole - v ' + _CONSOLE_V);
-  self.M_console.Lines.Add('------------------------');
-  self.M_console.Lines.Add('> ');
+  Self.Print('hJOPserver console v' + _CONSOLE_V);
 end;
 
-procedure TF_Console.B_OK_consoleClick(Sender: TObject);
+procedure TF_Console.FormResize(Sender: TObject);
+begin
+  Self.E_console.Width := Self.ClientWidth - Self.B_ok.Width - 25;
+  Self.E_console.Top := Self.ClientHeight - Self.E_console.Height - 10;
+  Self.B_ok.Top := Self.E_console.Top;
+  Self.B_ok.Left := Self.E_console.Left + Self.E_console.Width + 10;
+  Self.M_console.Height := Self.E_console.Top - 10;
+end;
+
+procedure TF_Console.Print(str: string);
+begin
+  Self.M_console.Lines.Add(str);
+end;
+
+procedure TF_Console.B_okClick(Sender: TObject);
 var
   strings: TStrings;
 begin
   strings := TStringList.Create();
-
   try
-    ExtractStrings([' ', '(', ')'], [], PChar(LowerCase(E_console.Text)), strings);
+    try
+      ExtractStrings([' ', '(', ')'], [], PChar(LowerCase(E_console.Text)), strings);
 
-    M_console.Lines.strings[M_console.Lines.Count - 1] := M_console.Lines.strings[M_console.Lines.Count - 1] +
-      E_console.Text;
+      Self.Print('> ' + Self.E_console.Text);
 
-    if (GlobalConfig.consoleLog) then
-      Log('Console: ' + E_console.Text, llInfo, lsConsole);
+      if (GlobalConfig.consoleLog) then
+        Log('Console: ' + E_console.Text, llInfo, lsConsole);
 
-    if (strings.Count <> 0) then
-    begin
+      if (strings.Count < 1) then
+        Exit();
+
       if (strings[0] = 'help') then
       begin
-        M_console.Lines.Add('Napoveda:');
-        M_console.Lines.Add('centrala [open/close]       Pripojeni k centrale');
-        M_console.Lines.Add('rcs [start/stop/open/close] Povely pro RCS');
-        M_console.Lines.Add('clear                       Smaze konzoli');
-        M_console.Lines.Add('exit                        Zavre okno konzole');
-        M_console.Lines.Add('app-exit                    Nouzove regulerni ukonceni aplikace');
-        M_console.Lines.Add('nuz [id bloku useku]        Nouzove uvolneni zaveru useku');
-      end;
+        Self.Print('Help:');
+        Self.Print('trakce [open/close]         Trakce control');
+        Self.Print('rcs [start/stop/open/close] RCS control');
+        Self.Print('clear                       Clear console window');
+        Self.Print('app-exit                    Emergency exit of hJOPserver');
+        Self.Print('nuz [blockid]               Emergency zaver release');
+        Self.Print('supress-exception           Supress critical system exception blocking system start');
+      end
 
-      if (strings[0] = 'clear') then
-        PM_DeleteConsoleClick(self);
+      else if (strings[0] = 'clear') then
+        Self.PM_DeleteConsoleClick(self)
 
-      if (strings[0] = 'exit') then
-      begin
-        M_console.Lines.Add('Zavreno okno konzole');
-        F_Console.Close;
-      end;
-
-      if (strings[0] = 'centrala') and (strings.Count >= 2) then
+      else if (strings[0] = 'trakce') and (strings.Count >= 2) then
       begin
         if (strings[1] = 'open') then
         begin
-          M_console.Lines.Add('Pripojuji se k centrale...');
-          try
-            TrakceI.Connect();
-          except
-            on E: Exception do
-            begin
-              M_console.Lines.Add(E.Message);
-              Exit();
-            end;
-          end;
-
-          M_console.Lines.Add('Pripojeno k centrale');
+          Self.Print('Connecting to Trakce...');
+          TrakceI.Connect();
+          Self.Print('Done');
         end;
 
         if (strings[1] = 'close') then
         begin
-          M_console.Lines.Add('Odpojuji se od cntraly...');
-
-          try
-            TrakceI.Disconnect();
-          except
-            on E: Exception do
-            begin
-              M_console.Lines.Add(E.Message);
-              Exit();
-            end;
-          end;
-          M_console.Lines.Add('Odpojeno od centraly');
+          Self.Print('Disconnecting from Trakce...');
+          TrakceI.Disconnect();
+          Self.Print('Done');
         end;
-      end;
+      end
 
-      if (strings[0] = 'rcs') and (strings.Count >= 2) then
+      else if (strings[0] = 'rcs') and (strings.Count >= 2) then
       begin
         if (strings[1] = 'start') then
           F_Main.A_RCS_GoExecute(self);
@@ -135,47 +118,60 @@ begin
 
         if (strings[1] = 'close') then
           F_Main.A_RCS_CloseExecute(self);
-      end;
+      end
 
-      if (strings[0] = 'app-exit') then
+      else if (strings[0] = 'app-exit') then
       begin
         F_Main.NUZClose := true;
         F_Main.CloseMessage := false;
         F_Main.Close();
         Exit();
-      end;
+      end
 
-      if (strings[0] = 'nuz') then
+      else if (strings[0] = 'nuz') then
       begin
         if (strings.Count < 2) then
+        begin
+          Self.Print('Missing argument!');
           Exit();
+        end;
 
         var blk := Blocks.GetBlkByID(StrToInt(strings[1]));
 
         if (blk = nil) then
         begin
-          M_console.Lines.Add('Blok s timto id neexistuje');
+          Self.Print('Block '+strings[1] + ' does not exist!');
         end else begin
           case (blk.typ) of
             btTrack, btRT:
               begin
                 (blk as TBlkTrack).Zaver := TZaver.no;
-                M_console.Lines.Add('Zrusen zaver useku ' + blk.name);
+                Self.Print('NUZ done on ' + blk.name);
               end;
           else
-            M_console.Lines.Add('Na bloku s timto typem neumim provest NUZ');
+            Self.Print('Cannot perform NUZ on this block type!');
           end;
         end;
-      end;
-    end; // Count <> 0
-  except
-    on E: Exception do
-      M_console.Lines.Add('Exception : ' + E.Message);
-  end;
+      end
 
-  M_console.Lines.Add('> ');
-  E_console.Text := '';
-  strings.Free;
+      else if (strings[0] = 'supress-exception') then
+      begin
+        AppEvents.lastException := nil;
+        Self.Print('Exception successfully supressed.');
+      end
+
+      else begin
+        Self.Print('Unknown command: '+strings[0]);
+      end;
+
+      Self.E_console.Text := '';
+    except
+      on E: Exception do
+        Self.Print('Exception : ' + E.Message);
+    end;
+  finally
+    strings.Free();
+  end;
 end;
 
 procedure TF_Console.PM_DeleteConsoleClick(Sender: TObject);

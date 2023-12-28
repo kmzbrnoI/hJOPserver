@@ -2,9 +2,9 @@ object F_Console: TF_Console
   Left = 562
   Top = 381
   BorderIcons = [biSystemMenu]
-  BorderStyle = bsToolWindow
+  BorderStyle = bsSizeToolWin
   Caption = 'Konzole'
-  ClientHeight = 441
+  ClientHeight = 443
   ClientWidth = 570
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -12,11 +12,9 @@ object F_Console: TF_Console
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
-  PixelsPerInch = 96
+  OnResize = FormResize
   TextHeight = 13
   object M_console: TMemo
     Left = 0
@@ -40,11 +38,12 @@ object F_Console: TF_Console
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 2
+    ExplicitWidth = 562
   end
   object E_console: TEdit
-    Left = 0
+    Left = 7
     Top = 409
-    Width = 497
+    Width = 490
     Height = 23
     Margins.Left = 2
     Margins.Top = 2
@@ -58,20 +57,20 @@ object F_Console: TF_Console
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    OnKeyPress = E_consoleKeyPress
   end
-  object B_OK_console: TButton
+  object B_ok: TButton
     Left = 507
-    Top = 407
+    Top = 409
     Width = 57
-    Height = 26
+    Height = 23
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Odeslat'
+    Caption = 'Prove'#271
+    Default = True
     TabOrder = 1
-    OnClick = B_OK_consoleClick
+    OnClick = B_okClick
   end
   object PM_Console: TPopupMenu
     Left = 8
