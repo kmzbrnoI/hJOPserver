@@ -14,12 +14,10 @@ object F_BlkTurnout: TF_BlkTurnout
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
   TextHeight = 13
   object L_Vyh01: TLabel
     Left = 7
@@ -282,7 +280,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 9
+    TabOrder = 10
     OnClick = B_StornoClick
   end
   object B_Save: TButton
@@ -296,7 +294,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 8
+    TabOrder = 9
     OnClick = B_SaveClick
   end
   object GB_Lock: TGroupBox
@@ -305,7 +303,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Width = 304
     Height = 83
     Caption = ' Z'#225'mek '
-    TabOrder = 5
+    TabOrder = 6
     object Label2: TLabel
       Left = 12
       Top = 46
@@ -352,7 +350,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Width = 304
     Height = 138
     Caption = ' Neprofilov'#233' styky '
-    TabOrder = 6
+    TabOrder = 7
     object CHB_npPlus: TCheckBox
       Left = 12
       Top = 24
@@ -394,7 +392,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Width = 304
     Height = 73
     Caption = ' Spojka '
-    TabOrder = 4
+    TabOrder = 5
     object CHB_Coupling: TCheckBox
       Left = 16
       Top = 22
@@ -562,7 +560,7 @@ object F_BlkTurnout: TF_BlkTurnout
     Width = 302
     Height = 156
     Caption = ' Voli'#269'e pro p'#345'estaven'#237' (v pultu) '
-    TabOrder = 7
+    TabOrder = 8
     object Label7: TLabel
       Left = 7
       Top = 88
@@ -682,5 +680,13 @@ object F_BlkTurnout: TF_BlkTurnout
       Caption = 'Voli'#269'e aktivn'#237' pouze p'#345'i aktivn'#237'm pomocn'#233'm stav'#283'dle'
       TabOrder = 1
     end
+  end
+  object CHB_ManAlwaysEm: TCheckBox
+    Left = 8
+    Top = 426
+    Width = 160
+    Height = 17
+    Caption = 'Ru'#269'n'#237' stav'#283'n'#237' v'#382'dy nouzov'#233
+    TabOrder = 4
   end
 end

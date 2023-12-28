@@ -53,6 +53,7 @@ type
     posDetection: Boolean;
     indication: TBlkTurnoutIndication;
     controllers: TBlkTurnoutControllers;
+    manAlwaysEm: Boolean; // if manual position changing should always be 'emergency' ('nouzove staveni')
   end;
 
   TBlkTurnoutState = record
@@ -362,23 +363,25 @@ begin
 
   Self.m_settings.indication.enabled := (ini_tech.ReadString(section, 'indRcsPlus', '') <> '');
   if (Self.m_settings.indication.enabled) then
-   begin
+  begin
     Self.m_settings.indication.rcsPlus.Load(ini_tech.ReadString(section, 'indRcsPlus', '0:0'));
     Self.m_settings.indication.rcsMinus.Load(ini_tech.ReadString(section, 'indRcsMinus', '0:0'));
     Self.m_settings.indication.pstOnly := ini_tech.ReadBool(section, 'indPstOnly', false);
     Self.RCSRegister(Self.m_settings.indication.rcsPlus);
     Self.RCSRegister(Self.m_settings.indication.rcsMinus);
-   end;
+  end;
 
   Self.m_settings.controllers.enabled := (ini_tech.ReadString(section, 'contRcsPlus', '') <> '');
   if (Self.m_settings.controllers.enabled) then
-   begin
+  begin
     Self.m_settings.controllers.rcsPlus.Load(ini_tech.ReadString(section, 'contRcsPlus', '0:0'));
     Self.m_settings.controllers.rcsMinus.Load(ini_tech.ReadString(section, 'contRcsMinus', '0:0'));
     Self.m_settings.controllers.pstOnly := ini_tech.ReadBool(section, 'contPstOnly', false);
     Self.RCSRegister(Self.m_settings.controllers.rcsPlus);
     Self.RCSRegister(Self.m_settings.controllers.rcsMinus);
-   end;
+  end;
+
+  Self.m_settings.manAlwaysEm := ini_tech.ReadBool(section, 'manAlwaysEm', False);
 
   if (Self.posDetection) then
   begin
@@ -417,18 +420,21 @@ begin
   end;
 
   if (Self.m_settings.indication.enabled) then
-   begin
+  begin
     ini_tech.WriteString(section, 'indRcsPlus', Self.m_settings.indication.rcsPlus.ToString());
     ini_tech.WriteString(section, 'indRcsMinus', Self.m_settings.indication.rcsMinus.ToString());
     ini_tech.WriteBool(section, 'indPstOnly', Self.m_settings.indication.pstOnly);
-   end;
+  end;
 
   if (Self.m_settings.controllers.enabled) then
-   begin
+  begin
     ini_tech.WriteString(section, 'contRcsPlus', Self.m_settings.controllers.rcsPlus.ToString());
     ini_tech.WriteString(section, 'contRcsMinus', Self.m_settings.controllers.rcsMinus.ToString());
     ini_tech.WriteBool(section, 'contPstOnly', Self.m_settings.controllers.pstOnly);
-   end;
+  end;
+
+  if (Self.m_settings.manAlwaysEm) then
+    ini_tech.WriteBool(section, 'manAlwaysEm', True);
 end;
 
 procedure TBlkTurnout.SaveState(ini_stat: TMemIniFile; const section: string);
@@ -2059,8 +2065,7 @@ end;
 
 function TBlkTurnout.SelfMenuNS(): Boolean;
 begin
-  Result := ((Self.occupied = TTrackState.occupied) and (Self.lock = nil)) or (Self.PstIsActive()) or
-    ((Self.parent <> nil) and (not Self.parent.occupAvailable) and (Self.lock = nil));
+  Result := (Self.m_settings.manAlwaysEm) or ((Self.occupied = TTrackState.occupied) and (Self.lock = nil)) or (Self.PstIsActive());
 end;
 
 end.

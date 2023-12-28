@@ -68,6 +68,7 @@ type
     SE_Cont_Minus_Port: TSpinEdit;
     CHB_Controllers: TCheckBox;
     CHB_Controllers_Pst: TCheckBox;
+    CHB_ManAlwaysEm: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -182,6 +183,7 @@ procedure TF_BlkTurnout.NewOpenForm();
 begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
+  Self.CHB_ManAlwaysEm.Checked := False;
 
   Self.SE_Out_Plus_port.Value := 0;
   Self.SE_Out_Plus_module.Value := 1;
@@ -229,6 +231,8 @@ begin
   Self.SE_ID.Value := glob.id;
 
   var settings := Self.block.GetSettings();
+
+  Self.CHB_ManAlwaysEm.Checked := settings.manAlwaysEm;
 
   Self.CHB_Coupling.Checked := (settings.coupling > -1);
   Self.CHB_CouplingClick(Self.CHB_Coupling);
@@ -548,6 +552,7 @@ begin
   end;
 
   var settings: TBlkTurnoutSettings;
+  settings.manAlwaysEm := Self.CHB_ManAlwaysEm.Checked;
   settings.posDetection := Self.CHB_Feedback.Checked;
 
   settings.rcs.outp := TRCS.RCSAddr(SE_Out_Plus_module.Value, SE_Out_Plus_port.Value);
