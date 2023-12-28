@@ -16,11 +16,12 @@ type
 
   TGlobalConfig = class
   const
-    _TIME_DEFAULT_RC = 3;
-    _TIME_DEFAULT_RC_VC = 20;
-    _TIME_DEFAULT_RC_PC = 10;
-    _TIME_DEFAULT_NUZ = 20;
-    _JC_DEFAULT_MAX_MOVING_TURNOUTS = 4;
+    _TIME_DEFAULT_RC: Integer = 3; // seconds
+    _TIME_DEFAULT_RC_VC: Integer = 20; // seconds
+    _TIME_DEFAULT_RC_PC: Integer = 10; // seconds
+    _TIME_DEFAULT_NUZ: Integer = 20; // seconds
+    _TIME_DEFAULT_JC_RELEASE_ZAVER: string = '1.0'; // seconds
+    _JC_DEFAULT_MAX_MOVING_TURNOUTS: Integer = 4;
 
   public
     autosave: Boolean;
@@ -37,6 +38,7 @@ type
       rcVcOccupied: Cardinal;
       rcPcOccupied: Cardinal;
       nuz: Cardinal;
+      jcReleaseZaver: TTime;
     end;
 
     procedure LoadFromFile(filename: string);
@@ -66,7 +68,7 @@ var
 
 implementation
 
-uses fSplash, fAdminForm, GetSystems, Diagnostics, fMain,
+uses fSplash, fAdminForm, GetSystems, Diagnostics, fMain, ownConvert,
   AreaDb, BlockDb, BoosterDb, THVDatabase,
   TCPServerPT, Logging, TCPServerPanel, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
   DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce, fTester,
@@ -358,8 +360,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TGlobalConfig.LoadFromFile(filename: string);
-var str: string;
-  ini: TMemIniFile;
+var ini: TMemIniFile;
 begin
   Log('Načítám globální konfiguraci: ' + filename, TLogLevel.llInfo, lsData);
   F_Main.E_configFilename.Text := filename;
@@ -382,11 +383,13 @@ begin
     Self.LoadCfgPtServer(ini);
 
     // autosave
-    Self.autosave := ini.ReadBool('autosave', 'enabled', true);
-    str := ini.ReadString('autosave', 'period', '00:30');
-    Self.autosave_period := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
-    if (Self.autosave) then
-      Self.autosave_next := Now + Self.autosave_period;
+    begin
+      Self.autosave := ini.ReadBool('autosave', 'enabled', true);
+      var str := ini.ReadString('autosave', 'period', '00:30');
+      Self.autosave_period := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
+      if (Self.autosave) then
+        Self.autosave_next := Now + Self.autosave_period;
+    end;
 
     // UDP discovery
     UDPdisc := TUDPDiscover.Create(_DISC_DEFAULT_PORT, ini.ReadString('PanelServer', 'nazev', ''),
@@ -404,6 +407,7 @@ begin
     Self.times.rcVcOccupied := ini.ReadInteger('times', 'rcVcOccupied', _TIME_DEFAULT_RC_VC);
     Self.times.rcPcOccupied := ini.ReadInteger('times', 'rcPcOccupied', _TIME_DEFAULT_RC_PC);
     Self.times.nuz := ini.ReadInteger('times', 'nuz', _TIME_DEFAULT_NUZ);
+    Self.times.jcReleaseZaver := SecTenthsToTime(ini.ReadString('times', 'jcReleaseZaver', _TIME_DEFAULT_JC_RELEASE_ZAVER));
 
     Self.jcMaxMovingTurnouts := ini.ReadInteger('JC', 'maxMovingTurnouts', _JC_DEFAULT_MAX_MOVING_TURNOUTS);
     if (Self.jcMaxMovingTurnouts < 1) then
@@ -473,6 +477,7 @@ begin
     ini.WriteInteger('times', 'rcVcOccupied', Self.times.rcVcOccupied);
     ini.WriteInteger('times', 'rcPcOccupied', Self.times.rcPcOccupied);
     ini.WriteInteger('times', 'nuz', Self.times.nuz);
+    ini.WriteString('times', 'jcReleaseZaver', TimeToSecTenths(Self.times.jcReleaseZaver));
 
     ini.WriteInteger('JC', 'maxMovingTurnouts', Self.jcMaxMovingTurnouts);
   finally

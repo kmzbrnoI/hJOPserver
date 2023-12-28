@@ -2,7 +2,7 @@
 
 interface
 
-uses Windows, SysUtils, Graphics, StrUtils, Generics.Collections;
+uses Windows, SysUtils, Graphics, StrUtils, Generics.Collections, Classes;
 
 function BoolToYesNo(bool: Boolean): string;
 function BoolToTick(bool: Boolean): string;
@@ -16,7 +16,12 @@ function ColorToStr(color: TColor): string;
 function SerializeIntList(l: TList<Integer>): string;
 function SerializeStrList(l: TList<string>; space: Boolean = false): string;
 
+function SecTenthsToTime(str: string): TTime;
+function TimeToSecTenths(time: TTime): string;
+
 function GetObjsList(first: TObject = nil; second: TObject = nil; third: TObject = nil): TList<TObject>;
+
+////////////////////////////////////////////////////////////////////////////////
 
 implementation
 
@@ -96,6 +101,30 @@ begin
     Result.Free();
     raise;
   end;
+end;
+
+function SecTenthsToTime(str: string): TTime;
+begin
+  var strs: TStrings := TStringList.Create();
+  try
+    ExtractStrings([FormatSettings.DecimalSeparator], [], PChar(str), strs);
+    if (strs.Count < 1) then
+      raise EConvertError.Create('"'+str+'" is not a number in format "15.5"');
+    var seconds := StrToInt(strs[0]);
+    var ms: Integer := 0;
+    if (strs.Count > 1) then
+      ms := StrToInt(strs[1])*100;
+    Result := EncodeTime(0, seconds div 60, seconds mod 60, ms);
+  finally
+    strs.Free();
+  end;
+end;
+
+function TimeToSecTenths(time: TTime): string;
+var hour, min, sec, msec: Word;
+begin
+  DecodeTime(time, hour, min, sec, msec);
+  Result := IntToStr(sec+(min*60)) + '.' + IntToStr(msec div 100);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

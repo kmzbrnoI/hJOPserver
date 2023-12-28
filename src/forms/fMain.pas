@@ -7,7 +7,7 @@ uses
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, Trakce,
   inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils,
   ComObj, TechnologieTrakce, BoosterDb, System.Actions, System.ImageList,
-  Vcl.Mask, Vcl.Samples.Spin, Generics.Collections;
+  Vcl.Mask, Vcl.Samples.Spin, Generics.Collections, Vcl.NumberBox;
 
 const
   _SB_LOG = 0;
@@ -306,6 +306,8 @@ type
     Label14: TLabel;
     SE_jcMaxMovingTurnouts: TSpinEdit;
     B_FuncUpdate: TButton;
+    NB_TimeJCZav: TNumberBox;
+    Label15: TLabel;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_RCS_libClick(Sender: TObject);
@@ -524,7 +526,7 @@ var
 
 implementation
 
-uses fTester, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC,
+uses fTester, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fAbout, version, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
   TechnologieRCS, TechnologieJC, Config, fConsole, AreaDb, BlockDb,
@@ -3536,6 +3538,7 @@ begin
   Self.SE_timeRCVC.Value := GlobalConfig.times.rcVcOccupied;
   Self.SE_timeRCPC.Value := GlobalConfig.times.rcPcOccupied;
   Self.SE_timeNUZ.Value := GlobalConfig.times.nuz;
+  Self.NB_TimeJCZav.Text := TimeToSecTenths(GlobalConfig.times.jcReleaseZaver);
 
   Self.SE_jcMaxMovingTurnouts.Value := GlobalConfig.jcMaxMovingTurnouts;
 end;
@@ -3545,47 +3548,56 @@ end;
 procedure TF_Main.B_ConfigApplyClick(Sender: TObject);
 begin
   try
-    GlobalConfig.scale := StrToInt(Self.E_Scale.Text);
+    try
+      GlobalConfig.scale := StrToInt(Self.E_Scale.Text);
+    except
+      on E: Exception do
+      begin
+        Application.MessageBox(PChar('Nepodařilo se načíst měřítko:' + #13#10 + E.Message), 'Chyba',
+          MB_OK OR MB_ICONWARNING);
+        Exit();
+      end;
+    end;
+
+    GlobalConfig.autosave := Self.CHB_Autosave.Checked;
+    GlobalConfig.autostart := Self.CHB_autostart.Checked;
+    GlobalConfig.consoleLog := Self.CHB_Log_console.Checked;
+
+    if (Self.CHB_Autosave.Checked) then
+    begin
+      try
+        GlobalConfig.autosave_period := EncodeTime(0, StrToInt(LeftStr(Self.ME_autosave_period.Text, 2)),
+          StrToInt(Copy(Self.ME_autosave_period.Text, 4, 2)), 0);
+      except
+        GlobalConfig.autosave := False;
+        Application.MessageBox('Nepodařilo se načíst čas automatického uložení', 'Chyba', MB_OK OR MB_ICONERROR);
+      end;
+    end;
+
+    case (Self.CB_MainTimerInterval.ItemIndex) of
+      0: Self.T_Main.Interval := 25;
+      1: Self.T_Main.Interval := 50;
+      2: Self.T_Main.Interval := 100;
+      3: Self.T_Main.Interval := 200;
+      4: Self.T_Main.Interval := 250;
+      5: Self.T_Main.Interval := 500;
+    end;
+    Log('Primární smyčka nastavena na ' + IntToStr(Self.T_Main.Interval) + ' ms', TLogLevel.llInfo);
+
+    GlobalConfig.times.rcFree := Self.SE_timeRC.Value;
+    GlobalConfig.times.rcVcOccupied := Self.SE_timeRCVC.Value;
+    GlobalConfig.times.rcPcOccupied := Self.SE_timeRCPC.Value;
+    GlobalConfig.times.nuz := Self.SE_timeNUZ.Value;
+    GlobalConfig.times.jcReleaseZaver := SecTenthsToTime(Self.NB_TimeJCZav.Text);
+
+    GlobalConfig.jcMaxMovingTurnouts := Self.SE_jcMaxMovingTurnouts.Value;
   except
     on E: Exception do
     begin
-      Application.MessageBox(PChar('Nepodařilo se načíst měřítko:' + #13#10 + E.Message), 'Chyba',
-        MB_OK OR MB_ICONWARNING);
+      Application.MessageBox(PChar('Chyba:' + E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
   end;
-
-  GlobalConfig.autosave := Self.CHB_Autosave.Checked;
-  GlobalConfig.autostart := Self.CHB_autostart.Checked;
-  GlobalConfig.consoleLog := Self.CHB_Log_console.Checked;
-
-  if (Self.CHB_Autosave.Checked) then
-  begin
-    try
-      GlobalConfig.autosave_period := EncodeTime(0, StrToInt(LeftStr(Self.ME_autosave_period.Text, 2)),
-        StrToInt(Copy(Self.ME_autosave_period.Text, 4, 2)), 0);
-    except
-      GlobalConfig.autosave := False;
-      Application.MessageBox('Nepodařilo se načíst čas automatického uložení', 'Chyba', MB_OK OR MB_ICONERROR);
-    end;
-  end;
-
-  case (Self.CB_MainTimerInterval.ItemIndex) of
-    0: Self.T_Main.Interval := 25;
-    1: Self.T_Main.Interval := 50;
-    2: Self.T_Main.Interval := 100;
-    3: Self.T_Main.Interval := 200;
-    4: Self.T_Main.Interval := 250;
-    5: Self.T_Main.Interval := 500;
-  end;
-  Log('Primární smyčka nastavena na ' + IntToStr(Self.T_Main.Interval) + ' ms', TLogLevel.llInfo);
-
-  GlobalConfig.times.rcFree := Self.SE_timeRC.Value;
-  GlobalConfig.times.rcVcOccupied := Self.SE_timeRCVC.Value;
-  GlobalConfig.times.rcPcOccupied := Self.SE_timeRCPC.Value;
-  GlobalConfig.times.nuz := Self.SE_timeNUZ.Value;
-
-  GlobalConfig.jcMaxMovingTurnouts := Self.SE_jcMaxMovingTurnouts.Value;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

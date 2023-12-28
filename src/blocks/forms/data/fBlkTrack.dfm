@@ -4,8 +4,8 @@ object F_BlkTrack: TF_BlkTrack
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'F_BlkTrack'
-  ClientHeight = 383
-  ClientWidth = 321
+  ClientHeight = 370
+  ClientWidth = 409
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,14 +13,12 @@ object F_BlkTrack: TF_BlkTrack
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object Label2: TLabel
     Left = 8
-    Top = 40
+    Top = 32
     Width = 14
     Height = 13
     Margins.Left = 2
@@ -42,18 +40,18 @@ object F_BlkTrack: TF_BlkTrack
   end
   object Label3: TLabel
     Left = 8
-    Top = 72
+    Top = 58
     Width = 86
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'D'#233'lka '#250'seku (cm):'
+    Caption = 'D'#233'lka '#250'seku [cm]:'
   end
   object Label5: TLabel
-    Left = 7
-    Top = 139
+    Left = 8
+    Top = 108
     Width = 75
     Height = 13
     Margins.Left = 2
@@ -64,7 +62,7 @@ object F_BlkTrack: TF_BlkTrack
   end
   object Label4: TLabel
     Left = 8
-    Top = 106
+    Top = 83
     Width = 49
     Height = 13
     Margins.Left = 2
@@ -75,7 +73,7 @@ object F_BlkTrack: TF_BlkTrack
   end
   object Label6: TLabel
     Left = 8
-    Top = 171
+    Top = 129
     Width = 97
     Height = 13
     Margins.Left = 2
@@ -87,8 +85,8 @@ object F_BlkTrack: TF_BlkTrack
     ParentColor = False
   end
   object B_OK: TButton
-    Left = 239
-    Top = 351
+    Left = 327
+    Top = 337
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -97,12 +95,12 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 7
+    TabOrder = 9
     OnClick = B_OKClick
   end
   object B_Storno: TButton
-    Left = 160
-    Top = 351
+    Left = 248
+    Top = 337
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -110,13 +108,13 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 8
+    TabOrder = 10
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
-    Left = 119
-    Top = 40
-    Width = 192
+    Left = 176
+    Top = 32
+    Width = 226
     Height = 22
     Margins.Left = 2
     Margins.Top = 2
@@ -128,9 +126,9 @@ object F_BlkTrack: TF_BlkTrack
     Value = 1
   end
   object E_Name: TEdit
-    Left = 119
+    Left = 176
     Top = 7
-    Width = 192
+    Width = 226
     Height = 21
     Margins.Left = 2
     Margins.Top = 2
@@ -141,18 +139,18 @@ object F_BlkTrack: TF_BlkTrack
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 208
-    Width = 305
-    Height = 129
+    Top = 182
+    Width = 395
+    Height = 139
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce obsazen'#237' - vstupy - RCS  '
-    TabOrder = 6
+    TabOrder = 8
     object L_det1: TLabel
       Left = 12
-      Top = 19
+      Top = 32
       Width = 54
       Height = 13
       Margins.Left = 2
@@ -163,7 +161,7 @@ object F_BlkTrack: TF_BlkTrack
     end
     object L_det2: TLabel
       Left = 12
-      Top = 45
+      Top = 58
       Width = 54
       Height = 13
       Margins.Left = 2
@@ -174,7 +172,7 @@ object F_BlkTrack: TF_BlkTrack
     end
     object L_det3: TLabel
       Left = 12
-      Top = 71
+      Top = 84
       Width = 54
       Height = 13
       Margins.Left = 2
@@ -185,7 +183,7 @@ object F_BlkTrack: TF_BlkTrack
     end
     object L_det4: TLabel
       Left = 12
-      Top = 97
+      Top = 110
       Width = 54
       Height = 13
       Margins.Left = 2
@@ -194,9 +192,31 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Bottom = 2
       Caption = '4. detektor:'
     end
-    object SE_Port1: TSpinEdit
+    object L_P01: TLabel
       Left = 224
-      Top = 19
+      Top = 16
+      Width = 29
+      Height = 12
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Modul'
+    end
+    object Label7: TLabel
+      Left = 312
+      Top = 15
+      Width = 19
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Port'
+    end
+    object SE_Port1: TSpinEdit
+      Left = 312
+      Top = 32
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -210,8 +230,8 @@ object F_BlkTrack: TF_BlkTrack
       Value = 0
     end
     object SE_Board1: TSpinEdit
-      Left = 136
-      Top = 19
+      Left = 224
+      Top = 32
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -227,8 +247,8 @@ object F_BlkTrack: TF_BlkTrack
     end
     object CHB_D1: TCheckBox
       Tag = 1
-      Left = 100
-      Top = 20
+      Left = 188
+      Top = 33
       Width = 17
       Height = 17
       Margins.Left = 2
@@ -240,8 +260,8 @@ object F_BlkTrack: TF_BlkTrack
     end
     object CHB_D2: TCheckBox
       Tag = 2
-      Left = 100
-      Top = 46
+      Left = 188
+      Top = 59
       Width = 17
       Height = 17
       Margins.Left = 2
@@ -252,8 +272,8 @@ object F_BlkTrack: TF_BlkTrack
       OnClick = CHB_D1Click
     end
     object SE_Board2: TSpinEdit
-      Left = 136
-      Top = 45
+      Left = 224
+      Top = 58
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -268,8 +288,8 @@ object F_BlkTrack: TF_BlkTrack
       OnExit = SE_RCS_BoardExit
     end
     object SE_Port2: TSpinEdit
-      Left = 224
-      Top = 45
+      Left = 312
+      Top = 58
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -284,8 +304,8 @@ object F_BlkTrack: TF_BlkTrack
     end
     object CHB_D3: TCheckBox
       Tag = 3
-      Left = 100
-      Top = 73
+      Left = 188
+      Top = 86
       Width = 17
       Height = 17
       Margins.Left = 2
@@ -296,8 +316,8 @@ object F_BlkTrack: TF_BlkTrack
       OnClick = CHB_D1Click
     end
     object SE_Board3: TSpinEdit
-      Left = 136
-      Top = 71
+      Left = 224
+      Top = 84
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -312,8 +332,8 @@ object F_BlkTrack: TF_BlkTrack
       OnExit = SE_RCS_BoardExit
     end
     object SE_Port3: TSpinEdit
-      Left = 224
-      Top = 71
+      Left = 312
+      Top = 84
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -328,8 +348,8 @@ object F_BlkTrack: TF_BlkTrack
     end
     object CHB_D4: TCheckBox
       Tag = 4
-      Left = 100
-      Top = 99
+      Left = 188
+      Top = 112
       Width = 17
       Height = 17
       Margins.Left = 2
@@ -340,8 +360,8 @@ object F_BlkTrack: TF_BlkTrack
       OnClick = CHB_D1Click
     end
     object SE_Board4: TSpinEdit
-      Left = 136
-      Top = 97
+      Left = 224
+      Top = 110
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -356,8 +376,8 @@ object F_BlkTrack: TF_BlkTrack
       OnExit = SE_RCS_BoardExit
     end
     object SE_Port4: TSpinEdit
-      Left = 224
-      Top = 97
+      Left = 312
+      Top = 110
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -372,9 +392,9 @@ object F_BlkTrack: TF_BlkTrack
     end
   end
   object E_Length: TEdit
-    Left = 119
-    Top = 72
-    Width = 192
+    Left = 176
+    Top = 58
+    Width = 226
     Height = 21
     Margins.Left = 2
     Margins.Top = 2
@@ -386,8 +406,8 @@ object F_BlkTrack: TF_BlkTrack
     Text = '0'
   end
   object CHB_Loop: TCheckBox
-    Left = 119
-    Top = 139
+    Left = 176
+    Top = 108
     Width = 17
     Height = 17
     Margins.Left = 2
@@ -397,9 +417,9 @@ object F_BlkTrack: TF_BlkTrack
     TabOrder = 4
   end
   object CB_Booster: TComboBox
-    Left = 119
-    Top = 106
-    Width = 194
+    Left = 176
+    Top = 83
+    Width = 226
     Height = 21
     Margins.Left = 2
     Margins.Top = 2
@@ -409,9 +429,9 @@ object F_BlkTrack: TF_BlkTrack
     TabOrder = 3
   end
   object SE_Max_Trains: TSpinEdit
-    Left = 119
-    Top = 171
-    Width = 192
+    Left = 176
+    Top = 129
+    Width = 226
     Height = 22
     Margins.Left = 2
     Margins.Top = 2
@@ -421,5 +441,23 @@ object F_BlkTrack: TF_BlkTrack
     MinValue = 1
     TabOrder = 5
     Value = 1
+  end
+  object NB_TimeJCZav: TNumberBox
+    Left = 296
+    Top = 156
+    Width = 105
+    Height = 21
+    Decimal = 1
+    Mode = nbmFloat
+    TabOrder = 7
+  end
+  object CHB_TimeJCZav: TCheckBox
+    Left = 8
+    Top = 156
+    Width = 273
+    Height = 17
+    Caption = 'Prodlou'#382'en'#237' podr'#382'en'#237' z'#225'v'#283'ru p'#345'i rozpadu cest na [s]:'
+    TabOrder = 6
+    OnClick = CHB_TimeJCZavClick
   end
 end

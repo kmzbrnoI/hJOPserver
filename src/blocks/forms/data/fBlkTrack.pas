@@ -5,7 +5,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, Spin, ComCtrls, fMain, BlockDb, Block, BlockTrack,
-  Generics.Collections;
+  Generics.Collections, Vcl.NumberBox;
 
 type
   TF_BlkTrack = class(TForm)
@@ -40,11 +40,16 @@ type
     SE_Port4: TSpinEdit;
     SE_Max_Trains: TSpinEdit;
     Label6: TLabel;
+    NB_TimeJCZav: TNumberBox;
+    CHB_TimeJCZav: TCheckBox;
+    L_P01: TLabel;
+    Label7: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_D1Click(Sender: TObject);
     procedure SE_RCS_BoardExit(Sender: TObject);
+    procedure CHB_TimeJCZavClick(Sender: TObject);
   private
     isNewBlock: Boolean;
     block: TBlkTrack;
@@ -63,8 +68,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, BoosterDb, DataBloky,
-  Booster, Area;
+uses GetSystems, TechnologieRCS, BoosterDb, DataBloky, Booster, Area, ownConvert;
 
 {$R *.dfm}
 
@@ -109,6 +113,8 @@ begin
   Self.CB_Booster.ItemIndex := -1;
   Self.SE_Max_Trains.Enabled := true;
   Self.SE_Max_Trains.Value := 1;
+  Self.CHB_TimeJCZav.Checked := False;
+  Self.CHB_TimeJCZavClick(Self.CHB_TimeJCZav);
 
   Self.SE_Port1.Value := 0;
   Self.SE_Board1.Value := 1;
@@ -139,6 +145,9 @@ begin
 
   Self.SE_Max_Trains.Value := settings.maxTrains;
   Self.SE_Max_Trains.Enabled := Self.block.spnl.stationTrack or Self.block.spnl.trainPos;
+  Self.CHB_TimeJCZav.Checked := (settings.jcReleaseZaver <> 0);
+  Self.CHB_TimeJCZavClick(Self.CHB_TimeJCZav);
+  Self.NB_TimeJCZav.Text := ownConvert.TimeToSecTenths(settings.jcReleaseZaver);
 
   Self.CHB_D1.Checked := false;
   Self.CHB_D2.Checked := false;
@@ -315,6 +324,7 @@ begin
   settings.lenght := StrToFloatDef(Self.E_Length.Text, 0);
   settings.loop := Self.CHB_Loop.Checked;
   settings.boosterId := Boosters.sorted[Self.CB_Booster.ItemIndex].id;
+  settings.jcReleaseZaver := ownConvert.SecTenthsToTime(Self.NB_TimeJCZav.Text);
 
   settings.houkEvL := Self.block.GetSettings().houkEvL;
   settings.houkEvS := Self.block.GetSettings().houkEvS;
@@ -392,6 +402,13 @@ begin
     end;
   end;
 
+end;
+
+procedure TF_BlkTrack.CHB_TimeJCZavClick(Sender: TObject);
+begin
+  Self.NB_TimeJCZav.Enabled := Self.CHB_TimeJCZav.Checked;
+  if (not Self.CHB_TimeJCZav.Checked) then
+    Self.NB_TimeJCZav.Value := 0;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

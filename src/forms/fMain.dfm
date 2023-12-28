@@ -4831,8 +4831,6 @@ object F_Main: TF_Main
         OnChange = LV_UsersChange
         OnDblClick = LV_UsersDblClick
         OnKeyPress = LV_UsersKeyPress
-        ExplicitWidth = 1285
-        ExplicitHeight = 573
       end
       object P_Users_pozadi: TPanel
         Left = 0
@@ -4848,7 +4846,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1285
         object P_Users_Left: TPanel
           Left = 0
           Top = 0
@@ -5698,7 +5695,7 @@ object F_Main: TF_Main
           Left = 247
           Top = 260
           Width = 299
-          Height = 141
+          Height = 165
           Caption = ' '#268'asy (v sekund'#225'ch) '
           TabOrder = 7
           object Label10: TLabel
@@ -5728,6 +5725,13 @@ object F_Main: TF_Main
             Width = 125
             Height = 13
             Caption = 'Nouzov'#233' uvoln'#283'n'#237' z'#225'v'#283'r'#367':'
+          end
+          object Label15: TLabel
+            Left = 13
+            Top = 136
+            Width = 159
+            Height = 13
+            Caption = 'Podr'#382'en'#237' z'#225'v'#283'ru p'#345'i rozpadu cest:'
           end
           object SE_timeRC: TSpinEdit
             Left = 192
@@ -5769,6 +5773,15 @@ object F_Main: TF_Main
             TabOrder = 3
             Value = 0
           end
+          object NB_TimeJCZav: TNumberBox
+            Left = 192
+            Top = 136
+            Width = 89
+            Height = 21
+            Decimal = 1
+            Mode = nbmFloat
+            TabOrder = 4
+          end
         end
         object SE_jcMaxMovingTurnouts: TSpinEdit
           Left = 445
@@ -5795,6 +5808,8 @@ object F_Main: TF_Main
         ParentDoubleBuffered = False
         ScrollBars = ssVertical
         TabOrder = 0
+        ExplicitWidth = 1285
+        ExplicitHeight = 573
       end
       object P_funcsVyznamBg: TPanel
         Left = 0
@@ -5806,6 +5821,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1285
         object B_FuncChange: TButton
           Left = 9
           Top = 6
@@ -6243,6 +6259,7 @@ object F_Main: TF_Main
       end
       object PM_Console: TMenuItem
         Caption = 'Konzole'
+        ShortCut = 16459
         OnClick = PM_ConsoleClick
       end
       object MI_SimulationDiagnostics: TMenuItem
@@ -6327,7 +6344,7 @@ object F_Main: TF_Main
     Interval = 3000
     OnTimer = T_clear_log_msgTimer
     Left = 544
-    Top = 456
+    Top = 536
   end
   object IL_Menu: TImageList
     Left = 1080
@@ -9107,7 +9124,7 @@ object F_Main: TF_Main
   object PM_HV: TPopupMenu
     OnPopup = PM_HVPopup
     Left = 336
-    Top = 456
+    Top = 536
     object PM_Regulator: TMenuItem
       Caption = 'Regul'#225'tor'
       OnClick = PM_RegulatorClick
@@ -9123,7 +9140,7 @@ object F_Main: TF_Main
   object PM_Bloky: TPopupMenu
     OnPopup = PM_BlokyPopup
     Left = 280
-    Top = 456
+    Top = 536
     object MI_BlockState: TMenuItem
       Caption = 'Stav bloku'
       OnClick = MI_BlockStateClick
@@ -9143,7 +9160,7 @@ object F_Main: TF_Main
   object PM_Clients: TPopupMenu
     OnPopup = PM_ClientsPopup
     Left = 408
-    Top = 456
+    Top = 536
     object MI_Disconnect: TMenuItem
       Caption = 'Odpojit'
       OnClick = MI_DisconnectClick

@@ -25,6 +25,7 @@ type
     houkEvL: TObjectList<THoukEv>; // seznam houkacich udalosti pro lichy smer
     houkEvS: TObjectList<THoukEv>; // seznam houkacich udalosti pro sudy smer
     maxTrains: Cardinal;
+    jcReleaseZaver: TTime; // time to keep zaver after the end of train in path
   end;
 
   TSectionsState = TList<TTrackState>;
@@ -165,6 +166,7 @@ type
     function GetSignalS(): TBlk;
 
     procedure PstCheckActive();
+    function GetTimeJCReleaseZaver(): TTime;
 
   protected
     m_settings: TBlkTrackSettings;
@@ -249,6 +251,7 @@ type
     property sectionsState: TList<TTrackState> read m_state.sectionsOccupied;
     property signalL: TBlk read GetSignalL; // warning: slow getter!
     property signalS: TBlk read GetSignalS; // warning: slow getter!
+    property timeJCReleaseZaver: TTime read GetTimeJCReleaseZaver;
 
     property trainI: Integer read GetTrainI;
     property train: TTrain read GetTrain;
@@ -294,7 +297,7 @@ uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
   Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO,
   announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef, ConfSeq,
   Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase, BlockPst, IfThenElse,
-  colorHelper;
+  colorHelper, Config;
 
 constructor TBlkTrack.Create(index: Integer);
 begin
@@ -351,6 +354,7 @@ begin
   Self.m_settings.boosterId := ini_tech.ReadString(section, 'zesil', '');
   Self.m_settings.loop := ini_tech.ReadBool(section, 'smc', false);
   Self.m_settings.maxTrains := ini_tech.ReadInteger(section, 'maxSpr', _DEFAULT_MAX_TRAINS);
+  Self.m_settings.jcReleaseZaver := ownConvert.SecTenthsToTime(ini_tech.ReadString(section, 'jcReleaseZaver', '0.0'));
 
   if (Boosters[Self.m_settings.boosterId] = nil) then
     Log('Blok ' + Self.name + ' (' + IntToStr(Self.id) + ') nemá návaznost na validní zesilovač',
@@ -421,6 +425,9 @@ begin
 
   if (Self.m_settings.maxTrains <> _DEFAULT_MAX_TRAINS) then
     ini_tech.WriteInteger(section, 'maxSpr', Self.m_settings.maxTrains);
+
+  if (Self.m_settings.jcReleaseZaver <> 0) then
+    ini_tech.WriteString(section, 'jcReleaseZaver', ownConvert.TimeToSecTenths(Self.m_settings.jcReleaseZaver));
 
   if (Self.m_settings.loop) then
     ini_tech.WriteBool(section, 'smc', Self.m_settings.loop);
@@ -2707,9 +2714,16 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBLkTrack.IsOccupancyIndication(): Boolean;
+function TBlkTrack.IsOccupancyIndication(): Boolean;
 begin
   Result := (Self.m_settings.RCSAddrs.Count > 0);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrack.GetTimeJCReleaseZaver(): TTime;
+begin
+  Result := Max(Self.m_settings.jcReleaseZaver, GlobalConfig.times.jcReleaseZaver);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
