@@ -92,6 +92,7 @@ type
     CHB_RCS_Lights: TCheckBox;
     Label17: TLabel;
     CHB_Closed_Required: TCheckBox;
+    CHB_InfiniteAnul: TCheckBox;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -110,6 +111,7 @@ type
     procedure CHB_RCS_Barriers_UpClick(Sender: TObject);
     procedure CHB_RCS_RingClick(Sender: TObject);
     procedure CHB_RCS_LightsClick(Sender: TObject);
+    procedure CHB_InfiniteAnulClick(Sender: TObject);
   private
     openIndex: Integer;
     block: TBlkCrossing;
@@ -292,19 +294,27 @@ begin
   Self.E_Track_Right_Out.Enabled := (Self.CB_Track.ItemIndex <> -1);
   Self.CB_Track_Open_LR.Enabled := (Self.CB_Track.ItemIndex <> -1);
   Self.CB_Track_Open_RL.Enabled := (Self.CB_Track.ItemIndex <> -1);
+  Self.CHB_InfiniteAnul.Enabled := (Self.CB_Track.ItemIndex <> -1);
   Self.ME_Track_Anul_Time.Enabled := (Self.CB_Track.ItemIndex <> -1);
 
   if ((Self.CB_Track.ItemIndex < Self.CB_Track.Items.Count - 1) and (Self.CB_Track.ItemIndex <> -1)) then
   begin
     // edit existing track
-    Self.E_Track_Left_Out.Text := Self.tracks[Self.CB_Track.ItemIndex].leftOut.ToStr();
-    Self.E_Track_Left.Text := Self.tracks[Self.CB_Track.ItemIndex].left.ToStr();
-    Self.E_Track_Middle.Text := Self.tracks[Self.CB_Track.ItemIndex].middle.ToStr();
-    Self.E_Track_Right.Text := Self.tracks[Self.CB_Track.ItemIndex].right.ToStr();
-    Self.E_Track_Right_Out.Text := Self.tracks[Self.CB_Track.ItemIndex].rightOut.ToStr();
-    Self.CB_Track_Open_LR.ItemIndex := Integer(Self.tracks[Self.CB_Track.ItemIndex].openingLR);
-    Self.CB_Track_Open_RL.ItemIndex := Integer(Self.tracks[Self.CB_Track.ItemIndex].openingRL);
-    Self.ME_Track_Anul_Time.Text := FormatDateTime('nn:ss', Self.tracks[Self.CB_Track.ItemIndex].anulTime)
+    var track: TBlkCrossingTrack := Self.tracks[Self.CB_Track.ItemIndex];
+    Self.E_Track_Left_Out.Text := track.leftOut.ToStr();
+    Self.E_Track_Left.Text := track.left.ToStr();
+    Self.E_Track_Middle.Text := track.middle.ToStr();
+    Self.E_Track_Right.Text := track.right.ToStr();
+    Self.E_Track_Right_Out.Text := track.rightOut.ToStr();
+    Self.CB_Track_Open_LR.ItemIndex := Integer(track.openingLR);
+    Self.CB_Track_Open_RL.ItemIndex := Integer(track.openingRL);
+    Self.CHB_InfiniteAnul.Checked := track.infiniteAnul;
+    if (track.infiniteAnul) then
+      Self.ME_Track_Anul_Time.Text := '00:00'
+    else
+      Self.ME_Track_Anul_Time.Text := FormatDateTime('nn:ss', track.anulTime);
+
+    Self.CHB_InfiniteAnulClick(Self.CHB_InfiniteAnul);
   end else begin
     // new track
     Self.E_Track_Left_Out.Text := '';
@@ -314,8 +324,16 @@ begin
     Self.E_Track_Right_Out.Text := '';
     Self.CB_Track_Open_LR.ItemIndex := -1;
     Self.CB_Track_Open_RL.ItemIndex := -1;
+    Self.CHB_InfiniteAnul.Checked := False;
     Self.ME_Track_Anul_Time.Text := '00:00';
   end;
+end;
+
+procedure TF_BlkCrossing.CHB_InfiniteAnulClick(Sender: TObject);
+begin
+  Self.ME_Track_Anul_Time.Enabled := (not Self.CHB_InfiniteAnul.Checked);
+  if (Self.CHB_InfiniteAnul.Checked) then
+    Self.ME_Track_Anul_Time.Text := '00:00';
 end;
 
 procedure TF_BlkCrossing.CHB_JOP_controlClick(Sender: TObject);
@@ -586,6 +604,7 @@ begin
 
   track.openingLR := TBlkCrossingTrackOpening(Self.CB_Track_Open_LR.ItemIndex);
   track.openingRL := TBlkCrossingTrackOpening(Self.CB_Track_Open_RL.ItemIndex);
+  track.infiniteAnul := Self.CHB_InfiniteAnul.Checked;
   track.anulTime := EncodeTime(0, StrToInt(LeftStr(Self.ME_Track_Anul_Time.Text, 2)),
     StrToInt(Copy(Self.ME_Track_Anul_Time.Text, 4, 2)), 0);
 end;

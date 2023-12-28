@@ -13,10 +13,8 @@ object F_BlkCrossing: TF_BlkCrossing
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object L_Name: TLabel
     Left = 8
@@ -725,7 +723,7 @@ object F_BlkCrossing: TF_BlkCrossing
     Left = 376
     Top = 9
     Width = 307
-    Height = 472
+    Height = 478
     Caption = ' Uzav'#237'r'#225'n'#237' p'#345'ejezdu '#345#237'zen'#233' z hJOP '
     TabOrder = 4
     object Label2: TLabel
@@ -738,9 +736,9 @@ object F_BlkCrossing: TF_BlkCrossing
     object CHB_JOP_control: TCheckBox
       Left = 16
       Top = 19
-      Width = 161
+      Width = 273
       Height = 17
-      Caption = #218'seky p'#345'ejezdu '#345#237'zen'#233' z hJOP'
+      Caption = 'Uzav'#237'r'#225'n'#237' p'#345'ejezdu '#345#237'zen'#233' z hJOP'
       TabOrder = 0
       OnClick = CHB_JOP_controlClick
     end
@@ -766,7 +764,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Left = 16
       Top = 69
       Width = 273
-      Height = 388
+      Height = 400
       Caption = 'check'
       TabOrder = 3
       object Label3: TLabel
@@ -866,9 +864,9 @@ object F_BlkCrossing: TF_BlkCrossing
         Text = 'E_Track_Right_Out'
       end
       object ME_Track_Anul_Time: TMaskEdit
-        Left = 168
+        Left = 170
         Top = 352
-        Width = 89
+        Width = 87
         Height = 24
         Hint = 'Zadejte aktu'#225'ln'#237' modelov'#253' cas'
         Margins.Left = 2
@@ -885,7 +883,7 @@ object F_BlkCrossing: TF_BlkCrossing
         ParentFont = False
         ParentShowHint = False
         ShowHint = True
-        TabOrder = 7
+        TabOrder = 8
         Text = '00:00'
       end
       object CB_Track_Open_RL: TComboBox
@@ -909,6 +907,15 @@ object F_BlkCrossing: TF_BlkCrossing
         Items.Strings = (
           'Uvoln'#283'n'#237' prost'#345'edn'#237'ho '#250'seku'
           'Uvoln'#283'n'#237' vzdalovac'#237'ho '#250'seku')
+      end
+      object CHB_InfiniteAnul: TCheckBox
+        Left = 16
+        Top = 365
+        Width = 149
+        Height = 17
+        Caption = 'Nekone'#269'n'#225' anulace'
+        TabOrder = 7
+        OnClick = CHB_InfiniteAnulClick
       end
     end
   end

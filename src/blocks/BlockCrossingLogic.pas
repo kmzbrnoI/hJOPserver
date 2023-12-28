@@ -50,6 +50,7 @@ type
   public
     sections: array [0 .. 4] of TBlkTrackRefs;
     openingLR, openingRL: TBlkCrossingTrackOpening;
+    infiniteAnul: Boolean;
     anulTime: TTime;
 
     onChanged: TNotifyEvent;
@@ -129,7 +130,11 @@ begin
   end;
 
   str := ini.ReadString(section, prefix + '-anulTime', '');
-  Self.anulTime := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0)
+  Self.infiniteAnul := (str = 'inf');
+  if (Self.infiniteAnul) then
+    Self.anulTime := EncodeTime(0, 0, 0, 0)
+  else
+    Self.anulTime := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
 end;
 
 procedure TBlkCrossingTrack.Save(ini: TMemIniFile; section: string; prefix: string);
@@ -146,7 +151,11 @@ begin
     ini.WriteString(section, prefix + '-rightOut', Self.rightOut.ToStr());
   ini.WriteInteger(section, prefix + '-openingLR', Integer(Self.openingLR));
   ini.WriteInteger(section, prefix + '-openingRL', Integer(Self.openingRL));
-  ini.WriteString(section, prefix + '-anulTime', FormatDateTime('nn:ss', Self.anulTime));
+
+  if (Self.infiniteAnul) then
+    ini.WriteString(section, prefix + '-anulTime', 'inf')
+  else
+    ini.WriteString(section, prefix + '-anulTime', FormatDateTime('nn:ss', Self.anulTime));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -281,7 +290,7 @@ begin
             Self.state := tsLRRightOutOccupied
           else
             Self.state := tsFree;
-        end else if ((Now > Self.anulEnd) and (Self.openingLR = toMiddleFree)) then
+        end else if ((not Self.infiniteAnul) and (Now > Self.anulEnd) and (Self.openingLR = toMiddleFree)) then
           Self.state := tsRLRightOccupied;
       end;
 
@@ -295,7 +304,7 @@ begin
             Self.state := tsRLLeftOutOccupied
           else
             Self.state := tsFree;
-        end else if ((Now > Self.anulEnd) and (Self.openingRL = toMiddleFree)) then
+        end else if ((not Self.infiniteAnul) and (Now > Self.anulEnd) and (Self.openingRL = toMiddleFree)) then
           Self.state := tsLRLeftOccupied;
       end;
 
