@@ -27,8 +27,8 @@ type
     procedure NullPrejezdZaver(Sender: TObject; data: Integer);
     procedure NullTratZaver(Sender: TObject; data: Integer);
     procedure NullVyhybkaMenuReduction(Sender: TObject; data: Integer);
-    procedure RemoveUsekNeprofil(Sender: TObject; data: Integer);
-    procedure RemoveEvent(Sender: TObject; data: Integer);
+    procedure RemoveUsekNeprofil(Sender: TObject; data: Pointer);
+    procedure RemoveEvent(Sender: TObject; data: Pointer);
   end;
 
 var ceCaller: TChangeEventCaller;
@@ -86,16 +86,16 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TChangeEventCaller.RemoveUsekNeprofil(Sender: TObject; data: Integer);
+procedure TChangeEventCaller.RemoveUsekNeprofil(Sender: TObject; data: Pointer);
 var caller: ^TNPCallerData;
 begin
-  caller := Pointer(data);
+  caller := data;
 
-  var track := Blocks.GetBlkTrackOrRTByID(caller.usekId);
+  var track := Blocks.GetBlkTrackOrRTByID(caller^.usekId);
   if (track = nil) then
     Exit();
 
-  track.RemoveNeprofilJC(caller.jcId);
+  track.RemoveNeprofilJC(caller^.jcId);
   FreeMem(caller);
 end;
 
@@ -107,13 +107,13 @@ begin
   Self.event := event;
 end;
 
-procedure TChangeEventCaller.RemoveEvent(Sender: TObject; data: Integer);
+procedure TChangeEventCaller.RemoveEvent(Sender: TObject; data: Pointer);
 var event: ^TRemoveEventData;
 begin
-  event := Pointer(data);
+  event := data;
 
-  if (event.events.Contains(event.event)) then
-    event.events.Remove(event.event);
+  if (event^.events.Contains(event.event)) then
+    event^.events.Remove(event.event);
 
   FreeMem(event);
 end;

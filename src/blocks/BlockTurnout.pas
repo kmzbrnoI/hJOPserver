@@ -1661,10 +1661,10 @@ begin
     // zmena bloku pro polohu +
     if (TBlkTrack(Self.npBlokPlus).occupied = TTrackState.occupied) then
       TBlkTrack(Self.npBlokPlus).AddChangeEvent(TBlkTrack(Self.npBlokPlus).EventsOnFree,
-        CreateChangeEvent(Self.NpObsazChange, 0))
+        CreateChangeEventInt(Self.NpObsazChange, 0))
     else
       TBlkTrack(Self.npBlokPlus).AddChangeEvent(TBlkTrack(Self.npBlokPlus).eventsOnOccupy,
-        CreateChangeEvent(Self.NpObsazChange, 0));
+        CreateChangeEventInt(Self.NpObsazChange, 0));
 
     if (Self.position = TTurnoutPosition.plus) then
       Self.Change();
@@ -1674,10 +1674,10 @@ begin
     // zmena bloku pro polohu -
     if (TBlkTrack(Self.npBlokMinus).occupied = TTrackState.occupied) then
       TBlkTrack(Self.npBlokMinus).AddChangeEvent(TBlkTrack(Self.npBlokMinus).EventsOnFree,
-        CreateChangeEvent(Self.NpObsazChange, 1))
+        CreateChangeEventInt(Self.NpObsazChange, 1))
     else
       TBlkTrack(Self.npBlokMinus).AddChangeEvent(TBlkTrack(Self.npBlokMinus).eventsOnOccupy,
-        CreateChangeEvent(Self.NpObsazChange, 1));
+        CreateChangeEventInt(Self.NpObsazChange, 1));
 
     if (Self.position = TTurnoutPosition.minus) then
       Self.Change();
@@ -1693,10 +1693,10 @@ begin
   begin
     if (TBlkTrack(Self.npBlokPlus).occupied = TTrackState.occupied) then
       TBlkTrack(Self.npBlokPlus).AddChangeEvent(TBlkTrack(Self.npBlokPlus).EventsOnFree,
-        CreateChangeEvent(Self.NpObsazChange, 0))
+        CreateChangeEventInt(Self.NpObsazChange, 0))
     else
       TBlkTrack(Self.npBlokPlus).AddChangeEvent(TBlkTrack(Self.npBlokPlus).eventsOnOccupy,
-        CreateChangeEvent(Self.NpObsazChange, 0));
+        CreateChangeEventInt(Self.NpObsazChange, 0));
   end;
 
   // namapovani udalosti obsazeni a uvolneni neprofiloveho useku pro polohu -
@@ -1704,10 +1704,10 @@ begin
   begin
     if (TBlkTrack(Self.npBlokMinus).occupied = TTrackState.occupied) then
       TBlkTrack(Self.npBlokMinus).AddChangeEvent(TBlkTrack(Self.npBlokMinus).EventsOnFree,
-        CreateChangeEvent(Self.NpObsazChange, 1))
+        CreateChangeEventInt(Self.NpObsazChange, 1))
     else
       TBlkTrack(Self.npBlokMinus).AddChangeEvent(TBlkTrack(Self.npBlokMinus).eventsOnOccupy,
-        CreateChangeEvent(Self.NpObsazChange, 1));
+        CreateChangeEventInt(Self.NpObsazChange, 1));
   end;
 end;
 

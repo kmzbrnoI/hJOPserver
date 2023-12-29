@@ -1048,7 +1048,7 @@ begin
     if ((not track.NUZ) or (not track.IsInArea(Self))) then
       continue;
 
-    track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
+    track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(Self.NUZPrematureZaverRelease, 0));
     var jc: TJC := JCDb.FindActiveJCWithTrack(blk.id);
     if (jc <> nil) then
     begin
@@ -2002,7 +2002,7 @@ begin
       continue;
     for var area: TArea in track.areas do
       if (area = Self) then
-        track.RemoveChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEvent(Self.NUZPrematureZaverRelease, 0));
+        track.RemoveChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(Self.NUZPrematureZaverRelease, 0));
   end;
 end;
 
