@@ -10,7 +10,7 @@ interface
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Types,
   Dialogs, ComCtrls, CloseTabSheet, Themes, houkEvent, Generics.Collections,
-  fhoukEv, Buttons, StdCtrls, UITypes;
+  fhoukEv, Buttons, StdCtrls, UITypes, BlockTrack;
 
 type
   TF_HoukEvs = class(TForm)
@@ -36,7 +36,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
 
-    procedure FillFromHouks(evs: TList<THoukEv>);
+    procedure FillFromHouks(evs: TList<THoukEv>; parentTrack: TBlkTrack);
     function GetHoukEvs(): TObjectList<THoukEv>;
     function InputValid(): Boolean;
 
@@ -64,7 +64,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TF_HoukEvs.FillFromHouks(evs: TList<THoukEv>);
+procedure TF_HoukEvs.FillFromHouks(evs: TList<THoukEv>; parentTrack: TBlkTrack);
 var i: Integer;
   form: TF_HoukEv;
   ts: TCloseTabSheet;
@@ -80,7 +80,7 @@ begin
 
     form := TF_HoukEv.Create(nil);
     form.Parent := ts;
-    form.FillFromHouk(evs[i]);
+    form.FillFromHouk(evs[i], parentTrack);
     form.Show();
 
     Self.Forms.Add(form);

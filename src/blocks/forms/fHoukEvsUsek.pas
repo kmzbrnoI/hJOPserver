@@ -77,8 +77,8 @@ procedure TF_HoukEvsUsek.Open(blk: TBlkTrack);
 begin
   Self.blk := blk;
 
-  formL.FillFromHouks(blk.GetSettings().houkEvL);
-  Forms.FillFromHouks(blk.GetSettings().houkEvS);
+  formL.FillFromHouks(blk.GetSettings().houkEvL, blk);
+  Forms.FillFromHouks(blk.GetSettings().houkEvS, blk);
 
   Self.Caption := 'Houkací události úseku ' + blk.name;
   Self.ActiveControl := B_Apply;

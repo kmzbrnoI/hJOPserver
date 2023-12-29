@@ -83,6 +83,7 @@ type
       DCC: false; trainMoving: - 1; slowingReady: false; trainLost: false; currentHoukEv: - 1; pathCancelZaverTimer: (running: False;));
 
     _DEFAULT_MAX_TRAINS = 1;
+    _MAX_PARTS = 4;
 
   private
     m_state: TBlkTrackState;

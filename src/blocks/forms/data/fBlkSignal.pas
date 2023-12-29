@@ -93,7 +93,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, Block, Area, DataBloky;
+uses GetSystems, TechnologieRCS, Block, Area, DataBloky, BlockTrack;
 
 {$R *.dfm}
 
@@ -142,9 +142,11 @@ end;
 procedure TF_BlkSignal.EditOpenForm();
 var glob: TBlkSettings;
   settings: TBlkSignalSettings;
+  track: TBlkTrack;
 begin
   glob := Self.block.GetGlobalSettings();
   settings := Self.block.GetSettings();
+  track := Blocks.GetBlkByID((Self.block as TBlkSignal).trackId) as TBlkTrack;
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
@@ -190,7 +192,7 @@ begin
       ts.Caption := IntToStr(settings.events[i].length.min) + '-' + IntToStr(settings.events[i].length.max) + '      ';
     var eventForm := TF_BlkSignalEvent.Create(ts);
 
-    eventForm.OpenForm(settings.events[i], (i = 0));
+    eventForm.OpenForm(settings.events[i], (i = 0), track);
     eventForm.Parent := ts;
     eventForm.Show();
 

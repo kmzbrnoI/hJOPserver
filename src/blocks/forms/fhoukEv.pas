@@ -8,7 +8,7 @@ unit fhoukEv;
 interface
 
 uses
-  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, BlockTrack,
   Dialogs, StdCtrls, houkEvent, frrEv, ExtCtrls, Generics.Collections;
 
 type
@@ -27,7 +27,7 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
 
-    procedure FillFromHouk(ev: THoukEv);
+    procedure FillFromHouk(ev: THoukEv; parentTrack: TBlkTrack);
     procedure ShowEmpty();
     function GetHoukEv(): THoukEv;
     function InputValid(): Boolean;
@@ -57,12 +57,12 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TF_HoukEv.FillFromHouk(ev: THoukEv);
+procedure TF_HoukEv.FillFromHouk(ev: THoukEv; parentTrack: TBlkTrack);
 begin
   Self.FillFuncs();
   Self.CB_Func.Text := ev.sound;
   Self.CB_Action.ItemIndex := Integer(ev.funcType);
-  Self.frrEv.FillFromRR(ev.event);
+  Self.frrEv.FillFromRR(ev.event, parentTrack);
 end;
 
 procedure TF_HoukEv.ShowEmpty();

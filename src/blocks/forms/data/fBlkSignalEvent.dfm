@@ -12,9 +12,7 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDefault
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8
@@ -28,14 +26,14 @@ object F_BlkSignalEvent: TF_BlkSignalEvent
     Top = 51
     Width = 106
     Height = 13
-    Caption = 'Min. d'#233'lka soup. (cm):'
+    Caption = 'Min. d'#233'lka soup. [cm]:'
   end
   object Label3: TLabel
     Left = 8
     Top = 79
     Width = 110
     Height = 13
-    Caption = 'Max. d'#233'lka soup. (cm):'
+    Caption = 'Max. d'#233'lka soup. [cm]:'
   end
   object GB_DetekceZastaveni: TGroupBox
     Left = 7

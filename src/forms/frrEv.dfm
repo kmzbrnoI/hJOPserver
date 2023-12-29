@@ -98,11 +98,6 @@ object F_RREv: TF_RREv
       Height = 21
       Style = csDropDownList
       TabOrder = 1
-      Items.Strings = (
-        '0'
-        '1'
-        '2'
-        '3')
     end
   end
   object GB_IR: TGroupBox

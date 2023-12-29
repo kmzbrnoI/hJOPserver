@@ -47,7 +47,6 @@ object F_HoukEv: TF_HoukEv
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitTop = 102
   end
   object CB_Func: TComboBox
     Left = 8

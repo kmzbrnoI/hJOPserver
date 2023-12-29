@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Variants, Classes, Graphics, Controls, Forms, Dialogs, StdCtrls, Spin,
-  BlockSignal, AreaDb, BlockDb, ExtCtrls, frrEv;
+  BlockSignal, AreaDb, BlockDb, ExtCtrls, frrEv, BlockTrack;
 
 type
   TF_BlkSignalEvent = class(TForm)
@@ -24,14 +24,14 @@ type
   private
     first: Boolean;
 
-    fZast: TF_RREv;
-    fZpom: TF_RREv;
+    fStop: TF_RREv;
+    fSlow: TF_RREv;
 
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
 
-    procedure OpenForm(event: TBlkSignalTrainEvent; first: Boolean);
+    procedure OpenForm(event: TBlkSignalTrainEvent; first: Boolean; parentTrack: TBlkTrack);
     procedure OpenEmptyForm(first: Boolean);
     function Check(): string;
 
@@ -51,27 +51,27 @@ constructor TF_BlkSignalEvent.Create(AOwner: TComponent);
 begin
   inherited;
 
-  Self.fZast := TF_RREv.Create(nil);
-  Self.fZast.Parent := Self.P_ZastForm;
-  Self.fZast.trackEnabled := false;
-  Self.fZast.Show();
+  Self.fStop := TF_RREv.Create(nil);
+  Self.fStop.Parent := Self.P_ZastForm;
+  Self.fStop.trackEnabled := false;
+  Self.fStop.Show();
 
-  Self.fZpom := TF_RREv.Create(nil);
-  Self.fZpom.Parent := Self.P_ZpomForm;
-  Self.fZpom.trackEnabled := true;
-  Self.fZpom.Show();
+  Self.fSlow := TF_RREv.Create(nil);
+  Self.fSlow.Parent := Self.P_ZpomForm;
+  Self.fSlow.trackEnabled := true;
+  Self.fSlow.Show();
 end;
 
 destructor TF_BlkSignalEvent.Destroy();
 begin
-  Self.fZast.Free();
-  Self.fZpom.Free();
+  Self.fStop.Free();
+  Self.fSlow.Free();
   inherited;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TF_BlkSignalEvent.OpenForm(event: TBlkSignalTrainEvent; first: Boolean);
+procedure TF_BlkSignalEvent.OpenForm(event: TBlkSignalTrainEvent; first: Boolean; parentTrack: TBlkTrack);
 begin
   Self.first := first;
 
@@ -92,14 +92,14 @@ begin
     Self.E_Spr.Text := Copy(event.train_type_re, 2, length(event.train_type_re) - 2);
   end;
 
-  Self.fZast.FillFromRR(event.stop);
+  Self.fStop.FillFromRR(event.stop, parentTrack);
 
   if (event.slow.Enabled) then
   begin
-    Self.fZpom.FillFromRR(event.slow.ev);
+    Self.fSlow.FillFromRR(event.slow.ev, parentTrack);
     Self.SE_Slow_Speed.Value := event.slow.speed;
   end else begin
-    Self.fZpom.ShowEmpty();
+    Self.fSlow.ShowEmpty();
     Self.SE_Slow_Speed.Value := 0;
   end;
 
@@ -130,8 +130,8 @@ begin
   Self.E_Spr.Text := '.*';
   Self.SE_Slow_Speed.Value := 0;
 
-  Self.fZast.ShowEmpty();
-  Self.fZpom.ShowEmpty();
+  Self.fStop.ShowEmpty();
+  Self.fSlow.ShowEmpty();
 
   Self.CHB_Zpomalit.Checked := false;
   Self.CHB_ZpomalitClick(CHB_Zpomalit);
@@ -148,12 +148,12 @@ begin
   Result.length.min := Self.SE_MinLength.Value;
   Result.length.max := Self.SE_MaxLength.Value;
 
-  Result.stop := fZast.GetRREv();
+  Result.stop := fStop.GetRREv();
   Result.slow.Enabled := Self.CHB_Zpomalit.Checked;
 
   if (Self.CHB_Zpomalit.Checked) then
   begin
-    Result.slow.ev := fZpom.GetRREv();
+    Result.slow.ev := fSlow.GetRREv();
     Result.slow.speed := Self.SE_Slow_Speed.Value;
   end else begin
     Result.slow.ev := nil;
@@ -164,7 +164,7 @@ end;
 
 procedure TF_BlkSignalEvent.CHB_ZpomalitClick(Sender: TObject);
 begin
-  Self.fZpom.Enabled := Self.CHB_Zpomalit.Checked;
+  Self.fSlow.Enabled := Self.CHB_Zpomalit.Checked;
   Self.SE_Slow_Speed.Enabled := Self.CHB_Zpomalit.Checked;
   if (not Self.CHB_Zpomalit.Checked) then
     Self.SE_Slow_Speed.Value := 0;
@@ -172,10 +172,10 @@ end;
 
 function TF_BlkSignalEvent.Check(): string;
 begin
-  if (not Self.fZast.InputValid()) then
+  if (not Self.fStop.InputValid()) then
     Exit('Vyberte zastavovací událost!');
 
-  if ((Self.CHB_Zpomalit.Checked) and (not Self.fZpom.InputValid())) then
+  if ((Self.CHB_Zpomalit.Checked) and (not Self.fSlow.InputValid())) then
     Exit('Vyberte zpomalovací událost!');
 
   if ((Self.SE_Slow_Speed.Value = 0) and (Self.CHB_Zpomalit.Checked)) then

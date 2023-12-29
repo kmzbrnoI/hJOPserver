@@ -11,8 +11,6 @@ object F_HoukEvs: TF_HoukEvs
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
-  PixelsPerInch = 96
   TextHeight = 13
   object PC_Events: TPageControl
     Left = 0
