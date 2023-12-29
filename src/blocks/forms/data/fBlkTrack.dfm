@@ -157,7 +157,7 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = '1. detektor:'
+      Caption = '0. detektor:'
     end
     object L_det2: TLabel
       Left = 12
@@ -168,7 +168,7 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = '2. detektor:'
+      Caption = '1. detektor:'
     end
     object L_det3: TLabel
       Left = 12
@@ -179,7 +179,7 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = '3. detektor:'
+      Caption = '2. detektor:'
     end
     object L_det4: TLabel
       Left = 12
@@ -190,7 +190,7 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = '4. detektor:'
+      Caption = '3. detektor:'
     end
     object L_P01: TLabel
       Left = 224
@@ -214,7 +214,7 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Bottom = 2
       Caption = 'Port'
     end
-    object SE_Port1: TSpinEdit
+    object SE_Port0: TSpinEdit
       Left = 312
       Top = 32
       Width = 73
@@ -229,7 +229,7 @@ object F_BlkTrack: TF_BlkTrack
       TabOrder = 2
       Value = 0
     end
-    object SE_Board1: TSpinEdit
+    object SE_Module0: TSpinEdit
       Left = 224
       Top = 32
       Width = 73
@@ -245,8 +245,7 @@ object F_BlkTrack: TF_BlkTrack
       Value = 1
       OnExit = SE_RCS_BoardExit
     end
-    object CHB_D1: TCheckBox
-      Tag = 1
+    object CHB_D0: TCheckBox
       Left = 188
       Top = 33
       Width = 17
@@ -256,10 +255,10 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Right = 2
       Margins.Bottom = 2
       TabOrder = 0
-      OnClick = CHB_D1Click
+      OnClick = CHB_D0Click
     end
-    object CHB_D2: TCheckBox
-      Tag = 2
+    object CHB_D1: TCheckBox
+      Tag = 1
       Left = 188
       Top = 59
       Width = 17
@@ -269,9 +268,9 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Right = 2
       Margins.Bottom = 2
       TabOrder = 3
-      OnClick = CHB_D1Click
+      OnClick = CHB_D0Click
     end
-    object SE_Board2: TSpinEdit
+    object SE_Module1: TSpinEdit
       Left = 224
       Top = 58
       Width = 73
@@ -287,7 +286,7 @@ object F_BlkTrack: TF_BlkTrack
       Value = 1
       OnExit = SE_RCS_BoardExit
     end
-    object SE_Port2: TSpinEdit
+    object SE_Port1: TSpinEdit
       Left = 312
       Top = 58
       Width = 73
@@ -302,8 +301,8 @@ object F_BlkTrack: TF_BlkTrack
       TabOrder = 5
       Value = 0
     end
-    object CHB_D3: TCheckBox
-      Tag = 3
+    object CHB_D2: TCheckBox
+      Tag = 2
       Left = 188
       Top = 86
       Width = 17
@@ -313,9 +312,9 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Right = 2
       Margins.Bottom = 2
       TabOrder = 6
-      OnClick = CHB_D1Click
+      OnClick = CHB_D0Click
     end
-    object SE_Board3: TSpinEdit
+    object SE_Module2: TSpinEdit
       Left = 224
       Top = 84
       Width = 73
@@ -331,7 +330,7 @@ object F_BlkTrack: TF_BlkTrack
       Value = 1
       OnExit = SE_RCS_BoardExit
     end
-    object SE_Port3: TSpinEdit
+    object SE_Port2: TSpinEdit
       Left = 312
       Top = 84
       Width = 73
@@ -346,8 +345,8 @@ object F_BlkTrack: TF_BlkTrack
       TabOrder = 8
       Value = 0
     end
-    object CHB_D4: TCheckBox
-      Tag = 4
+    object CHB_D3: TCheckBox
+      Tag = 3
       Left = 188
       Top = 112
       Width = 17
@@ -357,9 +356,9 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Right = 2
       Margins.Bottom = 2
       TabOrder = 9
-      OnClick = CHB_D1Click
+      OnClick = CHB_D0Click
     end
-    object SE_Board4: TSpinEdit
+    object SE_Module3: TSpinEdit
       Left = 224
       Top = 110
       Width = 73
@@ -375,7 +374,7 @@ object F_BlkTrack: TF_BlkTrack
       Value = 1
       OnExit = SE_RCS_BoardExit
     end
-    object SE_Port4: TSpinEdit
+    object SE_Port3: TSpinEdit
       Left = 312
       Top = 110
       Width = 73

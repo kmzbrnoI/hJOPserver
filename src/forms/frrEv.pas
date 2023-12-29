@@ -89,7 +89,7 @@ end;
 procedure TF_RREv.UpdateTrackParts();
 begin
   for var i: Integer := 0 to 3 do
-    Self.CB_Track_Part.Items[i] := IntToStr(i+1);
+    Self.CB_Track_Part.Items[i] := IntToStr(i);
 
   if ((Self.trackEnabled) and (Self.CB_Track.ItemIndex > -1)) then
   begin
@@ -101,7 +101,7 @@ begin
 
     for var i: Integer := 0 to 3 do
       if (blkTrackSettings.RCSAddrs.Count > i) then
-        Self.CB_Track_Part.Items[i] := IntToStr(i+1)+' (' + blkTrackSettings.RCSAddrs[i].ToString() + ')';
+        Self.CB_Track_Part.Items[i] := IntToStr(i)+' (' + blkTrackSettings.RCSAddrs[i].ToString() + ')';
   end;
 end;
 
