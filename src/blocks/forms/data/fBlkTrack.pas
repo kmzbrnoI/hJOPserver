@@ -288,60 +288,68 @@ begin
     Exit();
   end;
 
-  var glob: TBlkSettings;
-  glob.name := Self.E_Name.Text;
-  glob.id := Self.SE_ID.Value;
-  glob.typ := btTrack;
+  try
+    var glob: TBlkSettings;
+    glob.name := Self.E_Name.Text;
+    glob.id := Self.SE_ID.Value;
+    glob.typ := btTrack;
 
-  if (isNewBlock) then
-  begin
-    try
-      Self.block := Blocks.Add(glob) as TBlkTrack;
-    except
-      on E: Exception do
-      begin
-        Application.MessageBox(PChar('Nepodařilo se přidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
-          MB_OK OR MB_ICONWARNING);
-        Exit();
+    if (isNewBlock) then
+    begin
+      try
+        Self.block := Blocks.Add(glob) as TBlkTrack;
+      except
+        on E: Exception do
+        begin
+          Application.MessageBox(PChar('Nepodařilo se přidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
+            MB_OK OR MB_ICONWARNING);
+          Exit();
+        end;
       end;
+    end else begin
+      Self.block.SetGlobalSettings(glob);
     end;
-  end else begin
-    Self.block.SetGlobalSettings(glob);
+
+    // save block-specific data
+    var settings: TBlkTrackSettings;
+    settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+    if (Self.CHB_D1.Checked) then
+      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board1.Value, Self.SE_Port1.Value));
+    if (Self.CHB_D2.Checked) then
+      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board2.Value, Self.SE_Port2.Value));
+    if (Self.CHB_D3.Checked) then
+      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board3.Value, Self.SE_Port3.Value));
+    if (Self.CHB_D4.Checked) then
+      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board4.Value, Self.SE_Port4.Value));
+
+    settings.lenght := StrToFloatDef(Self.E_Length.Text, 0);
+    settings.loop := Self.CHB_Loop.Checked;
+    settings.boosterId := Boosters.sorted[Self.CB_Booster.ItemIndex].id;
+    settings.jcReleaseZaver := ownConvert.SecTenthsToTime(Self.NB_TimeJCZav.Text);
+
+    settings.houkEvL := Self.block.GetSettings().houkEvL;
+    settings.houkEvS := Self.block.GetSettings().houkEvS;
+
+    settings.maxTrains := Self.SE_Max_Trains.Value;
+
+    Self.block.SetSettings(settings);
+
+    for var addr in settings.RCSAddrs do
+    begin
+      var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.input);
+      if (another <> nil) then
+        Application.MessageBox(PChar('Varování: blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString()), 'Varování', MB_OK OR MB_ICONWARNING);
+    end;
+
+    Self.Close();
+    Self.block.Change();
+  except
+    on E:Exception do
+    begin
+      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+      Exit();
+    end;
   end;
-
-  // save block-specific data
-  var settings: TBlkTrackSettings;
-  settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  if (Self.CHB_D1.Checked) then
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board1.Value, Self.SE_Port1.Value));
-  if (Self.CHB_D2.Checked) then
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board2.Value, Self.SE_Port2.Value));
-  if (Self.CHB_D3.Checked) then
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board3.Value, Self.SE_Port3.Value));
-  if (Self.CHB_D4.Checked) then
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Board4.Value, Self.SE_Port4.Value));
-
-  settings.lenght := StrToFloatDef(Self.E_Length.Text, 0);
-  settings.loop := Self.CHB_Loop.Checked;
-  settings.boosterId := Boosters.sorted[Self.CB_Booster.ItemIndex].id;
-  settings.jcReleaseZaver := ownConvert.SecTenthsToTime(Self.NB_TimeJCZav.Text);
-
-  settings.houkEvL := Self.block.GetSettings().houkEvL;
-  settings.houkEvS := Self.block.GetSettings().houkEvS;
-
-  settings.maxTrains := Self.SE_Max_Trains.Value;
-
-  Self.block.SetSettings(settings);
-
-  for var addr in settings.RCSAddrs do
-  begin
-    var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.input);
-    if (another <> nil) then
-      Application.MessageBox(PChar('Varování: blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString()), 'Varování', MB_OK OR MB_ICONWARNING);
-  end;
-
-  Self.Close();
-  Self.block.Change();
 end;
 
 procedure TF_BlkTrack.FormClose(Sender: TObject; var Action: TCloseAction);
