@@ -57,22 +57,21 @@ type
 
   // zaver vyhybky v jizdni ceste
   TJCTurnoutZav = record
-    Block: Integer;
+    block: Integer;
     position: TTurnoutPosition;
   end;
 
   // zaver odvratove vyhybky v jizdni ceste
   TJCRefugeeZav = record
-    Block: Integer;
+    block: Integer;
     position: TTurnoutPosition;
-    // blok, pri jehoz zruseni redukce (typicky usek a uvolneni zaveru) dojde i k uvolneni zaveru odvratove vyhybky
-    ref_blk: Integer;
+    ref_blk: Integer; // id bloku, pri jehoz zruseni zaveru dojde i k uvolneni zaveru odvratove vyhybky
   end;
 
   // bloky v JC, ketre jsou navazany na konkretni useky v ramci JC
   TJCRefZav = record
-    Block: Integer;
-    ref_blk: Integer; // blok, pri jehoz uvolneni zaveru dojde ke zruseni redukce \Blok
+    block: Integer;
+    ref_blk: Integer; // id bloku, pri jehoz uvolneni zaveru dojde ke zruseni
   end;
 
   // prejezd v jizdni ceste
@@ -402,10 +401,10 @@ begin
   // turnouts
   for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
   begin
-    var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(turnoutZav.Block);
+    var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(turnoutZav.block);
     if (turnout = nil) then
     begin
-      Result.Add(JCBarrier(barBlockNotExists, nil, turnoutZav.Block));
+      Result.Add(JCBarrier(barBlockNotExists, nil, turnoutZav.block));
       Exit();
     end;
   end;
@@ -463,10 +462,10 @@ begin
       Exit();
     end;
 
-    var refugee: TBlkTurnout := Blocks.GetBlkTurnoutByID(refugeeZav.Block);
+    var refugee: TBlkTurnout := Blocks.GetBlkTurnoutByID(refugeeZav.block);
     if (refugee = nil) then
     begin
-      Result.Insert(0, JCBarrier(barBlockNotExists, nil, refugeeZav.Block));
+      Result.Insert(0, JCBarrier(barBlockNotExists, nil, refugeeZav.block));
       Exit();
     end;
   end;
@@ -491,10 +490,10 @@ begin
   // locks
   for var refZaver: TJCRefZav in Self.m_data.locks do
   begin
-    var lock: TBlkLock := Blocks.GetBlkLockByID(refZaver.Block);
+    var lock: TBlkLock := Blocks.GetBlkLockByID(refZaver.block);
     if (lock = nil) then
     begin
-      Result.Insert(0, JCBarrier(barBlockNotExists, nil, refZaver.Block));
+      Result.Insert(0, JCBarrier(barBlockNotExists, nil, refZaver.block));
       Exit();
     end;
 
@@ -582,7 +581,7 @@ begin
   // turnouts
   for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
   begin
-    var turnout: TBlkTurnout := TBlkturnout(Blocks.GetBlkByID(turnoutZav.Block));
+    var turnout: TBlkTurnout := TBlkturnout(Blocks.GetBlkByID(turnoutZav.block));
 
     if (turnout.position = TTurnoutPosition.disabled) then
       barriers.Add(JCBarrier(barBlockDisabled, turnout));
@@ -671,7 +670,7 @@ begin
   // refugees
   for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
   begin
-    var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.Block));
+    var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
 
     if (refugee.position = TTurnoutPosition.disabled) then
       barriers.Add(JCBarrier(barBlockDisabled, refugee));
@@ -825,7 +824,7 @@ begin
   // locks
   for var refZaver: TJCRefZav in Self.m_data.locks do
   begin
-    var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZaver.Block));
+    var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZaver.block));
     if (lock.keyReleased) then
       barriers.Add(JCBarrier(barLockNotLocked, lock));
   end;
@@ -914,7 +913,7 @@ begin
   // turnouts
   for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
   begin
-    var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.Block));
+    var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.block));
 
     if (turnout.lockout <> '') then
       barriers.Add(JCBarrier(barBlockLockout, turnout));
@@ -967,7 +966,7 @@ begin
   // refugees
   for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
   begin
-    var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.Block));
+    var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
 
     if (refugee.lockout <> '') then
       barriers.Add(JCBarrier(barBlockLockout, refugee));
@@ -1246,7 +1245,7 @@ begin
     try
       for var barrier in barriers do
         if (JCBarriers.IsCSBarrier(barrier.typ)) then
-          csItems.Add(CSItem(barrier.Block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+          csItems.Add(CSItem(barrier.block, JCBarriers.BarrierGetCSNote(barrier.typ)));
 
       if (csItems.Count > 0) then
       begin
@@ -1339,7 +1338,7 @@ begin
         for var i: Integer := 0 to Self.m_data.turnouts.Count - 1 do
         begin
           var turnoutZav: TJCTurnoutZav := Self.m_data.turnouts[i];
-          var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(Self.m_data.turnouts[i].Block));
+          var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(Self.m_data.turnouts[i].block));
 
           if (turnout.position <> TTurnoutPosition(turnoutZav.position)) then
           begin
@@ -1361,7 +1360,7 @@ begin
         for var i: Integer := 0 to Self.m_data.refuges.Count - 1 do
         begin
           var refugeeZav: TJCRefugeeZav := Self.m_data.refuges[i];
-          var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.Block));
+          var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
 
           // nastaveni odvratu
           if (refugee.position <> TTurnoutPosition(refugeeZav.position)) then
@@ -1380,7 +1379,7 @@ begin
           // pridani zruseni redukce
           var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(refugeeZav.ref_blk));
           track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.NullVyhybkaMenuReduction,
-            refugeeZav.Block));
+            refugeeZav.block));
 
           // Warning: this may call callback directly
           // Callback for just-locking turnout will have no effect due to nextVyhybka = -1
@@ -1394,10 +1393,10 @@ begin
         for var refZav: TJCRefZav in Self.m_data.locks do
         begin
           var refTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(refZav.ref_blk));
-          refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.NullZamekZaver, refZav.Block));
+          refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.NullZamekZaver, refZav.block));
 
           // nastaveni zaveru zamku
-          var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZav.Block));
+          var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZav.block));
           lock.zaver := true;
         end;
 
@@ -1430,13 +1429,13 @@ begin
       begin
         for var turnoutZav: TJCturnoutZav in Self.m_data.turnouts do
         begin
-          var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.Block));
+          var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.block));
           if (turnout.position <> turnoutZav.position) then
             Exit();
         end;
         for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
         begin
-          var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.Block));
+          var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
           if (turnout.position <> refugeeZav.position) then
             Exit();
         end;
@@ -1455,7 +1454,7 @@ begin
         for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
         begin
           var neprofil: TBlkTrack := nil;
-          var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.Block));
+          var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.block));
 
           if ((turnoutZav.position = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil)) then
             neprofil := TBlkTrack(turnout.npBlokPlus)
@@ -1736,7 +1735,7 @@ begin
           (Self.m_state.nextTurnout < Self.m_data.turnouts.Count)) do
         begin
           var turnoutZav: TJCTurnoutZav := Self.m_data.turnouts[Self.m_state.nextTurnout];
-          var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.Block));
+          var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.block));
 
           Inc(Self.m_state.nextTurnout);
           turnout.SetPosition(TTurnoutPosition(turnoutZav.position),
@@ -1761,7 +1760,7 @@ begin
         // nastavit nouzovy zaver zamkum
         for var refZav: TJCRefZav in Self.m_data.locks do
         begin
-          var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZav.Block));
+          var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZav.block));
           lock.emLock := true;
           signal.AddBlkToRnz(lock.id, false);
         end;
@@ -2571,7 +2570,7 @@ begin
       for var i: Integer := 0 to cnt - 1 do
       begin
         var turnoutZav: TJCTurnoutZav;
-        turnoutZav.Block := StrToInt(sl[i * sect_size]);
+        turnoutZav.block := StrToInt(sl[i * sect_size]);
         turnoutZav.position := TTurnoutPosition(StrToInt(sl[(i * sect_size) + 1]));
         Self.m_data.turnouts.Add(turnoutZav);
       end;
@@ -2587,7 +2586,7 @@ begin
       for var i: Integer := 0 to cnt - 1 do
       begin
         var refugeeZav: TJCRefugeeZav;
-        refugeeZav.Block := StrToInt(sl[i * sect_size]);
+        refugeeZav.block := StrToInt(sl[i * sect_size]);
         refugeeZav.position := TTurnoutPosition(StrToInt(sl[(i * sect_size) + 1]));
         refugeeZav.ref_blk := StrToInt(sl[(i * sect_size) + 2]);
         Self.m_data.refuges.Add(refugeeZav);
@@ -2641,7 +2640,7 @@ begin
           ExtractStrings([';', ',', '|', '-'], [], PChar(sl[i]), lockStrs);
 
           var refZav: TJCRefZav;
-          refZav.Block := StrToInt(lockStrs[0]);
+          refZav.block := StrToInt(lockStrs[0]);
           refZav.ref_blk := StrToInt(lockStrs[1]);
           Self.m_data.locks.Add(refZav);
         end;
@@ -2715,14 +2714,14 @@ begin
   // turnouts
   var turnoutsStr := '';
   for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
-    turnoutsStr := turnoutsStr + '(' + IntToStr(turnoutZav.Block) + ',' + IntToStr(Integer(turnoutZav.position)) + ')';
+    turnoutsStr := turnoutsStr + '(' + IntToStr(turnoutZav.block) + ',' + IntToStr(Integer(turnoutZav.position)) + ')';
   if (turnoutsStr <> '') then
     ini.WriteString(section, 'vyhybky', turnoutsStr);
 
   // refugees
   var refugeesStr: string := '';
   for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
-    refugeesStr := refugeesStr + '(' + IntToStr(refugeeZav.Block) + ',' +
+    refugeesStr := refugeesStr + '(' + IntToStr(refugeeZav.block) + ',' +
       IntToStr(Integer(refugeeZav.position)) + ',' + IntToStr(refugeeZav.ref_blk) + ')';
   if (refugeesStr <> '') then
     ini.WriteString(section, 'odvraty', refugeesStr);
@@ -2750,7 +2749,7 @@ begin
   // locks
   var locksStr: string := '';
   for var lockZav: TJCRefZav in Self.m_data.locks do
-    locksStr := locksStr + '(' + IntToStr(lockZav.Block) + ';' + IntToStr(lockZav.ref_blk) + ')';
+    locksStr := locksStr + '(' + IntToStr(lockZav.block) + ';' + IntToStr(lockZav.ref_blk) + ')';
   if (locksStr <> '') then
     ini.WriteString(section, 'podm-zamky', locksStr);
 
@@ -2862,7 +2861,7 @@ begin
   // zkontrolujeme polohu vyhybek
   for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
   begin
-    var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(turnoutZav.Block);
+    var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(turnoutZav.block);
     if (turnout.position <> turnoutZav.position) then
       Exit(false);
 
@@ -2880,7 +2879,7 @@ begin
   // zkontrolujeme polohu odvratu
   for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
   begin
-    var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(refugeeZav.Block);
+    var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(refugeeZav.block);
     if (turnout.position <> refugeeZav.position) then
       Exit(false);
   end;
@@ -2910,7 +2909,7 @@ begin
   // kontrola uzamceni zamku:
   for var refZav: TJCRefZav in Self.m_data.locks do
   begin
-    var lock: TBlkLock := Blocks.GetBlkLockByID(refZav.Block);
+    var lock: TBlkLock := Blocks.GetBlkLockByID(refZav.block);
 
     // kontrola uzamceni
     if (lock.keyReleased) then
@@ -3019,7 +3018,7 @@ begin
     // stavim dalsi vyhybku
     for var i: Integer := Self.m_state.nextTurnout to Self.m_data.turnouts.Count - 1 do
     begin
-      var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(Self.m_data.turnouts[i].Block);
+      var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(Self.m_data.turnouts[i].block);
       if (turnout.position <> TTurnoutPosition(Self.m_data.turnouts[i].position)) then
       begin
         Self.m_state.nextTurnout := i + 1;
@@ -3040,14 +3039,14 @@ begin
     for var i: Integer := refugeeId to Self.m_data.refuges.Count - 1 do
     begin
       // nastaveni odvratu
-      var refugee: TBlkTurnout := Blocks.GetBlkTurnoutByID(Self.m_data.refuges[i].Block);
+      var refugee: TBlkTurnout := Blocks.GetBlkTurnoutByID(Self.m_data.refuges[i].block);
       if (refugee.position <> TTurnoutPosition(Self.m_data.refuges[i].position)) then
       begin
         refugee.IntentionalLock();
 
         var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.refuges[i].ref_blk);
         track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.NullVyhybkaMenuReduction,
-          Self.m_data.refuges[i].Block));
+          Self.m_data.refuges[i].block));
 
         Self.m_state.nextTurnout := i + Self.m_data.turnouts.Count + 1;
         refugee.SetPosition(TTurnoutPosition(Self.m_data.refuges[i].position), true, false,
@@ -3110,7 +3109,7 @@ begin
     // Tady staci postavit jen jednu vyhybku, protoze jeji uzamceni opet zavola
     // tuto udalost.
 
-    var nextTurnout := TBlkTurnout(Blocks.GetBlkByID(Self.m_data.turnouts[Self.m_state.nextTurnout].Block));
+    var nextTurnout := TBlkTurnout(Blocks.GetBlkByID(Self.m_data.turnouts[Self.m_state.nextTurnout].block));
     Inc(Self.m_state.nextTurnout);
 
     nextTurnout.SetPosition(TTurnoutPosition(Self.m_data.turnouts[Self.m_state.nextTurnout - 1].position), true,
@@ -3123,7 +3122,7 @@ begin
     // tuto udalost.
 
     var refugeeId := Self.m_state.nextTurnout - Self.m_data.turnouts.Count;
-    var refugee := TBlkTurnout(Blocks.GetBlkByID(Self.m_data.refuges[refugeeId].Block));
+    var refugee := TBlkTurnout(Blocks.GetBlkByID(Self.m_data.refuges[refugeeId].block));
     Inc(Self.m_state.nextTurnout);
 
     refugee.SetPosition(TTurnoutPosition(Self.m_data.refuges[refugeeId].position), true, false,
@@ -3180,7 +3179,7 @@ begin
   // turnouts
   for var turnoutZav in Self.m_data.turnouts do
   begin
-    var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.Block));
+    var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnoutZav.block));
     var glob := turnout.GetGlobalSettings();
 
     if (turnout.position <> turnoutZav.position) then
@@ -3238,7 +3237,7 @@ begin
   // refugees
   for var refugeeZav in Self.m_data.refuges do
   begin
-    var refugee := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.Block));
+    var refugee := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
 
     if (refugee.position <> refugeeZav.position) then
       bariery.Add(JCBarrier(barTurnoutNoPos, refugee));
@@ -3306,7 +3305,7 @@ begin
   // locks
   for var refZav in Self.m_data.locks do
   begin
-    var lock := TBlkLock(Blocks.GetBlkByID(refZav.Block));
+    var lock := TBlkLock(Blocks.GetBlkByID(refZav.block));
 
     if (lock.keyReleased) then
       bariery.Add(JCBarrier(barLockNotLocked, lock));
@@ -3494,7 +3493,7 @@ begin
   for var turnoutZav in Self.m_data.turnouts do
   begin
     var newObj := json.A['turnouts'].AddObject();
-    newObj['block'] := turnoutZav.Block;
+    newObj['block'] := turnoutZav.block;
     case (turnoutZav.position) of
       TTurnoutPosition.plus:
         newObj['position'] := '+';
@@ -3509,7 +3508,7 @@ begin
   for var refugeeZav in Self.m_data.refuges do
   begin
     var newObj := json.A['refuges'].AddObject();
-    newObj['block'] := refugeeZav.Block;
+    newObj['block'] := refugeeZav.block;
     case (refugeeZav.position) of
       TTurnoutPosition.plus:
         newObj['position'] := '+';
@@ -3531,7 +3530,7 @@ begin
   for var refZav in Self.m_data.locks do
   begin
     var newObj := json.A['locks'].AddObject();
-    newObj['lock'] := refZav.Block;
+    newObj['lock'] := refZav.block;
     newObj['refTrack'] := refZav.ref_blk;
   end;
 
@@ -3677,7 +3676,7 @@ end;
 function TJC.ContainsLock(blockid: Integer): Boolean;
 begin
   for var lockZav: TJCRefZav in Self.data.locks do
-    if (lockZav.Block = blockid) then
+    if (lockZav.block = blockid) then
       Exit(True);
   Result := False;
 end;
@@ -3687,16 +3686,16 @@ begin
   var turnout: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(blockid));
 
   for var turnoutZav: TJCTurnoutZav in Self.data.turnouts do
-    if (turnoutZav.Block = turnout.id) then
+    if (turnoutZav.block = turnout.id) then
       Exit(True);
 
   for var refugeeZav: TJCRefugeeZav in Self.data.refuges do
-    if (refugeeZav.Block = turnout.id) then
+    if (refugeeZav.block = turnout.id) then
       Exit(True);
 
   if ((turnout <> nil) and (turnout.lock <> nil)) then
     for var refZav: TJCRefZav in Self.data.locks do
-      if (refZav.Block = turnout.lock.id) then
+      if (refZav.block = turnout.lock.id) then
         Exit(True);
 
   Result := False;
