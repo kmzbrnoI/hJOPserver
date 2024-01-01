@@ -22,11 +22,11 @@ type
   end;
 
   TChangeEventCaller = class
-    procedure CopyUsekZaver(Sender: TObject; data: Integer);
-    procedure NullZamekZaver(Sender: TObject; data: Integer);
-    procedure NullPrejezdZaver(Sender: TObject; data: Integer);
-    procedure NullTratZaver(Sender: TObject; data: Integer);
-    procedure NullVyhybkaMenuReduction(Sender: TObject; data: Integer);
+    procedure CopyTrackZaver(Sender: TObject; data: Integer);
+    procedure LockCancelZaver(Sender: TObject; data: Integer);
+    procedure CrossingCancelZaver(Sender: TObject; data: Integer);
+    procedure RailwayCancelZaver(Sender: TObject; data: Integer);
+    procedure TurnoutUnlock(Sender: TObject; data: Integer);
     procedure RemoveUsekNeprofil(Sender: TObject; data: Pointer);
     procedure RemoveEvent(Sender: TObject; data: Pointer);
   end;
@@ -40,7 +40,7 @@ uses BlockDb, Block, BlockTrack, BlockTurnout, BlockLock, BlockCrossing,
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TChangeEventCaller.CopyUsekZaver(Sender: TObject; data: Integer);
+procedure TChangeEventCaller.CopyTrackZaver(Sender: TObject; data: Integer);
 begin
   var track := Blocks.GetBlkTrackOrRTByID(data);
   if (track = nil) then
@@ -49,23 +49,23 @@ begin
   track.zaver := TBlkTrack(Sender).zaver;
 end;
 
-procedure TChangeEventCaller.NullZamekZaver(Sender: TObject; data: Integer);
+procedure TChangeEventCaller.LockCancelZaver(Sender: TObject; data: Integer);
 begin
   var lock: TBlkLock := Blocks.GetBlkLockByID(data);
   if (lock = nil) then
     Exit();
-  lock.Zaver := false;
+  lock.zaver := false;
 end;
 
-procedure TChangeEventCaller.NullPrejezdZaver(Sender: TObject; data: Integer);
+procedure TChangeEventCaller.CrossingCancelZaver(Sender: TObject; data: Integer);
 begin
   var crossing := Blocks.GetBlkCrossingByID(data);
   if (crossing = nil) then
     Exit();
-  crossing.Zaver := false;
+  crossing.zaver := false;
 end;
 
-procedure TChangeEventCaller.NullTratZaver(Sender: TObject; data: Integer);
+procedure TChangeEventCaller.RailwayCancelZaver(Sender: TObject; data: Integer);
 begin
   var railway: TBlkRailway := Blocks.GetBlkRailwayByID(data);
   if (railway = nil) then
@@ -75,7 +75,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TChangeEventCaller.NullVyhybkaMenuReduction(Sender: TObject; data: Integer);
+procedure TChangeEventCaller.TurnoutUnlock(Sender: TObject; data: Integer);
 begin
   var turnout := Blocks.GetBlkTurnoutByID(data);
   if (turnout = nil) then

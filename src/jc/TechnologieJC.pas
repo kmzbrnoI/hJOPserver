@@ -55,26 +55,26 @@ type
   );
 
 
-  // zaver vyhybky v jizdni ceste
+  // zaver vyhybky v JC
   TJCTurnoutZav = record
     block: Integer;
     position: TTurnoutPosition;
   end;
 
-  // zaver odvratove vyhybky v jizdni ceste
+  // zaver odvratove vyhybky v JC
   TJCRefugeeZav = record
     block: Integer;
     position: TTurnoutPosition;
     ref_blk: Integer; // id bloku, pri jehoz zruseni zaveru dojde i k uvolneni zaveru odvratove vyhybky
   end;
 
-  // bloky v JC, ketre jsou navazany na konkretni useky v ramci JC
+  // bloky v JC, ketre jsou navazany na konkretni useky v ramci JC (napr. zamky)
   TJCRefZav = record
     block: Integer;
     ref_blk: Integer; // id bloku, pri jehoz uvolneni zaveru dojde ke zruseni
   end;
 
-  // prejezd v jizdni ceste
+  // prejezd v JC
   TJCCrossingZav = record
     crossingId: Integer;
     closeTracks: TList<Integer>; // pokud se prejezd nezavira, je seznam prazdny
@@ -103,7 +103,7 @@ type
     railwayId: Integer;
     railwayDir: TRailwayDirection;
     speedsGo, speedsStop: TList<TTrainSpeed>;
-    turn: Boolean; // jc od odbocky (40 km/h)
+    turn: Boolean; // jc od odbocky (navesteni 40 km/h)
     nzv: Boolean; // nedostatecna zabrzdna vzdalenost
     signalFallTrackI: Cardinal;
   end;
@@ -1305,7 +1305,7 @@ begin
           var oneButLastTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[Self.m_data.tracks.Count-2]));
           oneButLastTrack.AddChangeEvent(
             oneButLastTrack.eventsOnZaverReleaseOrAB,
-            CreateChangeEventInt(ceCaller.CopyUsekZaver, Self.lastTrack.id)
+            CreateChangeEventInt(ceCaller.CopyTrackZaver, Self.lastTrack.id)
           );
 
           for var i: Integer := 0 to Self.m_data.tracks.Count - 2 do
@@ -1315,7 +1315,7 @@ begin
 
             if (track.spnl.stationTrack) then
             begin
-              var chEv: TChangeEvent := CreateChangeEventInt(ceCaller.CopyUsekZaver, track.id);
+              var chEv: TChangeEvent := CreateChangeEventInt(ceCaller.CopyTrackZaver, track.id);
               TBlk.AddChangeEvent(nextTrack.eventsOnZaverReleaseOrAB, chEv);
               remEvDataPtr := GetMemory(SizeOf(TRemoveEventData));
               remEvDataPtr^ := TRemoveEventData.Create(nextTrack.eventsOnZaverReleaseOrAB, chEv);
@@ -1378,8 +1378,7 @@ begin
 
           // pridani zruseni redukce
           var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(refugeeZav.ref_blk));
-          track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.NullVyhybkaMenuReduction,
-            refugeeZav.block));
+          track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.TurnoutUnlock, refugeeZav.block));
 
           // Warning: this may call callback directly
           // Callback for just-locking turnout will have no effect due to nextVyhybka = -1
@@ -1393,7 +1392,7 @@ begin
         for var refZav: TJCRefZav in Self.m_data.locks do
         begin
           var refTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(refZav.ref_blk));
-          refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.NullZamekZaver, refZav.block));
+          refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.LockCancelZaver, refZav.block));
 
           // nastaveni zaveru zamku
           var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZav.block));
@@ -1418,7 +1417,7 @@ begin
 
           // zruseni zaveru posledniho bloku JC priradime zruseni zaveru trati
           Self.lastTrack.AddChangeEvent(TBlkTrack(Self.lastTrack).eventsOnZaverReleaseOrAB,
-            CreateChangeEventInt(ceCaller.NullTratZaver, Self.m_data.railwayId));
+            CreateChangeEventInt(ceCaller.RailwayCancelZaver, Self.m_data.railwayId));
         end;
 
         Self.step := stepJcTurnoutsMoving;
@@ -1514,7 +1513,7 @@ begin
             var openTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(crossingZav.openTrack));
             openTrack.AddChangeEvent(
               openTrack.eventsOnZaverReleaseOrAB,
-              CreateChangeEventInt(ceCaller.NullPrejezdZaver, crossingZav.crossingId)
+              CreateChangeEventInt(ceCaller.CrossingCancelZaver, crossingZav.crossingId)
             );
 
             anyClosed := true;
@@ -2958,7 +2957,7 @@ begin
 
     // prejezd se uzavira -> po uvolneni zaveru bloku pod prejezdem prejezd opet otevrit
     var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.crossings[data].openTrack);
-    track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.NullPrejezdZaver,
+    track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.CrossingCancelZaver,
       Self.m_data.crossings[data].crossingId));
   end;
 
@@ -3045,7 +3044,7 @@ begin
         refugee.IntentionalLock();
 
         var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.refuges[i].ref_blk);
-        track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.NullVyhybkaMenuReduction,
+        track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.TurnoutUnlock,
           Self.m_data.refuges[i].block));
 
         Self.m_state.nextTurnout := i + Self.m_data.turnouts.Count + 1;
