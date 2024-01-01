@@ -13,9 +13,10 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Logging,
-  Dialogs, Menus, Buttons, ComCtrls, fMain, Block, Train,
+  Dialogs, Menus, Buttons, ComCtrls, fMain, Block, Train, BlockTrack,
   IniFiles, IdContext, BlockRailway, Generics.Collections, UPO, BlockTurnout,
-  Area, changeEvent, changeEventCaller, JsonDataObjects, PTUtils, JCBarriers, TrainSpeed;
+  Area, changeEvent, changeEventCaller, JsonDataObjects, PTUtils, JCBarriers,
+  TrainSpeed;
 
 const
   _JC_INITPOTVR_TIMEOUT_SEC = 60; // timeout UPO a potvrzeni na zacatku staveni JC
@@ -190,13 +191,14 @@ type
     function IsCriticalBarrier(): Boolean;
     function GetSignal(): TBlk;
     function GetWaitFroLastTrackOrRailwayOccupied(): Boolean;
-    function GetLastTrack(): TBlk;
+    function GetLastTrack(): TBlkTrack;
     function PSts(): TList<TBlk>;
 
     procedure Log(msg: string; level: TLogLevel = llInfo; source: TLogSource = lsJC);
     procedure LogStep(msg: string; level: TLogLevel = llInfo; source: TLogSource = lsJC);
 
     procedure DetermineCrossingsToClose(var toClose: TList<Boolean>);
+    procedure TrackCancelZaver(track: TBlkTrack);
 
   public
 
@@ -258,7 +260,7 @@ type
     property ncActive: Boolean read IsNCActive;
     property ab: Boolean read GetAB;
     property waitForLastTrackOrRailwayOccupy: Boolean read GetWaitFroLastTrackOrRailwayOccupied;
-    property lastTrack: TBlk read GetLastTrack;
+    property lastTrack: TBlkTrack read GetLastTrack;
 
     property destroyBlock: Integer read m_state.destroyBlock write SetDestroyBlock;
     property destroyEndBlock: Integer read m_state.destroyEndBlock write SetDestroyEndBlock;
@@ -282,7 +284,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, BlockTrack, AreaDb,
+uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, AreaDb,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
   BlockPSt, appEv, ConfSeq, BlockDb, Config, colorHelper;
@@ -1281,8 +1283,8 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// jakmile je zavolano StavJC(), tato funkce se stara o to, aby staveni doslo az do konce
-// kontroluje prubezne podminky apod.
+// jakmile je zavolano Activate, tato funkce se stara o to, aby staveni doslo az do konce.
+// Stavi vyhybky, zavira prejezdy atd.
 procedure TJC.UpdateActivating();
 var
   npCall: ^TNPCallerData;
@@ -1299,29 +1301,16 @@ begin
   case (Self.step) of
     stepJcInit:
       begin
-        // nejprve priradime uvolneni zaveru posledniho bloku uvolneni zaveru predposledniho bloku
-        if (Self.m_data.tracks.Count > 1) then
+        // U cest do trati uvolneni zaveru posledniho useku zpusobi uvolneni zaveru predposledniho bloku
+        // To je hlavne pro to, aby sel zrusit zaver posledniho useku pomoci NUZ
+        // U stanicnich koleji se zaver musi zrusit explicitnim zavedenim NUZ na stanicni koleji.
+        if ((Self.m_data.tracks.Count > 1) and (Self.lastTrack.typ = TBlkType.btRT)) then
         begin
           var oneButLastTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[Self.m_data.tracks.Count-2]));
           oneButLastTrack.AddChangeEvent(
             oneButLastTrack.eventsOnZaverReleaseOrAB,
             CreateChangeEventInt(ceCaller.CopyTrackZaver, Self.lastTrack.id)
           );
-
-          for var i: Integer := 0 to Self.m_data.tracks.Count - 2 do
-          begin
-            var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[i]));
-            var nextTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[i+1]));
-
-            if (track.spnl.stationTrack) then
-            begin
-              var chEv: TChangeEvent := CreateChangeEventInt(ceCaller.CopyTrackZaver, track.id);
-              TBlk.AddChangeEvent(nextTrack.eventsOnZaverReleaseOrAB, chEv);
-              remEvDataPtr := GetMemory(SizeOf(TRemoveEventData));
-              remEvDataPtr^ := TRemoveEventData.Create(nextTrack.eventsOnZaverReleaseOrAB, chEv);
-              TBlk.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEvent(ceCaller.RemoveEvent, remEvDataPtr));
-            end;
-          end;
         end;
 
         Self.LogStep('Useky: nastavuji staveci zavery');
@@ -1376,7 +1365,7 @@ begin
 
           refugee.IntentionalLock();
 
-          // pridani zruseni redukce
+          // zaver odvratu se rusi pri ruseni zaveru referencniho bloku
           var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(refugeeZav.ref_blk));
           track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.TurnoutUnlock, refugeeZav.block));
 
@@ -1400,8 +1389,6 @@ begin
         end;
 
         // trat
-        // zruseni redukce posledniho bloku jizdni cesty je navazano na zruseni zaveru trati
-        // -> jakmile dojde ke zruseni zaveru posledniho bloku, dojde ke zruseni zaveru trati
         if (Self.m_data.railwayId > -1) then
         begin
           Self.LogStep('Nastavuji zaver trati');
@@ -1415,8 +1402,8 @@ begin
           railway.zaver := true;
           railway.direction := Self.m_data.railwayDir;
 
-          // zruseni zaveru posledniho bloku JC priradime zruseni zaveru trati
-          Self.lastTrack.AddChangeEvent(TBlkTrack(Self.lastTrack).eventsOnZaverReleaseOrAB,
+          // zruseni zaveru posledniho bloku JC zpusobi zruseni zaveru trati
+          Self.lastTrack.AddChangeEvent(Self.lastTrack.eventsOnZaverReleaseOrAB,
             CreateChangeEventInt(ceCaller.RailwayCancelZaver, Self.m_data.railwayId));
         end;
 
@@ -1509,7 +1496,7 @@ begin
             Self.LogStep('Prejezd ' + crossing.name + ' - uzaviram');
             crossing.zaver := true;
 
-            // pridani zruseni redukce, tim se prejezd automaticky otevre po zruseni zaveru bloku pod nim
+            // uvolnit zaver prejezdu pri zruseni zaveru (nebo nastaveni na AB zaver) referencniho useku prejezdu
             var openTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(crossingZav.openTrack));
             openTrack.AddChangeEvent(
               openTrack.eventsOnZaverReleaseOrAB,
@@ -1893,8 +1880,8 @@ begin
           Self.m_state.destroyBlock := _JC_DESTROY_NC;
 
           // a)
-          if ((lastTrack.typ = btTrack) and (TBlkTrack(Self.lastTrack).spnl.stationTrack) and
-            (not TBlkTrack(Self.lastTrack).TrainsFull())) then
+          if ((lastTrack.typ = btTrack) and (Self.lastTrack.spnl.stationTrack) and
+            (not Self.lastTrack.TrainsFull())) then
           begin
             if (signalTrack.IsTrain()) then
             begin
@@ -1906,9 +1893,9 @@ begin
 
               // na dopravni kolej vlozime soupravu blize vjezdovemu navestidlu
               if (signal.direction = THVSite.odd) then
-                TBlkTrack(Self.lastTrack).AddTrainL(Train)
+                Self.lastTrack.AddTrainL(Train)
               else
-                TBlkTrack(Self.lastTrack).AddTrainS(Train);
+                Self.lastTrack.AddTrainS(Train);
 
               signalTrack.RemoveTrain(Train);
               train.front := Self.lastTrack;
@@ -1939,7 +1926,7 @@ begin
                   train.ChangeDirection();
               end;
             end else begin
-              if ((not TBlkTrack(Self.lastTrack).IsTrain()) and (railway.BP) and
+              if ((not Self.lastTrack.IsTrain()) and (railway.BP) and
                 (railway.direction = Self.data.railwayDir)) then
               begin
                 // Pridat soupravu do prvniho bloku trati
@@ -2038,7 +2025,7 @@ end;
 procedure TJC.CancelTrackEnd();
 begin
   if (Self.lastTrack <> nil) then
-    TBlkTrack(Self.lastTrack).jcEnd := TZaver.no;
+    Self.lastTrack.jcEnd := TZaver.no;
 end;
 
 procedure TJC.CancelVBs();
@@ -2066,7 +2053,8 @@ begin
     track.Zaver := TZaver.no;
   end;
 
-  // zaver trati se rusi automaticky uvolnenim zaveru posledniho bloku pred trati
+  // Ostatni zavery (trate, prejezdy, odvraty, zamky, ...) se zrusit automaticky pri zruseni zaveru
+  // referencniho useku.
 
   Self.Log('Zrusena');
 end;
@@ -2160,7 +2148,7 @@ begin
 
         // pokud jsme v predposlednim useku a posledni je nedetekovany, posuneme RozpadBlok jeste o jeden usek, aby se cesta mohla zrusit
         if (i = Self.m_data.tracks.Count - 2) then
-          if (not TBlkTrack(Self.lastTrack).occupAvailable) then
+          if (not Self.lastTrack.occupAvailable) then
             Self.destroyBlock := Self.destroyBlock + 1;
 
         if ((i = Self.m_data.tracks.Count - 1) and (Self.m_data.railwayId > -1)) then
@@ -2234,11 +2222,7 @@ begin
     then
     begin
       // cesta se rozpada...
-      if (Self.ab) then
-        track.SetZaverWithPathTimer(TZaver.ab)
-      else
-        track.SetZaverWithPathTimer(TZaver.no);
-
+      Self.TrackCancelZaver(track);
       Self.destroyEndBlock := Self.destroyEndBlock + 1;
 
       if ((Self.typ = TJCType.Train) and (track.IsTrain())) then
@@ -2253,7 +2237,7 @@ begin
   end; // if (cyklus2 = Self.rozpadRuseniBlok)
 
   // tady se resi pripad, kdy stanicni kolej zustane obsazena (protoze tam stoji vagony),
-  // ale souprava se z ni musi odstranit uvolnenim prvniho bloku JC
+  // ale souprava se z ni musi odstranit uvolnenim prvniho useku JC
   if ((Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK) and (Self.destroyBlock > 0)) then
   begin
     var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[0]));
@@ -2275,11 +2259,7 @@ begin
         signal.JCCancelSignal();
       end;
 
-      if (Self.ab) then
-        TBlkTrack(track).SetZaverWithPathTimer(TZaver.ab)
-      else
-        TBlkTrack(track).SetZaverWithPathTimer(TZaver.no);
-
+      Self.TrackCancelZaver(track as TBlkTrack);
       Self.destroyEndBlock := 1;
 
       if ((Self.typ = TJCType.Train) and (track.IsTrain())) then
@@ -2325,33 +2305,23 @@ begin
     Self.destroyEndBlock := _JC_DESTROY_SIGNAL_STUJ;
   end;
 
-  // tahleta silenost za OR je tu pro pripad, kdy JC ma jen jeden usek (to se stava napriklad na smyckach)
+  // Cast podminky za logickym OR je tu pro pripad, kdy JC ma jen jeden usek (to se stava napriklad na smyckach)
   if ((Self.destroyEndBlock = Self.m_data.tracks.Count - 1) and (Self.m_data.tracks.Count > 1)) or
     ((Self.m_data.tracks.Count = 1) and (Self.destroyBlock = 1)) then
   begin
     // vsechny useky az na posledni jsou uvolneny -> rusime JC
+    // Zaver posledniho useku rusime vzdy, byt u cest do trati existuje vazba "uvolneni zaveru predposledniho useku rusi zaver posledniho useku".
+    // Toto je z toho duvodu, aby i na poslednim useku JC doslo k pocitani casu uvolneni zaveru a to od momentu, kdy se rozpadne jizdni cesta.
+    Self.TrackCancelZaver(Self.lastTrack);
 
-    // tady by teoreticky melo prijit ruseni zaveru posledniho bloku, ale to neni poteba,
-    // protoze zaver tohoto bloku je primo navazny na zaver predposledniho bloku pres redukce
-    // to je napriklad kvuli tratim, ci z toho duvodu, ze na stanicnich kolejich nejde dat NUZ
-
-    // pozor ale na JC, ktere maji jen jeden usek a ten je stanicni koleji:
+    // pokud ma cesta jen jeden usek, odstranime soupravu z useku pred navestidlem:
     if (Self.m_data.tracks.Count = 1) then
     begin
-      var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[0]));
-
-      if (Self.ab) then
-        track.SetZaverWithPathTimer(TZaver.ab)
-      else
-        track.SetZaverWithPathTimer(TZaver.no);
-
       var train: TTrain := Self.GetTrain(signal, signalTrack);
-
-      // pokud ma cesta jen jeden usek, odstranime soupravu z useku pred navestidlem:
       if ((Self.typ = TJCType.Train) and (train <> nil)) then
       begin
         signalTrack.RemoveTrain(train);
-        Self.Log('Smazana souprava ' + Train.name + ' z bloku ' + signalTrack.name, llInfo, lsTrainMove);
+        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, llInfo, lsTrainMove);
       end;
 
       if ((signalTrack.typ = btRT) and (TBlkRT(signalTrack).railway <> nil) and (TBlkRT(signalTrack).bpInBlk)) then
@@ -2363,8 +2333,8 @@ begin
     Self.Log('Ruseni: rozpad cesty vlakem');
     if (signal.DNjc = Self) then
     begin
+      // tato situace opravdu muze nastat - posunova cesta s jednim usekem vychazejici z koleje bez indikace volnosti
       if (signal.targetSignal > ncStuj) then
-      // tato situace opravdu muze nastat - predstavte si posunovou cestu s jednim usekem vychazejici z nedetek koleje
         signal.JCCancelSignal();
       signal.DNjc := nil;
     end;
@@ -2827,8 +2797,8 @@ begin
   train := Self.GetTrain();
 
   // zkontrolujeme zavery bloku
-  // JC NELZE obnovit z useku, na kterych uplne spadl zaver (do zadneho zaveru)
-  // porusily by se reference na redukce menu
+  // JC NELZE obnovit, pokud na nekterych usecich uz vubec neni zaver
+  // mohlo totiz dojit napriklad k uvolneni zaveru odvratu
   for var i: Integer := 0 to Self.m_data.tracks.Count - 1 do
   begin
     var trackZaver: Integer := Self.m_data.tracks[i];
@@ -3282,9 +3252,8 @@ begin
         bariery.Add(JCBarrier(barRailwayNoBp, railway));
 
       var track := TBlkTrack((Self.signal as TBlkSignal).track);
-      var lastTrack := TBlkTrack(Self.lastTrack);
 
-      if ((track.IsTrain) and (lastTrack.typ = btRT) and ((lastTrack as TBlkRT).inRailway = Self.data.railwayId)) then
+      if ((track.IsTrain) and (Self.lastTrack.typ = btRT) and ((Self.lastTrack as TBlkRT).inRailway = Self.data.railwayId)) then
       begin
         if (railway.lockout) then
         begin
@@ -3294,7 +3263,7 @@ begin
           else
             bariery.Add(JCBarrier(barRailwayMoveEnd, railway));
         end else begin
-          if ((lastTrack.IsTrain()) or (not railway.BP) or (railway.direction <> Self.data.railwayDir)) then
+          if ((Self.lastTrack.IsTrain()) or (not railway.BP) or (railway.direction <> Self.data.railwayDir)) then
             bariery.Add(JCBarrier(barRailwayNoTrainMove, railway));
         end;
       end;
@@ -3583,7 +3552,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TJC.GetLastTrack(): TBlk;
+function TJC.GetLastTrack(): TBlkTrack;
 begin
   if (Self.data.tracks.Count = 0) then
     Exit(nil);
@@ -3711,6 +3680,16 @@ begin
     if (crossingZav.crossingId = blockid) then
       Exit(True);
   Result := False;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.TrackCancelZaver(track: TBlkTrack);
+begin
+  if (Self.ab) then
+    track.SetZaverWithPathTimer(TZaver.ab)
+  else
+    track.SetZaverWithPathTimer(TZaver.no);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
