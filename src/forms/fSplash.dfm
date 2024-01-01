@@ -12,11 +12,9 @@ object F_splash: TF_splash
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object L_Created: TLabel
     Left = 8
@@ -29,7 +27,7 @@ object F_splash: TF_splash
     Margins.Right = 2
     Margins.Bottom = 2
     AutoSize = False
-    Caption = #169' Jan Hor'#225#269'ek 2008'#8211'2023'
+    Caption = #169' Jan Hor'#225#269'ek 2008'#8211'2024'
     Color = clWhite
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clRed

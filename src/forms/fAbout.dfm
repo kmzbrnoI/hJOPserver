@@ -13,10 +13,8 @@ object F_About: TF_About
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object I_Horasystems: TImage
     Left = 286
@@ -452,7 +450,7 @@ object F_About: TF_About
     Margins.Bottom = 2
     Alignment = taCenter
     AutoSize = False
-    Caption = 'Vytvo'#345'il Jan Hor'#225#269'ek 2008'#8211'2023'
+    Caption = 'Vytvo'#345'il Jan Hor'#225#269'ek 2008'#8211'2024'
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clBlack
     Font.Height = -20
