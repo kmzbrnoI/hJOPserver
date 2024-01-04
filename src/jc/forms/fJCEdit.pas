@@ -30,8 +30,6 @@ type
     CB_Signal: TComboBox;
     CB_Typ: TComboBox;
     L_VC_11: TLabel;
-    L_VC_07: TLabel;
-    CB_Next_Signal: TComboBox;
     CHB_AutoName: TCheckBox;
     GB_Railway: TGroupBox;
     CHB_Railway: TCheckBox;
@@ -49,19 +47,21 @@ type
     Label7: TLabel;
     E_VB: TEdit;
     Label8: TLabel;
-    CHB_Advanced: TCheckBox;
     M_Locks: TMemo;
-    CHB_Odbocka: TCheckBox;
-    CHB_NZV: TCheckBox;
     Label6: TLabel;
     SE_SignalFallTrackI: TSpinEdit;
-    CB_Signal_Signal: TComboBox;
-    Label9: TLabel;
     B_Track_Del: TButton;
     B_Turnout_Del: TButton;
     GB_Speeds: TGroupBox;
     GB_SpeedsStop: TGroupBox;
     GB_SpeedsGo: TGroupBox;
+    GB_Signal: TGroupBox;
+    Label9: TLabel;
+    CB_Signal_Signal: TComboBox;
+    CHB_Odbocka: TCheckBox;
+    CHB_NZV: TCheckBox;
+    L_VC_07: TLabel;
+    CB_Next_Signal: TComboBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
@@ -76,7 +76,6 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure CHB_RailwayClick(Sender: TObject);
-    procedure CHB_AdvancedClick(Sender: TObject);
     procedure LV_TracksKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure LV_TurnoutsKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure CB_RailwayChange(Sender: TObject);
@@ -293,11 +292,10 @@ begin
     Self.Caption := 'Upravit jízdní cestu ' + JCData.name;
 end;
 
-procedure TF_JCEdit.CommonOpenForm;
+procedure TF_JCEdit.CommonOpenForm();
 begin
   Self.LV_Turnouts.Clear();
   Self.LV_Tracks.Clear();
-  Self.CHB_AdvancedClick(Self.CHB_Advanced);
   Self.ActiveControl := Self.E_Name;
 end;
 
@@ -804,19 +802,6 @@ begin
       Self.CB_Signal_Signal.ItemIndex := 1;
     end;
   end;
-end;
-
-procedure TF_JCEdit.CHB_AdvancedClick(Sender: TObject);
-var gb: TGroupBox;
-begin
-  if (Self.CHB_Advanced.Checked) then
-    gb := Self.GB_Advanced
-  else
-    gb := Self.GB_Turnouts;
-
-  Self.Width := gb.Left + gb.Width + 10;
-  Self.B_Save.Left := gb.Left + gb.Width - Self.B_Save.Width;
-  Self.B_Storno.Left := Self.B_Save.Left - Self.B_Storno.Width - 5;
 end;
 
 procedure TF_JCEdit.CHB_RailwayClick(Sender: TObject);
