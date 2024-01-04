@@ -5,7 +5,7 @@ object F_JCEdit: TF_JCEdit
   BorderStyle = bsToolWindow
   Caption = 'J'#237'zdn'#237' cesta ...'
   ClientHeight = 586
-  ClientWidth = 976
+  ClientWidth = 1049
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -316,7 +316,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 9
+    TabOrder = 11
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
@@ -329,7 +329,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 10
+    TabOrder = 12
     OnClick = B_StornoClick
   end
   object CB_Signal: TComboBox
@@ -369,7 +369,7 @@ object F_JCEdit: TF_JCEdit
     Caption = 'auto'
     Checked = True
     State = cbChecked
-    TabOrder = 12
+    TabOrder = 13
   end
   object GB_Railway: TGroupBox
     Left = 8
@@ -434,12 +434,12 @@ object F_JCEdit: TF_JCEdit
     Value = 0
   end
   object GB_Advanced: TGroupBox
-    Left = 670
-    Top = 8
+    Left = 677
+    Top = 200
     Width = 297
-    Height = 390
+    Height = 289
     Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' kurzorem) '
-    TabOrder = 11
+    TabOrder = 10
     object Label4: TLabel
       Left = 8
       Top = 16
@@ -454,23 +454,16 @@ object F_JCEdit: TF_JCEdit
       Height = 13
       Caption = 'Odvraty:'
     end
-    object Label7: TLabel
-      Left = 8
-      Top = 208
-      Width = 35
-      Height = 13
-      Caption = 'Z'#225'mky:'
-    end
     object Label8: TLabel
       Left = 8
-      Top = 301
+      Top = 205
       Width = 71
       Height = 13
       Caption = 'Variantn'#237' body:'
     end
     object Label6: TLabel
       Left = 8
-      Top = 352
+      Top = 256
       Width = 193
       Height = 13
       Caption = 'Zru'#353'it n'#225'v'#283'st p'#345'i obsazen'#237' '#250'seku [0..n-1]:'
@@ -507,38 +500,23 @@ object F_JCEdit: TF_JCEdit
     end
     object E_VB: TEdit
       Left = 8
-      Top = 320
+      Top = 224
       Width = 281
       Height = 21
       Hint = 'Form'#225't: id blok'#367' odd'#283'len'#253'ch '#269#225'rkami'
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 3
-      Text = 'E_VB'
-    end
-    object M_Locks: TMemo
-      Left = 8
-      Top = 227
-      Width = 281
-      Height = 62
-      Hint = 
-        'Form'#225't: na ka'#382'd'#233'm '#345#225'dku jeden blok: id bloku, id referen'#269'n'#237'ho bl' +
-        'oku'
-      Lines.Strings = (
-        'M_Zamky')
-      ParentShowHint = False
-      ScrollBars = ssVertical
-      ShowHint = True
       TabOrder = 2
+      Text = 'E_VB'
     end
     object SE_SignalFallTrackI: TSpinEdit
       Left = 208
-      Top = 352
+      Top = 256
       Width = 81
       Height = 22
       MaxValue = 0
       MinValue = 0
-      TabOrder = 4
+      TabOrder = 3
       Value = 0
     end
   end
@@ -611,7 +589,7 @@ object F_JCEdit: TF_JCEdit
     end
     object CHB_NZV: TCheckBox
       Left = 12
-      Top = 70
+      Top = 66
       Width = 194
       Height = 17
       Caption = 'Nedostate'#269'n'#225' z'#225'brzdn'#225' vzd'#225'lenost'
@@ -629,6 +607,147 @@ object F_JCEdit: TF_JCEdit
       Style = csDropDownList
       TabOrder = 3
       OnChange = CB_Next_SignalChange
+    end
+  end
+  object GB_Locks: TGroupBox
+    Left = 677
+    Top = 7
+    Width = 365
+    Height = 188
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = ' Z'#225'mky '
+    TabOrder = 9
+    object LV_Locks: TListView
+      Left = 2
+      Top = 15
+      Width = 361
+      Height = 100
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alClient
+      Columns = <
+        item
+          Caption = '#'
+          Width = 20
+        end
+        item
+          Caption = 'ID'
+        end
+        item
+          Caption = 'N'#225'zev'
+          Width = 100
+        end
+        item
+          Alignment = taCenter
+          Caption = 'Ref. ID'
+        end
+        item
+          Caption = 'Referen'#269'n'#237' '#250'sek'
+          Width = 100
+        end>
+      GridLines = True
+      MultiSelect = True
+      ReadOnly = True
+      RowSelect = True
+      TabOrder = 0
+      ViewStyle = vsReport
+      OnChange = LV_LocksChange
+      OnKeyDown = LV_LocksKeyDown
+      ExplicitTop = 11
+      ExplicitHeight = 173
+    end
+    object GB_Lock: TGroupBox
+      Left = 2
+      Top = 115
+      Width = 361
+      Height = 71
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alBottom
+      Caption = ' P'#345'idat/upravit/smazat z'#225'mek '
+      TabOrder = 1
+      ExplicitTop = 188
+      ExplicitWidth = 316
+      object Label12: TLabel
+        Left = 8
+        Top = 16
+        Width = 36
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Z'#225'mek:'
+      end
+      object Label13: TLabel
+        Left = 8
+        Top = 40
+        Width = 82
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Referen'#269'n'#237' '#250'sek:'
+      end
+      object CB_Lock: TComboBox
+        Left = 109
+        Top = 15
+        Width = 180
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 0
+      end
+      object CB_Lock_Ref: TComboBox
+        Left = 109
+        Top = 40
+        Width = 180
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 1
+      end
+      object B_Lock_Ok: TButton
+        Left = 301
+        Top = 40
+        Width = 49
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Ok'
+        TabOrder = 2
+        OnClick = B_Lock_OkClick
+      end
+      object B_Lock_Del: TButton
+        Left = 301
+        Top = 15
+        Width = 49
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Smazat'
+        Enabled = False
+        TabOrder = 3
+        OnClick = B_Lock_DelClick
+      end
     end
   end
 end

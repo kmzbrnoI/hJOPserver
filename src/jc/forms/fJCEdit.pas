@@ -44,10 +44,8 @@ type
     M_Crossings: TMemo;
     Label5: TLabel;
     M_Refugees: TMemo;
-    Label7: TLabel;
     E_VB: TEdit;
     Label8: TLabel;
-    M_Locks: TMemo;
     Label6: TLabel;
     SE_SignalFallTrackI: TSpinEdit;
     B_Track_Del: TButton;
@@ -62,6 +60,15 @@ type
     CHB_NZV: TCheckBox;
     L_VC_07: TLabel;
     CB_Next_Signal: TComboBox;
+    GB_Locks: TGroupBox;
+    LV_Locks: TListView;
+    GB_Lock: TGroupBox;
+    Label12: TLabel;
+    Label13: TLabel;
+    CB_Lock: TComboBox;
+    CB_Lock_Ref: TComboBox;
+    B_Lock_Ok: TButton;
+    B_Lock_Del: TButton;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
@@ -80,6 +87,12 @@ type
     procedure LV_TurnoutsKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure CB_RailwayChange(Sender: TObject);
     procedure CB_Next_SignalChange(Sender: TObject);
+    procedure B_Lock_OkClick(Sender: TObject);
+    procedure LV_LocksChange(Sender: TObject; Item: TListItem;
+      Change: TItemChange);
+    procedure LV_LocksKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure B_Lock_DelClick(Sender: TObject);
   private
     OpenIndex: Integer;
     mNewJC: Boolean;
@@ -87,6 +100,7 @@ type
     CB_NextSignalIds: TList<Integer>;
     CB_TrackIds: TList<Integer>;
     CB_TurnoutIds: TList<Integer>;
+    CB_LockIds: TList<Integer>;
     CB_RailwayIds: TList<Integer>;
     JCData: TJCdata;
 
@@ -101,12 +115,14 @@ type
     procedure UpdateNextSignal();
     procedure UpdateTurnoutsFromTracks();
     procedure FillBlocksCB();
-    function TurnoutIndex(id: Integer): Integer;
+    function LVFindLine(const LV: TListView; subitemi: Integer; content: string): Integer;
     function IsAnyTurnoutMinus(): Boolean;
 
     function Areas(): TList<TArea>;
     procedure FillBlockLI(var LI: TListItem; blockId: Integer);
     procedure FillTurnoutLI(var LI: TListItem; blockId: Integer; pos: string);
+    procedure FillRefLI(var LI: TListItem; blockId: Integer; refId: Integer);
+    procedure FillRefTracks();
     function BlockPresent(id: Integer; LV: TListView): Boolean;
 
   public
@@ -132,6 +148,7 @@ begin
   Self.CB_RailwayIds := TList<Integer>.Create();
   Self.CB_TurnoutIds := TList<Integer>.Create();
   Self.CB_TrackIds := TList<Integer>.Create();
+  Self.CB_LockIds := TList<Integer>.Create();
 
   Self.fTrainSpeedGo := TF_TrainSpeed.Create(nil);
   Self.fTrainSpeedGo.Parent := Self.GB_SpeedsGo;
@@ -151,6 +168,7 @@ begin
   Self.CB_RailwayIds.Free();
   Self.CB_TurnoutIds.Free();
   Self.CB_TrackIds.Free();
+  Self.CB_LockIds.Free();
 
   Self.fTrainSpeedGo.Free();
   Self.fTrainSpeedStop.Free();
@@ -202,7 +220,6 @@ begin
 
   Self.M_Crossings.Clear();
   Self.M_Refugees.Clear();
-  Self.M_Locks.Clear();
   Self.E_VB.Text := '';
   Self.SE_SignalFallTrackI.Value := 0;
   Self.SE_SignalFallTrackI.MaxValue := 0;
@@ -236,6 +253,7 @@ begin
     var LI := Self.LV_Tracks.Items.Add();
     Self.FillBlockLI(LI, trackId);
   end;
+  Self.FillRefTracks();
 
   for var turnoutZav in JCData.turnouts do
   begin
@@ -273,9 +291,11 @@ begin
     Self.M_Refugees.Lines.Add(tmp);
   end;
 
-  Self.M_Locks.Clear();
-  for var jcref in JCData.locks do
-    Self.M_Locks.Lines.Add(IntToStr(jcref.Block) + ', ' + IntToStr(jcref.ref_blk));
+  for var lockZav in JCData.locks do
+  begin
+    var LI := Self.LV_Locks.Items.Add();
+    Self.FillRefLI(LI, lockZav.Block, lockZav.ref_blk);
+  end;
 
   Self.E_VB.Text := '';
   for var vb in JCData.vb do
@@ -287,15 +307,17 @@ begin
 
   Self.CB_SignalChange(Self);
   if (Self.mNewJC) then
-    Self.Caption := 'Vytvořit novou jízdní cestu'
+    Self.Caption := 'Nová jízdní cesta'
   else
-    Self.Caption := 'Upravit jízdní cestu ' + JCData.name;
+    Self.Caption := 'Jízdní cesta ' + JCData.name;
 end;
 
 procedure TF_JCEdit.CommonOpenForm();
 begin
   Self.LV_Turnouts.Clear();
   Self.LV_Tracks.Clear();
+  Self.LV_Locks.Clear();
+  Self.FillRefTracks(); // will clear ref tracks
   Self.ActiveControl := Self.E_Name;
 end;
 
@@ -317,7 +339,7 @@ begin
 
   var updateSide := (Self.CHB_Odbocka.Checked = Self.IsAnyTurnoutMinus());
   var turnoutId := Self.CB_TurnoutIds[Self.CB_Turnout.ItemIndex];
-  var turnoutIndex := Self.TurnoutIndex(turnoutId);
+  var turnoutIndex := Self.LVFindLine(Self.LV_Turnouts, 0, IntToStr(turnoutId));
   var LI: TListItem;
   if (turnoutIndex > -1) then
     LI := Self.LV_Turnouts.Items[turnoutIndex]
@@ -357,6 +379,7 @@ begin
   Self.UpdateNextSignal();
   Self.UpdateTurnoutsFromTracks();
   Self.SE_SignalFallTrackI.MaxValue := Max(Self.LV_Tracks.Items.Count, Self.SE_SignalFallTrackI.Value);
+  Self.FillRefTracks();
 end;
 
 procedure TF_JCEdit.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -385,6 +408,37 @@ procedure TF_JCEdit.NewJC(templateIndex: Integer);
 begin
   Self.mNewJC := true;
   Self.EditJC(templateIndex);
+end;
+
+procedure TF_JCEdit.B_Lock_DelClick(Sender: TObject);
+begin
+  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané zámky z jízdní cesty?'), 'Mazání zámků',
+    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+    Self.LV_Locks.DeleteSelected();
+end;
+
+procedure TF_JCEdit.B_Lock_OkClick(Sender: TObject);
+begin
+  if ((not Self.CB_Lock.Enabled) or (Self.CB_Lock.ItemIndex = -1)) then
+  begin
+    Application.MessageBox('Vyberte zámek!', 'Nelze přídat zámek', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+  if (Self.CB_Lock_Ref.ItemIndex = -1) then
+  begin
+    Application.MessageBox('Vyberte referenční úsek!', 'Nelze přidat zámek', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+
+  var lockId := Self.CB_LockIds[Self.CB_Lock.ItemIndex];
+  var lockIndex := Self.LVFindLine(Self.LV_Locks, 0, IntToStr(lockId));
+  var LI: TListItem;
+  if (lockIndex > -1) then
+    LI := Self.LV_Locks.Items[lockIndex]
+  else
+    LI := Self.LV_Locks.Items.Add();
+
+  Self.FillRefLI(LI, lockId, StrToInt(Self.LV_Tracks.Items[Self.CB_Lock_Ref.ItemIndex].SubItems.Strings[0]));
 end;
 
 procedure TF_JCEdit.B_SaveClick(Sender: TObject);
@@ -491,6 +545,7 @@ begin
     JCsaveData.nextSignalType := JCData.nextSignalType;
     JCsaveData.nextSignalId := JCData.nextSignalId;
 
+    // turnouts
     for var LI: TListItem in Self.LV_Turnouts.Items do
     begin
       var zav: TJCTurnoutZav;
@@ -499,8 +554,18 @@ begin
       JCsaveData.turnouts.Add(zav);
     end;
 
+    // tracks
     for var LI: TListItem in Self.LV_Tracks.Items do
       JCsaveData.tracks.Add(StrToInt(LI.SubItems.Strings[0]));
+
+    // locks
+    for var LI: TListItem in Self.LV_Locks.Items do
+    begin
+      var zav: TJCRefZav;
+      zav.block := StrToInt(LI.SubItems.Strings[0]);
+      zav.ref_blk := StrToInt(LI.SubItems.Strings[2]);
+      JCsaveData.locks.Add(zav);
+    end;
 
     var parsed := TStringList.Create();
     try
@@ -558,28 +623,6 @@ begin
           begin
             TechnologieJC.FreeJCData(JCsaveData);
             Application.MessageBox(PChar('Napodařilo se naparsovat odvrat "' + line + '":' + #13#10 + E.Message), 'Chyba',
-              MB_OK OR MB_ICONWARNING);
-            Exit();
-          end;
-        end;
-      end;
-
-      // locks
-      for var line in Self.M_Locks.Lines do
-      begin
-        parsed.Clear();
-        ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
-
-        try
-          var refz: TJCRefZav;
-          refz.Block := StrToInt(parsed[0]);
-          refz.ref_blk := StrToInt(parsed[1]);
-          JCsaveData.locks.Add(refz);
-        except
-          on E: Exception do
-          begin
-            TechnologieJC.FreeJCData(JCsaveData);
-            Application.MessageBox(PChar('Napodařilo se naparsovat zámek ' + line + ':' + #13#10 + E.Message), 'Chyba',
               MB_OK OR MB_ICONWARNING);
             Exit();
           end;
@@ -651,6 +694,7 @@ begin
     Self.UpdateJCName();
   Self.UpdateNextSignal();
   Self.SE_SignalFallTrackI.MaxValue := Max(Self.LV_Tracks.Items.Count, Self.SE_SignalFallTrackI.Value);
+  Self.FillRefTracks();
 end;
 
 procedure TF_JCEdit.B_Turnout_DelClick(Sender: TObject);
@@ -663,7 +707,6 @@ end;
 procedure TF_JCEdit.LV_TurnoutsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   Self.B_Turnout_Del.Enabled := (LV_Turnouts.ItemIndex <> -1);
-  Self.B_Track_Del.Enabled := false;
 
   if (Self.LV_Turnouts.Selected = nil) then
   begin
@@ -696,10 +739,43 @@ begin
     B_Turnout_DelClick(B_Turnout_Del);
 end;
 
+procedure TF_JCEdit.LV_LocksChange(Sender: TObject; Item: TListItem;
+  Change: TItemChange);
+begin
+  Self.B_Lock_Del.Enabled := (Self.LV_Locks.Selected <> nil);
+
+  if (Self.LV_Locks.Selected = nil) then
+  begin
+    Self.CB_Lock.ItemIndex := -1;
+    Self.CB_Lock_Ref.ItemIndex := -1;
+    Exit();
+  end;
+
+  var blockId: Integer := StrToInt(Self.LV_Locks.Selected.SubItems.Strings[0]);
+  Self.CB_Lock.ItemIndex := -1;
+  for var i := 0 to Self.CB_LockIds.Count - 1 do
+    if (Self.CB_LockIds[i] = blockId) then
+      Self.CB_Lock.ItemIndex := i;
+
+  var refId: Integer := -1;
+  if (Self.LV_Locks.Selected.SubItems.Count > 2) then
+    refId := StrToIntDef(Self.LV_Locks.Selected.SubItems.Strings[2], -1);
+  Self.CB_Lock_Ref.ItemIndex := -1;
+  for var i := 0 to Self.LV_Tracks.Items.Count - 1 do
+    if (Self.LV_Tracks.Items[i].SubItems.Strings[0] = IntToStr(refId)) then
+      Self.CB_Lock_Ref.ItemIndex := i;
+end;
+
+procedure TF_JCEdit.LV_LocksKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_Lock_Del.Enabled)) then
+    Self.B_Lock_DelClick(B_Turnout_Del);
+end;
+
 procedure TF_JCEdit.LV_TracksChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   Self.B_Track_Del.Enabled := (LV_Tracks.ItemIndex <> -1);
-  Self.B_Turnout_Del.Enabled := false;
 
   if (Self.LV_Tracks.Selected = nil) then
   begin
@@ -932,10 +1008,10 @@ begin
   end;
 end;
 
-function TF_JCEdit.TurnoutIndex(id: Integer): Integer;
+function TF_JCEdit.LVFindLine(const LV: TListView; subitemi: Integer; content: string): Integer;
 begin
-  for var i := 0 to Self.LV_Turnouts.Items.Count - 1 do
-    if (StrToInt(Self.LV_Turnouts.Items[i].SubItems.Strings[0]) = id) then
+  for var i := 0 to LV.Items.Count - 1 do
+    if (LV.Items[i].SubItems.Strings[subitemi] = content) then
       Exit(i);
   Result := -1;
 end;
@@ -962,16 +1038,23 @@ begin
   LI.SubItems.Add(pos);
 end;
 
+procedure TF_JCEdit.FillRefLI(var LI: TListItem; blockId: Integer; refId: Integer);
+begin
+  Self.FillBlockLI(LI, blockId);
+  LI.SubItems.Add(IntToStr(refId));
+  LI.SubItems.Add(Blocks.GetBlkName(refId));
+end;
+
 procedure TF_JCEdit.FillBlocksCB();
 begin
   var areas := Self.Areas();
   try
     Blocks.FillCB(Self.CB_Turnout, Self.CB_TurnoutIds, nil, areas, btTurnout);
     Blocks.FillCB(Self.CB_Track, Self.CB_TrackIds, nil, areas, btTrack, btRT);
+    Blocks.FillCB(Self.CB_Lock, Self.CB_LockIds, nil, areas, btLock);
   finally
     areas.Free();
   end;
-
 end;
 
 function TF_JCEdit.BlockPresent(id: Integer; LV: TListView): Boolean;
@@ -980,6 +1063,13 @@ begin
     if (IntToStr(id) = item.SubItems[0]) then
       Exit(true);
   Result := false;
+end;
+
+procedure TF_JCEdit.FillRefTracks();
+begin
+  Self.CB_Lock_Ref.Clear();
+  for var LI: TListItem in Self.LV_Tracks.Items do
+    Self.CB_Lock_Ref.Items.Add(LI.SubItems.Strings[1]);
 end;
 
 end.
