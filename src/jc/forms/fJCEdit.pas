@@ -42,8 +42,6 @@ type
     GB_Advanced: TGroupBox;
     Label4: TLabel;
     M_Crossings: TMemo;
-    Label5: TLabel;
-    M_Refugees: TMemo;
     E_VB: TEdit;
     Label8: TLabel;
     Label6: TLabel;
@@ -69,6 +67,17 @@ type
     CB_Lock_Ref: TComboBox;
     B_Lock_Ok: TButton;
     B_Lock_Del: TButton;
+    GB_Refugees: TGroupBox;
+    LV_Refugees: TListView;
+    GB_Refugee: TGroupBox;
+    Label7: TLabel;
+    Label14: TLabel;
+    CB_Refugee: TComboBox;
+    CB_Refugee_Ref: TComboBox;
+    B_Refugee_Ok: TButton;
+    B_Refugee_Del: TButton;
+    Label15: TLabel;
+    CB_Refugee_Pos: TComboBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
@@ -93,6 +102,12 @@ type
     procedure LV_LocksKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure B_Lock_DelClick(Sender: TObject);
+    procedure B_Refugee_DelClick(Sender: TObject);
+    procedure B_Refugee_OkClick(Sender: TObject);
+    procedure LV_RefugeesChange(Sender: TObject; Item: TListItem;
+      Change: TItemChange);
+    procedure LV_RefugeesKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     OpenIndex: Integer;
     mNewJC: Boolean;
@@ -121,9 +136,11 @@ type
     function Areas(): TList<TArea>;
     procedure FillBlockLI(var LI: TListItem; blockId: Integer);
     procedure FillTurnoutLI(var LI: TListItem; blockId: Integer; pos: string);
+    procedure FillRefugeeLI(var LI: TListItem; blockId: Integer; pos: string; refId: Integer);
     procedure FillRefLI(var LI: TListItem; blockId: Integer; refId: Integer);
     procedure FillRefTracks();
     function BlockPresent(id: Integer; LV: TListView): Boolean;
+    procedure SetBlocksCbItemIndex(var cb: TComboBox; ids: TList<Integer>; id: Integer);
 
   public
     procedure EditJC(JCIndex: Integer);
@@ -219,7 +236,6 @@ begin
   Self.FillBlocksCB();
 
   Self.M_Crossings.Clear();
-  Self.M_Refugees.Clear();
   Self.E_VB.Text := '';
   Self.SE_SignalFallTrackI.Value := 0;
   Self.SE_SignalFallTrackI.MaxValue := 0;
@@ -278,23 +294,16 @@ begin
     Self.M_Crossings.Lines.Add(tmp);
   end;
 
-  Self.M_Refugees.Clear();
-  for var refugee in JCData.refuges do
+  for var refugeeZav in JCData.refuges do
   begin
-    var tmp := IntToStr(refugee.Block) + ', ';
-    if (refugee.position = TTurnoutPosition.plus) then
-      tmp := tmp + '+, '
-    else
-      tmp := tmp + '-, ';
-    tmp := tmp + IntToStr(refugee.ref_blk);
-
-    Self.M_Refugees.Lines.Add(tmp);
+    var LI := Self.LV_Refugees.Items.Add();
+    Self.FillRefugeeLI(LI, refugeeZav.block, TBlkTurnout.PositionToStr(refugeeZav.position), refugeeZav.ref_blk);
   end;
 
   for var lockZav in JCData.locks do
   begin
     var LI := Self.LV_Locks.Items.Add();
-    Self.FillRefLI(LI, lockZav.Block, lockZav.ref_blk);
+    Self.FillRefLI(LI, lockZav.block, lockZav.ref_blk);
   end;
 
   Self.E_VB.Text := '';
@@ -317,6 +326,7 @@ begin
   Self.LV_Turnouts.Clear();
   Self.LV_Tracks.Clear();
   Self.LV_Locks.Clear();
+  Self.LV_Refugees.Clear();
   Self.FillRefTracks(); // will clear ref tracks
   Self.ActiveControl := Self.E_Name;
 end;
@@ -439,6 +449,42 @@ begin
     LI := Self.LV_Locks.Items.Add();
 
   Self.FillRefLI(LI, lockId, StrToInt(Self.LV_Tracks.Items[Self.CB_Lock_Ref.ItemIndex].SubItems.Strings[0]));
+end;
+
+procedure TF_JCEdit.B_Refugee_DelClick(Sender: TObject);
+begin
+  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané odvraty z jízdní cesty?'), 'Mazání odvratů',
+    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+    Self.LV_Refugees.DeleteSelected();
+end;
+
+procedure TF_JCEdit.B_Refugee_OkClick(Sender: TObject);
+begin
+  if ((not Self.CB_Refugee.Enabled) or (Self.CB_Refugee.ItemIndex = -1)) then
+  begin
+    Application.MessageBox('Vyberte odvrat!', 'Nelze přídat odvrat', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+  if (Self.CB_Refugee_Pos.ItemIndex = -1) then
+  begin
+    Application.MessageBox('Vyberte polohu odvratu!', 'Nelze přidat odvrat', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+  if (Self.CB_Refugee_Ref.ItemIndex = -1) then
+  begin
+    Application.MessageBox('Vyberte referenční úsek!', 'Nelze přidat odvrat', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+
+  var refugeeId := Self.CB_TurnoutIds[Self.CB_Refugee.ItemIndex];
+  var refugeeIndex := Self.LVFindLine(Self.LV_Refugees, 0, IntToStr(refugeeId));
+  var LI: TListItem;
+  if (refugeeIndex > -1) then
+    LI := Self.LV_Refugees.Items[refugeeIndex]
+  else
+    LI := Self.LV_Refugees.Items.Add();
+
+  Self.FillRefugeeLI(LI, refugeeId, Self.CB_Refugee_Pos.Text, StrToInt(Self.LV_Tracks.Items[Self.CB_Refugee_Ref.ItemIndex].SubItems.Strings[0]));
 end;
 
 procedure TF_JCEdit.B_SaveClick(Sender: TObject);
@@ -567,6 +613,16 @@ begin
       JCsaveData.locks.Add(zav);
     end;
 
+    // refugees
+    for var LI: TListItem in Self.LV_Refugees.Items do
+    begin
+      var zav: TJCRefugeeZav;
+      zav.block := StrToInt(LI.SubItems.Strings[0]);
+      zav.position := TBlkTurnout.StrToPosition(LI.SubItems.Strings[2]);
+      zav.ref_blk := StrToInt(LI.SubItems.Strings[3]);
+      JCsaveData.refuges.Add(zav);
+    end;
+
     var parsed := TStringList.Create();
     try
       // crossings
@@ -598,32 +654,6 @@ begin
             TechnologieJC.FreeJCData(JCsaveData);
             Application.MessageBox(PChar('Napodařilo se naparsovat přejezd "' + line + '":' + #13#10 + E.Message),
               'Chyba', MB_OK OR MB_ICONWARNING);
-            Exit();
-          end;
-        end;
-      end;
-
-      // refugees
-      for var line in Self.M_Refugees.Lines do
-      begin
-        parsed.Clear();
-        ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
-
-        try
-          var refugeeZav: TJCRefugeeZav;
-          refugeeZav.Block := StrToInt(parsed[0]);
-          if (parsed[1] = '+') then
-            refugeeZav.position := TTurnoutPosition.plus
-          else
-            refugeeZav.position := TTurnoutPosition.minus;
-          refugeeZav.ref_blk := StrToInt(parsed[2]);
-          JCsaveData.refuges.Add(refugeeZav);
-        except
-          on E: Exception do
-          begin
-            TechnologieJC.FreeJCData(JCsaveData);
-            Application.MessageBox(PChar('Napodařilo se naparsovat odvrat "' + line + '":' + #13#10 + E.Message), 'Chyba',
-              MB_OK OR MB_ICONWARNING);
             Exit();
           end;
         end;
@@ -716,14 +746,11 @@ begin
   end;
 
   var blockId := StrToInt(Self.LV_Turnouts.Selected.SubItems.Strings[0]);
+  Self.SetBlocksCbItemIndex(Self.CB_Turnout, Self.CB_TurnoutIds, blockId);
+
   var pos := '';
   if (Self.LV_Turnouts.Selected.SubItems.Count > 2) then
     pos := Self.LV_Turnouts.Selected.SubItems.Strings[2];
-
-  Self.CB_Turnout.ItemIndex := -1;
-  for var i := 0 to Self.CB_TurnoutIds.Count - 1 do
-    if (Self.CB_TurnoutIds[i] = blockId) then
-      Self.CB_Turnout.ItemIndex := i;
 
   if (pos = '+') then
     Self.CB_Turnout_Pos.ItemIndex := 0
@@ -752,10 +779,7 @@ begin
   end;
 
   var blockId: Integer := StrToInt(Self.LV_Locks.Selected.SubItems.Strings[0]);
-  Self.CB_Lock.ItemIndex := -1;
-  for var i := 0 to Self.CB_LockIds.Count - 1 do
-    if (Self.CB_LockIds[i] = blockId) then
-      Self.CB_Lock.ItemIndex := i;
+  Self.SetBlocksCbItemIndex(Self.CB_Lock, Self.CB_LockIds, blockId);
 
   var refId: Integer := -1;
   if (Self.LV_Locks.Selected.SubItems.Count > 2) then
@@ -770,7 +794,50 @@ procedure TF_JCEdit.LV_LocksKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if ((Key = VK_DELETE) and (Self.B_Lock_Del.Enabled)) then
-    Self.B_Lock_DelClick(B_Turnout_Del);
+    Self.B_Lock_DelClick(Self.B_Lock_Del);
+end;
+
+procedure TF_JCEdit.LV_RefugeesChange(Sender: TObject; Item: TListItem;
+  Change: TItemChange);
+begin
+  Self.B_Refugee_Del.Enabled := (Self.LV_Refugees.Selected <> nil);
+
+  if (Self.LV_Refugees.Selected = nil) then
+  begin
+    Self.CB_Refugee.ItemIndex := -1;
+    Self.CB_Refugee_Pos.ItemIndex := -1;
+    Self.CB_Refugee_Ref.ItemIndex := -1;
+    Exit();
+  end;
+
+  var blockId: Integer := StrToInt(Self.LV_Refugees.Selected.SubItems.Strings[0]);
+  Self.SetBlocksCbItemIndex(Self.CB_Refugee, Self.CB_TurnoutIds, blockId);
+
+  var pos := '';
+  if (Self.LV_Refugees.Selected.SubItems.Count > 2) then
+    pos := Self.LV_Refugees.Selected.SubItems.Strings[2];
+  if (pos = '+') then
+    Self.CB_Refugee_Pos.ItemIndex := 0
+  else if (pos = '-') then
+    Self.CB_Refugee_Pos.ItemIndex := 1
+  else
+    Self.CB_Refugee_Pos.ItemIndex := -1;
+
+  var refId: Integer := -1;
+  if (Self.LV_Refugees.Selected.SubItems.Count > 3) then
+    refId := StrToIntDef(Self.LV_Refugees.Selected.SubItems.Strings[3], -1);
+
+  Self.CB_Refugee_Ref.ItemIndex := -1;
+  for var i := 0 to Self.LV_Tracks.Items.Count - 1 do
+    if (Self.LV_Tracks.Items[i].SubItems.Strings[0] = IntToStr(refId)) then
+      Self.CB_Refugee_Ref.ItemIndex := i;
+end;
+
+procedure TF_JCEdit.LV_RefugeesKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_Refugee_Del.Enabled)) then
+    Self.B_Refugee_DelClick(Self.B_Refugee_Del);
 end;
 
 procedure TF_JCEdit.LV_TracksChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -784,11 +851,7 @@ begin
   end;
 
   var blockId := StrToInt(Self.LV_Tracks.Selected.SubItems.Strings[0]);
-
-  Self.CB_Track.ItemIndex := -1;
-  for var i := 0 to Self.CB_TrackIds.Count - 1 do
-    if (Self.CB_TrackIds[i] = blockId) then
-      Self.CB_Track.ItemIndex := i;
+  Self.SetBlocksCbItemIndex(Self.CB_Track, Self.CB_TrackIds, blockId);
 end;
 
 procedure TF_JCEdit.LV_TracksKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -1045,10 +1108,19 @@ begin
   LI.SubItems.Add(Blocks.GetBlkName(refId));
 end;
 
+procedure TF_JCEdit.FillRefugeeLI(var LI: TListItem; blockId: Integer; pos: string; refId: Integer);
+begin
+  Self.FillBlockLI(LI, blockId);
+  LI.SubItems.Add(pos);
+  LI.SubItems.Add(IntToStr(refId));
+  LI.SubItems.Add(Blocks.GetBlkName(refId));
+end;
+
 procedure TF_JCEdit.FillBlocksCB();
 begin
   var areas := Self.Areas();
   try
+    Blocks.FillCB(Self.CB_Refugee, Self.CB_TurnoutIds, nil, areas, btTurnout);
     Blocks.FillCB(Self.CB_Turnout, Self.CB_TurnoutIds, nil, areas, btTurnout);
     Blocks.FillCB(Self.CB_Track, Self.CB_TrackIds, nil, areas, btTrack, btRT);
     Blocks.FillCB(Self.CB_Lock, Self.CB_LockIds, nil, areas, btLock);
@@ -1068,8 +1140,20 @@ end;
 procedure TF_JCEdit.FillRefTracks();
 begin
   Self.CB_Lock_Ref.Clear();
+  Self.CB_Refugee_Ref.Clear();
   for var LI: TListItem in Self.LV_Tracks.Items do
+  begin
     Self.CB_Lock_Ref.Items.Add(LI.SubItems.Strings[1]);
+    Self.CB_Refugee_Ref.Items.Add(LI.SubItems.Strings[1]);
+  end;
+end;
+
+procedure TF_JCEdit.SetBlocksCbItemIndex(var cb: TComboBox; ids: TList<Integer>; id: Integer);
+begin
+  cb.ItemIndex := -1;
+  for var i := 0 to ids.Count - 1 do
+    if (ids[i] = id) then
+      cb.ItemIndex := i;
 end;
 
 end.

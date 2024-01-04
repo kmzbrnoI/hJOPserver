@@ -5,7 +5,7 @@ object F_JCEdit: TF_JCEdit
   BorderStyle = bsToolWindow
   Caption = 'J'#237'zdn'#237' cesta ...'
   ClientHeight = 586
-  ClientWidth = 1049
+  ClientWidth = 1354
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -306,7 +306,7 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object B_Save: TButton
-    Left = 894
+    Left = 1270
     Top = 554
     Width = 75
     Height = 25
@@ -316,11 +316,11 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 11
+    TabOrder = 12
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
-    Left = 815
+    Left = 1191
     Top = 554
     Width = 75
     Height = 25
@@ -329,7 +329,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 12
+    TabOrder = 13
     OnClick = B_StornoClick
   end
   object CB_Signal: TComboBox
@@ -369,7 +369,7 @@ object F_JCEdit: TF_JCEdit
     Caption = 'auto'
     Checked = True
     State = cbChecked
-    TabOrder = 13
+    TabOrder = 14
   end
   object GB_Railway: TGroupBox
     Left = 8
@@ -434,12 +434,12 @@ object F_JCEdit: TF_JCEdit
     Value = 0
   end
   object GB_Advanced: TGroupBox
-    Left = 677
-    Top = 200
+    Left = 1047
+    Top = 7
     Width = 297
-    Height = 289
+    Height = 193
     Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' kurzorem) '
-    TabOrder = 10
+    TabOrder = 11
     object Label4: TLabel
       Left = 8
       Top = 16
@@ -447,23 +447,16 @@ object F_JCEdit: TF_JCEdit
       Height = 13
       Caption = 'P'#345'ejezdy:'
     end
-    object Label5: TLabel
-      Left = 8
-      Top = 112
-      Width = 40
-      Height = 13
-      Caption = 'Odvraty:'
-    end
     object Label8: TLabel
       Left = 8
-      Top = 205
+      Top = 110
       Width = 71
       Height = 13
       Caption = 'Variantn'#237' body:'
     end
     object Label6: TLabel
       Left = 8
-      Top = 256
+      Top = 161
       Width = 193
       Height = 13
       Caption = 'Zru'#353'it n'#225'v'#283'st p'#345'i obsazen'#237' '#250'seku [0..n-1]:'
@@ -483,40 +476,25 @@ object F_JCEdit: TF_JCEdit
       ShowHint = True
       TabOrder = 0
     end
-    object M_Refugees: TMemo
-      Left = 8
-      Top = 131
-      Width = 281
-      Height = 67
-      Hint = 
-        'Form'#225't: na ka'#382'd'#253' '#345#225'dek jeden odvrat: id bloku odvratu, poloha (+' +
-        ',-), id referen'#269'n'#237'ho bloku'
-      Lines.Strings = (
-        'M_Odvraty')
-      ParentShowHint = False
-      ScrollBars = ssVertical
-      ShowHint = True
-      TabOrder = 1
-    end
     object E_VB: TEdit
       Left = 8
-      Top = 224
+      Top = 129
       Width = 281
       Height = 21
       Hint = 'Form'#225't: id blok'#367' odd'#283'len'#253'ch '#269#225'rkami'
       ParentShowHint = False
       ShowHint = True
-      TabOrder = 2
+      TabOrder = 1
       Text = 'E_VB'
     end
     object SE_SignalFallTrackI: TSpinEdit
       Left = 208
-      Top = 256
+      Top = 161
       Width = 81
       Height = 22
       MaxValue = 0
       MinValue = 0
-      TabOrder = 3
+      TabOrder = 2
       Value = 0
     end
   end
@@ -747,6 +725,175 @@ object F_JCEdit: TF_JCEdit
         Enabled = False
         TabOrder = 3
         OnClick = B_Lock_DelClick
+      end
+    end
+  end
+  object GB_Refugees: TGroupBox
+    Left = 677
+    Top = 199
+    Width = 365
+    Height = 261
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = ' Odvraty '
+    TabOrder = 10
+    object LV_Refugees: TListView
+      Left = 2
+      Top = 15
+      Width = 361
+      Height = 148
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alClient
+      Columns = <
+        item
+          Caption = '#'
+          Width = 20
+        end
+        item
+          Caption = 'ID'
+          Width = 40
+        end
+        item
+          Caption = 'N'#225'zev'
+          Width = 80
+        end
+        item
+          Caption = 'Poloha'
+        end
+        item
+          Alignment = taCenter
+          Caption = 'Ref. ID'
+        end
+        item
+          Caption = 'Referen'#269'n'#237' '#250'sek'
+          Width = 80
+        end>
+      GridLines = True
+      MultiSelect = True
+      ReadOnly = True
+      RowSelect = True
+      TabOrder = 0
+      ViewStyle = vsReport
+      OnChange = LV_RefugeesChange
+      OnKeyDown = LV_RefugeesKeyDown
+    end
+    object GB_Refugee: TGroupBox
+      Left = 2
+      Top = 163
+      Width = 361
+      Height = 96
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alBottom
+      Caption = ' P'#345'idat/upravit/smazat odvrat '
+      TabOrder = 1
+      object Label7: TLabel
+        Left = 8
+        Top = 16
+        Width = 35
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Odvrat:'
+      end
+      object Label14: TLabel
+        Left = 8
+        Top = 64
+        Width = 82
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Referen'#269'n'#237' '#250'sek:'
+      end
+      object Label15: TLabel
+        Left = 9
+        Top = 40
+        Width = 36
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Poloha:'
+      end
+      object CB_Refugee: TComboBox
+        Left = 109
+        Top = 15
+        Width = 180
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 0
+      end
+      object CB_Refugee_Ref: TComboBox
+        Left = 109
+        Top = 64
+        Width = 180
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 2
+      end
+      object B_Refugee_Ok: TButton
+        Left = 301
+        Top = 64
+        Width = 49
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Ok'
+        TabOrder = 3
+        OnClick = B_Refugee_OkClick
+      end
+      object B_Refugee_Del: TButton
+        Left = 301
+        Top = 39
+        Width = 49
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Smazat'
+        Enabled = False
+        TabOrder = 4
+        OnClick = B_Refugee_DelClick
+      end
+      object CB_Refugee_Pos: TComboBox
+        Left = 109
+        Top = 40
+        Width = 180
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        ItemIndex = 0
+        TabOrder = 1
+        Text = '+'
+        Items.Strings = (
+          '+'
+          '-')
       end
     end
   end
