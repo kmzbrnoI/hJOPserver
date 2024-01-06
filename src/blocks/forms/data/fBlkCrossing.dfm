@@ -285,7 +285,7 @@ object F_BlkCrossing: TF_BlkCrossing
         OnExit = SE_RCS_boardExit
       end
       object CHB_RCS_NOT: TCheckBox
-        Left = 143
+        Left = 140
         Top = 47
         Width = 16
         Height = 17
@@ -293,7 +293,7 @@ object F_BlkCrossing: TF_BlkCrossing
         OnClick = CHB_RCS_NOTClick
       end
       object CHB_RCS_Positive: TCheckBox
-        Left = 143
+        Left = 140
         Top = 73
         Width = 16
         Height = 17
@@ -330,7 +330,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
       end
       object CHB_RCS_Close: TCheckBox
-        Left = 143
+        Left = 140
         Top = 22
         Width = 15
         Height = 17
@@ -350,7 +350,7 @@ object F_BlkCrossing: TF_BlkCrossing
           'kmitav'#253)
       end
       object CHB_RCS_Barriers_Down: TCheckBox
-        Left = 143
+        Left = 140
         Top = 126
         Width = 16
         Height = 17
@@ -387,7 +387,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
       end
       object CHB_RCS_Barriers_Up: TCheckBox
-        Left = 143
+        Left = 140
         Top = 152
         Width = 16
         Height = 17
@@ -424,7 +424,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Value = 0
       end
       object CHB_RCS_Ring: TCheckBox
-        Left = 143
+        Left = 140
         Top = 204
         Width = 16
         Height = 17
@@ -498,7 +498,7 @@ object F_BlkCrossing: TF_BlkCrossing
         OnExit = SE_RCS_boardExit
       end
       object CHB_RCS_Lights: TCheckBox
-        Left = 143
+        Left = 140
         Top = 178
         Width = 16
         Height = 17
@@ -678,7 +678,7 @@ object F_BlkCrossing: TF_BlkCrossing
         OnExit = SE_RCS_boardExit
       end
       object CHB_RCS_Anullation: TCheckBox
-        Left = 142
+        Left = 140
         Top = 101
         Width = 16
         Height = 17
@@ -686,7 +686,7 @@ object F_BlkCrossing: TF_BlkCrossing
         OnClick = CHB_RCS_AnullationClick
       end
       object CHB_RCS_Closed: TCheckBox
-        Left = 142
+        Left = 140
         Top = 24
         Width = 16
         Height = 17
@@ -694,7 +694,7 @@ object F_BlkCrossing: TF_BlkCrossing
         OnClick = CHB_RCS_ClosedClick
       end
       object CHB_RCS_Open: TCheckBox
-        Left = 142
+        Left = 140
         Top = 50
         Width = 16
         Height = 17
@@ -702,7 +702,7 @@ object F_BlkCrossing: TF_BlkCrossing
         OnClick = CHB_RCS_OpenClick
       end
       object CHB_RCS_Caution: TCheckBox
-        Left = 142
+        Left = 140
         Top = 76
         Width = 16
         Height = 17
@@ -765,7 +765,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Top = 69
       Width = 273
       Height = 400
-      Caption = 'check'
+      Caption = ' Kolej '
       TabOrder = 3
       object Label3: TLabel
         Left = 16
