@@ -240,7 +240,7 @@ begin
   Result := '';
   for var cond in Self.conditions do
     Result := Result + cond.NameStr() + ', ';
-  Result := LeftStr(Result, Length(Result)-1);
+  Result := LeftStr(Result, Length(Result)-2);
   Result := Result + ' > ';
 
   for var blockId: Integer in Self.blocks do

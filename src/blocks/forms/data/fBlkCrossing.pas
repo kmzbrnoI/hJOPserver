@@ -93,6 +93,13 @@ type
     Label17: TLabel;
     CHB_Closed_Required: TCheckBox;
     CHB_InfiniteAnul: TCheckBox;
+    GB_Positive: TGroupBox;
+    M_Positive_Ids: TMemo;
+    M_Positive_Names: TMemo;
+    Label19: TLabel;
+    Label18: TLabel;
+    B_Positive_Name_To_Ids: TButton;
+    B_Positive_Help: TButton;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -134,7 +141,8 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, AreaDb, Area, Block, DataBloky, Config;
+uses GetSystems, TechnologieRCS, AreaDb, Area, Block, DataBloky, Config,
+  BlockCrossingPositive;
 
 {$R *.dfm}
 
@@ -178,6 +186,21 @@ begin
   begin
     Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
+  end;
+
+  var positiveRules := TPositiveRules.Create();
+  for var line: string in Self.M_Positive_Ids.Lines do
+  begin
+    try
+      positiveRules.Add(TPositiveRule.Create(line));
+    except
+      on E:Exception do
+      begin
+        Application.MessageBox(PChar('Nepodařilo se načíst pravidlo pozitivy: '+line+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+        positiveRules.Free();
+        Exit();
+      end;
+    end;
   end;
 
   var glob: TBlkSettings;
@@ -243,6 +266,9 @@ begin
     Self.tracks.OwnsObjects := false;
     Self.tracks.Clear();
     Self.tracks.OwnsObjects := true;
+
+    Self.block.positiveRules.Free();
+    Self.block.positiveRules := positiveRules;
 
     var messages := '';
     for var i := 0 to addrs.Count - 1 do
@@ -529,6 +555,14 @@ begin
     Self.CB_Track.ItemIndex := 0;
   Self.CB_TrackChange(Self);
 
+  Self.M_Positive_Ids.Clear();
+  for var rule: TPositiveRule in Self.block.positiveRules do
+    Self.M_Positive_Ids.Lines.Add(rule.IdStr());
+
+  Self.M_Positive_Names.Clear();
+  for var rule: TPositiveRule in Self.block.positiveRules do
+    Self.M_Positive_Names.Lines.Add(rule.NameStr());
+
   Self.Caption := 'Upravit blok ' + glob.name + ' (přejezd)';
   Self.ActiveControl := Self.B_save_P;
 end;
@@ -559,6 +593,9 @@ begin
   Self.CHB_JOP_controlClick(Self);
 
   Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
+
+  Self.M_Positive_Ids.Clear();
+  Self.M_Positive_Names.Clear();
 
   Self.Caption := 'Nový přejezd';
   Self.ActiveControl := Self.E_Name;

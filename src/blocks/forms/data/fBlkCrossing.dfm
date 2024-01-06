@@ -4,8 +4,8 @@ object F_BlkCrossing: TF_BlkCrossing
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 601
-  ClientWidth = 691
+  ClientHeight = 822
+  ClientWidth = 690
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -62,8 +62,8 @@ object F_BlkCrossing: TF_BlkCrossing
     TabOrder = 0
   end
   object B_save_P: TButton
-    Left = 7
-    Top = 569
+    Left = 601
+    Top = 790
     Width = 82
     Height = 25
     Margins.Left = 2
@@ -72,12 +72,12 @@ object F_BlkCrossing: TF_BlkCrossing
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 5
+    TabOrder = 6
     OnClick = B_save_PClick
   end
   object B_Storno: TButton
-    Left = 93
-    Top = 569
+    Left = 516
+    Top = 790
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -85,7 +85,7 @@ object F_BlkCrossing: TF_BlkCrossing
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 6
+    TabOrder = 7
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
@@ -720,8 +720,8 @@ object F_BlkCrossing: TF_BlkCrossing
     end
   end
   object GB_JOP_control: TGroupBox
-    Left = 376
-    Top = 9
+    Left = 375
+    Top = 8
     Width = 307
     Height = 478
     Caption = ' Uzav'#237'r'#225'n'#237' p'#345'ejezdu '#345#237'zen'#233' z hJOP '
@@ -932,5 +932,67 @@ object F_BlkCrossing: TF_BlkCrossing
     MinValue = 0
     TabOrder = 2
     Value = 1
+  end
+  object GB_Positive: TGroupBox
+    Left = 8
+    Top = 567
+    Width = 675
+    Height = 218
+    Caption = ' Pokro'#269'il'#233' ovl'#225'd'#225'n'#237' pozitivn'#237'ho sv'#283'tla '
+    TabOrder = 5
+    object Label19: TLabel
+      Left = 9
+      Top = 19
+      Width = 57
+      Height = 25
+      AutoSize = False
+      Caption = 'Autoritativn'#237' definice:'
+      WordWrap = True
+    end
+    object Label18: TLabel
+      Left = 9
+      Top = 115
+      Width = 80
+      Height = 25
+      AutoSize = False
+      Caption = 'Definice pomoc'#237' jmen blok'#367':'
+      WordWrap = True
+    end
+    object M_Positive_Ids: TMemo
+      Left = 105
+      Top = 19
+      Width = 553
+      Height = 89
+      Lines.Strings = (
+        'M_Positive_Ids')
+      ScrollBars = ssBoth
+      TabOrder = 0
+    end
+    object M_Positive_Names: TMemo
+      Left = 104
+      Top = 114
+      Width = 554
+      Height = 89
+      Lines.Strings = (
+        'M_Positive_Names')
+      ScrollBars = ssBoth
+      TabOrder = 1
+    end
+    object B_Positive_Name_To_Ids: TButton
+      Left = 9
+      Top = 176
+      Width = 75
+      Height = 25
+      Caption = 'Jm'#233'na > ID'
+      TabOrder = 2
+    end
+    object B_Positive_Help: TButton
+      Left = 9
+      Top = 146
+      Width = 75
+      Height = 25
+      Caption = 'N'#225'pov'#283'da'
+      TabOrder = 3
+    end
   end
 end
