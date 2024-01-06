@@ -533,7 +533,12 @@ begin
     for var str: string in strings do
     begin
       var id: Integer := Blocks.GetBlkID(str);
-      if (id = -1) then
+      if (id = BLK_MULTIPLE) then
+      begin
+        Application.MessageBox(PChar('Více bloků se jménem  "'+str+'"'), 'Chyba', MB_OK OR MB_ICONERROR);
+        Exit();
+      end;
+      if (id = BLK_NOT_FOUND) then
       begin
         Application.MessageBox(PChar('Blok "'+str+'" neexistuje'), 'Chyba', MB_OK OR MB_ICONERROR);
         Exit();

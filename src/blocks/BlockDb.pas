@@ -21,6 +21,10 @@ uses IniFiles, Block, SysUtils, Windows, AreaDb, Area, StdCtrls,
   BlockLinker, BlockAC, BlockRailwayTrack, BlockPst, BlockSignal, BlockSummary,
   BlockCrossing, BlockDisconnector;
 
+CONST
+  BLK_NOT_FOUND: Integer = -1;
+  BLK_MULTIPLE: Integer = -2;
+
 type
   TBlocks = class(TObject)
   private
@@ -59,12 +63,13 @@ type
 
     procedure Update();
 
-    function GetBlkIndex(id: Integer): Integer;
+    function GetBlkIndex(id: Integer): Integer; overload;
+    function GetBlkIndex(name: string): Integer; overload; // -2 = multiple occurences
     function GetBlkByID(id: Integer): TBlk; overload;
     function GetBlkID(index: Integer): Integer; overload;
     function GetBlkID(name: string): Integer; overload;
     function GetBlkName(id: Integer): string;
-    function GetBlkByName(name: string): TBlk;
+    function GetBlkByName(name: string): TBlk; // warning: doest not check multiple occurences
     function GetBlkIndexName(index: Integer): string;
 
     function GetBlkTrackOrRTByID(id: Integer): TBlkTrack;
@@ -562,6 +567,21 @@ begin
   Result := -1;
 end;
 
+function TBlocks.GetBlkIndex(name: string): Integer;
+begin
+  var firsti: Integer := -1;
+  for var i: Integer := 0 to Self.data.Count-1 do
+  begin
+    if (Self.data[i].name = name) then
+    begin
+      if (firsti <> -1) then
+        Exit(BLK_MULTIPLE);
+      firsti := i;
+    end;
+  end;
+  Result := firsti;
+end;
+
 function TBlocks.GetBlkByID(id: Integer): TBlk;
 begin
   Result := Self.GetBlkByIndex(Self.GetBlkIndex(id));
@@ -688,18 +708,18 @@ end;
 
 function TBlocks.GetBlkID(name: string): Integer;
 begin
-  for var blk: TBlk in Self.data do
-    if (blk.name = name) then
-      Exit(blk.id);
-  Result := -1;
+  var index := Self.GetBlkIndex(name);
+  if (index < 0) then
+    Exit(index);
+  Result := Self.data[index].id;
 end;
 
 function TBlocks.GetBlkByName(name: string): TBlk;
 begin
-  for var blk: TBlk in Self.data do
-    if (blk.name = name) then
-      Exit(blk);
-  Result := nil;
+  var index := Self.GetBlkIndex(name);
+  if (index < 0) then
+    Exit(nil);
+  Result := Self.data[index];
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

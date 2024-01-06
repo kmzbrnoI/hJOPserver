@@ -4,8 +4,8 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'J'#237'zdn'#237' cesta ...'
-  ClientHeight = 837
-  ClientWidth = 1057
+  ClientHeight = 838
+  ClientWidth = 1056
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -114,8 +114,6 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_TurnoutsChange
       OnKeyDown = LV_TurnoutsKeyDown
-      ExplicitWidth = 316
-      ExplicitHeight = 173
     end
     object GB_Turnout_New: TGroupBox
       Left = 2
@@ -129,8 +127,6 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit/smazat v'#253'hybku '
       TabOrder = 1
-      ExplicitTop = 188
-      ExplicitWidth = 316
       object Label10: TLabel
         Left = 8
         Top = 16
@@ -237,8 +233,6 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit/odstranit '#250'sek '
       TabOrder = 1
-      ExplicitLeft = 34
-      ExplicitTop = 172
       object CB_Track: TComboBox
         Left = 10
         Top = 16
@@ -322,8 +316,6 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_TracksChange
       OnKeyDown = LV_TracksKeyDown
-      ExplicitTop = 11
-      ExplicitHeight = 236
     end
   end
   object B_Save: TButton
@@ -469,7 +461,6 @@ object F_JCEdit: TF_JCEdit
       Align = alTop
       Caption = ' Rychlosti p'#345'i dal'#353#237'm n'#225'v'#283'stidle na st'#367'j '
       TabOrder = 0
-      ExplicitWidth = 314
     end
     object GB_SpeedsGo: TGroupBox
       Left = 2
@@ -479,7 +470,6 @@ object F_JCEdit: TF_JCEdit
       Align = alClient
       Caption = ' Rychlosti p'#345'i dal'#353#237'm n'#225'v'#283'stidle povoluj'#237'c'#237'm j'#237'zdu  '
       TabOrder = 1
-      ExplicitWidth = 314
     end
   end
   object GB_Signal: TGroupBox
@@ -609,8 +599,6 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_LocksChange
       OnKeyDown = LV_LocksKeyDown
-      ExplicitTop = 11
-      ExplicitHeight = 173
     end
     object GB_Lock: TGroupBox
       Left = 2
@@ -624,8 +612,6 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit/smazat z'#225'mek '
       TabOrder = 1
-      ExplicitTop = 188
-      ExplicitWidth = 316
       object Label12: TLabel
         Left = 8
         Top = 16
@@ -939,7 +925,6 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit/smazat p'#345'ejezd '
       TabOrder = 1
-      ExplicitTop = 168
       object Label5: TLabel
         Left = 8
         Top = 16
