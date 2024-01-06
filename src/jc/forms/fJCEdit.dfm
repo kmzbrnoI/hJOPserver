@@ -393,8 +393,8 @@ object F_JCEdit: TF_JCEdit
     TabOrder = 14
   end
   object GB_Railway: TGroupBox
-    Left = 7
-    Top = 526
+    Left = 8
+    Top = 553
     Width = 329
     Height = 72
     Caption = ' N'#225'vaznost na tra'#357' '
@@ -458,7 +458,7 @@ object F_JCEdit: TF_JCEdit
     Left = 688
     Top = 465
     Width = 365
-    Height = 138
+    Height = 112
     Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' kurzorem) '
     TabOrder = 11
     object Label4: TLabel
@@ -467,13 +467,6 @@ object F_JCEdit: TF_JCEdit
       Width = 44
       Height = 13
       Caption = 'P'#345'ejezdy:'
-    end
-    object Label6: TLabel
-      Left = 8
-      Top = 108
-      Width = 193
-      Height = 13
-      Caption = 'Zru'#353'it n'#225'v'#283'st p'#345'i obsazen'#237' '#250'seku [0..n-1]:'
     end
     object M_Crossings: TMemo
       Left = 8
@@ -490,20 +483,10 @@ object F_JCEdit: TF_JCEdit
       ShowHint = True
       TabOrder = 0
     end
-    object SE_SignalFallTrackI: TSpinEdit
-      Left = 272
-      Top = 108
-      Width = 81
-      Height = 22
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 1
-      Value = 0
-    end
   end
   object GB_Speeds: TGroupBox
-    Left = 7
-    Top = 254
+    Left = 8
+    Top = 279
     Width = 329
     Height = 268
     Caption = ' Rychlosti '
@@ -530,10 +513,10 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object GB_Signal: TGroupBox
-    Left = 7
+    Left = 8
     Top = 123
     Width = 329
-    Height = 125
+    Height = 150
     Caption = ' N'#225'v'#283#353't'#283'n'#237' '
     TabOrder = 4
     object Label9: TLabel
@@ -553,6 +536,13 @@ object F_JCEdit: TF_JCEdit
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'Dal'#353#237' n'#225'v'#283'stidlo :'
+    end
+    object Label6: TLabel
+      Left = 13
+      Top = 119
+      Width = 83
+      Height = 13
+      Caption = 'P'#225'd p'#345'i obsazen'#237':'
     end
     object CB_Signal_Signal: TComboBox
       Left = 129
@@ -590,6 +580,14 @@ object F_JCEdit: TF_JCEdit
       Style = csDropDownList
       TabOrder = 3
       OnChange = CB_Next_SignalChange
+    end
+    object CB_Signal_Fall: TComboBox
+      Left = 129
+      Top = 119
+      Width = 193
+      Height = 21
+      Style = csDropDownList
+      TabOrder = 4
     end
   end
   object GB_Locks: TGroupBox

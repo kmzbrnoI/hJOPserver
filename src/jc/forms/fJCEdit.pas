@@ -42,8 +42,6 @@ type
     GB_Advanced: TGroupBox;
     Label4: TLabel;
     M_Crossings: TMemo;
-    Label6: TLabel;
-    SE_SignalFallTrackI: TSpinEdit;
     B_Track_Del: TButton;
     B_Turnout_Del: TButton;
     GB_Speeds: TGroupBox;
@@ -77,6 +75,8 @@ type
     Label15: TLabel;
     CB_Refugee_Pos: TComboBox;
     CHB_Variant_Point: TCheckBox;
+    Label6: TLabel;
+    CB_Signal_Fall: TComboBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
@@ -187,7 +187,7 @@ begin
   Self.CB_NextSignalIds.Free();
   Self.CB_RailwayIds.Free();
   Self.CB_TurnoutIds.Free();
-  Self.CB_TrackIds.Free();
+Self.CB_TrackIds.Free();
   Self.CB_LockIds.Free();
 
   Self.fTrainSpeedGo.Free();
@@ -239,8 +239,6 @@ begin
   Self.FillBlocksCB();
 
   Self.M_Crossings.Clear();
-  Self.SE_SignalFallTrackI.Value := 0;
-  Self.SE_SignalFallTrackI.MaxValue := 0;
   Self.CHB_Odbocka.Checked := false;
   Self.CHB_NZV.Checked := false;
 
@@ -308,8 +306,7 @@ begin
     Self.FillRefLI(LI, lockZav.block, lockZav.ref_blk);
   end;
 
-  Self.SE_SignalFallTrackI.MaxValue := Max(JCData.tracks.Count - 1, JCData.signalFallTrackI);
-  Self.SE_SignalFallTrackI.Value := JCData.signalFallTrackI;
+  Self.CB_Signal_Fall.ItemIndex := JCData.signalFallTrackI;
 
   Self.CB_SignalChange(Self);
   if (Self.mNewJC) then
@@ -369,7 +366,6 @@ begin
     if (Self.CHB_AutoName.Checked) then
       Self.UpdateJCName();
     Self.UpdateNextSignal();
-    Self.SE_SignalFallTrackI.MaxValue := Max(Self.LV_Tracks.Items.Count, Self.SE_SignalFallTrackI.Value);
     Self.FillRefTracks();
   end;
 end;
@@ -401,7 +397,6 @@ begin
     Self.UpdateJCName();
   Self.UpdateNextSignal();
   Self.UpdateTurnoutsFromTracks();
-  Self.SE_SignalFallTrackI.MaxValue := Max(Self.LV_Tracks.Items.Count, Self.SE_SignalFallTrackI.Value);
   Self.FillRefTracks();
 end;
 
@@ -539,6 +534,12 @@ begin
     Application.MessageBox('Vyberte další návěstidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
+  if (Self.CB_Signal_Fall.ItemIndex < 0) then
+  begin
+    Application.MessageBox('Vyberte, při obsazení kterého úseku má proběhnout pád návěstidla!',
+      'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
   if (Self.CHB_Railway.Checked) and (Self.CB_Railway.ItemIndex < 0) then
   begin
     Application.MessageBox('Vyberte trať!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
@@ -557,12 +558,6 @@ begin
       Application.MessageBox('Je třeba vybrat polohy všech výhybek!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
-  end;
-  if (Self.SE_SignalFallTrackI.Value >= Self.LV_Tracks.Items.Count) then
-  begin
-    Application.MessageBox('Číslo úseku, při jehož obsazení se má zrušit návěst, přesahuje rozmezi 0..počet úseků-1!',
-      'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit();
   end;
 
   var JCsaveData: TJCdata := TechnologieJC.NewJCData();
@@ -595,7 +590,7 @@ begin
 
     JCsaveData.turn := Self.CHB_Odbocka.Checked;
     JCsaveData.nzv := Self.CHB_NZV.Checked;
-    JCsaveData.signalFallTrackI := Self.SE_SignalFallTrackI.Value;
+    JCsaveData.signalFallTrackI := Self.CB_Signal_Fall.ItemIndex;
 
     if (Self.CHB_Railway.Checked) then
     begin
@@ -1144,6 +1139,10 @@ procedure TF_JCEdit.FillRefTracks();
 begin
   Self.FillRefTracks(Self.CB_Lock_Ref);
   Self.FillRefTracks(Self.CB_Refugee_Ref);
+
+  var i: Integer := Self.CB_Signal_Fall.ItemIndex;
+  Self.FillRefTracks(Self.CB_Signal_Fall);
+  Self.CB_Signal_Fall.ItemIndex := i;
 end;
 
 procedure TF_JCEdit.FillRefTracks(var cb: TComboBox);
