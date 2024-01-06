@@ -3,7 +3,7 @@ object F_BlkPst: TF_BlkPst
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'F_BlkPst'
-  ClientHeight = 508
+  ClientHeight = 507
   ClientWidth = 990
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -11,12 +11,10 @@ object F_BlkPst: TF_BlkPst
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
   TextHeight = 13
   object Label2: TLabel
     Left = 8
