@@ -140,7 +140,9 @@ type
     procedure FillRefLI(var LI: TListItem; blockId: Integer; refId: Integer);
     procedure FillRefTracks();
     function BlockPresent(id: Integer; LV: TListView): Boolean;
+
     procedure SetBlocksCbItemIndex(var cb: TComboBox; ids: TList<Integer>; id: Integer);
+    procedure UpdateIndexes(var lv: TListView);
 
   public
     procedure EditJC(JCIndex: Integer);
@@ -424,7 +426,10 @@ procedure TF_JCEdit.B_Lock_DelClick(Sender: TObject);
 begin
   if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané zámky z jízdní cesty?'), 'Mazání zámků',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
     Self.LV_Locks.DeleteSelected();
+    Self.UpdateIndexes(Self.LV_Locks);
+  end;
 end;
 
 procedure TF_JCEdit.B_Lock_OkClick(Sender: TObject);
@@ -455,7 +460,10 @@ procedure TF_JCEdit.B_Refugee_DelClick(Sender: TObject);
 begin
   if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané odvraty z jízdní cesty?'), 'Mazání odvratů',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
     Self.LV_Refugees.DeleteSelected();
+    Self.UpdateIndexes(Self.LV_Refugees);
+  end;
 end;
 
 procedure TF_JCEdit.B_Refugee_OkClick(Sender: TObject);
@@ -718,20 +726,27 @@ procedure TF_JCEdit.B_Track_DelClick(Sender: TObject);
 begin
   if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané úseky z JC?'), 'Mazání úseku',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
     Self.LV_Tracks.DeleteSelected();
+    Self.UpdateIndexes(Self.LV_Tracks);
 
-  if (Self.CHB_AutoName.Checked) then
-    Self.UpdateJCName();
-  Self.UpdateNextSignal();
-  Self.SE_SignalFallTrackI.MaxValue := Max(Self.LV_Tracks.Items.Count, Self.SE_SignalFallTrackI.Value);
-  Self.FillRefTracks();
+    if (Self.CHB_AutoName.Checked) then
+      Self.UpdateJCName();
+    Self.UpdateNextSignal();
+    Self.SE_SignalFallTrackI.MaxValue := Max(Self.LV_Tracks.Items.Count, Self.SE_SignalFallTrackI.Value);
+    Self.FillRefTracks();
+
+  end;
 end;
 
 procedure TF_JCEdit.B_Turnout_DelClick(Sender: TObject);
 begin
   if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané výhybky z JC?'), 'Mazání výhybek',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
     Self.LV_Turnouts.DeleteSelected();
+    Self.UpdateIndexes(Self.LV_Turnouts);
+  end;
 end;
 
 procedure TF_JCEdit.LV_TurnoutsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -1154,6 +1169,12 @@ begin
   for var i := 0 to ids.Count - 1 do
     if (ids[i] = id) then
       cb.ItemIndex := i;
+end;
+
+procedure TF_JCEdit.UpdateIndexes(var lv: TListView);
+begin
+  for var i: Integer := 0 to lv.Items.Count-1 do
+    lv.Items[i].Caption := IntToStr(i);
 end;
 
 end.
