@@ -42,8 +42,6 @@ type
     GB_Advanced: TGroupBox;
     Label4: TLabel;
     M_Crossings: TMemo;
-    E_VB: TEdit;
-    Label8: TLabel;
     Label6: TLabel;
     SE_SignalFallTrackI: TSpinEdit;
     B_Track_Del: TButton;
@@ -78,12 +76,12 @@ type
     B_Refugee_Del: TButton;
     Label15: TLabel;
     CB_Refugee_Pos: TComboBox;
+    CHB_Variant_Point: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure B_SaveClick(Sender: TObject);
-    procedure B_Track_DelClick(Sender: TObject);
     procedure B_Turnout_DelClick(Sender: TObject);
     procedure LV_TurnoutsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure LV_TracksChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -108,6 +106,7 @@ type
       Change: TItemChange);
     procedure LV_RefugeesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure B_Track_DelClick(Sender: TObject);
   private
     OpenIndex: Integer;
     mNewJC: Boolean;
@@ -135,10 +134,12 @@ type
 
     function Areas(): TList<TArea>;
     procedure FillBlockLI(var LI: TListItem; blockId: Integer);
+    procedure FillTrackLI(var LI: TListItem; blockId: Integer; vb: Boolean);
     procedure FillTurnoutLI(var LI: TListItem; blockId: Integer; pos: string);
     procedure FillRefugeeLI(var LI: TListItem; blockId: Integer; pos: string; refId: Integer);
     procedure FillRefLI(var LI: TListItem; blockId: Integer; refId: Integer);
-    procedure FillRefTracks();
+    procedure FillRefTracks(var cb: TComboBox); overload;
+    procedure FillRefTracks(); overload;
     function BlockPresent(id: Integer; LV: TListView): Boolean;
 
     procedure SetBlocksCbItemIndex(var cb: TComboBox; ids: TList<Integer>; id: Integer);
@@ -155,7 +156,7 @@ var
 
 implementation
 
-uses GetSystems, Block, AreaDb, TrainSpeed,
+uses GetSystems, Block, AreaDb, TrainSpeed, ownConvert,
   BlockSignal, TJCDatabase, DataJC, BlockRailway, BlockTurnout;
 
 {$R *.dfm}
@@ -238,7 +239,6 @@ begin
   Self.FillBlocksCB();
 
   Self.M_Crossings.Clear();
-  Self.E_VB.Text := '';
   Self.SE_SignalFallTrackI.Value := 0;
   Self.SE_SignalFallTrackI.MaxValue := 0;
   Self.CHB_Odbocka.Checked := false;
@@ -269,7 +269,7 @@ begin
   for var trackId in JCData.tracks do
   begin
     var LI := Self.LV_Tracks.Items.Add();
-    Self.FillBlockLI(LI, trackId);
+    Self.FillTrackLI(LI, trackId, JCData.vb.Contains(trackId));
   end;
   Self.FillRefTracks();
 
@@ -307,11 +307,6 @@ begin
     var LI := Self.LV_Locks.Items.Add();
     Self.FillRefLI(LI, lockZav.block, lockZav.ref_blk);
   end;
-
-  Self.E_VB.Text := '';
-  for var vb in JCData.vb do
-    Self.E_VB.Text := Self.E_VB.Text + IntToStr(vb) + ', ';
-  Self.E_VB.Text := LeftStr(Self.E_VB.Text, Length(Self.E_VB.Text) - 2);
 
   Self.SE_SignalFallTrackI.MaxValue := Max(JCData.tracks.Count - 1, JCData.signalFallTrackI);
   Self.SE_SignalFallTrackI.Value := JCData.signalFallTrackI;
@@ -363,6 +358,22 @@ begin
     Self.CHB_Odbocka.Checked := Self.IsAnyTurnoutMinus();
 end;
 
+procedure TF_JCEdit.B_Track_DelClick(Sender: TObject);
+begin
+  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané úseky z JC?'), 'Mazání úseku',
+    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+    Self.LV_Tracks.DeleteSelected();
+    Self.UpdateIndexes(Self.LV_Tracks);
+
+    if (Self.CHB_AutoName.Checked) then
+      Self.UpdateJCName();
+    Self.UpdateNextSignal();
+    Self.SE_SignalFallTrackI.MaxValue := Max(Self.LV_Tracks.Items.Count, Self.SE_SignalFallTrackI.Value);
+    Self.FillRefTracks();
+  end;
+end;
+
 procedure TF_JCEdit.B_Track_OkClick(Sender: TObject);
 begin
   if (Self.CB_Track.ItemIndex = -1) then
@@ -384,7 +395,7 @@ begin
   else
     LI := Self.LV_Tracks.Selected;
 
-  Self.FillBlockLI(LI, id);
+  Self.FillTrackLI(LI, id, Self.CHB_Variant_Point.Checked);
 
   if (Self.CHB_AutoName.Checked) then
     Self.UpdateJCName();
@@ -610,7 +621,12 @@ begin
 
     // tracks
     for var LI: TListItem in Self.LV_Tracks.Items do
-      JCsaveData.tracks.Add(StrToInt(LI.SubItems.Strings[0]));
+    begin
+      var id: Integer := StrToInt(LI.SubItems.Strings[0]);
+      JCsaveData.tracks.Add(id);
+      if (LI.SubItems.Strings[2] <> '') then
+        JCsaveData.vb.Add(id);
+    end;
 
     // locks
     for var LI: TListItem in Self.LV_Locks.Items do
@@ -666,24 +682,6 @@ begin
           end;
         end;
       end;
-
-      // variant points
-      parsed.Clear();
-      ExtractStrings([','], [], PChar(StringReplace(Self.E_VB.Text, ' ', '', [rfReplaceAll])), parsed);
-      for var item in parsed do
-      begin
-        try
-          JCsaveData.vb.Add(StrToInt(Item));
-        except
-          on E: Exception do
-          begin
-            TechnologieJC.FreeJCData(JCsaveData);
-            Application.MessageBox(PChar('Napodařilo se naparsovat variantní bod ' + Item + ':' + #13#10 + E.Message),
-              'Chyba', MB_OK OR MB_ICONWARNING);
-            Exit();
-          end;
-        end;
-      end;
     finally
       parsed.Free()
     end;
@@ -720,23 +718,6 @@ begin
   end;
 
   Self.Close();
-end;
-
-procedure TF_JCEdit.B_Track_DelClick(Sender: TObject);
-begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané úseky z JC?'), 'Mazání úseku',
-    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-  begin
-    Self.LV_Tracks.DeleteSelected();
-    Self.UpdateIndexes(Self.LV_Tracks);
-
-    if (Self.CHB_AutoName.Checked) then
-      Self.UpdateJCName();
-    Self.UpdateNextSignal();
-    Self.SE_SignalFallTrackI.MaxValue := Max(Self.LV_Tracks.Items.Count, Self.SE_SignalFallTrackI.Value);
-    Self.FillRefTracks();
-
-  end;
 end;
 
 procedure TF_JCEdit.B_Turnout_DelClick(Sender: TObject);
@@ -867,12 +848,13 @@ begin
 
   var blockId := StrToInt(Self.LV_Tracks.Selected.SubItems.Strings[0]);
   Self.SetBlocksCbItemIndex(Self.CB_Track, Self.CB_TrackIds, blockId);
+  Self.CHB_Variant_Point.Checked := (Self.LV_Tracks.Selected.SubItems.Strings[2] <> '');
 end;
 
 procedure TF_JCEdit.LV_TracksKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if ((Key = VK_DELETE) and (Self.B_Track_Del.Enabled)) then
-    B_Track_DelClick(B_Track_Del);
+    Self.B_Track_DelClick(B_Track_Del);
 end;
 
 procedure TF_JCEdit.CB_Next_SignalChange(Sender: TObject);
@@ -1110,6 +1092,12 @@ begin
   LI.SubItems.Add(Blocks.GetBlkName(blockId));
 end;
 
+procedure TF_JCEdit.FillTrackLI(var LI: TListItem; blockId: Integer; vb: Boolean);
+begin
+  Self.FillBlockLI(LI, blockId);
+  LI.SubItems.Add(ownConvert.BoolToTick(vb));
+end;
+
 procedure TF_JCEdit.FillTurnoutLI(var LI: TListItem; blockId: Integer; pos: string);
 begin
   Self.FillBlockLI(LI, blockId);
@@ -1154,13 +1142,15 @@ end;
 
 procedure TF_JCEdit.FillRefTracks();
 begin
-  Self.CB_Lock_Ref.Clear();
-  Self.CB_Refugee_Ref.Clear();
+  Self.FillRefTracks(Self.CB_Lock_Ref);
+  Self.FillRefTracks(Self.CB_Refugee_Ref);
+end;
+
+procedure TF_JCEdit.FillRefTracks(var cb: TComboBox);
+begin
+  cb.Clear();
   for var LI: TListItem in Self.LV_Tracks.Items do
-  begin
-    Self.CB_Lock_Ref.Items.Add(LI.SubItems.Strings[1]);
-    Self.CB_Refugee_Ref.Items.Add(LI.SubItems.Strings[1]);
-  end;
+    cb.Items.Add(LI.SubItems.Strings[1]);
 end;
 
 procedure TF_JCEdit.SetBlocksCbItemIndex(var cb: TComboBox; ids: TList<Integer>; id: Integer);
