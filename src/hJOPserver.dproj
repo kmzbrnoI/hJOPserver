@@ -396,6 +396,8 @@
         </DCCReference>
         <DCCReference Include="pt\PTEndpointStatus.pas"/>
         <DCCReference Include="helpers\colorHelper.pas"/>
+        <DCCReference Include="blocks\BlockCrossingPositive.pas"/>
+        <DCCReference Include="blocks\BlockProxy.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -465,6 +467,12 @@
             </Platforms>
             <Deployment Version="4">
                 <DeployFile LocalName="..\x86-64\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput"/>
+                <DeployFile LocalName="..\x86-64\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>hJOPserver.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\x86\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployClass Name="AdditionalDebugSymbols">
                     <Platform Name="OSX32">

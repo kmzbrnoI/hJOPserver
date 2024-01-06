@@ -163,7 +163,9 @@ uses
   fBlkCrossingState in 'blocks\forms\state\fBlkCrossingState.pas' {F_BlkCrossingState},
   fBlkSignalState in 'blocks\forms\state\fBlkSignalState.pas' {F_BlkSignalState},
   PTEndpointStatus in 'pt\PTEndpointStatus.pas',
-  colorHelper in 'helpers\colorHelper.pas';
+  colorHelper in 'helpers\colorHelper.pas',
+  BlockCrossingPositive in 'blocks\BlockCrossingPositive.pas',
+  BlockProxy in 'blocks\BlockProxy.pas';
 
 {$R *.res}
 

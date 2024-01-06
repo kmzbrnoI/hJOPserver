@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, SysUtils, Menus, AreaDb, Classes, TechnologieRCS,
   IdContext, Area, Generics.Collections, JsonDataObjects, ConfSeq,
-  BlockCrossingLogic;
+  BlockCrossingLogic, BlockCrossingPositive;
 
 type
   TBlkCrossingRCSInputs = record
@@ -68,6 +68,7 @@ type
     rcsModules: TList<Cardinal>; // seznam RCS modulu, ktere vyuziva prejezd
     lastInputValid: TDateTime;
     lastWantClose: Boolean;
+    lastPositive: Boolean;
   end;
 
   EPrjNOT = class(Exception);
@@ -94,6 +95,7 @@ type
     _SECT_RCSOBELL_ACTIVE_DOWN = 'RCSObellActiveDown';
     _SECT_PRERING_TIME = 'preringTime';
     _SECT_TRACKS = 'tracks';
+    _SECT_POSITIVE = 'positive'; // actually positiveX, where X \in [0..n-1] (multiple lines)
     _SECT_CLOSED_REQUIRED = 'closedRequired';
 
     _UZ_UPOZ_MIN = 4; // po 4 minutach uzavreneho prejezdu zobrazim upozorneni na uzavreni prilis dlouho
@@ -108,6 +110,7 @@ type
 
     procedure UpdateOutputs();
     procedure UpdateTracks();
+    procedure UpdatePositive();
     function UpdateState(): TBlkCrossingBasicState;
 
     procedure SetEmOpen(state: Boolean);
@@ -160,6 +163,7 @@ type
 
   public
     tracks: TObjectList<TBlkCrossingTrack>;
+    positiveRules: TPositiveRules;
 
     constructor Create(index: Integer);
     destructor Destroy(); override;
@@ -227,6 +231,7 @@ begin
   Self.m_state.shs := TList<TBlk>.Create();
   Self.m_state.rcsModules := TList<Cardinal>.Create();
   Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
+  Self.positiveRules := TPositiveRules.Create();
 end;
 
 destructor TBlkCrossing.Destroy();
@@ -234,6 +239,7 @@ begin
   Self.m_state.shs.Free();
   Self.m_state.rcsModules.Free();
   Self.tracks.Free();
+  Self.positiveRules.Free();
   inherited;
 end;
 
@@ -280,6 +286,21 @@ begin
       on E: Exception do
         AppEvents.LogException(E, 'LoadTracks');
     end;
+  end;
+
+  Self.positiveRules.Clear();
+  var positiveLine: string := ini_tech.ReadString(section, _SECT_POSITIVE + '0', '');
+  var count: Integer := 0;
+  while (positiveLine <> '') do
+  begin
+    try
+      Self.positiveRules.Add(TPositiveRule.Create(positiveLine));
+    except
+      on E: Exception do
+        AppEvents.LogException(E, 'TBlkCrossing.positiveRules.Add '+IntToStr(count));
+    end;
+    Inc(count);
+    positiveLine := ini_tech.ReadString(section, _SECT_POSITIVE + IntToStr(count), '');
   end;
 
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
@@ -340,6 +361,9 @@ begin
     ini_tech.WriteInteger(section, _SECT_TRACKS, Self.tracks.Count);
   for var i: Integer := 0 to Self.tracks.Count - 1 do
     Self.tracks[i].Save(ini_tech, section, 'T' + IntToStr(i));
+
+  for var i: Integer := 0 to Self.positiveRules.Count - 1 do
+    ini_tech.WriteString(section, _SECT_POSITIVE + IntToStr(i), Self.positiveRules[i].IdStr());
 end;
 
 procedure TBlkCrossing.SaveState(ini_stat: TMemIniFile; const section: string);
@@ -472,6 +496,7 @@ begin
   end;
 
   Self.UpdateTracks();
+  Self.UpdatePositive();
 
   if (Self.changed) then
     Self.UpdateOutputs();
@@ -540,6 +565,16 @@ begin
 
   if (changed) then
     Self.Change();
+end;
+
+procedure TBlkCrossing.UpdatePositive();
+begin
+  var positive: Boolean := Self.positive;
+  if (Self.m_state.lastPositive <> positive) then
+  begin
+    Self.m_state.lastPositive := positive;
+    Self.Change();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1244,7 +1279,8 @@ end;
 
 function TBlkCrossing.IsPositive(): Boolean;
 begin
-  Result := (Self.state = TBlkCrossingBasicState.open) and (Self.TrackPositiveLight()) and (not Self.pcClosed) and (not Self.pcEmOpen);
+  Result := (Self.state = TBlkCrossingBasicState.open) and (Self.TrackPositiveLight()) and (BlockCrossingPositive.PositiveOn(Self.positiveRules))
+     and (not Self.pcClosed) and (not Self.pcEmOpen);
 end;
 
 function TBlkCrossing.IsEnabled(): Boolean;

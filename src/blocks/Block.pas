@@ -156,6 +156,7 @@ end;
 
 destructor TBlk.Destroy();
 begin
+  Self.m_globSettings.id := -2; // so potential references after Free break
   Self.m_areas.Free();
   inherited;
 end;
