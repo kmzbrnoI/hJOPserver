@@ -232,7 +232,7 @@ begin
       Self.LV_Tracks.Selected.Delete();
 
       for var i: Integer := 0 to Self.LV_Tracks.Items.Count-1 do
-        Self.LV_Tracks.Items[i].Caption := IntToStr(i+1);
+        Self.LV_Tracks.Items[i].Caption := IntToStr(i);
     end;
   end;
 end;
@@ -399,7 +399,7 @@ end;
 
 procedure TF_BlkRailway.FillBlockLI(var LI: TListItem; blockId: Integer);
 begin
-  LI.Caption := IntToStr(LI.Index+1);
+  LI.Caption := IntToStr(LI.Index);
   LI.SubItems.Clear();
   LI.SubItems.Add(IntToStr(blockId));
   LI.SubItems.Add(Blocks.GetBlkName(blockId));

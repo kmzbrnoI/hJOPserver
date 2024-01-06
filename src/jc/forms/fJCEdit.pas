@@ -1089,7 +1089,7 @@ end;
 
 procedure TF_JCEdit.FillBlockLI(var LI: TListItem; blockId: Integer);
 begin
-  LI.Caption := IntToStr(LI.Index+1);
+  LI.Caption := IntToStr(LI.Index);
   LI.SubItems.Clear();
   LI.SubItems.Add(IntToStr(blockId));
   LI.SubItems.Add(Blocks.GetBlkName(blockId));

@@ -169,8 +169,8 @@ begin
     var JC := JCDb.GetJCByID(jcid);
     if (JC = nil) then
       continue;
-    var LI: TListItem := Self.LV_JCs.Items.Add;
-    LI.Caption := IntToStr(Self.LV_JCs.Items.Count);
+    var LI: TListItem := Self.LV_JCs.Items.Add();
+    LI.Caption := IntToStr(Self.LV_JCs.Items.Count-1);
     LI.SubItems.Add(IntToStr(jcid));
     LI.SubItems.Add(JC.name);
   end;
@@ -180,8 +180,8 @@ begin
     var blk := Blocks.GetBlkByID(vbId);
     if (blk = nil) then
       continue;
-    var LI: TListItem := Self.LV_VBs.Items.Add;
-    LI.Caption := IntToStr(Self.LV_VBs.Items.Count);
+    var LI: TListItem := Self.LV_VBs.Items.Add();
+    LI.Caption := IntToStr(Self.LV_VBs.Items.Count-1);
     LI.SubItems.Add(IntToStr(vbId));
     LI.SubItems.Add(blk.GetGlobalSettings.name);
   end;
@@ -195,7 +195,7 @@ begin
   if (Self.new) then
     Self.Caption := 'Nová složená jízdní cesta'
   else
-    Self.Caption := 'Upravit složenou jízdní cestu ' + Self.openMJC.name;
+    Self.Caption := 'Složená jízdní cesta ' + Self.openMJC.name;
 end;
 
 procedure TF_MJCEdit.EmptyOpenForm();
@@ -428,13 +428,13 @@ end;
 procedure TF_MJCEdit.RecalcJCIndexes();
 begin
   for var i: Integer := 0 to Self.LV_JCs.Items.Count-1 do
-    Self.LV_JCs.Items[i].Caption := IntToStr(i+1);
+    Self.LV_JCs.Items[i].Caption := IntToStr(i);
 end;
 
 procedure TF_MJCEdit.RecalcVBIndexes();
 begin
   for var i: Integer := 0 to Self.LV_VBs.Items.Count-1 do
-    Self.LV_VBs.Items[i].Caption := IntToStr(i+1);
+    Self.LV_VBs.Items[i].Caption := IntToStr(i);
 end;
 
 end.
