@@ -61,8 +61,10 @@ type
 
     function GetBlkIndex(id: Integer): Integer;
     function GetBlkByID(id: Integer): TBlk; overload;
-    function GetBlkID(index: Integer): Integer;
+    function GetBlkID(index: Integer): Integer; overload;
+    function GetBlkID(name: string): Integer; overload;
     function GetBlkName(id: Integer): string;
+    function GetBlkByName(name: string): TBlk;
     function GetBlkIndexName(index: Integer): string;
 
     function GetBlkTrackOrRTByID(id: Integer): TBlkTrack;
@@ -680,6 +682,24 @@ begin
   if (index < 0) or (index >= Self.data.count) then
     Exit(-1);
   Result := Self.data[index].id;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlocks.GetBlkID(name: string): Integer;
+begin
+  for var blk: TBlk in Self.data do
+    if (blk.name = name) then
+      Exit(blk.id);
+  Result := -1;
+end;
+
+function TBlocks.GetBlkByName(name: string): TBlk;
+begin
+  for var blk: TBlk in Self.data do
+    if (blk.name = name) then
+      Exit(blk);
+  Result := nil;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

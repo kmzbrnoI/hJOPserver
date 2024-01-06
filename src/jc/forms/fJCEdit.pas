@@ -39,9 +39,6 @@ type
     CB_Railway_Dir: TComboBox;
     Label3: TLabel;
     SE_ID: TSpinEdit;
-    GB_Advanced: TGroupBox;
-    Label4: TLabel;
-    M_Crossings: TMemo;
     B_Track_Del: TButton;
     B_Turnout_Del: TButton;
     GB_Speeds: TGroupBox;
@@ -77,6 +74,21 @@ type
     CHB_Variant_Point: TCheckBox;
     Label6: TLabel;
     CB_Signal_Fall: TComboBox;
+    GB_Crossings: TGroupBox;
+    LV_Crossings: TListView;
+    GB_Crossing: TGroupBox;
+    Label5: TLabel;
+    Label16: TLabel;
+    CB_Crossing: TComboBox;
+    CB_Crossing_Ref: TComboBox;
+    B_Crossing_Ok: TButton;
+    B_Crossing_Del: TButton;
+    CHB_Crossing_Closing: TCheckBox;
+    E_Crossing_Close_Ids: TEdit;
+    E_Crossing_Close_Names: TEdit;
+    Label8: TLabel;
+    Label17: TLabel;
+    B_Cros_Names_To_Ids: TButton;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
@@ -107,6 +119,14 @@ type
     procedure LV_RefugeesKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure B_Track_DelClick(Sender: TObject);
+    procedure B_Crossing_DelClick(Sender: TObject);
+    procedure LV_CrossingsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_CrossingsChange(Sender: TObject; Item: TListItem;
+      Change: TItemChange);
+    procedure CHB_Crossing_ClosingClick(Sender: TObject);
+    procedure B_Crossing_OkClick(Sender: TObject);
+    procedure B_Cros_Names_To_IdsClick(Sender: TObject);
   private
     OpenIndex: Integer;
     mNewJC: Boolean;
@@ -116,6 +136,7 @@ type
     CB_TurnoutIds: TList<Integer>;
     CB_LockIds: TList<Integer>;
     CB_RailwayIds: TList<Integer>;
+    CB_CrossingIds: TList<Integer>;
     JCData: TJCdata;
 
     fTrainSpeedGo: TF_TrainSpeed;
@@ -138,6 +159,7 @@ type
     procedure FillTurnoutLI(var LI: TListItem; blockId: Integer; pos: string);
     procedure FillRefugeeLI(var LI: TListItem; blockId: Integer; pos: string; refId: Integer);
     procedure FillRefLI(var LI: TListItem; blockId: Integer; refId: Integer);
+
     procedure FillRefTracks(var cb: TComboBox); overload;
     procedure FillRefTracks(); overload;
     function BlockPresent(id: Integer; LV: TListView): Boolean;
@@ -169,6 +191,7 @@ begin
   Self.CB_TurnoutIds := TList<Integer>.Create();
   Self.CB_TrackIds := TList<Integer>.Create();
   Self.CB_LockIds := TList<Integer>.Create();
+  Self.CB_CrossingIds := TList<Integer>.Create();
 
   Self.fTrainSpeedGo := TF_TrainSpeed.Create(nil);
   Self.fTrainSpeedGo.Parent := Self.GB_SpeedsGo;
@@ -187,8 +210,9 @@ begin
   Self.CB_NextSignalIds.Free();
   Self.CB_RailwayIds.Free();
   Self.CB_TurnoutIds.Free();
-Self.CB_TrackIds.Free();
+  Self.CB_TrackIds.Free();
   Self.CB_LockIds.Free();
+  Self.CB_CrossingIds.Free();
 
   Self.fTrainSpeedGo.Free();
   Self.fTrainSpeedStop.Free();
@@ -238,7 +262,6 @@ begin
   Self.LV_Tracks.Clear();
   Self.FillBlocksCB();
 
-  Self.M_Crossings.Clear();
   Self.CHB_Odbocka.Checked := false;
   Self.CHB_NZV.Checked := false;
 
@@ -270,6 +293,7 @@ begin
     Self.FillTrackLI(LI, trackId, JCData.vb.Contains(trackId));
   end;
   Self.FillRefTracks();
+  Self.CB_Signal_Fall.ItemIndex := JCData.signalFallTrackI;
 
   for var turnoutZav in JCData.turnouts do
   begin
@@ -279,20 +303,6 @@ begin
 
   Self.CHB_Odbocka.Checked := JCData.turn;
   Self.CHB_NZV.Checked := JCData.nzv;
-
-  Self.M_Crossings.Clear();
-  for var crossingZav in JCData.crossings do
-  begin
-    var tmp := IntToStr(crossingZav.crossingId);
-    if (crossingZav.openTrack <> -1) then
-    begin
-      tmp := tmp + ', ' + IntToStr(crossingZav.openTrack);
-      for var blokid in crossingZav.closeTracks do
-        tmp := tmp + ', ' + IntToStr(blokid);
-    end;
-
-    Self.M_Crossings.Lines.Add(tmp);
-  end;
 
   for var refugeeZav in JCData.refuges do
   begin
@@ -306,7 +316,24 @@ begin
     Self.FillRefLI(LI, lockZav.block, lockZav.ref_blk);
   end;
 
-  Self.CB_Signal_Fall.ItemIndex := JCData.signalFallTrackI;
+  for var crossingZav in JCData.crossings do
+  begin
+    var LI := Self.LV_Crossings.Items.Add();
+    Self.FillRefLI(LI, crossingZav.crossingId, crossingZav.openTrack);
+
+    var ids: string := '';
+    var names: string := '';
+    for var blokid in crossingZav.closeTracks do
+    begin
+      ids := ids + IntToStr(blokid) + ', ';
+      names := names + Blocks.GetBlkName(blokid) + ', ';
+    end;
+    ids := LeftStr(ids, Length(ids)-2);
+    names := LeftStr(names, Length(names)-2);
+
+    LI.SubItems.Add(ids);
+    LI.SubItems.Add(names);
+  end;
 
   Self.CB_SignalChange(Self);
   if (Self.mNewJC) then
@@ -321,7 +348,12 @@ begin
   Self.LV_Tracks.Clear();
   Self.LV_Locks.Clear();
   Self.LV_Refugees.Clear();
+  Self.LV_Crossings.Clear();
   Self.FillRefTracks(); // will clear ref tracks
+
+  Self.CHB_Crossing_Closing.Checked := False;
+  Self.CHB_Crossing_ClosingClick(Self.CHB_Crossing_Closing);
+
   Self.ActiveControl := Self.E_Name;
 end;
 
@@ -426,6 +458,95 @@ procedure TF_JCEdit.NewJC(templateIndex: Integer);
 begin
   Self.mNewJC := true;
   Self.EditJC(templateIndex);
+end;
+
+procedure TF_JCEdit.B_Crossing_DelClick(Sender: TObject);
+begin
+  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané přejezdy z jízdní cesty?'), 'Mazání přejezdů',
+    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+    Self.LV_Crossings.DeleteSelected();
+    Self.UpdateIndexes(Self.LV_Crossings);
+  end;
+end;
+
+procedure TF_JCEdit.B_Crossing_OkClick(Sender: TObject);
+begin
+  if ((not Self.CB_Crossing.Enabled) or (Self.CB_Crossing.ItemIndex = -1)) then
+  begin
+    Application.MessageBox('Vyberte přejezd!', 'Nelze přídat přejezd', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+  if ((Self.CHB_Crossing_Closing.Checked) and (Self.CB_Crossing_Ref.ItemIndex = -1)) then
+  begin
+    Application.MessageBox('Vyberte referenční úsek!', 'Nelze přidat přejezd', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+
+  var closeNames: string := '';
+  var strings: TStrings := TStringList.Create();
+  try
+    ExtractStrings([','], [], PChar(Self.E_Crossing_Close_Ids.Text), strings);
+    for var str: string in strings do
+    begin
+      try
+        var id := StrToInt(str);
+        closeNames := closeNames + Blocks.GetBlkName(id) + ', ';
+      except
+        on E:Exception do
+        begin
+          Application.MessageBox(PChar(str + ' není platné ID bloku'), 'Chyba', MB_OK OR MB_ICONERROR);
+          Exit();
+        end;
+      end;
+    end;
+
+    closeNames := LeftStr(closeNames, Length(closeNames)-2);
+  finally
+    strings.Free();
+  end;
+
+  var crossingId := Self.CB_CrossingIds[Self.CB_Crossing.ItemIndex];
+  var crossingIndex := Self.LVFindLine(Self.LV_Crossings, 0, IntToStr(crossingId));
+  var LI: TListItem;
+  if (crossingIndex > -1) then
+    LI := Self.LV_Crossings.Items[crossingIndex]
+  else
+    LI := Self.LV_Crossings.Items.Add();
+
+  var refId: Integer := -1;
+  if (Self.CB_Crossing_Ref.Enabled) then
+    refId := StrToInt(Self.LV_Tracks.Items[Self.CB_Crossing_Ref.ItemIndex].SubItems.Strings[0]);
+
+  Self.FillRefLI(LI, crossingId, refId);
+  LI.SubItems.Add(Self.E_Crossing_Close_Ids.Text);
+  LI.SubItems.Add(closeNames);
+  Self.E_Crossing_Close_Names.Text := closeNames;
+end;
+
+procedure TF_JCEdit.B_Cros_Names_To_IdsClick(Sender: TObject);
+begin
+  var ids: string := '';
+  var strings: TStrings := TStringList.Create();
+  try
+    ExtractStrings([','], [' '], PChar(Self.E_Crossing_Close_Names.Text), strings);
+    for var str: string in strings do
+    begin
+      var id: Integer := Blocks.GetBlkID(str);
+      if (id = -1) then
+      begin
+        Application.MessageBox(PChar('Blok "'+str+'" neexistuje'), 'Chyba', MB_OK OR MB_ICONERROR);
+        Exit();
+      end;
+      ids := ids + IntToStr(id) + ', ';
+    end;
+
+    ids := LeftStr(ids, Length(ids)-2);
+  finally
+    strings.Free();
+  end;
+
+  Self.E_Crossing_Close_Ids.Text := ids;
 end;
 
 procedure TF_JCEdit.B_Lock_DelClick(Sender: TObject);
@@ -642,43 +763,27 @@ begin
       JCsaveData.refuges.Add(zav);
     end;
 
-    var parsed := TStringList.Create();
-    try
-      // crossings
-      for var line in Self.M_Crossings.Lines do
-      begin
-        parsed.Clear();
-        ExtractStrings([','], [], PChar(StringReplace(line, ' ', '', [rfReplaceAll])), parsed);
+    // crossings
+    for var LI: TListItem in Self.LV_Crossings.Items do
+    begin
+      var zav: TJCCrossingZav;
+      zav.crossingId := StrToInt(LI.SubItems.Strings[0]);
+      if (LI.SubItems.Strings[2] <> '') then
+        zav.openTrack := StrToInt(LI.SubItems.Strings[2])
+      else
+        zav.openTrack := -1;
 
-        var crossingZav: TJCCrossingZav;
-        try
-          crossingZav.closeTracks := nil;
-          crossingZav.crossingId := StrToInt(parsed[0]);
-          if (parsed.Count > 1) then
-            crossingZav.openTrack := StrToInt(parsed[1])
-          else
-            crossingZav.openTrack := -1;
-
-          crossingZav.closeTracks := TList<Integer>.Create();
-          for var i := 2 to parsed.Count - 1 do
-            crossingZav.closeTracks.Add(StrToInt(parsed[i]));
-
-          JCsaveData.crossings.Add(crossingZav);
-        except
-          on E: Exception do
-          begin
-            if (Assigned(crossingZav.closeTracks)) then
-              crossingZav.closeTracks.Free();
-
-            TechnologieJC.FreeJCData(JCsaveData);
-            Application.MessageBox(PChar('Napodařilo se naparsovat přejezd "' + line + '":' + #13#10 + E.Message),
-              'Chyba', MB_OK OR MB_ICONWARNING);
-            Exit();
-          end;
-        end;
+      zav.closeTracks := TList<Integer>.Create();
+      var strs: TStrings := TStringList.Create();
+      try
+        ExtractStrings([','], [], PChar(LI.SubItems.Strings[4]), strs);
+        for var str: string in strs do
+          zav.closeTracks.Add(StrToInt(str));
+      finally
+        strs.Free();
       end;
-    finally
-      parsed.Free()
+
+      JCsaveData.crossings.Add(zav);
     end;
 
     if (mNewJC) then
@@ -755,6 +860,49 @@ procedure TF_JCEdit.LV_TurnoutsKeyDown(Sender: TObject; var Key: Word; Shift: TS
 begin
   if ((Key = VK_DELETE) and (Self.B_Turnout_Del.Enabled)) then
     B_Turnout_DelClick(B_Turnout_Del);
+end;
+
+procedure TF_JCEdit.LV_CrossingsChange(Sender: TObject; Item: TListItem;
+  Change: TItemChange);
+begin
+  Self.B_Crossing_Del.Enabled := (Self.LV_Crossings.Selected <> nil);
+
+  if (Self.LV_Crossings.Selected = nil) then
+  begin
+    Self.CB_Crossing.ItemIndex := -1;
+    Self.CB_Crossing_Ref.ItemIndex := -1;
+    Self.CHB_Crossing_Closing.Checked := False;
+    Self.CHB_Crossing_ClosingClick(Self.CHB_Crossing_Closing);
+    Exit();
+  end;
+
+  var blockId: Integer := StrToInt(Self.LV_Crossings.Selected.SubItems.Strings[0]);
+  Self.SetBlocksCbItemIndex(Self.CB_Crossing, Self.CB_CrossingIds, blockId);
+
+  var refId: Integer := -1;
+  if (Self.LV_Crossings.Selected.SubItems.Count > 2) then
+    refId := StrToIntDef(Self.LV_Crossings.Selected.SubItems.Strings[2], -1);
+
+  Self.CHB_Crossing_Closing.Checked := (refId <> -1);
+  Self.CHB_Crossing_ClosingClick(Self.CHB_Crossing_Closing);
+
+  if (refId <> -1) then
+  begin
+    Self.CB_Crossing_Ref.ItemIndex := -1;
+    for var i := 0 to Self.LV_Tracks.Items.Count - 1 do
+      if (Self.LV_Tracks.Items[i].SubItems.Strings[0] = IntToStr(refId)) then
+        Self.CB_Crossing_Ref.ItemIndex := i;
+
+    Self.E_Crossing_Close_Ids.Text := Self.LV_Crossings.Selected.SubItems.Strings[4];
+    Self.E_Crossing_Close_Names.Text := Self.LV_Crossings.Selected.SubItems.Strings[5];
+  end;
+end;
+
+procedure TF_JCEdit.LV_CrossingsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_Crossing_Del.Enabled)) then
+    Self.B_Crossing_DelClick(Self.B_Crossing_Del);
 end;
 
 procedure TF_JCEdit.LV_LocksChange(Sender: TObject; Item: TListItem;
@@ -935,6 +1083,21 @@ begin
   end;
 end;
 
+procedure TF_JCEdit.CHB_Crossing_ClosingClick(Sender: TObject);
+begin
+  Self.CB_Crossing_Ref.Enabled := Self.CHB_Crossing_Closing.Checked;
+  Self.E_Crossing_Close_Ids.Enabled := Self.CHB_Crossing_Closing.Checked;
+  Self.E_Crossing_Close_Names.Enabled := Self.CHB_Crossing_Closing.Checked;
+  Self.B_Cros_Names_To_Ids.Enabled := Self.CHB_Crossing_Closing.Checked;
+
+  if (not Self.CHB_Crossing_Closing.Checked) then
+  begin
+    Self.CB_Crossing_Ref.ItemIndex := -1;
+    Self.E_Crossing_Close_Ids.Text := '';
+    Self.E_Crossing_Close_Names.Text := '';
+  end;
+end;
+
 procedure TF_JCEdit.CHB_RailwayClick(Sender: TObject);
 begin
   Self.CB_Railway.Enabled := Self.CHB_Railway.Checked;
@@ -1102,8 +1265,14 @@ end;
 procedure TF_JCEdit.FillRefLI(var LI: TListItem; blockId: Integer; refId: Integer);
 begin
   Self.FillBlockLI(LI, blockId);
-  LI.SubItems.Add(IntToStr(refId));
-  LI.SubItems.Add(Blocks.GetBlkName(refId));
+  if (refId <> -1) then
+  begin
+    LI.SubItems.Add(IntToStr(refId));
+    LI.SubItems.Add(Blocks.GetBlkName(refId))
+  end else begin
+    LI.SubItems.Add('');
+    LI.SubItems.Add('');
+  end;
 end;
 
 procedure TF_JCEdit.FillRefugeeLI(var LI: TListItem; blockId: Integer; pos: string; refId: Integer);
@@ -1122,6 +1291,7 @@ begin
     Blocks.FillCB(Self.CB_Turnout, Self.CB_TurnoutIds, nil, areas, btTurnout);
     Blocks.FillCB(Self.CB_Track, Self.CB_TrackIds, nil, areas, btTrack, btRT);
     Blocks.FillCB(Self.CB_Lock, Self.CB_LockIds, nil, areas, btLock);
+    Blocks.FillCB(Self.CB_Crossing, Self.CB_CrossingIds, nil, nil, btCrossing);
   finally
     areas.Free();
   end;
@@ -1139,6 +1309,7 @@ procedure TF_JCEdit.FillRefTracks();
 begin
   Self.FillRefTracks(Self.CB_Lock_Ref);
   Self.FillRefTracks(Self.CB_Refugee_Ref);
+  Self.FillRefTracks(Self.CB_Crossing_Ref);
 
   var i: Integer := Self.CB_Signal_Fall.ItemIndex;
   Self.FillRefTracks(Self.CB_Signal_Fall);

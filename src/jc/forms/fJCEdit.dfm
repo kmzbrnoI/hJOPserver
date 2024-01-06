@@ -4,8 +4,8 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'J'#237'zdn'#237' cesta ...'
-  ClientHeight = 642
-  ClientWidth = 1061
+  ClientHeight = 837
+  ClientWidth = 1057
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -73,7 +73,7 @@ object F_JCEdit: TF_JCEdit
     Left = 346
     Top = 325
     Width = 329
-    Height = 312
+    Height = 300
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -84,7 +84,7 @@ object F_JCEdit: TF_JCEdit
       Left = 2
       Top = 15
       Width = 325
-      Height = 224
+      Height = 212
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -119,7 +119,7 @@ object F_JCEdit: TF_JCEdit
     end
     object GB_Turnout_New: TGroupBox
       Left = 2
-      Top = 239
+      Top = 227
       Width = 325
       Height = 71
       Margins.Left = 2
@@ -327,8 +327,8 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object B_Save: TButton
-    Left = 976
-    Top = 610
+    Left = 975
+    Top = 804
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -341,8 +341,8 @@ object F_JCEdit: TF_JCEdit
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
-    Left = 897
-    Top = 610
+    Left = 896
+    Top = 805
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -454,36 +454,6 @@ object F_JCEdit: TF_JCEdit
     TabOrder = 1
     Value = 0
   end
-  object GB_Advanced: TGroupBox
-    Left = 688
-    Top = 465
-    Width = 365
-    Height = 112
-    Caption = ' Pokro'#269'il'#225' nastaven'#237' (n'#225'pov'#283'da po najet'#237' kurzorem) '
-    TabOrder = 11
-    object Label4: TLabel
-      Left = 8
-      Top = 16
-      Width = 44
-      Height = 13
-      Caption = 'P'#345'ejezdy:'
-    end
-    object M_Crossings: TMemo
-      Left = 8
-      Top = 35
-      Width = 345
-      Height = 67
-      Hint = 
-        'Form'#225't: na ka'#382'd'#253' '#345#225'dek jeden p'#345'ejezd: id bloku p'#345'ejezdu, id otev' +
-        #237'rac'#237'ho bloku, id 1. uz. bloku., id 2. uz. bloku, ...'
-      Lines.Strings = (
-        'M_Prj')
-      ParentShowHint = False
-      ScrollBars = ssBoth
-      ShowHint = True
-      TabOrder = 0
-    end
-  end
   object GB_Speeds: TGroupBox
     Left = 8
     Top = 279
@@ -591,7 +561,7 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object GB_Locks: TGroupBox
-    Left = 688
+    Left = 685
     Top = 7
     Width = 365
     Height = 188
@@ -732,7 +702,7 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object GB_Refugees: TGroupBox
-    Left = 688
+    Left = 685
     Top = 199
     Width = 365
     Height = 261
@@ -897,6 +867,199 @@ object F_JCEdit: TF_JCEdit
         Items.Strings = (
           '+'
           '-')
+      end
+    end
+  end
+  object GB_Crossings: TGroupBox
+    Left = 7
+    Top = 627
+    Width = 668
+    Height = 202
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = ' P'#345'ejezdy '
+    TabOrder = 11
+    object LV_Crossings: TListView
+      Left = 2
+      Top = 15
+      Width = 664
+      Height = 94
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alClient
+      Columns = <
+        item
+          Caption = '#'
+          Width = 20
+        end
+        item
+          Caption = 'ID'
+        end
+        item
+          Caption = 'N'#225'zev'
+          Width = 90
+        end
+        item
+          Caption = 'Ref. ID'
+        end
+        item
+          Caption = 'Refere'#269'n'#237' '#250'sek'
+          Width = 90
+        end
+        item
+          Caption = 'Zav'#237'rac'#237' ID'
+          Width = 130
+        end
+        item
+          Caption = 'Zav'#237'rac'#237' '#250'seky'
+          Width = 200
+        end>
+      GridLines = True
+      MultiSelect = True
+      ReadOnly = True
+      RowSelect = True
+      TabOrder = 0
+      ViewStyle = vsReport
+      OnChange = LV_CrossingsChange
+      OnKeyDown = LV_CrossingsKeyDown
+    end
+    object GB_Crossing: TGroupBox
+      Left = 2
+      Top = 109
+      Width = 664
+      Height = 91
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alBottom
+      Caption = ' P'#345'idat/upravit/smazat p'#345'ejezd '
+      TabOrder = 1
+      ExplicitTop = 168
+      object Label5: TLabel
+        Left = 8
+        Top = 16
+        Width = 39
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'P'#345'ejezd:'
+      end
+      object Label16: TLabel
+        Left = 9
+        Top = 63
+        Width = 82
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Referen'#269'n'#237' '#250'sek:'
+      end
+      object Label8: TLabel
+        Left = 254
+        Top = 16
+        Width = 99
+        Height = 13
+        Caption = 'ID zav'#237'rac'#237'ch '#250'sek'#367':'
+      end
+      object Label17: TLabel
+        Left = 254
+        Top = 43
+        Width = 235
+        Height = 13
+        Caption = 'Jm'#233'na zav'#237'rac'#237'ch '#250'sek'#367' (pr'#225'zdn'#233' = zav'#237'rat v'#382'dy):'
+      end
+      object CB_Crossing: TComboBox
+        Left = 109
+        Top = 16
+        Width = 124
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 0
+      end
+      object CB_Crossing_Ref: TComboBox
+        Left = 109
+        Top = 63
+        Width = 124
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 2
+      end
+      object B_Crossing_Ok: TButton
+        Left = 608
+        Top = 61
+        Width = 49
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Ok'
+        TabOrder = 6
+        OnClick = B_Crossing_OkClick
+      end
+      object B_Crossing_Del: TButton
+        Left = 608
+        Top = 35
+        Width = 49
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Smazat'
+        Enabled = False
+        TabOrder = 7
+        OnClick = B_Crossing_DelClick
+      end
+      object CHB_Crossing_Closing: TCheckBox
+        Left = 9
+        Top = 41
+        Width = 168
+        Height = 17
+        Caption = 'P'#345'ejezd zav'#237'ran'#253' j'#237'zdn'#237' cestou'
+        TabOrder = 1
+        OnClick = CHB_Crossing_ClosingClick
+      end
+      object E_Crossing_Close_Ids: TEdit
+        Left = 359
+        Top = 16
+        Width = 244
+        Height = 21
+        TabOrder = 3
+        Text = 'E_Crossing_Close_Ids'
+      end
+      object E_Crossing_Close_Names: TEdit
+        Left = 254
+        Top = 62
+        Width = 349
+        Height = 21
+        TabOrder = 5
+        Text = 'E_Crossing_Close_Names'
+      end
+      object B_Cros_Names_To_Ids: TButton
+        Left = 528
+        Top = 40
+        Width = 75
+        Height = 20
+        Caption = 'Jm'#233'na > ID'
+        TabOrder = 4
+        OnClick = B_Cros_Names_To_IdsClick
       end
     end
   end
