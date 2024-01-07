@@ -31,6 +31,22 @@ interface
 uses BlockTurnout, Generics.Collections, BlockProxy, Classes, SysUtils, Block,
   StrUtils;
 
+const
+  HELP: string = 'Do jednotlivých øádkù je možné psát pravidla pro rozsvícení pozitivy.'+#13#10+
+    'Každé pravidlo je ve formátu "podmínky > bloky". Podmínky vyjadøují pøedepsané polohy výhybek èi výkolejek. '+
+    'Pøi splnìní podmínek se vyhodnocují bloky. Bloky mohou obsahovat úseky nebo návìstidla. Pravidlo øíká, že pozitiva '+
+    'je rozsvícena právì tehdy, pokud jsou všechny uvedené úseky volné a všechna uvedená návìstidla návìstí "stùj".'+#13#10+
+    'Pozitiva je celkovì rozsvícena, pokud všechna pravidla se splnìnými podmínkami øíkají, že pozitiva má být rozsvícena. '+
+    'Prázdná podmínka je vždy splnìna. Prázdná pravidla = pozitiva rozsvícena dle pravidel vždy. "bloky" nesmí být prázdné. '+
+    'Pokud je výhybka v podmínce v nepoloze nebo indikuje obì polohy, uvažuje se, že podmínce vyhovìla. '+
+    'Pozitiva je navíc vždy zhasnutá, pokud je pøejezd ve výstraze nebo koleje indikují, že nemá být pozitiva rozsvícena.'+#13#10+
+    'Pøíklad:'+#13#10+
+    '> Sk LK, Sk 1K, Sk L'+#13#10+
+    'Sk 5:+, Sk Vk4:- > Sk 3K, Sk S3'+#13#10+
+    'Vysvìtlení: obsazení Sk LK nebo Sk 1K zpùsobí vždy zhasnutí pozitivy. Povolující návìst na Sk L zpùsobí vždy zhasnutí pozitivy. '+
+    'Obsazení Sk 3K nebo povolující návìst na Sk S3 zpùsobí zhasnutí pozitivy jen tehdy, když jsou odvratné výhybky a výkolejky v poloze, '+
+    'která ohrožuje pøejezd, konkrétnì Sk 5 v poloze + a Sk Vk4 v poloze -.';
+
 type
   TPositiveCondition = class
   private
@@ -234,6 +250,9 @@ begin
   finally
     strs.Free();
   end;
+
+  if (Self.blocks.Count = 0) then
+    raise Exception.Create('"blocks" cannot be empty!');
 end;
 
 function TPositiveRule.IdStr(): string;

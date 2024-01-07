@@ -994,6 +994,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Height = 25
       Caption = 'N'#225'pov'#283'da'
       TabOrder = 3
+      OnClick = B_Positive_HelpClick
     end
   end
 end

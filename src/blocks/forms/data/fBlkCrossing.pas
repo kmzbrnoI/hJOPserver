@@ -120,6 +120,7 @@ type
     procedure CHB_RCS_LightsClick(Sender: TObject);
     procedure CHB_InfiniteAnulClick(Sender: TObject);
     procedure B_Positive_Name_To_IdsClick(Sender: TObject);
+    procedure B_Positive_HelpClick(Sender: TObject);
   private
     openIndex: Integer;
     block: TBlkCrossing;
@@ -174,6 +175,11 @@ begin
   Self.SE_in_open_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_open_board.Value, Self.SE_in_open_port.Value);
   Self.SE_in_caution_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_caution_board.Value, Self.SE_in_caution_port.Value);
   Self.SE_in_annulation_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_annulation_board.Value, Self.SE_in_annulation_port.Value);
+end;
+
+procedure TF_BlkCrossing.B_Positive_HelpClick(Sender: TObject);
+begin
+  Application.MessageBox(PChar(BlockCrossingPositive.HELP), 'Nápověda', MB_OK OR MB_ICONINFORMATION);
 end;
 
 procedure TF_BlkCrossing.B_Positive_Name_To_IdsClick(Sender: TObject);
