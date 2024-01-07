@@ -119,6 +119,7 @@ type
     procedure CHB_RCS_RingClick(Sender: TObject);
     procedure CHB_RCS_LightsClick(Sender: TObject);
     procedure CHB_InfiniteAnulClick(Sender: TObject);
+    procedure B_Positive_Name_To_IdsClick(Sender: TObject);
   private
     openIndex: Integer;
     block: TBlkCrossing;
@@ -173,6 +174,29 @@ begin
   Self.SE_in_open_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_open_board.Value, Self.SE_in_open_port.Value);
   Self.SE_in_caution_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_caution_board.Value, Self.SE_in_caution_port.Value);
   Self.SE_in_annulation_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_annulation_board.Value, Self.SE_in_annulation_port.Value);
+end;
+
+procedure TF_BlkCrossing.B_Positive_Name_To_IdsClick(Sender: TObject);
+begin
+  var rules: TPositiveRules := TPositiveRules.Create();
+  try
+    try
+      for var line: string in Self.M_Positive_Names.Lines do
+        rules.Add(TPositiveRule.Create(line, True));
+    except
+      on E:Exception do
+      begin
+        Application.MessageBox(PChar(E.Message), 'Chyba převodu', MB_OK OR MB_ICONERROR);
+        Exit();
+      end;
+    end;
+
+    Self.M_Positive_Ids.Clear();
+    for var rule: TPositiveRule in rules do
+      Self.M_Positive_Ids.Lines.Add(rule.IdStr());
+  finally
+    rules.Free();
+  end;
 end;
 
 procedure TF_BlkCrossing.B_save_PClick(Sender: TObject);

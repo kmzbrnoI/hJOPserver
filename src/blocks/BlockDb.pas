@@ -26,6 +26,9 @@ CONST
   BLK_MULTIPLE: Integer = -2;
 
 type
+  EBlockNotFound = class(Exception);
+  EMultipleBlocks = class(Exception);
+
   TBlocks = class(TObject)
   private
     data: TList<TBlk>;
@@ -68,6 +71,7 @@ type
     function GetBlkByID(id: Integer): TBlk; overload;
     function GetBlkID(index: Integer): Integer; overload;
     function GetBlkID(name: string): Integer; overload;
+    function GetBlkIDExc(name: string): Integer;
     function GetBlkName(id: Integer): string;
     function GetBlkByName(name: string): TBlk; // warning: doest not check multiple occurences
     function GetBlkIndexName(index: Integer): string;
@@ -712,6 +716,15 @@ begin
   if (index < 0) then
     Exit(index);
   Result := Self.data[index].id;
+end;
+
+function TBlocks.GetBlkIDExc(name: string): Integer;
+begin
+  Result := Self.GetBlkID(name);
+  if (Result = BLK_NOT_FOUND) then
+    raise BlockDb.EBlockNotFound.Create('Block not found: '+name);
+  if (Result = BLK_MULTIPLE) then
+    raise BlockDb.EMultipleBlocks.Create('Multiple blocks with name: '+name);
 end;
 
 function TBlocks.GetBlkByName(name: string): TBlk;

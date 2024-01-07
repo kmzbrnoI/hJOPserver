@@ -985,6 +985,7 @@ object F_BlkCrossing: TF_BlkCrossing
       Height = 25
       Caption = 'Jm'#233'na > ID'
       TabOrder = 2
+      OnClick = B_Positive_Name_To_IdsClick
     end
     object B_Positive_Help: TButton
       Left = 9

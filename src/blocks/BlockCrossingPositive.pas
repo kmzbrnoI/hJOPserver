@@ -44,10 +44,10 @@ type
     position: TTurnoutPosition;
 
      constructor Create(); overload;
-     constructor Create(str: string); overload;
+     constructor Create(str: string; name: Boolean = False); overload;
      destructor Destroy(); override;
 
-     procedure Parse(str: string);
+     procedure Parse(str: string; name: Boolean = False);
      function IdStr(): string;
      function NameStr(): string;
 
@@ -59,8 +59,8 @@ type
   private
     blockProxies: TObjectList<TBlockProxy>;
 
-     procedure ParseConditions(conds: string);
-     procedure ParseBlocks(blocks: string);
+     procedure ParseConditions(conds: string; name: Boolean);
+     procedure ParseBlocks(blocks: string; name: Boolean);
      function BlockPositiveOn(blk: TBlk): Boolean;
 
   public
@@ -69,10 +69,10 @@ type
     blocks: TList<Integer>;
 
      constructor Create(); overload;
-     constructor Create(line: string); overload;
+     constructor Create(line: string; name: Boolean = False); overload;
      destructor Destroy(); override;
 
-     procedure Parse(line: string);
+     procedure Parse(line: string; name: Boolean);
      function IdStr(): string;
      function NameStr(): string;
 
@@ -97,10 +97,10 @@ begin
   Self.proxy := TBlockProxy.Create();
 end;
 
-constructor TPositiveCondition.Create(str: string);
+constructor TPositiveCondition.Create(str: string; name: Boolean);
 begin
   Self.Create();
-  Self.Parse(str);
+  Self.Parse(str, name);
 end;
 
 destructor TPositiveCondition.Destroy();
@@ -124,15 +124,18 @@ begin
     (Self.turnoutBlk.position = TTurnoutPosition.disabled) or (Self.turnoutBlk.position = TTurnoutPosition.none);
 end;
 
-procedure TPositiveCondition.Parse(str: string);
+procedure TPositiveCondition.Parse(str: string; name: Boolean);
 begin
   var strs: TStrings := TStringList.Create();
   try
-    ExtractStringsEx([':'], [' '], str, strs);
+    ExtractStringsEx([':'], [], str, strs);
     if (strs.Count <> 2) then
       raise EConvertError.Create(str + 'is not in format "turnoutid:[+-]" (TPositiveCondition.Parse)');
-    Self.turnout := StrToInt(strs[0]);
-    Self.position := TBlkTurnout.StrToPosition(strs[1]);
+    if (name) then
+      Self.turnout := BlockDb.Blocks.GetBlkIDExc(Trim(strs[0]))
+    else
+      Self.turnout := StrToInt(Trim(strs[0]));
+    Self.position := TBlkTurnout.StrToPosition(Trim(strs[1]));
     if ((Self.position <> TTurnoutPosition.plus) and (Self.position <> TTurnoutPosition.minus)) then
       raise EConvertError.Create('Invalid turnout position: "'+strs[1]+'" (TPositiveCondition.Parse)');
   finally
@@ -160,10 +163,10 @@ begin
   Self.blockProxies := TObjectList<TBlockProxy>.Create();
 end;
 
-constructor TPositiveRule.Create(line: string);
+constructor TPositiveRule.Create(line: string; name: Boolean = False);
 begin
   Self.Create();
-  Self.Parse(line);
+  Self.Parse(line, name);
 end;
 
 destructor TPositiveRule.Destroy();
@@ -176,21 +179,21 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TPositiveRule.Parse(line: string);
+procedure TPositiveRule.Parse(line: string; name: Boolean);
 begin
   Self.conditions.Clear();
   Self.blocks.Clear();
 
   var top: TStrings := TStringList.Create();
   try
-    ExtractStringsEx(['>'], [' '], line, top);
+    ExtractStringsEx(['>'], [], line, top);
     if (top.Count = 2) then
     begin
-      Self.ParseConditions(top[0]);
-      Self.ParseBlocks(top[1]);
+      Self.ParseConditions(Trim(top[0]), name);
+      Self.ParseBlocks(Trim(top[1]), name);
     end else if (top.Count = 1) then
     begin
-      Self.ParseBlocks(top[0]);
+      Self.ParseBlocks(Trim(top[0]), name);
     end else
       raise EConvertError.Create('TPositiveRule.Parse: invalid number of ">" blocks!');
   finally
@@ -198,29 +201,36 @@ begin
   end;
 end;
 
-procedure TPositiveRule.ParseConditions(conds: string);
+procedure TPositiveRule.ParseConditions(conds: string; name: Boolean);
 begin
   Self.conditions.Clear();
 
   var strs: TStrings := TStringList.Create();
   try
-    ExtractStringsEx([','], [' '], conds, strs);
+    ExtractStringsEx([','], [], conds, strs);
     for var str in strs do
-      Self.conditions.Add(TPositiveCondition.Create(str));
+      Self.conditions.Add(TPositiveCondition.Create(str, name));
   finally
     strs.Free();
   end;
 end;
 
-procedure TPositiveRule.ParseBlocks(blocks: string);
+procedure TPositiveRule.ParseBlocks(blocks: string; name: Boolean);
 begin
   Self.blocks.Clear();
 
   var strs: TStrings := TStringList.Create();
   try
-    ExtractStringsEx([','], [' '], blocks, strs);
+    ExtractStringsEx([','], [], blocks, strs);
     for var str in strs do
-      Self.blocks.Add(StrToInt(str));
+    begin
+      var id: Integer := -1;
+      if (name) then
+        id := BlockDb.Blocks.GetBlkIDExc(Trim(str))
+      else
+        id := StrToInt(Trim(str));
+      Self.blocks.Add(id);
+    end;
   finally
     strs.Free();
   end;
