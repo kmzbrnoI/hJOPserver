@@ -1,4 +1,4 @@
-unit BlockCrossingPositive;
+ï»¿unit BlockCrossingPositive;
 
 {
  Setting a positive light of a crossing
@@ -32,20 +32,20 @@ uses BlockTurnout, Generics.Collections, BlockProxy, Classes, SysUtils, Block,
   StrUtils;
 
 const
-  HELP: string = 'Do jednotlivıch øádkù je moné psát pravidla pro rozsvícení pozitivy.'+#13#10+
-    'Kadé pravidlo je ve formátu "podmínky > bloky". Podmínky vyjadøují pøedepsané polohy vıhybek èi vıkolejek. '+
-    'Pøi splnìní podmínek se vyhodnocují bloky. Bloky mohou obsahovat úseky nebo návìstidla. Pravidlo øíká, e pozitiva '+
-    'je rozsvícena právì tehdy, pokud jsou všechny uvedené úseky volné a všechna uvedená návìstidla návìstí "stùj".'+#13#10+
-    'Pozitiva je celkovì rozsvícena, pokud všechna pravidla se splnìnımi podmínkami øíkají, e pozitiva má bıt rozsvícena. '+
-    'Prázdná podmínka je vdy splnìna. Prázdná pravidla = pozitiva rozsvícena dle pravidel vdy. "bloky" nesmí bıt prázdné. '+
-    'Pokud je vıhybka v podmínce v nepoloze nebo indikuje obì polohy, uvauje se, e podmínce vyhovìla. '+
-    'Pozitiva je navíc vdy zhasnutá, pokud je pøejezd ve vıstraze nebo koleje indikují, e nemá bıt pozitiva rozsvícena.'+#13#10+
-    'Pøíklad:'+#13#10+
+  HELP: string = 'Do jednotlivÃ½ch Å™Ã¡dkÅ¯ je moÅ¾nÃ© psÃ¡t pravidla pro rozsvÃ­cenÃ­ pozitivy.'+#13#10+
+    'KaÅ¾dÃ© pravidlo je ve formÃ¡tu "podmÃ­nky > bloky". PodmÃ­nky vyjadÅ™ujÃ­ pÅ™edepsanÃ© polohy vÃ½hybek Äi vÃ½kolejek. '+
+    'PÅ™i splnÄ›nÃ­ podmÃ­nek se vyhodnocujÃ­ bloky. Bloky mohou obsahovat Ãºseky nebo nÃ¡vÄ›stidla. Pravidlo Å™Ã­kÃ¡, Å¾e pozitiva '+
+    'je rozsvÃ­cena prÃ¡vÄ› tehdy, pokud jsou vÅ¡echny uvedenÃ© Ãºseky volnÃ© a vÅ¡echna uvedenÃ¡ nÃ¡vÄ›stidla nÃ¡vÄ›stÃ­ "stÅ¯j".'+#13#10+
+    'Pozitiva je celkovÄ› rozsvÃ­cena, pokud vÅ¡echna pravidla se splnÄ›nÃ½mi podmÃ­nkami Å™Ã­kajÃ­, Å¾e pozitiva mÃ¡ bÃ½t rozsvÃ­cena. '+
+    'PrÃ¡zdnÃ¡ podmÃ­nka je vÅ¾dy splnÄ›na. PrÃ¡zdnÃ¡ pravidla = pozitiva rozsvÃ­cena dle pravidel vÅ¾dy. "bloky" nesmÃ­ bÃ½t prÃ¡zdnÃ©. '+
+    'Pokud je vÃ½hybka v podmÃ­nce v nepoloze nebo indikuje obÄ› polohy, uvaÅ¾uje se, Å¾e podmÃ­nce vyhovÄ›la. '+
+    'Pozitiva je navÃ­c vÅ¾dy zhasnutÃ¡, pokud je pÅ™ejezd ve vÃ½straze nebo koleje indikujÃ­, Å¾e nemÃ¡ bÃ½t pozitiva rozsvÃ­cena.'+#13#10+
+    'PÅ™Ã­klad:'+#13#10+
     '> Sk LK, Sk 1K, Sk L'+#13#10+
     'Sk 5:+, Sk Vk4:- > Sk 3K, Sk S3'+#13#10+
-    'Vysvìtlení: obsazení Sk LK nebo Sk 1K zpùsobí vdy zhasnutí pozitivy. Povolující návìst na Sk L zpùsobí vdy zhasnutí pozitivy. '+
-    'Obsazení Sk 3K nebo povolující návìst na Sk S3 zpùsobí zhasnutí pozitivy jen tehdy, kdy jsou odvratné vıhybky a vıkolejky v poloze, '+
-    'která ohrouje pøejezd, konkrétnì Sk 5 v poloze + a Sk Vk4 v poloze -.';
+    'VysvÄ›tlenÃ­: obsazenÃ­ Sk LK nebo Sk 1K zpÅ¯sobÃ­ vÅ¾dy zhasnutÃ­ pozitivy. PovolujÃ­cÃ­ nÃ¡vÄ›st na Sk L zpÅ¯sobÃ­ vÅ¾dy zhasnutÃ­ pozitivy. '+
+    'ObsazenÃ­ Sk 3K nebo povolujÃ­cÃ­ nÃ¡vÄ›st na Sk S3 zpÅ¯sobÃ­ zhasnutÃ­ pozitivy jen tehdy, kdyÅ¾ jsou odvratnÃ© vÃ½hybky a vÃ½kolejky v poloze, '+
+    'kterÃ¡ ohroÅ¾uje pÅ™ejezd, konkrÃ©tnÄ› Sk 5 v poloze + a Sk Vk4 v poloze -.';
 
 type
   TPositiveCondition = class
