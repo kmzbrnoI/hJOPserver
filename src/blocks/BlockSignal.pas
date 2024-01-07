@@ -61,6 +61,8 @@ type
     class function ParseTrainTypes(types: string): string;
     function ToFileStr(short: Boolean = false): string;
     class function ParseOldRychEvent(trackAllowed: Boolean; str: string): TRREv;
+
+    function Match(train: TTrain): Boolean;
   end;
 
   TBlkSignalSettings = record
@@ -1622,26 +1624,32 @@ begin
     raise ENoEvents.Create('No current events!');
 
   var track := TBlkTrack(Self.track);
-  if (not track.IsTrain()) then
+  if (track.IsTrain()) then
   begin
-    // na bloku neni zadna souprava
-    Result := 0;
-  end else begin
     var train: TTrain := Self.GetTrain(track);
 
     // hledame takovy event, ktery odpovida nasi souprave
+    if (Self.m_settings.events.Count >= 2) then
+      for var i: Integer := 1 to Self.m_settings.events.Count - 1 do
+        if (Self.m_settings.events[i].Match(train)) then
+          Exit(i);
+
+    // pokud jsme event odpovidajici parametrum soupravy nenasli, vyhodnocujeme globalni event
+    Result := 0;
+  end else begin
+    // na bloku neni zadna souprava -> muzeme chtit zpomaleni na jinem bloku, musime se divat na soupravu na tomto bloku
+
     if (Self.m_settings.events.Count >= 2) then
     begin
       for var i: Integer := 1 to Self.m_settings.events.Count - 1 do
       begin
         var event: TBlkSignalTrainEvent := Self.m_settings.events[i];
-        if ((Train.length >= event.length.min) and (Train.length <= event.length.max) and
-          (TRegEx.IsMatch(Train.typ, event.train_type_re))) then
+        if ((event.slow.enabled) and (event.slow.ev.trackDefined) and (TBlkTrack(event.slow.ev.Track()).IsTrain())
+            and (event.Match(Self.GetTrain(TBlkTrack(event.slow.ev.Track()))))) then
           Exit(i);
       end;
     end;
 
-    // pokud jsme event odpovidajici parametrum soupravy nenasli, vyhodnocujeme globalni event
     Result := 0;
   end;
 end;
@@ -2258,6 +2266,12 @@ begin
   finally
     data.Free();
   end;
+end;
+
+function TBlkSignalTrainEvent.Match(train: TTrain): Boolean;
+begin
+  Result := ((train.length >= Self.length.min) and (train.length <= Self.length.max) and
+    (TRegEx.IsMatch(train.typ, Self.train_type_re)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

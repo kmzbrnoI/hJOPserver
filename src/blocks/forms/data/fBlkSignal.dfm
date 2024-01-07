@@ -4,7 +4,7 @@ object F_BlkSignal: TF_BlkSignal
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (n'#225'v'#283'stidlo)'
-  ClientHeight = 439
+  ClientHeight = 441
   ClientWidth = 681
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

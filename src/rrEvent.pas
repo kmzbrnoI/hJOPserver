@@ -24,6 +24,7 @@ uses Classes, SysUtils, StrUtils;
 
 type
   TRREvType = (rrtTrack = 1, rrtIR = 2, rrtTime = 3, rrtDist = 4);
+  ENoTrack = class(Exception);
 
   TRREvData = record
     trackId: Integer;
@@ -66,6 +67,7 @@ type
     m_trackAllowed: Boolean;
 
     procedure LoadFromDefStr(data: string);
+    function IsTrackDefined(): Boolean;
 
     class function TrackPartFromFile(part: string): Integer;
     class function TrackPartToFile(trackPart: Integer): string;
@@ -82,13 +84,15 @@ type
 
     // Sender must be a valid "Usek" blok.
     function IsTriggerred(Sender: TObject; safeState: Boolean): Boolean;
-    function Track(Sender: TObject): TObject;
+    function Track(Sender: TObject): TObject; overload;
+    function Track(): TObject; overload;
 
     property enabled: Boolean read m_state.enabled;
     property data: TRREvData read m_data;
     property typ: TRREvType read m_data.typ;
     property trackAllowed: Boolean read m_trackAllowed;
     property trackId: Integer read m_data.trackId;
+    property trackDefined: Boolean read IsTrackDefined;
 
   end;
 
@@ -198,7 +202,7 @@ begin
       Result := Result + IntToStr(Self.m_data.distanceCm) + ',' + Self.TrackPartToFile(Self.m_data.trackPart);
   end;
 
-  if ((Self.trackAllowed) and (Self.m_data.trackId > -1)) then
+  if (Self.trackDefined) then
     Result := Result + ',' + IntToStr(Self.m_data.trackId);
 end;
 
@@ -315,10 +319,17 @@ end;
 
 function TRREv.Track(Sender: TObject): TObject;
 begin
-  if ((Self.trackAllowed) and (Self.m_data.trackId > -1)) then
+  if (Self.trackDefined) then
     Result := Blocks.GetBlkTrackOrRTByID(Self.m_data.trackId)
   else
     Result := Sender;
+end;
+
+function TRREv.Track(): TObject;
+begin
+  if (not Self.trackDefined) then
+    raise ENoTrack.Create('TRREv: no track degined!');
+  Result := Blocks.GetBlkTrackOrRTByID(Self.m_data.trackId);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -337,6 +348,13 @@ begin
     Result := '*'
   else
     Result := IntToStr(trackPart);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TRREv.IsTrackDefined(): Boolean;
+begin
+  Result := ((Self.trackAllowed) and (Self.m_data.trackId > -1));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

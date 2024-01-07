@@ -320,7 +320,7 @@ object F_JCEdit: TF_JCEdit
   end
   object B_Save: TButton
     Left = 975
-    Top = 804
+    Top = 806
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -334,7 +334,7 @@ object F_JCEdit: TF_JCEdit
   end
   object B_Storno: TButton
     Left = 896
-    Top = 805
+    Top = 806
     Width = 75
     Height = 25
     Margins.Left = 2
