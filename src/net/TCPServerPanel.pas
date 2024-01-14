@@ -696,7 +696,7 @@ begin
     try
       var btn: TPanelButton := Self.StrToPanelButton(parsed[2]);
       if (btn = TPanelButton.ESCAPE) then
-        orRef.ESCAPE(AContext);
+        orRef.Escape(AContext);
     except
       on E: EInvalidButton do
         Exit();
