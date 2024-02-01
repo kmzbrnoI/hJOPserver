@@ -492,11 +492,6 @@ begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(Self.SE_ID.Value, Self.openIndex)) then
-  begin
-    Application.MessageBox('ID již bylo definováno na jiním bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit();
-  end;
   if ((Self.CHB_Coupling.Checked) and (Self.CB_Coupling.ItemIndex < 0)) then
   begin
     Application.MessageBox('Vyberte spojku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
@@ -547,7 +542,16 @@ begin
       end;
     end;
   end else begin
-    Self.block.SetGlobalSettings(glob);
+    try
+      Self.block.SetGlobalSettings(glob);
+    except
+      on E: Exception do
+      begin
+        Application.MessageBox(PChar('Nepodařilo se uložit blok:' + #13#10 + E.Message), 'Nelze uložit data',
+          MB_OK OR MB_ICONWARNING);
+        Exit();
+      end;
+    end;
   end;
 
   var settings: TBlkTurnoutSettings;

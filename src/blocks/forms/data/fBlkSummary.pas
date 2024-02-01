@@ -112,11 +112,6 @@ begin
     Application.MessageBox('Vyplňte název součtové hlásky!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(SE_ID.Value, openIndex)) then
-  begin
-    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit();
-  end;
 
   glob.name := Self.E_Name.Text;
   glob.id := Self.SE_ID.Value;
@@ -135,7 +130,16 @@ begin
       end;
     end;
   end else begin
-    Self.block.SetGlobalSettings(glob);
+    try
+      Self.block.SetGlobalSettings(glob);
+    except
+      on E: Exception do
+      begin
+        Application.MessageBox(PChar('Nepodařilo se uložit blok:' + #13#10 + E.Message), 'Nelze uložit data',
+          MB_OK OR MB_ICONWARNING);
+        Exit();
+      end;
+    end;
   end;
 
   settings.crossings := TList<Integer>.Create();

@@ -165,14 +165,33 @@ end;
 
 procedure TBlk.SetGlobalSettings(data: TBlkSettings);
 var id_changed: Boolean;
+    name_changed: Boolean;
+    prev_name: string;
 begin
+  if (data.name = '') then
+    raise EArgumentNilException.Create('Jméno bloku nemůže být prázdné!');
+  if (Blocks.IsBlock(data.id, Self.table_index)) then
+    raise BlockDb.EMultipleBlocks.Create('Blok s ID '+IntToStr(data.id)+' již existuje');
+  if (Blocks.IsBlock(data.name, Self.table_index)) then
+    raise BlockDb.EMultipleBlocks.Create('Blok se jménem "'+data.name+'" již existuje');
+
   id_changed := ((Self.id <> data.id) and (Self.id <> -1));
+  prev_name := Self.name;
+  name_changed := (Self.name <> data.name) and (Self.name <> '');
   Self.m_globSettings := data;
-  if (id_changed) then
-  begin
-    // sem se skoci, pokud je potreba preskladat bloky, protoze doslo ke zmene ID
-    // pri vytvareni novych bloku se sem neskace
-    Blocks.BlkIDChanged(Self.table_index);
+
+  try
+    if (id_changed) then
+    begin
+      // sem se skoci, pokud je potreba preskladat bloky, protoze doslo ke zmene ID
+      // pri vytvareni novych bloku se sem neskace
+      Blocks.BlkIDChanged(Self.table_index);
+    end;
+    if (name_changed) then
+      Blocks.BlkNameChanged(prev_name, Self.table_index);
+  except
+    on E:Exception do
+      AppEvents.LogException(E, 'TBlk.SetGlobalSettings');
   end;
 end;
 

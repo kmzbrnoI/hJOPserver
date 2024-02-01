@@ -278,40 +278,10 @@ procedure TF_BlkRailway.B_SaveClick(Sender: TObject);
 var globRailway, globLinkerA, globLinkerB: TBlkSettings;
   rSettings: TBlkRailwaySettings;
   linkerSettings: TBlkLinkerSettings;
-  railway, linkerA, linkerB: Integer;
 begin
-  if (Self.isNewBlock) then
-  begin
-    railway := -1;
-    linkerA := -1;
-    linkerB := -1;
-  end else begin
-    railway := Blocks.GetBlkIndex(Self.railway.id);
-    linkerA := Blocks.GetBlkIndex(Self.linkerA.id);
-    linkerB := Blocks.GetBlkIndex(Self.linkerB.id);
-  end;
-
   if ((Self.E_Railway_Name.Text = '') or (Self.E_LA_name.Text = '') or (Self.E_LB_name.Text = '')) then
   begin
     Application.MessageBox('Vyplňte názvy bloků!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit();
-  end;
-  if (Blocks.IsBlock(Self.SE_Railway_ID.Value, railway)) then
-  begin
-    Application.MessageBox('ID trati jiz bylo definovano na jinem bloku !', 'Nelze uložit data',
-      MB_OK OR MB_ICONWARNING);
-    Exit();
-  end;
-  if (Blocks.IsBlock(Self.SE_LA_Id.Value, linkerA)) then
-  begin
-    Application.MessageBox('ID úvazky A jiz bylo definovano na jinem bloku !', 'Nelze uložit data',
-      MB_OK OR MB_ICONWARNING);
-    Exit();
-  end;
-  if (Blocks.IsBlock(Self.SE_LB_Id.Value, linkerB)) then
-  begin
-    Application.MessageBox('ID úvazky B jiz bylo definovano na jinem bloku !', 'Nelze ulozit data',
-      MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Type.ItemIndex < 0) then
@@ -355,9 +325,18 @@ begin
       end;
     end;
   end else begin
-    Self.railway.SetGlobalSettings(globRailway);
-    Self.linkerA.SetGlobalSettings(globLinkerA);
-    Self.linkerB.SetGlobalSettings(globLinkerB);
+    try
+      Self.railway.SetGlobalSettings(globRailway);
+      Self.linkerA.SetGlobalSettings(globLinkerA);
+      Self.linkerB.SetGlobalSettings(globLinkerB);
+    except
+      on E: Exception do
+      begin
+        Application.MessageBox(PChar('Nepodařilo se uložit blok:' + #13#10 + E.Message), 'Nelze uložit data',
+          MB_OK OR MB_ICONWARNING);
+        Exit();
+      end;
+    end;
   end;
 
   rSettings.linkerA := Self.SE_LA_Id.Value;

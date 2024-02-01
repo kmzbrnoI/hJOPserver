@@ -31,7 +31,8 @@ type
 
   TBlocks = class(TObject)
   private
-    data: TObjectList<TBlk>;
+    data: TObjectList<TBlk>; // owns blocks
+    nameToBlk: TDictionary<string, TBlk>; // does not own blocks
 
     ffstatus: string;
     ffile: string;
@@ -66,14 +67,13 @@ type
 
     procedure Update();
 
-    function GetBlkIndex(id: Integer): Integer; overload;
-    function GetBlkIndex(name: string): Integer; overload; // -2 = multiple occurences
-    function GetBlkByID(id: Integer): TBlk; overload;
+    function GetBlkIndex(id: Integer): Integer;
+    function GetBlkByID(id: Integer): TBlk;
     function GetBlkID(index: Integer): Integer; overload;
     function GetBlkID(name: string): Integer; overload;
     function GetBlkIDExc(name: string): Integer;
     function GetBlkName(id: Integer): string;
-    function GetBlkByName(name: string): TBlk; // warning: doest not check multiple occurences
+    function GetBlkByName(name: string): TBlk;
     function GetBlkIndexName(index: Integer): string;
 
     function GetBlkTrackOrRTByID(id: Integer): TBlkTrack;
@@ -96,7 +96,8 @@ type
 
     // Check if block with id 'id' already exists.
     // Ignore block 'ignore_index'.
-    function IsBlock(id: Integer; ignore_index: Integer = -1): Boolean;
+    function IsBlock(id: Integer; ignore_index: Integer = -1): Boolean; overload;
+    function IsBlock(name: string; ignore_index: Integer = -1): Boolean; overload;
 
     procedure OnBoosterChange(booster: string);
 
@@ -121,6 +122,7 @@ type
     procedure ChangeTrainToRailway(Train: TTrain);
 
     procedure BlkIDChanged(index: Integer);
+    procedure BlkNameChanged(previous: string; index: Integer);
     procedure ClearPOdj();
 
     class function SEInPortMaxValue(addr: Integer; currentValue: Integer): Integer;
@@ -159,12 +161,14 @@ constructor TBlocks.Create();
 begin
   inherited;
   Self.data := TObjectList<TBlk>.Create();
+  Self.nameToBlk := TDictionary<string, TBlk>.Create();
   Self.fenabled := false;
 end;
 
 destructor TBlocks.Destroy();
 begin
-  Self.data.Free();
+  FreeAndNil(Self.nameToBlk);
+  FreeAndNil(Self.data);
   inherited;
 end;
 
@@ -283,8 +287,18 @@ begin
         end else begin
           blk.LoadData(ini_tech, section, ini_rel, ini_stat);
           blk.OnChange := Self.BlkChange;
-          Self.data.Insert(Self.FindPlaceForNewBlk(Blk.id), blk);
-          blk := nil;
+
+          if (blk.name = '') then
+          begin
+            Log('Nenačítám blok ' + blk.idName + ' - blok má prázdné jméno', llError, lsData);
+          end else if (Self.GetBlkByName(blk.name) <> nil) then
+          begin
+            Log('Nenačítám blok ' + blk.idName + ' - blok tohoto jména již existuje', llError, lsData);
+          end else begin
+            Self.data.Insert(Self.FindPlaceForNewBlk(blk.id), blk);
+            Self.nameToBlk.Add(blk.name, blk);
+            blk := nil;
+          end;
         end;
       except
         on E: Exception do
@@ -376,8 +390,12 @@ function TBlocks.Add(glob: TBlkSettings): TBlk;
 var blk: TBlk;
   index: Integer;
 begin
+  if (glob.name = '') then
+    raise EArgumentNilException.Create('Jméno bloku nemůže být prázdné!');
   if (Self.IsBlock(glob.id)) then
-    raise Exception.Create('Blok tohoto ID již existuje!');
+    raise EInvalidArgument.Create('Blok s ID '+IntToStr(glob.id)+' již existuje!');
+  if (Self.GetBlkByName(glob.name) <> nil) then
+    raise EInvalidArgument.Create('Blok s názvem "'+glob.name+'" již existuje!');
 
   index := Self.FindPlaceForNewBlk(glob.id);
   blk := Self.NewBlk(glob.typ, index);
@@ -386,7 +404,10 @@ begin
 
   blk.SetGlobalSettings(glob);
   blk.OnChange := Self.BlkChange;
+
   Self.data.Insert(index, blk);
+  Self.nameToBlk.Add(glob.name, blk);
+
   BlocksTablePainter.BlkAdd(index);
 
   // move indexes
@@ -414,6 +435,9 @@ begin
   Self.data.OwnsObjects := False;
   Self.data.Delete(index);
   Self.data.OwnsObjects := True;
+
+  if ((Assigned(Self.nameToBlk)) and (Self.nameToBlk.ContainsKey(deleted.name)) and (Self.nameToBlk[deleted.name] = deleted)) then
+    Self.nameToBlk.Remove(deleted.name);
 
   // update indexes (decrement)
   for var i: Integer := index to Self.data.count - 1 do
@@ -541,21 +565,6 @@ begin
   Result := -1;
 end;
 
-function TBlocks.GetBlkIndex(name: string): Integer;
-begin
-  var firsti: Integer := -1;
-  for var i: Integer := 0 to Self.data.Count-1 do
-  begin
-    if (Self.data[i].name = name) then
-    begin
-      if (firsti <> -1) then
-        Exit(BLK_MULTIPLE);
-      firsti := i;
-    end;
-  end;
-  Result := firsti;
-end;
-
 function TBlocks.GetBlkByID(id: Integer): TBlk;
 begin
   Result := Self.GetBlkByIndex(Self.GetBlkIndex(id));
@@ -669,6 +678,15 @@ begin
   Result := ((index <> -1) and (index <> ignore_index));
 end;
 
+function TBlocks.IsBlock(name: string; ignore_index: Integer = -1): Boolean;
+begin
+  var blk: TBlk := Self.GetBlkByName(name);
+  if (blk = nil) then
+    Exit(False);
+  var index: Integer := Self.GetBlkIndex(blk.id);
+  Result := (index > -1) and (index <> ignore_index);
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBlocks.GetBlkID(index: Integer): Integer;
@@ -682,10 +700,10 @@ end;
 
 function TBlocks.GetBlkID(name: string): Integer;
 begin
-  var index := Self.GetBlkIndex(name);
-  if (index < 0) then
-    Exit(index);
-  Result := Self.data[index].id;
+  var blk: TBlk := Self.GetBlkByName(name);
+  if (blk = nil) then
+    Exit(BLK_NOT_FOUND);
+  Result := blk.id;
 end;
 
 function TBlocks.GetBlkIDExc(name: string): Integer;
@@ -693,16 +711,15 @@ begin
   Result := Self.GetBlkID(name);
   if (Result = BLK_NOT_FOUND) then
     raise BlockDb.EBlockNotFound.Create('Block not found: '+name);
-  if (Result = BLK_MULTIPLE) then
-    raise BlockDb.EMultipleBlocks.Create('Multiple blocks with name: '+name);
 end;
 
 function TBlocks.GetBlkByName(name: string): TBlk;
 begin
-  var index := Self.GetBlkIndex(name);
-  if (index < 0) then
+  if (not Assigned(Self.nameToBlk)) then
     Exit(nil);
-  Result := Self.data[index];
+  if (not Self.nameToBlk.ContainsKey(name)) then
+    Exit(nil);
+  Result := Self.nameToBlk[name];
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1096,6 +1113,18 @@ begin
   end;
 
   BlocksTablePainter.BlkMove(index, new_index);
+end;
+
+procedure TBlocks.BlkNameChanged(previous: string; index: Integer);
+begin
+  var blk: TBlk := Self.data[index];
+  if (previous = blk.name) then
+    Exit();
+  if ((Self.nameToBlk.ContainsKey(previous)) and (Self.nameToBlk[previous] = blk)) then
+    Self.nameToBlk.Remove(previous);
+  if (Self.GetBlkByName(blk.name) <> nil) then
+    raise EMultipleBlocks.Create('Blok se jménem "'+blk.name+'" již existuje');
+  Self.nameToBlk.AddOrSetValue(blk.name, blk);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

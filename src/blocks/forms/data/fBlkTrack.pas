@@ -277,11 +277,6 @@ begin
     Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Blocks.IsBlock(SE_ID.Value, openIndex)) then
-  begin
-    Application.MessageBox('ID již bylo definováno na jiném bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-    Exit();
-  end;
   if (Self.CB_Booster.ItemIndex = -1) then
   begin
     Application.MessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
@@ -307,7 +302,16 @@ begin
         end;
       end;
     end else begin
-      Self.block.SetGlobalSettings(glob);
+      try
+        Self.block.SetGlobalSettings(glob);
+      except
+        on E: Exception do
+        begin
+          Application.MessageBox(PChar('Nepodařilo se uložit blok:' + #13#10 + E.Message), 'Nelze uložit data',
+            MB_OK OR MB_ICONWARNING);
+          Exit();
+        end;
+      end;
     end;
 
     // save block-specific data
