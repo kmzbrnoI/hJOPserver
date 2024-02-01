@@ -69,7 +69,7 @@ var
 
 implementation
 
-uses Block, Area, DataBloky, TechnologieRCS, BlockSignal;
+uses Block, Area, DataBloky, TechnologieRCS, BlockSignal, ownGuiUtils;
 
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
@@ -295,8 +295,7 @@ begin
     except
       on E: Exception do
       begin
-        Application.MessageBox(PChar('Nepodaøilo se pøidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
-          MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Nepodaøilo se pøidat blok.', 'Nelze uložit data', E);
         Exit();
       end;
     end;
@@ -306,8 +305,7 @@ begin
     except
       on E: Exception do
       begin
-        Application.MessageBox(PChar('Nepodaøilo se uložit blok:' + #13#10 + E.Message), 'Nelze uložit data',
-          MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Nepodaøilo se uložit blok.', 'Nelze uložit data', E);
         Exit();
       end;
     end;

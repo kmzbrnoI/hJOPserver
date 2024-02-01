@@ -398,6 +398,7 @@
         <DCCReference Include="helpers\colorHelper.pas"/>
         <DCCReference Include="blocks\BlockCrossingPositive.pas"/>
         <DCCReference Include="blocks\BlockProxy.pas"/>
+        <DCCReference Include="helpers\ownGuiUtils.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

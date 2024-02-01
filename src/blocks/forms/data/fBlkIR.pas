@@ -43,7 +43,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, BlockDb, Block, DataBloky;
+uses GetSystems, TechnologieRCS, BlockDb, Block, DataBloky, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -154,8 +154,7 @@ begin
     except
       on E: Exception do
       begin
-        Application.MessageBox(PChar('Nepodařilo se přidat blok:' + #13#10 + E.Message), 'Nelze uložit data',
-          MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
         Exit();
       end;
     end;
@@ -165,8 +164,7 @@ begin
     except
       on E: Exception do
       begin
-        Application.MessageBox(PChar('Nepodařilo se uložit blok:' + #13#10 + E.Message), 'Nelze uložit data',
-          MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
         Exit();
       end;
     end;

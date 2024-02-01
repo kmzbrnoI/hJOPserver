@@ -178,7 +178,7 @@ var
 
 implementation
 
-uses GetSystems, Block, AreaDb, TrainSpeed, ownConvert,
+uses GetSystems, Block, AreaDb, TrainSpeed, ownConvert, ownGuiUtils,
   BlockSignal, TJCDatabase, DataJC, BlockRailway, BlockTurnout;
 
 {$R *.dfm}
@@ -799,8 +799,7 @@ begin
         on E: Exception do
         begin
           TechnologieJC.FreeJCData(JCsaveData);
-          Application.MessageBox(PChar('Přidávání JC skončilo s chybou' + #13#10 + E.Message), 'Chyba',
-            MB_OK OR MB_ICONWARNING);
+          ExceptionMessageBox('Přidávání JC skončilo s chybou.', 'Chyba', E);
           Exit();
         end;
       end;
@@ -813,11 +812,10 @@ begin
     end;
 
   except
-    on E:Exception do
+    on E: Exception do
     begin
       TechnologieJC.FreeJCData(JCsaveData);
-      Application.MessageBox(PChar('Neočekávaná chyba:' + #13#10 + E.Message), 'Chyba',
-        MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
       Exit();
     end;
   end;

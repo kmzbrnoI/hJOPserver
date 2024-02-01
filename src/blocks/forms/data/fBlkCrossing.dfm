@@ -4,7 +4,7 @@ object F_BlkCrossing: TF_BlkCrossing
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Prejezd : [Prejezd]'
-  ClientHeight = 822
+  ClientHeight = 821
   ClientWidth = 690
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

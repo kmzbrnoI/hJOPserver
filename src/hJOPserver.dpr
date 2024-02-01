@@ -165,7 +165,8 @@ uses
   PTEndpointStatus in 'pt\PTEndpointStatus.pas',
   colorHelper in 'helpers\colorHelper.pas',
   BlockCrossingPositive in 'blocks\BlockCrossingPositive.pas',
-  BlockProxy in 'blocks\BlockProxy.pas';
+  BlockProxy in 'blocks\BlockProxy.pas',
+  ownGuiUtils in 'helpers\ownGuiUtils.pas';
 
 {$R *.res}
 
