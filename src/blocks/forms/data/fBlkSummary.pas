@@ -156,6 +156,7 @@ procedure TF_BlkSummary.CommonOpenForm();
 begin
   Self.LV_Crossings.Clear();
   Self.B_Remove.Enabled := false;
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkSummary.EditOpenForm();
@@ -177,7 +178,6 @@ begin
   Blocks.FillCB(Self.CB_Crossing, Self.CB_CrossingId, nil, Self.block.areas, btCrossing);
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (součtová hláska)';
-  Self.ActiveControl := Self.B_save_P;
 end;
 
 procedure TF_BlkSummary.NewOpenForm();
@@ -187,7 +187,6 @@ begin
   Blocks.FillCB(Self.CB_Crossing, Self.CB_CrossingId, nil, nil, btCrossing);
 
   Self.Caption := 'Nový blok Součtová hláska';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkSummary.FormClose(Sender: TObject; var Action: TCloseAction);

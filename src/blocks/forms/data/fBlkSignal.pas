@@ -136,7 +136,6 @@ begin
   // ktere ji nepotrebuje
 
   Self.Caption := 'Nový blok Návěstidlo';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkSignal.EditOpenForm();
@@ -224,13 +223,13 @@ begin
   end;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (návěstidlo)';
-  Self.ActiveControl := Self.B_Save;
 end;
 
 procedure TF_BlkSignal.CommonOpenForm();
 begin
   Self.SE_RCSmodule1.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCSmodule2.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkSignal.NewBlock();

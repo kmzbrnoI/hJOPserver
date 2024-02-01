@@ -219,7 +219,6 @@ begin
   Self.CHB_ControllersClick(Self.CHB_Controllers);
 
   Self.Caption := 'Nový blok Výhybka';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkTurnout.EditOpenForm();
@@ -340,7 +339,6 @@ begin
   end;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (výhybka)';
-  Self.ActiveControl := B_Save;
 end;
 
 procedure TF_BlkTurnout.CommonOpenForm();
@@ -390,6 +388,7 @@ begin
     Self.CHB_npMinus.Enabled := (Self.CB_NeprofilIds.Count > 0);
   end;
 
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkTurnout.B_StornoClick(Sender: TObject);

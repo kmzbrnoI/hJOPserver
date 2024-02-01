@@ -5,7 +5,7 @@ object F_BlkTurnout: TF_BlkTurnout
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (vyhybka)'
-  ClientHeight = 490
+  ClientHeight = 489
   ClientWidth = 631
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

@@ -77,7 +77,6 @@ begin
   Self.E_AccessToken.Text := '';
 
   Self.Caption := 'Nový blok AC';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkAC.EditOpenForm();
@@ -92,12 +91,11 @@ begin
   Self.E_AccessToken.Text := settings.accessToken;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (AC)';
-  Self.ActiveControl := Self.B_Save;
 end;
 
 procedure TF_BlkAC.CommonOpenForm();
 begin
-
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkAC.B_StornoClick(Sender: TObject);

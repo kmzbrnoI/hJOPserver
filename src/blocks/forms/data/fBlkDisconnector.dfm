@@ -13,10 +13,8 @@ object F_BlkDisconnector: TF_BlkDisconnector
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object Label2: TLabel
     Left = 8

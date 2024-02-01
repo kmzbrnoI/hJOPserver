@@ -206,7 +206,6 @@ begin
   Self.stopOdd.OpenEmptyForm();
 
   Self.Caption := 'Nový blok Traťový úsek';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkRT.EditOpenForm();
@@ -342,7 +341,6 @@ begin
   end;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (traťový úsek)';
-  Self.ActiveControl := Self.B_OK;
 end;
 
 procedure TF_BlkRT.CommonOpenForm;
@@ -355,6 +353,8 @@ begin
   Self.CB_Booster.Clear();
   for var booster in Boosters.sorted do
     Self.CB_Booster.Items.Add(booster.name + ' (' + booster.id + ')');
+
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkRT.B_StornoClick(Sender: TObject);

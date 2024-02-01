@@ -529,6 +529,7 @@ end;
 
 procedure TF_BlkCrossing.CommonOpenForm();
 begin
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkCrossing.EditOpenForm();
@@ -594,7 +595,6 @@ begin
     Self.M_Positive_Names.Lines.Add(rule.NameStr());
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (přejezd)';
-  Self.ActiveControl := Self.B_save_P;
 end;
 
 procedure TF_BlkCrossing.NewOpenForm();
@@ -628,7 +628,6 @@ begin
   Self.M_Positive_Names.Clear();
 
   Self.Caption := 'Nový přejezd';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkCrossing.FormClose(Sender: TObject; var Action: TCloseAction);

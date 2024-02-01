@@ -142,7 +142,6 @@ begin
   Blocks.FillCB(Self.CB_Track, Self.CB_TrackIds, nil, nil, btRT);
 
   Self.Caption := 'Nový blok Trať';
-  Self.ActiveControl := Self.E_Railway_Name;
 end;
 
 procedure TF_BlkRailway.EditOpenForm();
@@ -193,13 +192,13 @@ begin
   end;
 
   Self.Caption := 'Upravit blok ' + Self.railway.name + ' (trať)';
-  Self.ActiveControl := Self.B_Save;
 end;
 
 procedure TF_BlkRailway.CommonOpenForm();
 begin
   Self.LV_Tracks.Clear();
   Self.B_Track_Del.Enabled := false;
+  Self.ActiveControl := Self.E_Railway_Name;
 end;
 
 procedure TF_BlkRailway.LV_TracksChange(Sender: TObject; Item: TListItem; Change: TItemChange);

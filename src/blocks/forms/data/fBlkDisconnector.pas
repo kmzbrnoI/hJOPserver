@@ -107,7 +107,6 @@ begin
   Self.CHB_ContollerClick(Self.CHB_Contoller);
 
   Self.Caption := 'Nový rozpojovač';
-  Self.ActiveControl := Self.E_name;
 end;
 
 procedure TF_BlkDisconnector.EditOpenForm();
@@ -165,7 +164,6 @@ begin
   end;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (rozpojovač)';
-  Self.ActiveControl := B_Save;
 end;
 
 procedure TF_BlkDisconnector.CHB_ContollerClick(Sender: TObject);
@@ -185,6 +183,7 @@ end;
 procedure TF_BlkDisconnector.CommonOpenForm;
 begin
   Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.ActiveControl := Self.E_name;
 end;
 
 procedure TF_BlkDisconnector.B_StornoClick(Sender: TObject);

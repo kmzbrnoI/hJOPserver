@@ -127,7 +127,6 @@ begin
   Self.CHB_AllowOutChange.Checked := false;
 
   Self.Caption := 'Nový blok Výstup';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkIO.EditOpenForm();
@@ -180,13 +179,13 @@ begin
   Self.CHB_AllowOutChange.Checked := settings.allowOutChange;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (IO)';
-  Self.ActiveControl := Self.B_Save;
 end;
 
 procedure TF_BlkIO.CommonOpenForm();
 begin
   Self.SE_RCS_Input_Module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCS_Output_Module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkIO.B_StornoClick(Sender: TObject);

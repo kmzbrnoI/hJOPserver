@@ -189,7 +189,6 @@ begin
   Self.SE_RCS_Active_Port.Value := 0;
 
   Self.Caption := 'Nový blok Pomocné stavědlo';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkPst.NormalOpenForm();
@@ -274,7 +273,6 @@ begin
   Self.SE_RCS_Active_Port.Value := pstSettings.rcsOutActive.port;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (pomocné stavědlo)';
-  Self.ActiveControl := Self.B_Apply;
 end;
 
 procedure TF_BlkPst.SE_RCS_Active_ModuleExit(Sender: TObject);
@@ -325,6 +323,8 @@ begin
   Self.SE_RCS_Indication_Module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCS_Release_Module.MaxValue := RCSi.maxModuleAddrSafe;
   Self.SE_RCS_Horn_Module.MaxValue := RCSi.maxModuleAddrSafe;
+
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkPst.NewBlock();

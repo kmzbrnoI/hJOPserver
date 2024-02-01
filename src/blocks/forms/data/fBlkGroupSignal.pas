@@ -179,7 +179,7 @@ begin
   Self.FillCBNewSignal();
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (skupinové návìstidlo)';
-  Self.ActiveControl := Self.B_Apply;
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkGroupSignal.NewBlock();

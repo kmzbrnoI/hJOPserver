@@ -130,7 +130,6 @@ begin
   Self.CHB_D0Click(Self.CHB_D0);
 
   Self.Caption := 'Nový blok Úsek';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkTrack.EditOpenForm();
@@ -250,7 +249,6 @@ begin
   Self.CHB_Loop.Checked := settings.loop;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (úsek)';
-  Self.ActiveControl := Self.B_OK;
 end;
 
 procedure TF_BlkTrack.CommonOpenForm();
@@ -263,6 +261,8 @@ begin
   Self.CB_Booster.Clear();
   for var booster in Boosters.sorted do
     Self.CB_Booster.Items.Add(booster.name + ' (' + booster.id + ')');
+
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkTrack.B_StornoClick(Sender: TObject);

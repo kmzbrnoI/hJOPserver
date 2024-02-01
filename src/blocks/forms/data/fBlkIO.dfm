@@ -13,10 +13,8 @@ object F_BlkIO: TF_BlkIO
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object L_IR02: TLabel
     Left = 8

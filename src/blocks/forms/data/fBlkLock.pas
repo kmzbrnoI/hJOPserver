@@ -72,7 +72,6 @@ begin
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
 
   Self.Caption := 'Nový blok Zámek';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkLock.EditForm();
@@ -84,12 +83,11 @@ begin
   Self.SE_ID.Value := glob.id;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (zámek)';
-  Self.ActiveControl := Self.B_Save;
 end;
 
 procedure TF_BlkLock.CommonOpenForm();
 begin
-
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkLock.B_StornoClick(Sender: TObject);

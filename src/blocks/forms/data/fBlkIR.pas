@@ -74,7 +74,6 @@ begin
   Self.SE_moduleExit(Self);
 
   Self.Caption := 'Nový blok IR';
-  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkIR.EditOpenForm();
@@ -102,12 +101,12 @@ begin
   Self.SE_ID.Value := glob.id;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (IR)';
-  Self.ActiveControl := Self.B_Save;
 end;
 
 procedure TF_BlkIR.CommonOpenForm();
 begin
   Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.ActiveControl := Self.E_Name;
 end;
 
 procedure TF_BlkIR.NewBlock();
