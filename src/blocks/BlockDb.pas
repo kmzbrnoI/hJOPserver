@@ -31,13 +31,13 @@ type
 
   TBlocks = class(TObject)
   private
-    data: TList<TBlk>;
+    data: TObjectList<TBlk>;
 
     ffstatus: string;
     ffile: string;
     fenabled: Boolean;
 
-    procedure DestroyBlocks();
+    class function NewBlk(typ: TBlkType; index: Integer): TBlk;
     procedure BlkChange(Sender: TObject);
 
     function GetCount(): Integer;
@@ -158,31 +158,14 @@ uses fMain, TJCDatabase, Logging, DataBloky, TrainDb, TechnologieJC,
 constructor TBlocks.Create();
 begin
   inherited;
-  Self.data := TList<TBlk>.Create();
+  Self.data := TObjectList<TBlk>.Create();
   Self.fenabled := false;
 end;
 
 destructor TBlocks.Destroy();
 begin
-  Self.DestroyBlocks();
   Self.data.Free();
   inherited;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-procedure TBlocks.DestroyBlocks();
-begin
-  for var i: Integer := Self.data.count - 1 downto 0 do
-  begin
-    if (Assigned(Self.data[i])) then
-    begin
-      var blk: TBlk := Self.data[i];
-      Self.data.Delete(i);
-      blk.Free();
-    end;
-  end;
-  Self.data.Clear();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -215,11 +198,50 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
+class function TBlocks.NewBlk(typ: TBlkType; index: Integer): TBlk;
+begin
+  case (typ) of
+    btTurnout:
+      Result := TBlkTurnout.Create(index);
+    btTrack:
+      Result := TBlkTrack.Create(index);
+    btIR:
+      Result := TBlkIR.Create(index);
+    btSignal:
+      Result := TBlkSignal.Create(index);
+    btCrossing:
+      Result := TBlkCrossing.Create(index);
+    btRailway:
+      Result := TBlkRailway.Create(index);
+    btLinker:
+      Result := TBlkLinker.Create(index);
+    btLock:
+      Result := TBlkLock.Create(index);
+    btDisconnector:
+      Result := TBlkDisconnector.Create(index);
+    btRT:
+      Result := TBlkRT.Create(index);
+    btIO:
+      Result := TBlkIO.Create(index);
+    btSummary:
+      Result := TBlkSummary.Create(index);
+    btAC:
+      Result := TBlkAC.Create(index);
+    btGroupSignal:
+      Result := TBlkGroupSignal.Create(index);
+    btPst:
+      Result := TBlkPst.Create(index);
+  else
+    Result := nil;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
 // load all blocks from file
 // Use default index '-1' when loading, index propely later ('UpdateBlkIndexes')
 procedure TBlocks.LoadFromFile(const tech_filename, rel_filename, stat_filename: string);
 var ini_tech, ini_rel, ini_stat: TMemIniFile;
-  Blk: TBlk;
   str: TStrings;
 begin
   Log('Načítám bloky: ' + tech_filename + '; ' + rel_filename, llInfo, lsData);
@@ -231,11 +253,11 @@ begin
   ini_stat := TMemIniFile.Create(stat_filename, TEncoding.UTF8);
   str := TStringList.Create();
 
+  var blk: TBlk := nil;
   try
-    Self.DestroyBlocks();
+    Self.data.Clear();
     ini_tech.ReadSections(str);
 
-    Blk := nil;
     for var section: string in str do
     begin
       try
@@ -252,54 +274,23 @@ begin
           continue;
         end;
 
-        var typei: Integer := ini_tech.ReadInteger(section, 'typ', -1);
+        var typeint: Integer := ini_tech.ReadInteger(section, 'typ', -1);
+        blk := Self.NewBlk(TBlkType(typeint), -1);
 
-        case (typei) of
-          Integer(btTurnout):
-            Blk := TBlkTurnout.Create(-1);
-          Integer(btTrack):
-            Blk := TBlkTrack.Create(-1);
-          Integer(btIR):
-            Blk := TBlkIR.Create(-1);
-          Integer(btSignal):
-            Blk := TBlkSignal.Create(-1);
-          Integer(btCrossing):
-            Blk := TBlkCrossing.Create(-1);
-          Integer(btRailway):
-            Blk := TBlkRailway.Create(-1);
-          Integer(btLinker):
-            Blk := TBlkLinker.Create(-1);
-          Integer(btLock):
-            Blk := TBlkLock.Create(-1);
-          Integer(btDisconnector):
-            Blk := TBlkDisconnector.Create(-1);
-          Integer(btRT):
-            Blk := TBlkRT.Create(-1);
-          Integer(btIO):
-            Blk := TBlkIO.Create(-1);
-          Integer(btSummary):
-            Blk := TBlkSummary.Create(-1);
-          Integer(btAC):
-            Blk := TBlkAC.Create(-1);
-          Integer(btGroupSignal):
-            Blk := TBlkGroupSignal.Create(-1);
-          Integer(btPst):
-            Blk := TBlkPst.Create(-1);
-        else
+        if (blk = nil) then
+        begin
           Log('Nenačítám blok ' + section + ' - neznámý typ', llError, lsData);
-          continue;
+        end else begin
+          blk.LoadData(ini_tech, section, ini_rel, ini_stat);
+          blk.OnChange := Self.BlkChange;
+          Self.data.Insert(Self.FindPlaceForNewBlk(Blk.id), blk);
+          blk := nil;
         end;
-
-        Blk.LoadData(ini_tech, section, ini_rel, ini_stat);
-        Blk.OnChange := Self.BlkChange;
-
-        Self.data.Insert(Self.FindPlaceForNewBlk(Blk.id), Blk);
-        Blk := nil;
       except
         on E: Exception do
         begin
-          if (Assigned(Blk)) then
-            Blk.Free();
+          if (Assigned(blk)) then
+            blk.Free();
           AppEvents.LogException(E, 'Načítání bloku ' + section);
         end;
       end;
@@ -382,92 +373,71 @@ end;
 
 // add 1 block
 function TBlocks.Add(glob: TBlkSettings): TBlk;
-var Blk: TBlk;
+var blk: TBlk;
   index: Integer;
 begin
   if (Self.IsBlock(glob.id)) then
     raise Exception.Create('Blok tohoto ID již existuje!');
 
   index := Self.FindPlaceForNewBlk(glob.id);
-
-  case (glob.typ) of
-    btTurnout:
-      Blk := TBlkTurnout.Create(index);
-    btTrack:
-      Blk := TBlkTrack.Create(index);
-    btIR:
-      Blk := TBlkIR.Create(index);
-    btSignal:
-      Blk := TBlkSignal.Create(index);
-    btCrossing:
-      Blk := TBlkCrossing.Create(index);
-    btRailway:
-      Blk := TBlkRailway.Create(index);
-    btLinker:
-      Blk := TBlkLinker.Create(index);
-    btLock:
-      Blk := TBlkLock.Create(index);
-    btDisconnector:
-      Blk := TBlkDisconnector.Create(index);
-    btRT:
-      Blk := TBlkRT.Create(index);
-    btIO:
-      Blk := TBlkIO.Create(index);
-    btSummary:
-      Blk := TBlkSummary.Create(index);
-    btAC:
-      Blk := TBlkAC.Create(index);
-    btGroupSignal:
-      Blk := TBlkGroupSignal.Create(index);
-    btPst:
-      Blk := TBlkPst.Create(index);
-  else
+  blk := Self.NewBlk(glob.typ, index);
+  if (blk = nil) then
     Exit(nil);
-  end;
 
-  Blk.SetGlobalSettings(glob);
-  Blk.OnChange := Self.BlkChange;
-  Self.data.Insert(index, Blk);
+  blk.SetGlobalSettings(glob);
+  blk.OnChange := Self.BlkChange;
+  Self.data.Insert(index, blk);
   BlocksTablePainter.BlkAdd(index);
-  Result := Blk;
 
   // move indexes
   for var i: Integer := index + 1 to Self.data.count - 1 do
     Self.data[i].table_index := Self.data[i].table_index + 1;
+
+  Result := blk;
 end;
 
 procedure TBlocks.Delete(index: Integer);
 begin
   if (index < 0) then
-    raise Exception.Create('Index podtekl seznam bloků');
+    raise ERangeError.Create('Index podtekl seznam bloků');
   if (index >= Self.data.count) then
-    raise Exception.Create('Index přetekl seznam bloků');
-  var tmp := Self.data[index];
-  if ((tmp.typ = btRT) and (TBlkRT(tmp).inRailway > -1)) then
-    raise Exception.Create('Tento blok je zaveden jako traťový úsek v trati ID ' + IntToStr((tmp as TBlkRT).inRailway));
-  if ((tmp.typ = btSignal) and (TBlkSignal(tmp).groupMaster <> nil)) then
-    raise Exception.Create('Toto návěstidlo je zavedeno ve skupinovém návěstidle ' + TBlkSignal(tmp).groupMaster.name);
+    raise ERangeError.Create('Index přetekl seznam bloků');
 
+  var deleted: TBlk := Self.data[index];
+
+  if ((deleted.typ = btRT) and (TBlkRT(deleted).inRailway > -1)) then
+    raise Exception.Create('Tento blok je zaveden jako traťový úsek v trati ID ' + IntToStr((deleted as TBlkRT).inRailway));
+  if ((deleted.typ = btSignal) and (TBlkSignal(deleted).groupMaster <> nil)) then
+    raise Exception.Create('Toto návěstidlo je zavedeno ve skupinovém návěstidle ' + TBlkSignal(deleted).groupMaster.name);
+
+  // Delete but do not destroy
+  Self.data.OwnsObjects := False;
   Self.data.Delete(index);
+  Self.data.OwnsObjects := True;
 
   // update indexes (decrement)
   for var i: Integer := index to Self.data.count - 1 do
     Self.data[i].table_index := Self.data[i].table_index - 1;
 
   // railway deletion -> linker deletion
-  if (tmp.typ = btRailway) then
+  if (deleted.typ = btRailway) then
   begin
-    Self.Delete(Blocks.GetBlkIndex((tmp as TBlkRailway).GetSettings().linkerA));
-    Self.Delete(Blocks.GetBlkIndex((tmp as TBlkRailway).GetSettings().linkerB));
+    var aindex: Integer := Self.GetBlkIndex((deleted as TBlkRailway).GetSettings().linkerA);
+    if (aindex >= 0) then
+      Self.Delete(aindex);
+
+    var bindex: Integer := Self.GetBlkIndex((deleted as TBlkRailway).GetSettings().linkerB);
+    if (bindex >= 0) then
+      Self.Delete(bindex);
   end;
-  if (tmp.typ = btLinker) then
+  if (deleted.typ = btLinker) then
   begin
-    var blk := Blocks.GetBlkByID((tmp as TBlkLinker).GetSettings.parent);
-    if (blk <> nil) then
-      Self.Delete(Blocks.GetBlkIndex((tmp as TBlkLinker).GetSettings.parent));
+    var i: Integer := Blocks.GetBlkIndex((deleted as TBlkLinker).GetSettings.parent);
+    if (i >= 0) then
+      Self.Delete(i);
   end;
 
-  FreeAndNil(tmp);
+  FreeAndNil(deleted);
   BlocksTablePainter.BlkRemove(index);
 end;
 
@@ -1099,11 +1069,15 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlocks.BlkIDChanged(index: Integer);
-var new_index, min_index, i: Integer;
+var new_index, min_index: Integer;
   tmp: TBlk;
 begin
   tmp := Self.data[index];
+
+  Self.data.OwnsObjects := False;
   Self.data.Delete(index);
+  Self.data.OwnsObjects := True;
+
   new_index := FindPlaceForNewBlk(tmp.id);
 
   Self.data.Insert(new_index, tmp);
@@ -1113,11 +1087,13 @@ begin
   // update indexes from lowest-changed index
   // update while index mismatch
   min_index := Min(new_index, index);
-  for i := min_index to Self.data.count - 1 do
+  for var i: Integer := min_index to Self.data.count - 1 do
+  begin
     if (Self.data[i].table_index = i) then
       Break
     else
       Self.data[i].table_index := i;
+  end;
 
   BlocksTablePainter.BlkMove(index, new_index);
 end;
