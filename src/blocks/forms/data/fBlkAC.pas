@@ -116,38 +116,47 @@ begin
     Exit();
   end;
 
-  var glob: TBlkSettings;
-  glob.name := Self.E_Name.Text;
-  glob.id := Self.SE_ID.Value;
-  glob.typ := btAC;
+  try
+    var glob: TBlkSettings;
+    glob.name := Self.E_Name.Text;
+    glob.id := Self.SE_ID.Value;
+    glob.typ := btAC;
 
-  var settings: TBlkACSettings;
-  settings.accessToken := Self.E_AccessToken.Text;
+    var settings: TBlkACSettings;
+    settings.accessToken := Self.E_AccessToken.Text;
 
-  if (Self.isNewBlock) then
-  begin
-    try
-      Self.block := Blocks.Add(glob) as TBlkAC;
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
-        Exit();
+    if (Self.isNewBlock) then
+    begin
+      try
+        Self.block := Blocks.Add(glob) as TBlkAC;
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end else begin
+      try
+        Self.block.SetGlobalSettings(glob);
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
       end;
     end;
-  end else begin
-    try
-      Self.block.SetGlobalSettings(glob);
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
-        Exit();
-      end;
+
+    Self.block.SetSettings(settings);
+  except
+    on E: Exception do
+    begin
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      Exit();
     end;
   end;
 
-  Self.block.SetSettings(settings);
   Self.Close();
 end;
 

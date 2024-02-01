@@ -206,78 +206,86 @@ begin
     Exit();
   end;
 
-  var messages := '';
+  try
+    var messages := '';
 
-  begin
-    var addr := TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value);
-    var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
-  end;
+    begin
+      var addr := TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value);
+      var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
+    end;
 
-  glob.name := Self.E_name.Text;
-  glob.id := Self.SE_ID.Value;
-  glob.typ := btDisconnector;
+    glob.name := Self.E_name.Text;
+    glob.id := Self.SE_ID.Value;
+    glob.typ := btDisconnector;
 
-  if (Self.isNewBlock) then
-  begin
-    try
-      block := Blocks.Add(glob) as TBlkDisconnector;
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
-        Exit();
+    if (Self.isNewBlock) then
+    begin
+      try
+        block := Blocks.Add(glob) as TBlkDisconnector;
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end else begin
+      try
+        Self.block.SetGlobalSettings(glob);
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
       end;
     end;
-  end else begin
-    try
-      Self.block.SetGlobalSettings(glob);
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
-        Exit();
-      end;
+
+    settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value));
+
+    case (Self.CB_outputType.ItemIndex) of
+      0: settings.outputType := osEnabled;
+      1: settings.outputType := osf60;
+      2: settings.outputType := osf120;
+      3: settings.outputType := osf180;
+      4: settings.outputType := osf240;
+      5: settings.outputType := osf300;
+      6: settings.outputType := osf600;
+      7: settings.outputType := osf33;
+      8: settings.outputType := osf66;
+    else
+      settings.outputType := osEnabled;
+    end;
+
+    settings.rcsController.enabled := Self.CHB_Contoller.Checked;
+    if (Self.CHB_Contoller.Checked) then
+    begin
+      settings.rcsController.addr.board := Self.SE_Cont_Module.Value;
+      settings.rcsController.addr.port := Self.SE_Cont_Port.Value;
+      settings.rcsController.pstOnly := Self.CHB_Contoller_Pst.Checked;
+
+      var another := Blocks.AnotherBlockUsesRCS(settings.rcsController.addr, Self.block, TRCSIOType.input);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcsController.addr.ToString() + '.' + #13#10;
+    end;
+
+    if (messages <> '') then
+      Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
+
+    Self.block.SetSettings(settings);
+    Self.block.Change();
+  except
+    on E: Exception do
+    begin
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      Exit();
     end;
   end;
-
-  settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value));
-
-  case (Self.CB_outputType.ItemIndex) of
-    0: settings.outputType := osEnabled;
-    1: settings.outputType := osf60;
-    2: settings.outputType := osf120;
-    3: settings.outputType := osf180;
-    4: settings.outputType := osf240;
-    5: settings.outputType := osf300;
-    6: settings.outputType := osf600;
-    7: settings.outputType := osf33;
-    8: settings.outputType := osf66;
-  else
-    settings.outputType := osEnabled;
-  end;
-
-  settings.rcsController.enabled := Self.CHB_Contoller.Checked;
-  if (Self.CHB_Contoller.Checked) then
-  begin
-    settings.rcsController.addr.board := Self.SE_Cont_Module.Value;
-    settings.rcsController.addr.port := Self.SE_Cont_Port.Value;
-    settings.rcsController.pstOnly := Self.CHB_Contoller_Pst.Checked;
-
-    var another := Blocks.AnotherBlockUsesRCS(settings.rcsController.addr, Self.block, TRCSIOType.input);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcsController.addr.ToString() + '.' + #13#10;
-  end;
-
-  if (messages <> '') then
-    Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
-
-  Self.block.SetSettings(settings);
 
   Self.Close();
-  Self.block.Change();
 end;
 
 procedure TF_BlkDisconnector.FormClose(Sender: TObject; var Action: TCloseAction);

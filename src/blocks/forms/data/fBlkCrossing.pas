@@ -259,65 +259,73 @@ begin
   var settings: TBlkCrossingSettings;
   var addrs := TList<TRCSAddr>.Create();
   try
-    settings.RCSOutputs.close := RCSOptionalFromUI(Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port, addrs);
-    settings.RCSOutputs.emOpen := RCSOptionalFromUI(Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port, addrs);
-    settings.RCSOutputs.positive := RCSOptionalFromUI(Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port, addrs);
-    settings.RCSOutputs.barriersDown := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port, addrs);
-    settings.RCSOutputs.barriersUp := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port, addrs);
-    settings.RCSOutputs.bell := RCSOptionalFromUI(Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port, addrs);
-    settings.RCSOutputs.lights := RCSOptionalFromUI(Self.CHB_RCS_Lights, Self.SE_out_lights_board, Self.SE_out_lights_port, addrs);
-
-    settings.RCSInputs.open := RCSOptionalFromUI(Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port, addrs);
-    settings.RCSInputs.closed := RCSOptionalFromUI(Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port, addrs);
-    settings.RCSInputs.caution := RCSOptionalFromUI(Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port, addrs);
-    settings.RCSInputs.annulation := RCSOptionalFromUI(Self.CHB_RCS_Anullation, Self.SE_in_annulation_board, Self.SE_in_annulation_port, addrs);
-
-    settings.RCSOutputs.positiveInvert := (Self.CB_Positive_Type.ItemIndex = 1);
-    settings.RCSOutputs.positiveFlick := (Self.CB_Positive_Type.ItemIndex = 2);
-    settings.RCSOutputs.bellActiveDown := Self.CHB_Ring_Active_Down.Checked;
-
-    settings.preringTime := Self.SE_Prering_Time.Value;
-    settings.closedRequired := Self.CHB_Closed_Required.Checked;
-
-    Self.block.SetSettings(settings);
-
     try
-      Self.SaveTracks();
+      settings.RCSOutputs.close := RCSOptionalFromUI(Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port, addrs);
+      settings.RCSOutputs.emOpen := RCSOptionalFromUI(Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port, addrs);
+      settings.RCSOutputs.positive := RCSOptionalFromUI(Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port, addrs);
+      settings.RCSOutputs.barriersDown := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port, addrs);
+      settings.RCSOutputs.barriersUp := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port, addrs);
+      settings.RCSOutputs.bell := RCSOptionalFromUI(Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port, addrs);
+      settings.RCSOutputs.lights := RCSOptionalFromUI(Self.CHB_RCS_Lights, Self.SE_out_lights_board, Self.SE_out_lights_port, addrs);
+
+      settings.RCSInputs.open := RCSOptionalFromUI(Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port, addrs);
+      settings.RCSInputs.closed := RCSOptionalFromUI(Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port, addrs);
+      settings.RCSInputs.caution := RCSOptionalFromUI(Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port, addrs);
+      settings.RCSInputs.annulation := RCSOptionalFromUI(Self.CHB_RCS_Anullation, Self.SE_in_annulation_board, Self.SE_in_annulation_port, addrs);
+
+      settings.RCSOutputs.positiveInvert := (Self.CB_Positive_Type.ItemIndex = 1);
+      settings.RCSOutputs.positiveFlick := (Self.CB_Positive_Type.ItemIndex = 2);
+      settings.RCSOutputs.bellActiveDown := Self.CHB_Ring_Active_Down.Checked;
+
+      settings.preringTime := Self.SE_Prering_Time.Value;
+      settings.closedRequired := Self.CHB_Closed_Required.Checked;
+
+      Self.block.SetSettings(settings);
+
+      try
+        Self.SaveTracks();
+      except
+        on E: Exception do
+        begin
+          Application.MessageBox('Nepodařilo se načíst kolej přejezdu!', 'Chyba', MB_OK OR MB_ICONWARNING);
+          Exit();
+        end;
+      end;
+
+      Self.block.tracks.OwnsObjects := false;
+      Self.block.tracks.Clear();
+      Self.block.tracks.AddRange(Self.tracks);
+      Self.block.tracks.OwnsObjects := true;
+      Self.tracks.OwnsObjects := false;
+      Self.tracks.Clear();
+      Self.tracks.OwnsObjects := true;
+
+      Self.block.positiveRules.Free();
+      Self.block.positiveRules := positiveRules;
+
+      var messages := '';
+      for var i := 0 to addrs.Count - 1 do
+      begin
+        var typ: TRCSIOType;
+        if (i < 7) then
+          typ := TRCSIOType.output
+        else
+          typ := TRCSIOType.input;
+
+        var another := Blocks.AnotherBlockUsesRCS(addrs[i], Self.block, typ);
+        if (another <> nil) then
+          messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addrs[i].ToString() + '.' + #13#10;
+      end;
+
+      if (messages <> '') then
+        Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
     except
       on E: Exception do
       begin
-        Application.MessageBox('Nepodařilo se načíst kolej přejezdu!', 'Chyba', MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
         Exit();
       end;
     end;
-
-    Self.block.tracks.OwnsObjects := false;
-    Self.block.tracks.Clear();
-    Self.block.tracks.AddRange(Self.tracks);
-    Self.block.tracks.OwnsObjects := true;
-    Self.tracks.OwnsObjects := false;
-    Self.tracks.Clear();
-    Self.tracks.OwnsObjects := true;
-
-    Self.block.positiveRules.Free();
-    Self.block.positiveRules := positiveRules;
-
-    var messages := '';
-    for var i := 0 to addrs.Count - 1 do
-    begin
-      var typ: TRCSIOType;
-      if (i < 7) then
-        typ := TRCSIOType.output
-      else
-        typ := TRCSIOType.input;
-
-      var another := Blocks.AnotherBlockUsesRCS(addrs[i], Self.block, typ);
-      if (another <> nil) then
-        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addrs[i].ToString() + '.' + #13#10;
-    end;
-
-    if (messages <> '') then
-      Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
 
     Self.close();
     Self.block.Change();

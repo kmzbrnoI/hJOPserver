@@ -104,35 +104,44 @@ begin
     Exit();
   end;
 
-  glob.name := Self.E_Name.Text;
-  glob.id := Self.SE_ID.Value;
-  glob.typ := btLock;
+  try
+    glob.name := Self.E_Name.Text;
+    glob.id := Self.SE_ID.Value;
+    glob.typ := btLock;
 
-  if (Self.isNewBlock) then
-  begin
-    try
-      block := Blocks.Add(glob) as TBlkLock;
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
-        Exit();
+    if (Self.isNewBlock) then
+    begin
+      try
+        block := Blocks.Add(glob) as TBlkLock;
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end else begin
+      try
+        Self.block.SetGlobalSettings(glob);
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
       end;
     end;
-  end else begin
-    try
-      Self.block.SetGlobalSettings(glob);
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
-        Exit();
-      end;
+
+    Self.block.Change();
+  except
+    on E: Exception do
+    begin
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      Exit();
     end;
   end;
 
   Self.Close();
-  Self.block.Change();
 end;
 
 procedure TF_BlkLock.FormClose(Sender: TObject; var Action: TCloseAction);

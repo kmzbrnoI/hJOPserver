@@ -311,28 +311,36 @@ begin
     end;
   end;
 
-  var settings: TBlkGSSettings;
-  settings.signalIds := TList<Integer>.Create();
-  settings.signalIds.Clear();
-  for var LI: TListItem in Self.LV_Signals.Items do
-    settings.signalIds.Add(StrToInt(LI.Caption));
-  Self.block.SetSettings(settings);
+  try
+    var settings: TBlkGSSettings;
+    settings.signalIds := TList<Integer>.Create();
+    settings.signalIds.Clear();
+    for var LI: TListItem in Self.LV_Signals.Items do
+      settings.signalIds.Add(StrToInt(LI.Caption));
+    Self.block.SetSettings(settings);
 
-  var signalSettings: TBlkSignalSettings;
-  signalSettings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  if (Self.CHB_RCS_Output.Checked) then
-  begin
-    signalSettings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value));
-    signalSettings.OutputType := TBlkSignalOutputType(CB_Typ.ItemIndex);
+    var signalSettings: TBlkSignalSettings;
+    signalSettings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+    if (Self.CHB_RCS_Output.Checked) then
+    begin
+      signalSettings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value));
+      signalSettings.OutputType := TBlkSignalOutputType(CB_Typ.ItemIndex);
+    end;
+    if (Self.CHB_RCS_Second_Output.Checked) then
+      signalSettings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value));
+
+    signalSettings.fallDelay := 0;
+    signalSettings.locked := false;
+    signalSettings.events := TObjectList<TBlkSignalTrainEvent>.Create();
+
+    TBlkSignal(Self.block).SetSettings(signalSettings);
+  except
+    on E: Exception do
+    begin
+      ExceptionMessageBox('Neoèekávaná chyba.', 'Chyba', E);
+      Exit();
+    end;
   end;
-  if (Self.CHB_RCS_Second_Output.Checked) then
-    signalSettings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value));
-
-  signalSettings.fallDelay := 0;
-  signalSettings.locked := false;
-  signalSettings.events := TObjectList<TBlkSignalTrainEvent>.Create();
-
-  TBlkSignal(Self.block).SetSettings(signalSettings);
 
   Self.Close();
 end;

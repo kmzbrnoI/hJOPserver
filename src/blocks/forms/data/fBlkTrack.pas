@@ -347,9 +347,9 @@ begin
     Self.Close();
     Self.block.Change();
   except
-    on E:Exception do
+    on E: Exception do
     begin
-      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
       Exit();
     end;
   end;

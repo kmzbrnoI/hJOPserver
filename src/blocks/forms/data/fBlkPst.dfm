@@ -3,8 +3,8 @@ object F_BlkPst: TF_BlkPst
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'F_BlkPst'
-  ClientHeight = 495
-  ClientWidth = 982
+  ClientHeight = 507
+  ClientWidth = 990
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -410,7 +410,6 @@ object F_BlkPst: TF_BlkPst
           Width = 220
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True
@@ -453,7 +452,6 @@ object F_BlkPst: TF_BlkPst
           Width = 220
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True
@@ -552,7 +550,6 @@ object F_BlkPst: TF_BlkPst
           Caption = 'Poloha'
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True
@@ -739,7 +736,6 @@ object F_BlkPst: TF_BlkPst
           Width = 220
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True
@@ -837,7 +833,6 @@ object F_BlkPst: TF_BlkPst
           Width = 200
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True

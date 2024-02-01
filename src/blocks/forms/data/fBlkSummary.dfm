@@ -4,8 +4,8 @@ object F_BlkSummary: TF_BlkSummary
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkSummary'
-  ClientHeight = 317
-  ClientWidth = 329
+  ClientHeight = 329
+  ClientWidth = 337
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -119,7 +119,6 @@ object F_BlkSummary: TF_BlkSummary
           Width = 200
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True

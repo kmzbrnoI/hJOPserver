@@ -524,175 +524,184 @@ begin
     Exit();
   end;
 
-  var glob: TBlkSettings;
-  glob.name := Self.E_Name.Text;
-  glob.id := Self.SE_ID.Value;
-  glob.typ := btTurnout;
-
-  if (Self.isNewBlock) then
-  begin
-    try
-      Self.block := Blocks.Add(glob) as TBlkTurnout;
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
-        Exit();
-      end;
-    end;
-  end else begin
-    try
-      Self.block.SetGlobalSettings(glob);
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
-        Exit();
-      end;
-    end;
-  end;
-
-  var settings: TBlkTurnoutSettings;
-  settings.manAlwaysEm := Self.CHB_ManAlwaysEm.Checked;
-  settings.posDetection := Self.CHB_Feedback.Checked;
-
-  settings.rcs.outp := TRCS.RCSAddr(SE_Out_Plus_module.Value, SE_Out_Plus_port.Value);
-  settings.rcs.outm := TRCS.RCSAddr(SE_Out_Minus_module.Value, SE_Out_Minus_port.Value);
-
-  if (Self.CHB_Feedback.Checked) then
-  begin
-    settings.rcs.inp := TRCS.RCSAddr(SE_In_Plus_module.Value, SE_In_Plus_port.Value);
-    settings.rcs.inm := TRCS.RCSAddr(SE_In_Minus_module.Value, SE_In_Minus_port.Value);
-  end else begin
-    settings.rcs.inp := RCSi.RCSAddr(0, 0);
-    settings.rcs.inm := RCSi.RCSAddr(0, 0);
-  end;
-
-
-  var messages := '';
-  var another: TBlk;
-  another := Blocks.AnotherBlockUsesRCS(settings.rcs.outp, Self.block, TRCSIOType.output);
-  if (another <> nil) then
-    messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.outp.ToString() + '.' + #13#10;
-  another := Blocks.AnotherBlockUsesRCS(settings.rcs.outm, Self.block, TRCSIOType.output);
-  if (another <> nil) then
-    messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.outm.ToString() + '.' + #13#10;
-
-  if (Self.CHB_Feedback.Checked) then
-  begin
-    another := Blocks.AnotherBlockUsesRCS(settings.rcs.inp, Self.block, TRCSIOType.input);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.inp.ToString() + '.' + #13#10;
-    another := Blocks.AnotherBlockUsesRCS(settings.rcs.inm, Self.block, TRCSIOType.input);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.inm.ToString() + '.' + #13#10;
-  end;
-
-  if (Self.CHB_Coupling.Checked) then
-  begin
-    settings.coupling := Self.CB_CouplingIds[Self.CB_Coupling.ItemIndex];
-
-    var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(settings.coupling);
-    if (turnout = nil) then
-    begin
-      Application.MessageBox('Blok spojky neexistuje nebo není výhybka', 'Chyba', MB_OK OR MB_ICONWARNING);
-      Exit();
-    end;
-
-    var turnoutSettings := turnout.GetSettings();
-
-    if ((turnoutSettings.coupling <> -1) and (turnoutSettings.coupling <> glob.id)) then
-    begin
-      Application.MessageBox('Na spojkové výhybce je již jiná Coupling!', 'Varování', MB_OK OR MB_ICONWARNING);
-      Exit();
-    end;
-
-    if (Self.CHB_Coupling_Common_Out.Checked) then
-    begin
-      turnoutSettings.rcs.outp := settings.rcs.outp;
-      turnoutSettings.rcs.outm := settings.rcs.outm;
-    end;
-    if (Self.CHB_Coupling_Common_In.Checked) then
-    begin
-      turnoutSettings.rcs.inp := settings.rcs.inp;
-      turnoutSettings.rcs.inm := settings.rcs.inm;
-    end;
-
-    turnout.SetSettings(turnoutSettings);
-  end else begin
-    settings.coupling := -1;
-  end;
-
-  if (Self.CHB_Lock.Checked) then
-  begin
-    settings.lock := Self.CB_LockIds[Self.CB_Lock.ItemIndex];
-    settings.lockPosition := TTurnoutPosition(Self.CB_Lock_Pos.ItemIndex);
-  end else begin
-    settings.lock := -1;
-    settings.lockPosition := TTurnoutPosition.none;
-  end;
-
-  if (Self.CHB_npPlus.Checked) then
-    settings.npPlus := Self.CB_NeprofilIds[Self.CB_npPlus.ItemIndex]
-  else
-    settings.npPlus := -1;
-
-  if (Self.CHB_npMinus.Checked) then
-    settings.npMinus := Self.CB_NeprofilIds[Self.CB_npMinus.ItemIndex]
-  else
-    settings.npMinus := -1;
-
-  settings.indication.enabled := Self.CHB_Indication.Checked;
-  if (Self.CHB_Indication.Checked) then
-  begin
-    settings.indication.rcsPlus.board := Self.SE_Ind_Plus_Module.Value;
-    settings.indication.rcsPlus.port := Self.SE_Ind_Plus_Port.Value;
-    settings.indication.rcsMinus.board := Self.SE_Ind_Minus_Module.Value;
-    settings.indication.rcsMinus.port := Self.SE_Ind_Minus_Port.Value;
-    settings.indication.pstOnly := Self.CHB_Indication_Pst.Checked;
-
-    another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsPlus, Self.block, TRCSIOType.output);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.indication.rcsPlus.ToString() + '.' + #13#10;
-
-    another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsMinus, Self.block, TRCSIOType.output);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.indication.rcsMinus.ToString() + '.' + #13#10;
-  end;
-
-  settings.controllers.enabled := Self.CHB_Controllers.Checked;
-  if (Self.CHB_Controllers.Checked) then
-  begin
-    settings.controllers.rcsPlus.board := Self.SE_Cont_Plus_Module.Value;
-    settings.controllers.rcsPlus.port := Self.SE_Cont_Plus_Port.Value;
-    settings.controllers.rcsMinus.board := Self.SE_Cont_Minus_Module.Value;
-    settings.controllers.rcsMinus.port := Self.SE_Cont_Minus_Port.Value;
-    settings.controllers.pstOnly := Self.CHB_Controllers_Pst.Checked;
-
-    another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsPlus, Self.block, TRCSIOType.input);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.controllers.rcsPlus.ToString() + '.' + #13#10;
-
-    another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsMinus, Self.block, TRCSIOType.input);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.controllers.rcsMinus.ToString() + '.' + #13#10;
-  end;
-
   try
-    Self.block.SetSettings(settings);
+    var glob: TBlkSettings;
+    glob.name := Self.E_Name.Text;
+    glob.id := Self.SE_ID.Value;
+    glob.typ := btTurnout;
+
+    if (Self.isNewBlock) then
+    begin
+      try
+        Self.block := Blocks.Add(glob) as TBlkTurnout;
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end else begin
+      try
+        Self.block.SetGlobalSettings(glob);
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end;
+
+    var settings: TBlkTurnoutSettings;
+    settings.manAlwaysEm := Self.CHB_ManAlwaysEm.Checked;
+    settings.posDetection := Self.CHB_Feedback.Checked;
+
+    settings.rcs.outp := TRCS.RCSAddr(SE_Out_Plus_module.Value, SE_Out_Plus_port.Value);
+    settings.rcs.outm := TRCS.RCSAddr(SE_Out_Minus_module.Value, SE_Out_Minus_port.Value);
+
+    if (Self.CHB_Feedback.Checked) then
+    begin
+      settings.rcs.inp := TRCS.RCSAddr(SE_In_Plus_module.Value, SE_In_Plus_port.Value);
+      settings.rcs.inm := TRCS.RCSAddr(SE_In_Minus_module.Value, SE_In_Minus_port.Value);
+    end else begin
+      settings.rcs.inp := RCSi.RCSAddr(0, 0);
+      settings.rcs.inm := RCSi.RCSAddr(0, 0);
+    end;
+
+
+    var messages := '';
+    var another: TBlk;
+    another := Blocks.AnotherBlockUsesRCS(settings.rcs.outp, Self.block, TRCSIOType.output);
+    if (another <> nil) then
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.outp.ToString() + '.' + #13#10;
+    another := Blocks.AnotherBlockUsesRCS(settings.rcs.outm, Self.block, TRCSIOType.output);
+    if (another <> nil) then
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.outm.ToString() + '.' + #13#10;
+
+    if (Self.CHB_Feedback.Checked) then
+    begin
+      another := Blocks.AnotherBlockUsesRCS(settings.rcs.inp, Self.block, TRCSIOType.input);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.inp.ToString() + '.' + #13#10;
+      another := Blocks.AnotherBlockUsesRCS(settings.rcs.inm, Self.block, TRCSIOType.input);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.rcs.inm.ToString() + '.' + #13#10;
+    end;
+
+    if (Self.CHB_Coupling.Checked) then
+    begin
+      settings.coupling := Self.CB_CouplingIds[Self.CB_Coupling.ItemIndex];
+
+      var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(settings.coupling);
+      if (turnout = nil) then
+      begin
+        Application.MessageBox('Blok spojky neexistuje nebo není výhybka', 'Chyba', MB_OK OR MB_ICONWARNING);
+        Exit();
+      end;
+
+      var turnoutSettings := turnout.GetSettings();
+
+      if ((turnoutSettings.coupling <> -1) and (turnoutSettings.coupling <> glob.id)) then
+      begin
+        Application.MessageBox('Na spojkové výhybce je již jiná Coupling!', 'Varování', MB_OK OR MB_ICONWARNING);
+        Exit();
+      end;
+
+      if (Self.CHB_Coupling_Common_Out.Checked) then
+      begin
+        turnoutSettings.rcs.outp := settings.rcs.outp;
+        turnoutSettings.rcs.outm := settings.rcs.outm;
+      end;
+      if (Self.CHB_Coupling_Common_In.Checked) then
+      begin
+        turnoutSettings.rcs.inp := settings.rcs.inp;
+        turnoutSettings.rcs.inm := settings.rcs.inm;
+      end;
+
+      turnout.SetSettings(turnoutSettings);
+    end else begin
+      settings.coupling := -1;
+    end;
+
+    if (Self.CHB_Lock.Checked) then
+    begin
+      settings.lock := Self.CB_LockIds[Self.CB_Lock.ItemIndex];
+      settings.lockPosition := TTurnoutPosition(Self.CB_Lock_Pos.ItemIndex);
+    end else begin
+      settings.lock := -1;
+      settings.lockPosition := TTurnoutPosition.none;
+    end;
+
+    if (Self.CHB_npPlus.Checked) then
+      settings.npPlus := Self.CB_NeprofilIds[Self.CB_npPlus.ItemIndex]
+    else
+      settings.npPlus := -1;
+
+    if (Self.CHB_npMinus.Checked) then
+      settings.npMinus := Self.CB_NeprofilIds[Self.CB_npMinus.ItemIndex]
+    else
+      settings.npMinus := -1;
+
+    settings.indication.enabled := Self.CHB_Indication.Checked;
+    if (Self.CHB_Indication.Checked) then
+    begin
+      settings.indication.rcsPlus.board := Self.SE_Ind_Plus_Module.Value;
+      settings.indication.rcsPlus.port := Self.SE_Ind_Plus_Port.Value;
+      settings.indication.rcsMinus.board := Self.SE_Ind_Minus_Module.Value;
+      settings.indication.rcsMinus.port := Self.SE_Ind_Minus_Port.Value;
+      settings.indication.pstOnly := Self.CHB_Indication_Pst.Checked;
+
+      another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsPlus, Self.block, TRCSIOType.output);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.indication.rcsPlus.ToString() + '.' + #13#10;
+
+      another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsMinus, Self.block, TRCSIOType.output);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.indication.rcsMinus.ToString() + '.' + #13#10;
+    end;
+
+    settings.controllers.enabled := Self.CHB_Controllers.Checked;
+    if (Self.CHB_Controllers.Checked) then
+    begin
+      settings.controllers.rcsPlus.board := Self.SE_Cont_Plus_Module.Value;
+      settings.controllers.rcsPlus.port := Self.SE_Cont_Plus_Port.Value;
+      settings.controllers.rcsMinus.board := Self.SE_Cont_Minus_Module.Value;
+      settings.controllers.rcsMinus.port := Self.SE_Cont_Minus_Port.Value;
+      settings.controllers.pstOnly := Self.CHB_Controllers_Pst.Checked;
+
+      another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsPlus, Self.block, TRCSIOType.input);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.controllers.rcsPlus.ToString() + '.' + #13#10;
+
+      another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsMinus, Self.block, TRCSIOType.input);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.controllers.rcsMinus.ToString() + '.' + #13#10;
+    end;
+
+    try
+      Self.block.SetSettings(settings);
+    except
+      on E: Exception do
+      begin
+        Application.MessageBox(PChar(E.Message), 'Nelze uložit', MB_OK OR MB_ICONWARNING);
+        Exit();
+      end;
+    end;
+
+    if (messages <> '') then
+      Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
+
+    Self.block.Change();
   except
     on E: Exception do
     begin
-      Application.MessageBox(PChar(E.Message), 'Nelze uložit', MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
       Exit();
     end;
   end;
 
-  if (messages <> '') then
-    Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
-
   Self.Close();
-  Self.block.Change();
 end;
 
 procedure TF_BlkTurnout.FormClose(Sender: TObject; var Action: TCloseAction);

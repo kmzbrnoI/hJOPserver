@@ -417,106 +417,114 @@ begin
   end;
 
 
-  var speedsL: TList<TTrainSpeed> := Self.fTrainSpeedL.Get();
-  var speedsS: TList<TTrainSpeed> := Self.fTrainSpeedS.Get();
+  try
+    var speedsL: TList<TTrainSpeed> := Self.fTrainSpeedL.Get();
+    var speedsS: TList<TTrainSpeed> := Self.fTrainSpeedS.Get();
 
-  var glob: TBlkSettings;
-  glob.name := Self.E_Name.Text;
-  glob.id := Self.SE_ID.Value;
-  glob.typ := btRT;
+    var glob: TBlkSettings;
+    glob.name := Self.E_Name.Text;
+    glob.id := Self.SE_ID.Value;
+    glob.typ := btRT;
 
-  if (Self.isNewBlock) then
-  begin
-    try
-      Self.block := Blocks.Add(glob) as TBlkRT;
-    except
-      on E: Exception do
-      begin
-        speedsL.Free();
-        speedsS.Free();
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
-        Exit();
+    if (Self.isNewBlock) then
+    begin
+      try
+        Self.block := Blocks.Add(glob) as TBlkRT;
+      except
+        on E: Exception do
+        begin
+          speedsL.Free();
+          speedsS.Free();
+          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end else begin
+      try
+        Self.block.SetGlobalSettings(glob);
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
       end;
     end;
-  end else begin
-    try
-      Self.block.SetGlobalSettings(glob);
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+
+    var settings: TBlkTrackSettings;
+    settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+    if (Self.CHB_D0.Checked) then
+      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module0.Value, Self.SE_Port0.Value));
+    if (Self.CHB_D1.Checked) then
+      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module1.Value, Self.SE_Port1.Value));
+    if (Self.CHB_D2.Checked) then
+      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module2.Value, Self.SE_Port2.Value));
+    if (Self.CHB_D3.Checked) then
+      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module3.Value, Self.SE_Port3.Value));
+
+    settings.lenght := StrToFloatDef(Self.E_Length.Text, 0);
+    settings.loop := Self.CHB_loop.Checked;
+    settings.boosterId := Boosters.sorted[Self.CB_Booster.ItemIndex].id;
+    settings.maxTrains := 1;
+
+    var TUsettings: TBlkRTSettings;
+    TUsettings.speedsL := speedsL;
+    TUsettings.speedsS := speedsS;
+
+    if (Self.CHB_SignalL.Checked) then
+      TUsettings.signalLid := Self.CB_SignalId[Self.CB_SignalL.ItemIndex]
+    else
+      TUsettings.signalLid := -1;
+
+    if (Self.CHB_SignalS.Checked) then
+      TUsettings.signalSid := Self.CB_SignalId[Self.CB_SignalS.ItemIndex]
+    else
+      TUsettings.signalSid := -1;
+
+    if ((Self.CHB_Stop_Odd.Checked) or (Self.CHB_Stop_Even.Checked)) then
+    begin
+      TUsettings.stop := TBlkRTStop.Create();
+      TUsettings.stop.trainType := '^' + Self.E_Stop_Trains.Text + '$';
+      TUsettings.stop.maxLength := Self.SE_Stop_Length.Value;
+      try
+        TUsettings.stop.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Stop_Delay.Text, 2)),
+          StrToInt(RightStr(Self.ME_Stop_Delay.Text, 2)), 0);
+      except
+        speedsL.Free();
+        speedsS.Free();
+        TUsettings.stop.Free();
+        Application.MessageBox('Nesprávně zadaný čas čekání v zastávce!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();
       end;
+
+      if (Self.CHB_Stop_Odd.Checked) then
+        TUsettings.stop.evL := Self.stopOdd.GetEvent()
+      else
+        TUsettings.stop.evL := nil;
+
+      if (Self.CHB_Stop_Even.Checked) then
+        TUsettings.stop.evS := Self.stopEven.GetEvent()
+      else
+        TUsettings.stop.evS := nil;
+    end
+    else
+      TUsettings.stop := nil;
+
+    settings.houkEvL := TBlkTrack(Self.block).GetSettings().houkEvL;
+    settings.houkEvS := TBlkTrack(Self.block).GetSettings().houkEvS;
+
+    Self.block.SetSettings(TUsettings);
+    (Self.block as TBlkTrack).SetSettings(settings);
+    Self.block.Change();
+  except
+    on E: Exception do
+    begin
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      Exit();
     end;
   end;
 
-  var settings: TBlkTrackSettings;
-  settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  if (Self.CHB_D0.Checked) then
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module0.Value, Self.SE_Port0.Value));
-  if (Self.CHB_D1.Checked) then
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module1.Value, Self.SE_Port1.Value));
-  if (Self.CHB_D2.Checked) then
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module2.Value, Self.SE_Port2.Value));
-  if (Self.CHB_D3.Checked) then
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module3.Value, Self.SE_Port3.Value));
-
-  settings.lenght := StrToFloatDef(Self.E_Length.Text, 0);
-  settings.loop := Self.CHB_loop.Checked;
-  settings.boosterId := Boosters.sorted[Self.CB_Booster.ItemIndex].id;
-  settings.maxTrains := 1;
-
-  var TUsettings: TBlkRTSettings;
-  TUsettings.speedsL := speedsL;
-  TUsettings.speedsS := speedsS;
-
-  if (Self.CHB_SignalL.Checked) then
-    TUsettings.signalLid := Self.CB_SignalId[Self.CB_SignalL.ItemIndex]
-  else
-    TUsettings.signalLid := -1;
-
-  if (Self.CHB_SignalS.Checked) then
-    TUsettings.signalSid := Self.CB_SignalId[Self.CB_SignalS.ItemIndex]
-  else
-    TUsettings.signalSid := -1;
-
-  if ((Self.CHB_Stop_Odd.Checked) or (Self.CHB_Stop_Even.Checked)) then
-  begin
-    TUsettings.stop := TBlkRTStop.Create();
-    TUsettings.stop.trainType := '^' + Self.E_Stop_Trains.Text + '$';
-    TUsettings.stop.maxLength := Self.SE_Stop_Length.Value;
-    try
-      TUsettings.stop.delay := EncodeTime(0, StrToInt(LeftStr(Self.ME_Stop_Delay.Text, 2)),
-        StrToInt(RightStr(Self.ME_Stop_Delay.Text, 2)), 0);
-    except
-      speedsL.Free();
-      speedsS.Free();
-      TUsettings.stop.Free();
-      Application.MessageBox('Nesprávně zadaný čas čekání v zastávce!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-      Exit();
-    end;
-
-    if (Self.CHB_Stop_Odd.Checked) then
-      TUsettings.stop.evL := Self.stopOdd.GetEvent()
-    else
-      TUsettings.stop.evL := nil;
-
-    if (Self.CHB_Stop_Even.Checked) then
-      TUsettings.stop.evS := Self.stopEven.GetEvent()
-    else
-      TUsettings.stop.evS := nil;
-  end
-  else
-    TUsettings.stop := nil;
-
-  settings.houkEvL := TBlkTrack(Self.block).GetSettings().houkEvL;
-  settings.houkEvS := TBlkTrack(Self.block).GetSettings().houkEvS;
-
-  Self.block.SetSettings(TUsettings);
-  (Self.block as TBlkTrack).SetSettings(settings);
-
   Self.Close();
-  Self.block.Change();
 end;
 
 procedure TF_BlkRT.FormClose(Sender: TObject; var Action: TCloseAction);

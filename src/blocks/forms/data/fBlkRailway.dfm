@@ -5,8 +5,8 @@ object F_BlkRailway: TF_BlkRailway
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkRailway'
-  ClientHeight = 329
-  ClientWidth = 663
+  ClientHeight = 341
+  ClientWidth = 671
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -358,7 +358,6 @@ object F_BlkRailway: TF_BlkRailway
       DragMode = dmAutomatic
       FullDrag = True
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True

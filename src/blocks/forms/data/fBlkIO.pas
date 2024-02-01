@@ -244,61 +244,69 @@ begin
     end;
   end;
 
-  var glob: TBlkSettings;
-  glob.name := Self.E_Name.Text;
-  glob.id := Self.SE_ID.Value;
-  glob.typ := btIO;
+  try
+    var glob: TBlkSettings;
+    glob.name := Self.E_Name.Text;
+    glob.id := Self.SE_ID.Value;
+    glob.typ := btIO;
 
-  if (Self.isNewBlock) then
-  begin
-    try
-      Self.block := Blocks.Add(glob) as TBlkIO;
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
-        Exit();
+    if (Self.isNewBlock) then
+    begin
+      try
+        Self.block := Blocks.Add(glob) as TBlkIO;
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end else begin
+      try
+        Self.block.SetGlobalSettings(glob);
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
       end;
     end;
-  end else begin
-    try
-      Self.block.SetGlobalSettings(glob);
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
-        Exit();
-      end;
+
+    var settings: TBlkIOsettings;
+    settings.isRCSOutput := Self.CHB_RCS_Output.Checked;
+    if (Self.CHB_RCS_Output.Checked) then
+    begin
+      settings.RCSOutput := TRCS.RCSAddr(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value);
+      settings.RCSoutputNeeded := Self.CHB_RCS_Output_Needed.Checked;
+    end;
+
+    settings.isRCSinput := Self.CHB_RCS_Input.Checked;
+    if (Self.CHB_RCS_Input.Checked) then
+    begin
+      settings.RCSinput := TRCS.RCSAddr(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value);
+      settings.RCSinputNeeded := Self.CHB_RCS_Input_Needed.Checked;
+    end;
+
+    settings.setOutputOnStart := Self.CHB_Activate_On_Start.Checked;
+    if (Self.CHB_Nullable.Checked) then
+      settings.nullAfterSec := Self.SE_Null_Time.Value
+    else
+      settings.nullAfterSec := 0;
+
+    settings.allowOutChange := Self.CHB_AllowOutChange.Checked;
+
+    Self.block.SetSettings(settings);
+    Self.block.Change();
+  except
+    on E: Exception do
+    begin
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      Exit();
     end;
   end;
 
-
-  var settings: TBlkIOsettings;
-  settings.isRCSOutput := Self.CHB_RCS_Output.Checked;
-  if (Self.CHB_RCS_Output.Checked) then
-  begin
-    settings.RCSOutput := TRCS.RCSAddr(Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value);
-    settings.RCSoutputNeeded := Self.CHB_RCS_Output_Needed.Checked;
-  end;
-
-  settings.isRCSinput := Self.CHB_RCS_Input.Checked;
-  if (Self.CHB_RCS_Input.Checked) then
-  begin
-    settings.RCSinput := TRCS.RCSAddr(Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value);
-    settings.RCSinputNeeded := Self.CHB_RCS_Input_Needed.Checked;
-  end;
-
-  settings.setOutputOnStart := Self.CHB_Activate_On_Start.Checked;
-  if (Self.CHB_Nullable.Checked) then
-    settings.nullAfterSec := Self.SE_Null_Time.Value
-  else
-    settings.nullAfterSec := 0;
-
-  settings.allowOutChange := Self.CHB_AllowOutChange.Checked;
-
-  Self.block.SetSettings(settings);
   Self.Close();
-  Self.block.Change();
 end;
 
 procedure TF_BlkIO.FormClose(Sender: TObject; var Action: TCloseAction);

@@ -348,81 +348,89 @@ begin
     Exit();
   end;
 
-  glob.name := Self.E_Name.Text;
-  glob.id := Self.SE_ID.Value;
-  glob.typ := btPst;
+  try
+    glob.name := Self.E_Name.Text;
+    glob.id := Self.SE_ID.Value;
+    glob.typ := btPst;
 
-  if (Self.isNewBlock) then
-  begin
-    try
-      Self.block := Blocks.Add(glob) as TBlkPst;
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
-        Exit();
+    if (Self.isNewBlock) then
+    begin
+      try
+        Self.block := Blocks.Add(glob) as TBlkPst;
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end else begin
+      try
+        Self.block.SetGlobalSettings(glob);
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
       end;
     end;
-  end else begin
-    try
-      Self.block.SetGlobalSettings(glob);
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
-        Exit();
-      end;
+
+    var pstSettings: TBlkPstSettings;
+    pstSettings.tracks := TList<Integer>.Create();
+    for var LI: TListItem in Self.LV_Tracks.Items do
+      pstSettings.tracks.Add(StrToInt(LI.SubItems[0]));
+
+    pstSettings.turnouts := TList<Integer>.Create();
+    for var LI: TListItem in Self.LV_Turnouts.Items do
+      pstSettings.turnouts.Add(StrToInt(LI.SubItems[0]));
+
+    pstSettings.signals := TList<Integer>.Create();
+    for var LI: TListItem in Self.LV_Signals.Items do
+      pstSettings.signals.Add(StrToInt(LI.SubItems[0]));
+
+    pstSettings.refugees := TList<TPstRefugeeZav>.Create();
+    for var LI: TListItem in Self.LV_Refugees.Items do
+    begin
+      var zav : TPstRefugeeZav;
+      zav.block := StrToInt(LI.SubItems[0]);
+      if (LI.SubItems[2] = '-') then
+        zav.position := TTurnoutPosition.minus
+      else
+        zav.position := TTurnoutPosition.plus;
+      pstSettings.refugees.Add(zav);
+    end;
+
+    pstSettings.disconnectors := TList<Integer>.Create();
+    for var LI: TListItem in Self.LV_Disconnectors.Items do
+      pstSettings.disconnectors.Add(StrToInt(LI.SubItems[0]));
+
+    pstSettings.rcsInTake.board := Self.SE_RCS_Take_Module.Value;
+    pstSettings.rcsInTake.port := Self.SE_RCS_Take_Port.Value;
+
+    pstSettings.rcsInRelease.board := Self.SE_RCS_Release_Module.Value;
+    pstSettings.rcsInRelease.port := Self.SE_RCS_Release_Port.Value;
+
+    pstSettings.rcsOutTaken.board := Self.SE_RCS_Indication_Module.Value;
+    pstSettings.rcsOutTaken.port := Self.SE_RCS_Indication_Port.Value;
+
+    pstSettings.rcsOutHorn.board := Self.SE_RCS_Horn_Module.Value;
+    pstSettings.rcsOutHorn.port := Self.SE_RCS_Horn_Port.Value;
+
+    pstSettings.rcsOutActive.board := Self.SE_RCS_Active_Module.Value;
+    pstSettings.rcsOutActive.port := Self.SE_RCS_Active_Port.Value;
+
+    Self.block.SetSettings(pstSettings);
+    Self.block.Change();
+  except
+    on E: Exception do
+    begin
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      Exit();
     end;
   end;
-
-  var pstSettings: TBlkPstSettings;
-  pstSettings.tracks := TList<Integer>.Create();
-  for var LI: TListItem in Self.LV_Tracks.Items do
-    pstSettings.tracks.Add(StrToInt(LI.SubItems[0]));
-
-  pstSettings.turnouts := TList<Integer>.Create();
-  for var LI: TListItem in Self.LV_Turnouts.Items do
-    pstSettings.turnouts.Add(StrToInt(LI.SubItems[0]));
-
-  pstSettings.signals := TList<Integer>.Create();
-  for var LI: TListItem in Self.LV_Signals.Items do
-    pstSettings.signals.Add(StrToInt(LI.SubItems[0]));
-
-  pstSettings.refugees := TList<TPstRefugeeZav>.Create();
-  for var LI: TListItem in Self.LV_Refugees.Items do
-  begin
-    var zav : TPstRefugeeZav;
-    zav.block := StrToInt(LI.SubItems[0]);
-    if (LI.SubItems[2] = '-') then
-      zav.position := TTurnoutPosition.minus
-    else
-      zav.position := TTurnoutPosition.plus;
-    pstSettings.refugees.Add(zav);
-  end;
-
-  pstSettings.disconnectors := TList<Integer>.Create();
-  for var LI: TListItem in Self.LV_Disconnectors.Items do
-    pstSettings.disconnectors.Add(StrToInt(LI.SubItems[0]));
-
-  pstSettings.rcsInTake.board := Self.SE_RCS_Take_Module.Value;
-  pstSettings.rcsInTake.port := Self.SE_RCS_Take_Port.Value;
-
-  pstSettings.rcsInRelease.board := Self.SE_RCS_Release_Module.Value;
-  pstSettings.rcsInRelease.port := Self.SE_RCS_Release_Port.Value;
-
-  pstSettings.rcsOutTaken.board := Self.SE_RCS_Indication_Module.Value;
-  pstSettings.rcsOutTaken.port := Self.SE_RCS_Indication_Port.Value;
-
-  pstSettings.rcsOutHorn.board := Self.SE_RCS_Horn_Module.Value;
-  pstSettings.rcsOutHorn.port := Self.SE_RCS_Horn_Port.Value;
-
-  pstSettings.rcsOutActive.board := Self.SE_RCS_Active_Module.Value;
-  pstSettings.rcsOutActive.port := Self.SE_RCS_Active_Port.Value;
-
-  Self.block.SetSettings(pstSettings);
 
   Self.Close();
-  Self.block.Change();
 end;
 
 procedure TF_BlkPst.B_Disc_DeleteClick(Sender: TObject);

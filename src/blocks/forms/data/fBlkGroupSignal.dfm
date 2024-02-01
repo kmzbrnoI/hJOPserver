@@ -4,8 +4,8 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkGroupSignal'
-  ClientHeight = 242
-  ClientWidth = 617
+  ClientHeight = 254
+  ClientWidth = 625
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -113,7 +113,6 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
           Caption = 'N'#225'zev'
           Width = 200
         end>
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True

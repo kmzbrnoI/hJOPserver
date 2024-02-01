@@ -355,75 +355,83 @@ begin
     end;
   end;
 
-  var glob: TBlkSettings;
-  glob.name := Self.E_Name.Text;
-  glob.id := Self.SE_ID.Value;
-  glob.typ := btSignal;
+  try
+    var glob: TBlkSettings;
+    glob.name := Self.E_Name.Text;
+    glob.id := Self.SE_ID.Value;
+    glob.typ := btSignal;
 
-  if (Self.isNewBlock) then
-  begin
-    try
-      Self.block := Blocks.Add(glob) as TBlkSignal;
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
-        Exit();
+    if (Self.isNewBlock) then
+    begin
+      try
+        Self.block := Blocks.Add(glob) as TBlkSignal;
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end else begin
+      try
+        Self.block.SetGlobalSettings(glob);
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
       end;
     end;
-  end else begin
-    try
-      Self.block.SetGlobalSettings(glob);
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
-        Exit();
-      end;
+
+    var settings: TBlkSignalSettings;
+    settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+    if (Self.CHB_RCS_Output.Checked) then
+    begin
+      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value));
+      settings.OutputType := TBlkSignalOutputType(CB_Typ.ItemIndex);
+    end;
+    if (Self.CHB_RCS_Second_Output.Checked) then
+      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value));
+
+    settings.fallDelay := Self.SE_Delay.Value;
+
+    settings.locked := Self.CHB_Locked.Checked;
+    settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
+    for var fBlkNavEvent in Self.eventForms do
+      settings.events.Add(fBlkNavEvent.GetEvent());
+
+    settings.PSt.enabled := Self.CHB_PSt.Checked;
+    if (Self.CHB_PSt.Checked) then
+    begin
+      settings.PSt.rcsIndicationShunt.board := Self.SE_Ind_Module.Value;
+      settings.PSt.rcsIndicationShunt.port := Self.SE_Ind_Port.Value;
+      settings.PSt.rcsControllerShunt.board := Self.SE_Cont_Module.Value;
+      settings.PSt.rcsControllerShunt.port := Self.SE_Cont_Port.Value;
+
+      var another := Blocks.AnotherBlockUsesRCS(settings.PSt.rcsIndicationShunt, Self.block, TRCSIOType.output);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.PSt.rcsIndicationShunt.ToString() + '.' + #13#10;
+
+      another := Blocks.AnotherBlockUsesRCS(settings.PSt.rcsControllerShunt, Self.block, TRCSIOType.output);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.PSt.rcsControllerShunt.ToString() + '.' + #13#10;
+    end;
+
+    if (messages <> '') then
+      Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
+
+    Self.block.SetSettings(settings);
+    Self.block.Change();
+  except
+    on E: Exception do
+    begin
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      Exit();
     end;
   end;
-
-  var settings: TBlkSignalSettings;
-  settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-  if (Self.CHB_RCS_Output.Checked) then
-  begin
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value));
-    settings.OutputType := TBlkSignalOutputType(CB_Typ.ItemIndex);
-  end;
-  if (Self.CHB_RCS_Second_Output.Checked) then
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value));
-
-  settings.fallDelay := Self.SE_Delay.Value;
-
-  settings.locked := Self.CHB_Locked.Checked;
-  settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
-  for var fBlkNavEvent in Self.eventForms do
-    settings.events.Add(fBlkNavEvent.GetEvent());
-
-  settings.PSt.enabled := Self.CHB_PSt.Checked;
-  if (Self.CHB_PSt.Checked) then
-  begin
-    settings.PSt.rcsIndicationShunt.board := Self.SE_Ind_Module.Value;
-    settings.PSt.rcsIndicationShunt.port := Self.SE_Ind_Port.Value;
-    settings.PSt.rcsControllerShunt.board := Self.SE_Cont_Module.Value;
-    settings.PSt.rcsControllerShunt.port := Self.SE_Cont_Port.Value;
-
-    var another := Blocks.AnotherBlockUsesRCS(settings.PSt.rcsIndicationShunt, Self.block, TRCSIOType.output);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.PSt.rcsIndicationShunt.ToString() + '.' + #13#10;
-
-    another := Blocks.AnotherBlockUsesRCS(settings.PSt.rcsControllerShunt, Self.block, TRCSIOType.output);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + settings.PSt.rcsControllerShunt.ToString() + '.' + #13#10;
-  end;
-
-  if (messages <> '') then
-    Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
-
-  Self.block.SetSettings(settings);
 
   Self.Close();
-  Self.block.Change();
 end;
 
 procedure TF_BlkSignal.FormClose(Sender: TObject; var Action: TCloseAction);

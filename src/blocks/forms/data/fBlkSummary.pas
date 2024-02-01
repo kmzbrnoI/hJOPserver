@@ -113,40 +113,48 @@ begin
     Exit();
   end;
 
-  glob.name := Self.E_Name.Text;
-  glob.id := Self.SE_ID.Value;
-  glob.typ := btSummary;
+  try
+    glob.name := Self.E_Name.Text;
+    glob.id := Self.SE_ID.Value;
+    glob.typ := btSummary;
 
-  if (isNewBlock) then
-  begin
-    try
-      block := Blocks.Add(glob) as TBlkSummary;
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
-        Exit();
+    if (isNewBlock) then
+    begin
+      try
+        block := Blocks.Add(glob) as TBlkSummary;
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end else begin
+      try
+        Self.block.SetGlobalSettings(glob);
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
       end;
     end;
-  end else begin
-    try
-      Self.block.SetGlobalSettings(glob);
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
-        Exit();
-      end;
+
+    settings.crossings := TList<Integer>.Create();
+    for var LI: TListItem in Self.LV_Crossings.Items do
+      settings.crossings.Add(StrToInt(LI.SubItems[0]));
+    Self.block.SetSettings(settings);
+    Self.block.Change();
+  except
+    on E: Exception do
+    begin
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      Exit();
     end;
   end;
 
-  settings.crossings := TList<Integer>.Create();
-  for var LI: TListItem in Self.LV_Crossings.Items do
-    settings.crossings.Add(StrToInt(LI.SubItems[0]));
-  Self.block.SetSettings(settings);
-
   Self.Close();
-  Self.block.Change();
 end;
 
 procedure TF_BlkSummary.B_StornoClick(Sender: TObject);

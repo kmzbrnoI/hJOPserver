@@ -296,70 +296,79 @@ begin
     Exit();
   end;
 
-  globRailway.name := Self.E_Railway_Name.Text;
-  globRailway.id := Self.SE_Railway_ID.Value;
-  globRailway.typ := btRailway;
+  try
+    globRailway.name := Self.E_Railway_Name.Text;
+    globRailway.id := Self.SE_Railway_ID.Value;
+    globRailway.typ := btRailway;
 
-  globLinkerA.name := Self.E_LA_Name.Text;
-  globLinkerA.id := Self.SE_LA_Id.Value;
-  globLinkerA.typ := btLinker;
+    globLinkerA.name := Self.E_LA_Name.Text;
+    globLinkerA.id := Self.SE_LA_Id.Value;
+    globLinkerA.typ := btLinker;
 
-  globLinkerB.name := Self.E_LB_Name.Text;
-  globLinkerB.id := Self.SE_LB_Id.Value;
-  globLinkerB.typ := btLinker;
+    globLinkerB.name := Self.E_LB_Name.Text;
+    globLinkerB.id := Self.SE_LB_Id.Value;
+    globLinkerB.typ := btLinker;
 
-  rSettings.trackIds := TList<Integer>.Create();
+    rSettings.trackIds := TList<Integer>.Create();
 
-  if (isNewBlock) then
-  begin
-    try
-      Self.railway := Blocks.Add(globRailway) as TBlkRailway;
-      Self.linkerA := Blocks.Add(globLinkerA) as TBlkLinker;
-      Self.linkerB := Blocks.Add(globLinkerB) as TBlkLinker;
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
-        Exit();
+    if (isNewBlock) then
+    begin
+      try
+        Self.railway := Blocks.Add(globRailway) as TBlkRailway;
+        Self.linkerA := Blocks.Add(globLinkerA) as TBlkLinker;
+        Self.linkerB := Blocks.Add(globLinkerB) as TBlkLinker;
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
+      end;
+    end else begin
+      try
+        Self.railway.SetGlobalSettings(globRailway);
+        Self.linkerA.SetGlobalSettings(globLinkerA);
+        Self.linkerB.SetGlobalSettings(globLinkerB);
+      except
+        on E: Exception do
+        begin
+          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          Exit();
+        end;
       end;
     end;
-  end else begin
-    try
-      Self.railway.SetGlobalSettings(globRailway);
-      Self.linkerA.SetGlobalSettings(globLinkerA);
-      Self.linkerB.SetGlobalSettings(globLinkerB);
-    except
-      on E: Exception do
-      begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
-        Exit();
-      end;
+
+    rSettings.linkerA := Self.SE_LA_Id.Value;
+    rSettings.linkerB := Self.SE_LB_Id.Value;
+
+    case (Self.CB_Type.ItemIndex) of
+      0: rSettings.rType := TRailwayType.permanent;
+      1: rSettings.rType := TRailwayType.request;
+    end;
+
+    rSettings.signals := TRailwaySignals(Self.CB_Signals.ItemIndex);
+
+    rSettings.trackIds.Clear();
+    for var LI in Self.LV_Tracks.Items do
+      rSettings.trackIds.Add(StrToInt(LI.SubItems[0]));
+    Self.railway.SetSettings(rSettings);
+
+    linkerSettings.parent := Self.SE_Railway_ID.Value;
+    Self.linkerA.SetSettings(linkerSettings);
+
+    linkerSettings.parent := Self.SE_Railway_ID.Value;
+    Self.linkerB.SetSettings(linkerSettings);
+
+    Self.railway.Change();
+  except
+    on E: Exception do
+    begin
+      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      Exit();
     end;
   end;
-
-  rSettings.linkerA := Self.SE_LA_Id.Value;
-  rSettings.linkerB := Self.SE_LB_Id.Value;
-
-  case (Self.CB_Type.ItemIndex) of
-    0: rSettings.rType := TRailwayType.permanent;
-    1: rSettings.rType := TRailwayType.request;
-  end;
-
-  rSettings.signals := TRailwaySignals(Self.CB_Signals.ItemIndex);
-
-  rSettings.trackIds.Clear();
-  for var LI in Self.LV_Tracks.Items do
-    rSettings.trackIds.Add(StrToInt(LI.SubItems[0]));
-  Self.railway.SetSettings(rSettings);
-
-  linkerSettings.parent := Self.SE_Railway_ID.Value;
-  Self.linkerA.SetSettings(linkerSettings);
-
-  linkerSettings.parent := Self.SE_Railway_ID.Value;
-  Self.linkerB.SetSettings(linkerSettings);
 
   Self.Close();
-  Self.railway.Change();
 end;
 
 procedure TF_BlkRailway.B_StornoClick(Sender: TObject);
