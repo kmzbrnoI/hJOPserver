@@ -13,9 +13,7 @@ object F_Admin: TF_Admin
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   OnClose = FormClose
-  PixelsPerInch = 96
   TextHeight = 13
   object B_InputSim: TButton
     Left = 8

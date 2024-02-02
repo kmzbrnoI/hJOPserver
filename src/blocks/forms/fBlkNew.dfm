@@ -13,9 +13,7 @@ object F_BlkNew: TF_BlkNew
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object RG_NewTyp: TRadioGroup
     Left = 7

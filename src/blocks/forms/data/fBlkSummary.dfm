@@ -4,7 +4,7 @@ object F_BlkSummary: TF_BlkSummary
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkSummary'
-  ClientHeight = 329
+  ClientHeight = 328
   ClientWidth = 337
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

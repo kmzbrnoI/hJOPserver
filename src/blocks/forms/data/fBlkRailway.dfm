@@ -5,7 +5,7 @@ object F_BlkRailway: TF_BlkRailway
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkRailway'
-  ClientHeight = 341
+  ClientHeight = 340
   ClientWidth = 671
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

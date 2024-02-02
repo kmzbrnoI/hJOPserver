@@ -4,8 +4,8 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'J'#237'zdn'#237' cesta ...'
-  ClientHeight = 826
-  ClientWidth = 1048
+  ClientHeight = 837
+  ClientWidth = 1057
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -107,7 +107,6 @@ object F_JCEdit: TF_JCEdit
           Caption = 'Poloha'
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True
@@ -310,7 +309,6 @@ object F_JCEdit: TF_JCEdit
           Width = 30
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True
@@ -594,7 +592,6 @@ object F_JCEdit: TF_JCEdit
           Width = 100
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True
@@ -736,7 +733,6 @@ object F_JCEdit: TF_JCEdit
           Width = 80
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True
@@ -909,7 +905,6 @@ object F_JCEdit: TF_JCEdit
           Width = 200
         end>
       GridLines = True
-      Items.ItemData = {}
       MultiSelect = True
       ReadOnly = True
       RowSelect = True

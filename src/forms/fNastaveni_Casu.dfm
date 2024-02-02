@@ -13,9 +13,7 @@ object F_ModCasSet: TF_ModCasSet
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object L_time_start: TLabel
     Left = 7

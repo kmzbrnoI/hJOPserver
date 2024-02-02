@@ -13,10 +13,8 @@ object F_Booster_Edit: TF_Booster_Edit
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
   OnCloseQuery = FormCloseQuery
-  PixelsPerInch = 96
   TextHeight = 13
   object Label4: TLabel
     Left = 9

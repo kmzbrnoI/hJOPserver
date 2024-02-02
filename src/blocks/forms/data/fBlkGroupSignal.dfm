@@ -4,7 +4,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkGroupSignal'
-  ClientHeight = 254
+  ClientHeight = 252
   ClientWidth = 625
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -309,7 +309,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
     object CHB_RCS_Second_Output: TCheckBox
       Left = 8
       Top = 85
-      Width = 81
+      Width = 89
       Height = 17
       Caption = 'Druh'#253' v'#253'stup:'
       TabOrder = 6

@@ -4,7 +4,7 @@ object F_BlkLock: TF_BlkLock
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkLock'
-  ClientHeight = 112
+  ClientHeight = 110
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

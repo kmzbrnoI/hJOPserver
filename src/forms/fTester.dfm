@@ -37,11 +37,9 @@ object F_Tester: TF_Tester
     0000000000000000000000000000000000000000000000000000000000000000
     0000000000000000000000000000000000000000000000000000000000000000
     000000000000000000000000000000000001FFFFFFFFFFFFFFFFFFFFFFFF}
-  OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
-  PixelsPerInch = 96
   TextHeight = 13
   object L_1: TLabel
     Left = 7
@@ -94,10 +92,6 @@ object F_Tester: TF_Tester
       BevelOuter = bvNone
       ParentBackground = False
       TabOrder = 1
-      ExplicitLeft = 32
-      ExplicitTop = 136
-      ExplicitWidth = 185
-      ExplicitHeight = 41
     end
   end
   object CB_Addr: TComboBox
@@ -145,10 +139,6 @@ object F_Tester: TF_Tester
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 1
-      ExplicitLeft = 4
-      ExplicitTop = 38
-      ExplicitWidth = 118
-      ExplicitHeight = 237
     end
   end
 end

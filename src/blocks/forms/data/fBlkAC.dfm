@@ -4,8 +4,8 @@ object F_BlkAC: TF_BlkAC
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Upravit blok [blok] (AC)'
-  ClientHeight = 168
-  ClientWidth = 321
+  ClientHeight = 165
+  ClientWidth = 320
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

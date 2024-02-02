@@ -3,7 +3,7 @@ object F_BlkPst: TF_BlkPst
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'F_BlkPst'
-  ClientHeight = 507
+  ClientHeight = 513
   ClientWidth = 990
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

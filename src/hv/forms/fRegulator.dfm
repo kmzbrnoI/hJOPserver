@@ -12,10 +12,8 @@ object F_DigiReg: TF_DigiReg
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label5: TLabel
     Left = 286

@@ -4,7 +4,7 @@ object F_BlkIR: TF_BlkIR
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (IR)'
-  ClientHeight = 194
+  ClientHeight = 189
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

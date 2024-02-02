@@ -13,10 +13,8 @@ object F_HVEdit: TF_HVEdit
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
   OnCloseQuery = FormCloseQuery
-  PixelsPerInch = 96
   TextHeight = 13
   object L_HV1: TLabel
     Left = 8

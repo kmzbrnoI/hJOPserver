@@ -4,7 +4,7 @@ object F_BlkTrack: TF_BlkTrack
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'F_BlkTrack'
-  ClientHeight = 371
+  ClientHeight = 369
   ClientWidth = 409
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET

@@ -4,7 +4,7 @@ object F_BlkRT: TF_BlkRT
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (tratovy usek)'
-  ClientHeight = 601
+  ClientHeight = 600
   ClientWidth = 697
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
