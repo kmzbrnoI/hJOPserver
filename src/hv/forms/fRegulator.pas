@@ -106,7 +106,7 @@ implementation
 
 {$R *.dfm}
 
-uses fMain, Trakce, TechnologieTrakce, ownConvert;
+uses fMain, Trakce, TechnologieTrakce, ownConvert, ownGuiUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -117,10 +117,7 @@ begin
       Self.OpenHV.ruc := Self.CHB_Total.Checked;
   except
     on E: Exception do
-    begin
-      Application.MessageBox(PChar('Nepodařilo se nastavit RUČ:' + #13#10 + E.Message), 'Varování',
-        MB_OK OR MB_ICONWARNING);
-    end;
+      ExceptionMessageBox('Nepodařilo se nastavit RUČ:', E);
   end;
 end;
 
@@ -182,8 +179,7 @@ begin
       on E: Exception do
       begin
         Self.OpenHV := tmp;
-        Application.MessageBox(PChar('Lokomotivu se nepodařilo odhlásit:' + #13#10 + E.Message), 'Varování',
-          MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Lokomotivu se nepodařilo odhlásit:', E);
       end;
     end;
   end;
@@ -199,7 +195,7 @@ end;
 procedure TF_DigiReg.AcquireFailed(Sender: TObject; data: Pointer);
 begin
   Self.B_PrevzitLoko.Enabled := true;
-  Application.MessageBox('Převezetí lokomotivy se nedařilo!', 'Chyba', MB_OK OR MB_ICONWARNING);
+  ErrorMessageBox('Převezetí lokomotivy se nedařilo!');
 end;
 
 procedure TF_DigiReg.B_STOPClick(Sender: TObject);

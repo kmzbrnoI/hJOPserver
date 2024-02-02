@@ -318,7 +318,7 @@ procedure TF_BlkSignal.B_SaveClick(Sender: TObject);
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -328,7 +328,7 @@ begin
   begin
     if (CB_Typ.ItemIndex = -1) then
     begin
-      Application.MessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      StrMessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
 
@@ -350,7 +350,7 @@ begin
     var str := fBlkNavEvent.Check();
     if (str <> '') then
     begin
-      Application.MessageBox(PChar(str), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      StrMessageBox(str, 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
   end;
@@ -368,7 +368,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -378,7 +378,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -419,14 +419,14 @@ begin
     end;
 
     if (messages <> '') then
-      Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
+      StrMessageBox(messages, 'Varování', MB_OK OR MB_ICONWARNING);
 
     Self.block.SetSettings(settings);
     Self.block.Change();
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;
@@ -617,8 +617,8 @@ procedure TF_BlkSignal.OnTabClose(Sender: TObject);
 begin
   if (Self.eventTabSheets.count <= 1) then
   begin
-    if (Application.MessageBox(PChar('Mazání globální události způsobí nezastavení vlaku před návěstidlem, ' +
-      'proto je doporučeno jen u seřaďovacích návěstidel!' + #13#10 + 'Opravdu smazat globální událost?'), 'Opravdu?',
+    if (StrMessageBox('Mazání globální události způsobí nezastavení vlaku před návěstidlem, ' +
+      'proto je doporučeno jen u seřaďovacích návěstidel!' + #13#10 + 'Opravdu smazat globální událost?', 'Opravdu?',
       MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
       Exit();
   end;

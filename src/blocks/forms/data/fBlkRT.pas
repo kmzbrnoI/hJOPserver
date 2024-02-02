@@ -366,23 +366,23 @@ procedure TF_BlkRT.B_OKClick(Sender: TObject);
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Booster.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if ((Self.CHB_SignalL.Checked) and (Self.CB_SignalL.ItemIndex = -1)) then
   begin
-    Application.MessageBox('Vyberte návěstidlo kryjící úsek v lichém směru!', 'Nelze uložit data',
+    StrMessageBox('Vyberte návěstidlo kryjící úsek v lichém směru!', 'Nelze uložit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if ((Self.CHB_SignalS.Checked) and (Self.CB_SignalS.ItemIndex = -1)) then
   begin
-    Application.MessageBox('Vyberte návěstidlo kryjící úsek v sudém směru!', 'Nelze uložit data',
+    StrMessageBox('Vyberte návěstidlo kryjící úsek v sudém směru!', 'Nelze uložit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
@@ -392,7 +392,7 @@ begin
     var str := Self.stopEven.Check();
     if (str <> '') then
     begin
-      Application.MessageBox(PChar('Zastavovací událost zastávky v sudém směru:' + #13#10 + str), 'Nelze uložit data',
+      StrMessageBox(PChar('Zastavovací událost zastávky v sudém směru:' + #13#10 + str), 'Nelze uložit data',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
@@ -403,7 +403,7 @@ begin
     var str := Self.stopOdd.Check();
     if (str <> '') then
     begin
-      Application.MessageBox(PChar('Zastavovací událost zastávky v lichém směru:' + #13#10 + str), 'Nelze uložit data',
+      StrMessageBox(PChar('Zastavovací událost zastávky v lichém směru:' + #13#10 + str), 'Nelze uložit data',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
@@ -411,7 +411,7 @@ begin
 
   if (Self.fTrainSpeedL.LV_Speeds.Items.Count = 0) then
   begin
-    Application.MessageBox('Nezadány traťové rychlosti (zadejte alespoň pro lichý směr)!', 'Nelze uložit data',
+    StrMessageBox('Nezadány traťové rychlosti (zadejte alespoň pro lichý směr)!', 'Nelze uložit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
@@ -435,7 +435,7 @@ begin
         begin
           speedsL.Free();
           speedsS.Free();
-          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -445,7 +445,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -493,7 +493,7 @@ begin
         speedsL.Free();
         speedsS.Free();
         TUsettings.stop.Free();
-        Application.MessageBox('Nesprávně zadaný čas čekání v zastávce!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        StrMessageBox('Nesprávně zadaný čas čekání v zastávce!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
         Exit();
       end;
 
@@ -519,7 +519,7 @@ begin
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;

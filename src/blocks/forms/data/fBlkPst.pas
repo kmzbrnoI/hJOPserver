@@ -344,7 +344,7 @@ var glob: TBlkSettings;
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -360,7 +360,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -370,7 +370,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -425,7 +425,7 @@ begin
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;
@@ -445,14 +445,14 @@ begin
 
   if (Self.CB_Disconnector.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte rozpojovač!', 'Nelze přidat/upravit rozpojovač', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte rozpojovač!', 'Nelze přidat/upravit rozpojovač', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   var id := Self.CB_DiscItems[Self.CB_Disconnector.ItemIndex];
   if ((Self.LV_Disconnectors.Selected = nil) and (Self.BlockPresent(id, Self.LV_Disconnectors))) then
   begin
-    Application.MessageBox('Nelze přidat duplicitní rozpojovač!', 'Nelze přidat/upravit rozpojovač', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Nelze přidat duplicitní rozpojovač!', 'Nelze přidat/upravit rozpojovač', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -477,26 +477,26 @@ begin
 
   if (Self.CB_Ref_Block.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte výhybku!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte výhybku!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   var id := Self.CB_RefugeeItems[Self.CB_Ref_Block.ItemIndex];
   if ((Self.LV_Refugees.Selected = nil) and (Self.BlockPresent(id, Self.LV_Refugees))) then
   begin
-    Application.MessageBox('Nelze přidat duplicitní výhybku!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Nelze přidat duplicitní výhybku!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   if (Self.CB_Ref_Pos.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte polohu!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte polohu!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   if (Self.BlockPresent(id, Self.LV_Turnouts)) then
   begin
-    Application.MessageBox('Nelze přidat odvrat, který je zároveň ovládaný!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Nelze přidat odvrat, který je zároveň ovládaný!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -521,14 +521,14 @@ begin
 
   if (Self.CB_Signal.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte návěstidlo!', 'Nelze přidat/upravit návěstidlo', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte návěstidlo!', 'Nelze přidat/upravit návěstidlo', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   var id := Self.CB_SignalItems[Self.CB_Signal.ItemIndex];
   if ((Self.LV_Signals.Selected = nil) and (Self.BlockPresent(id, Self.LV_Signals))) then
   begin
-    Application.MessageBox('Nelze přidat duplicitní návěstidlo!', 'Nelze přidat/upravit návěstidlo', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Nelze přidat duplicitní návěstidlo!', 'Nelze přidat/upravit návěstidlo', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -558,14 +558,14 @@ begin
 
   if (Self.CB_Track.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   var id := Self.CB_TrackItems[Self.CB_Track.ItemIndex];
   if ((Self.LV_Tracks.Selected = nil) and (Self.BlockPresent(id, Self.LV_Tracks))) then
   begin
-    Application.MessageBox('Nelze přidat duplicitní úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Nelze přidat duplicitní úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -590,20 +590,20 @@ begin
 
   if (Self.CB_Turnout.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte výhybku!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte výhybku!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   var id := Self.CB_TurnoutItems[Self.CB_Turnout.ItemIndex];
   if ((Self.LV_Turnouts.Selected = nil) and (Self.BlockPresent(id, Self.LV_Turnouts))) then
   begin
-    Application.MessageBox('Nelze přidat duplicitní výhybku!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Nelze přidat duplicitní výhybku!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   if (Self.BlockPresent(id, Self.LV_Refugees)) then
   begin
-    Application.MessageBox('Nelze přidat výhybku, která je na odvratu!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Nelze přidat výhybku, která je na odvratu!', 'Nelze přidat/upravit výhybku', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 

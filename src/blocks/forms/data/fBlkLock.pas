@@ -100,7 +100,7 @@ var glob: TBlkSettings;
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -116,7 +116,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -126,7 +126,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -136,7 +136,7 @@ begin
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;

@@ -197,12 +197,12 @@ var glob: TBlkSettings;
 begin
   if (Self.E_name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_outputType.ItemIndex < 0) then
   begin
-    Application.MessageBox('Je třeba vybrat typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Je třeba vybrat typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -227,7 +227,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -237,7 +237,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -273,14 +273,14 @@ begin
     end;
 
     if (messages <> '') then
-      Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
+      StrMessageBox(messages, 'Varování', MB_OK OR MB_ICONWARNING);
 
     Self.block.SetSettings(settings);
     Self.block.Change();
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;

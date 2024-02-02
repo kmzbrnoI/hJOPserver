@@ -529,7 +529,7 @@ implementation
 uses fTester, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fAbout, version, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
-  TechnologieRCS, TechnologieJC, Config, fConsole, AreaDb, BlockDb,
+  TechnologieRCS, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils,
   Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area,
   BlockSummary, BlockCrossing, TJCDatabase, Logging,
   TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
@@ -563,7 +563,7 @@ begin
     on E: Exception do
     begin
       Screen.Cursor := crDefault;
-      Application.MessageBox(PChar('Nelze načíst knihovnu ' + fn + ':' + #13#10 + E.Message), 'Nelze načíst knihovnu',
+      StrMessageBox('Nelze načíst knihovnu ' + fn + ':' + #13#10 + E.Message, 'Nelze načíst knihovnu',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
@@ -604,7 +604,7 @@ procedure TF_Main.A_RCS_lib_cfgExecute(Sender: TObject);
 begin
   if (not RCSi.HasDialog()) then
   begin
-    Application.MessageBox('Aktuální knihovna nemá konfigurační okno.', 'Info', MB_OK OR MB_ICONINFORMATION);
+    StrMessageBox('Aktuální knihovna nemá konfigurační okno.', 'Info', MB_OK OR MB_ICONINFORMATION);
     Exit();
   end;
 
@@ -615,7 +615,7 @@ begin
     on E: Exception do
     begin
       Screen.Cursor := crDefault;
-      Application.MessageBox(PChar('Nelze zobrazit konfigurační dialog RCS : ' + E.Message), 'Varování',
+      StrMessageBox('Nelze zobrazit konfigurační dialog RCS : ' + E.Message, 'Varování',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
@@ -966,7 +966,7 @@ begin
   Log('----- RCS OPEN FAIL - ' + errMsg + ' -----', llError, lsRCS);
   SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
-  Application.MessageBox(PChar('Při otevírání RCS nastala chyba:' + #13#10 + errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
+  ErrorMessageBox('Při otevírání RCS nastala chyba:', errMsg);
 end;
 
 procedure TF_Main.OnRCSErrClose(Sender: TObject; errMsg: string);
@@ -984,7 +984,7 @@ begin
   Self.LogStatus('ERR: RCS CLOSE FAIL: ' + errMsg);
   SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
-  Application.MessageBox(PChar('Při uzavírání RCS nastala chyba:' + #13#10 + errMsg), 'Chyba', MB_OK OR MB_ICONWARNING);
+  ErrorMessageBox('Při uzavírání RCS nastala chyba:', errMsg);
   Log('----- RCS CLOSE FAIL - ' + errMsg + ' -----', llError, lsRCS);
 end;
 
@@ -1004,8 +1004,7 @@ begin
   Self.LogStatus('ERR: RCS START FAIL: ' + errMsg);
   Log('----- RCS START FAIL - ' + errMsg + ' -----', llError, lsRCS);
 
-  Application.MessageBox(PChar('Při zapínání komunikace nastala chyba:' + #13#10 + errMsg), 'Chyba',
-    MB_OK OR MB_ICONWARNING);
+  ErrorMessageBox('Při zapínání komunikace nastala chyba:', errMsg);
 end;
 
 procedure TF_Main.OnRCSErrStop(Sender: TObject; errMsg: string);
@@ -1023,7 +1022,7 @@ begin
 
   Self.LogStatus('ERR: RCS STOP FAIL: ' + errMsg);
 
-  Application.MessageBox(PChar('Při vypínání komunikace nastala chyba:' + #13#10 + errMsg + #13#10), 'Chyba',
+  StrMessageBox('Při vypínání komunikace nastala chyba:' + #13#10 + errMsg, 'Chyba',
     MB_OK OR MB_ICONWARNING);
   Log('----- RCS STOP FAIL - ' + errMsg + ' -----', llError, lsRCS);
 end;
@@ -1083,7 +1082,7 @@ begin
     on E: Exception do
     begin
       Screen.Cursor := crDefault;
-      Application.MessageBox(PChar('Nelze načíst knihovnu ' + fn + ':' + #13#10 + E.Message), 'Nelze načíst knihovnu',
+      StrMessageBox('Nelze načíst knihovnu ' + fn + ':' + #13#10 + E.Message, 'Nelze načíst knihovnu',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
@@ -1123,7 +1122,7 @@ procedure TF_Main.A_Trk_Lib_CfgExecute(Sender: TObject);
 begin
   if (not TrakceI.HasDialog()) then
   begin
-    Application.MessageBox('Aktuální knihovna nemá konfigurační okno.', 'Info', MB_OK OR MB_ICONINFORMATION);
+    StrMessageBox('Aktuální knihovna nemá konfigurační okno.', 'Info', MB_OK OR MB_ICONINFORMATION);
     Exit();
   end;
 
@@ -1134,7 +1133,7 @@ begin
     on E: Exception do
     begin
       Screen.Cursor := crDefault;
-      Application.MessageBox(PChar('Nelze zobrazit konfigurační dialog: ' + E.Message), 'Varování',
+      StrMessageBox('Nelze zobrazit konfigurační dialog: ' + E.Message, 'Varování',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
@@ -1146,10 +1145,10 @@ procedure TF_Main.MI_Trk_UpdateClick(Sender: TObject);
 begin
   try
     Self.UpdateTrkLibsList();
-    Application.MessageBox('Seznam knihoven úspěšně aktualizován.', 'Info', MB_OK OR MB_ICONINFORMATION);
+    StrMessageBox('Seznam knihoven úspěšně aktualizován.', 'Info', MB_OK OR MB_ICONINFORMATION);
   except
     on E: Exception do
-      Application.MessageBox(PChar('Seznam knihoven se nepodařilo aktualizovat:' + #13#10 + E.Message), 'Chyba',
+      ErrorMessageBox('Seznam knihoven se nepodařilo aktualizovat:', E.Message, 'Chyba',
         MB_OK OR MB_ICONWARNING);
   end;
 end;
@@ -1192,8 +1191,8 @@ begin
     on E: Exception do
     begin
       TrakceI.Log(llErrors, 'CLOSE: error: ' + E.Message);
-      Application.MessageBox(PChar('Chyba pri uzavírání komunikace s centrálou:' + #13#10 + E.Message + #13#10 +
-        'Více informací naleznete v logu.'), 'Chyba', MB_OK OR MB_ICONERROR);
+      StrMessageBox('Chyba pri uzavírání komunikace s centrálou:' + #13#10 + E.Message + #13#10 +
+        'Více informací naleznete v logu.', 'Chyba', MB_OK OR MB_ICONERROR);
     end;
   end;
 
@@ -1252,7 +1251,7 @@ begin
     Self.A_System_Stop.Enabled := true;
   end;
 
-  Application.MessageBox('Nepodařilo se převzít všechny lokomotivy, více informací v logu.', 'Chyba',
+  StrMessageBox('Nepodařilo se převzít všechny lokomotivy, více informací v logu.', 'Chyba',
     MB_OK OR MB_ICONWARNING);
 end;
 
@@ -1298,8 +1297,8 @@ begin
     on E: Exception do
     begin
       SystemData.Status := null;
-      Application.MessageBox(PChar('Chyba při DCC GO:' + #13#10 + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
       Self.LogStatus('DCC: START: ERR ' + E.Message);
+      ExceptionMessageBox('Chyba při DCC GO:', E);
     end;
   end;
 end;
@@ -1313,8 +1312,8 @@ begin
   except
     on E: Exception do
     begin
-      Application.MessageBox(PChar('Chyba při DCC STOP:' + #13#10 + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
       Self.LogStatus('DCC: STOP: ERR ' + E.Message);
+      ExceptionMessageBox('Chyba při DCC STOP:', E);
     end;
   end;
 end;
@@ -1337,7 +1336,7 @@ begin
   Self.A_DCC_Stop.Enabled := true;
   Self.S_DCC.Brush.Color := clGray;
   Self.LogStatus('DCC: START: ERR: cenrála neodpověděla na příkaz');
-  Application.MessageBox('Centrála neodpověděla na příkaz DCC START', 'Varování', MB_OK OR MB_ICONWARNING);
+  StrMessageBox('Centrála neodpověděla na příkaz DCC START', 'Varování', MB_OK OR MB_ICONWARNING);
 end;
 
 procedure TF_Main.OnDCCStopOk(Sender: TObject; Data: Pointer);
@@ -1353,7 +1352,7 @@ begin
   Self.A_DCC_Go.Enabled := true;
   Self.A_DCC_Stop.Enabled := true;
   Self.S_DCC.Brush.Color := clGray;
-  Application.MessageBox('Centrála neodpověděla na příkaz DCC STOP', 'Varování', MB_OK OR MB_ICONWARNING);
+  StrMessageBox('Centrála neodpověděla na příkaz DCC STOP', 'Varování', MB_OK OR MB_ICONWARNING);
 end;
 
 procedure TF_Main.OnTrkBeforeOpen(Sender: TObject);
@@ -1451,8 +1450,7 @@ begin
 
   TrakceI.opening := false;
   Self.LogStatus('ERR: Trakce OPEN FAIL: ' + errMsg);
-  Application.MessageBox(PChar('Při otevírání Trakce nastala chyba:' + #13#10 + errMsg), 'Chyba',
-    MB_OK OR MB_ICONWARNING);
+  ErrorMessageBox('Při otevírání Trakce nastala chyba:', errMsg);
 end;
 
 procedure TF_Main.CB_centrala_loglevel_fileChange(Sender: TObject);
@@ -1612,13 +1610,13 @@ end;
 
 procedure TF_Main.PM_ResetVClick(Sender: TObject);
 begin
-  if (Application.MessageBox('Pozor: tato operace zaráz přestaví všechny výhybky na kolejišti, ' +
+  if (StrMessageBox('Pozor: tato operace zaráz přestaví potenciálně všechny výhybky na kolejišti, ' +
     'což může způsobit přetížení napájecích zdrojů. Chcete skutečně pokračovat?', 'Otázka',
     MB_YESNO OR MB_ICONWARNING OR MB_DEFBUTTON2) = mrYes) then
   begin
     Blocks.MoveTurnoutBasicPosition();
     Log('Vyhýbky přestaveny do základní polohy', llInfo);
-    Application.MessageBox('Výhybky přestaveny do záklaních poloh.', 'Informace', MB_OK OR MB_ICONINFORMATION);
+    StrMessageBox('Výhybky přestaveny do základních poloh.', 'Informace', MB_OK OR MB_ICONINFORMATION);
   end;
 end;
 
@@ -1633,7 +1631,7 @@ begin
       RegCollector.Open(HVDb[StrToInt(Self.LV_HV.Selected.Caption)]);
     except
       on E: Exception do
-        Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
+        StrMessageBox(E.Message, 'Varování', MB_OK OR MB_ICONWARNING);
     end;
   end; // if
 end;
@@ -1654,15 +1652,15 @@ begin
     TCloseInfo.ci_system_changing:
       begin
         Log('Pokus o zavření okna při zapínání nebo vypínání systémů', llWarning);
-        Application.MessageBox(PChar('Technologie právě zapíná nebo vypíná systémy, aplikaci nelze momentálně zavřít.' +
-          #13#10 + 'Nouzové ukončení programu lze provést spuštěním příkazu "app-exit" v konzoli'),
+        StrMessageBox('Technologie právě zapíná nebo vypíná systémy, aplikaci nelze momentálně zavřít.' +
+          #13#10 + 'Nouzové ukončení programu lze provést spuštěním příkazu "app-exit" v konzoli',
           'Nelze ukončit program', MB_OK OR MB_ICONWARNING);
       end;
 
     TCloseInfo.ci_system_started:
       begin
         Log('Pokus o zavření okna bez ukončení komunikace se systémy', llWarning);
-        if (Application.MessageBox('Program není odpojen od systémů, odpojit od systémů?', 'Nelze ukončit program',
+        if (StrMessageBox('Program není odpojen od systémů, odpojit od systémů?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
           Self.A_System_StopExecute(Self);
       end;
@@ -1670,7 +1668,7 @@ begin
     TCloseInfo.ci_rcs:
       begin
         Log('Pokus o zavření okna bez uzavření RCS', llWarning);
-        if (Application.MessageBox('Program není odpojen od RCS, odpojit?', 'Nelze ukončit program',
+        if (StrMessageBox('Program není odpojen od RCS, odpojit?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
         begin
           try
@@ -1680,7 +1678,7 @@ begin
               RCSi.Close();
           except
             on E: Exception do
-              Application.MessageBox(PChar('Nastala výjimka : ' + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+              ExceptionMessageBox('Nastala výjimka', E);
           end;
         end;
       end;
@@ -1688,7 +1686,7 @@ begin
     TCloseInfo.ci_server:
       begin
         Log('Pokus o zavření okna bez vypnutí panel serveru', llWarning);
-        if (Application.MessageBox('PanelServer stále běží, vypnout?', 'Nelze ukončit program',
+        if (StrMessageBox('PanelServer stále běží, vypnout?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
           PanelServer.Stop();
       end;
@@ -1696,7 +1694,7 @@ begin
     TCloseInfo.ci_trakce:
       begin
         Log('Pokus o zavření okna bez odpojení od centrály', llWarning);
-        if (Application.MessageBox('Program není odpojen od centrály, odpojit?', 'Nelze ukončit program',
+        if (StrMessageBox('Program není odpojen od centrály, odpojit?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
           TrakceI.Disconnect();
       end;
@@ -1705,7 +1703,7 @@ begin
       begin
         if (Self.CloseMessage) then
         begin
-          CanClose := (Application.MessageBox('Opravdu chcete ukončit program?', 'hJOPserver',
+          CanClose := (StrMessageBox('Opravdu chcete ukončit program?', 'hJOPserver',
             MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes);
         end else begin
           CanClose := true;
@@ -1785,7 +1783,7 @@ begin
                 RCSi.HideConfigDialog();
               except
                 on E: Exception do
-                  Application.MessageBox(PChar('Nelze skrýt konfigurační dialog RCS : ' + E.Message), 'Varování',
+                  ExceptionMessageBox('Nelze skrýt konfigurační dialog RCS', E, 'Varování',
                     MB_OK OR MB_ICONWARNING);
               end;
             end;
@@ -1890,7 +1888,7 @@ begin
       begin
         SystemData.Status := TSystemStatus.null;
         Self.UpdateSystemButtons();
-        Application.MessageBox(PChar('Chyba při aktivaci bloků:' + #13#10 + E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Chyba při aktivaci bloků:', E);
         Exit();
       end;
     end;
@@ -1906,8 +1904,7 @@ begin
     begin
       SystemData.Status := TSystemStatus.null;
       Self.UpdateSystemButtons();
-      Application.MessageBox(PChar('Chyba při zapínání panelServeru:' + #13#10 + E.Message), 'Chyba',
-        MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox('Chyba při zapínání panelServeru:', E);
       Exit();
     end;
   end;
@@ -1936,8 +1933,7 @@ begin
     end;
   except
     on E: Exception do
-      Application.MessageBox(PChar('Nelze nastartovat PT server:' + #13#10 + E.Message), 'Chyba',
-        MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox('Nelze nastartovat PT server:', E);
   end;
 
   if (SystemData.Status = TSystemStatus.starting) then
@@ -1954,7 +1950,7 @@ begin
     PtServer.Stop();
   except
     on E: Exception do
-      Application.MessageBox(PChar('Nelze zastavit PT server:' + #13#10 + E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox('Nelze zastavit PT server:', E);
   end;
 
   Self.UpdateSystemButtons();
@@ -2070,21 +2066,21 @@ begin
 
   if (not RCSi.ready) then
   begin
-    Application.MessageBox(PChar('Systém nelze spustit, RCS není připraveno k zapnutí systému' + #13#10 +
-      'Možné příčiny:' + #13#10 + ' - nenačtena validní knihovna'), 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Systém nelze spustit, RCS není připraveno k zapnutí systému' + #13#10 +
+      'Možné příčiny:' + #13#10 + ' - nenačtena validní knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Self.LogStatus('ERR: Systém nelze spustit, RCS není připraveno k zapnutí systému');
     Exit();
   end;
   if (not TrakceI.ready) then
   begin
-    Application.MessageBox(PChar('Systém nelze spustit, Trakce není připravena k zapnutí systému' + #13#10 +
-      'Možné příčiny:' + #13#10 + ' - nenačtena validní knihovna'), 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Systém nelze spustit, Trakce není připravena k zapnutí systému' + #13#10 +
+      'Možné příčiny:' + #13#10 + ' - nenačtena validní knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Self.LogStatus('ERR: Systém nelze spustit, Trakce není připravena k zapnutí systému');
     Exit();
   end;
   if (AppEvents.lastException <> nil) then
   begin
-    Application.MessageBox(PChar('Systém nelze spustit, v minulosti nastala kritická výjimka!'), 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Systém nelze spustit, v minulosti nastala kritická výjimka!', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Self.LogStatus('ERR: Systém nelze spustit, AppEvents hlásí výjimku');
     Exit();
   end;
@@ -2139,7 +2135,7 @@ procedure TF_Main.B_AB_DeleteClick(Sender: TObject);
 var jc: TJC;
 begin
   jc := ABlist[Self.LV_AB.ItemIndex];
-  if ((Self.LV_AB.Selected <> nil) and (Application.MessageBox(PChar('Opravdu smazat jízdní cestu ' + jc.name + '?'),
+  if ((Self.LV_AB.Selected <> nil) and (StrMessageBox('Opravdu smazat jízdní cestu ' + jc.name + '?',
     'Opravdu?', MB_YESNO OR MB_ICONQUESTION) = mrYes)) then
   begin
     try
@@ -2154,7 +2150,7 @@ begin
         ABlist.Remove(ABlist[Self.LV_AB.ItemIndex]);
     except
       on E: Exception do
-        Application.MessageBox(PChar('Chyba při mazání:' + #13#10 + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+        ExceptionMessageBox('Chyba při mazání:', E);
     end;
   end;
 end;
@@ -2169,14 +2165,14 @@ begin
   var i := LV_Blocks.ItemIndex;
 
   Beep;
-  if Application.MessageBox(PChar('Opravdu chcete smazazat blok ' + Blocks.GetBlkIndexName(i) + '?'), 'Mazání bloku',
-    MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
+  if (StrMessageBox('Opravdu chcete smazazat blok ' + Blocks.GetBlkIndexName(i) + '?', 'Mazání bloku',
+      MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
   begin
     try
       Blocks.Delete(i);
     except
       on E: Exception do
-        Application.MessageBox(PChar('Chyba:' + #13#10 + E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox(E);
     end;
   end; // if MesageBox
 end;
@@ -2194,12 +2190,12 @@ begin
     except
       on E:Exception do
       begin
-        Application.MessageBox(PChar('Nepodařilo se přidat!'+#13#10+E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+        ExceptionMessageBox('Nepodařilo se přidat!', E);
         Exit();
       end;
     end;
 
-    Application.MessageBox('Úspěšně uloženo', 'OK', MB_OK OR MB_ICONINFORMATION);
+    StrMessageBox('Úspěšně uloženo', 'OK', MB_OK OR MB_ICONINFORMATION);
   finally
     Self.B_FuncChange.Enabled := True;
     PanelServer.BroadcastFuncsDescription();
@@ -2212,10 +2208,10 @@ begin
   try
     Self.B_FuncUpdate.Enabled := False;
     Self.UpdateFuncMemo();
-    Application.MessageBox('Úspěšně aktualizováno', 'OK', MB_OK OR MB_ICONINFORMATION);
+    StrMessageBox('Úspěšně aktualizováno', 'OK', MB_OK OR MB_ICONINFORMATION);
   except
     on E:Exception do
-      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+      ExceptionMessageBox(E);
   end;
 
   Self.B_FuncUpdate.Enabled := True;
@@ -2235,7 +2231,7 @@ end;
 
 procedure TF_Main.B_ClearStatsClick(Sender: TObject);
 begin
-  if (Application.MessageBox('Opravdu smazat najeté bloky a kilometry všech hnacích vozidel?', 'Opravdu?',
+  if (StrMessageBox('Opravdu smazat najeté bloky a kilometry všech hnacích vozidel?', 'Opravdu?',
     MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
     HVDb.ClearAllStatistics();
 end;
@@ -2270,7 +2266,7 @@ begin
       HVDb.ExportStatistics(fn);
     except
       on E: Exception do
-        Application.MessageBox(PChar('Nelze exportovat' + #13#10 + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+        ExceptionMessageBox('Nelze exportovat', E);
     end;
   end;
 end;
@@ -2287,7 +2283,7 @@ begin
 
   var hvs := Self.LVSelectedTexts(Self.LV_HV, 'HV', 'HV');
 
-  if (Application.MessageBox(PChar('Opravdu smazat ' + hvs + '?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  if (StrMessageBox('Opravdu smazat ' + hvs + '?', '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
     for var i := Self.LV_HV.Items.Count - 1 downto 0 do
     begin
@@ -2300,8 +2296,7 @@ begin
         except
           on E: Exception do
           begin
-            Application.MessageBox(PChar('Mazání HV ' + IntToStr(addr) + ' se nezdařilo:' + #13#10 + E.Message),
-              'Chyba', MB_OK OR MB_ICONWARNING);
+            ExceptionMessageBox('Mazání HV ' + IntToStr(addr) + ' se nezdařilo:', E);
             Exit();
           end;
         end;
@@ -2323,8 +2318,6 @@ end;
 
 procedure TF_Main.B_lok_deleteClick(Sender: TObject);
 var sprs: string;
-  LI: TListItem;
-  i: Integer;
 begin
   if (Self.LV_Soupravy.Selected = nil) then
     Exit();
@@ -2333,11 +2326,11 @@ begin
 
   sprs := Self.LVSelectedTexts(Self.LV_Soupravy, 'soupravu', 'soupravy');
 
-  if (Application.MessageBox(PChar('Opravdu smazat ' + sprs + '?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  if (StrMessageBox('Opravdu smazat ' + sprs + '?', '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
-    for i := Self.LV_Soupravy.Items.Count - 1 downto 0 do
+    for var i: Integer := Self.LV_Soupravy.Items.Count - 1 downto 0 do
     begin
-      LI := Self.LV_Soupravy.Items[i];
+      var LI: TListItem := Self.LV_Soupravy.Items[i];
       if ((LI.Selected) and (LI.Caption <> '')) then
         Trains.Remove(LI.Index);
     end;
@@ -2347,8 +2340,8 @@ end;
 procedure TF_Main.B_mJC_AddClick(Sender: TObject);
 begin
   if ((Self.LV_MultiJC.Selected <> nil) and
-    (Application.MessageBox(PChar('Chcete použít složenou JC ' + MultiJCDb[Self.LV_MultiJC.ItemIndex].name +
-    ' jako šablonu pro vytvoření nové složené JC?'), 'Nová složená JC', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON1)
+    (StrMessageBox('Chcete použít složenou JC ' + MultiJCDb[Self.LV_MultiJC.ItemIndex].name +
+    ' jako šablonu pro vytvoření nové složené JC?', 'Nová složená JC', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON1)
     = mrYes)) then
     F_MJCEdit.NewMJC(MultiJCDb[Self.LV_MultiJC.ItemIndex])
   else
@@ -2357,19 +2350,17 @@ end;
 
 procedure TF_Main.B_mJC_RemoveClick(Sender: TObject);
 var mjcs: string;
-  LI: TListItem;
-  i: Integer;
 begin
   if (Self.LV_MultiJC.Selected = nil) then
     Exit();
 
   mjcs := Self.LVSelectedTexts(Self.LV_MultiJC, 'cestu', 'cesty');
 
-  if (Application.MessageBox(PChar('Opravdu smazat ' + mjcs + '?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  if (StrMessageBox('Opravdu smazat ' + mjcs + '?', '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
-    for i := Self.LV_MultiJC.Items.Count - 1 downto 0 do
+    for var i: Integer := Self.LV_MultiJC.Items.Count - 1 downto 0 do
     begin
-      LI := Self.LV_MultiJC.Items[i];
+      var LI: TListItem := Self.LV_MultiJC.Items[i];
       if (LI.Selected) then
         MultiJCDb.Remove(LI.Index);
     end;
@@ -2382,7 +2373,7 @@ begin
   if (Self.LV_Stanice.Selected = nil) then
     Exit();
   Area := Areas[Self.LV_Stanice.ItemIndex];
-  if (Application.MessageBox(PChar('Opravdu smazat zásobník jízdních cest stanice ' + Area.name + ' ?'), 'Opravdu?',
+  if (StrMessageBox('Opravdu smazat zásobník jízdních cest stanice ' + Area.name + ' ?', 'Opravdu?',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
     Area.stack.Clear();
 end;
@@ -2394,7 +2385,7 @@ end;
 
 procedure TF_Main.B_User_DeleteClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu smazat uživatele ' + Self.LV_Users.Selected.SubItems[0] + ' ?'), 'Opravdu?',
+  if (StrMessageBox('Opravdu smazat uživatele ' + Self.LV_Users.Selected.SubItems[0] + ' ?', 'Opravdu?',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
     UsrDB.RemoveUser(Self.LV_Users.ItemIndex);
@@ -2405,8 +2396,8 @@ end;
 procedure TF_Main.B_VC_AddClick(Sender: TObject);
 begin
   if ((Self.LV_JC.Selected <> nil) and
-    (Application.MessageBox(PChar('Chcete použít JC ' + JCDb[Self.LV_JC.ItemIndex].name +
-    ' jako šablonu pro vytvoření nové JC?'), 'Nová JC', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON1) = mrYes)) then
+    (StrMessageBox('Chcete použít JC ' + JCDb[Self.LV_JC.ItemIndex].name +
+    ' jako šablonu pro vytvoření nové JC?', 'Nová JC', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON1) = mrYes)) then
     F_JCEdit.NewJC(Self.LV_JC.ItemIndex)
   else
     F_JCEdit.NewJC(-1);
@@ -2414,31 +2405,28 @@ end;
 
 procedure TF_Main.B_VC_deleteClick(Sender: TObject);
 var jcs: string;
-  LI: TListItem;
-  i: Integer;
-  jc: TJC;
 begin
   if (Self.LV_JC.Selected = nil) then
     Exit();
 
   jcs := Self.LVSelectedTexts(Self.LV_JC, 'cestu', 'cesty');
 
-  if (Application.MessageBox(PChar('Opravdu smazat ' + jcs + '?'), '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  if (StrMessageBox('Opravdu smazat ' + jcs + '?', '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
-    for i := Self.LV_JC.Items.Count - 1 downto 0 do
+    for var i: Integer := Self.LV_JC.Items.Count - 1 downto 0 do
     begin
-      LI := Self.LV_JC.Items[i];
+      var LI: TListItem := Self.LV_JC.Items[i];
       if (LI.Selected) then
       begin
         try
-          jc := JCDb.GetJCByIndex(LI.Index);
+          var jc: TJC := JCDb.GetJCByIndex(LI.Index);
           if (ABlist.Contains(jc)) then
             ABlist.Remove(jc);
           JCDb.Remove(LI.Index);
         except
           on E: Exception do
           begin
-            Application.MessageBox(PChar('Nelze smazat JC' + #13#10 + E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+            ExceptionMessageBox('Nelze smazat JC', E);
             Exit();
           end;
         end;
@@ -2457,8 +2445,8 @@ var pozice: Integer;
 begin
   pozice := LV_Zesilovace.ItemIndex;
   Beep;
-  if Application.MessageBox(PChar('Opravdu chcete smazat zesilovač ' + Boosters.sorted[pozice].name + '?'),
-    'Mazání zesilovace', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes then
+  if (StrMessageBox('Opravdu chcete smazat zesilovač ' + Boosters.sorted[pozice].name + '?',
+    'Mazání zesilovace', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
   begin
     Boosters.Remove(Boosters.sorted[pozice].id);
     LV_Zesilovace.Items.Delete(pozice);
@@ -2605,8 +2593,7 @@ end;
 
 procedure TF_Main.L_DateDblClick(Sender: TObject);
 begin
-  Application.MessageBox('Datum a čas lze nastavit v operačním systému', 'Informace', MB_ICONINFORMATION OR MB_OK OR
-    MB_DEFBUTTON1);
+  StrMessageBox('Datum a čas lze nastavit v operačním systému', 'Informace', MB_ICONINFORMATION OR MB_OK);
 end;
 
 procedure TF_Main.MI_DisconnectClick(Sender: TObject);
@@ -2617,7 +2604,7 @@ begin
       PanelServer.DisconnectClient(PanelServer.GetClient(Self.LV_Clients.ItemIndex).connection);
     except
       on E: Exception do
-        Application.MessageBox(PChar('Výjimka při odpojování - ' + E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Výjimka při odpojování', E);
     end;
   end;
 end;
@@ -2645,11 +2632,10 @@ procedure TF_Main.MI_RCS_UpdateClick(Sender: TObject);
 begin
   try
     Self.UpdateRCSLibsList();
-    Application.MessageBox('Seznam knihoven úspěšně aktualizován.', 'Info', MB_OK OR MB_ICONINFORMATION);
+    StrMessageBox('Seznam knihoven úspěšně aktualizován.', 'Informace', MB_OK OR MB_ICONINFORMATION);
   except
     on E: Exception do
-      Application.MessageBox(PChar('Seznam knihoven se nepodařilo aktualizovat:' + #13#10 + E.Message), 'Chyba',
-        MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox('Seznam knihoven se nepodařilo aktualizovat:', E);
   end;
 end;
 
@@ -2671,7 +2657,7 @@ begin
     on E: Exception do
     begin
       AppEvents.LogException(E, 'TF_Main.MI_Save_configClick');
-      Application.MessageBox(PChar('Výjimka: ' + E.Message), 'Výjimka', MB_OK OR MB_ICONERROR);
+      ExceptionMessageBox('Výjimka: ', E);
     end;
   end;
 
@@ -2708,8 +2694,7 @@ end;
 
 procedure TF_Main.LB_LogDblClick(Sender: TObject);
 begin
-  if (Application.MessageBox('Smazat obsah seznamu?', 'Smazat?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes)
-  then
+  if (StrMessageBox('Smazat obsah seznamu?', 'Smazat?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
     Self.LB_Log.Clear();
 end;
 
@@ -2867,7 +2852,7 @@ begin
     FormData.SaveFormData(FormData.aFile);
   except
     on E: Exception do
-      Application.MessageBox(PChar('Výjimka:'+#13#10+E.Message), 'Chyba při ukládání dat', MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox('Výjimka:', E);
   end;
 end;
 
@@ -3315,7 +3300,7 @@ begin
     end;
   except
     on E:Exception do
-      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONERROR);
+      ExceptionMessageBox(E);
   end;
 end;
 
@@ -3376,7 +3361,7 @@ begin
       RegCollector.Open(HVDb[StrToInt(Self.LV_HV.Selected.Caption)]);
     except
       on E: Exception do
-        Application.MessageBox(PChar(E.Message), 'Varování', MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox(E);
     end;
   end else begin
     F_HVEdit.OpenForm(HVDb[StrToInt(LV_HV.Selected.Caption)]);
@@ -3553,8 +3538,7 @@ begin
     except
       on E: Exception do
       begin
-        Application.MessageBox(PChar('Nepodařilo se načíst měřítko:' + #13#10 + E.Message), 'Chyba',
-          MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Nepodařilo se načíst měřítko:', E);
         Exit();
       end;
     end;
@@ -3570,7 +3554,7 @@ begin
           StrToInt(Copy(Self.ME_autosave_period.Text, 4, 2)), 0);
       except
         GlobalConfig.autosave := False;
-        Application.MessageBox('Nepodařilo se načíst čas automatického uložení', 'Chyba', MB_OK OR MB_ICONERROR);
+        ErrorMessageBox('Nepodařilo se načíst čas automatického uložení');
       end;
     end;
 
@@ -3594,7 +3578,7 @@ begin
   except
     on E: Exception do
     begin
-      Application.MessageBox(PChar('Chyba:' + E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox(E);
       Exit();
     end;
   end;

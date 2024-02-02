@@ -71,7 +71,7 @@ implementation
 {$R *.dfm}
 
 uses TJCDatabase, TechnologieJC, Block, BlockSignal, TMultiJCDatabase,
-  DataMultiJC;
+  DataMultiJC, ownGuiUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -323,12 +323,12 @@ var data: TMultiJCData;
 begin
   if (Self.LV_JCs.Items.Count < 2) then
   begin
-    Application.MessageBox('Složená JC musí obsahovat alespoň 2 JC', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Složená JC musí obsahovat alespoň 2 JC', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název složené JC', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název složené JC', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -336,7 +336,7 @@ begin
     var check := MultiJCDb.GetJCByID(Self.SE_ID.Value);
     if ((check <> nil) and (check <> Self.openMJC)) then
     begin
-      Application.MessageBox('Složená jízdní cesta s tímto ID již existuje', 'Nelze uložit data',
+      StrMessageBox('Složená jízdní cesta s tímto ID již existuje', 'Nelze uložit data',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
@@ -357,8 +357,7 @@ begin
     except
       on E: Exception do
       begin
-        Application.MessageBox(PChar('Nepodařilo se přidat složenou JC' + #13#10 + E.Message), 'Chyba',
-          MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Nepodařilo se přidat složenou JC', E);
         Exit();
       end;
     end;

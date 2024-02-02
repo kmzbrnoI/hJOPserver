@@ -34,7 +34,7 @@ var
 
 implementation
 
-uses ModelovyCas;
+uses ModelovyCas, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -43,19 +43,19 @@ begin
   try
     if (StrToInt(Copy(ME_start_time.Text, 4, 2)) > 59) then
     begin
-      Application.MessageBox('Minuty zadejte v rozsahu 0-59', 'Nelze nastavit cas', MB_OK OR MB_ICONWARNING);
+      StrMessageBox('Minuty zadejte v rozsahu 0-59', 'Nelze nastavit čas', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
 
     if (StrToInt(LeftStr(ME_start_time.Text, 2)) > 23) then
     begin
-      Application.MessageBox('Hodiny zadejte v rozsahu 0-23', 'Nelze nastavit cas', MB_OK OR MB_ICONWARNING);
+      StrMessageBox('Hodiny zadejte v rozsahu 0-23', 'Nelze nastavit čas', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
 
     if (StrToFloat(ME_Nasobic.Text) >= 10) then
     begin
-      Application.MessageBox('Násobič zadejte v rozsahu 0-9.9', 'Nelze nastavit cas', MB_OK OR MB_ICONWARNING);
+      StrMessageBox('Násobič zadejte v rozsahu 0-9.9', 'Nelze nastavit čas', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
 
@@ -65,7 +65,8 @@ begin
 
     Self.Close();
   except
-    Application.MessageBox('Zadána neplatná data', 'Nelze nasatvit čas', MB_OK OR MB_ICONWARNING);
+    on E:Exception do
+      ExceptionMessageBox('Zadána neplatná data', E);
   end;
 
 end;

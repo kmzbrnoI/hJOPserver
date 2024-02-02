@@ -81,7 +81,7 @@ var
 
 implementation
 
-uses TechnologieRCS, Logging, RCS, BlockSignal, RCSErrors, IfThenElse;
+uses TechnologieRCS, Logging, RCS, BlockSignal, RCSErrors, IfThenElse, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -398,7 +398,7 @@ begin
     end;
   except
     on E: Exception do
-      Application.MessageBox(PChar('Nelze nastavít výstup:' + #13#10 + E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox('Nelze nastavít výstup:', E);
   end;
 end;
 

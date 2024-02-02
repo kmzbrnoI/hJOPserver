@@ -275,12 +275,12 @@ procedure TF_BlkTrack.B_OKClick(Sender: TObject);
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Booster.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte zesilovač, kterému patří blok!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -297,7 +297,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -307,7 +307,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -341,7 +341,7 @@ begin
     begin
       var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.input);
       if (another <> nil) then
-        Application.MessageBox(PChar('Varování: blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString()), 'Varování', MB_OK OR MB_ICONWARNING);
+        StrMessageBox('Varování: blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString(), 'Varování', MB_OK OR MB_ICONWARNING);
     end;
 
     Self.Close();
@@ -349,7 +349,7 @@ begin
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;

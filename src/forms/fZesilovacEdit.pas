@@ -58,7 +58,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, BoosterDb, DataZesilovac, BlockDb;
+uses GetSystems, TechnologieRCS, BoosterDb, DataZesilovac, BlockDb, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -87,17 +87,17 @@ var settings: TBoosterSettings;
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
+    StrMessageBox('Vyplňte název zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
     Exit();
   end;
   if (Self.E_ID.Text = '') then
   begin
-    Application.MessageBox('Vyplňte id zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
+    StrMessageBox('Vyplňte id zesilovače!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
     Exit();
   end;
   if (Boosters.ContainsKey(E_ID.Text, Self.open_booster)) then
   begin
-    Application.MessageBox('Zesilovač s tímto ID již existuje!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
+    StrMessageBox('Zesilovač s tímto ID již existuje!', 'Nelze uložit data', MB_OK OR MB_ICONSTOP);
     Exit();
   end;
 
@@ -109,7 +109,7 @@ begin
     except
       on E: Exception do
       begin
-        Application.MessageBox(PChar(E.Message), 'Chyba při vytváření zesilovače', MB_OK OR MB_ICONERROR);
+        ExceptionMessageBox('Chyba při vytváření zesilovače', E);
         Exit();
       end;
     end;

@@ -179,7 +179,7 @@ end;
 
 procedure TF_BlkCrossing.B_Positive_HelpClick(Sender: TObject);
 begin
-  Application.MessageBox(PChar(BlockCrossingPositive.HELP), 'Nápověda', MB_OK OR MB_ICONINFORMATION);
+  StrMessageBox(BlockCrossingPositive.HELP, 'Nápověda', MB_OK OR MB_ICONINFORMATION);
 end;
 
 procedure TF_BlkCrossing.B_Positive_Name_To_IdsClick(Sender: TObject);
@@ -192,7 +192,7 @@ begin
     except
       on E:Exception do
       begin
-        Application.MessageBox(PChar(E.Message), 'Chyba převodu', MB_OK OR MB_ICONERROR);
+        ExceptionMessageBox('Chyba převodu', E);
         Exit();
       end;
     end;
@@ -209,7 +209,7 @@ procedure TF_BlkCrossing.B_save_PClick(Sender: TObject);
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název přejezdu', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název přejezdu', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -221,7 +221,7 @@ begin
     except
       on E:Exception do
       begin
-        ExceptionMessageBox('Nepodařilo se načíst pravidlo pozitivy: '+line, 'Nelze uložit data', E);
+        ExceptionMessageBox('Nepodařilo se načíst pravidlo pozitivy: '+line, E, 'Nelze uložit data');
         positiveRules.Free();
         Exit();
       end;
@@ -240,7 +240,7 @@ begin
     except
       on E: Exception do
       begin
-        ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+        ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
         Exit();
       end;
     end;
@@ -250,7 +250,7 @@ begin
     except
       on E: Exception do
       begin
-        ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+        ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
         Exit();
       end;
     end;
@@ -287,7 +287,7 @@ begin
       except
         on E: Exception do
         begin
-          Application.MessageBox('Nepodařilo se načíst kolej přejezdu!', 'Chyba', MB_OK OR MB_ICONWARNING);
+          ExceptionMessageBox('Nepodařilo se načíst kolej přejezdu!', E);
           Exit();
         end;
       end;
@@ -318,11 +318,11 @@ begin
       end;
 
       if (messages <> '') then
-        Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
+        StrMessageBox(messages, 'Varování', MB_OK OR MB_ICONWARNING);
     except
       on E: Exception do
       begin
-        ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+        ExceptionMessageBox('Neočekávaná chyba.', E);
         Exit();
       end;
     end;
@@ -341,7 +341,7 @@ end;
 
 procedure TF_BlkCrossing.B_Track_DeleteClick(Sender: TObject);
 begin
-  if (Application.MessageBox('Opravdu smazat kolej?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
+  if (StrMessageBox('Opravdu smazat kolej?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
     Exit();
   Self.tracks.Delete(Self.CB_Track.ItemIndex);
   Self.CB_Track.Items.Delete(Self.CB_Track.ItemIndex);

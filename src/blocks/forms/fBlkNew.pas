@@ -24,7 +24,7 @@ implementation
 
 uses fBlkTurnout, fBlkTrack, fBlkIR, fBlkSignal, fMain, fBlkSummary, fBlkAC,
   BlockDb, fBlkCrossing, fBlkRailway, fBlkLock, fBlkDisconnector, fBlkRT,
-  fBlkIO, fBlkGroupSignal, fBlkPst;
+  fBlkIO, fBlkGroupSignal, fBlkPst, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -38,7 +38,7 @@ procedure TF_BlkNew.B_SaveClick(Sender: TObject);
 begin
   if (RG_NewTyp.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte typ bloku', 'Nelze vytvořit blok', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte typ bloku', 'Nelze vytvořit blok', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 

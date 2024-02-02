@@ -54,7 +54,7 @@ var
 
 implementation
 
-uses CommCtrl;
+uses CommCtrl, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -66,7 +66,7 @@ end;
 
 procedure TF_TrainSpeed.MI_HelpClick(Sender: TObject);
 begin
-  Application.MessageBox('Každý øádek obsahuje rychlost v km/h a kritéria zadávané jako regulární výrazy.'+#13#10+
+  StrMessageBox('Každý øádek obsahuje rychlost v km/h a kritéria zadávané jako regulární výrazy.'+#13#10+
     'Øádky se zpracovávají postupnì odshora dolù. Pokud souprava vyhoví kritériím v øádku, je jí nastavena rychlost v onom øádku.'+#13#10+
     'Kritéria jsou tvoøena typem vlaku a tøídou pøechodnosti hnacích vozidel. Všechna hnací vozidla musí vyhovìt regulárnímu výrazu tøídy pøechodnosti.'+#13#10+
     'Pøíklad tabulky:'+#13#10+

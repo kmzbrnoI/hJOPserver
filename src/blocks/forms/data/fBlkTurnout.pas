@@ -489,37 +489,37 @@ procedure TF_BlkTurnout.B_SaveClick(Sender: TObject);
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if ((Self.CHB_Coupling.Checked) and (Self.CB_Coupling.ItemIndex < 0)) then
   begin
-    Application.MessageBox('Vyberte spojku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte spojku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CHB_Lock.Checked) then
   begin
     if (Self.CB_Lock.ItemIndex < 0) then
     begin
-      Application.MessageBox('Vyberte zámek!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      StrMessageBox('Vyberte zámek!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
     if (Self.CB_Lock_Pos.ItemIndex < 0) then
     begin
-      Application.MessageBox('Vyberte polohu výhybky pro uzamčení zámku!', 'Nelze uložit data',
+      StrMessageBox('Vyberte polohu výhybky pro uzamčení zámku!', 'Nelze uložit data',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
   end;
   if ((Self.CHB_npPlus.Checked) and (Self.CB_npPlus.ItemIndex < 0)) then
   begin
-    Application.MessageBox('Vyberte hlídaný blok neprofilového styku pro polohu plus!', 'Nelze uložit data',
+    StrMessageBox('Vyberte hlídaný blok neprofilového styku pro polohu plus!', 'Nelze uložit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if ((Self.CHB_npMinus.Checked) and (Self.CB_npMinus.ItemIndex < 0)) then
   begin
-    Application.MessageBox('Vyberte hlídaný blok neprofilového styku pro polohu mínus!', 'Nelze uložit data',
+    StrMessageBox('Vyberte hlídaný blok neprofilového styku pro polohu mínus!', 'Nelze uložit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
@@ -537,7 +537,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -547,7 +547,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -596,7 +596,7 @@ begin
       var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(settings.coupling);
       if (turnout = nil) then
       begin
-        Application.MessageBox('Blok spojky neexistuje nebo není výhybka', 'Chyba', MB_OK OR MB_ICONWARNING);
+        StrMessageBox('Blok spojky neexistuje nebo není výhybka', 'Chyba', MB_OK OR MB_ICONWARNING);
         Exit();
       end;
 
@@ -604,7 +604,7 @@ begin
 
       if ((turnoutSettings.coupling <> -1) and (turnoutSettings.coupling <> glob.id)) then
       begin
-        Application.MessageBox('Na spojkové výhybce je již jiná Coupling!', 'Varování', MB_OK OR MB_ICONWARNING);
+        StrMessageBox('Na spojkové výhybce je již jiná Coupling!', 'Varování', MB_OK OR MB_ICONWARNING);
         Exit();
       end;
 
@@ -684,19 +684,19 @@ begin
     except
       on E: Exception do
       begin
-        Application.MessageBox(PChar(E.Message), 'Nelze uložit', MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Nelze uložit', E);
         Exit();
       end;
     end;
 
     if (messages <> '') then
-      Application.MessageBox(PChar(messages), 'Varování', MB_OK OR MB_ICONWARNING);
+      StrMessageBox(messages, 'Varování', MB_OK OR MB_ICONWARNING);
 
     Self.block.Change();
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;

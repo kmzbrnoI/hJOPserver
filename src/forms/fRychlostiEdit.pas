@@ -27,7 +27,7 @@ var
 
 implementation
 
-uses fMain, TechnologieTrakce;
+uses fMain, TechnologieTrakce, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -52,7 +52,7 @@ begin
   except
     on E: Exception do
     begin
-      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox(E);
       Exit();
     end;
   end;

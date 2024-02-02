@@ -78,14 +78,14 @@ begin
 
   if (Self.CB_Crossing.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte přejezd!', 'Nelze přidat/upravit přejezd', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte přejezd!', 'Nelze přidat/upravit přejezd', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   var id := Self.CB_CrossingId[Self.CB_Crossing.ItemIndex];
   if ((Self.LV_Crossings.Selected = nil) and (Self.BlockPresent(id, Self.LV_Crossings))) then
   begin
-    Application.MessageBox('Nelze přidat duplicitní přejezd!', 'Nelze přidat/upravit přejezd', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Nelze přidat duplicitní přejezd!', 'Nelze přidat/upravit přejezd', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -109,7 +109,7 @@ var glob: TBlkSettings;
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název součtové hlásky!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název součtové hlásky!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -125,7 +125,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -135,7 +135,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -149,7 +149,7 @@ begin
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;

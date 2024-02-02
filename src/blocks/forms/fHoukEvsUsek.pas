@@ -43,6 +43,8 @@ var
 
 implementation
 
+uses ownGuiUtils;
+
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -99,14 +101,14 @@ var s: TBlkTrackSettings;
 begin
   if (not formL.InputValid()) then
   begin
-    Application.MessageBox('Nějaká událost v lichém směru je špatně zadaná!', 'Nelze uložit data',
+    StrMessageBox('Nějaká událost v lichém směru je špatně zadaná!', 'Nelze uložit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   if (not Forms.InputValid()) then
   begin
-    Application.MessageBox('Nějaká událost v sudém směru je špatně zadaná!', 'Nelze uložit data',
+    StrMessageBox('Nějaká událost v sudém směru je špatně zadaná!', 'Nelze uložit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;

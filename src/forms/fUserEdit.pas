@@ -54,7 +54,7 @@ implementation
 
 {$R *.dfm}
 
-uses UserDb, DataUsers, AreaDb, Area, fMain;
+uses UserDb, DataUsers, AreaDb, Area, fMain, ownGuiUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -64,9 +64,8 @@ begin
 end;
 
 procedure TF_UserEdit.CB_RightsChange(Sender: TObject);
-var i: Integer;
 begin
-  for i := 0 to Self.LV_ORs.Items.Count - 1 do
+  for var i: Integer := 0 to Self.LV_ORs.Items.Count - 1 do
   begin
     if (Self.LV_ORs.Items[i].Selected) then
     begin
@@ -80,11 +79,10 @@ begin
 end;
 
 procedure TF_UserEdit.FormClose(Sender: TObject; var Action: TCloseAction);
-var i: Integer;
 begin
   Self.new := false;
 
-  for i := 0 to Self.LV_ORs.Items.Count - 1 do
+  for var i: Integer := 0 to Self.LV_ORs.Items.Count - 1 do
     FreeMem(Self.LV_ORs.Items.Item[i].Data);
   Self.LV_ORs.Clear();
 end;
@@ -200,7 +198,7 @@ var index: Integer;
 begin
   if (Length(Self.E_UserName.Text) < 3) then
   begin
-    Application.MessageBox('Uživatelské jméno musí mít alespoň 3 znaky!', 'nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Uživatelské jméno musí mít alespoň 3 znaky!', 'nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -208,19 +206,19 @@ begin
   begin
     if (Self.E_Password1.Text = '') then
     begin
-      Application.MessageBox('Heslo nemůže být prázdné!', 'nelze uložit data', MB_OK OR MB_ICONWARNING);
+      StrMessageBox('Heslo nemůže být prázdné!', 'nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
   end;
 
   if (Self.E_Password1.Text <> Self.E_Password2.Text) then
   begin
-    Application.MessageBox('Zadaná hesla se neshodují!', 'nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Zadaná hesla se neshodují!', 'nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Length(Self.E_Password1.Text) < 3) then
   begin
-    Application.MessageBox('Heslo musí mít alespoň 3 znaky!', 'nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Heslo musí mít alespoň 3 znaky!', 'nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -248,7 +246,7 @@ begin
     except
       on e: Exception do
       begin
-        Application.MessageBox(PChar(e.Message), 'Varování', MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox(e);
         Exit();
       end;
     end;
@@ -269,27 +267,25 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_UserEdit.FillORs();
-var LI: TListItem;
-  rights: TAreaRights;
-  Data: Pointer;
-  Area: TArea;
 begin
   Self.LV_ORs.Clear();
 
-  for Area in areas do
+  for var area: TArea in areas do
   begin
-    LI := Self.LV_ORs.Items.Add;
+    var LI: TListItem := Self.LV_ORs.Items.Add();
     LI.Caption := Area.id;
     LI.SubItems.Add(Area.name);
 
+    var rights: TAreaRights;
     if (not Self.openUser.areas.TryGetValue(LI.Caption, rights)) then
       rights := TAreaRights.null;
     LI.SubItems.Add(TArea.ORRightsToString(rights));
 
-    GetMem(Data, 3);
+    var data: Pointer;
+    GetMem(data, 3);
     TAreaRights(Data^) := rights;
 
-    LI.Data := Data;
+    LI.Data := data;
   end;
 
   Self.CB_Rights.ItemIndex := -1;

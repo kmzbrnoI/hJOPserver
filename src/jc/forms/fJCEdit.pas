@@ -364,12 +364,12 @@ begin
 
   if (Self.CB_Turnout.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte výhybku!', 'Nelze přídat výhybku', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte výhybku!', 'Nelze přídat výhybku', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Turnout_Pos.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte polohu výhybky!', 'Nelze přidat výhybku', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte polohu výhybky!', 'Nelze přidat výhybku', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -389,7 +389,7 @@ end;
 
 procedure TF_JCEdit.B_Track_DelClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané úseky z JC?'), 'Mazání úseku',
+  if (StrMessageBox('Opravdu chcete smazat vybrané úseky z JC?', 'Mazání úseku',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
     Self.LV_Tracks.DeleteSelected();
@@ -406,14 +406,14 @@ procedure TF_JCEdit.B_Track_OkClick(Sender: TObject);
 begin
   if (Self.CB_Track.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte úsek!', 'Nelze přidat úsek', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte úsek!', 'Nelze přidat úsek', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   var id := Self.CB_TrackIds[Self.CB_Track.ItemIndex];
   if ((Self.LV_Tracks.Selected = nil) and (Self.BlockPresent(id, Self.LV_Tracks))) then
   begin
-    Application.MessageBox('Nelze přidat duplicitní úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Nelze přidat duplicitní úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -462,7 +462,7 @@ end;
 
 procedure TF_JCEdit.B_Crossing_DelClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané přejezdy z jízdní cesty?'), 'Mazání přejezdů',
+  if (StrMessageBox(PChar('Opravdu chcete smazat vybrané přejezdy z jízdní cesty?'), 'Mazání přejezdů',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
     Self.LV_Crossings.DeleteSelected();
@@ -474,12 +474,12 @@ procedure TF_JCEdit.B_Crossing_OkClick(Sender: TObject);
 begin
   if ((not Self.CB_Crossing.Enabled) or (Self.CB_Crossing.ItemIndex = -1)) then
   begin
-    Application.MessageBox('Vyberte přejezd!', 'Nelze přídat přejezd', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte přejezd!', 'Nelze přídat přejezd', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if ((Self.CHB_Crossing_Closing.Checked) and (Self.CB_Crossing_Ref.ItemIndex = -1)) then
   begin
-    Application.MessageBox('Vyberte referenční úsek!', 'Nelze přidat přejezd', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte referenční úsek!', 'Nelze přidat přejezd', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -495,7 +495,7 @@ begin
       except
         on E:Exception do
         begin
-          Application.MessageBox(PChar(str + ' není platné ID bloku'), 'Chyba', MB_OK OR MB_ICONERROR);
+          ErrorMessageBox(str + ' není platné ID bloku');
           Exit();
         end;
       end;
@@ -535,12 +535,12 @@ begin
       var id: Integer := Blocks.GetBlkID(str);
       if (id = BLK_MULTIPLE) then
       begin
-        Application.MessageBox(PChar('Více bloků se jménem  "'+str+'"'), 'Chyba', MB_OK OR MB_ICONERROR);
+        ErrorMessageBox('Více bloků se jménem  "'+str+'"');
         Exit();
       end;
       if (id = BLK_NOT_FOUND) then
       begin
-        Application.MessageBox(PChar('Blok "'+str+'" neexistuje'), 'Chyba', MB_OK OR MB_ICONERROR);
+        ErrorMessageBox('Blok "'+str+'" neexistuje');
         Exit();
       end;
       ids := ids + IntToStr(id) + ', ';
@@ -556,7 +556,7 @@ end;
 
 procedure TF_JCEdit.B_Lock_DelClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané zámky z jízdní cesty?'), 'Mazání zámků',
+  if (StrMessageBox('Opravdu chcete smazat vybrané zámky z jízdní cesty?', 'Mazání zámků',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
     Self.LV_Locks.DeleteSelected();
@@ -568,12 +568,12 @@ procedure TF_JCEdit.B_Lock_OkClick(Sender: TObject);
 begin
   if ((not Self.CB_Lock.Enabled) or (Self.CB_Lock.ItemIndex = -1)) then
   begin
-    Application.MessageBox('Vyberte zámek!', 'Nelze přídat zámek', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte zámek!', 'Nelze přídat zámek', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Lock_Ref.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte referenční úsek!', 'Nelze přidat zámek', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte referenční úsek!', 'Nelze přidat zámek', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -590,7 +590,7 @@ end;
 
 procedure TF_JCEdit.B_Refugee_DelClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané odvraty z jízdní cesty?'), 'Mazání odvratů',
+  if (StrMessageBox('Opravdu chcete smazat vybrané odvraty z jízdní cesty?', 'Mazání odvratů',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
     Self.LV_Refugees.DeleteSelected();
@@ -602,17 +602,17 @@ procedure TF_JCEdit.B_Refugee_OkClick(Sender: TObject);
 begin
   if ((not Self.CB_Refugee.Enabled) or (Self.CB_Refugee.ItemIndex = -1)) then
   begin
-    Application.MessageBox('Vyberte odvrat!', 'Nelze přídat odvrat', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte odvrat!', 'Nelze přídat odvrat', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Refugee_Pos.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte polohu odvratu!', 'Nelze přidat odvrat', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte polohu odvratu!', 'Nelze přidat odvrat', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Refugee_Ref.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte referenční úsek!', 'Nelze přidat odvrat', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte referenční úsek!', 'Nelze přidat odvrat', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -632,48 +632,48 @@ label Fail;
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název jízdní cesty!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název jízdní cesty!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (JCDb.IsJC(Self.SE_ID.Value, Self.OpenIndex)) then
   begin
-    Application.MessageBox('JC s tímto ID již existuje!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('JC s tímto ID již existuje!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Signal.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte návestidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte návestidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Typ.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte typ jízdní cesty!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte typ jízdní cesty!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Signal_Signal.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte návěst!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte návěst!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Next_Signal.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte další návěstidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte další návěstidlo!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Signal_Fall.ItemIndex < 0) then
   begin
-    Application.MessageBox('Vyberte, při obsazení kterého úseku má proběhnout pád návěstidla!',
+    StrMessageBox('Vyberte, při obsazení kterého úseku má proběhnout pád návěstidla!',
       'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CHB_Railway.Checked) and (Self.CB_Railway.ItemIndex < 0) then
   begin
-    Application.MessageBox('Vyberte trať!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte trať!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CHB_Railway.Checked) and (Self.CB_Railway_Dir.ItemIndex < 0) then
   begin
-    Application.MessageBox('Vyberte směr trati!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte směr trati!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -681,7 +681,7 @@ begin
   begin
     if ((LI.SubItems.Count < 3) or ((LI.SubItems.Strings[2] <> '+') and (LI.SubItems.Strings[2] <> '-'))) then
     begin
-      Application.MessageBox('Je třeba vybrat polohy všech výhybek!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      StrMessageBox('Je třeba vybrat polohy všech výhybek!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
   end;
@@ -696,7 +696,7 @@ begin
       on E:Exception do
       begin
         TechnologieJC.FreeJCData(JCsaveData);
-        Application.MessageBox(PChar('Rychlosti:'+#13#10+E.Message), 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Rychlosti:', E);
         Exit();
       end;
     end;
@@ -799,7 +799,7 @@ begin
         on E: Exception do
         begin
           TechnologieJC.FreeJCData(JCsaveData);
-          ExceptionMessageBox('Přidávání JC skončilo s chybou.', 'Chyba', E);
+          ExceptionMessageBox('Přidávání JC skončilo s chybou.', E);
           Exit();
         end;
       end;
@@ -815,7 +815,7 @@ begin
     on E: Exception do
     begin
       TechnologieJC.FreeJCData(JCsaveData);
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;
@@ -825,7 +825,7 @@ end;
 
 procedure TF_JCEdit.B_Turnout_DelClick(Sender: TObject);
 begin
-  if (Application.MessageBox(PChar('Opravdu chcete smazat vybrané výhybky z JC?'), 'Mazání výhybek',
+  if (StrMessageBox('Opravdu chcete smazat vybrané výhybky z JC?', 'Mazání výhybek',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
     Self.LV_Turnouts.DeleteSelected();

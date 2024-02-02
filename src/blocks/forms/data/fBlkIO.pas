@@ -216,7 +216,7 @@ procedure TF_BlkIO.B_SaveClick(Sender: TObject);
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -226,7 +226,7 @@ begin
       Self.block, TRCSIOType.input);
     if (another <> nil) then
     begin
-      if (Application.MessageBox(PChar('RCS adresa vstupu se již používá na bloku ' + another.name +
+      if (StrMessageBox(PChar('RCS adresa vstupu se již používá na bloku ' + another.name +
         ', chcete pokračovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
     end;
@@ -238,7 +238,7 @@ begin
       Self.block, TRCSIOType.output);
     if (another <> nil) then
     begin
-      if (Application.MessageBox(PChar('RCS adresa výstupu se již používá na bloku ' + another.name +
+      if (StrMessageBox(PChar('RCS adresa výstupu se již používá na bloku ' + another.name +
         ', chcete pokračovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
     end;
@@ -257,7 +257,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -267,7 +267,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -301,7 +301,7 @@ begin
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;

@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses Diagnostics, Simulation, fMain, TechnologieRCS, Logging;
+uses Diagnostics, Simulation, fMain, TechnologieRCS, Logging, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -134,7 +134,7 @@ begin
       Log('Proveden InputSim', llInfo, lsRCS);
     except
       on E: Exception do
-        Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox(E);
     end;
   end;
 end;

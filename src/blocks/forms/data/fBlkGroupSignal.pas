@@ -196,7 +196,7 @@ procedure TF_BlkGroupSignal.B_BlkAddClick(Sender: TObject);
 begin
   if (Self.CB_NewSignal.ItemIndex < 0) then
   begin
-    Application.MessageBox('Vyberte blok!', 'Nelze pokraèovat', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte blok!', 'Nelze pokraèovat', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -250,7 +250,7 @@ procedure TF_BlkGroupSignal.B_ApplyClick(Sender: TObject);
 begin
   if (Self.E_Name.Text = '') then
   begin
-    Application.MessageBox('Vyplòte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplòte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -258,7 +258,7 @@ begin
   begin
     if (CB_Typ.ItemIndex = -1) then
     begin
-      Application.MessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      StrMessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
       Exit();
     end;
 
@@ -266,7 +266,7 @@ begin
       TRCSIOType.output);
     if (another <> nil) then
     begin
-      if (Application.MessageBox(PChar('První RCS adresa se již používá na bloku ' + another.name +
+      if (StrMessageBox(PChar('První RCS adresa se již používá na bloku ' + another.name +
         ', chcete pokraèovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
     end;
@@ -277,7 +277,7 @@ begin
       TRCSIOType.output);
     if (another <> nil) then
     begin
-      if (Application.MessageBox(PChar('Druhá RCS adresa se již používá na bloku ' + another.name +
+      if (StrMessageBox(PChar('Druhá RCS adresa se již používá na bloku ' + another.name +
         ', chcete pokraèovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
     end;
@@ -295,7 +295,7 @@ begin
     except
       on E: Exception do
       begin
-        ExceptionMessageBox('Nepodaøilo se pøidat blok.', 'Nelze uložit data', E);
+        ExceptionMessageBox('Nepodaøilo se pøidat blok.', E, 'Nelze uložit data');
         Exit();
       end;
     end;
@@ -305,7 +305,7 @@ begin
     except
       on E: Exception do
       begin
-        ExceptionMessageBox('Nepodaøilo se uložit blok.', 'Nelze uložit data', E);
+        ExceptionMessageBox('Nepodaøilo se uložit blok.', E, 'Nelze uložit data');
         Exit();
       end;
     end;
@@ -337,7 +337,7 @@ begin
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neoèekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neoèekávaná chyba.', E);
       Exit();
     end;
   end;

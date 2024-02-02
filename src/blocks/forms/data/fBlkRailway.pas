@@ -249,14 +249,14 @@ begin
 
   if (Self.CB_Track.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   var id := Self.CB_TrackIds[Self.CB_Track.ItemIndex];
   if ((Self.LV_Tracks.Selected = nil) and (Self.BlockPresent(id, Self.LV_Tracks))) then
   begin
-    Application.MessageBox('Nelze přidat duplicitní úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Nelze přidat duplicitní úsek!', 'Nelze přidat/upravit úsek', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -281,18 +281,18 @@ var globRailway, globLinkerA, globLinkerB: TBlkSettings;
 begin
   if ((Self.E_Railway_Name.Text = '') or (Self.E_LA_name.Text = '') or (Self.E_LB_name.Text = '')) then
   begin
-    Application.MessageBox('Vyplňte názvy bloků!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte názvy bloků!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Type.ItemIndex < 0) then
   begin
-    Application.MessageBox('Vyberte typ zabezpečovacího zařízení trati !', 'Nelze ulozit data',
+    StrMessageBox('Vyberte typ zabezpečovacího zařízení trati!', 'Nelze ulozit data',
       MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Signals.ItemIndex < 0) then
   begin
-    Application.MessageBox('Vyberte chování návěstidel trati !', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte chování návěstidel trati!', 'Nelze ulozit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -320,7 +320,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se přidat blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se přidat blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -332,7 +332,7 @@ begin
       except
         on E: Exception do
         begin
-          ExceptionMessageBox('Nepodařilo se uložit blok.', 'Nelze uložit data', E);
+          ExceptionMessageBox('Nepodařilo se uložit blok.', E, 'Nelze uložit data');
           Exit();
         end;
       end;
@@ -363,7 +363,7 @@ begin
   except
     on E: Exception do
     begin
-      ExceptionMessageBox('Neočekávaná chyba.', 'Chyba', E);
+      ExceptionMessageBox('Neočekávaná chyba.', E);
       Exit();
     end;
   end;

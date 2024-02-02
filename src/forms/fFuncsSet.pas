@@ -28,7 +28,7 @@ var
 
 implementation
 
-uses fMain, TechnologieTrakce;
+uses fMain, TechnologieTrakce, ownGuiUtils;
 
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
@@ -38,12 +38,12 @@ procedure TF_FuncsSet.B_ApplyClick(Sender: TObject);
 begin
   if (not TrakceI.ConnectedSafe()) then
   begin
-    Application.MessageBox('Aplikace není připojena k centrále', 'Nelze pokračovat', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Aplikace není připojena k centrále', 'Nelze pokračovat', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Vyznam.Text = '') then
   begin
-    Application.MessageBox('Vyplňte význam funkce', 'Nelze pokračovat', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte význam funkce', 'Nelze pokračovat', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 

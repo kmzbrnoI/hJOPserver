@@ -58,7 +58,7 @@ var
 
 implementation
 
-uses fMain, ownConvert, TrainDb, Booster;
+uses fMain, ownConvert, TrainDb, Booster, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -139,7 +139,7 @@ begin
     Self.LB_Trains.Items.Add(IntToStr(Self.SE_Train_Add_Index.Value));
   except
     on E: Exception do
-      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox(E);
   end;
 end;
 
@@ -147,7 +147,7 @@ procedure TF_BlkTrackState.B_Train_DeleteClick(Sender: TObject);
 begin
   if ((Self.LB_Trains.ItemIndex = -1) or (Self.track = nil)) then
     Exit();
-  if (Application.MessageBox('Opravdu?', 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
+  if (StrMessageBox('Opravdu?', 'Opravdu?', MB_YESNO OR MB_ICONQUESTION) <> mrYes) then
     Exit();
 
   try
@@ -155,7 +155,7 @@ begin
     Self.LB_Trains.Items.Delete(Self.LB_Trains.ItemIndex);
   except
     on E: Exception do
-      Application.MessageBox(PChar(E.Message), 'Chyba', MB_OK OR MB_ICONWARNING);
+      ExceptionMessageBox(E);
   end;
 end;
 

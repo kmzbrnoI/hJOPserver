@@ -52,7 +52,7 @@ implementation
 
 {$R *.dfm}
 
-uses ownConvert, TrainDb, IfThenElse;
+uses ownConvert, TrainDb, IfThenElse, ownGuiUtils;
 
 procedure TF_BlkRailwayState.B_Train_AddClick(Sender: TObject);
 begin
@@ -61,7 +61,7 @@ begin
       Self.railway.AddTrain(Trains[Self.SE_Train_Add.Value]);
   except
     on E: Exception do
-      Application.MessageBox(PChar('Výjimka:' + #13#10 + E.Message), 'Výjimka', MB_OK OR MB_ICONERROR);
+      ExceptionMessageBox(E);
   end;
 
   Self.Refresh();

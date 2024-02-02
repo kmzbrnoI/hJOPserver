@@ -66,7 +66,8 @@ var
 
 implementation
 
-uses fMain, THVDatabase, DataHV, AreaDb, Area, fHVPomEdit, BlockDb, TrainDb;
+uses fMain, THVDatabase, DataHV, AreaDb, Area, fHVPomEdit, BlockDb, TrainDb,
+  ownGuiUtils;
 
 {$R *.dfm}
 
@@ -85,13 +86,11 @@ begin
 end;
 
 procedure TF_HVEdit.SB_Rel_AddClick(Sender: TObject);
-var LI: TListItem;
-  i: Integer;
 begin
   F_HV_Pom.OpenForm(-1, 0);
   if (F_HV_Pom.saved) then
   begin
-    i := 0;
+    var i: Integer := 0;
     while ((i < Self.LV_Pom_Release.Items.Count) and (StrToInt(Self.LV_Pom_Release.Items.Item[i].Caption) <
       F_HV_Pom.SE_CV.Value)) do
       Inc(i);
@@ -101,7 +100,7 @@ begin
     begin
       Self.LV_Pom_Release.Items.Item[i].SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
     end else begin
-      LI := Self.LV_Pom_Release.Items.Insert(i);
+      var LI: TListItem := Self.LV_Pom_Release.Items.Insert(i);
       LI.Caption := IntToStr(F_HV_Pom.SE_CV.Value);
       LI.SubItems.Add(IntToStr(F_HV_Pom.SE_Value.Value));
     end;
@@ -115,13 +114,11 @@ begin
 end;
 
 procedure TF_HVEdit.SB_Take_AddClick(Sender: TObject);
-var LI: TListItem;
-  i: Integer;
 begin
   F_HV_Pom.OpenForm(-1, 0);
   if (F_HV_Pom.saved) then
   begin
-    i := 0;
+    var i: Integer := 0;
     while ((i < Self.LV_Pom_Load.Items.Count) and (StrToInt(Self.LV_Pom_Load.Items.Item[i].Caption) <
       F_HV_Pom.SE_CV.Value)) do
       Inc(i);
@@ -131,7 +128,7 @@ begin
     begin
       Self.LV_Pom_Load.Items.Item[i].SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
     end else begin
-      LI := Self.LV_Pom_Load.Items.Insert(i);
+      var LI: TListItem := Self.LV_Pom_Load.Items.Insert(i);
       LI.Caption := IntToStr(F_HV_Pom.SE_CV.Value);
       LI.SubItems.Add(IntToStr(F_HV_Pom.SE_Value.Value));
     end;
@@ -146,40 +143,36 @@ end;
 
 procedure TF_HVEdit.B_SaveClick(Sender: TObject);
 var data: THVData;
-  stav: THVState;
-  Area: TArea;
-  i: Integer;
-  pomCV: THVPomCV;
 begin
   if (E_Nazev.Text = '') then
   begin
-    Application.MessageBox('Vypište název hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vypište název hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (CB_Trida.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte typ hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte typ hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (CB_Orientace.ItemIndex = -1) and (CB_Orientace.Visible) then
   begin
-    Application.MessageBox('Vyberte směr stanoviště A hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte směr stanoviště A hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (CB_OR.ItemIndex = -1) then
   begin
-    Application.MessageBox('Vyberte stanici hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte stanici hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if ((not Self.E_Addr.ReadOnly) and (Self.E_Addr.Text = '')) then
   begin
-    Application.MessageBox('Vyplňte DCC adresu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyplňte DCC adresu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
-  Area := Areas[Self.CB_OR.ItemIndex];
+  var area: TArea := Areas[Self.CB_OR.ItemIndex];
   if ((Self.OpenHV <> nil) and (Self.OpenHV.state.train > -1) and (Self.OpenHV.state.Area <> Area)) then
-    if (Application.MessageBox('Měníte stanici HV, které je na soupravě, opravdu pokračovat?', 'Opravdu?',
+    if (StrMessageBox('Měníte stanici HV, které je na soupravě, opravdu pokračovat?', 'Opravdu?',
       MB_YESNO OR MB_ICONWARNING) = mrNo) then
       Exit();
 
@@ -205,9 +198,10 @@ begin
   data.POMrelease.Clear();
 
   // parse POM take
-  for i := 0 to Self.LV_Pom_Load.Items.Count - 1 do
+  for var i: Integer := 0 to Self.LV_Pom_Load.Items.Count - 1 do
   begin
     try
+      var pomCV: THVPomCV;
       pomCV.cv := StrToInt(Self.LV_Pom_Load.Items.Item[i].Caption);
       pomCV.data := StrToInt(Self.LV_Pom_Load.Items.Item[i].SubItems.Strings[0]);
       data.POMtake.Add(pomCV);
@@ -217,9 +211,10 @@ begin
   end;
 
   // parse POM release
-  for i := 0 to Self.LV_Pom_Release.Items.Count - 1 do
+  for var i: Integer := 0 to Self.LV_Pom_Release.Items.Count - 1 do
   begin
     try
+      var pomCV: THVPomCV;
       pomCV.cv := StrToInt(Self.LV_Pom_Release.Items.Item[i].Caption);
       pomCV.data := StrToInt(Self.LV_Pom_Release.Items.Item[i].SubItems.Strings[0]);
       data.POMrelease.Add(pomCV);
@@ -239,7 +234,7 @@ begin
     except
       on E: Exception do
       begin
-        Application.MessageBox(PChar(E.Message), 'Nelze přidat', MB_OK OR MB_ICONWARNING);
+        ExceptionMessageBox('Nelze přidat', E);
         Exit();
       end;
     end;
@@ -255,7 +250,7 @@ begin
 
     Area := Areas[Self.CB_OR.ItemIndex];
 
-    stav := Self.OpenHV.state;
+    var stav: THVState := Self.OpenHV.state;
     stav.siteA := THVSite(CB_Orientace.ItemIndex);
     Self.OpenHV.state := stav;
     Self.OpenHV.MoveToArea(Area);
@@ -293,7 +288,7 @@ begin
   OpenHV.ResetStats();
   HVTableData.UpdateLine(Self.OpenHV);
 
-  Application.MessageBox('Operace proběhla úspěšně.', 'OK', MB_OK OR MB_ICONINFORMATION);
+  StrMessageBox('Operace proběhla úspěšně.', 'OK', MB_OK OR MB_ICONINFORMATION);
 end;
 
 procedure TF_HVEdit.HlavniOpenForm;
@@ -341,8 +336,6 @@ end;
 procedure TF_HVEdit.NormalOpenForm();
 var data: THVData;
   stav: THVState;
-  i: Integer;
-  LI: TListItem;
 begin
   B_NajetoDelete.Visible := true;
   E_Addr.ReadOnly := true;
@@ -362,17 +355,17 @@ begin
   Self.CB_Orientace.ItemIndex := Integer(stav.siteA);
 
   Self.LV_Pom_Load.Clear();
-  for i := 0 to data.POMtake.Count - 1 do
+  for var i: Integer := 0 to data.POMtake.Count - 1 do
   begin
-    LI := Self.LV_Pom_Load.Items.Add;
+    var LI: TListItem := Self.LV_Pom_Load.Items.Add;
     LI.Caption := IntToStr(data.POMtake[i].cv);
     LI.SubItems.Add(IntToStr(data.POMtake[i].data));
   end;
 
   Self.LV_Pom_Release.Clear();
-  for i := 0 to data.POMrelease.Count - 1 do
+  for var i: Integer := 0 to data.POMrelease.Count - 1 do
   begin
-    LI := Self.LV_Pom_Release.Items.Add;
+    var LI: TListItem := Self.LV_Pom_Release.Items.Add;
     LI.Caption := IntToStr(data.POMrelease[i].cv);
     LI.SubItems.Add(IntToStr(data.POMrelease[i].data));
   end;
