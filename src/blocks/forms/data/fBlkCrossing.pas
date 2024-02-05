@@ -257,21 +257,22 @@ begin
   end;
 
   var settings: TBlkCrossingSettings;
-  var addrs := TList<TRCSAddr>.Create();
+  var addrsIn := TList<TRCSAddr>.Create();
+  var addrsOut := TList<TRCSAddr>.Create();
   try
     try
-      settings.RCSOutputs.close := RCSOptionalFromUI(Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port, addrs);
-      settings.RCSOutputs.emOpen := RCSOptionalFromUI(Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port, addrs);
-      settings.RCSOutputs.positive := RCSOptionalFromUI(Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port, addrs);
-      settings.RCSOutputs.barriersDown := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port, addrs);
-      settings.RCSOutputs.barriersUp := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port, addrs);
-      settings.RCSOutputs.bell := RCSOptionalFromUI(Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port, addrs);
-      settings.RCSOutputs.lights := RCSOptionalFromUI(Self.CHB_RCS_Lights, Self.SE_out_lights_board, Self.SE_out_lights_port, addrs);
+      settings.RCSOutputs.close := RCSOptionalFromUI(Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port, addrsOut);
+      settings.RCSOutputs.emOpen := RCSOptionalFromUI(Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port, addrsOut);
+      settings.RCSOutputs.positive := RCSOptionalFromUI(Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port, addrsOut);
+      settings.RCSOutputs.barriersDown := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port, addrsOut);
+      settings.RCSOutputs.barriersUp := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port, addrsOut);
+      settings.RCSOutputs.bell := RCSOptionalFromUI(Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port, addrsOut);
+      settings.RCSOutputs.lights := RCSOptionalFromUI(Self.CHB_RCS_Lights, Self.SE_out_lights_board, Self.SE_out_lights_port, addrsOut);
 
-      settings.RCSInputs.open := RCSOptionalFromUI(Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port, addrs);
-      settings.RCSInputs.closed := RCSOptionalFromUI(Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port, addrs);
-      settings.RCSInputs.caution := RCSOptionalFromUI(Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port, addrs);
-      settings.RCSInputs.annulation := RCSOptionalFromUI(Self.CHB_RCS_Anullation, Self.SE_in_annulation_board, Self.SE_in_annulation_port, addrs);
+      settings.RCSInputs.open := RCSOptionalFromUI(Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port, addrsIn);
+      settings.RCSInputs.closed := RCSOptionalFromUI(Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port, addrsIn);
+      settings.RCSInputs.caution := RCSOptionalFromUI(Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port, addrsIn);
+      settings.RCSInputs.annulation := RCSOptionalFromUI(Self.CHB_RCS_Anullation, Self.SE_in_annulation_board, Self.SE_in_annulation_port, addrsIn);
 
       settings.RCSOutputs.positiveInvert := (Self.CB_Positive_Type.ItemIndex = 1);
       settings.RCSOutputs.positiveFlick := (Self.CB_Positive_Type.ItemIndex = 2);
@@ -304,17 +305,17 @@ begin
       Self.block.positiveRules := positiveRules;
 
       var messages := '';
-      for var i := 0 to addrs.Count - 1 do
+      for var addr: TRCSAddr in addrsIn do
       begin
-        var typ: TRCSIOType;
-        if (i < 7) then
-          typ := TRCSIOType.output
-        else
-          typ := TRCSIOType.input;
-
-        var another := Blocks.AnotherBlockUsesRCS(addrs[i], Self.block, typ);
+        var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.input);
         if (another <> nil) then
-          messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addrs[i].ToString() + '.' + #13#10;
+          messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
+      end;
+      for var addr: TRCSAddr in addrsOut do
+      begin
+        var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
+        if (another <> nil) then
+          messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
       end;
 
       if (messages <> '') then
@@ -330,7 +331,8 @@ begin
     Self.close();
     Self.block.Change();
   finally
-    addrs.Free();
+    addrsIn.Free();
+    addrsOut.Free();
   end;
 end;
 
