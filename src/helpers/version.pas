@@ -7,7 +7,7 @@ uses Windows, SysUtils;
  function VersionStr(const FileName: string): string; //cteni verze z nastaveni
  function BuildDateTime(): TDateTime;
 
- const _RELEASE: Boolean = false;
+ const _RELEASE: Boolean = False;
 
 implementation
 
