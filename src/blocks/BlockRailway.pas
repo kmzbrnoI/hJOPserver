@@ -906,7 +906,8 @@ begin
           end;
           if ((blk.signalCover <> nil) and (TBlkSignal(blk.signalCover).signal = ncStuj)) then
           begin
-            Blocks.TrainPrediction(Self.signalB as TBlkSignal);
+            if (Self.signalB <> nil) then
+              Blocks.TrainPrediction(Self.signalB as TBlkSignal);
             Exit();
           end;
         end;
@@ -938,7 +939,8 @@ begin
           end;
           if ((blk.signalCover <> nil) and (TBlkSignal(blk.signalCover).signal = ncStuj)) then
           begin
-            Blocks.TrainPrediction(Self.signalA as TBlkSignal);
+            if (Self.signalA <> nil) then
+              Blocks.TrainPrediction(Self.signalA as TBlkSignal);
             Exit();
           end;
         end;
