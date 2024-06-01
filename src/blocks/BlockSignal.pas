@@ -574,6 +574,9 @@ begin
     Exit();
   end;
 
+  if (code = ncPrivol) then
+    Self.m_state.privolStart := now;
+
   if ((code = ncPrivol) or (code = ncStuj)) then
   begin
     // prodlouzeni nebo zruseni privolavaci navesti -> zrusit odpocet v panelu
@@ -586,15 +589,20 @@ begin
     Self.m_state.privolTimerId := 0;
   end;
 
-  if (code = ncPrivol) then
-    Self.m_state.privolStart := now;
-
   if ((Self.m_state.signal = code) or ((Self.changing) and (Self.m_state.targetSignal = code))) then
   begin
     if (Assigned(changeCallbackOk)) then
       changeCallbackOk(Self);
     Exit();
   end;
+
+  var prevTargetSignal := Self.targetSignal;
+  if (not Self.changing) then
+    Self.m_state.signalOld := Self.signal;
+  Self.m_state.changeCallbackOk := changeCallbackOk;
+  Self.m_state.changeCallbackErr := changeCallbackErr;
+  Self.m_state.signal := ncChanging;
+  Self.m_state.targetSignal := code;
 
   // nastaveni vystupu
   try
@@ -609,6 +617,10 @@ begin
   except
     if (Assigned(changeCallbackErr)) then
       changeCallbackErr(Self);
+    Self.m_state.changeCallbackOk := nil;
+    Self.m_state.changeCallbackErr := nil;
+    Self.m_state.signal := prevTargetSignal;
+    Self.m_state.targetSignal := prevTargetSignal;
     Exit();
   end;
 
@@ -625,25 +637,19 @@ begin
 
     if (Assigned(Self.privol)) then
     begin
-      Self.privol.CancelWithoutTrackRelease();
-      Self.privol := nil;
+      var tmpjc: TJC := Self.privol;
+      Self.privol := nil; // reset first to allow potential reetrability
+      tmpjc.CancelWithoutTrackRelease();
     end;
   end;
 
-  if ((Self.signal = ncPrivol) and (code = ncStuj)) then
+  if ((prevTargetSignal = ncPrivol) and (code = ncStuj)) then
   begin
     // STUJ po privolavacce -> vypnout zvukovou vyzvu
     Self.Log('Zhasnuta PN', TLogLevel.llInfo);
     for var area: TArea in Self.m_areas do
       Area.pnBlkCnt := area.pnBlkCnt - 1;
   end;
-
-  if (not Self.changing) then
-    Self.m_state.signalOld := Self.signal;
-  Self.m_state.changeCallbackOk := changeCallbackOk;
-  Self.m_state.changeCallbackErr := changeCallbackErr;
-  Self.m_state.signal := ncChanging;
-  Self.m_state.targetSignal := code;
 
   if (Self.m_settings.RCSAddrs.Count > 0) then
     Self.m_state.changeEnd := now + EncodeTime(0, 0, _SIG_CHANGE_DELAY_MSEC div 1000, _SIG_CHANGE_DELAY_MSEC mod 1000)

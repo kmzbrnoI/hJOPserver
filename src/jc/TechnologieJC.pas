@@ -1829,7 +1829,9 @@ begin
           track.zaver := TZaver.no;
         end;
 
-        signal.privol := Self;
+        // STUJ nelze udelat na PN nouzovych posunovych cest
+        if (Self.typ = TJCType.train) then
+          signal.privol := Self;
 
         // i pokud je navetidlo ve STUJ, nastavuji navest (to je spravne chovani podle JOP)
         if ((Self.typ = TJCType.Train) and (signal.enabled)) then
