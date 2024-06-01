@@ -1229,8 +1229,8 @@ begin
       // 2 = VC, 3= PC
       if (Self.m_spnl.symbolType = TBlkSignalSymbol.main) then
       begin
-        if (((JCDb.IsAnyVCAvailable(Self)) and (Self.enabled) and (not Self.PstIs())) or
-            ((SenderOR as TArea).stack.mode = VZ)) then
+        if ((JCDb.IsAnyVC(Self)) and (((JCDb.IsAnyVCAvailable(Self)) and (Self.enabled) and (not Self.PstIs())) or
+            ((SenderOR as TArea).stack.mode = VZ))) then
         // i kdyz neni zadna VC, schvalne umoznime PN
         begin
           Result := Result + 'VC>,';
@@ -1241,8 +1241,8 @@ begin
       end;
       if (JCDb.IsAnyPC(Self)) then
       begin
-        if (((JCDb.IsAnyPCAvailable(Self)) and (Self.enabled) and (not Self.PstIs())) or
-            ((SenderOR as TArea).stack.mode = VZ)) then
+        if ((JCDb.IsAnyPC(Self)) and (((JCDb.IsAnyPCAvailable(Self)) and (Self.enabled) and (not Self.PstIs())) or
+            ((SenderOR as TArea).stack.mode = VZ))) then
           Result := Result + 'PC>,';
         Result := Result + 'PP>,';
       end;
