@@ -54,7 +54,6 @@ type
     start: TDateTime;
     duration: TDateTime;
     callback: TNotifyEvent;
-    id: Integer;
   end;
 
   TAreaPanel = record
@@ -99,7 +98,8 @@ type
     m_index: Integer; // index in all areas
     m_data: TAreaData;
     m_state: TAreaState;
-    countdowns: TList<TAreaCountdown>;
+    m_next_countdown_id: Byte;
+    countdowns: TDictionary<Byte, TAreaCountdown>;
     RCSs: TAreaRCSs; // list of RCS addresses in area (based on blocks)
 
     procedure PanelDbAdd(Panel: TIDContext; rights: TAreaRights; user: string);
@@ -177,6 +177,7 @@ type
 
     function AddCountdown(callback: TNotifyEvent; len: TDateTime): Byte;
     procedure RemoveCountdown(id: Integer);
+    function IsCountdown(id: Integer): Boolean;
 
     procedure RCSAdd(addr: Integer);
     procedure RCSFail(addr: Integer);
@@ -321,8 +322,10 @@ begin
   Self.stack := TORStack.Create(index, Self);
   Self.changed := false;
 
-  Self.countdowns := TList<TAreaCountdown>.Create();
+  Self.countdowns := TDictionary<Byte, TAreaCountdown>.Create();
   Self.announcement := nil;
+
+  Self.m_next_countdown_id := 0;
 end;
 
 destructor TArea.Destroy();
@@ -976,47 +979,48 @@ begin
   Self.stack.Update();
 
   // aktualizace mereni casu:
-  for var i: Integer := 0 to Self.countdowns.Count - 1 do
+  for var id: Byte in Self.countdowns.Keys do
   begin
-    if (Now >= (Self.countdowns[i].start + Self.countdowns[i].duration)) then
+    var countdown := Self.countdowns[id];
+    if (Now >= (countdown.start + countdown.duration)) then
     begin
-      if (Assigned(Self.countdowns[i].callback)) then
-        Self.countdowns[i].callback(Self);
-      Self.countdowns.Delete(i);
-      Break;
+      var callback: TNotifyEvent := countdown.callback;
+      Self.countdowns.Remove(id);
+      if (Assigned(callback)) then
+        callback(Self);
     end;
   end;
 end;
 
 // vraci id pridaneho mereni
 function TArea.AddCountdown(callback: TNotifyEvent; len: TDateTime): Byte;
-var
-  id: Integer;
-  mc: TAreaCountdown;
 begin
-  if (Self.countdowns.Count > 0) then
-    id := Self.countdowns[Self.countdowns.Count - 1].id + 1
-  else
-    id := 0;
+  var id := Self.m_next_countdown_id;
 
   Self.BroadcastData('CAS;START;' + IntToStr(id) + ';' + FormatDateTime('s', len) + ';');
 
+  var mc: TAreaCountdown;
   mc.start := Now;
   mc.duration := len;
   mc.callback := callback;
-  mc.id := id;
-  Self.countdowns.Add(mc);
+  Self.countdowns.Add(id, mc);
 
   Result := id;
+  Inc(Self.m_next_countdown_id); // Inc ignores overflows
 end;
 
 procedure TArea.RemoveCountdown(id: Integer);
 begin
-  for var i: Integer := Self.countdowns.Count - 1 downto 0 do
-    if (Self.countdowns[i].id = id) then
-      Self.countdowns.Delete(i);
+  if (Self.countdowns.ContainsKey(id)) then
+  begin
+    Self.countdowns.Remove(id);
+    Self.BroadcastData('CAS;STOP;' + IntToStr(id) + ';');
+  end;
+end;
 
-  Self.BroadcastData('CAS;STOP;' + IntToStr(id) + ';');
+function TArea.IsCountdown(id: Integer): Boolean;
+begin
+  Result := Self.countdowns.ContainsKey(id);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
