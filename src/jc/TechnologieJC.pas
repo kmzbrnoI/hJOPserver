@@ -212,8 +212,8 @@ type
     procedure SetSignalSignal();
     procedure Cancel(Sender: TObject = nil);
     procedure CancelWithoutTrackRelease();
-    procedure DynamicCanceling(); // kontroluje projizdeni soupravy useky a rusi jejich zavery
-    procedure DynamicCancelingNC(); // rusi poruchu BP trati, ze ktere odjizdi souprava v ramci nouzove jizdni cesty
+    procedure DynamicCancelling(); // kontroluje projizdeni soupravy useky a rusi jejich zavery
+    procedure DynamicCancellingNC(); // rusi poruchu BP trati, ze ktere odjizdi souprava v ramci nouzove jizdni cesty
     procedure NonProfileOccupied(); // volano pri obsazeni kontrolvoaneho neprofiloveho useku
 
     procedure UpdateActivating();
@@ -2086,7 +2086,7 @@ end;
 
 // RozpadBlok = blok index, kam by mela souprava vjet
 // RozpadRuseniBlok = blok index, kde je posledni detekovany vagon soupravy
-procedure TJC.DynamicCanceling();
+procedure TJC.DynamicCancelling();
 begin
   var signal: TBlkSignal := TBlkSignal(Self.signal);
 
@@ -2362,7 +2362,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.DynamicCancelingNC();
+procedure TJC.DynamicCancellingNC();
 var signalTrack, first: TBlkTrack;
 begin
   signalTrack := TBlkRT((Self.signal as TBlkSignal).track);

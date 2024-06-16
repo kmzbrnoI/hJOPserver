@@ -192,9 +192,9 @@ begin
   begin
     try
       if (JC.state.destroyBlock > _JC_DESTROY_NONE) then
-        JC.DynamicCanceling();
+        JC.DynamicCancelling();
       if (JC.state.destroyBlock = _JC_DESTROY_NC) then
-        JC.DynamicCancelingNC();
+        JC.DynamicCancellingNC();
 
       if ((JC.activating) or (JC.step = stepJcLastTrackWait)) then
       begin
