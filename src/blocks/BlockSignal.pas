@@ -470,7 +470,6 @@ begin
   Self.ab := false;
   Self.m_state.ZAM := false;
   Self.m_state.toRnz.Clear();
-  Self.m_state.RCtimer := -1;
   Self.UnregisterAllEvents();
   Self.m_state.psts.Clear();
   Self.Change(true);
