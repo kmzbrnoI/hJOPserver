@@ -12,11 +12,9 @@ object F_BlkSignalState: TF_BlkSignalState
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8
@@ -84,13 +82,6 @@ object F_BlkSignalState: TF_BlkSignalState
     Height = 13
     Alignment = taRightJustify
     Caption = 'L_PN_Start_Time'
-  end
-  object Label5: TLabel
-    Left = 8
-    Top = 230
-    Width = 106
-    Height = 13
-    Caption = #268'asova'#269' ru'#353'en'#237' cesty:'
   end
   object CB_Aspect: TComboBox
     Left = 120
@@ -202,22 +193,7 @@ object F_BlkSignalState: TF_BlkSignalState
       RowSelect = True
       TabOrder = 0
       ViewStyle = vsReport
-      ExplicitLeft = 88
-      ExplicitTop = 32
-      ExplicitWidth = 250
-      ExplicitHeight = 150
     end
-  end
-  object SE_RC_Timer: TSpinEdit
-    Left = 248
-    Top = 227
-    Width = 121
-    Height = 22
-    Enabled = False
-    MaxValue = 0
-    MinValue = 0
-    TabOrder = 7
-    Value = 0
   end
   object B_Apply: TButton
     Left = 668
@@ -226,7 +202,7 @@ object F_BlkSignalState: TF_BlkSignalState
     Height = 26
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 8
+    TabOrder = 7
     OnClick = B_ApplyClick
   end
   object B_Refresh: TButton
@@ -235,7 +211,7 @@ object F_BlkSignalState: TF_BlkSignalState
     Width = 76
     Height = 26
     Caption = 'Obnovit'
-    TabOrder = 9
+    TabOrder = 8
     OnClick = B_RefreshClick
   end
 end

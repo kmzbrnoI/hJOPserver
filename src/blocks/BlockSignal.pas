@@ -97,7 +97,6 @@ type
     autoblok: Boolean;
 
     toRnz: TDictionary<Integer, Cardinal>; // seznam bloku k RNZ spolu s pocty ruseni, ktere je treba udelat
-    RCtimer: Integer; // id timeru, ktery se prave ted pouziva pro ruseni JC
     changeCallbackOk, changeCallbackErr: TNotifyEvent; // notifikace o nastaveni polohy navestidla
     changeEnd: TTime;
     psts: TList<TBlk>;
@@ -113,7 +112,7 @@ type
   TBlkSignal = class(TBlk)
   const
     _def_signal_state: TBlkSignalState = (signal: ncDisabled; selected: none; beginAB: false; targetSignal: ncDisabled;
-      ABJC: nil; ZAM: false; dnJC: nil; privolJC: nil; privolTimerId: 0; autoblok: false; RCtimer: - 1;
+      ABJC: nil; ZAM: false; dnJC: nil; privolJC: nil; privolTimerId: 0; autoblok: false;
       changeCallbackOk: nil; changeCallbackErr: nil; dnArea: nil; );
 
     // doba sviceni privolavaci navesti
@@ -129,7 +128,6 @@ type
     m_groupMaster: TBlk;
 
     function IsEnabled(): Boolean;
-    function RCinProgress(): Boolean;
 
     procedure mSetSignal(signal: TBlkSignalCode);
 
@@ -228,7 +226,6 @@ type
     procedure UpdateTrainSpeed(force: Boolean = false);
     procedure AddBlkToRnz(blkId: Integer; Change: Boolean = true);
     procedure RemoveBlkFromRnz(blkId: Integer);
-    procedure RCtimerTimeout();
     function FourtyKmph(): Boolean;
     class function AddOpak(code: TBlkSignalCode): TBlkSignalCode;
 
@@ -261,7 +258,6 @@ type
     property track: TBlk read GetTrackId;
     property autoblok: Boolean read m_state.autoblok write m_state.autoblok;
     property canRNZ: Boolean read CanIDoRNZ;
-    property RCtimer: Integer read m_state.RCtimer write m_state.RCtimer;
     property changing: Boolean read IsChanging;
     property enabled: Boolean read IsEnabled;
     property groupMaster: TBlk read m_groupMaster write m_groupMaster;
@@ -804,7 +800,7 @@ begin
         Self.dnJC.STUJ();
       end;
     end else begin
-      if ((Self.dnJC.destroyBlock = -2) and (not Self.RCinProgress())) then
+      if ((Self.dnJC.destroyBlock = -2) and (not Self.dnJC.cancelling)) then
       begin
         Self.dnJC.destroyBlock := -1;
         Self.dnJC.DN(nil, nil);
@@ -878,11 +874,8 @@ begin
   if (Self.dnJC = nil) then
     Exit();
 
-  if (Self.RCinProgress()) then
-  begin
-    TArea(SenderOR).RemoveCountdown(Self.m_state.RCtimer);
-    Self.m_state.RCtimer := -1;
-  end;
+  if (Self.dnJC.cancelling) then
+    Self.dnJC.StopCancelling();
 
   Self.m_state.dnArea := SenderOR;
 
@@ -916,36 +909,10 @@ begin
 end;
 
 procedure TBlkSignal.MenuRCClick(SenderPnl: TIdContext; SenderOR: TObject);
-var JC: TJC;
 begin
-  if ((Self.dnJC = nil) or (Self.RCinProgress())) then
+  if ((Self.dnJC = nil) or (Self.dnJC.cancelling)) then
     Exit();
-
-  JC := Self.dnJC;
-
-  var track: TBlkTrack := Self.track as TBlkTrack;
-  if ((track <> nil) and ((track.typ = btTrack) or (track.typ = btRT)) and
-      (track.GetSettings().RCSAddrs.Count > 0) and (track.occupied = TTrackState.Free)) then
-  begin
-    // pokud neni blok pred JC obsazen -> 2 sekundy
-    Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTimeSec(GlobalConfig.times.rcFree));
-  end else begin
-    // pokud je obsazen, zalezi na typu jizdni cesty
-    case (JC.typ) of
-      TJCType.Train:
-        Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTimeSec(GlobalConfig.times.rcVcOccupied));
-      TJCType.shunt:
-        Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel, EncodeTimeSec(GlobalConfig.times.rcPcOccupied));
-    else
-      // nejaka divna cesta
-      Self.m_state.RCtimer := (SenderOR as TArea).AddCountdown(JC.Cancel,
-        EncodeTimeSec(Max(GlobalConfig.times.rcVcOccupied, GlobalConfig.times.rcPcOccupied)));
-    end;
-  end;
-
-  Self.ab := false;
-  JC.CancelWithoutTrackRelease();
-  Blocks.TrainPrediction(Self);
+  Self.dnJC.StartCancelling(TArea(SenderOR));
 end;
 
 procedure TBlkSignal.MenuABStartClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1269,7 +1236,7 @@ begin
         Result := Result + 'DN,';
     end;
 
-    if (((Self.signal > ncStuj) or (Self.dnJC.CanDN()) or (Self.dnJC.destroyBlock < 1)) and (not Self.RCinProgress()))
+    if (((Self.signal > ncStuj) or (Self.dnJC.CanDN()) or (Self.dnJC.destroyBlock < 1)) and (not Self.dnJC.cancelling))
     then
     begin
       Result := Result + 'RC,';
@@ -1966,20 +1933,6 @@ begin
     Result := TBlkTrack(track).trainSudy
   else
     Result := TBlkTrack(track).trainL;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-function TBlkSignal.RCinProgress(): Boolean;
-begin
-  Result := (Self.m_state.RCtimer > -1);
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-procedure TBlkSignal.RCtimerTimeout();
-begin
-  Self.m_state.RCtimer := -1;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

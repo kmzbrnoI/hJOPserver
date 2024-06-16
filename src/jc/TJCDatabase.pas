@@ -189,30 +189,7 @@ end;
 procedure TJCDb.Update();
 begin
   for var JC: TJC in Self.JCs do
-  begin
-    try
-      if (JC.state.destroyBlock > _JC_DESTROY_NONE) then
-        JC.DynamicCancelling();
-      if (JC.state.destroyBlock = _JC_DESTROY_NC) then
-        JC.DynamicCancellingNC();
-
-      if ((JC.activating) or (JC.step = stepJcLastTrackWait)) then
-      begin
-        JC.UpdateActivating();
-        JC.UpdateTimeOut();
-      end;
-    except
-      on E: Exception do
-      begin
-        if (not log_last_error) then
-          AppEvents.LogException(E, 'JC ' + JC.name + ' update error');
-        if (JC.activating) then
-          JC.CancelActivating('Vyjímka')
-        else
-          JC.CancelWithoutTrackRelease();
-      end;
-    end; // except
-  end;
+    JC.Update();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

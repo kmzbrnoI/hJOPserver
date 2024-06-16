@@ -26,8 +26,6 @@ type
     CHB_Autoblok: TCheckBox;
     GB_RNZ: TGroupBox;
     LV_RNZ: TListView;
-    Label5: TLabel;
-    SE_RC_Timer: TSpinEdit;
     B_Apply: TButton;
     B_Refresh: TButton;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -118,7 +116,6 @@ begin
 
   Self.CHB_Autoblok.Checked := Self.signal.autoblok;
   Self.CHB_Falling.Checked := state.falling;
-  Self.SE_RC_Timer.Value := state.RCtimer;
 
   Self.LV_RNZ.Clear();
   for var blkId: Integer in state.toRnz.Keys do

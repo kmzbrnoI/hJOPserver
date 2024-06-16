@@ -917,6 +917,8 @@ var track, startTrack: TBlkTrack;
   Train: TTrain;
   JC: TJC;
 begin
+  if (signal = nil) then
+    Exit();
   track := nil;
 
   try

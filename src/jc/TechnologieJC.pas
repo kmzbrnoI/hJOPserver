@@ -16,7 +16,7 @@ uses
   Dialogs, Menus, Buttons, ComCtrls, fMain, Block, Train, BlockTrack,
   IniFiles, IdContext, BlockRailway, Generics.Collections, UPO, BlockTurnout,
   Area, changeEvent, changeEventCaller, JsonDataObjects, PTUtils, JCBarriers,
-  TrainSpeed;
+  TrainSpeed, Math;
 
 const
   _JC_INITPOTVR_TIMEOUT_SEC = 60; // timeout UPO a potvrzeni na zacatku staveni JC
@@ -130,6 +130,8 @@ type
     crossingWasClosed: Boolean; // jiz byl vydan povel k zavreni prejezdu
     lastTrackOrRailwayOccupied: Boolean; // je obsazen posledni usek JC, nestavit navestidlo a nezavirat prejezdy
     crossingsToClose: TList<Boolean>; // seznam prejezdu k zavreni pri aktivaci
+    RCtimer: Integer; // id timeru, ktery se prave ted pouziva pro ruseni JC; -1 pokud se JC nerusi, jinak se prave ted rusi
+    RCtimerArea: TArea;
   end;
 
   ENavChanged = procedure(Sender: TObject; origNav: TBlk) of object;
@@ -139,7 +141,7 @@ type
   TJC = class
   private const
     _def_jc_state: TJCstate = (step: stepDefault; destroyBlock: _JC_DESTROY_NONE; destroyEndBlock: _JC_DESTROY_NONE;
-      ab: false; crossingWasClosed: false; crossingsToClose: nil; );
+      ab: false; crossingWasClosed: false; crossingsToClose: nil; RCtimer: -1; RCtimerArea: nil);
 
   private
     m_data: TJCdata;
@@ -160,6 +162,7 @@ type
     function IsActivating(): Boolean;
     function IsActive(): Boolean;
     function IsNCActive(): Boolean;
+    function IsCancelling(): Boolean;
 
     procedure PS_vylCallback(Sender: TIdContext; success: Boolean); // callback potvrzovaci sekvence na vyluku
     procedure UPO_OKCallback(Sender: TObject); // callback potvrzeni upozorneni
@@ -200,6 +203,8 @@ type
     procedure DetermineCrossingsToClose(var toClose: TList<Boolean>);
     procedure TrackCancelZaver(track: TBlkTrack);
 
+    function CancelTimeSec(): Cardinal;
+
   public
 
     index: Integer; // index v tabulce jizdni cest ve F_Main
@@ -208,6 +213,7 @@ type
     constructor Create(); overload;
     constructor Create(data: TJCdata); overload;
     destructor Destroy(); override;
+    procedure Update();
 
     procedure SetSignalSignal();
     procedure Cancel(Sender: TObject = nil);
@@ -215,6 +221,10 @@ type
     procedure DynamicCancelling(); // kontroluje projizdeni soupravy useky a rusi jejich zavery
     procedure DynamicCancellingNC(); // rusi poruchu BP trati, ze ktere odjizdi souprava v ramci nouzove jizdni cesty
     procedure NonProfileOccupied(); // volano pri obsazeni kontrolvoaneho neprofiloveho useku
+
+    procedure StartCancelling(senderArea: TArea);
+    procedure StopCancelling();
+    procedure CheckCancellingTracks();
 
     procedure UpdateActivating();
     procedure UpdateTimeOut();
@@ -256,6 +266,7 @@ type
     property typ: TJCType read m_data.typ;
 
     property activating: Boolean read IsActivating;
+    property cancelling: Boolean read IsCancelling;
     property active: Boolean read IsActive; // true pokud je postavena navest
     property ncActive: Boolean read IsNCActive;
     property ab: Boolean read GetAB;
@@ -363,6 +374,36 @@ begin
     jcdata.speedsGo.Free();
   if (Assigned(jcdata.speedsStop)) then
     jcdata.speedsStop.Free();
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.Update();
+begin
+  try
+    if (Self.state.destroyBlock > _JC_DESTROY_NONE) then
+      Self.DynamicCancelling()
+    else if (Self.state.destroyBlock = _JC_DESTROY_NC) then
+      Self.DynamicCancellingNC()
+    else if (Self.cancelling) then
+      Self.CheckCancellingTracks();
+
+    if ((Self.activating) or (Self.step = stepJcLastTrackWait)) then
+    begin
+      Self.UpdateActivating();
+      Self.UpdateTimeOut();
+    end;
+  except
+    on E: Exception do
+    begin
+      if (not log_last_error) then
+        AppEvents.LogException(E, 'JC ' + Self.name + ' update error');
+      if (Self.activating) then
+        Self.CancelActivating('Výjimka')
+      else
+        Self.CancelWithoutTrackRelease();
+    end;
+  end; // except
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2042,17 +2083,51 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
+procedure TJC.StartCancelling(senderArea: TArea);
+begin
+  if (Self.cancelling) then
+    Exit();
+
+  Self.m_state.RCtimerArea := senderArea;
+  Self.m_state.RCtimer := senderArea.AddCountdown(Self.Cancel, EncodeTimeSec(Self.CancelTimeSec()));
+
+  if ((Assigned(Self.signal)) and (Self.signal.typ = TBlkType.btSignal)) then
+    TBlkSignal(Self.signal).ab := False;
+  Self.CancelWithoutTrackRelease();
+  if ((Assigned(Self.signal)) and (Self.signal.typ = TBlkType.btSignal)) then
+    Blocks.TrainPrediction(Self.signal as TBlkSignal);
+end;
+
+procedure TJC.StopCancelling();
+begin
+  if (not Self.cancelling) then
+    Exit();
+  if (Self.m_state.RCtimerArea <> nil) then
+    Self.m_state.RCtimerArea.RemoveCountdown(Self.m_state.RCtimer);
+  Self.m_state.RCtimer := -1;
+  Self.m_state.RCtimerArea := nil;
+end;
+
 procedure TJC.Cancel(Sender: TObject = nil);
 begin
+  if ((Self.m_state.RCtimer > -1) and (Self.m_state.RCtimerArea <> nil)) then
+  begin
+    if (Self.m_state.RCtimerArea.IsCountdown(Self.m_state.RCtimer)) then
+      Self.m_state.RCtimerArea.RemoveCountdown(Self.m_state.RCtimer);
+  end else begin
+    Self.m_state.RCtimer := -1;
+    Self.m_state.RCtimerArea := nil;
+  end;
+
   Self.CancelWithoutTrackRelease();
 
-  (Self.signal as TBlkSignal).DNjc := nil;
-  (Self.signal as TBlkSignal).RCtimerTimeout();
+  if ((Self.signal as TBlkSignal).dnJC = Self) then
+    (Self.signal as TBlkSignal).DNjc := nil;
 
   for var trackZaver: Integer in Self.m_data.tracks do
   begin
     var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackZaver));
-    track.Zaver := TZaver.no;
+    track.zaver := TZaver.no;
   end;
 
   // Ostatni zavery (trate, prejezdy, odvraty, zamky, ...) se zrusit automaticky pri zruseni zaveru
@@ -2107,26 +2182,27 @@ begin
     signal.JCCancelSignal();
   end;
 
-  for var i: Integer := Self.destroyBlock to Self.m_data.tracks.Count - 1 do
+  // destroyBlock = -1 kdyz se kontroluje blok pred navestidlem, -2 pokud je navestidlo na STUJ, nebo zamkle
+  for var i: Integer := Max(Self.destroyBlock, 0) to Self.m_data.tracks.Count - 1 do
   begin
-    if (i < 0) then
-      continue; // i = -1 kdyz se kontroluje blok pred navestidlem, -2 pokud je navestidlo na STUJ, nebo zamkle
-
     var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[i]));
 
-    // druha cast podminky je tu pro pripad, kdy by byl na konci posunove cesty obsazeny usek
-    if ((track.occupied = occupied) and ((i < Self.m_data.tracks.Count - 1) or
-      (Self.destroyBlock > Self.m_data.tracks.Count - 2) or (Self.typ <> TJCType.shunt))) then
+    // Obsazeni posledniho useku v posunove ceste nekontrolujeme do momentu, dokud neni na tomto
+    // useku destroyBlock. Tzn. pokud je posledni usek PC obsazeny (coz muze byt), nebereme toto
+    // v potaz.
+    if ((track.occupied = occupied) and
+        ((Self.typ <> TJCType.shunt) or (i < Self.m_data.tracks.Count - 1) or (Self.destroyBlock >= Self.m_data.tracks.Count - 1))) then
     begin
       if (i = Self.destroyBlock) then
       begin
+        // obsadil se usek, ktery jsme ocekavali
         track.Zaver := TZaver.nouz;
 
         if (Self.typ = TJCType.Train) then
           Self.MoveTrainToNextTrack();
 
         // obsazeni useku rusiciho navest (obvykle 0. usek, u skupinoveho navestidla byva jiny)
-        // pozor: toto musi byt na tomto miste kvuli nastavovani Souprava.front
+        // pozor: toto musi byt na tomto miste kvuli nastavovani train.front
         if ((i = Integer(Self.m_data.signalFallTrackI)) and (signal.targetSignal <> ncStuj) and (Self.typ = TJCType.Train)) then
         begin
           // navestidlo pri obsazeni useku rusime jen v pripade, ze se jedna o VC
@@ -2148,7 +2224,7 @@ begin
 
         Self.destroyBlock := Self.destroyBlock + 1;
 
-        // pokud jsme v predposlednim useku a posledni je nedetekovany, posuneme RozpadBlok jeste o jeden usek, aby se cesta mohla zrusit
+        // pokud jsme v predposlednim useku a posledni je nedetekovany, posuneme destroyBlock jeste o jeden usek, aby se cesta mohla zrusit
         if (i = Self.m_data.tracks.Count - 2) then
           if (not Self.lastTrack.occupAvailable) then
             Self.destroyBlock := Self.destroyBlock + 1;
@@ -2177,7 +2253,9 @@ begin
             TBlkRT(track).speedUpdate := true;
         end;
 
-      end else begin // if Self.rozpadBlok = 0
+      end else begin // if (i = Self.destroyBlock)
+        // obsadil se usek, ktery jsme NEocekavali
+
         if (track.Zaver > TZaver.no) then
         begin
           // pokud jsme na jinem useku, nez RozpadBlok
@@ -2786,6 +2864,11 @@ end;
 function TJC.IsNCActive(): Boolean;
 begin
   Result := (Self.m_state.destroyBlock = _JC_DESTROY_NC);
+end;
+
+function TJC.IsCancelling(): Boolean;
+begin
+  Result := (Self.m_state.RCtimer > -1);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3692,6 +3775,60 @@ begin
     track.SetZaverWithPathTimer(TZaver.ab)
   else
     track.SetZaverWithPathTimer(TZaver.no);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TJC.CancelTimeSec(): Cardinal;
+begin
+  Result := Max(GlobalConfig.times.rcVcOccupied, GlobalConfig.times.rcPcOccupied); // vychozi hodnota (maximalni cas)
+  if ((Self.signal = nil) or (Self.signal.typ <> TBlkType.btSignal)) then
+    Exit();
+
+  var signalTrack: TBlkTrack := TBlkTrack(TBlkSignal(Self.signal).track);
+
+  if ((signalTrack <> nil) and ((signalTrack.typ = btTrack) or (signalTrack.typ = btRT)) and
+      (signalTrack.GetSettings().RCSAddrs.Count > 0) and (signalTrack.occupied = TTrackState.Free)) then
+  begin
+    // pokud neni blok pred JC obsazen -> 2 sekundy
+    Result := GlobalConfig.times.rcFree;
+  end else begin
+    // pokud je obsazen, zalezi na typu jizdni cesty
+    case (Self.typ) of
+      TJCType.Train: Result := GlobalConfig.times.rcVcOccupied;
+      TJCType.shunt: Result := GlobalConfig.times.rcPcOccupied;
+    end;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+// When tracks are occupied or zaver is lost during cancelling,
+// cancelling is stopped and dnJC := nil (-> NUZ required for further cancelling).
+
+procedure TJC.CheckCancellingTracks();
+begin
+  var violated: Boolean := False;
+
+  for var i: Integer := 0 to Self.m_data.tracks.Count - 1 do
+  begin
+    var trackId: Integer := Self.m_data.tracks[i];
+    var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackId));
+
+    if ((track <> nil) and ((track.typ = TBlkType.btTrack) or (track.typ = TBlkType.btRT))) then
+    begin
+      if ((track.occupied = TTrackState.occupied) and (not ((Self.typ = TJCType.shunt) and (i = Self.m_data.tracks.Count-1)))) then
+        violated := True;
+      if (track.zaver = TZaver.no) then
+        violated := True;
+    end;
+  end;
+
+  if (violated) then
+  begin
+    Self.StopCancelling();
+    if ((Self.signal <> nil) and (Self.signal.typ = TBlkType.btSignal) and (TBlkSignal(Self.signal).dnJC = Self)) then
+      TBlkSignal(Self.signal).dnJC := nil;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
