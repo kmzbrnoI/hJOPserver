@@ -131,7 +131,8 @@ type
     lastTrackOrRailwayOccupied: Boolean; // je obsazen posledni usek JC, nestavit navestidlo a nezavirat prejezdy
     crossingsToClose: TList<Boolean>; // seznam prejezdu k zavreni pri aktivaci
     RCtimer: Integer; // id timeru, ktery se prave ted pouziva pro ruseni JC; -1 pokud se JC nerusi, jinak se prave ted rusi
-    RCtimerArea: TArea;
+    RCtimerArea: TArea; // oblast rizeni, ze ktere bylo spusteno mereni casu ruseni JC
+    RClongTime: Boolean; // jestli se bude cesta rusit dlouhym nebo kratkym casem
   end;
 
   ENavChanged = procedure(Sender: TObject; origNav: TBlk) of object;
@@ -1118,6 +1119,9 @@ begin
   Self.m_state.ab := (abAfter) and (Self.typ = TJCType.Train);
   Self.m_state.crossingWasClosed := false;
   Self.m_state.lastTrackOrRailwayOccupied := false;
+  Self.m_state.RCtimer := -1;
+  Self.m_state.RCtimerArea := nil;
+  Self.m_state.RClongTime := False; // default = short time
 
   Self.Log('Požadavek na stavění, kontroluji podmínky');
 
@@ -2172,6 +2176,7 @@ begin
   begin
     Self.destroyBlock := 0;
     Self.destroyEndBlock := _JC_DESTROY_SIGNAL_TRACK;
+    Self.m_state.RClongTime := True; // obsazeno -> rusime odted vzdy dlouhym casem
   end;
 
   // uvolneni prvniho useku pred navestidlem v posunove ceste je signalem pro zhasnuti navestidla
@@ -3782,22 +3787,15 @@ end;
 function TJC.CancelTimeSec(): Cardinal;
 begin
   Result := Max(GlobalConfig.times.rcVcOccupied, GlobalConfig.times.rcPcOccupied); // vychozi hodnota (maximalni cas)
-  if ((Self.signal = nil) or (Self.signal.typ <> TBlkType.btSignal)) then
-    Exit();
 
-  var signalTrack: TBlkTrack := TBlkTrack(TBlkSignal(Self.signal).track);
-
-  if ((signalTrack <> nil) and ((signalTrack.typ = btTrack) or (signalTrack.typ = btRT)) and
-      (signalTrack.GetSettings().RCSAddrs.Count > 0) and (signalTrack.occupied = TTrackState.Free)) then
+  if (Self.m_state.RClongTime) then
   begin
-    // pokud neni blok pred JC obsazen -> 2 sekundy
-    Result := GlobalConfig.times.rcFree;
-  end else begin
-    // pokud je obsazen, zalezi na typu jizdni cesty
     case (Self.typ) of
       TJCType.Train: Result := GlobalConfig.times.rcVcOccupied;
       TJCType.shunt: Result := GlobalConfig.times.rcPcOccupied;
     end;
+  end else begin
+    Result := GlobalConfig.times.rcFree;
   end;
 end;
 
