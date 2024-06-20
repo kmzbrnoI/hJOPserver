@@ -235,10 +235,10 @@ type
     procedure LoadData(ini: TMemIniFile; section: string);
     procedure SaveData(ini: TMemIniFile; section: string);
 
-    function Activate(senderPnl: TIdContext; senderOR: TObject; bariery_out: TJCBarriers; from_stack: TObject = nil;
-      nc: Boolean = false; fromAB: Boolean = false; abAfter: Boolean = false; ignoreWarn: Boolean = False): Integer; overload;
-    function Activate(senderPnl: TIdContext; senderOR: TObject; from_stack: TObject = nil; nc: Boolean = false;
-      fromAB: Boolean = false; abAfter: Boolean = false; ignoreWarn: Boolean = False): Integer; overload;
+    procedure Activate(senderPnl: TIdContext; senderOR: TObject; bariery_out: TJCBarriers; from_stack: TObject = nil;
+      nc: Boolean = false; fromAB: Boolean = false; abAfter: Boolean = false; ignoreWarn: Boolean = False); overload;
+    procedure Activate(senderPnl: TIdContext; senderOR: TObject; from_stack: TObject = nil; nc: Boolean = false;
+      fromAB: Boolean = false; abAfter: Boolean = false; ignoreWarn: Boolean = False); overload;
 
     function CanDN(): Boolean;
     // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
@@ -1106,10 +1106,9 @@ end;
 // stavi konkretni jizdni cestu
 // tato fce ma za ukol zkontrolovat vstupni podminky jizdni cesty
 // tato funkce jeste nic nenastavuje!
-function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; bariery_out: TJCBarriers; from_stack: TObject;
-  nc: Boolean; fromAB: Boolean; abAfter: Boolean; ignoreWarn: Boolean): Integer;
+procedure TJC.Activate(senderPnl: TIdContext; senderOR: TObject; bariery_out: TJCBarriers; from_stack: TObject;
+  nc: Boolean; fromAB: Boolean; abAfter: Boolean; ignoreWarn: Boolean);
 begin
-  Result := 1; // error by default
   Self.m_state.timeOut := Now + EncodeTimeSec(_JC_INITPOTVR_TIMEOUT_SEC);
 
   Self.m_state.from_stack := from_stack;
@@ -1157,7 +1156,6 @@ begin
         Self.step := stepCritBarriers;
         PanelServer.UPO(Self.m_state.senderPnl, UPO, true, nil, Self.CritBarieraEsc, Self);
       end;
-      Result := 1;
     end else begin
       // bariery k potvrzeni
       // kdyz je neni komu oznamit, cesta se rovnou stavi
@@ -1179,7 +1177,6 @@ begin
 
         PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
         Self.step := stepConfBarriers;
-        Result := 1;
       end else begin
         // v jzdni ceste nejsou zadne bariery -> stavim
         if (barriers.Count = 0) then
@@ -1190,7 +1187,6 @@ begin
           Self.Log('Jsou warning bariéry, ale senderPnl=nil -> stavím');
 
         Self.SetInitStep();
-        Result := 0;
       end;
     end;
   except
@@ -1198,7 +1194,6 @@ begin
     begin
       Self.CancelActivating('Výjimka při stavění');
       AppEvents.LogException(E, 'JC.Activate');
-      Result := 1;
     end;
   end;
 
@@ -1208,10 +1203,10 @@ begin
   UPO.Free();
 end;
 
-function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; from_stack: TObject; nc: Boolean;
-  fromAB: Boolean; abAfter: Boolean; ignoreWarn: Boolean): Integer;
+procedure TJC.Activate(senderPnl: TIdContext; senderOR: TObject; from_stack: TObject; nc: Boolean;
+  fromAB: Boolean; abAfter: Boolean; ignoreWarn: Boolean);
 begin
-  Result := Self.Activate(senderPnl, senderOR, nil, from_stack, nc, fromAB, abAfter, ignoreWarn);
+  Self.Activate(senderPnl, senderOR, nil, from_stack, nc, fromAB, abAfter, ignoreWarn);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1339,7 +1334,6 @@ end;
 procedure TJC.UpdateActivating();
 var
   npCall: ^TNPCallerData;
-  remEvDataPtr: ^TRemoveEventData;
 begin
   if ((not Self.activating) and (Self.step <> stepJcLastTrackWait)) then
     Exit();
@@ -3640,8 +3634,9 @@ begin
 
   var barriers := TJCBarriers.Create();
   try
-    var ok := Self.Activate(nil, TBlkSignal(Self.signal).areas[0], barriers, nil, false, false, ab);
-    respJson['success'] := (ok = 0);
+    var wasActivating := Self.activating;
+    Self.Activate(nil, TBlkSignal(Self.signal).areas[0], barriers, nil, false, false, ab);
+    respJson['success'] := (not wasActivating) and (Self.activating);
     for var barrier in barriers do
       JCBarriers.BarrierToJson(barrier, respJson.A['barriers'].AddObject());
   finally
