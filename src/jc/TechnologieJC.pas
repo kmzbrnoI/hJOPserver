@@ -245,7 +245,7 @@ type
     procedure DN(senderPnl: TIdContext; senderOR: TObject); // DN nastavi zavery vsech bloku na validni a rozsviti navestidlo
     procedure STUJ();
 
-    function barriers(nc: Boolean = false): TJCBarriers;
+    function Barriers(nc: Boolean = false): TJCBarriers;
     function IsAnyTurnoutMinus(): Boolean;
     procedure ClientDisconnect(AContext: TIdContext);
 
@@ -1182,7 +1182,13 @@ begin
         Result := 1;
       end else begin
         // v jzdni ceste nejsou zadne bariery -> stavim
-        Self.Log('Žádné bariéry, stavím');
+        if (barriers.Count = 0) then
+          Self.Log('Žádné bariéry, stavím')
+        else if (ignoreWarn) then
+          Self.Log('Jsou warning bariéry, ale je ignoreWarn -> stavím')
+        else if (senderPnl = nil) then
+          Self.Log('Jsou warning bariéry, ale senderPnl=nil -> stavím');
+
         Self.SetInitStep();
         Result := 0;
       end;
@@ -1264,7 +1270,7 @@ begin
 
   Self.Log('Krok 1 : upozornění schválena, kontroluji znovu bariéry');
 
-  // znovu zkontrolujeme bariery (behem potvrzovani se mohly vyskytnout)
+  // znovu zkontrolujeme bariery (behem potvrzovani se mohly zmenit)
   var barriers: TJCBarriers := Self.barriers(Self.m_state.nc);
   try
     // existuji kriticke bariery?
@@ -1321,8 +1327,8 @@ procedure TJC.UPO_EscCallback(Sender: TObject);
 begin
   if (Self.step = stepConfBarriers) then
   begin
+    Self.Log('UPO odmítnuto');
     Self.CancelActivating('', False);
-    Self.step := stepDefault;
   end;
 end;
 
