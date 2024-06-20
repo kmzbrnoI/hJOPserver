@@ -401,7 +401,7 @@ end;
 
 procedure TPtServer.httpException(AContext: TIdContext; AException: Exception);
 begin
- AppEvents.LogException(AException, 'PTServer :: httpException');
+ log('PTServer :: httpException: ' + AException.Message, llError, lsPT);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
