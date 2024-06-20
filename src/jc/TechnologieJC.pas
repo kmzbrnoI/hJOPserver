@@ -3814,7 +3814,8 @@ begin
 
     if ((track <> nil) and ((track.typ = TBlkType.btTrack) or (track.typ = TBlkType.btRT))) then
     begin
-      if ((track.occupied = TTrackState.occupied) and (not ((Self.typ = TJCType.shunt) and (i = Self.m_data.tracks.Count-1)))) then
+      if ((track.occupied = TTrackState.occupied) and (not ((Self.typ = TJCType.shunt) and (i = Self.m_data.tracks.Count-1))) and
+          (not ((Self.m_state.lastTrackOrRailwayOccupied) and (i = Self.m_data.tracks.Count-1)))) then
         violated := True;
       if (track.zaver = TZaver.no) then
         violated := True;
