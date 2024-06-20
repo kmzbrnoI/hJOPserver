@@ -2,22 +2,25 @@
 
 {
   Technologie slozenych jizdnich cest.
+  Slozena jizdni cesta nikdy nemuze byt stavena jako nouzova cesta.
 }
 
 interface
 
 uses
   IniFiles, TechnologieJC, Generics.Collections, BlockDb, IdContext, SysUtils,
-  Classes, Generics.Defaults, Math, Block, BlockSignal;
+  Classes, Generics.Defaults, Math, Block, BlockSignal, JCBarriers, Logging,
+  BlockTrack;
 
 type
 
   TMultiJCState = record
-    JCIndex: Integer; // index v 'activatingJCs'
     SenderOR: TObject;
     SenderPnl: TIdContext;
     activatingJCs: TList<Integer>; // JCs in stack=VZ are activated all at once at the beginning, here is the rest
     abAfter: Boolean;
+    step: JCStep;
+    timeOut: TDateTime; // cas, pri jehoz prekroceni dojde k timeoutu staveni JC
   end;
 
   TMultiJCData = record
@@ -32,7 +35,7 @@ type
   TMultiJC = class
 
   private const
-    _def_mutiJC_staveni: TMultiJCState = (JCIndex: - 1; SenderOR: nil; SenderPnl: nil; activatingJCs: nil;);
+    _def_mutiJC_staveni: TMultiJCState = (SenderOR: nil; SenderPnl: nil; activatingJCs: nil; step: JCStep.stepDefault);
 
   private
     m_data: TMultiJCData;
@@ -40,6 +43,20 @@ type
     activatingJC: TJC; // zde je ulozena JC, ktera se aktualne stavi
 
     function IsActivating(): Boolean;
+    procedure Log(msg: string; level: TLogLevel = llInfo; source: TLogSource = lsJC);
+
+    procedure UpdateTimeOut();
+    procedure SetStep(step: JCStep);
+
+    procedure CritBarieraEsc(Sender: TObject);
+    procedure UPO_OKCallback(Sender: TObject); // callback potvrzeni upozorneni
+    procedure UPO_EscCallback(Sender: TObject); // callback zamitnuti upozorneni
+    procedure CS_Callback(Sender: TIdContext; success: Boolean); // callback potvrzovaci sekvence staveni JC
+
+    function GetFirstSignal(): TBlk;
+    function GetLastTrack(): TBlkTrack;
+
+    procedure ActivatePaths();
 
   public
 
@@ -55,23 +72,28 @@ type
     procedure SaveData(ini: TMemIniFile);
 
     procedure Activate(SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
-    procedure CancelActivation();
+    procedure CancelActivating(reason: string = '');
 
     function Match(blocks: TList<TBlk>): Boolean;
     function StartSignal(): TBlkSignal;
+    function BarriersActivatingJCs(): TJCBarriers;
 
     property data: TMultiJCData read m_data write m_data;
     property state: TMultiJCState read m_state;
     property name: string read m_data.name;
     property activating: Boolean read IsActivating;
     property id: Integer read m_data.id;
+    property step: JCStep read m_state.step write SetStep;
+    property firstSignal: TBlk read GetFirstSignal;
+    property lastTrack: TBlkTrack read GetLastTrack;
 
     class function IdComparer(): IComparer<TMultiJC>;
   end;
 
 implementation
 
-uses TJCDatabase, BlockTrack, Area, ownConvert, TCPAreasRef, AreaStack;
+uses TJCDatabase, Area, ownConvert, TCPAreasRef, AreaStack, UPO,
+  TCPServerPanel, ConfSeq, appEv, timeHelper;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -183,47 +205,29 @@ end;
 
 procedure TMultiJC.UpdateActivating();
 begin
-  if (Self.activatingJC.active) then
-  begin
-    // aktualni cesta postavena
-    Inc(Self.m_state.JCIndex);
-
-    if (Self.m_state.JCIndex >= Self.m_state.activatingJCs.Count) then
-    begin
-      // vsechny cesty postaveny
-      Self.CancelActivation();
-    end else begin
-      // vsechny cesty nepostaveny -> stavime dalsi cestu
-      var JC := JCDb.GetJCByID(Self.m_state.activatingJCs[Self.m_state.JCIndex]);
-      if (JC = nil) then
-        Self.CancelActivation()
-      else
-      begin
-        Self.activatingJC := JC;
-        Self.activatingJC.Activate(Self.m_state.SenderPnl, Self.m_state.SenderOR, nil, False, False, Self.m_state.abAfter);
-      end;
-      Self.changed := true;
-    end;
-  end else begin
-    if (not Self.activatingJC.activating) then
-    begin
-      // cesta byla stavena, ale uz se nestavi -> evidentne nastala chyba -> ukoncime staveni slozene jizdni cesty
-      Self.CancelActivation();
-    end;
-  end;
+  Self.UpdateTimeOut();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TMultiJC.Activate(SenderPnl: TIdContext; SenderOR: TObject; abAfter: Boolean);
 begin
-  for var jcId in Self.m_data.JCs do
-    if (JCDb.GetJCByID(jcId) = nil) then
-      raise Exception.Create('JC ve slozene jizdni ceste neexistuje');
+  Self.m_state.timeOut := Now + EncodeTimeSec(_JC_INITPOTVR_TIMEOUT_SEC);
 
   Self.m_state.SenderOR := SenderOR;
   Self.m_state.SenderPnl := SenderPnl;
   Self.m_state.abAfter := abAfter;
+
+  Self.Log('Požadavek na stavění, kontroluji podmínky ...');
+
+  for var jcId in Self.m_data.JCs do
+  begin
+    if (JCDb.GetJCByID(jcId) = nil) then
+    begin
+      Self.CancelActivating('Cesta ve složené JC neexistuje');
+      Exit();
+    end;
+  end;
 
   Self.m_state.activatingJCs.Clear();
   for var jcId in Self.m_data.JCs do
@@ -241,52 +245,125 @@ begin
   else
     TPanelConnData(SenderPnl.Data).pathBlocks.Clear();
 
+  // No paths to activate in PV mode -> exit
   if (Self.m_state.activatingJCs.Count = 0) then
+  begin
+    Self.Log('Zásobník OŘ všech JC v režimu VZ -> nestavím žádnou cestu rovnou');
     Exit();
+  end;
 
-  Self.activatingJC := JCDb.GetJCByID(Self.m_state.activatingJCs[0]);
-  Self.activatingJC.Activate(SenderPnl, SenderOR, nil, false, false, Self.m_state.abAfter);
-  Self.m_state.JCIndex := 0;
+  var barriers: TJCBarriers := Self.BarriersActivatingJCs();
+  var UPO: TUPOItems := TList<TUPOItem>.Create();
+  try
+    // Are critical barriers present?
+    var critical: Boolean := false;
+    for var barrier: TJCBarrier in barriers do
+    begin
+      if ((JCBarriers.CriticalBarrier(barrier.typ)) or (not JCBarriers.JCWarningBarrier(barrier.typ))) then
+      begin
+        critical := true;
+        UPO.Add(JCBarrierToMessage(barrier));
+      end;
+    end;
 
-  Self.changed := true;
+    if (critical) then
+    begin
+      // yes -> report
+      Self.Log('Celkem ' + IntToStr(barriers.Count) + ' bariér, ukončuji stavění');
+      if (senderPnl <> nil) then
+      begin
+        Self.step := stepCritBarriers;
+        PanelServer.UPO(Self.m_state.senderPnl, UPO, true, nil, Self.CritBarieraEsc, Self);
+      end;
+    end else begin
+      // non-critical barriers -> confirmation request
+      // when there is no one to ask, just activate the path right now
+      if ((barriers.Count > 0) and (senderPnl <> nil)) then
+      begin
+        Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...');
+        for var i: Integer := 0 to barriers.Count - 1 do
+          UPO.Add(JCBarrierToMessage(barriers[i]));
+
+        PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
+        Self.step := stepConfBarriers;
+      end else begin
+        // no barriers -> activate child paths
+        Self.Log('Žádné bariéry, stavím');
+        Self.ActivatePaths();
+      end;
+    end;
+  except
+    on E:Exception do
+    begin
+      Self.CancelActivating('Výjimka při stavění');
+      AppEvents.LogException(E, 'TMultiJC.Activate');
+    end;
+  end;
+
+  barriers.Free();
+  UPO.Free();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TMultiJC.CancelActivation();
+procedure TMultiJC.CancelActivating(reason: string = '');
 begin
-  Self.m_state.JCIndex := -1;
-  Self.activatingJC := nil;
+  if (reason <> '') then
+  begin
+    if (Self.m_state.senderPnl <> nil) then
+      PanelServer.SendInfoMsg(Self.m_state.senderPnl, reason);
+    Self.Log('Nelze postavit - ' + reason);
+  end;
+
+  case (Self.step) of
+    stepNcBarrierUpdate:
+      begin
+        if (Self.m_state.senderPnl <> nil) then
+          PanelServer.CSClose(Self.m_state.senderPnl, reason);
+      end;
+
+    stepConfBarriers, stepCritBarriers:
+      begin
+        if (Self.m_state.senderPnl <> nil) then
+          PanelServer.CancelUPO(Self.m_state.senderPnl, Self);
+      end;
+  end;
+
+  Self.step := stepDefault;
 
   // zrusime zacatek staveni na navestidle
+  if (Self.data.JCs.Count > 0) then
   begin
-    var JC := JCDb.GetJCByID(Self.m_data.JCs[0]);
-    var signal := Blocks.GetBlkSignalByID(JC.data.signalId);
-    signal.selected := TBlkSignalSelection.none;
+    var firstJC: TJC := JCDb.GetJCByID(Self.data.JCs[0]);
+    if (firstJC <> nil) then
+      firstJC.CancelSignalBegin();
   end;
 
   // zrusime konec staveni na poslednim useku posledni JC
   begin
-    var JC := JCDb.GetJCByID(Self.m_data.JCs[Self.m_data.JCs.Count - 1]);
-    var track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.data.tracks.Count - 1]);
-    track.jcEnd := TZaver.no;
+    var lastJC := JCDb.GetJCByID(Self.m_data.JCs[Self.m_data.JCs.Count - 1]);
+    if (lastJC <> nil) then
+      lastJC.CancelTrackEnd();
   end;
 
   // zrusime konec staveni na vsech variantnich bodech
   for var i: Integer := 0 to Self.m_data.vb.Count - 1 do
   begin
     var track := Blocks.GetBlkTrackOrRTByID(Self.m_data.vb[i]);
-    track.jcEnd := TZaver.no;
+    if (track <> nil) then
+      track.jcEnd := TZaver.no;
   end;
 
-  Self.changed := true;
+  Self.m_state.SenderPnl := nil;
+  Self.m_state.SenderOR := nil;
+  Self.m_state.abAfter := False;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TMultiJC.IsActivating(): Boolean;
 begin
-  Result := (Self.m_state.JCIndex > -1);
+  Result := (Self.m_state.step > JCStep.stepDefault);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -357,6 +434,236 @@ begin
   end
   else
     Result := nil
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TMultiJC.BarriersActivatingJCs(): TJCBarriers;
+begin
+  Result := TJCBarriers.Create();
+  try
+    for var jcId in Self.m_state.activatingJCs do
+    begin
+      var jc: TJC := JCDb.GetJCByID(jcId);
+      var jcbarriers: TJCBarriers := jc.Barriers();
+      try
+        if (jcId <> Self.m_data.JCs[Self.m_data.JCs.Count-1]) then
+        begin
+          for var barrier: TJCBarrier in jcbarriers do
+          begin
+            var newBar: TJCBarrier := barrier;
+            if ((newBar.typ = TJCBarType.barTrackLastOccupied) or (newBar.typ = TJCBarType.barRailwayOccupied)) then
+              newBar.typ := TJCBarType.barTrackOccupied;
+            Result.Add(newBar);
+          end;
+        end else begin
+          Result.AddRange(jcbarriers);
+        end;
+      finally
+        jcbarriers.Free();
+      end;
+    end;
+  except
+    Result.Free();
+    raise;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TMultiJC.Log(msg: string; level: TLogLevel; source: TLogSource);
+begin
+  Logging.Log('Složená JC ' + Self.name + ': ' + msg, level, source);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+// timeout staveni JC
+procedure TMultiJC.UpdateTimeOut();
+begin
+  // na nouzovou cestu se nevztahuje timeout
+  if (not Self.activating) then
+    Exit();
+
+  if (Now > Self.m_state.timeOut) then
+  begin
+    case (Self.step) of
+      stepConfSeq:
+        begin
+          if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+            PanelServer.CSClose(Self.m_state.senderPnl, 'Timeout');
+        end;
+
+    else
+      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+        PanelServer.BottomError(Self.m_state.senderPnl, 'Timeout ' + Self.name,
+          (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+    end; // else case
+
+    Self.CancelActivating('Překročení času stavění JC');
+  end; // if timeout
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TMultiJC.SetStep(step: JCStep);
+begin
+  Self.m_state.step := step;
+  Self.changed := true;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TMultiJC.CritBarieraEsc(Sender: TObject);
+begin
+  Self.CancelActivating();
+end;
+
+procedure TMultiJC.UPO_OKCallback(Sender: TObject);
+begin
+  if (Self.step <> stepConfBarriers) then
+    Exit();
+
+  Self.Log('Krok 1 : upozornění schválena, kontroluji znovu bariéry');
+
+  // Pripadne vyvolani jizdni cesty s potvrzenim ...
+  // (radsi nejdriv zkontrolujeme, jestli se neobjevily kriticke bariery)
+  var barriers: TJCBarriers := Self.BarriersActivatingJCs();
+  try
+    // existuji kriticke bariery?
+    var critical: Boolean := false;
+    for var barrier in barriers do
+      if ((barrier.typ <> barProcessing) and ((JCBarriers.CriticalBarrier(barrier.typ)) or
+        (not JCBarriers.JCWarningBarrier(barrier.typ)))) then
+      begin
+        critical := true;
+        break;
+      end;
+
+    if (critical) then
+    begin
+      Self.CancelActivating('Nelze postavit - kritické bariéry');
+      if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+        PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
+          (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
+      Exit();
+    end;
+
+    // existuji bariery na potvrzeni potvrzovaci sekvenci?
+    var csItems: TList<TConfSeqItem> := TList<TConfSeqItem>.Create();
+    try
+      for var barrier in barriers do
+        if (JCBarriers.IsCSBarrier(barrier.typ)) then
+          csItems.Add(CSItem(barrier.block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+
+      if (csItems.Count > 0) then
+      begin
+        // ano, takoveto bariery existuji -> potvrzovaci sekvence
+        Self.Log('Bariéry s potvrzovací sekvencí, žádám potvrzení...');
+
+        if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
+          PanelServer.ConfirmationSequence(Self.m_state.senderPnl, Self.CS_Callback, (Self.m_state.senderOR as TArea),
+            'Jízdní cesta s potvrzením', GetObjsList(Self.firstSignal, Self.lastTrack), csItems, True, False);
+
+        Self.step := stepConfSeq;
+      end else begin
+        // ne, takoveto bariery neexistuji -> stavim jizdni cestu
+        Self.ActivatePaths();
+      end;
+    finally
+      csItems.Free();
+    end;
+
+  finally
+    barriers.Free();
+  end;
+end;
+
+procedure TMultiJC.UPO_EscCallback(Sender: TObject);
+begin
+  if (Self.step = stepConfBarriers) then
+  begin
+    Self.Log('UPO odmítnuto');
+    Self.CancelActivating();
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TMultiJC.CS_Callback(Sender: TIdContext; success: Boolean);
+begin
+  if (Self.step <> stepConfSeq) then
+    Exit();
+
+  // Checking of the barriers again is not required
+  // If any critical barrier occurs, it is found in child-paths activation
+
+  if (success) then
+  begin
+    Self.Log('Povrzovací sekvence OK');
+    Self.ActivatePaths();
+  end else begin
+    Self.Log('Povrzovací sekvence NOK - ruším stavění');
+    Self.CancelActivating();
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TMultiJC.GetFirstSignal(): TBlk;
+begin
+  if (Self.data.JCs.Count = 0) then
+    Exit(nil);
+  var jc: TJC := JCDb.GetJCByID(Self.data.JCs[0]);
+  if (jc = nil) then
+    Exit(nil);
+  Result := jc.signal;
+end;
+
+function TMultiJC.GetLastTrack(): TBlkTrack;
+begin
+  if (Self.data.JCs.Count = 0) then
+    Exit(nil);
+  var jc: TJC := JCDb.GetJCByID(Self.data.JCs[Self.data.JCs.Count-1]);
+  if (jc = nil) then
+    Exit(nil);
+  Result := jc.lastTrack;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TMultiJC.ActivatePaths();
+begin
+  // Activate all paths at once, all barriers should be already confirmed.
+  // In case some critical barriers occurs, jc.Activate will show them to the dispatcher.
+
+  Self.Log('Stavím jízdní cesty ...');
+  Self.step := stepDefault;
+
+  for var jcId: Integer in Self.m_state.activatingJCs do
+  begin
+    var jc: TJC := JCDb.GetJCByID(jcId);
+    if (jc = nil) then
+    begin
+      Self.CancelActivating('Jízdní cesta neexistuje');
+      Exit();
+    end;
+
+    jc.Activate(
+      Self.m_state.SenderPnl,
+      Self.m_state.SenderOR,
+      nil,
+      false,
+      false,
+      Self.m_state.abAfter,
+      True
+    );
+  end;
+
+  Self.m_state.activatingJCs.Clear();
+  Self.m_state.SenderPnl := nil;
+  Self.m_state.SenderOR := nil;
+  Self.m_state.abAfter := False;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

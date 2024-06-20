@@ -215,20 +215,18 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TMultiJCDb.Update();
-var i: Integer;
 begin
- for i := 0 to Self.JCs.Count-1 do
+ for var mJC in Self.JCs do
   begin
    try
-     if (Self.JCs[i].state.JCIndex > -1) then
-       Self.JCs[i].UpdateActivating();
+     if (mJC.activating) then
+       mJC.UpdateActivating();
    except
     on E: Exception do
      begin
       if (not log_last_error) then
-        AppEvents.LogException(E, 'JC '+Self.JCs[i].name
-         + ' update error, rusim staveni');
-      Self.JCs[i].CancelActivation();
+        AppEvents.LogException(E, 'mJC ' + mJC.name + ' update error, rusim staveni');
+      mJC.CancelActivating();
      end;
    end;//except
   end;//for i }

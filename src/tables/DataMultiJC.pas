@@ -88,8 +88,8 @@ begin
   Self.LV.Items[line].Caption := IntToStr(mJCData.id);
   Self.LV.Items[line].SubItems[0] := mJCData.name;
 
-  // krok ( = aktualne stavena JC)
-  Self.LV.Items[line].SubItems[1] := IntToStr(mJC.state.JCIndex);
+  // krok
+  Self.LV.Items[line].SubItems[1] := IntToStr(Integer(mJC.state.step));
 
   // jednotlive jizdni cesty
   begin

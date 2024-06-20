@@ -2965,7 +2965,7 @@ procedure TF_Main.LV_MultiJCCustomDrawItem(Sender: TCustomListView; Item: TListI
 begin
   if (Item.SubItems.Count >= 4) then
   begin
-    if (Item.SubItems[1] <> '-1') then
+    if (Item.SubItems[1] <> '0') then
       Self.LV_MultiJC.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
     else
       Self.LV_MultiJC.Canvas.Brush.Color := _TABLE_COLOR_WHITE;

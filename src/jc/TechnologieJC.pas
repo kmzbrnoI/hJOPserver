@@ -153,8 +153,6 @@ type
     procedure SetInitStep();
     procedure SetData(prop: TJCdata);
 
-    procedure CancelSignalBegin();
-    procedure CancelTrackEnd();
     procedure CancelVBs();
     procedure MoveTrainToNextTrack();
     // kontroluje zmenu smeru soupravy a hnacich vozidel pri vkroceni do smyckove bloku,
@@ -231,14 +229,16 @@ type
     procedure UpdateTimeOut();
     // zrusi staveni a oduvodneni zaloguje a zobrazi dispecerovi
     procedure CancelActivating(reason: string = ''; stackToPV: Boolean = True);
+    procedure CancelSignalBegin();
+    procedure CancelTrackEnd();
 
     procedure LoadData(ini: TMemIniFile; section: string);
     procedure SaveData(ini: TMemIniFile; section: string);
 
     function Activate(senderPnl: TIdContext; senderOR: TObject; bariery_out: TJCBarriers; from_stack: TObject = nil;
-      nc: Boolean = false; fromAB: Boolean = false; abAfter: Boolean = false): Integer; overload;
+      nc: Boolean = false; fromAB: Boolean = false; abAfter: Boolean = false; ignoreWarn: Boolean = False): Integer; overload;
     function Activate(senderPnl: TIdContext; senderOR: TObject; from_stack: TObject = nil; nc: Boolean = false;
-      fromAB: Boolean = false; abAfter: Boolean = false): Integer; overload;
+      fromAB: Boolean = false; abAfter: Boolean = false; ignoreWarn: Boolean = False): Integer; overload;
 
     function CanDN(): Boolean;
     // true = je mozno DN; tato funkce kontroluje, jestli je mozne znovupostavit cestu i kdyz byla fakticky zrusena = musi zkontrolovat vsechny podminky
@@ -1106,8 +1106,8 @@ end;
 // stavi konkretni jizdni cestu
 // tato fce ma za ukol zkontrolovat vstupni podminky jizdni cesty
 // tato funkce jeste nic nenastavuje!
-function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; bariery_out: TJCBarriers; from_stack: TObject = nil;
-  nc: Boolean = false; fromAB: Boolean = false; abAfter: Boolean = false): Integer;
+function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; bariery_out: TJCBarriers; from_stack: TObject;
+  nc: Boolean; fromAB: Boolean; abAfter: Boolean; ignoreWarn: Boolean): Integer;
 begin
   Result := 1; // error by default
   Self.m_state.timeOut := Now + EncodeTimeSec(_JC_INITPOTVR_TIMEOUT_SEC);
@@ -1161,7 +1161,7 @@ begin
     end else begin
       // bariery k potvrzeni
       // kdyz je neni komu oznamit, cesta se rovnou stavi
-      if (((barriers.Count > 0) or ((nc) and (from_stack <> nil))) and (senderPnl <> nil)) then
+      if (((barriers.Count > 0) or ((nc) and (from_stack <> nil))) and (senderPnl <> nil) and (not ignoreWarn)) then
       begin
         Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...');
         for var i: Integer := 0 to barriers.Count - 1 do
@@ -1208,10 +1208,10 @@ begin
   UPO.Free();
 end;
 
-function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; from_stack: TObject = nil; nc: Boolean = false;
-  fromAB: Boolean = false; abAfter: Boolean = false): Integer;
+function TJC.Activate(senderPnl: TIdContext; senderOR: TObject; from_stack: TObject; nc: Boolean;
+  fromAB: Boolean; abAfter: Boolean; ignoreWarn: Boolean): Integer;
 begin
-  Result := Self.Activate(senderPnl, senderOR, nil, from_stack, nc, fromAB, abAfter);
+  Result := Self.Activate(senderPnl, senderOR, nil, from_stack, nc, fromAB, abAfter, ignoreWarn);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
