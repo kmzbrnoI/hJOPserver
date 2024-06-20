@@ -2022,7 +2022,13 @@ begin
       begin
         if (Self.m_state.senderPnl <> nil) then
           PanelServer.CSClose(Self.m_state.senderPnl, reason);
-      end
+      end;
+
+    stepConfBarriers, stepCritBarriers:
+      begin
+        if (Self.m_state.senderPnl <> nil) then
+          PanelServer.CancelUPO(Self.m_state.senderPnl, Self);
+      end;
   end;
 
   // staveci zavery jsou zruseny, ostatni zavery zustavaji (lze je vyNUZovat)
@@ -2041,8 +2047,6 @@ begin
   Self.CancelSignalBegin();
   Self.CancelVBs();
   Self.CancelTrackEnd();
-  if (Self.m_state.senderPnl <> nil) then
-    PanelServer.CancelUPO(Self.m_state.senderPnl, Self);
   if (Self.m_state.from_stack <> nil) then
   begin
     if (stackToPV) then
@@ -2833,7 +2837,7 @@ begin
       stepConfSeq:
         begin
           if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
-            PanelServer.CSClose(Self.m_state.senderPnl);
+            PanelServer.CSClose(Self.m_state.senderPnl, 'Timeout');
         end;
       stepJcWaitCross:
         begin
