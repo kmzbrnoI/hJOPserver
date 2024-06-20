@@ -1613,7 +1613,6 @@ begin
           Self.LogStep('Navestidlo: nestavim');
           Self.step := stepJcFinish;
         end else begin
-          Self.LogStep('Navestidlo: stavim...');
           Self.SetSignalSignal();
           Self.step := stepJcSignalWait;
         end;
@@ -1882,7 +1881,6 @@ begin
         if ((Self.typ = TJCType.Train) and (signal.enabled)) then
         begin
           Self.SetSignalSignal();
-          Self.LogStep('Navestidlo: nastavuji na privolavaci navest...');
           Self.step := stepNcSignalWait;
         end
         else
@@ -2572,6 +2570,7 @@ begin
     end; // case
   end; // else emergency
 
+  Self.LogStep('Návěstidlo '+Self.signal.name+': nastavuji návěst '+TBlkSignal.SignalToString(code)+' ...');
   (Self.signal as TBlkSignal).SetSignal(code, TNotifyEvent(nil), Self.SignalError);
 end;
 

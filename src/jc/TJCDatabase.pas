@@ -527,6 +527,7 @@ begin
     if ((JC.data.nzv) and (code <> ncVolno)) then
       code := TBlkSignal.AddOpak(code);
 
+    Log('Předchozí návěstidlo '+prevSignal.name+': nastavuji návěst '+TBlkSignal.SignalToString(code)+' ...', llInfo);
     prevSignal.signal := code;
   end;
 end;
