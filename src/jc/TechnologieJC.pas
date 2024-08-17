@@ -1624,6 +1624,11 @@ begin
         begin
           Self.Log('Krok 15 : navestidlo postaveno');
           Self.step := stepJcFinish;
+        end else if ((signal.targetSignal = ncStuj) and (signal.signal = ncStuj)) then
+        begin
+          // Nekdo ihned pri staveni navestidla dal STUJ
+          Self.Log('Krok 15 : navestidlo NEpostaveno');
+          Self.step := stepJcFinish;
         end;
       end;
 
@@ -1680,7 +1685,7 @@ begin
           end;
         end;
 
-        if ((signal.ZAM) or (Self.m_state.lastTrackOrRailwayOccupied)) then
+        if ((signal.targetSignal = ncStuj) or (signal.ZAM) or (Self.m_state.lastTrackOrRailwayOccupied)) then
           Self.destroyBlock := _JC_DESTROY_SIGNAL_STUJ
         else
           Self.destroyBlock := _JC_DESTROY_SIGNAL_TRACK;
