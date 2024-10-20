@@ -7,7 +7,7 @@ Description of whole hJOP project is available in Czech at
 [http://hjop.kmz-brno.cz](http://hjop.kmz-brno.cz/).
 
  * Programming language: Object Pascal
- * Environment: CodeGear RAD Studio 11 Alexandria (available for free under [Community edition](http://docwiki.embarcadero.com/RADStudio/Alexandria/en/Community_Edition))
+ * Environment: CodeGear RAD Studio 12 Athens (available for free under [Community edition](http://docwiki.embarcadero.com/RADStudio/Athens/en/Community_Edition))
  * For: Microsoft Windows OS
 
 ## Using
