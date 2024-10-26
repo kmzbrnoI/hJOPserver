@@ -78,7 +78,7 @@ type
     procedure Auth(AContext: TIdContext; parsed: TStrings); // pozadavek na autorizaci OR, data se ziskavaji z \parsed
 
     function IsOpenned(): Boolean; // je server zapnut?
-    function GetBind(): string;
+    function GetBind(): string; overload;
 
     procedure OnDCCCmdErr(Sender: TObject; data: Pointer); // event chyby komunikace s lokomotivou v automatu
     procedure CheckPing(Sender: TObject);
@@ -150,9 +150,13 @@ type
     procedure DisconnectRegulatorUser(User: TUser);
     function StrToPanelButton(button: string): TPanelButton;
     procedure OnRemoveTrain(Train: TTrain);
+    function GetBindings(): TIdSocketHandles;
+    function IsBind(ip: string): Boolean;
+    function GetBind(ip: string): TIdSocketHandle; overload;
+    function GetBindOrZeroBind(ip: string): TIdSocketHandle;
 
     property openned: Boolean read IsOpenned;
-    property bindings: string read GetBind;
+    property bindingsStr: string read GetBind;
   end;
 
 var
@@ -267,7 +271,7 @@ end;
 
 procedure TPanelServer.SaveConfig(ini: TMemIniFile);
 begin
-  ini.WriteString(_CONFIG_SECTION, 'bind', Self.bindings);
+  ini.WriteString(_CONFIG_SECTION, 'bind', Self.bindingsStr);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -286,7 +290,7 @@ begin
     Exit();
 
   F_Main.S_Server.Brush.Color := clGray;
-  F_Main.LogStatus('Panel server: spouštění '+Self.bindings+' ...');
+  F_Main.LogStatus('Panel server: spouštění '+Self.bindingsStr+' ...');
 
   try
     Self.tcpServer.Active := true;
@@ -1631,6 +1635,38 @@ begin
     Result := Result + handle.IP + ':' + handle.Port.ToString() + ', ';
   end;
   Result := LeftStr(Result, Length(Result)-2);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TPanelServer.GetBindings(): TIdSocketHandles;
+begin
+  Result := Self.tcpServer.Bindings;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TPanelServer.IsBind(ip: string): Boolean;
+begin
+  Result := False;
+  for var i: Integer := 0 to Self.tcpServer.Bindings.Count-1 do
+    if (Self.tcpServer.Bindings[i].IP = ip) then
+      Exit(True);
+end;
+
+function TPanelServer.GetBind(ip: string): TIdSocketHandle;
+begin
+  Result := nil;
+  for var i: Integer := 0 to Self.tcpServer.Bindings.Count-1 do
+    if (Self.tcpServer.Bindings[i].IP = ip) then
+      Exit(Self.tcpServer.Bindings[i]);
+end;
+
+function TPanelServer.GetBindOrZeroBind(ip: string): TIdSocketHandle;
+begin
+  Result := Self.GetBind(ip);
+  if (Result = nil) then
+    Result := Self.GetBind('0.0.0.0');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

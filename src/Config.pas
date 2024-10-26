@@ -401,9 +401,12 @@ begin
         Self.autosave_next := Now + Self.autosave_period;
     end;
 
-    // UDP discovery
-    UDPdisc := TUDPDiscover.Create(_DISC_DEFAULT_PORT, ini.ReadString('PanelServer', 'nazev', ''),
-      ini.ReadString('PanelServer', 'popis', ''));
+    try
+      UDPdisc.LoadConfig(ini);
+    except
+      on E:Exception do
+        AppEvents.LogException(E, 'UDPdisc.LoadConfig');
+    end;
 
     try
       diag.LoadData(ini, 'AdminData');
@@ -471,6 +474,7 @@ begin
   try
     PanelServer.SaveConfig(ini);
     ModCas.SaveData(ini);
+    UDPdisc.SaveConfig(ini);
 
     ini.EraseSection('SystemCfg');
     ini.WriteInteger('SystemCfg', 'mainTimerIntervalMs', F_Main.T_Main.Interval);
