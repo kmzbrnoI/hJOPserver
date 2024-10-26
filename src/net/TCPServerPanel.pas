@@ -8,9 +8,9 @@
 
 interface
 
-uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs,
+uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs, IniFiles,
   Classes, StrUtils, Graphics, Windows, Area, ExtCtrls, ConfSeq,
-  IdContext, Block, ComCtrls, IdSync, UPO, TCPAreasRef,
+  IdContext, Block, ComCtrls, IdSync, UPO, TCPAreasRef, IdSocketHandle,
   User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
 const
@@ -18,6 +18,7 @@ const
   _MAX_CLIENTS = 64;
   _PING_TIMER_PERIOD_MS = 250;
   _RECEIVE_CHECK_PERIOD_MS = 15;
+  _CONFIG_SECTION = 'PanelServer';
 
   // tady jsou vyjmenovane vsechny verze protokolu, ktere akceptuje server od klientu
   _PROTO_V_ACCEPT: array [0 .. 1] of string = ('1.0', '1.1');
@@ -58,7 +59,8 @@ type
     clients: array [0 .. _MAX_CLIENTS - 1] of TPanelClient;
     tcpServer: TIdTCPServer;
     data: string; // prijata data v plain-text forme
-    fport: Word;
+    mBindPort: Word;
+    mBindIP: string;
     DCCStopped: TIdContext; // tady je ulozeno ID spojeni, ktere zazadalo o CentralStop
     // vsechny panely maji standartne moznost vypnout DCC
     // pokud to udela nejaky panel, ma moznost DCC zapnout jen tento panel
@@ -76,6 +78,7 @@ type
     procedure Auth(AContext: TIdContext; parsed: TStrings); // pozadavek na autorizaci OR, data se ziskavaji z \parsed
 
     function IsOpenned(): Boolean; // je server zapnut?
+    function GetBind(): string;
 
     procedure OnDCCCmdErr(Sender: TObject; data: Pointer); // event chyby komunikace s lokomotivou v automatu
     procedure CheckPing(Sender: TObject);
@@ -87,8 +90,10 @@ type
     constructor Create();
     destructor Destroy(); override;
 
-    procedure Start(port: Word); overload;
-    procedure Start(); overload;
+    procedure LoadConfig(ini: TMemIniFile);
+    procedure SaveConfig(ini: TMemIniFile);
+
+    procedure Start();
     procedure Stop();
     procedure DisconnectClient(conn: TIdContext);
 
@@ -147,7 +152,7 @@ type
     procedure OnRemoveTrain(Train: TTrain);
 
     property openned: Boolean read IsOpenned;
-    property port: Word read fport write fport;
+    property bindings: string read GetBind;
   end;
 
 var
@@ -178,13 +183,10 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 constructor TPanelServer.Create();
-var i: Integer;
 begin
   inherited Create();
 
-  Self.fport := _DEFAULT_PORT;
-
-  for i := 0 to _MAX_CLIENTS - 1 do
+  for var i: Integer := 0 to _MAX_CLIENTS - 1 do
     Self.clients[i] := nil;
 
   Self.received := TObjectQueue<TPanelReceived>.Create();
@@ -231,7 +233,46 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TPanelServer.Start(port: Word);
+procedure TPanelServer.LoadConfig(ini: TMemIniFile);
+begin
+  var strBinds: string := ini.ReadString(_CONFIG_SECTION, 'bind', '0.0.0.0:'+IntToStr(_DEFAULT_PORT));
+
+  Self.tcpServer.Bindings.Clear();
+  var binds: TStrings := TStringList.Create();
+  var bind: TStrings := TStringList.Create();
+  try
+    ExtractStringsEx([' '], [','], strBinds, binds);
+    for var strBind: string in binds do
+    begin
+      bind.Clear();
+      ExtractStringsEx([':'], [], strBind, bind);
+      if (bind.Count = 2) then
+      begin
+        var ip: string := bind[0];
+        var port: Word := StrToIntDef(bind[1], 0);
+        if (port <> 0) then
+        begin
+          var binding: TIdSocketHandle := Self.tcpServer.Bindings.Add();
+          binding.IP := ip;
+          binding.Port := port;
+        end;
+      end;
+    end;
+
+  finally
+    bind.Free();
+    binds.Free();
+  end;
+end;
+
+procedure TPanelServer.SaveConfig(ini: TMemIniFile);
+begin
+  ini.WriteString(_CONFIG_SECTION, 'bind', Self.bindings);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TPanelServer.Start();
 begin
   if ((SystemData.status = starting) and (Self.openned)) then
   begin
@@ -245,10 +286,7 @@ begin
     Exit();
 
   F_Main.S_Server.Brush.Color := clGray;
-  F_Main.LogStatus('Panel server: spouštění...');
-
-  Self.tcpServer.DefaultPort := port;
-  Self.fport := port;
+  F_Main.LogStatus('Panel server: spouštění '+Self.bindings+' ...');
 
   try
     Self.tcpServer.Active := true;
@@ -280,11 +318,6 @@ begin
       F_Main.UpdateSystemButtons();
     end;
   end;
-end;
-
-procedure TPanelServer.Start();
-begin
-  Self.Start(Self.port);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1585,6 +1618,19 @@ begin
 
   Self.connection := conn;
   Self.state := status;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TPanelServer.GetBind(): string;
+begin
+  Result := '';
+  for var i: Integer := 0 to Self.tcpServer.Bindings.Count-1 do
+  begin
+    var handle: TIdSocketHandle := Self.tcpServer.Bindings[i];
+    Result := Result + handle.IP + ':' + handle.Port.ToString() + ', ';
+  end;
+  Result := LeftStr(Result, Length(Result)-2);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

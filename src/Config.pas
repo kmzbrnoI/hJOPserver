@@ -378,9 +378,19 @@ begin
     FuncNames.Add(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
     F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
 
-    PanelServer.port := ini.ReadInteger('PanelServer', 'port', _DEFAULT_PORT);
+    try
+      PanelServer.LoadConfig(ini);
+    except
+      on E:Exception do
+        AppEvents.LogException(E, 'PanelServer.LoadConfig');
+    end;
 
-    Self.LoadCfgPtServer(ini);
+    try
+      Self.LoadCfgPtServer(ini);
+    except
+      on E:Exception do
+        AppEvents.LogException(E, 'LoadCfgPtServer');
+    end;
 
     // autosave
     begin
@@ -459,6 +469,7 @@ begin
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
   try
+    PanelServer.SaveConfig(ini);
     ModCas.SaveData(ini);
 
     ini.EraseSection('SystemCfg');

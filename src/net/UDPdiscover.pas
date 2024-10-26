@@ -76,7 +76,7 @@ var
 
 implementation
 
-uses TCPServerPanel, ownStrUtils, Logging, USock;
+uses TCPServerPanel, ownStrUtils, Logging, USock, IfThenElse;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -141,29 +141,21 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TUDPDiscover.SendDisc(ABinding: TIdSocketHandle; port: Word);
-var Msg: string;
-  data: TIdBytes;
+var msg: string;
 begin
   if (ABinding.IP = '0.0.0.0') then
     Exit();
 
-  Msg := 'hJOP;' + _DISC_PROTOCOL_VERSION + ';server;' + Self.name + ';' + ABinding.IP + ';' +
-    IntToStr(PanelServer.port) + ';';
+  msg := 'hJOP;' + _DISC_PROTOCOL_VERSION + ';server;' + Self.name + ';' + ABinding.IP + ';' +
+    {IntToStr(PanelServer.port) +} ';'; // TODO
+  msg := msg + ite(PanelServer.openned, 'on', 'off') + ';';
+  msg := msg + Self.description + ';';
 
-  case (PanelServer.openned) of
-    false:
-      Msg := Msg + 'off;';
-    true:
-      Msg := Msg + 'on;';
-  end;
-
-  Msg := Msg + Self.description + ';';
-
-  if (not broadcasts.ContainsKey(ABinding.IP)) then
+  if (not Self.broadcasts.ContainsKey(ABinding.IP)) then
     Self.UpdateBindings();
 
   try
-    data := TIdBytes(TEncoding.UTF8.GetBytes(Msg));
+    var data: TIdBytes := TIdBytes(TEncoding.UTF8.GetBytes(Msg));
     ABinding.Broadcast(data, port, broadcasts[ABinding.IP]);
   except
     on E: Exception do
@@ -207,8 +199,8 @@ begin
       if ((ifaces[i].IsLoopback) or (not ifaces[i].IsInterfaceUp) or (not ifaces[i].BroadcastSupport)) then
         continue;
 
-      var binding: TIdSocketHandle := Self.UDPserver.Bindings.Add;
-      binding.port := port;
+      var binding: TIdSocketHandle := Self.UDPserver.Bindings.Add();
+      binding.Port := port;
       binding.IP := ifaces[i].AddrIP;
       Self.broadcasts.Add(binding.IP, ifaces[i].AddrDirectedBroadcast);
     end;
