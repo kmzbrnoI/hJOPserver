@@ -23,7 +23,7 @@ interface
 
 uses SysUtils, Classes, Graphics, PTEndpoint, Generics.Collections, SyncObjs,
      IdHttpServer, IdSocketHandle, IdContext, IdCustomHTTPServer, IdComponent,
-     JsonDataObjects, PTUtils, ExtCtrls;
+     JsonDataObjects, PTUtils, ExtCtrls, IniFiles;
 
 const
   _PT_DEFAULT_PORT = 5823;
@@ -31,6 +31,8 @@ const
   _PT_COMPACT_RESPONSE = false;
   _PT_CONTENT_TYPE = 'application/json';
   _PT_DESCRIPTION = 'ptServer v3.0.0';
+  _PT_CONFIG_SECTION = 'PTServer';
+  _PT_TOKENS_SECTION = 'PTServerStaticTokens';
   _RECEIVE_CHECK_PERIOD_MS = 15;
 
 type
@@ -80,16 +82,17 @@ type
        const AStatusText: string);
 
      function IsOpenned(): Boolean;
-
-     function GetPort(): Word;
-     procedure SetPort(new: Word);
-
      function GetEndpoint(path: string): TPTEndpoint;
+     function GetBind(): string;
 
    public
+     autoStart: Boolean;
 
      constructor Create();
      destructor Destroy(); override;
+
+     procedure LoadConfig(ini: TMemIniFile);
+     procedure SaveConfig(ini: TMemIniFile);
 
      procedure Start();
      procedure Stop();
@@ -99,8 +102,8 @@ type
      function HasAccess(login: string):Boolean;
 
      property openned: Boolean read IsOpenned;
-     property port: Word read GetPort write SetPort;
      property compact: Boolean read Fcompact write Fcompact;
+     property bindingsStr: string read GetBind;
   end;
 
 var
@@ -108,7 +111,7 @@ var
 
 implementation
 
-uses Logging, appEv, fMain,
+uses Logging, appEv, fMain, OwnStrUtils, StrUtils,
       PTEndpointBlock, PTEndpointBlocks, PTEndpointBlockState, PTEndpointJC,
       PTEndpointLok, PTEndpointLoks, PTEndpointLokState, PTEndpointJCs,
       PTEndpointJCStav, PTEndpointTrains, PTEndpointTrain, PTEndpointUsers,
@@ -135,37 +138,29 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 constructor TPtServer.Create();
-var bindings: TIdSocketHandles;
-    binding: TIdSocketHandle;
 begin
  inherited;
 
  // initialize variables
  Self.Fcompact := _PT_COMPACT_RESPONSE;
 
- // bind all addresses
- bindings := TIdSocketHandles.Create(nil);
- binding := bindings.Add();
- binding.SetBinding('0.0.0.0', _PT_DEFAULT_PORT);
-
  Self.received := TObjectQueue<TPtReceived>.Create();
  Self.receivedLock := TCriticalSection.Create();
  Self.accessTokens := TDictionary<string, string>.Create();
 
  Self.httpServer := TIdHTTPServer.Create(nil);
- Self.httpServer.Bindings := bindings;
  Self.httpServer.MaxConnections := _PT_MAX_CONNECTIONS;
  Self.httpServer.KeepAlive := true;
  Self.httpServer.ServerSoftware := _PT_DESCRIPTION;
 
  // bind events
- Self.httpServer.OnCommandGet   := Self.httpGet;
+ Self.httpServer.OnCommandGet := Self.httpGet;
  Self.httpServer.OnCommandOther := Self.httpGet;
  Self.httpServer.OnCommandError := Self.httpError;
- Self.httpServer.OnException    := Self.httpException;
+ Self.httpServer.OnException := Self.httpException;
 
- Self.httpServer.OnAfterBind    := Self.httpAfterBind;
- Self.httpServer.OnStatus       := Self.httpStatus;
+ Self.httpServer.OnAfterBind := Self.httpAfterBind;
+ Self.httpServer.OnStatus := Self.httpStatus;
 
  // endpoints
  Self.endpoints := TObjectList<TPTEndpoint>.Create();
@@ -215,6 +210,71 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+procedure TPtServer.LoadConfig(ini: TMemIniFile);
+begin
+  var strBinds: string := ini.ReadString(_PT_CONFIG_SECTION, 'bind', '0.0.0.0:'+IntToStr(_PT_DEFAULT_PORT));
+
+  Self.httpServer.Bindings.Clear();
+  var binds: TStrings := TStringList.Create();
+  var bind: TStrings := TStringList.Create();
+  try
+    ExtractStringsEx([' '], [','], strBinds, binds);
+    for var strBind: string in binds do
+    begin
+      bind.Clear();
+      ExtractStringsEx([':'], [], strBind, bind);
+      if (bind.Count = 2) then
+      begin
+        var ip: string := bind[0];
+        var port: Word := StrToIntDef(bind[1], 0);
+        if (port <> 0) then
+        begin
+          var binding: TIdSocketHandle := Self.httpServer.Bindings.Add();
+          binding.IP := ip;
+          binding.Port := port;
+        end;
+      end;
+    end;
+
+  finally
+    bind.Free();
+    binds.Free();
+  end;
+
+  Self.compact := ini.ReadBool(_PT_CONFIG_SECTION, 'compact', _PT_COMPACT_RESPONSE);
+  Self.autoStart := ini.ReadBool(_PT_CONFIG_SECTION, 'autoStart', false);
+
+  var strs: TStrings := TStringList.Create();
+  try
+    ini.ReadSection(_PT_TOKENS_SECTION, strs);
+    var str: string := '';
+    for var key: string in strs do
+    begin
+      try
+        str := ini.ReadString(_PT_TOKENS_SECTION, key, '');
+        if (str <> '') then
+          Self.AccessTokenAdd(key, str);
+      except
+        on e: Exception do
+          Log('PTserver: nepodařilo se přidat token ' + str + ' (' + e.Message + ')', TLogLevel.llError, lsPT);
+      end;
+    end;
+  finally
+    strs.Free();
+  end;
+end;
+
+procedure TPtServer.SaveConfig(ini: TMemIniFile);
+begin
+  ini.WriteString(_PT_CONFIG_SECTION, 'bind', Self.bindingsStr);
+  ini.WriteBool(_PT_CONFIG_SECTION, 'compact', Self.compact);
+  ini.WriteBool(_PT_CONFIG_SECTION, 'autoStart', Self.autoStart);
+  ini.DeleteKey(_PT_CONFIG_SECTION, 'port'); // old definition; new = bind
+  // intentionally do not save tokens, they are read-only
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TPtServer.Start();
 begin
  if (Self.openned) then
@@ -225,6 +285,7 @@ begin
    S_PTServer.Visible := true;
    L_PTServer.Visible := true;
    S_PTServer.Brush.Color := clBlue;
+   LogStatus('PT server: spouštění '+Self.bindingsStr+' ...');
   end;
 
  try
@@ -246,6 +307,7 @@ begin
  Self.receiveTimer.Enabled := false;
 
  Log('PT server zastaven', llInfo, lsPT);
+ F_Main.LogStatus('PT server: zastaven');
 
  with (F_Main) do
   begin
@@ -411,23 +473,12 @@ begin
  Result := Self.httpServer.Active;
 end;
 
-function TPtServer.GetPort(): Word;
-begin
- Result := Self.httpServer.Bindings[0].Port;
-end;
-
-procedure TPtServer.SetPort(new: Word);
-begin
- if (Self.httpServer.Active) then
-   raise EPTActive.Create('PT server je aktivni, nelze zmenit cislo portu!');
- Self.httpServer.Bindings[0].Port := new;
-end;
-
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TPtServer.httpAfterBind(Sender: TObject);
 begin
  Log('PT server spuštěn', llInfo, lsPT);
+ F_Main.LogStatus('PT server: spuštěn');
 
  with (F_Main) do
   begin
@@ -467,6 +518,19 @@ end;
 function TPtServer.HasAccess(login: string): Boolean;
 begin
  Result := Self.accessTokens.ContainsKey(login);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TPtServer.GetBind(): string;
+begin
+  Result := '';
+  for var i: Integer := 0 to Self.httpServer.Bindings.Count-1 do
+  begin
+    var handle: TIdSocketHandle := Self.httpServer.Bindings[i];
+    Result := Result + handle.IP + ':' + handle.Port.ToString() + ', ';
+  end;
+  Result := LeftStr(Result, Length(Result)-2);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

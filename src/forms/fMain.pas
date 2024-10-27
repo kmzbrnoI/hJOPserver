@@ -1921,16 +1921,10 @@ end;
 
 procedure TF_Main.A_PT_StartExecute(Sender: TObject);
 begin
-  if (SystemData.Status = TSystemStatus.starting) then
-    Self.LogStatus('PT server: spouštění...');
-
   try
     PtServer.Start();
     if (SystemData.Status = TSystemStatus.starting) then
-    begin
-      Self.LogStatus('PT server: spuštěn');
       Self.LogStatus('System: start OK');
-    end;
   except
     on E: Exception do
       ExceptionMessageBox('Nelze nastartovat PT server:', E);
@@ -1943,9 +1937,6 @@ end;
 
 procedure TF_Main.A_PT_StopExecute(Sender: TObject);
 begin
-  if (SystemData.Status = TSystemStatus.stopping) then
-    Self.LogStatus('PT server: vypínání...');
-
   try
     PtServer.Stop();
   except
@@ -2829,8 +2820,8 @@ begin
       Log('Nelze provést inputSim : ' + E.Message, llInfo, lsRCS);
   end;
 
-  Self.S_PTServer.Visible := (GlobalConfig.ptAutoStart);
-  Self.L_PTServer.Visible := (GlobalConfig.ptAutoStart);
+  Self.S_PTServer.Visible := (PtServer.autoStart);
+  Self.L_PTServer.Visible := (PtServer.autoStart);
 
   if (not Self.CloseMessage) then
   begin
@@ -3442,7 +3433,7 @@ end;
 procedure TF_Main.UpdateSystemButtons();
 begin
   Self.A_System_Start.Enabled := ((not RCSi.NoExStarted) or (not TrakceI.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
-    or (not PanelServer.openned) or (not Blocks.Enabled) or ((GlobalConfig.ptAutoStart) and (not PtServer.openned)));
+    or (not PanelServer.openned) or (not Blocks.Enabled) or ((PtServer.autoStart) and (not PtServer.openned)));
   Self.A_System_Stop.Enabled := (RCSi.NoExOpened) or (TrakceI.ConnectedSafe()) or (PanelServer.openned) or
     (PtServer.openned);
 end;

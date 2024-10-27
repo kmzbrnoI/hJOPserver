@@ -168,7 +168,7 @@ uses fMain, BlockTrack, BlockTurnout, BlockSignal, AreaDb, BlockLinker,
   BlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, Config,
   BlockLock, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
   UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks, BlockDb,
-  BlockDisconnector, BlockIO, ownConvert, THVDatabase, BlockPst;
+  BlockDisconnector, BlockIO, ownConvert, THVDatabase, BlockPst, TCPServerPT;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -272,6 +272,7 @@ end;
 procedure TPanelServer.SaveConfig(ini: TMemIniFile);
 begin
   ini.WriteString(_CONFIG_SECTION, 'bind', Self.bindingsStr);
+  ini.DeleteKey(_CONFIG_SECTION, 'port'); // old definition; new = bind
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -313,7 +314,7 @@ begin
 
   if (SystemData.status = starting) then
   begin
-    if (GlobalConfig.ptAutoStart) then
+    if (PtServer.autoStart) then
       F_Main.A_PT_StartExecute(Self)
     else
     begin

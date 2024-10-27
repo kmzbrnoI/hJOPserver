@@ -27,7 +27,6 @@ type
     autosave: Boolean;
     autosave_period: TTime;
     scale: Cardinal;
-    ptAutoStart: Boolean;
     autosave_next: TDateTime;
     autostart: Boolean;
     consoleLog: Boolean;
@@ -42,7 +41,6 @@ type
     end;
 
     procedure LoadFromFile(filename: string);
-    procedure LoadCfgPtServer(ini: TMemIniFile);
     procedure SaveToFile(filename: string);
   end;
 
@@ -386,10 +384,10 @@ begin
     end;
 
     try
-      Self.LoadCfgPtServer(ini);
+      PtServer.LoadConfig(ini);
     except
       on E:Exception do
-        AppEvents.LogException(E, 'LoadCfgPtServer');
+        AppEvents.LogException(E, 'PtServer.LoadConfig');
     end;
 
     // autosave
@@ -432,40 +430,6 @@ begin
   end;
 end;
 
-procedure TGlobalConfig.LoadCfgPtServer(ini: TMemIniFile);
-var strs: TStringList;
-  key, str: string;
-const _SECTION = 'PTServer';
-begin
-  try
-    PtServer.port := ini.ReadInteger(_SECTION, 'port', _PT_DEFAULT_PORT);
-  except
-    on e: EPTActive do
-      Log('PT ERR: ' + e.Message, llError, lsPT);
-  end;
-
-  PtServer.compact := ini.ReadBool(_SECTION, 'compact', _PT_COMPACT_RESPONSE);
-  Self.ptAutoStart := ini.ReadBool(_SECTION, 'autoStart', false);
-
-  strs := TStringList.Create();
-  try
-    ini.ReadSection(_SECTION + 'StaticTokens', strs);
-    for key in strs do
-    begin
-      try
-        str := ini.ReadString(_SECTION + 'StaticTokens', key, '');
-        if (str <> '') then
-          PtServer.AccessTokenAdd(key, str);
-      except
-        on e: Exception do
-          Log('PTserver: nepodařilo se přidat token ' + str + ' (' + e.Message + ')', TLogLevel.llError, lsPT);
-      end;
-    end;
-  finally
-    strs.Free();
-  end;
-end;
-
 procedure TGlobalConfig.SaveToFile(filename: string);
 var ini: TMemIniFile;
 begin
@@ -475,6 +439,7 @@ begin
     PanelServer.SaveConfig(ini);
     ModCas.SaveData(ini);
     UDPdisc.SaveConfig(ini);
+    PtServer.SaveConfig(ini);
 
     ini.EraseSection('SystemCfg');
     ini.WriteInteger('SystemCfg', 'mainTimerIntervalMs', F_Main.T_Main.Interval);
