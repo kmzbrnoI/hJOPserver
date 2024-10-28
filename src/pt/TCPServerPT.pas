@@ -121,91 +121,91 @@ uses Logging, appEv, fMain, OwnStrUtils, StrUtils,
 
 constructor TPtReceived.Create();
 begin
- inherited;
- Self.processed := false;
- Self.reqJson := nil;
- Self.respJson := TJsonObject.Create();
+  inherited;
+  Self.processed := false;
+  Self.reqJson := nil;
+  Self.respJson := TJsonObject.Create();
 end;
 
 destructor TPtReceived.Destroy();
 begin
- if (Self.reqJson <> nil) then
-   Self.reqJson.Free();
- Self.respJson.Free();
- inherited;
+  if (Self.reqJson <> nil) then
+    Self.reqJson.Free();
+  Self.respJson.Free();
+  inherited;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 constructor TPtServer.Create();
 begin
- inherited;
+  inherited;
 
- // initialize variables
- Self.Fcompact := _PT_COMPACT_RESPONSE;
+  // initialize variables
+  Self.Fcompact := _PT_COMPACT_RESPONSE;
 
- Self.received := TObjectQueue<TPtReceived>.Create();
- Self.receivedLock := TCriticalSection.Create();
- Self.accessTokens := TDictionary<string, string>.Create();
+  Self.received := TObjectQueue<TPtReceived>.Create();
+  Self.receivedLock := TCriticalSection.Create();
+  Self.accessTokens := TDictionary<string, string>.Create();
 
- Self.httpServer := TIdHTTPServer.Create(nil);
- Self.httpServer.MaxConnections := _PT_MAX_CONNECTIONS;
- Self.httpServer.KeepAlive := true;
- Self.httpServer.ServerSoftware := _PT_DESCRIPTION;
+  Self.httpServer := TIdHTTPServer.Create(nil);
+  Self.httpServer.MaxConnections := _PT_MAX_CONNECTIONS;
+  Self.httpServer.KeepAlive := true;
+  Self.httpServer.ServerSoftware := _PT_DESCRIPTION;
 
- // bind events
- Self.httpServer.OnCommandGet := Self.httpGet;
- Self.httpServer.OnCommandOther := Self.httpGet;
- Self.httpServer.OnCommandError := Self.httpError;
- Self.httpServer.OnException := Self.httpException;
+  // bind events
+  Self.httpServer.OnCommandGet := Self.httpGet;
+  Self.httpServer.OnCommandOther := Self.httpGet;
+  Self.httpServer.OnCommandError := Self.httpError;
+  Self.httpServer.OnException := Self.httpException;
 
- Self.httpServer.OnAfterBind := Self.httpAfterBind;
- Self.httpServer.OnStatus := Self.httpStatus;
+  Self.httpServer.OnAfterBind := Self.httpAfterBind;
+  Self.httpServer.OnStatus := Self.httpStatus;
 
- // endpoints
- Self.endpoints := TObjectList<TPTEndpoint>.Create();
+  // endpoints
+  Self.endpoints := TObjectList<TPTEndpoint>.Create();
 
- Self.receiveTimer := TTimer.Create(nil);
- Self.receiveTimer.Enabled := false;
- Self.receiveTimer.Interval := _RECEIVE_CHECK_PERIOD_MS;
- Self.receiveTimer.OnTimer := Self.OnReceiveTimerTick;
+  Self.receiveTimer := TTimer.Create(nil);
+  Self.receiveTimer.Enabled := false;
+  Self.receiveTimer.Interval := _RECEIVE_CHECK_PERIOD_MS;
+  Self.receiveTimer.OnTimer := Self.OnReceiveTimerTick;
 
- // sem doplnit seznam vsech endpointu:
- Self.endpoints.Add(TPTEndpointBlok.Create());
- Self.endpoints.Add(TPTEndpointBloky.Create());
- Self.endpoints.Add(TPTEndpointBlokStav.Create());
- Self.endpoints.Add(TPTEndpointLok.Create());
- Self.endpoints.Add(TPTEndpointLoks.Create());
- Self.endpoints.Add(TPTEndpointLokStav.Create());
- Self.endpoints.Add(TPTEndpointJCs.Create());
- Self.endpoints.Add(TPTEndpointJC.Create());
- Self.endpoints.Add(TPTEndpointJCStav.Create());
- Self.endpoints.Add(TPTEndpointTrains.Create());
- Self.endpoints.Add(TPTEndpointTrain.Create());
- Self.endpoints.Add(TPTEndpointUsers.Create());
- Self.endpoints.Add(TPTEndpointUser.Create());
- Self.endpoints.Add(TPTEndpointUserAuth.Create());
- Self.endpoints.Add(TPTEndpointAreas.Create());
- Self.endpoints.Add(TPTEndpointArea.Create());
- Self.endpoints.Add(TPTEndpointStatus.Create());
+  // sem doplnit seznam vsech endpointu:
+  Self.endpoints.Add(TPTEndpointBlok.Create());
+  Self.endpoints.Add(TPTEndpointBloky.Create());
+  Self.endpoints.Add(TPTEndpointBlokStav.Create());
+  Self.endpoints.Add(TPTEndpointLok.Create());
+  Self.endpoints.Add(TPTEndpointLoks.Create());
+  Self.endpoints.Add(TPTEndpointLokStav.Create());
+  Self.endpoints.Add(TPTEndpointJCs.Create());
+  Self.endpoints.Add(TPTEndpointJC.Create());
+  Self.endpoints.Add(TPTEndpointJCStav.Create());
+  Self.endpoints.Add(TPTEndpointTrains.Create());
+  Self.endpoints.Add(TPTEndpointTrain.Create());
+  Self.endpoints.Add(TPTEndpointUsers.Create());
+  Self.endpoints.Add(TPTEndpointUser.Create());
+  Self.endpoints.Add(TPTEndpointUserAuth.Create());
+  Self.endpoints.Add(TPTEndpointAreas.Create());
+  Self.endpoints.Add(TPTEndpointArea.Create());
+  Self.endpoints.Add(TPTEndpointStatus.Create());
 end;
 
 destructor TPtServer.Destroy();
 begin
- try
-   Self.endpoints.Free();
-   if (Self.httpServer.Active) then
-    Self.httpServer.Active := false;
-   Self.httpServer.Free();
+  try
+    Self.endpoints.Free();
+    if (Self.httpServer.Active) then
+      Self.httpServer.Active := false;
+    Self.httpServer.Free();
 
-   Self.receivedLock.Acquire(); // wait for everything to end
-   FreeAndNil(Self.received);
-   Self.receivedLock.Release();
-   FreeAndNil(Self.receivedLock);
-   Self.accessTokens.Free();
- finally
-   inherited;
- end;
+    Self.receivedLock.Acquire(); // wait for everything to end
+    FreeAndNil(Self.received);
+    Self.receivedLock.Release();
+    FreeAndNil(Self.receivedLock);
+    Self.accessTokens.Free();
+  finally
+    inherited;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -281,43 +281,43 @@ end;
 
 procedure TPtServer.Start();
 begin
- if (Self.openned) then
-   Exit();
+  if (Self.openned) then
+    Exit();
 
- with (F_Main) do
+  with (F_Main) do
   begin
-   S_PTServer.Visible := true;
-   L_PTServer.Visible := true;
-   S_PTServer.Brush.Color := clBlue;
-   LogStatus('PT server: spouštění '+Self.bindingsStr+' ...');
+    S_PTServer.Visible := true;
+    L_PTServer.Visible := true;
+    S_PTServer.Brush.Color := clBlue;
+    LogStatus('PT server: spouštění '+Self.bindingsStr+' ...');
   end;
 
- try
-  Self.httpServer.Active := true;
-  Self.receiveTimer.Enabled := true;
- except
-  on E:Exception do
-   begin
-    Log('ERR: Cannot start server : '+E.Message, llError, lsPT);
-    F_Main.S_PTServer.Brush.Color := clRed;
-    raise;
-   end;
- end;
+  try
+    Self.httpServer.Active := true;
+    Self.receiveTimer.Enabled := true;
+  except
+    on E:Exception do
+    begin
+      Log('ERR: Cannot start server : '+E.Message, llError, lsPT);
+      F_Main.S_PTServer.Brush.Color := clRed;
+      raise;
+    end;
+  end;
 end;
 
 procedure TPtServer.Stop();
 begin
- Self.httpServer.Active := false;
- Self.receiveTimer.Enabled := false;
+  Self.httpServer.Active := false;
+  Self.receiveTimer.Enabled := false;
 
- Log('PT server zastaven', llInfo, lsPT);
- F_Main.LogStatus('PT server: zastaven');
+  Log('PT server zastaven', llInfo, lsPT);
+  F_Main.LogStatus('PT server: zastaven');
 
- with (F_Main) do
+  with (F_Main) do
   begin
-   A_PT_Start.Enabled := true;
-   A_PT_Stop.Enabled  := false;
-   S_PTServer.Brush.Color := clRed;
+    A_PT_Start.Enabled := true;
+    A_PT_Stop.Enabled  := false;
+    S_PTServer.Brush.Color := clRed;
   end;
 end;
 
@@ -327,33 +327,34 @@ procedure TPtServer.httpGet(AContext: TIdContext; ARequestInfo: TIdHTTPRequestIn
   AResponseInfo: TIdHTTPResponseInfo);
 var received:TPtReceived;
 begin
- received := TPtReceived.Create();
- try
-   AResponseInfo.ContentType := 'application/json; charset=utf-8';
+  received := TPtReceived.Create();
+  try
+    AResponseInfo.ContentType := 'application/json; charset=utf-8';
 
-   received.AContext := AContext;
-   received.ARequestInfo := ARequestInfo;
-   received.endpoint := Self.GetEndpoint(ARequestInfo.Document);
+    received.AContext := AContext;
+    received.ARequestInfo := ARequestInfo;
+    received.endpoint := Self.GetEndpoint(ARequestInfo.Document);
 
-   if (received.endpoint = nil) then
+    if (received.endpoint = nil) then
     begin
-     Self.httpSinkEndpoint(AContext, ARequestInfo, received.respJson);
-     received.processed := true;
+      Self.httpSinkEndpoint(AContext, ARequestInfo, received.respJson);
+      received.processed := true;
     end else begin
 
-     if ((received.endpoint.AuthRequired(ARequestInfo.CommandType)) and
-         ((not ARequestInfo.AuthExists) or (not Self.accessTokens.ContainsKey(ARequestInfo.AuthUsername)) or
-         (Self.accessTokens[ARequestInfo.AuthUsername] <> ARequestInfo.AuthPassword))) then
+      if ((received.endpoint.AuthRequired(ARequestInfo.CommandType)) and
+          ((not ARequestInfo.AuthExists) or (not Self.accessTokens.ContainsKey(ARequestInfo.AuthUsername)) or
+          (Self.accessTokens[ARequestInfo.AuthUsername] <> ARequestInfo.AuthPassword))) then
       begin
-       AResponseInfo.ResponseNo := 401;
-       PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '401', 'Unauthorized',
-                             'Neexitující/neplatný autorizační token');
-       received.processed := true;
+        AResponseInfo.ResponseNo := 401;
+        PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '401', 'Unauthorized',
+                              'Neexitující/neplatný autorizační token');
+        received.processed := true;
       end;
 
-     case (ARequestInfo.CommandType) of
-      hcGET: ;
-      hcPOST, hcPUT, hcDELETE: begin
+      case (ARequestInfo.CommandType) of
+       hcGET: ;
+       hcPOST, hcPUT, hcDELETE:
+       begin
          if ((not received.processed) and (ARequestInfo.ContentType <> _PT_CONTENT_TYPE)) then
           begin
            PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '406', 'Not acceptable',
@@ -371,131 +372,130 @@ begin
              received.processed := true;
             end;
           end;
-      end;
-     else
-      PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '405', 'Method not allowed',
-                            'S touto HTTP metodou si neumim poradit');
-      received.processed := true;
-     end;
-
-     if (not received.processed) then
-      begin
-       Self.receivedLock.Acquire();
-       try
-         Self.received.Enqueue(received);
-       finally
-         Self.receivedLock.Release();
        end;
+      else
+        PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '405', 'Method not allowed',
+                              'S touto HTTP metodou si neumim poradit');
+        received.processed := true;
+      end;
+
+      if (not received.processed) then
+      begin
+        Self.receivedLock.Acquire();
+        try
+          Self.received.Enqueue(received);
+        finally
+          Self.receivedLock.Release();
+        end;
       end;
     end;
- except
-   received.Free();
-   AResponseInfo.ContentText := '{"errors":[{"title":"Server general error"}]}';
-   Exit();
- end;
+  except
+    received.Free();
+    AResponseInfo.ContentText := '{"errors":[{"title":"Server general error"}]}';
+    Exit();
+  end;
 
- // Wait for finishing of the command to send response
- while ((not received.processed) and (Self.received <> nil)) do
-   Sleep(_RECEIVE_CHECK_PERIOD_MS); // sleep in its own thread
+  // Wait for finishing of the command to send response
+  while ((not received.processed) and (Self.received <> nil)) do
+    Sleep(_RECEIVE_CHECK_PERIOD_MS); // sleep in its own thread
 
- if (Self.receivedLock <> nil) then
-   Self.receivedLock.Acquire();
- try
-   AResponseInfo.ContentStream := TStringStream.Create();
-   AResponseInfo.FreeContentStream := true;
-   received.respJson.SaveToStream(AResponseInfo.ContentStream, Self.compact, TEncoding.UTF8);
- finally
-   received.Free();
-   if (Self.receivedLock <> nil) then
-     Self.receivedLock.Release();
- end;
+  if (Self.receivedLock <> nil) then
+    Self.receivedLock.Acquire();
+
+  try
+    AResponseInfo.ContentStream := TStringStream.Create();
+    AResponseInfo.FreeContentStream := true;
+    received.respJson.SaveToStream(AResponseInfo.ContentStream, Self.compact, TEncoding.UTF8);
+  finally
+    received.Free();
+    if (Self.receivedLock <> nil) then
+      Self.receivedLock.Release();
+  end;
 end;
 
 function TPtServer.GetEndpoint(path: string): TPTEndpoint;
-var endpoint: TPTEndpoint;
 begin
- Result := nil;
- for endpoint in Self.endpoints do
-   if (endpoint.EndpointMatch(path)) then
-     Exit(endpoint);
+  Result := nil;
+  for var endpoint: TPTEndpoint in Self.endpoints do
+    if (endpoint.EndpointMatch(path)) then
+      Exit(endpoint);
 end;
 
 procedure TPtServer.OnReceiveTimerTick(Sender: TObject);
 begin
- Self.ProcessReceivedMessages();
+  Self.ProcessReceivedMessages();
 end;
 
 procedure TPtServer.ProcessReceivedMessages();
-var received: TPtReceived;
 begin
- if (not Assigned(Self.received)) then
-   Exit(); // everything is shutting down
+  if (not Assigned(Self.received)) then
+    Exit(); // everything is shutting down
 
- receivedLock.Acquire();
+  receivedLock.Acquire();
 
- try
-   while (Self.received.Count > 0) do
+  try
+    while (Self.received.Count > 0) do
     begin
-     received := Self.received.Extract();
-     try
-       case (received.ARequestInfo.CommandType) of
-         hcGet: received.endpoint.OnGET(received.AContext, received.ARequestInfo, received.respJson);
-         hcPOST: received.endpoint.OnPOST(received.AContext, received.ARequestInfo,
+      var received: TPtReceived := Self.received.Extract();
+      try
+        case (received.ARequestInfo.CommandType) of
+          hcGet: received.endpoint.OnGET(received.AContext, received.ARequestInfo, received.respJson);
+          hcPOST: received.endpoint.OnPOST(received.AContext, received.ARequestInfo,
+                                           received.respJson, received.reqJson);
+          hcPUT : received.endpoint.OnPUT(received.AContext, received.ARequestInfo,
                                           received.respJson, received.reqJson);
-         hcPUT : received.endpoint.OnPUT(received.AContext, received.ARequestInfo,
-                                         received.respJson, received.reqJson);
-         hcDELETE: received.endpoint.OnDELETE(received.AContext, received.ARequestInfo,
-                                              received.respJson, received.reqJson);
-       end;
-     except
-      on Eorig:Exception do
-        PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '500', 'Request exception', Eorig.Message);
-     end;
+          hcDELETE: received.endpoint.OnDELETE(received.AContext, received.ARequestInfo,
+                                               received.respJson, received.reqJson);
+        end;
+      except
+        on Eorig:Exception do
+          PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '500', 'Request exception', Eorig.Message);
+      end;
 
-     received.processed := true;
+      received.processed := true;
     end;
- finally
-   receivedLock.Release();
- end;
+  finally
+    receivedLock.Release();
+  end;
 end;
 
 procedure TPtServer.httpError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   AResponseInfo: TIdHTTPResponseInfo; AException: Exception);
 begin
- Log('ERROR:'+ARequestInfo.Document, llError, lsPT);
+  Log('ERROR:'+ARequestInfo.Document, llError, lsPT);
 end;
 
 procedure TPtServer.httpException(AContext: TIdContext; AException: Exception);
 begin
- log('PTServer :: httpException: ' + AException.Message, llError, lsPT);
+  log('PTServer :: httpException: ' + AException.Message, llError, lsPT);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TPtServer.IsOpenned(): Boolean;
 begin
- Result := Self.httpServer.Active;
+  Result := Self.httpServer.Active;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TPtServer.httpAfterBind(Sender: TObject);
 begin
- Log('PT server spuštěn', llInfo, lsPT);
- F_Main.LogStatus('PT server: spuštěn');
+  Log('PT server spuštěn', llInfo, lsPT);
+  F_Main.LogStatus('PT server: spuštěn');
 
- with (F_Main) do
+  with (F_Main) do
   begin
-   A_PT_Start.Enabled := false;
-   A_PT_Stop.Enabled  := true;
-   S_PTServer.Brush.Color := clLime;
+    A_PT_Start.Enabled := false;
+    A_PT_Stop.Enabled  := true;
+    S_PTServer.Brush.Color := clLime;
   end;
 end;
 
 procedure TPtServer.httpStatus(ASender: TObject; const AStatus: TIdStatus;
   const AStatusText: string);
 begin
- Log('PT status: '+AStatusText, llInfo, lsPT);
+  Log('PT status: '+AStatusText, llInfo, lsPT);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -504,24 +504,24 @@ end;
 procedure TPtServer.httpSinkEndpoint(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson: TJsonObject);
 begin
- PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Neznamy endpoint');
+  PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Neznamy endpoint');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TPtServer.AccessTokenAdd(login: string; token: string);
 begin
- Self.accessTokens.Add(login, token);
+  Self.accessTokens.Add(login, token);
 end;
 
 procedure TPtServer.AccessTokenRemove(login: string);
 begin
- Self.accessTokens.Remove(login);
+  Self.accessTokens.Remove(login);
 end;
 
 function TPtServer.HasAccess(login: string): Boolean;
 begin
- Result := Self.accessTokens.ContainsKey(login);
+  Result := Self.accessTokens.ContainsKey(login);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
