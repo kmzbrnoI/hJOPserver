@@ -239,7 +239,11 @@ end;
 
 procedure TPanelServer.LoadConfig(ini: TMemIniFile);
 begin
-  var strBinds: string := ini.ReadString(_CONFIG_SECTION, 'bind', '0.0.0.0:'+IntToStr(_DEFAULT_PORT));
+  var strBinds: string := '';
+  if (ini.ValueExists(_CONFIG_SECTION, 'bind')) then
+    strBinds := ini.ReadString(_CONFIG_SECTION, 'bind', '0.0.0.0:'+IntToStr(_DEFAULT_PORT))
+  else
+    strBinds := '0.0.0.0:' + IntToStr(ini.ReadInteger(_CONFIG_SECTION, 'port', _DEFAULT_PORT));
 
   Self.tcpServer.Bindings.Clear();
   var binds: TStrings := TStringList.Create();

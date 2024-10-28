@@ -212,7 +212,11 @@ end;
 
 procedure TPtServer.LoadConfig(ini: TMemIniFile);
 begin
-  var strBinds: string := ini.ReadString(_PT_CONFIG_SECTION, 'bind', '0.0.0.0:'+IntToStr(_PT_DEFAULT_PORT));
+  var strBinds: string := '';
+  if (ini.ValueExists(_PT_CONFIG_SECTION, 'bind')) then
+    strBinds := ini.ReadString(_PT_CONFIG_SECTION, 'bind', '0.0.0.0:'+IntToStr(_PT_DEFAULT_PORT))
+  else
+    strBinds := '0.0.0.0:' + IntToStr(ini.ReadInteger(_PT_CONFIG_SECTION, 'port', _PT_DEFAULT_PORT));
 
   Self.httpServer.Bindings.Clear();
   var binds: TStrings := TStringList.Create();
