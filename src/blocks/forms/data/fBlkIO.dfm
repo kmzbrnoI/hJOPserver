@@ -65,7 +65,7 @@ object F_BlkIO: TF_BlkIO
     Value = 1
   end
   object GB_RCS_Input: TGroupBox
-    Left = 7
+    Left = 10
     Top = 148
     Width = 304
     Height = 114
@@ -129,7 +129,7 @@ object F_BlkIO: TF_BlkIO
     object CHB_RCS_Input: TCheckBox
       Left = 16
       Top = 18
-      Width = 169
+      Width = 188
       Height = 17
       Caption = 'Blok m'#225' vstup na sb'#283'rnici RCS'
       TabOrder = 0
@@ -138,7 +138,7 @@ object F_BlkIO: TF_BlkIO
     object CHB_RCS_Input_Needed: TCheckBox
       Left = 16
       Top = 34
-      Width = 209
+      Width = 220
       Height = 17
       Caption = 'Deaktivovat blok p'#345'i ztr'#225't'#283' RCS vstupu'
       TabOrder = 1
@@ -174,15 +174,15 @@ object F_BlkIO: TF_BlkIO
   object CHB_Activate_On_Start: TCheckBox
     Left = 8
     Top = 74
-    Width = 113
+    Width = 169
     Height = 17
-    Caption = 'Aktivovat po startu'
+    Caption = 'Aktivovat v'#253'stup po startu'
     TabOrder = 2
   end
   object CHB_Nullable: TCheckBox
     Left = 8
     Top = 97
-    Width = 216
+    Width = 223
     Height = 17
     Caption = 'Po zapnut'#237' automaticky deaktivovat po [s]'
     TabOrder = 3
@@ -263,7 +263,7 @@ object F_BlkIO: TF_BlkIO
     object CHB_RCS_Output: TCheckBox
       Left = 16
       Top = 18
-      Width = 169
+      Width = 185
       Height = 17
       Caption = 'Blok m'#225' v'#253'stup na sb'#283'rnici RCS'
       TabOrder = 0
@@ -272,7 +272,7 @@ object F_BlkIO: TF_BlkIO
     object CHB_RCS_Output_Needed: TCheckBox
       Left = 16
       Top = 34
-      Width = 209
+      Width = 217
       Height = 17
       Caption = 'Deaktivovat blok p'#345'i ztr'#225't'#283' RCS v'#253'stupu'
       TabOrder = 1
