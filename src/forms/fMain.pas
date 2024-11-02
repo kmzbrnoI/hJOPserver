@@ -822,6 +822,7 @@ begin
   begin
     Blocks.Disable();
     Trains.ClearPOdj();
+    Self.A_SaveStavExecute(Self);
   end;
 
   ModCas.started := false;
@@ -925,6 +926,7 @@ begin
   begin
     Blocks.Disable();
     Trains.ClearPOdj();
+    Self.A_SaveStavExecute(Self);
   end;
   Trains.StopAllTrains();
 
@@ -2106,6 +2108,7 @@ begin
   Blocks.Disable();
   Trains.ClearPOdj();
   Blocks.Reset();
+  Self.A_SaveStavExecute(Self);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
