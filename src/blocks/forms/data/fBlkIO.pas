@@ -126,7 +126,7 @@ begin
   Self.SE_Null_Time.Value := 0;
   Self.CHB_AllowOutChange.Checked := false;
 
-  Self.Caption := 'Nový blok Výstup';
+  Self.Caption := 'Nový blok IO';
 end;
 
 procedure TF_BlkIO.EditOpenForm();

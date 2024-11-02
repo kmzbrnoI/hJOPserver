@@ -36,7 +36,7 @@ object F_BlkNew: TF_BlkNew
       'Z'#225'mek'
       'Rozpojova'#269
       'Tra'#357'ov'#253' '#250'sek'
-      'Logick'#253' v'#253'stup'
+      'IO'
       'Sou'#269'tov'#225' hl'#225'ska'
       'AC'
       'Pomocn'#233' stav'#283'dlo')

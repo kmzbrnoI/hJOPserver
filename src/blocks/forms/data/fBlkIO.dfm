@@ -4,7 +4,7 @@ object F_BlkIO: TF_BlkIO
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (IO)'
-  ClientHeight = 429
+  ClientHeight = 430
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
