@@ -1975,8 +1975,6 @@ begin
     Exit();
   if ((Self.m_settings.controllers.pstOnly) and (not Self.PstIsActive())) then
     Exit();
-  if ((Self.movingPlus) or (Self.movingMinus)) then
-    Exit();
 
   try
     if ((RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) and
@@ -1984,11 +1982,11 @@ begin
       Exit();
 
     if (RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) then
-      if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.plus)) then
+      if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.plus) and (not Self.movingPlus)) then
         Self.SetPosition(TTurnoutPosition.plus, false, true);
 
     if (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) = TRCSInputState.isOn) then
-      if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.minus)) then
+      if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.minus) and (not Self.movingMinus)) then
         Self.SetPosition(TTurnoutPosition.minus, false, true);
 
   except
