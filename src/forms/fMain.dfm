@@ -3153,7 +3153,6 @@ object F_Main: TF_Main
     Color = clGray
     ParentBackground = False
     TabOrder = 0
-    ExplicitWidth = 1293
     object P_Date: TPanel
       Left = 897
       Top = 4
@@ -3495,8 +3494,6 @@ object F_Main: TF_Main
     ParentDoubleBuffered = False
     ParentShowHint = False
     ShowHint = False
-    ExplicitTop = 674
-    ExplicitWidth = 1293
   end
   object PC_1: TPageControl
     Left = 0
@@ -3512,8 +3509,6 @@ object F_Main: TF_Main
     MultiLine = True
     TabOrder = 2
     OnChange = PC_1Change
-    ExplicitWidth = 1293
-    ExplicitHeight = 641
     object TS_Technologie: TTabSheet
       Margins.Left = 2
       Margins.Top = 2
