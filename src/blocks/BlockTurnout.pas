@@ -346,10 +346,7 @@ begin
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
   Self.m_state.lockout := ini_stat.ReadString(section, 'vyl', '');
 
-  Self.m_state.positionSave := Self.StrToPosition(ini_stat.ReadString(section, 'poloha', '+'));
-  if ((Self.m_state.positionSave <> TTurnoutPosition.plus) and (Self.m_state.positionSave <> TTurnoutPosition.minus))
-  then
-    Self.m_state.positionSave := TTurnoutPosition.plus;
+  Self.m_state.positionSave := Self.StrToPosition(ini_stat.ReadString(section, 'poloha', '?'));
 
   var strs: TStrings := Self.LoadAreas(ini_rel, 'V');
   try
@@ -453,7 +450,12 @@ begin
     else
       position := Self.m_state.positionSave;
 
-    ini_stat.WriteString(section, 'poloha', ite((Self.movingMinus) or (position = TTurnoutPosition.minus), '-', '+'));
+    var positionStr: string := '?';
+    if ((Self.movingPlus) or (position = TTurnoutPosition.plus)) then
+      positionStr := '+';
+    if ((Self.movingMinus) or (position = TTurnoutPosition.minus)) then
+      positionStr := '-';
+    ini_stat.WriteString(section, 'poloha', positionStr);
   end;
 end;
 
@@ -496,7 +498,7 @@ begin
     Self.m_state.positionSave := TTurnoutPosition.plus
   else if (Self.movingMinus) then
     Self.m_state.positionSave := TTurnoutPosition.minus
-  else
+  else if (Self.position <> TTurnoutPosition.disabled) then // already disabled -> keep previous position
     Self.m_state.positionSave := Self.m_state.position;
 
   Self.m_state.position := disabled;
