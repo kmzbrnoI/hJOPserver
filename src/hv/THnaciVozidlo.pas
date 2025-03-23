@@ -123,6 +123,7 @@ type
     acquiring: Boolean;
     updating: Boolean;
     lastUpdated: TTime;
+    speedPendingCmds: Cardinal; // number of pending set speed commands
   end;
 
   THV = class
@@ -1226,6 +1227,8 @@ begin
   TrakceI.Log(llCommands, 'Loko ' + Self.name + ': rychlostní stupeň: ' + IntToStr(speedStep) + ', směr: ' +
     IntToStr(ownConvert.BoolToInt(direction)));
 
+  Inc(Self.state.speedPendingCmds);
+
   try
     TrakceI.LocoSetSpeed(Self.addr, Self.slot.step, Self.direction, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
       TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
@@ -1379,12 +1382,16 @@ begin
   Self.state.stolen := false;
   Self.state.pom := TPomStatus.released;
   Self.state.trakceError := false;
+  Self.state.speedPendingCmds := 0;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure THV.TrakceCallbackOk(Sender: TObject; data: Pointer);
 begin
+  if (Self.state.speedPendingCmds > 0) then
+    Dec(Self.state.speedPendingCmds);
+
   Self.TrakceCallbackCallEv(data);
 
   if (not Self.state.trakceError) then
@@ -1396,13 +1403,21 @@ end;
 
 procedure THV.TrakceCallbackErr(Sender: TObject; data: Pointer);
 begin
-  Self.TrakceCallbackCallEv(data);
+  if (Self.state.speedPendingCmds > 0) then
+    Dec(Self.state.speedPendingCmds);
+
+  if (Self.state.speedPendingCmds = 0) then
+    Self.TrakceCallbackCallEv(data);
 
   if (Self.state.trakceError) then
     Exit();
-  Self.state.trakceError := true;
-  Self.changed := true;
-  RegCollector.LocoChanged(Self, Self.addr);
+
+  if (Self.state.speedPendingCmds = 0) then
+  begin
+    Self.state.trakceError := true;
+    Self.changed := true;
+    RegCollector.LocoChanged(Self, Self.addr);
+  end;
 end;
 
 procedure THV.TrakceCallbackEmergencyErr(Sender: TObject; data: Pointer);
