@@ -1793,9 +1793,12 @@ end;
 function THV.ExpectedSpeedStr(): string;
 begin
   if (Self.IsTrain()) then
-    Result := IntToStr(Trains[Self.train].speed)
-  else
-    Result := '-';
+  begin
+    var direction: Integer := Integer(Trains[Self.train].direction) xor Integer(Self.state.siteA);
+    Result := IntToStr(Trains[Self.train].speed) + ';' + IntToStr(direction);
+  end else begin
+    Result := '-;-';
+  end;
 end;
 
 procedure THV.SendExpectedSpeed();
