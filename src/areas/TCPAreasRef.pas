@@ -36,6 +36,7 @@ type
   public
     areas: TList<TArea>;
     protocol_version: string;
+    client_name: string;
 
     note: TBlk; // blok, na kterema kutalne probiha zmena stitku
     lockout: TBlk; // blok, na kterem aktualne probiha zmena vyluky

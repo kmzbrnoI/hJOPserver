@@ -3537,7 +3537,13 @@ object F_Main: TF_Main
               Caption = 'Stav'
             end
             item
-              Caption = 'Klient'
+              Caption = 'IP adresa'
+            end
+            item
+              Caption = 'Klient verze protokolu'
+            end
+            item
+              Caption = 'Aplikace'
             end
             item
               Caption = 'Ping [ms]'
@@ -3564,9 +3570,6 @@ object F_Main: TF_Main
               Caption = 'Potvrzovac'#237' sekvence'
             end
             item
-              Caption = 'Klient verze protokolu'
-            end
-            item
               Caption = 'Autorizovan'#253' regul'#225'tor'
             end
             item
@@ -3574,7 +3577,6 @@ object F_Main: TF_Main
             end>
           DoubleBuffered = True
           GridLines = True
-          Items.ItemData = {050000000000000000}
           ReadOnly = True
           RowSelect = True
           ParentDoubleBuffered = False
@@ -5804,8 +5806,6 @@ object F_Main: TF_Main
         ParentDoubleBuffered = False
         ScrollBars = ssVertical
         TabOrder = 0
-        ExplicitWidth = 1285
-        ExplicitHeight = 573
       end
       object P_funcsVyznamBg: TPanel
         Left = 0
@@ -5817,7 +5817,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1285
         object B_FuncChange: TButton
           Left = 9
           Top = 6

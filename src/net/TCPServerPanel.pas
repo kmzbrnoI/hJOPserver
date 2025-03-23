@@ -624,6 +624,13 @@ begin
     orRef.protocol_version := parsed[2];
     F_Main.LV_Clients.items[orRef.index].SubItems[_LV_CLIENTS_COL_PROTOCOL] := parsed[2];
 
+    // jmeno klienta
+    if (parsed.Count >= 4) then
+      orRef.client_name := parsed[3]
+    else
+      orRef.client_name := '';
+    F_main.LV_Clients.Items[orRef.index].SubItems[_LV_CLIENTS_COL_APP] := orRef.client_name;
+
     PanelServer.GUIQueueLineToRefresh(orRef.index);
     ModCas.SendTimeToPanel(AContext);
 
