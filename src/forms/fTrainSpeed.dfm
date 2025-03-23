@@ -1,6 +1,7 @@
 object F_TrainSpeed: TF_TrainSpeed
   Left = 0
   Top = 0
+  Align = alClient
   BorderIcons = []
   BorderStyle = bsNone
   Caption = 'F_TrainSpeed'

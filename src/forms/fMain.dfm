@@ -3574,6 +3574,7 @@ object F_Main: TF_Main
             end>
           DoubleBuffered = True
           GridLines = True
+          Items.ItemData = {050000000000000000}
           ReadOnly = True
           RowSelect = True
           ParentDoubleBuffered = False

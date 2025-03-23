@@ -1,6 +1,7 @@
 object F_RREv: TF_RREv
   Left = 0
   Top = 0
+  Align = alClient
   BorderStyle = bsNone
   Caption = 'F_RREv'
   ClientHeight = 205

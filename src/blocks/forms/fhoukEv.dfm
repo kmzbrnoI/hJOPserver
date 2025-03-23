@@ -1,6 +1,7 @@
 object F_HoukEv: TF_HoukEv
   Left = 0
   Top = 0
+  Align = alClient
   BorderStyle = bsNone
   Caption = 'F_HoukEv'
   ClientHeight = 271

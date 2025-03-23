@@ -1,6 +1,7 @@
 object F_HoukEvs: TF_HoukEvs
   Left = 0
   Top = 0
+  Align = alClient
   BorderStyle = bsNone
   Caption = 'Houkac'#237' ud'#225'losti bloku XY'
   ClientHeight = 297

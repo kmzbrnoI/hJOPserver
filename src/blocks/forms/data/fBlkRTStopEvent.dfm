@@ -1,6 +1,7 @@
 object F_BlkRTStopEvent: TF_BlkRTStopEvent
   Left = 0
   Top = 0
+  Align = alClient
   BorderStyle = bsNone
   Caption = 'F_BlkRTStopEvent'
   ClientHeight = 290
