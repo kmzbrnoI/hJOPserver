@@ -202,7 +202,7 @@ implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, Area, BlockSignal, Logging,
   TJCDatabase, fMain, TCPServerPanel, BlockTrack, BlockLinker, TrainDb, THVDatabase,
-  appEv, timeHelper, ownConvert, Graphics, colorHelper;
+  appEv, timeHelper, ownConvert, Graphics, colorHelper, TechnologieJC;
 
 constructor TBlkRailway.Create(index: Integer);
 begin
@@ -904,7 +904,7 @@ begin
             last.trainPredict := blk.trainPredict;
             break;
           end;
-          if ((blk.signalCover <> nil) and (TBlkSignal(blk.signalCover).signal = ncStuj)) then
+          if ((blk.signalCover <> nil) and (not TBlkSignal(blk.signalCover).IsGoSignal(TJCType.train))) then
           begin
             if (Self.signalB <> nil) then
               Blocks.TrainPrediction(Self.signalB as TBlkSignal);
@@ -937,7 +937,7 @@ begin
             last.trainPredict := blk.trainPredict;
             break;
           end;
-          if ((blk.signalCover <> nil) and (TBlkSignal(blk.signalCover).signal = ncStuj)) then
+          if ((blk.signalCover <> nil) and (not TBlkSignal(blk.signalCover).IsGoSignal(TJCType.train))) then
           begin
             if (Self.signalA <> nil) then
               Blocks.TrainPrediction(Self.signalA as TBlkSignal);
