@@ -906,7 +906,7 @@ begin
           end;
           if ((blk.signalCover <> nil) and (not TBlkSignal(blk.signalCover).IsGoSignal(TJCType.train))) then
           begin
-            if (Self.signalB <> nil) then
+            if ((call_prediction) and (Self.signalB <> nil)) then
               Blocks.TrainPrediction(Self.signalB as TBlkSignal);
             Exit();
           end;
@@ -939,7 +939,7 @@ begin
           end;
           if ((blk.signalCover <> nil) and (not TBlkSignal(blk.signalCover).IsGoSignal(TJCType.train))) then
           begin
-            if (Self.signalA <> nil) then
+            if ((call_prediction) and (Self.signalA <> nil)) then
               Blocks.TrainPrediction(Self.signalA as TBlkSignal);
             Exit();
           end;
