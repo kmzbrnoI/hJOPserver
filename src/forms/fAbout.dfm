@@ -450,7 +450,7 @@ object F_About: TF_About
     Margins.Bottom = 2
     Alignment = taCenter
     AutoSize = False
-    Caption = 'Vytvo'#345'il Jan Hor'#225#269'ek 2008'#8211'2024'
+    Caption = 'Vytvo'#345'il Jan Hor'#225#269'ek 2008'#8211'2025'
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clBlack
     Font.Height = -20
