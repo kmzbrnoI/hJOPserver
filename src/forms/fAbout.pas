@@ -10,10 +10,10 @@ type
   TF_About = class(TForm)
     ST_about1: TStaticText;
     ST_about2: TStaticText;
-    ST_about3: TStaticText;
+    ST_email: TStaticText;
     ST_about4: TStaticText;
-    ST_about5: TStaticText;
-    B_OK: TButton;
+    ST_kmz_web: TStaticText;
+    B_Close: TButton;
     I_Horasystems: TImage;
     GB_Info: TGroupBox;
     Label1: TLabel;
@@ -25,11 +25,11 @@ type
     Label6: TLabel;
     L_VRCSDriver: TLabel;
     I_AppIcon: TImage;
+    ST_hJOP_web: TStaticText;
     procedure FormShow(Sender: TObject);
-    procedure B_OKClick(Sender: TObject);
-    procedure ST_about5Click(Sender: TObject);
-    procedure ST_about3Click(Sender: TObject);
-    procedure B_RegistraceClick(Sender: TObject);
+    procedure B_CloseClick(Sender: TObject);
+    procedure ST_linkClick(Sender: TObject);
+    procedure ST_emailClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -47,11 +47,7 @@ uses version, TechnologieRCS, Logging, appEv;
 
 procedure TF_About.FormShow(Sender: TObject);
 begin
-  Self.ST_about5.Font.Color := clBlue;
-  Self.ST_about3.Font.Color := clBlue;
-
   Self.L_VApp.Caption := VersionStr(Application.ExeName) + ' (' + FormatDateTime('dd.mm.yyyy hh:nn:ss', BuildDateTime()) + ')';
-
   Self.L_VRCSLib.Caption := RCSi.Lib;
 
   try
@@ -78,30 +74,24 @@ begin
   end;
 end;
 
-procedure TF_About.B_OKClick(Sender: TObject);
+procedure TF_About.B_CloseClick(Sender: TObject);
 begin
-  F_About.Close;
+  Self.Close();
 end;
 
-procedure TF_About.ST_about5Click(Sender: TObject);
+procedure TF_About.ST_linkClick(Sender: TObject);
+begin
+  var stSender: TStaticText := (Sender as TStaticText);
+  Screen.Cursor := crAppStart;
+  ShellExecute(0, nil, PChar(stSender.Caption), nil, nil, 0);
+  Screen.Cursor := crDefault;
+end;
+
+procedure TF_About.ST_emailClick(Sender: TObject);
 begin
   Screen.Cursor := crAppStart;
-  ShellExecute(0, nil, PChar(ST_about5.Caption), nil, nil, 0);
+  ShellExecute(0, nil, PChar('mailto:' + Self.ST_email.Caption), nil, nil, 0);
   Screen.Cursor := crDefault;
-  ST_about5.Font.Color := clPurple;
-end;
-
-procedure TF_About.ST_about3Click(Sender: TObject);
-begin
-  Screen.Cursor := crAppStart;
-  ShellExecute(0, nil, PChar('mailto:' + ST_about3.Caption), nil, nil, 0);
-  Screen.Cursor := crDefault;
-  ST_about3.Font.Color := clPurple;
-end;
-
-procedure TF_About.B_RegistraceClick(Sender: TObject);
-begin
-  F_About.Close;
 end;
 
 end.// unit

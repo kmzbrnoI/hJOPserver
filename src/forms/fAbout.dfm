@@ -4,7 +4,7 @@ object F_About: TF_About
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'O programu hJOPserver'
-  ClientHeight = 361
+  ClientHeight = 387
   ClientWidth = 568
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object F_About: TF_About
   TextHeight = 13
   object I_Horasystems: TImage
     Left = 286
-    Top = 248
+    Top = 272
     Width = 60
     Height = 60
     Hint = 'Logo spolecnosti Horasystems'
@@ -372,7 +372,7 @@ object F_About: TF_About
   end
   object I_AppIcon: TImage
     Left = 207
-    Top = 248
+    Top = 272
     Width = 60
     Height = 60
     Picture.Data = {
@@ -441,7 +441,7 @@ object F_About: TF_About
   end
   object ST_about2: TStaticText
     Left = 1
-    Top = 37
+    Top = 61
     Width = 560
     Height = 25
     Margins.Left = 2
@@ -459,9 +459,9 @@ object F_About: TF_About
     ParentFont = False
     TabOrder = 1
   end
-  object ST_about3: TStaticText
+  object ST_email: TStaticText
     Left = 192
-    Top = 59
+    Top = 84
     Width = 177
     Height = 17
     Cursor = crHandPoint
@@ -479,11 +479,11 @@ object F_About: TF_About
     Font.Style = [fsUnderline]
     ParentFont = False
     TabOrder = 2
-    OnClick = ST_about3Click
+    OnClick = ST_emailClick
   end
   object ST_about4: TStaticText
     Left = 8
-    Top = 94
+    Top = 118
     Width = 553
     Height = 17
     Margins.Left = 2
@@ -501,10 +501,10 @@ object F_About: TF_About
     ParentFont = False
     TabOrder = 3
   end
-  object ST_about5: TStaticText
-    Left = 215
-    Top = 110
-    Width = 138
+  object ST_kmz_web: TStaticText
+    Left = 207
+    Top = 136
+    Width = 154
     Height = 17
     Cursor = crHandPoint
     Margins.Left = 2
@@ -513,7 +513,7 @@ object F_About: TF_About
     Margins.Bottom = 2
     Alignment = taCenter
     AutoSize = False
-    Caption = 'http://www.kmz-brno.cz'
+    Caption = 'https://www.kmz-brno.cz'
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -521,11 +521,11 @@ object F_About: TF_About
     Font.Style = [fsUnderline]
     ParentFont = False
     TabOrder = 4
-    OnClick = ST_about5Click
+    OnClick = ST_linkClick
   end
-  object B_OK: TButton
+  object B_Close: TButton
     Left = 241
-    Top = 329
+    Top = 353
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -535,11 +535,11 @@ object F_About: TF_About
     Caption = 'Zav'#345#237't'
     Default = True
     TabOrder = 5
-    OnClick = B_OKClick
+    OnClick = B_CloseClick
   end
   object GB_Info: TGroupBox
     Left = 111
-    Top = 135
+    Top = 159
     Width = 330
     Height = 96
     Margins.Left = 2
@@ -636,5 +636,27 @@ object F_About: TF_About
       Margins.Bottom = 2
       Caption = 'L_VRCSDriver'
     end
+  end
+  object ST_hJOP_web: TStaticText
+    Left = 212
+    Top = 26
+    Width = 139
+    Height = 17
+    Cursor = crHandPoint
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'https://hjop.kmz-brno.cz'
+    Font.Charset = EASTEUROPE_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Arial'
+    Font.Style = [fsUnderline]
+    ParentFont = False
+    TabOrder = 7
+    OnClick = ST_linkClick
   end
 end
