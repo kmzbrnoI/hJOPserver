@@ -914,7 +914,7 @@ end;
 procedure TBlocks.TrainPrediction(signal: TBlkSignal);
 var track, startTrack: TBlkTrack;
   railway: TBlkRailway;
-  Train: TTrain;
+  train: TTrain;
   JC: TJC;
 begin
   if (signal = nil) then
@@ -925,15 +925,15 @@ begin
     // get train on track before signal
     track := TBlkTrack(signal.track);
     startTrack := track;
-    Train := signal.GeTTrain(track);
+    train := signal.GeTTrain(track);
 
     if (signal.IsGoSignal()) then
     begin
       if ((not track.IsTrain()) or (Train.direction <> signal.direction)) then
-        Train := track.trainPredict
+        train := track.trainPredict
     end
     else
-      Train := nil;
+      train := nil;
     JC := signal.DNjc;
 
     // predict while paths exist
@@ -942,7 +942,7 @@ begin
       // signal is go?
       signal := Blocks.GetBlkSignalByID(JC.data.signalId);
       if ((signal = nil) or (not signal.IsGoSignal())) then
-        Train := nil;
+        train := nil;
 
       // get last track of the path
       track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.data.tracks.count - 1]);
@@ -954,10 +954,10 @@ begin
       begin
         // last track in railway -> continue on the other side of railway
         railway := Blocks.GetBlkRailwayByID(TBlkRT(track).inRailway);
-        if (Train <> nil) then
+        if (train <> nil) then
         begin
-          if ((railway.trainPredict = nil) or (railway.trainPredict.Train <> Train)) then
-            railway.trainPredict := TBlkRailwayTrain.Create(Train.index);
+          if ((railway.trainPredict = nil) or (railway.trainPredict.Train <> train)) then
+            railway.trainPredict := TBlkRailwayTrain.Create(train.index);
         end else begin
           if (railway.trainPredict <> nil) then
             railway.trainPredict := nil;
@@ -975,12 +975,12 @@ begin
             track := Blocks.GetBlkTrackOrRTByID(railway.GetSettings().trackIds[0]);
         end;
 
-        // train was not propagated tot end of railway -> exit (maybe some signal in autoblock locked? etc.)
-        if ((track.trainPredict <> Train) or (track = startTrack)) then
+        // train was not propagated to end of railway -> exit (maybe some signal in autoblock locked? etc.)
+        if ((track.trainPredict <> train) or (track = startTrack)) then
           Exit();
       end;
 
-      track.trainPredict := Train;
+      track.trainPredict := train;
 
       // is any next path active?
       if (track.signalJCRef.count = 0) then
