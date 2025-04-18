@@ -6317,24 +6317,6 @@ object F_Main: TF_Main
       end
     end
   end
-  object PM_TI: TPopupMenu
-    Left = 824
-    Top = 456
-    object PM_Open: TMenuItem
-      Caption = 'Otevr'#237't'
-      Hint = 'Otevr'#237't r'#237'd'#237'c'#237' program'
-    end
-    object PM_icon_close: TMenuItem
-      Caption = 'Skr'#253't ikonu'
-    end
-    object N3: TMenuItem
-      Caption = '-'
-    end
-    object PM_close: TMenuItem
-      Caption = 'Ukoncit program'
-      Hint = 'Ukoncit r'#237'd'#237'c'#237' program'
-    end
-  end
   object T_GUI_refresh: TTimer
     Enabled = False
     Interval = 500
@@ -6346,8 +6328,8 @@ object F_Main: TF_Main
     Enabled = False
     Interval = 3000
     OnTimer = T_clear_log_msgTimer
-    Left = 544
-    Top = 536
+    Left = 600
+    Top = 512
   end
   object IL_Menu: TImageList
     Left = 1080
@@ -8207,12 +8189,6 @@ object F_Main: TF_Main
       C6C73BB97FFE7BDEDEDB0001FFFFF7EFDEC70001FFFFFFFFDEDB3BB9FFFFFFFF
       DEC777DDFFFFFFFFFFFFEFEFFFFFFFFF00000000000000000000000000000000
       000000000000}
-  end
-  object SPD_Save: TSavePictureDialog
-    Filter = 'Bitmaps (*.bmp)|*.bmp'
-    Title = 'Ulozit snimek reliefu'
-    Left = 776
-    Top = 456
   end
   object IL_Bloky: TImageList
     BkColor = clGray

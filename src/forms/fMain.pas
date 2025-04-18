@@ -58,11 +58,6 @@ type
     SB1: TStatusBar;
     N1: TMenuItem;
     PM_Tester: TMenuItem;
-    PM_TI: TPopupMenu;
-    PM_Open: TMenuItem;
-    PM_close: TMenuItem;
-    N3: TMenuItem;
-    PM_icon_close: TMenuItem;
     M_Help: TMenuItem;
     PM_Help_RP: TMenuItem;
     MI_Centrala: TMenuItem;
@@ -85,12 +80,9 @@ type
     P_Time_modelovy: TPanel;
     P_Zrychleni: TPanel;
     IL_Menu: TImageList;
-    SPD_Save: TSavePictureDialog;
     MI_Loco_Acquire: TMenuItem;
     MI_Loco_Release: TMenuItem;
     P_DCC: TPanel;
-    SB_Loconet_Start: TSpeedButton;
-    SB_Loconet_Stop: TSpeedButton;
     P_SystemSet: TPanel;
     SB_SystemStart: TSpeedButton;
     SB_SystemStop: TSpeedButton;
