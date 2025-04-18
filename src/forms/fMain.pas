@@ -2290,8 +2290,8 @@ begin
     Exit();
 
   var hvs := Self.LVSelectedTexts(Self.LV_HV, 'HV', 'HV');
-
-  if (StrMessageBox('Opravdu smazat ' + hvs + '?', '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  var response: Integer := StrMessageBox('Opravdu smazat ' + hvs + '?', '?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
+  if (response = mrYes) then
   begin
     for var i := Self.LV_HV.Items.Count - 1 downto 0 do
     begin
@@ -2324,17 +2324,16 @@ begin
     jc.CancelActivating('Nouzové rušení stavění JC');
 end;
 
-procedure TF_Main.B_lok_deleteClick(Sender: TObject);
-var sprs: string;
+procedure TF_Main.B_train_deleteClick(Sender: TObject);
 begin
   if (Self.LV_Soupravy.Selected = nil) then
     Exit();
   if (not Assigned(Trains[Self.LV_Soupravy.ItemIndex])) then
     Exit();
 
-  sprs := Self.LVSelectedTexts(Self.LV_Soupravy, 'soupravu', 'soupravy');
-
-  if (StrMessageBox('Opravdu smazat ' + sprs + '?', '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  var sprs: string := Self.LVSelectedTexts(Self.LV_Soupravy, 'soupravu', 'soupravy');
+  var response: Integer := StrMessageBox('Opravdu smazat ' + sprs + '?', '?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
+  if (response = mrYes) then
   begin
     for var i: Integer := Self.LV_Soupravy.Items.Count - 1 downto 0 do
     begin
@@ -2357,14 +2356,13 @@ begin
 end;
 
 procedure TF_Main.B_mJC_RemoveClick(Sender: TObject);
-var mjcs: string;
 begin
   if (Self.LV_MultiJC.Selected = nil) then
     Exit();
 
-  mjcs := Self.LVSelectedTexts(Self.LV_MultiJC, 'cestu', 'cesty');
-
-  if (StrMessageBox('Opravdu smazat ' + mjcs + '?', '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  var mjcs: string := Self.LVSelectedTexts(Self.LV_MultiJC, 'cestu', 'cesty');
+  var response: Integer := StrMessageBox('Opravdu smazat ' + mjcs + '?', '?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
+  if (response = mrYes) then
   begin
     for var i: Integer := Self.LV_MultiJC.Items.Count - 1 downto 0 do
     begin
@@ -2393,8 +2391,9 @@ end;
 
 procedure TF_Main.B_User_DeleteClick(Sender: TObject);
 begin
-  if (StrMessageBox('Opravdu smazat uživatele ' + Self.LV_Users.Selected.SubItems[0] + ' ?', 'Opravdu?',
-    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  var response: Integer := StrMessageBox('Opravdu smazat uživatele ' + Self.LV_Users.Selected.SubItems[0] + ' ?', 'Opravdu?',
+    MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
+  if (response = mrYes) then
   begin
     UsrDB.RemoveUser(Self.LV_Users.ItemIndex);
     Self.B_User_Delete.Enabled := false;
@@ -2412,14 +2411,13 @@ begin
 end;
 
 procedure TF_Main.B_VC_deleteClick(Sender: TObject);
-var jcs: string;
 begin
   if (Self.LV_JC.Selected = nil) then
     Exit();
 
-  jcs := Self.LVSelectedTexts(Self.LV_JC, 'cestu', 'cesty');
-
-  if (StrMessageBox('Opravdu smazat ' + jcs + '?', '?', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  var jcs: string := Self.LVSelectedTexts(Self.LV_JC, 'cestu', 'cesty');
+  var response: Integer := StrMessageBox('Opravdu smazat ' + jcs + '?', '?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
+  if (response = mrYes) then
   begin
     for var i: Integer := Self.LV_JC.Items.Count - 1 downto 0 do
     begin
