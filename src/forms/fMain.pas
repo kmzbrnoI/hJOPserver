@@ -164,8 +164,8 @@ type
     TS_Stav_RCS: TTabSheet;
     LV_Stav_RCS: TListView;
     TS_VC: TTabSheet;
-    P_VC_Pozadi: TPanel;
-    P_VC_Left: TPanel;
+    P_JC_Bg: TPanel;
+    P_JC_Left: TPanel;
     E_Dataload_JC: TEdit;
     LV_JC: TListView;
     TS_log: TTabSheet;
@@ -206,8 +206,8 @@ type
     MI_BlockState: TMenuItem;
     MenuItem2: TMenuItem;
     MI_Prop: TMenuItem;
-    B_VC_Add: TButton;
-    B_VC_delete: TButton;
+    B_JC_Add: TButton;
+    B_JC_delete: TButton;
     B_JC_Reset: TButton;
     B_RemoveStack: TButton;
     TS_MultiJC: TTabSheet;
@@ -359,9 +359,9 @@ type
     procedure B_BlkAddClick(Sender: TObject);
     procedure LV_BlocksChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure B_BlkDeleteClick(Sender: TObject);
-    procedure B_VC_AddClick(Sender: TObject);
+    procedure B_JC_AddClick(Sender: TObject);
     procedure LV_JCDblClick(Sender: TObject);
-    procedure B_VC_deleteClick(Sender: TObject);
+    procedure B_JC_deleteClick(Sender: TObject);
     procedure LV_logCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure LV_log_lnetCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -2400,7 +2400,7 @@ begin
   end;
 end;
 
-procedure TF_Main.B_VC_AddClick(Sender: TObject);
+procedure TF_Main.B_JC_AddClick(Sender: TObject);
 begin
   if ((Self.LV_JC.Selected <> nil) and
     (StrMessageBox('Chcete použít JC ' + JCDb[Self.LV_JC.ItemIndex].name +
@@ -2410,7 +2410,7 @@ begin
     F_JCEdit.NewJC(-1);
 end;
 
-procedure TF_Main.B_VC_deleteClick(Sender: TObject);
+procedure TF_Main.B_JC_deleteClick(Sender: TObject);
 begin
   if (Self.LV_JC.Selected = nil) then
     Exit();
@@ -2882,12 +2882,12 @@ end;
 
 procedure TF_Main.LV_JCChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  B_VC_delete.Enabled := (LV_JC.Selected <> nil);
+  Self.B_JC_delete.Enabled := (LV_JC.Selected <> nil);
 
   if (LV_JC.Selected <> nil) then
-    B_JC_Reset.Enabled := JCDb.GetJCByIndex(LV_JC.ItemIndex).activating
+    Self.B_JC_Reset.Enabled := JCDb.GetJCByIndex(LV_JC.ItemIndex).activating
   else
-    B_JC_Reset.Enabled := false;
+    Self.B_JC_Reset.Enabled := false;
 end;
 
 procedure TF_Main.LV_JCCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -2913,8 +2913,8 @@ end;
 procedure TF_Main.LV_JCKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if ((Key = VK_DELETE) and (Self.B_VC_delete.Enabled)) then
-    Self.B_VC_deleteClick(Self);
+  if ((Key = VK_DELETE) and (Self.B_JC_delete.Enabled)) then
+    Self.B_JC_deleteClick(Self);
 end;
 
 procedure TF_Main.LV_JCKeyPress(Sender: TObject; var Key: Char);
@@ -3473,15 +3473,15 @@ end;
 
 procedure TF_Main.DisableRemoveButtons();
 begin
-  B_BlkDelete.Enabled := false;
-  B_HV_Delete.Enabled := false;
-  B_train_delete.Enabled := false;
-  B_zes_delete.Enabled := false;
-  B_User_Delete.Enabled := false;
-  B_VC_delete.Enabled := false;
-  B_JC_Reset.Enabled := false;
-  B_RemoveStack.Enabled := false;
-  B_mJC_Remove.Enabled := false;
+  Self.B_BlkDelete.Enabled := false;
+  Self.B_HV_Delete.Enabled := false;
+  Self.B_train_delete.Enabled := false;
+  Self.B_zes_delete.Enabled := false;
+  Self.B_User_Delete.Enabled := false;
+  Self.B_JC_delete.Enabled := false;
+  Self.B_JC_Reset.Enabled := false;
+  Self.B_RemoveStack.Enabled := false;
+  Self.B_mJC_Remove.Enabled := false;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

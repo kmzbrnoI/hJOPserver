@@ -5048,7 +5048,7 @@ object F_Main: TF_Main
       Margins.Bottom = 2
       Caption = 'J'#237'zdn'#237' cesty'
       ImageIndex = 24
-      object P_VC_Pozadi: TPanel
+      object P_JC_Bg: TPanel
         Left = 0
         Top = 0
         Width = 1289
@@ -5062,7 +5062,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        object P_VC_Left: TPanel
+        object P_JC_Left: TPanel
           Left = 0
           Top = 0
           Width = 537
@@ -5094,7 +5094,7 @@ object F_Main: TF_Main
             ReadOnly = True
             TabOrder = 0
           end
-          object B_VC_Add: TButton
+          object B_JC_Add: TButton
             Left = 220
             Top = 7
             Width = 97
@@ -5111,9 +5111,9 @@ object F_Main: TF_Main
             Font.Style = []
             ParentFont = False
             TabOrder = 1
-            OnClick = B_VC_AddClick
+            OnClick = B_JC_AddClick
           end
-          object B_VC_delete: TButton
+          object B_JC_delete: TButton
             Left = 323
             Top = 7
             Width = 97
@@ -5131,7 +5131,7 @@ object F_Main: TF_Main
             Font.Style = []
             ParentFont = False
             TabOrder = 2
-            OnClick = B_VC_deleteClick
+            OnClick = B_JC_deleteClick
           end
           object B_JC_Reset: TButton
             Left = 430
