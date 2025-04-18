@@ -192,8 +192,8 @@ type
     S_locos_acquired: TShape;
     Label1: TLabel;
     PM_HV: TPopupMenu;
-    PM_Properties: TMenuItem;
-    PM_Regulator: TMenuItem;
+    PM_Loco_Edit: TMenuItem;
+    PM_Loco_Reg: TMenuItem;
     N6: TMenuItem;
     P_log: TPanel;
     Panel3: TPanel;
@@ -203,9 +203,9 @@ type
     PM_SaveLayout: TMenuItem;
     A_SaveStav: TAction;
     PM_Bloky: TPopupMenu;
-    MI_BlockState: TMenuItem;
+    MI_Block_State: TMenuItem;
     MenuItem2: TMenuItem;
-    MI_Prop: TMenuItem;
+    MI_Block_Edit: TMenuItem;
     B_JC_Add: TButton;
     B_JC_delete: TButton;
     B_JC_Reset: TButton;
@@ -239,7 +239,7 @@ type
     MI_Stop: TMenuItem;
     A_PT_Start: TAction;
     A_PT_Stop: TAction;
-    MI_Houk: TMenuItem;
+    MI_Block_Houk: TMenuItem;
     MI_RCS_Update: TMenuItem;
     TS_AB: TTabSheet;
     Panel4: TPanel;
@@ -309,6 +309,8 @@ type
     B_FuncUpdate: TButton;
     NB_TimeJCZav: TNumberBox;
     Label15: TLabel;
+    MI_Block_Delete: TMenuItem;
+    PM_Loco_Delete: TMenuItem;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_RCS_libClick(Sender: TObject);
@@ -375,8 +377,8 @@ type
     procedure LV_log_lnetDblClick(Sender: TObject);
     procedure LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
-    procedure PM_PropertiesClick(Sender: TObject);
-    procedure PM_RegulatorClick(Sender: TObject);
+    procedure PM_Loco_EditClick(Sender: TObject);
+    procedure PM_Loco_RegClick(Sender: TObject);
     procedure PM_HVPopup(Sender: TObject);
     procedure LV_JCCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
@@ -388,8 +390,8 @@ type
     procedure B_User_DeleteClick(Sender: TObject);
     procedure A_SaveStavExecute(Sender: TObject);
     procedure PM_BlokyPopup(Sender: TObject);
-    procedure MI_PropClick(Sender: TObject);
-    procedure MI_BlockStateClick(Sender: TObject);
+    procedure MI_Block_EditClick(Sender: TObject);
+    procedure MI_Block_StateClick(Sender: TObject);
     procedure B_JC_ResetClick(Sender: TObject);
     procedure P_Time_modelovyDblClick(Sender: TObject);
     procedure P_ZrychleniDblClick(Sender: TObject);
@@ -418,7 +420,7 @@ type
     procedure A_PT_StopExecute(Sender: TObject);
     procedure LV_Stav_RCSCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
-    procedure MI_HoukClick(Sender: TObject);
+    procedure MI_Block_HoukClick(Sender: TObject);
     procedure MI_RCS_UpdateClick(Sender: TObject);
     procedure B_AB_DeleteClick(Sender: TObject);
     procedure LV_ABChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -451,6 +453,8 @@ type
     procedure LV_MultiJCKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure LV_ABKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure MI_Block_DeleteClick(Sender: TObject);
+    procedure PM_Loco_DeleteClick(Sender: TObject);
   private
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
@@ -1577,7 +1581,13 @@ begin
   F_ModCasSet.OpenForm();
 end;
 
-procedure TF_Main.PM_PropertiesClick(Sender: TObject);
+procedure TF_Main.PM_Loco_DeleteClick(Sender: TObject);
+begin
+  if (Self.B_HV_Delete.Enabled) then
+    Self.B_HV_DeleteClick(Self)
+end;
+
+procedure TF_Main.PM_Loco_EditClick(Sender: TObject);
 begin
   if (LV_HV.Selected <> nil) then
     F_HVEdit.OpenForm(HVDb[StrToInt(LV_HV.Selected.Caption)]);
@@ -1609,19 +1619,12 @@ end;
 
 procedure TF_Main.PM_BlokyPopup(Sender: TObject);
 begin
-  if (Self.LV_Blocks.Selected = nil) then
-  begin
-    for var item in (Sender as TPopupMenu).Items do
-      item.Enabled := false;
-  end else begin
-    var blk := Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex);
-    if (blk = nil) then
-      Exit();
+  for var item in (Sender as TPopupMenu).Items do
+    item.Enabled := ((Self.LV_Blocks.Selected <> nil) and (Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex) <> nil));
 
-    Self.MI_BlockState.Enabled := (blk <> nil) and ((blk.typ = btTurnout) or (blk.typ = btTrack) or (blk.typ = btRT) or (blk.typ = btCrossing) or (blk.typ = btSignal) or (blk.typ = btRailway));
-    Self.MI_Houk.Enabled := (blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT));
-    Self.MI_Prop.Enabled := true;
-  end;
+  var blk := Blocks.GetBlkByIndex(Self.LV_Blocks.ItemIndex);
+  Self.MI_Block_State.Enabled := (blk <> nil) and ((blk.typ = btTurnout) or (blk.typ = btTrack) or (blk.typ = btRT) or (blk.typ = btCrossing) or (blk.typ = btSignal) or (blk.typ = btRailway));
+  Self.MI_Block_Houk.Visible := (blk <> nil) and ((blk.typ = btTrack) or (blk.typ = btRT));
 end;
 
 procedure TF_Main.PM_ResetVClick(Sender: TObject);
@@ -1636,7 +1639,7 @@ begin
   end;
 end;
 
-procedure TF_Main.PM_RegulatorClick(Sender: TObject);
+procedure TF_Main.PM_Loco_RegClick(Sender: TObject);
 begin
   if (Self.LV_HV.Selected = nil) then
     Exit();
@@ -2602,6 +2605,12 @@ begin
   StrMessageBox('Datum a čas lze nastavit v operačním systému', 'Informace', MB_ICONINFORMATION OR MB_OK);
 end;
 
+procedure TF_Main.MI_Block_DeleteClick(Sender: TObject);
+begin
+  if (Self.B_BlkDelete.Enabled) then
+    Self.B_BlkDeleteClick(Self);
+end;
+
 procedure TF_Main.MI_DisconnectClick(Sender: TObject);
 begin
   if (PanelServer.GetClient(Self.LV_Clients.ItemIndex) <> nil) then
@@ -2615,7 +2624,7 @@ begin
   end;
 end;
 
-procedure TF_Main.MI_HoukClick(Sender: TObject);
+procedure TF_Main.MI_Block_HoukClick(Sender: TObject);
 begin
   if (Self.LV_Blocks.Selected = nil) then
     Exit();
@@ -2628,7 +2637,7 @@ begin
   F_HoukEvsUsek.Open(TBlkTrack(blk));
 end;
 
-procedure TF_Main.MI_PropClick(Sender: TObject);
+procedure TF_Main.MI_Block_EditClick(Sender: TObject);
 begin
   if (Self.LV_Blocks.Selected <> nil) then
     Self.LV_BlocksDblClick(Self.LV_Blocks);
@@ -2675,7 +2684,7 @@ begin
   F_Admin.Show();
 end;
 
-procedure TF_Main.MI_BlockStateClick(Sender: TObject);
+procedure TF_Main.MI_Block_StateClick(Sender: TObject);
 var blk: TBlk;
 begin
   if (LV_Blocks.Selected = nil) then

@@ -9128,36 +9128,44 @@ object F_Main: TF_Main
     OnPopup = PM_HVPopup
     Left = 336
     Top = 536
-    object PM_Regulator: TMenuItem
-      Caption = 'Regul'#225'tor'
-      OnClick = PM_RegulatorClick
+    object PM_Loco_Edit: TMenuItem
+      Caption = 'Upravit'
+      OnClick = PM_Loco_EditClick
+    end
+    object PM_Loco_Delete: TMenuItem
+      Caption = 'Smazat'
+      OnClick = PM_Loco_DeleteClick
     end
     object N6: TMenuItem
       Caption = '-'
     end
-    object PM_Properties: TMenuItem
-      Caption = 'Vlastnosti'
-      OnClick = PM_PropertiesClick
+    object PM_Loco_Reg: TMenuItem
+      Caption = 'Regul'#225'tor'
+      OnClick = PM_Loco_RegClick
     end
   end
   object PM_Bloky: TPopupMenu
     OnPopup = PM_BlokyPopup
     Left = 280
     Top = 536
-    object MI_BlockState: TMenuItem
-      Caption = 'Stav bloku'
-      OnClick = MI_BlockStateClick
+    object MI_Block_Edit: TMenuItem
+      Caption = 'Upravit'
+      OnClick = MI_Block_EditClick
+    end
+    object MI_Block_Delete: TMenuItem
+      Caption = 'Smazat'
+      OnClick = MI_Block_DeleteClick
     end
     object MenuItem2: TMenuItem
       Caption = '-'
     end
-    object MI_Houk: TMenuItem
-      Caption = 'Houkac'#237' ud'#225'losti'
-      OnClick = MI_HoukClick
+    object MI_Block_State: TMenuItem
+      Caption = 'Stav'
+      OnClick = MI_Block_StateClick
     end
-    object MI_Prop: TMenuItem
-      Caption = 'Vlastnosti'
-      OnClick = MI_PropClick
+    object MI_Block_Houk: TMenuItem
+      Caption = 'Houkac'#237' ud'#225'losti'
+      OnClick = MI_Block_HoukClick
     end
   end
   object PM_Clients: TPopupMenu
