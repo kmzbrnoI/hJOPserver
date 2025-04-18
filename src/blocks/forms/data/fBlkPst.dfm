@@ -416,6 +416,7 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_TracksChange
+      OnKeyDown = LV_TracksKeyDown
     end
   end
   object GB_Turnouts: TGroupBox
@@ -458,6 +459,7 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_TurnoutsChange
+      OnKeyDown = LV_TurnoutsKeyDown
     end
     object GB_TurnoutEdit: TGroupBox
       Left = 2
@@ -556,6 +558,7 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_RefugeesChange
+      OnKeyDown = LV_RefugeesKeyDown
     end
     object GB_RefEdit: TGroupBox
       Left = 2
@@ -742,6 +745,7 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_SignalsChange
+      OnKeyDown = LV_SignalsKeyDown
     end
   end
   object GB_Disconnectors: TGroupBox
@@ -839,6 +843,7 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_DisconnectorsChange
+      OnKeyDown = LV_DisconnectorsKeyDown
     end
   end
 end

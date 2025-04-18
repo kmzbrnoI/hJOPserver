@@ -366,6 +366,7 @@ object F_BlkRailway: TF_BlkRailway
       OnChange = LV_TracksChange
       OnDragDrop = LV_TracksDragDrop
       OnDragOver = LV_TracksDragOver
+      OnKeyDown = LV_TracksKeyDown
     end
   end
 end

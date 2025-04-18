@@ -119,6 +119,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_SignalsChange
+      OnKeyDown = LV_SignalsKeyDown
     end
     object B_BlkDelete: TButton
       Left = 88

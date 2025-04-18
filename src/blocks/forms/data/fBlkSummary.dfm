@@ -125,6 +125,7 @@ object F_BlkSummary: TF_BlkSummary
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_CrossingsChange
+      OnKeyDown = LV_CrossingsKeyDown
     end
     object CB_Crossing: TComboBox
       Left = 6

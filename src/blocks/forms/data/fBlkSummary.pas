@@ -28,6 +28,8 @@ type
     procedure B_AddClick(Sender: TObject);
     procedure LV_CrossingsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure B_RemoveClick(Sender: TObject);
+    procedure LV_CrossingsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     openIndex: Integer;
     block: TBlkSummary;
@@ -231,6 +233,13 @@ begin
           Self.CB_Crossing.ItemIndex := i;
     end;
   end;
+end;
+
+procedure TF_BlkSummary.LV_CrossingsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_Remove.Enabled)) then
+    Self.B_RemoveClick(Self);
 end;
 
 procedure TF_BlkSummary.NewBlock();

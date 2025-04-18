@@ -48,6 +48,10 @@ type
     procedure SB_Rel_RemoveClick(Sender: TObject);
     procedure LV_Pom_ReleaseChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure LV_Pom_ReleaseDblClick(Sender: TObject);
+    procedure LV_Pom_LoadKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_Pom_ReleaseKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     OpenHV: THV;
 
@@ -315,6 +319,13 @@ begin
   end;
 end;
 
+procedure TF_HVEdit.LV_Pom_LoadKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.SB_Take_Remove.Enabled)) then
+    Self.SB_Take_RemoveClick(Self);
+end;
+
 procedure TF_HVEdit.LV_Pom_ReleaseChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   Self.SB_Rel_Remove.Enabled := (Self.LV_Pom_Release.Selected <> nil);
@@ -331,6 +342,13 @@ begin
   end else begin
     Self.SB_Rel_AddClick(Self);
   end;
+end;
+
+procedure TF_HVEdit.LV_Pom_ReleaseKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.SB_Rel_Remove.Enabled)) then
+    Self.SB_Rel_RemoveClick(Self);
 end;
 
 procedure TF_HVEdit.NormalOpenForm();

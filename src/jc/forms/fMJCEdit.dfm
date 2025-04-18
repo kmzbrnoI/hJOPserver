@@ -141,6 +141,7 @@ object F_MJCEdit: TF_MJCEdit
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_JCsChange
+      OnKeyDown = LV_JCsKeyDown
     end
     object B_JC_Remove: TButton
       Left = 112
@@ -238,6 +239,7 @@ object F_MJCEdit: TF_MJCEdit
       TabOrder = 0
       ViewStyle = vsReport
       OnChange = LV_VBsChange
+      OnKeyDown = LV_VBsKeyDown
     end
     object B_VB_Remove: TButton
       Left = 112

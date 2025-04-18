@@ -45,6 +45,8 @@ type
     procedure CHB_RCS_OutputClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure LV_SignalsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
 
   private
     isNewBlock: Boolean;
@@ -356,6 +358,13 @@ end;
 procedure TF_BlkGroupSignal.LV_SignalsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   Self.B_BlkDelete.Enabled := (Self.LV_Signals.ItemIndex > -1);
+end;
+
+procedure TF_BlkGroupSignal.LV_SignalsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_BlkDelete.Enabled)) then
+    Self.B_BlkDeleteClick(Self);
 end;
 
 procedure TF_BlkGroupSignal.FillCBNewSignal();

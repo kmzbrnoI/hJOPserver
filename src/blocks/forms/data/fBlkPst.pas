@@ -96,6 +96,16 @@ type
     procedure B_Disc_DeleteClick(Sender: TObject);
     procedure B_Disc_OkClick(Sender: TObject);
     procedure SE_RCS_Active_ModuleExit(Sender: TObject);
+    procedure LV_DisconnectorsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_TracksKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_TurnoutsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_RefugeesKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_SignalsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     isNewBlock: Boolean;
     block: TBlkPst;
@@ -641,6 +651,13 @@ begin
   end;
 end;
 
+procedure TF_BlkPst.LV_DisconnectorsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_Disc_Delete.Enabled)) then
+    Self.B_Disc_DeleteClick(Self);
+end;
+
 procedure TF_BlkPst.LV_RefugeesChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
@@ -665,6 +682,13 @@ begin
   end;
 end;
 
+procedure TF_BlkPst.LV_RefugeesKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_Ref_Del.Enabled)) then
+    Self.B_Ref_DelClick(Self);
+end;
+
 procedure TF_BlkPst.LV_SignalsChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
@@ -681,6 +705,13 @@ begin
           Self.CB_Signal.ItemIndex := i;
     end;
   end;
+end;
+
+procedure TF_BlkPst.LV_SignalsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_Signal_Del.Enabled)) then
+    Self.B_Signal_DelClick(Self);
 end;
 
 procedure TF_BlkPst.LV_TracksChange(Sender: TObject; Item: TListItem;
@@ -701,6 +732,13 @@ begin
   end;
 end;
 
+procedure TF_BlkPst.LV_TracksKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_Track_Del.Enabled)) then
+    Self.B_Track_DelClick(Self);
+end;
+
 procedure TF_BlkPst.LV_TurnoutsChange(Sender: TObject; Item: TListItem;
   Change: TItemChange);
 begin
@@ -717,6 +755,13 @@ begin
           Self.CB_Turnout.ItemIndex := i;
     end;
   end;
+end;
+
+procedure TF_BlkPst.LV_TurnoutsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_Turnout_Del.Enabled)) then
+    Self.B_Turnout_DelClick(Self);
 end;
 
 function TF_BlkPst.BlockPresent(id: Integer; LV: TListView): Boolean;

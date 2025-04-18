@@ -39,6 +39,8 @@ type
     procedure LV_VBsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure B_JC_RemoveClick(Sender: TObject);
     procedure B_VB_RemoveClick(Sender: TObject);
+    procedure LV_JCsKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure LV_VBsKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     openMJC: TMultiJC;
     new: Boolean;
@@ -111,6 +113,13 @@ begin
       Self.CB_JC_Add.ItemIndex := i;
 end;
 
+procedure TF_MJCEdit.LV_JCsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_JC_Remove.Enabled)) then
+    Self.B_JC_RemoveClick(Self);
+end;
+
 procedure TF_MJCEdit.LV_VBsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   Self.B_VB_Remove.Enabled := (Self.LV_VBs.Selected <> nil);
@@ -125,6 +134,13 @@ begin
   for var i := 0 to Self.CB_VB_Ids.Count - 1 do
     if (Self.CB_VB_Ids[i] = selectedId) then
       Self.CB_VB_New.ItemIndex := i;
+end;
+
+procedure TF_MJCEdit.LV_VBsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_VB_Remove.Enabled)) then
+    Self.B_VB_RemoveClick(Self);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

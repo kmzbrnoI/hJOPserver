@@ -46,6 +46,8 @@ type
     procedure LV_TracksDragOver(Sender, Source: TObject; X, Y: Integer;
       State: TDragState; var Accept: Boolean);
     procedure LV_TracksDragDrop(Sender, Source: TObject; X, Y: Integer);
+    procedure LV_TracksKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
 
   private
     isNewBlock: Boolean;
@@ -240,6 +242,13 @@ procedure TF_BlkRailway.LV_TracksDragOver(Sender, Source: TObject; X,
   Y: Integer; State: TDragState; var Accept: Boolean);
 begin
   Accept := (Source = Self.LV_Tracks);
+end;
+
+procedure TF_BlkRailway.LV_TracksKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_Track_Del.Enabled)) then
+    Self.B_Track_DelClick(Self);
 end;
 
 procedure TF_BlkRailway.B_Track_AddClick(Sender: TObject);
