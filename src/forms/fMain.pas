@@ -250,7 +250,7 @@ type
     B_BlkDelete: TButton;
     B_HV_Add: TButton;
     B_HV_Delete: TButton;
-    B_lok_delete: TButton;
+    B_train_delete: TButton;
     B_HVStats_Export: TButton;
     B_HVStats_Clear: TButton;
     B_zes_add: TButton;
@@ -371,7 +371,7 @@ type
     procedure MI_Save_configClick(Sender: TObject);
     procedure LB_LogDblClick(Sender: TObject);
     procedure LV_SoupravyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
-    procedure B_lok_deleteClick(Sender: TObject);
+    procedure B_train_deleteClick(Sender: TObject);
     procedure LV_log_lnetDblClick(Sender: TObject);
     procedure LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
@@ -438,6 +438,19 @@ type
     procedure B_ConfigApplyClick(Sender: TObject);
     procedure LV_DigiRychDblClick(Sender: TObject);
     procedure B_FuncUpdateClick(Sender: TObject);
+    procedure LV_BlocksKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_HVKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure LV_SoupravyKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_ZesilovaceKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_UsersKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_JCKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure LV_MultiJCKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_ABKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
@@ -2899,6 +2912,13 @@ begin
     F_JCEdit.EditJC(LV_JC.ItemIndex);
 end;
 
+procedure TF_Main.LV_JCKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_VC_delete.Enabled)) then
+    Self.B_VC_deleteClick(Self);
+end;
+
 procedure TF_Main.LV_JCKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
@@ -2973,6 +2993,13 @@ begin
     F_MJCEdit.EditMJC(MultiJCDb[Self.LV_MultiJC.ItemIndex]);
 end;
 
+procedure TF_Main.LV_MultiJCKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_mJC_Remove.Enabled)) then
+    Self.B_mJC_RemoveClick(Self);
+end;
+
 procedure TF_Main.LV_MultiJCKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
@@ -2981,12 +3008,12 @@ end;
 
 procedure TF_Main.LV_SoupravyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  Self.B_lok_delete.Enabled := (Self.SoupravySelectedCount() > 0);
+  Self.B_train_delete.Enabled := (Self.SoupravySelectedCount() > 0);
 
   if (Self.SoupravySelectedCount() > 1) then
-    Self.B_lok_delete.Caption := 'Smazat soupravy'
+    Self.B_train_delete.Caption := 'Smazat soupravy'
   else
-    Self.B_lok_delete.Caption := 'Smazat soupravu';
+    Self.B_train_delete.Caption := 'Smazat soupravu';
 end;
 
 procedure TF_Main.LV_SoupravyCustomDrawItem(Sender: TCustomListView;
@@ -2999,6 +3026,13 @@ begin
     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED
   else if (Trains[Item.Index].IsSpeedOverride) then
     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+end;
+
+procedure TF_Main.LV_SoupravyKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_train_delete.Enabled)) then
+    Self.B_train_deleteClick(Self);
 end;
 
 procedure TF_Main.LV_StaniceChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -3034,6 +3068,13 @@ begin
     F_UserEdit.OpenForm(UsrDB.GetUser(Self.LV_Users.ItemIndex));
 end;
 
+procedure TF_Main.LV_UsersKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_User_Delete.Enabled)) then
+    Self.B_User_DeleteClick(Self);
+end;
+
 procedure TF_Main.LV_UsersKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
@@ -3061,6 +3102,13 @@ end;
 procedure TF_Main.LV_ABChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   Self.B_AB_Delete.Enabled := (Self.LV_AB.Selected <> nil);
+end;
+
+procedure TF_Main.LV_ABKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_AB_Delete.Enabled)) then
+    Self.B_AB_DeleteClick(Self);
 end;
 
 procedure TF_Main.LV_BlocksChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -3299,6 +3347,13 @@ begin
   end;
 end;
 
+procedure TF_Main.LV_BlocksKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_BlkDelete.Enabled)) then
+    Self.B_BlkDeleteClick(Self);
+end;
+
 procedure TF_Main.LV_BlocksKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
@@ -3363,6 +3418,13 @@ begin
   end;
 end;
 
+procedure TF_Main.LV_HVKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_HV_Delete.Enabled)) then
+    Self.B_HV_DeleteClick(Self);
+end;
+
 procedure TF_Main.LV_HVKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
@@ -3396,6 +3458,13 @@ begin
     F_Booster_Edit.EditBooster(Boosters.sorted[LV_Zesilovace.ItemIndex]);
 end;
 
+procedure TF_Main.LV_ZesilovaceKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_zes_delete.Enabled)) then
+    Self.B_zes_deleteClick(Self);
+end;
+
 procedure TF_Main.LV_ZesilovaceKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
@@ -3408,7 +3477,7 @@ procedure TF_Main.DisableRemoveButtons();
 begin
   B_BlkDelete.Enabled := false;
   B_HV_Delete.Enabled := false;
-  B_lok_delete.Enabled := false;
+  B_train_delete.Enabled := false;
   B_zes_delete.Enabled := false;
   B_User_Delete.Enabled := false;
   B_VC_delete.Enabled := false;

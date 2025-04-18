@@ -3872,6 +3872,7 @@ object F_Main: TF_Main
         OnChange = LV_BlocksChange
         OnCustomDrawItem = LV_BlocksCustomDrawItem
         OnDblClick = LV_BlocksDblClick
+        OnKeyDown = LV_BlocksKeyDown
         OnKeyPress = LV_BlocksKeyPress
       end
       object P_BlkPozadi: TPanel
@@ -4116,6 +4117,7 @@ object F_Main: TF_Main
         OnChange = LV_HVChange
         OnCustomDrawItem = LV_HVCustomDrawItem
         OnDblClick = LV_HVDblClick
+        OnKeyDown = LV_HVKeyDown
         OnKeyPress = LV_HVKeyPress
       end
       object P_HV_Pozadi: TPanel
@@ -4334,6 +4336,7 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnChange = LV_SoupravyChange
         OnCustomDrawItem = LV_SoupravyCustomDrawItem
+        OnKeyDown = LV_SoupravyKeyDown
       end
       object P_Soupravy_pozadi: TPanel
         Left = 0
@@ -4382,7 +4385,7 @@ object F_Main: TF_Main
             ReadOnly = True
             TabOrder = 0
           end
-          object B_lok_delete: TButton
+          object B_train_delete: TButton
             Left = 214
             Top = 7
             Width = 97
@@ -4400,7 +4403,7 @@ object F_Main: TF_Main
             Font.Style = []
             ParentFont = False
             TabOrder = 1
-            OnClick = B_lok_deleteClick
+            OnClick = B_train_deleteClick
           end
         end
       end
@@ -4577,6 +4580,7 @@ object F_Main: TF_Main
         OnChange = LV_ZesilovaceChange
         OnCustomDrawItem = LV_ZesilovaceCustomDrawItem
         OnDblClick = LV_ZesilovaceDblClick
+        OnKeyDown = LV_ZesilovaceKeyDown
         OnKeyPress = LV_ZesilovaceKeyPress
       end
       object P_zes_pozadi: TPanel
@@ -4828,6 +4832,7 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnChange = LV_UsersChange
         OnDblClick = LV_UsersDblClick
+        OnKeyDown = LV_UsersKeyDown
         OnKeyPress = LV_UsersKeyPress
       end
       object P_Users_pozadi: TPanel
@@ -5243,6 +5248,7 @@ object F_Main: TF_Main
         OnChange = LV_JCChange
         OnCustomDrawItem = LV_JCCustomDrawItem
         OnDblClick = LV_JCDblClick
+        OnKeyDown = LV_JCKeyDown
         OnKeyPress = LV_JCKeyPress
       end
     end
@@ -5381,6 +5387,7 @@ object F_Main: TF_Main
         OnChange = LV_MultiJCChange
         OnCustomDrawItem = LV_MultiJCCustomDrawItem
         OnDblClick = LV_MultiJCDblClick
+        OnKeyDown = LV_MultiJCKeyDown
         OnKeyPress = LV_MultiJCKeyPress
       end
     end
@@ -5465,6 +5472,7 @@ object F_Main: TF_Main
         TabOrder = 1
         ViewStyle = vsReport
         OnChange = LV_ABChange
+        OnKeyDown = LV_ABKeyDown
       end
     end
     object TS_Config: TTabSheet

@@ -2268,7 +2268,7 @@ begin
       end else begin // if (i = Self.destroyBlock)
         // obsadil se usek, ktery jsme NEocekavali
 
-        if (track.Zaver > TZaver.no) then
+        if (track.zaver > TZaver.no) then
         begin
           // pokud jsme na jinem useku, nez RozpadBlok
           if ((signal.targetSignal > ncStuj) and (signal.DNjc = Self)) then
@@ -2279,7 +2279,7 @@ begin
 
           // v trati zaver nerusime, nesmime tam dat ani nouzovy, ani zadny zaver
           if ((i <> Self.m_data.tracks.Count - 1) or (Self.m_data.railwayId = -1)) then
-            track.Zaver := TZaver.nouz;
+            track.zaver := TZaver.nouz;
         end;
       end;
     end;
