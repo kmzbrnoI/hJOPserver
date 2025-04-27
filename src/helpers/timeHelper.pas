@@ -17,13 +17,13 @@ function EncodeTimeSec(sec: Cardinal): TTime;
 
 implementation
 
-uses SysUtils, ModelovyCas;
+uses SysUtils, TimeModel;
 
 function RealDelta(future: TTime): TTime;
 begin
- if (ModCas.used) then
+ if (modelTime.used) then
   begin
-   Result := (future - ModCas.dateTime) / ModCas.speed;
+   Result := (future - modelTime.dateTime) / modelTime.speed;
   end else begin
    Result := future - Now;
   end;
@@ -31,8 +31,8 @@ end;
 
 function hJOPnow(): TTime;
 begin
- if (ModCas.used) then
-   Result := ModCas.dateTime
+ if (modelTime.used) then
+   Result := modelTime.dateTime
  else
    Result := Now;
 end;

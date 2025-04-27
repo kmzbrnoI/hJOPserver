@@ -1,4 +1,4 @@
-﻿unit ModelovyCas;
+﻿unit timeModel;
 
 {
   Tato unta se stara o modelovy cas.
@@ -27,7 +27,7 @@ interface
 uses Classes, SysUtils, IniFiles, IDContext, Graphics;
 
 type
-  TModCas = class
+  TModelTime = class
   private const
     _INI_SECTION = 'ModCas';
     _SYNC_REAL_MINUTES = 3;
@@ -78,7 +78,7 @@ type
   end; // class TModCas
 
 var
-  ModCas: TModCas;
+  modelTime: TModelTime;
 
 implementation
 
@@ -86,7 +86,7 @@ uses TCPServerPanel, fMain, TrainDb, BlockDb, ownConvert;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-constructor TModCas.Create();
+constructor TModelTime.Create();
 begin
   Self.fdateTime := 0;
   Self.fspeed := 3;
@@ -96,14 +96,14 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.LoadData(var ini: TMemIniFile);
+procedure TModelTime.LoadData(var ini: TMemIniFile);
 begin
   Self.fspeed := ini.ReadFloat(_INI_SECTION, 'speed', 5);
   Self.dateTime := StrToTime(ini.ReadString(_INI_SECTION, 'cas', '00:00:00'));
   Self.fused := ini.ReadBool(_INI_SECTION, 'used', true);
 end;
 
-procedure TModCas.SaveData(var ini: TMemIniFile);
+procedure TModelTime.SaveData(var ini: TMemIniFile);
 begin
   ini.WriteString(_INI_SECTION, 'speed', Self.strSpeed);
   ini.WriteString(_INI_SECTION, 'cas', TimeToStr(Self.time));
@@ -112,7 +112,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetDateTime(dt: TDateTime);
+procedure TModelTime.SetDateTime(dt: TDateTime);
 begin
   if ((Self.fdateTime <> dt) and (not Self.started)) then
   begin
@@ -121,7 +121,7 @@ begin
   end;
 end;
 
-procedure TModCas.mSetTime(time: TTime);
+procedure TModelTime.mSetTime(time: TTime);
 begin
   if ((Self.fdateTime <> Self.date + time) and (not Self.started)) then
   begin
@@ -132,7 +132,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetSpeed(speed: Real);
+procedure TModelTime.SetSpeed(speed: Real);
 begin
   if ((Self.fspeed <> speed) and (not Self.started)) then
   begin
@@ -143,7 +143,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetStarted(started: Boolean);
+procedure TModelTime.SetStarted(started: Boolean);
 begin
   if (started <> Self.fstarted) then
   begin
@@ -155,7 +155,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetUsed(used: Boolean);
+procedure TModelTime.SetUsed(used: Boolean);
 begin
   if (used <> Self.fused) then
   begin
@@ -167,7 +167,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.Update();
+procedure TModelTime.Update();
 var diff: TTime;
 begin
   if (not Self.started) then
@@ -192,7 +192,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.BroadcastTime();
+procedure TModelTime.BroadcastTime();
 begin
   Self.last_sync := Now;
 
@@ -203,14 +203,14 @@ begin
   PanelServer.BroadcastData(Self.GetTCPString());
 end;
 
-procedure TModCas.SendTimeToPanel(AContext: TIDContext);
+procedure TModelTime.SendTimeToPanel(AContext: TIDContext);
 begin
   PanelServer.SendLn(AContext, Self.GetTCPString());
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.SetTime(time: TTime; speed: Real);
+procedure TModelTime.SetTime(time: TTime; speed: Real);
 begin
   if (((Self.time <> time) or (Self.fspeed <> speed)) and (not Self.started)) then
   begin
@@ -222,19 +222,19 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TModCas.GetStrSpeed(): string;
+function TModelTime.GetStrSpeed(): string;
 begin
   Result := FloatToStrF(Self.speed, ffGeneral, 1, 1);
 end;
 
-procedure TModCas.SetStrSpeed(speed: string);
+procedure TModelTime.SetStrSpeed(speed: string);
 begin
   Self.SetSpeed(StrToFloat(speed));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.UpdateGUIColors();
+procedure TModelTime.UpdateGUIColors();
 begin
   if (Self.started) then
   begin
@@ -257,7 +257,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TModCas.GetTCPString(): string;
+function TModelTime.GetTCPString(): string;
 begin
   PanelServer.BroadcastData(
     '-;MOD-CAS;'+
@@ -270,7 +270,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TModCas.Parse(parsed: TStrings);
+procedure TModelTime.Parse(parsed: TStrings);
 begin
   parsed[2] := UpperCase(parsed[2]);
 
@@ -279,7 +279,7 @@ begin
 
   if ((parsed.Count >= 4) and (parsed[2] = 'TIME')) then
   begin
-    ModCas.SetTime(StrToTime(parsed[3]), StrToFloat(parsed[4]));
+    modelTime.SetTime(StrToTime(parsed[3]), StrToFloat(parsed[4]));
     if (parsed.Count >= 6) then
     begin
       if (Self.fused <> (parsed[5] = '1')) then
@@ -300,7 +300,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TModCas.GetDate(): TDate;
+function TModelTime.GetDate(): TDate;
 var dt: TDateTime;
 begin
   dt := Self.dateTime;
@@ -308,7 +308,7 @@ begin
   Result := dt;
 end;
 
-function TModCas.GetTime(): TTime;
+function TModelTime.GetTime(): TTime;
 var dt: TDateTime;
 begin
   dt := Self.dateTime;
@@ -320,10 +320,10 @@ end;
 
 initialization
 
-ModCas := TModCas.Create();
+modelTime := TModelTime.Create();
 
 finalization
 
-FreeAndNil(ModCas);
+FreeAndNil(modelTime);
 
 end.// unit

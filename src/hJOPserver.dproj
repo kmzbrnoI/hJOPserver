@@ -152,8 +152,8 @@
         <DCCReference Include="forms\fMain.pas">
             <Form>F_Main</Form>
         </DCCReference>
-        <DCCReference Include="forms\fNastaveni_Casu.pas">
-            <Form>F_ModCasSet</Form>
+        <DCCReference Include="forms\fModelTimeSet.pas">
+            <Form>F_ModelTimeSet</Form>
         </DCCReference>
         <DCCReference Include="hv\forms\fRegulator.pas">
             <Form>F_DigiReg</Form>
@@ -255,7 +255,7 @@
         <DCCReference Include="blocks\forms\state\fBlkRailwayState.pas">
             <Form>F_BlkRailwayState</Form>
         </DCCReference>
-        <DCCReference Include="ModelovyCas.pas"/>
+        <DCCReference Include="timeModel.pas"/>
         <DCCReference Include="blocks\forms\data\fBlkSignalEvent.pas">
             <Form>F_BlkSignalEvent</Form>
         </DCCReference>
@@ -393,11 +393,12 @@
             <Form>F_BlkSignalState</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="pt\PTEndpointStatus.pas"/>
+        <DCCReference Include="pt\PTEndpointTime.pas"/>
         <DCCReference Include="helpers\colorHelper.pas"/>
         <DCCReference Include="blocks\BlockCrossingPositive.pas"/>
         <DCCReference Include="blocks\BlockProxy.pas"/>
         <DCCReference Include="helpers\ownGuiUtils.pas"/>
+        <DCCReference Include="pt\PTEndpointStatus.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

@@ -1,4 +1,4 @@
-﻿unit fNastaveni_Casu;
+﻿unit fModelTimeSet;
 
 {
   Okno nastaveni modeloveho casu.
@@ -11,7 +11,7 @@ uses
   StdCtrls, ExtCtrls, Mask, StrUtils;
 
 type
-  TF_ModCasSet = class(TForm)
+  TF_ModelTimeSet = class(TForm)
     ME_start_time: TMaskEdit;
     L_time_start: TLabel;
     B_OK: TButton;
@@ -30,15 +30,15 @@ type
   end;
 
 var
-  F_ModCasSet: TF_ModCasSet;
+  F_ModelTimeSet: TF_ModelTimeSet;
 
 implementation
 
-uses ModelovyCas, ownGuiUtils;
+uses TimeModel, ownGuiUtils;
 
 {$R *.dfm}
 
-procedure TF_ModCasSet.B_OKClick(Sender: TObject);
+procedure TF_ModelTimeSet.B_OKClick(Sender: TObject);
 begin
   try
     if (StrToInt(Copy(ME_start_time.Text, 4, 2)) > 59) then
@@ -59,9 +59,9 @@ begin
       Exit();
     end;
 
-    ModCas.used := Self.CHB_Used.Checked;
-    ModCas.time := EncodeTime(StrToInt(LeftStr(ME_start_time.Text, 2)), StrToInt(Copy(ME_start_time.Text, 4, 2)), 0, 0);
-    ModCas.strSpeed := Self.ME_Nasobic.Text;
+    modelTime.used := Self.CHB_Used.Checked;
+    modelTime.time := EncodeTime(StrToInt(LeftStr(ME_start_time.Text, 2)), StrToInt(Copy(ME_start_time.Text, 4, 2)), 0, 0);
+    modelTime.strSpeed := Self.ME_Nasobic.Text;
 
     Self.Close();
   except
@@ -71,18 +71,18 @@ begin
 
 end;
 
-procedure TF_ModCasSet.B_StornoClick(Sender: TObject);
+procedure TF_ModelTimeSet.B_StornoClick(Sender: TObject);
 begin
   Self.Close();
 end;
 
-procedure TF_ModCasSet.CHB_UsedClick(Sender: TObject);
+procedure TF_ModelTimeSet.CHB_UsedClick(Sender: TObject);
 begin
   Self.ME_start_time.Enabled := Self.CHB_Used.Checked;
   Self.ME_Nasobic.Enabled := Self.CHB_Used.Checked;
 end;
 
-procedure TF_ModCasSet.ME_start_timeKeyPress(Sender: TObject; var Key: Char);
+procedure TF_ModelTimeSet.ME_start_timeKeyPress(Sender: TObject; var Key: Char);
 begin
   Key := Key;
   case Key of
@@ -96,11 +96,11 @@ begin
   end; // case
 end;
 
-procedure TF_ModCasSet.OpenForm;
+procedure TF_ModelTimeSet.OpenForm;
 begin
-  Self.CHB_Used.Checked := ModCas.used;
-  Self.ME_start_time.Text := FormatDateTime('hh:nn', ModCas.time);
-  Self.ME_Nasobic.Text := FloatToStrF(ModCas.speed, ffNumber, 1, 1);
+  Self.CHB_Used.Checked := modelTime.used;
+  Self.ME_start_time.Text := FormatDateTime('hh:nn', modelTime.time);
+  Self.ME_Nasobic.Text := FloatToStrF(modelTime.speed, ffNumber, 1, 1);
 
   Self.CHB_UsedClick(Self.CHB_Used);
 

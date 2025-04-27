@@ -72,7 +72,7 @@ procedure GetPOdjColors(podj: TPOdj; var fg: TColor; var bg: TColor);
 
 implementation
 
-uses ModelovyCas, timeHelper, DateUtils;
+uses TimeModel, timeHelper, DateUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -91,8 +91,8 @@ begin
 
   if (abs <> '') then
   begin
-    if (ModCas.used) then
-      Self.abs := ModCas.date + StrToTime(abs)
+    if (modelTime.used) then
+      Self.abs := modelTime.date + StrToTime(abs)
     else
       Self.abs := date() + StrToTime(abs);
 

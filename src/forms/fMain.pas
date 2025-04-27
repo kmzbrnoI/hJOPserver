@@ -536,7 +536,7 @@ var
 
 implementation
 
-uses fTester, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC, ownConvert,
+uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fAbout, version, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
   TechnologieRCS, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils,
@@ -545,7 +545,7 @@ uses fTester, fNastaveni_Casu, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
   fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkCrossing,
   fBlkSignal, fBlkRailway, BlockLinker, TrainDb, DataTrains, DataUsers, fUserEdit, UserDb,
-  fBlkTurnoutState, fBlkRailwayState, BlockRailway, ModelovyCas, fBlkLock,
+  fBlkTurnoutState, fBlkRailwayState, BlockRailway, TimeModel, fBlkLock,
   BlockLock, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
   fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
   AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB, fBlkCrossingState,
@@ -835,7 +835,7 @@ begin
     Self.A_SaveStavExecute(Self);
   end;
 
-  ModCas.started := false;
+  modelTime.started := false;
   Self.UpdateSystemButtons();
 
   if (F_Tester.Showing) then
@@ -1539,7 +1539,7 @@ begin
     AutostartUpdate();
     Blocks.Update();
     ShowDateTime();
-    ModCas.Update();
+    modelTime.Update();
     JCDb.Update();
     MultiJCDb.Update();
     Boosters.Update();
@@ -1565,12 +1565,12 @@ end;
 
 procedure TF_Main.P_Time_modelovyDblClick(Sender: TObject);
 begin
-  ModCas.started := not ModCas.started;
+  modelTime.started := not modelTime.started;
 end;
 
 procedure TF_Main.P_ZrychleniDblClick(Sender: TObject);
 begin
-  F_ModCasSet.OpenForm();
+  F_ModelTimeSet.OpenForm();
 end;
 
 procedure TF_Main.PM_Loco_DeleteClick(Sender: TObject);
@@ -2049,7 +2049,7 @@ begin
     ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), Self.E_configFilename.Text),
       TEncoding.UTF8);
     try
-      ModCas.SaveData(ini);
+      modelTime.SaveData(ini);
       ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.PanelStr());
       ini.WriteBool('RCS', 'ShowOnlyActive', Self.CHB_RCS_Show_Only_Active.Checked);
       ini.UpdateFile();
@@ -2803,7 +2803,7 @@ begin
   Self.PC_1.ActivePage := TS_Technologie;
 
   PanelServer.GUIInitTable();
-  ModCas.UpdateGUIColors();
+  modelTime.UpdateGUIColors();
   Self.FillGlobalConfig();
 
   Self.Visible := true;

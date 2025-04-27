@@ -165,7 +165,7 @@ var
 implementation
 
 uses fMain, BlockTrack, BlockTurnout, BlockSignal, AreaDb, BlockLinker,
-  BlockCrossing, Logging, ModelovyCas, TrainDb, TechnologieTrakce, Config,
+  BlockCrossing, Logging, TimeModel, TrainDb, TechnologieTrakce, Config,
   BlockLock, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
   UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks, BlockDb,
   BlockDisconnector, BlockIO, ownConvert, THVDatabase, BlockPst, TCPServerPT;
@@ -632,7 +632,7 @@ begin
     F_main.LV_Clients.Items[orRef.index].SubItems[_LV_CLIENTS_COL_APP] := orRef.client_name;
 
     PanelServer.GUIQueueLineToRefresh(orRef.index);
-    ModCas.SendTimeToPanel(AContext);
+    modelTime.SendTimeToPanel(AContext);
 
     if (TrakceI.TrackStatusSafe() = tsOn) then
       Self.SendLn(AContext, '-;DCC;GO')
@@ -770,7 +770,7 @@ begin
   end // if parsed[2] = 'UPO'
 
   else if (parsed[1] = 'MOD-CAS') then
-    ModCas.Parse(parsed)
+    modelTime.Parse(parsed)
 
   else if (parsed[1] = 'DCC') then
   begin

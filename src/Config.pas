@@ -68,7 +68,7 @@ implementation
 
 uses fSplash, fAdminForm, GetSystems, Diagnostics, fMain, ownConvert,
   AreaDb, BlockDb, BoosterDb, THVDatabase,
-  TCPServerPT, Logging, TCPServerPanel, TrainDb, UserDb, ModelovyCas, TMultiJCDatabase,
+  TCPServerPT, Logging, TCPServerPanel, TrainDb, UserDb, TimeModel, TMultiJCDatabase,
   DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce, fTester,
   TechnologieTrakce, TJCDatabase;
 
@@ -371,7 +371,7 @@ begin
       F_Main.autostart.state := asEnabled;
     Self.scale := ini.ReadInteger('SystemCfg', 'scale', 120);
 
-    ModCas.LoadData(ini);
+    modelTime.LoadData(ini);
     FuncNames.Clear();
     FuncNames.Add(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
     F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
@@ -437,7 +437,7 @@ begin
 
   try
     PanelServer.SaveConfig(ini);
-    ModCas.SaveData(ini);
+    modelTime.SaveData(ini);
     UDPdisc.SaveConfig(ini);
     PtServer.SaveConfig(ini);
 

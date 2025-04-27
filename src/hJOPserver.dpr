@@ -13,7 +13,7 @@ uses
   libPreload in 'libPreload.pas',
   fTester in 'forms\fTester.pas' {F_Tester},
   fMain in 'forms\fMain.pas' {F_Main},
-  fNastaveni_Casu in 'forms\fNastaveni_Casu.pas' {F_ModCasSet},
+  fModelTimeSet in 'forms\fModelTimeSet.pas' {F_ModelTimeSet},
   fRegulator in 'hv\forms\fRegulator.pas' {F_DigiReg},
   fSplash in 'forms\fSplash.pas' {F_splash},
   fAbout in 'forms\fAbout.pas' {F_About},
@@ -72,7 +72,7 @@ uses
   AreaStack in 'areas\AreaStack.pas',
   UPO in 'jc\UPO.pas',
   fBlkRailwayState in 'blocks\forms\state\fBlkRailwayState.pas' {F_BlkRailwayState},
-  ModelovyCas in 'ModelovyCas.pas',
+  timeModel in 'timeModel.pas',
   fBlkSignalEvent in 'blocks\forms\data\fBlkSignalEvent.pas' {F_BlkSignalEvent},
   CloseTabSheet in 'helpers\CloseTabSheet.pas',
   BlockLock in 'blocks\BlockLock.pas',
@@ -162,11 +162,12 @@ uses
   ConfSeq in 'ConfSeq.pas',
   fBlkCrossingState in 'blocks\forms\state\fBlkCrossingState.pas' {F_BlkCrossingState},
   fBlkSignalState in 'blocks\forms\state\fBlkSignalState.pas' {F_BlkSignalState},
-  PTEndpointStatus in 'pt\PTEndpointStatus.pas',
+  PTEndpointTime in 'pt\PTEndpointTime.pas',
   colorHelper in 'helpers\colorHelper.pas',
   BlockCrossingPositive in 'blocks\BlockCrossingPositive.pas',
   BlockProxy in 'blocks\BlockProxy.pas',
-  ownGuiUtils in 'helpers\ownGuiUtils.pas';
+  ownGuiUtils in 'helpers\ownGuiUtils.pas',
+  PTEndpointStatus in 'pt\PTEndpointStatus.pas';
 
 {$R *.res}
 
@@ -222,7 +223,7 @@ uses
   Application.CreateForm(TF_BlkLock, F_BlkLock);
   Application.CreateForm(TF_BlkDisconnector, F_BlkDisconnector);
   Application.CreateForm(TF_HVEdit, F_HVEdit);
-  Application.CreateForm(TF_ModCasSet, F_ModCasSet);
+  Application.CreateForm(TF_ModelTimeSet, F_ModelTimeSet);
   Application.CreateForm(TF_About, F_About);
 
   LogInit();
