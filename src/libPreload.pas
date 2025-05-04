@@ -15,7 +15,7 @@ uses Generics.Collections, SysUtils, IniFiles, Classes, Windows;
 type
   TLibPreload = class
   private
-    preloaded: TList<Cardinal>;
+    preloaded: TList<NativeUInt>;
   public
     constructor Create();
     destructor Destroy(); override;
@@ -33,7 +33,7 @@ uses Logging;
 constructor TLibPreload.Create();
 begin
   inherited;
-  Self.preloaded := TList<Cardinal>.Create();
+  Self.preloaded := TList<NativeUInt>.Create();
 end;
 
 destructor TLibPreload.Destroy();
@@ -44,15 +44,14 @@ begin
 end;
 
 procedure TLibPreload.Unload();
-var i: Integer;
 begin
-  for i := Self.preloaded.Count - 1 downto 0 do
+  for var i: Integer := Self.preloaded.Count - 1 downto 0 do
     FreeLibrary(Self.preloaded[i]);
   Self.preloaded.Clear();
 end;
 
 procedure TLibPreload.Preload(path: string);
-var handle: Cardinal;
+var handle: NativeUInt;
 begin
   handle := LoadLibrary(PChar(path));
   if (handle = 0) then
