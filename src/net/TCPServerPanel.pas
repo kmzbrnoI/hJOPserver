@@ -59,8 +59,6 @@ type
     clients: array [0 .. _MAX_CLIENTS - 1] of TPanelClient;
     tcpServer: TIdTCPServer;
     data: string; // prijata data v plain-text forme
-    mBindPort: Word;
-    mBindIP: string;
     DCCStopped: TIdContext; // tady je ulozeno ID spojeni, ktere zazadalo o CentralStop
     // vsechny panely maji standartne moznost vypnout DCC
     // pokud to udela nejaky panel, ma moznost DCC zapnout jen tento panel
