@@ -204,10 +204,6 @@ begin
   end;
 
   Self.funcsVyznamReq := false;
-
-  F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_MENU] := '';
-  F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_STIT] := '';
-  F_Main.LV_Clients.Items[Self.index].SubItems[_LV_CLIENTS_COL_RIZ] := '';
 end;
 
 procedure TPanelConnData.ResetTrains();

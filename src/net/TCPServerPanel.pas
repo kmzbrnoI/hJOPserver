@@ -59,7 +59,7 @@ type
     clients: array [0 .. _MAX_CLIENTS - 1] of TPanelClient;
     tcpServer: TIdTCPServer;
     data: string; // prijata data v plain-text forme
-    DCCStopped: TIdContext; // tady je ulozeno ID spojeni, ktere zazadalo o CentralStop
+    m_DCCStopped: TIdContext; // tady je ulozeno ID spojeni, ktere zazadalo o CentralStop
     // vsechny panely maji standartne moznost vypnout DCC
     // pokud to udela nejaky panel, ma moznost DCC zapnout jen tento panel
     // pokud vypne DCC nekdo ze serveru, nebo z ovladace, zadny klient nema moznost ho zapnout
@@ -82,6 +82,9 @@ type
     procedure CheckPing(Sender: TObject);
     procedure ProcessReceivedMessages();
     procedure OnReceiveTimerTick(Sender: TObject);
+    procedure SetDCCStopped(who: TIdContext);
+
+    property DCCStopped: TIdContext read m_DCCStopped write SetDCCStopped;
 
   public
 
@@ -209,7 +212,7 @@ begin
   Self.receiveTimer.Interval := _RECEIVE_CHECK_PERIOD_MS;
   Self.receiveTimer.OnTimer := Self.OnReceiveTimerTick;
 
-  Self.DCCStopped := nil;
+  Self.m_DCCStopped := nil;
 end;
 
 destructor TPanelServer.Destroy();
@@ -480,7 +483,7 @@ begin
   // odpojil se klient, ktery zpusobil stop dcc -> dcc muze zapnout kdokoliv
   if (Self.DCCStopped = AContext) then
   begin
-    Self.DCCStopped := nil;
+    Self.m_DCCStopped := nil; // do not assign to DCCStopped, because AContext is already destroyed
     Self.BroadcastData('-;DCC;STOP');
   end;
 
@@ -657,8 +660,6 @@ begin
     if (parsed.Count >= 3) then
       note := parsed[2];
 
-    F_Main.LV_Clients.items[orRef.index].SubItems[_LV_CLIENTS_COL_STIT] := '';
-
     if (orRef.Note = nil) then
       Exit();
     case (orRef.Note.typ) of
@@ -688,8 +689,6 @@ begin
     if (parsed.Count >= 3) then
       lockout := parsed[2];
 
-    F_Main.LV_Clients.items[orRef.index].SubItems[_LV_CLIENTS_COL_STIT] := '';
-
     if (orRef.lockout = nil) then
       Exit();
     case (orRef.lockout.typ) of
@@ -706,7 +705,6 @@ begin
     if (not Assigned(orRef.potvr)) then
       Exit();
 
-    F_Main.LV_Clients.items[orRef.index].SubItems[_LV_CLIENTS_COL_RIZ] := '';
     orRef.potvr(AContext, (parsed[2] = '2'));
     orRef.potvr := nil;
   end
@@ -717,7 +715,6 @@ begin
       Exit();
     var blk: TBlk := orRef.Menu;
     orRef.Menu := nil; // musi byt v tomto poradi - pri volani menu do bloku uz musi byt menu = nil
-    F_Main.LV_Clients.items[orRef.index].SubItems[_LV_CLIENTS_COL_MENU] := '';
 
     var rights := orRef.menu_or.PanelDbRights(AContext);
     if (not IsReadable(rights)) then
@@ -1020,7 +1017,6 @@ begin
   try
     (AContext.data as TPanelConnData).Note := Blk;
     Self.SendLn(AContext, '-;STIT;{' + Blk.name + '};{' + note + '};');
-    F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_STIT] := Blk.name;
   except
 
   end;
@@ -1048,7 +1044,6 @@ begin
   try
     (AContext.data as TPanelConnData).lockout := Blk;
     Self.SendLn(AContext, '-;VYL;{' + Blk.name + '};{' + lockout + '};');
-    F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_STIT] := Blk.name;
   except
 
   end;
@@ -1077,7 +1072,6 @@ begin
     (AContext.data as TPanelConnData).Menu := Blk;
     (AContext.data as TPanelConnData).menu_or := Area;
     Self.SendLn(AContext, '-;MENU;{' + Menu + '};');
-    F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_MENU] := Blk.name;
   except
 
   end;
@@ -1128,7 +1122,6 @@ begin
   try
     (AContext.data as TPanelConnData).potvr := callback;
     Self.SendLn(AContext, '-;' + UpperCase(mode) + ';{' + areaName + '};{' + event + '};' + str);
-    F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_RIZ] := event;
   except
 
   end;
@@ -1148,7 +1141,6 @@ procedure TPanelServer.CSWindowClose(AContext: TIdContext; mode: string; msg: st
 begin
   try
     (AContext.data as TPanelConnData).potvr := nil;
-    F_Main.LV_Clients.items[(AContext.data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_RIZ] := '';
 
     if (msg <> '') then
       Self.SendLn(AContext, '-;' + UpperCase(mode) + '-CLOSE;' + msg)
@@ -1411,26 +1403,6 @@ begin
     F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_OR_NEXT] := LeftStr(str, Length(str) - 2);
   end;
 
-  if (orRef.Menu <> nil) then
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_MENU] := orRef.Menu.name
-  else
-  begin
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_MENU] := '';
-  end;
-
-  if (orRef.lockout <> nil) then
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_STIT] := orRef.lockout.name
-  else
-  begin
-    if (orRef.Note <> nil) then
-      F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_STIT] := orRef.Note.name
-    else
-      F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_STIT] := '';
-  end;
-
-  if (not Assigned(orRef.potvr)) then
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_RIZ] := '';
-
   if (orRef.regulator) then
   begin
     var str: string;
@@ -1456,6 +1428,8 @@ begin
   for var area: TArea in TPanelConnData(Self.clients[index].connection.data).st_hlaseni do
     announcement := announcement + area.ShortName + ', ';
   F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_SH] := LeftStr(announcement, Length(announcement) - 2);
+
+  F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_DCC] := IfThen(Self.DCCStopped = Self.clients[index].connection, 'ano', '');
 
   F_Main.LV_Clients.UpdateItems(index, index);
 end;
@@ -1677,6 +1651,27 @@ begin
   Result := Self.GetBind(ip);
   if (Result = nil) then
     Result := Self.GetBind('0.0.0.0');
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TPanelServer.SetDCCStopped(who: TIdContext);
+begin
+  if (Self.m_DCCStopped = who) then
+    Exit();
+
+  if (Self.m_DCCStopped <> nil) then
+  begin
+    const i = TPanelConnData(Self.m_DCCStopped.data).index;
+    F_Main.LV_Clients.items[i].SubItems[_LV_CLIENTS_COL_DCC] := '';
+  end;
+  if (who <> nil) then
+  begin
+    const i = TPanelConnData(who.data).index;
+    F_Main.LV_Clients.items[i].SubItems[_LV_CLIENTS_COL_DCC] := 'ano';
+  end;
+
+  Self.m_DCCStopped := who;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

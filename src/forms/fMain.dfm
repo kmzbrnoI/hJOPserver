@@ -3504,7 +3504,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_VC
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3561,19 +3561,14 @@ object F_Main: TF_Main
               Caption = 'Dal'#353#237' O'#344
             end
             item
-              Caption = 'Menu'
-            end
-            item
-              Caption = #352't'#237'tek / v'#253'luka'
-            end
-            item
-              Caption = 'Potvrzovac'#237' sekvence'
-            end
-            item
               Caption = 'Autorizovan'#253' regul'#225'tor'
             end
             item
               Caption = 'Stani'#269'n'#237' hl'#225#353'en'#237
+            end
+            item
+              Alignment = taCenter
+              Caption = 'Zastavil DCC'
             end>
           DoubleBuffered = True
           GridLines = True
