@@ -296,7 +296,7 @@ implementation
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSignal,
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
-  predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO, TCPAreasRef,
+  predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO, PanelConnData,
   TrainSpeed, ConfSeq, PTUtils, timeHelper, Config, colorHelper;
 
 constructor TBlkSignal.Create(index: Integer);

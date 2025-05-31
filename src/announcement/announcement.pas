@@ -55,7 +55,7 @@ type
 
 implementation
 
-uses TCPServerPanel, Area, TCPAreasRef;
+uses TCPServerPanel, Area, PanelConnData;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

@@ -303,7 +303,7 @@ implementation
 uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, THVDatabase, Math,
   Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO,
-  announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, TCPAreasRef, ConfSeq,
+  announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, PanelConnData, ConfSeq,
   Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase, BlockPst, IfThenElse,
   colorHelper, Config;
 

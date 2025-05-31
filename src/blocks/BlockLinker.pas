@@ -113,7 +113,7 @@ type
 implementation
 
 uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert, TrainDb,
-  TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack, TCPAreasRef,
+  TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack,
   Logging, ConfSeq, TechnologieJC, colorHelper, IfThenElse;
 
 constructor TBlkLinker.Create(index: Integer);

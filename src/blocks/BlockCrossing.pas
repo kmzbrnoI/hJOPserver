@@ -219,7 +219,7 @@ type
 implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCS, UPO,
-  Graphics, TCPAreasRef, Diagnostics, appEv, ownConvert, Config, timeHelper,
+  Graphics, PanelConnData, Diagnostics, appEv, ownConvert, Config, timeHelper,
   BlockTrack, BlockTrackRef, colorHelper;
 
 constructor TBlkCrossing.Create(index: Integer);

@@ -61,8 +61,7 @@ var
 implementation
 
 uses Logging, GetSystems, BlockDb, BlockTrack, Area, TCPServerPanel,
-      DataMultiJC, AreaStack, AreaDb, TechnologieJC, TJCDatabase, appEv,
-      TCPAreasRef;
+      DataMultiJC, AreaStack, AreaDb, TechnologieJC, TJCDatabase, appEv;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TRIDA TMultiJCDb

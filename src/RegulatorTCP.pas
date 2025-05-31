@@ -48,7 +48,7 @@ var
 
 implementation
 
-uses UserDb, user, TCPServerPanel, Trakce, THVDatabase, TrainDb, TCPAreasRef, Logging,
+uses UserDb, user, TCPServerPanel, Trakce, THVDatabase, TrainDb, PanelConnData, Logging,
   fRegulator, fMain, Area, AreaDb, TechnologieTrakce, ownConvert;
 
 /// /////////////////////////////////////////////////////////////////////////////

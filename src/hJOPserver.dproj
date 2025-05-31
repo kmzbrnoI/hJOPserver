@@ -340,7 +340,7 @@
         <DCCReference Include="helpers\timeHelper.pas"/>
         <DCCReference Include="jc\TechnologieAB.pas"/>
         <DCCReference Include="tables\DataAB.pas"/>
-        <DCCReference Include="areas\TCPAreasRef.pas"/>
+        <DCCReference Include="net\PanelConnData.pas"/>
         <DCCReference Include="blocks\forms\data\fBlkSignal.pas">
             <Form>F_BlkSignal</Form>
         </DCCReference>

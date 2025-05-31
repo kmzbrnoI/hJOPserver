@@ -128,7 +128,7 @@ uses
   timeHelper in 'helpers\timeHelper.pas',
   TechnologieAB in 'jc\TechnologieAB.pas',
   DataAB in 'tables\DataAB.pas',
-  TCPAreasRef in 'areas\TCPAreasRef.pas',
+  PanelConnData in 'net\PanelConnData.pas',
   fBlkSignal in 'blocks\forms\data\fBlkSignal.pas' {F_BlkSignal},
   Trakce in 'trakce\Trakce.pas',
   TrakceErrors in 'trakce\TrakceErrors.pas',

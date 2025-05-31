@@ -286,7 +286,7 @@ implementation
 
 uses ownStrUtils, AreaDb, THVDatabase, TrainDb, DataHV, fRegulator, BlockDb,
   RegulatorTCP, fMain, PTUtils, TCPServerPanel, appEv, Logging, TechnologieTrakce,
-  ownConvert, BlockSignal, IfThenElse, TCPAreasRef, Config;
+  ownConvert, BlockSignal, IfThenElse, PanelConnData, Config;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

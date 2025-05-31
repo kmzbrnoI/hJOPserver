@@ -1,4 +1,4 @@
-﻿unit TCPAreasRef;
+﻿unit PanelConnData;
 
 interface
 

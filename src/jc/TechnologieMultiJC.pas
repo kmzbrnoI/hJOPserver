@@ -92,7 +92,7 @@ type
 
 implementation
 
-uses TJCDatabase, Area, ownConvert, TCPAreasRef, AreaStack, UPO,
+uses TJCDatabase, Area, ownConvert, AreaStack, UPO, PanelConnData,
   TCPServerPanel, ConfSeq, appEv, timeHelper;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -98,7 +98,7 @@ implementation
 
 uses Logging, GetSystems, BlockTrack, Area, TCPServerPanel, BlockRailway,
   DataJC, AreaStack, AreaDb, TMultiJCDatabase, appEv, BlockTurnout,
-  BlockRailwayTrack, TCPAreasRef, BlockPst;
+  BlockRailwayTrack, PanelConnData, BlockPst;
 
 /// /////////////////////////////////////////////////////////////////////////////
 // TRIDA TJCDb

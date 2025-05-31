@@ -208,7 +208,7 @@ uses THVDatabase, ownStrUtils, TrainDb, BlockTrack, appEv,
       DataHV, AreaDb, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
       fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
       TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
-      TCPAreasRef, JCBarriers, Config;
+      PanelConnData, JCBarriers, Config;
 
 ////////////////////////////////////////////////////////////////////////////////
 

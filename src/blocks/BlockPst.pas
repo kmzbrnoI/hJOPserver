@@ -155,7 +155,7 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
-  RCSErrors, RCS, TCPAreasRef, BlockSignal, Logging, BlockDisconnector, ConfSeq,
+  RCSErrors, RCS, PanelConnData, BlockSignal, Logging, BlockDisconnector, ConfSeq,
   TechnologieJC, colorHelper, IfThenElse;
 
 constructor TBlkPst.Create(index: Integer);

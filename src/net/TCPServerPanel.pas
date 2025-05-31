@@ -10,7 +10,7 @@ interface
 
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs, IniFiles,
   Classes, StrUtils, Graphics, Windows, Area, ExtCtrls, ConfSeq,
-  IdContext, Block, ComCtrls, IdSync, UPO, TCPAreasRef, IdSocketHandle,
+  IdContext, Block, ComCtrls, IdSync, UPO, PanelConnData, IdSocketHandle,
   User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
 
 const

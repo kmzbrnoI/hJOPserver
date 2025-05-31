@@ -296,7 +296,7 @@ type
 implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
-  TCPServerPanel, BlockLock, PTUtils, changeEvent, TCPAreasRef, ownConvert,
+  TCPServerPanel, BlockLock, PTUtils, changeEvent, PanelConnData, ownConvert,
   IfThenElse, RCSErrors, BlockPst, JCBarriers, Config, TechnologieJC, colorHelper;
 
 constructor TBlkTurnout.Create(index: Integer);
