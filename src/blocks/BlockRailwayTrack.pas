@@ -201,7 +201,7 @@ type
       params: string = ''); override;
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
 
-    procedure CreateNavRefs(); // navestidlum autobloku nastavi UsekPred a smer
+    procedure CreateSignalRefs(); // navestidlum v trati nastavi UsekPred a smer
     procedure RemoveTURefs(); // zrusi UsekPred navetidlum autobloku
 
     // tato metoda ma smysl pouze pro krajni TU trati a resi radne odstraneni obsahu useku z trati
@@ -1120,7 +1120,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRT.CreateNavRefs();
+procedure TBlkRT.CreateSignalRefs();
 begin
   begin
     var signal: TBlkSignal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalLid);
@@ -1128,7 +1128,10 @@ begin
     begin
       signal.trackId := Self.lRT.id;
       signal.direction := THVSite.odd;
-      signal.autoblok := true;
+      if ((Self.railway <> nil) and (TBlkRailway(Self.railway).signals = TRailwaySignals.hradlo)) then
+        signal.inRailway := rwHradlo
+      else
+        signal.inRailway := rwAutoblok;
     end;
   end;
 
@@ -1138,7 +1141,10 @@ begin
     begin
       signal.trackId := Self.sRT.id;
       signal.direction := THVSite.even;
-      signal.autoblok := true;
+      if ((Self.railway <> nil) and (TBlkRailway(Self.railway).signals = TRailwaySignals.hradlo)) then
+        signal.inRailway := rwHradlo
+      else
+        signal.inRailway := rwAutoblok;
     end;
   end;
 end;
@@ -1219,7 +1225,7 @@ begin
 
   // nastavime kryci navestidlo
   if ((Self.signalCover <> nil) and (not TBlkSignal(Self.signalCover).ZAM) and
-    (TBlkSignal(Self.signalCover).signal >= ncStuj)) then
+    (TBlkSignal(Self.signalCover).signal >= ncStuj) and (TBlkSignal(Self.signalCover).targetSignal <> ncPrivol)) then
   begin
     if (not Self.sectReady) then
     begin

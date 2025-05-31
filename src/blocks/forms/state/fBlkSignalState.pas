@@ -28,6 +28,7 @@ type
     LV_RNZ: TListView;
     B_Apply: TButton;
     B_Refresh: TButton;
+    CHB_Hradlo: TCheckBox;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
@@ -114,7 +115,8 @@ begin
   else
     Self.L_PN_Start_Time.Caption := '-';
 
-  Self.CHB_Autoblok.Checked := Self.signal.autoblok;
+  Self.CHB_Autoblok.Checked := (Self.signal.inRailway = rwAutoblok);
+  Self.CHB_Hradlo.Checked := (Self.signal.inRailway = rwHradlo);
   Self.CHB_Falling.Checked := state.falling;
 
   Self.LV_RNZ.Clear();

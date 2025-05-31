@@ -854,7 +854,7 @@ begin
   // 3) inicializujeme navaznosti navestidel
 
   for blk in Self.tracks do
-    blk.CreateNavRefs();
+    blk.CreateSignalRefs();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

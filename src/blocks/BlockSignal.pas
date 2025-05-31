@@ -33,6 +33,11 @@ type
     ncOpakVystraha40 = 15,
     ncOpak40Ocek40 = 16
   );
+  TBlkSignalInRailway = (
+    rwNone = 0,
+    rwAutoblok = 1,
+    rwHradlo = 2
+  );
 
   ENoEvents = class(Exception);
 
@@ -94,7 +99,7 @@ type
 
     privolStart: TDateTime; // start privolavaci navesti (privolavacka sviti pouze omezeny cas a pak se vypne)
     privolTimerId: Integer; // id timeru ukonceni privolavacky v panelu, ze ktreho byla JC postavena
-    autoblok: Boolean;
+    inRailway: TBlkSignalInRailway;
 
     toRnz: TDictionary<Integer, Cardinal>; // seznam bloku k RNZ spolu s pocty ruseni, ktere je treba udelat
     changeCallbackOk, changeCallbackErr: TNotifyEvent; // notifikace o nastaveni polohy navestidla
@@ -112,7 +117,7 @@ type
   TBlkSignal = class(TBlk)
   const
     _def_signal_state: TBlkSignalState = (signal: ncDisabled; selected: none; beginAB: false; targetSignal: ncDisabled;
-      ABJC: nil; ZAM: false; dnJC: nil; privolJC: nil; privolTimerId: 0; autoblok: false;
+      ABJC: nil; ZAM: false; dnJC: nil; privolJC: nil; privolTimerId: 0; inRailway: rwNone;
       changeCallbackOk: nil; changeCallbackErr: nil; dnArea: nil; );
 
     // doba sviceni privolavaci navesti
@@ -162,6 +167,9 @@ type
     procedure MenuAdminRadOffClick(SenderPnl: TIDContext; SenderOR: TObject);
 
     procedure DNCSCallback(Sender: TIDContext; success: Boolean);
+    procedure PNStartMain(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure PNStartHradlo(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure PNHradloConfSeq(Sender: TIdContext; success: Boolean);
 
     procedure UpdateFalling();
     procedure UpdatePrivol();
@@ -256,7 +264,7 @@ type
     property dnJC: TJC read m_state.dnJC write m_state.dnJC;
     property privol: TJC read m_state.privolJC write m_state.privolJC;
     property track: TBlk read GetTrackId;
-    property autoblok: Boolean read m_state.autoblok write m_state.autoblok;
+    property inRailway: TBlkSignalInRailway read m_state.inRailway write m_state.inRailway;
     property canRNZ: Boolean read CanIDoRNZ;
     property changing: Boolean read IsChanging;
     property enabled: Boolean read IsEnabled;
@@ -682,7 +690,7 @@ begin
       Area.pnBlkCnt := Area.pnBlkCnt + 1;
   end;
 
-  if (Self.autoblok) then
+  if (Self.inRailway <> rwNone) then
   begin
     if (TBlkRT(Self.track).nextRT <> nil) then
       TBlkRT(Self.track).nextRT.Change();
@@ -808,7 +816,7 @@ begin
     Blocks.TrainPrediction(Self);
   end;
 
-  if ((Self.autoblok) and (not ZAM) and (Self.track <> nil) and (TBlkRT(Self.track).railway <> nil)) then
+  if ((Self.inRailway <> rwNone) and (not ZAM) and (Self.track <> nil) and (TBlkRT(Self.track).railway <> nil)) then
     TBlkRailway(TBlkRT(Self.track).railway).ChangeTracks();
 
   Self.Change();
@@ -948,9 +956,23 @@ end;
 
 procedure TBlkSignal.MenuPNStartClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then
+  if ((Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) or (Self.IsTargetGoSignal())) then
     Exit();
 
+  if (Self.inRailway = rwHradlo) then
+    Self.PNStartHradlo(SenderPnl, SenderOR)
+  else if (Self.inRailway = rwNone) then
+    Self.PNStartMain(SenderPnl, SenderOR);
+end;
+
+procedure TBlkSignal.MenuPNStopClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  Self.selected := TBlkSignalSelection.none;
+  TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
+end;
+
+procedure TBlkSignal.PNStartMain(SenderPnl: TIdContext; SenderOR: TObject);
+begin
   TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
   TPanelConnData(SenderPnl.Data).pathBlocks.Add(Self);
   Self.selected := TBlkSignalSelection.NC;
@@ -959,10 +981,10 @@ begin
     Area.ORDKClickServer(Self.PNDKClick);
 end;
 
-procedure TBlkSignal.MenuPNStopClick(SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkSignal.PNStartHradlo(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.selected := TBlkSignalSelection.none;
-  TPanelConnData(SenderPnl.Data).ClearAndHidePathBlocks();
+  PanelServer.ConfirmationSequence(SenderPnl, Self.PNHradloConfSeq, SenderOR as TArea,
+    'Zapnutí přivolávací návěsti', GetObjsList(Self), nil);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1092,7 +1114,7 @@ begin
           (Self.signal <> ncPrivol) and (JCDb.IsAnyVCAvailable(Self) and (Self.enabled)) and (not Self.PstIs())) or
           (TArea(SenderOR).stack.mode = VZ)) and (JCDb.IsAnyVC(Self))) then
         begin
-          if ((not Self.m_settings.locked) and (not Self.autoblok)) then
+          if ((not Self.m_settings.locked) and (Self.inRailway = rwNone)) then
             Self.MenuVCStartClick(SenderPnl, SenderOR);
         end
         else
@@ -1105,7 +1127,7 @@ begin
           (Self.signal <> ncPrivol) and (JCDb.IsAnyPCAvailable(Self)) and (Self.enabled) and (not Self.PstIs())) or
           ((SenderOR as TArea).stack.mode = VZ)) and (JCDb.IsAnyPC(Self))) then
         begin
-          if ((not Self.m_settings.locked) and (not Self.autoblok)) then
+          if ((not Self.m_settings.locked) and (Self.inRailway = rwNone)) then
             Self.MenuPCStartClick(SenderPnl, SenderOR);
         end
         else
@@ -1177,7 +1199,7 @@ begin
     Exit();
 
   if (((((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1)) and (JCDb.FindJCActivating(Self.id) = nil) and
-    (Self.signal <> ncPrivol) and (not Self.ab)) or ((SenderOR as TArea).stack.mode = VZ)) and (not Self.autoblok)) then
+        (Self.signal <> ncPrivol) and (not Self.ab)) or ((SenderOR as TArea).stack.mode = VZ)) and (Self.inRailway <> rwAutoblok)) then
   begin
     case (Self.m_state.selected) of
       TBlkSignalSelection.VC:
@@ -1203,7 +1225,8 @@ begin
           if (Self.dnJC = nil) then
             Result := Result + 'AB>,';
         end;
-        Result := Result + '!PN>,';
+        if (not Self.IsTargetGoSignal()) then // hradlo
+          Result := Result + '!PN>,';
       end;
       if (JCDb.IsAnyPC(Self)) then
       begin
@@ -1214,7 +1237,8 @@ begin
       end;
     end;
 
-    Result := Result + '-,';
+    if (not Result.EndsWith('-,')) then
+      Result := Result + '-,';
   end;
 
   if (Self.CanSTUJ()) then
@@ -1397,10 +1421,10 @@ begin
       Exit();
 
     // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontextu zmeny smeru soupravy)
-    if ((Self.autoblok) and (TBlkRailway(TBlkRT(track).railway).direction = TRailwayDirection.AtoB) and
+    if ((Self.inRailway <> rwNone) and (TBlkRailway(TBlkRT(track).railway).direction = TRailwayDirection.AtoB) and
       (Self.direction = THVSite.even)) then
       Exit();
-    if ((Self.autoblok) and (TBlkRailway(TBlkRT(track).railway).direction = TRailwayDirection.BtoA) and
+    if ((Self.inRailway <> rwNone) and (TBlkRailway(TBlkRT(track).railway).direction = TRailwayDirection.BtoA) and
       (Self.direction = THVSite.odd)) then
       Exit();
   end;
@@ -1741,6 +1765,15 @@ begin
   end;
 end;
 
+procedure TBlkSignal.PNHradloConfSeq(Sender: TIdContext; success: Boolean);
+begin
+  if (success) then
+  begin
+    Self.signal := ncPrivol;
+    Self.Log('Rozsvícena PN na hradle', TLogLevel.llInfo, lsJC);
+  end;
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSignal.RNZPotvrSekv(Sender: TIdContext; success: Boolean);
@@ -1793,7 +1826,7 @@ begin
     Exit();
   Self.m_spnl.trackId := new_id;
   if (new_id = -1) then
-    Self.autoblok := false;
+    Self.inRailway := rwNone;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1828,7 +1861,8 @@ end;
 
 function TBlkSignal.CanSTUJ(): Boolean;
 begin
-  Result := (Self.targetSignal <> ncStuj) and (Self.targetSignal <> ncZhasnuto) and (not Self.autoblok);
+  Result := (Self.targetSignal <> ncStuj) and (Self.targetSignal <> ncZhasnuto) and
+    ((Self.inRailway = rwNone) or ((Self.inRailway = rwHradlo) and (Self.targetSignal = ncPrivol)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1907,7 +1941,7 @@ begin
       if (Self.targetSignal <> ncPrivol) then
       begin
         if ((Self.m_spnl.symbolType = TBlkSignalSymbol.main) and (Self.targetSignal = ncStuj) and
-            (JCDb.FindJCActivating(Self.id) = nil) and (not Self.autoblok) and ((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1))) then
+            (JCDb.FindJCActivating(Self.id) = nil) and (Self.inRailway <> rwAutoblok) and ((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1))) then
         begin
           Self.signal := ncPrivol;
         end else

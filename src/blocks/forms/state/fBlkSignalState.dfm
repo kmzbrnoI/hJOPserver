@@ -214,4 +214,13 @@ object F_BlkSignalState: TF_BlkSignalState
     TabOrder = 8
     OnClick = B_RefreshClick
   end
+  object CHB_Hradlo: TCheckBox
+    Left = 8
+    Top = 230
+    Width = 65
+    Height = 17
+    Caption = 'Hradlo'
+    Enabled = False
+    TabOrder = 9
+  end
 end
