@@ -3,7 +3,7 @@
 interface
 
 uses Generics.Collections, Area, Block, Classes, Train, User,
-  THnaciVozidlo, IdContext, SysUtils;
+  THnaciVozidlo, IdContext, SysUtils, TechnologieJC;
 
 type
   TCSCallback = procedure(Sender: TIdContext; success: Boolean) of object;
@@ -54,6 +54,8 @@ type
     // 0. blok je vzdy navestidlo, nasleduji variantni body, posledni blok je posledni usek JC
     pathBlocks: TList<TBlk>;
 
+    lastActivatedPath: TJC;
+
     train_new_usek_index: Integer; // index nove vytvarene soupravy na useku (-1 pokud neni vytvarena)
     train_edit: TTrain; // souprava, kterou panel edituje
     train_usek: TObject; // usek, na kterem panel edituje soupravu (TBlkUsek)
@@ -82,8 +84,7 @@ type
     constructor Create(index: Integer);
     destructor Destroy(); override;
 
-    procedure Escape(AContext: TIdContext); // volano pri stisku Escape v panelu
-    function Reset(weak: boolean = false): Boolean; // returns if handled
+    function Escape(AContext: TIdContext): Boolean; // volano pri stisku Escape v panelu
     procedure ResetTrains();
 
     class function ORPing(id: Cardinal; sent: TDateTime): TAreaPing;
@@ -108,19 +109,42 @@ uses fMain, TCPServerPanel, RegulatorTCP, BlockSignal, BlockTrack;
 constructor TPanelConnData.Create(index: Integer);
 begin
   inherited Create();
+
+  Self.areas := TList<TArea>.Create();
+  Self.protocol_version := '';
+  Self.client_name := '';
+  Self.note := nil;
+  Self.lockout := nil;
+  Self.potvr := nil;
+  Self.menu := nil;
+  Self.menu_or := nil;
+  Self.UPO_OK := nil;
+  Self.UPO_Esc := nil;
+  Self.UPO_ref := nil;
+  Self.index := index;
+  Self.funcsVyznamReq := False;
+  Self.maus := False;
   Self.pathBlocks := TList<TBlk>.Create();
+  Self.lastActivatedPath := nil;
+  Self.train_new_usek_index := -1;
+  Self.train_edit := nil;
+  Self.train_usek := nil;
+  Self.regulator := False;
+  Self.regulator_user := nil;
+  Self.regulator_zadost := nil;
   Self.regulator_loks := TList<THV>.Create();
   Self.st_hlaseni := TList<TArea>.Create();
+  Self.train_menu_index := -1;
   Self.soundDict := TDictionary<Integer, Cardinal>.Create();
-  Self.areas := TList<TArea>.Create();
-  Self.regulator_zadost := nil;
-  Self.index := index;
+  Self.podj_track := nil;
+  Self.podj_trainid := -1;
+
+  Self.ping_next_id := 0;
+  Self.ping_next_send := Now + EncodeTime(0, 0, 0, 500); // do not disturb device for first half a sec
   Self.ping_sent := TQueue<TAreaPing>.Create();
   Self.ping_received := TList<TTime>.Create();
-  Self.ping_next_send := Now + EncodeTime(0, 0, 0, 500); // do not disturb device for first half a sec
   Self.ping_received_next_index := 0;
   Self.ping_unreachable := false;
-  Self.Reset();
 end;
 
 destructor TPanelConnData.Destroy();
@@ -132,23 +156,15 @@ begin
   Self.soundDict.Free();
   Self.ping_sent.Free();
   Self.ping_received.Free();
+
   inherited;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TPanelConnData.Escape(AContext: TIdContext);
+function TPanelConnData.Escape(AContext: TIdContext): Boolean;
 begin
-  var handled := Self.Reset(true);
-
-  if (not handled) then
-    for var area: TArea in Self.areas do
-      area.PanelEscape(AContext);
-end;
-
-function TPanelConnData.Reset(weak: boolean = false): Boolean;
-begin
-  Result := false;
+  Result := false; // Result = handled
 
   if (Self.note <> nil) then
   begin
@@ -197,13 +213,17 @@ begin
     Result := true;
   end;
 
-  if (((not Result) or (not weak)) and (Self.pathBlocks.Count > 0)) then
+  if ((not Result) and (Self.pathBlocks.Count > 0)) then
   begin
     Self.DeleteAndHideLastPathBlock();
     Result := true;
   end;
 
   Self.funcsVyznamReq := false;
+
+  if (not Result) then
+    for var area: TArea in Self.areas do
+      area.PanelEscape(AContext);
 end;
 
 procedure TPanelConnData.ResetTrains();
