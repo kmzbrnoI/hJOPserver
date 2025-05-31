@@ -583,9 +583,9 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TPanelServer.ParseGlobal(AContext: TIdContext; parsed: TStrings);
-var orRef: TPanelConnData;
+var connData: TPanelConnData;
 begin
-  orRef := (AContext.data as TPanelConnData);
+  connData := (AContext.data as TPanelConnData);
 
   // najdeme klienta v databazi
   var clientIndex: Integer;
@@ -622,17 +622,17 @@ begin
     Self.SendLn(AContext, '-;HELLO;' + _PROTOCOL_VERSION);
 
     // oznamime verzi komunikacniho protokolu
-    orRef.protocol_version := parsed[2];
-    F_Main.LV_Clients.items[orRef.index].SubItems[_LV_CLIENTS_COL_PROTOCOL] := parsed[2];
+    connData.protocol_version := parsed[2];
+    F_Main.LV_Clients.items[connData.index].SubItems[_LV_CLIENTS_COL_PROTOCOL] := parsed[2];
 
     // jmeno klienta
     if (parsed.Count >= 4) then
-      orRef.client_name := parsed[3]
+      connData.client_name := parsed[3]
     else
-      orRef.client_name := '';
-    F_main.LV_Clients.Items[orRef.index].SubItems[_LV_CLIENTS_COL_APP] := orRef.client_name;
+      connData.client_name := '';
+    F_main.LV_Clients.Items[connData.index].SubItems[_LV_CLIENTS_COL_APP] := connData.client_name;
 
-    PanelServer.GUIQueueLineToRefresh(orRef.index);
+    PanelServer.GUIQueueLineToRefresh(connData.index);
     modelTime.SendTimeToPanel(AContext);
 
     if (TrakceI.TrackStatusSafe() = tsOn) then
@@ -652,7 +652,7 @@ begin
   if (parsed[1] = 'PONG') then
   begin
     if (parsed.Count >= 3) then
-      orRef.PongReceived(StrToInt(parsed[2]));
+      connData.PongReceived(StrToInt(parsed[2]));
 
   end else if (parsed[1] = 'STIT') then
   begin
@@ -660,27 +660,27 @@ begin
     if (parsed.Count >= 3) then
       note := parsed[2];
 
-    if (orRef.Note = nil) then
+    if (connData.Note = nil) then
       Exit();
-    case (orRef.Note.typ) of
+    case (connData.Note.typ) of
       btTrack, btRT:
-        (orRef.Note as TBlkTrack).Note := note;
+        (connData.Note as TBlkTrack).Note := note;
       btTurnout:
-        (orRef.Note as TBlkTurnout).Note := note;
+        (connData.Note as TBlkTurnout).Note := note;
       btLinker:
-        (orRef.Note as TBlkLinker).Note := note;
+        (connData.Note as TBlkLinker).Note := note;
       btCrossing:
-        (orRef.Note as TBlkCrossing).Note := note;
+        (connData.Note as TBlkCrossing).Note := note;
       btLock:
-        (orRef.Note as TBlkLock).Note := note;
+        (connData.Note as TBlkLock).Note := note;
       btDisconnector:
-        (orRef.Note as TBlkDisconnector).Note := note;
+        (connData.Note as TBlkDisconnector).Note := note;
       btIO:
-        (orRef.Note as TBlkIO).Note := note;
+        (connData.Note as TBlkIO).Note := note;
       btPst:
-        (orRef.note as TBlkPst).Note := note;
+        (connData.note as TBlkPst).Note := note;
     end; // case
-    orRef.Note := nil;
+    connData.Note := nil;
   end
 
   else if (parsed[1] = 'VYL') then
@@ -689,58 +689,58 @@ begin
     if (parsed.Count >= 3) then
       lockout := parsed[2];
 
-    if (orRef.lockout = nil) then
+    if (connData.lockout = nil) then
       Exit();
-    case (orRef.lockout.typ) of
+    case (connData.lockout.typ) of
       btTrack, btRT:
-        (orRef.lockout as TBlkTrack).SetLockout(AContext, lockout);
+        (connData.lockout as TBlkTrack).SetLockout(AContext, lockout);
       btTurnout:
-        (orRef.lockout as TBlkTurnout).SetLockout(AContext, lockout);
+        (connData.lockout as TBlkTurnout).SetLockout(AContext, lockout);
     end;
-    orRef.lockout := nil;
+    connData.lockout := nil;
   end
 
   else if ((parsed[1] = 'PS') or (parsed[1] = 'IS')) then
   begin
-    if (not Assigned(orRef.potvr)) then
+    if (not Assigned(connData.potvr)) then
       Exit();
 
-    orRef.potvr(AContext, (parsed[2] = '2'));
-    orRef.potvr := nil;
+    connData.potvr(AContext, (parsed[2] = '2'));
+    connData.potvr := nil;
   end
 
   else if (parsed[1] = 'MENUCLICK') then
   begin
-    if (orRef.Menu = nil) then
+    if (connData.Menu = nil) then
       Exit();
-    var blk: TBlk := orRef.Menu;
-    orRef.Menu := nil; // musi byt v tomto poradi - pri volani menu do bloku uz musi byt menu = nil
+    var blk: TBlk := connData.Menu;
+    connData.Menu := nil; // musi byt v tomto poradi - pri volani menu do bloku uz musi byt menu = nil
 
-    var rights := orRef.menu_or.PanelDbRights(AContext);
+    var rights := connData.menu_or.PanelDbRights(AContext);
     if (not IsReadable(rights)) then
     begin
       PanelServer.SendInfoMsg(AContext, TArea._COM_ACCESS_DENIED);
       Exit();
     end;
 
-    if (not blk.AcceptsMenuClick(AContext, orRef.menu_or, rights, parsed[2])) then
+    if (not blk.AcceptsMenuClick(AContext, connData.menu_or, rights, parsed[2])) then
     begin
       PanelServer.SendInfoMsg(AContext, 'Neplatná volba');
       Exit();
     end;
 
     if (parsed.Count > 2) then
-      blk.PanelMenuClick(AContext, orRef.menu_or, parsed[2], StrToIntDef(parsed[3], -1), rights)
+      blk.PanelMenuClick(AContext, connData.menu_or, parsed[2], StrToIntDef(parsed[3], -1), rights)
     else
-      blk.PanelMenuClick(AContext, orRef.menu_or, parsed[2], -1, rights);
+      blk.PanelMenuClick(AContext, connData.menu_or, parsed[2], -1, rights);
   end
 
   else if (parsed[1] = 'CLICK') then
   begin
     try
-      var btn: TPanelButton := Self.StrToPanelButton(parsed[2]);
+      const btn = Self.StrToPanelButton(parsed[2]);
       if (btn = TPanelButton.ESCAPE) then
-        orRef.Escape(AContext);
+        connData.Escape(AContext);
     except
       on E: EInvalidButton do
         Exit();
@@ -753,15 +753,15 @@ begin
   begin
     if (parsed[2] = 'OK') then
     begin
-      if (Assigned(orRef.UPO_OK)) then
-        orRef.UPO_OK(AContext);
+      if (Assigned(connData.UPO_OK)) then
+        connData.UPO_OK(AContext);
     end else if (parsed[2] = 'ESC') then
-      if (Assigned(orRef.UPO_Esc)) then
-        orRef.UPO_Esc(AContext);
+      if (Assigned(connData.UPO_Esc)) then
+        connData.UPO_Esc(AContext);
 
-    orRef.UPO_OK := nil;
-    orRef.UPO_Esc := nil;
-    orRef.UPO_ref := nil;
+    connData.UPO_OK := nil;
+    connData.UPO_Esc := nil;
+    connData.UPO_ref := nil;
   end // if parsed[2] = 'UPO'
 
   else if (parsed[1] = 'MOD-CAS') then
@@ -792,7 +792,7 @@ begin
   else if (parsed[1] = 'SPR-LIST') then
   begin
     var trains: string := '';
-    for var area: TArea in orRef.areas do
+    for var area: TArea in connData.areas do
       trains := trains + area.PanelGetTrains(AContext);
     Self.SendLn(AContext, '-;SPR-LIST;' + trains);
   end
@@ -804,7 +804,7 @@ begin
       (Trains[i].station as TArea).PanelRemoveTrain(AContext, i);
 
     var trains: string := '';
-    for var area: TArea in orRef.areas do
+    for var area: TArea in connData.areas do
       trains := trains + area.PanelGetTrains(AContext);
     Self.SendLn(AContext, '-;SPR-LIST;' + trains);
   end
@@ -814,7 +814,7 @@ begin
 
   else if (parsed[1] = 'F-VYZN-GET') then
   begin
-    orRef.funcsVyznamReq := true;
+    connData.funcsVyznamReq := true;
     Self.SendLn(AContext, '-;F-VYZN-LIST;{' + FuncNames.PanelStr(';') + '}');
   end
 
@@ -889,10 +889,9 @@ end;
 
 procedure TPanelServer.ParseOR(AContext: TIdContext; parsed: TStrings);
 var
-  btn: TPanelButton;
-  orRef: TPanelConnData;
+  connData: TPanelConnData;
 begin
-  orRef := (AContext.data as TPanelConnData);
+  connData := (AContext.data as TPanelConnData);
   if (parsed.Count < 2) then
     Exit();
 
@@ -931,12 +930,12 @@ begin
   end;
 
   if (parsed[1] = 'GET-ALL') then
-    Area.PanelFirstGet(AContext)
+    area.PanelFirstGet(AContext)
 
   else if (parsed[1] = 'CLICK') then
   begin
     try
-      btn := Self.StrToPanelButton(parsed[2]);
+      const btn = Self.StrToPanelButton(parsed[2]);
 
       if (parsed.Count > 4) then
         area.PanelClick(AContext, StrToInt(parsed[3]), btn, parsed[4])
@@ -944,7 +943,7 @@ begin
         area.PanelClick(AContext, StrToInt(parsed[3]), btn);
 
       if (btn = ESCAPE) then
-        orRef.ESCAPE(AContext);
+        connData.Escape(AContext);
     except
       on E: EInvalidButton do
         Exit();
@@ -1349,7 +1348,7 @@ begin
       F_Main.LV_Clients.items[index].SubItems[i] := '';
   end;
 
-  var orRef: TPanelConnData := (Self.clients[index].connection.data as TPanelConnData);
+  var connData: TPanelConnData := (Self.clients[index].connection.data as TPanelConnData);
 
   case (Self.clients[index].state) of
     TPanelConnectionState.closed:
@@ -1364,12 +1363,12 @@ begin
 
   F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_CLIENT] :=
     Self.clients[index].connection.connection.Socket.Binding.PeerIP;
-  if (orRef.ping_unreachable) then
+  if (connData.ping_unreachable) then
     F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_PING] := 'unreachable'
-  else if (orRef.PingComputed()) then
+  else if (connData.PingComputed()) then
   begin
     var Hour, Min, Sec, MSec: Word;
-    DecodeTime(orRef.ping, Hour, Min, Sec, MSec);
+    DecodeTime(connData.ping, Hour, Min, Sec, MSec);
     F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_PING] := IntToStr(MSec);
   end
   else
@@ -1377,12 +1376,12 @@ begin
 
   for var i: Integer := 0 to 2 do
   begin
-    if (i < orRef.areas.Count) then
+    if (i < connData.areas.Count) then
     begin
       // klient existuje
       var ORpanel: TAreaPanel;
-      orRef.areas[i].GetORPanel(Self.clients[index].connection, ORPanel);
-      F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_OR1 + i] := orRef.areas[i].ShortName + ' (' + ORPanel.User
+      connData.areas[i].GetORPanel(Self.clients[index].connection, ORPanel);
+      F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_OR1 + i] := connData.areas[i].ShortName + ' (' + ORPanel.User
         + ' :: ' + TArea.GetRightsString(ORPanel.Rights) + ')';
     end else begin
       // klient neexistuje
@@ -1390,31 +1389,31 @@ begin
     end;
   end;
 
-  if (orRef.areas.Count > 3) then
+  if (connData.areas.Count > 3) then
   begin
     var str: string := '';
-    for var i: Integer := 3 to orRef.areas.Count - 1 do
+    for var i: Integer := 3 to connData.areas.Count - 1 do
     begin
       var ORpanel: TAreaPanel;
-      orRef.areas[i].GetORPanel(Self.clients[index].connection, ORPanel);
-      str := str + orRef.areas[i].ShortName + ' (' + ORPanel.User + ' :: ' + TArea.GetRightsString(ORPanel.Rights) +
+      connData.areas[i].GetORPanel(Self.clients[index].connection, ORPanel);
+      str := str + connData.areas[i].ShortName + ' (' + ORPanel.User + ' :: ' + TArea.GetRightsString(ORPanel.Rights) +
         ')' + ', ';
     end;
     F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_OR_NEXT] := LeftStr(str, Length(str) - 2);
   end;
 
-  if (orRef.regulator) then
+  if (connData.regulator) then
   begin
     var str: string;
-    if (Assigned(orRef.regulator_user)) then
-      str := orRef.regulator_user.username
+    if (Assigned(connData.regulator_user)) then
+      str := connData.regulator_user.username
     else
       str := 'ano';
 
-    if (orRef.regulator_loks.Count > 0) then
+    if (connData.regulator_loks.Count > 0) then
     begin
       str := str + ': ';
-      for var HV: THV in orRef.regulator_loks do
+      for var HV: THV in connData.regulator_loks do
         str := str + IntToStr(HV.addr) + ', ';
       str := LeftStr(str, Length(str) - 2);
     end;
@@ -1564,8 +1563,8 @@ begin
     if (Self.clients[i] <> nil) then
     begin
       try
-        var orRef: TPanelConnData := TPanelConnData(Self.clients[i].connection.data);
-        orRef.PingUpdate(Self.clients[i].connection);
+        var connData: TPanelConnData := TPanelConnData(Self.clients[i].connection.data);
+        connData.PingUpdate(Self.clients[i].connection);
       except
 
       end;

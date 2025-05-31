@@ -143,7 +143,7 @@ begin
 
   if (not handled) then
     for var area: TArea in Self.areas do
-      Area.PanelEscape(AContext);
+      area.PanelEscape(AContext);
 end;
 
 function TPanelConnData.Reset(weak: boolean = false): Boolean;
