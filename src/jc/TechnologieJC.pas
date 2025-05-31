@@ -296,7 +296,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, AreaDb,
+uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, AreaDb, PanelConnData,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
   BlockPSt, appEv, ConfSeq, BlockDb, Config, colorHelper;
@@ -3521,6 +3521,8 @@ begin
   end else begin
     Self.step := stepJcInit;
     Self.m_state.timeOut := Now + EncodeTimeSec(_JC_TIMEOUT_SEC);
+    if ((Self.state.from_stack = nil) and (Self.state.senderPnl <> nil)) then
+      TPanelConnData(Self.state.senderPnl.Data).lastActivatedPath := Self;
   end;
 end;
 

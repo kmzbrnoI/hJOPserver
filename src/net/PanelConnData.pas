@@ -219,6 +219,14 @@ begin
     Result := true;
   end;
 
+  if ((not Result) and (Self.lastActivatedPath <> nil) and (Self.lastActivatedPath.activating) and
+      (Self.lastActivatedPath.step <> stepJcSignalWait) and (Self.lastActivatedPath.state.senderPnl = AContext)) then
+  begin
+    Self.lastActivatedPath.CancelActivating('Výpravčí zrušil stavění');
+    Self.lastActivatedPath := nil;
+    Result := True;
+  end;
+
   Self.funcsVyznamReq := false;
 
   if (not Result) then
