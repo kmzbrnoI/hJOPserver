@@ -1056,11 +1056,8 @@ begin
     var jc: TJC := JCDb.FindActiveJCWithTrack(blk.id);
     if (jc <> nil) then
     begin
+      jc.EmergencyCancelActivePath();
       var signal: TBlkSignal := Blocks.GetBlkSignalByID(jc.data.signalId);
-      if ((signal.signal > ncStuj) and (signal.DNjc = jc)) then
-        PanelServer.BottomError(JC.state.SenderPnl, 'Chyba povolovací návěsti ' + signal.name, Self.shortName,
-          'TECHNOLOGIE');
-      jc.CancelWithoutTrackRelease();
       if (signal.DNjc = jc) then
         signal.DNjc := nil;
     end;

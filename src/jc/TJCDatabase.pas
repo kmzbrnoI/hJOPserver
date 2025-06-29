@@ -573,8 +573,9 @@ begin
           ((tmpSignal.IsGoSignal(TJCType.train) or (tmpSignal.IsGoSignal(TJCType.shunt))) or (tmpSignal.ZAM) or
           (JC.waitForLastTrackOrRailwayOccupy))) then
       begin
-        JC.CancelWithoutTrackRelease();
-        tmpSignal.BottomErrorBroadcast('Chyba povolovací návěsti ' + tmpSignal.name, 'TECHNOLOGIE');
+        JC.EmergencyCancelActivePath();
+      end else begin
+        JC.EmergencyStopTrainInVC();
       end;
     end;
   finally

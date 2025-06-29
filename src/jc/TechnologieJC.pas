@@ -203,6 +203,8 @@ type
     procedure TrackCancelZaver(track: TBlkTrack);
 
     function CancelTimeSec(): Cardinal;
+    procedure EmergencyStopTrainInPath();
+    procedure EmergencyStopTrainsInTrack(track: TBlkTrack);
 
   public
 
@@ -217,6 +219,7 @@ type
     procedure SetSignalSignal();
     procedure Cancel(Sender: TObject = nil);
     procedure CancelWithoutTrackRelease();
+    procedure EmergencyCancelActivePath();
     procedure DynamicCancelling(); // kontroluje projizdeni soupravy useky a rusi jejich zavery
     procedure DynamicCancellingNC(); // rusi poruchu BP trati, ze ktere odjizdi souprava v ramci nouzove jizdni cesty
     procedure NonProfileOccupied(); // volano pri obsazeni kontrolvoaneho neprofiloveho useku
@@ -258,6 +261,8 @@ type
     function ContainsTurnout(blockid: Integer): Boolean;
     function ContainsRailway(blockid: Integer): Boolean;
     function ContainsCrossing(blockid: Integer): Boolean;
+
+    procedure EmergencyStopTrainInVC();
 
     property data: TJCdata read m_data write SetData;
     property state: TJCstate read m_state;
@@ -402,7 +407,7 @@ begin
       if (Self.activating) then
         Self.CancelActivating('Výjimka')
       else
-        Self.CancelWithoutTrackRelease();
+        Self.EmergencyCancelActivePath();
     end;
   end; // except
 end;
@@ -2151,7 +2156,7 @@ end;
 procedure TJC.CancelWithoutTrackRelease();
 begin
   var signal: TBlkSignal := TBlkSignal(Self.signal);
-  Self.Log('Probiha ruseni navesti');
+  Self.Log('CancelWithoutTrackRelease');
 
   if ((signal.DNjc = Self) and (signal.targetSignal > ncStuj)) then
   begin
@@ -2166,6 +2171,17 @@ begin
   Self.step := stepDefault;
   Self.destroyBlock := _JC_DESTROY_NONE;
   Self.destroyEndBlock := _JC_DESTROY_NONE;
+end;
+
+procedure TJC.EmergencyCancelActivePath();
+begin
+  Self.EmergencyStopTrainInVC();
+
+  if ((Self.signal <> nil) and (Self.signal.typ = btSignal) and (TBlkSignal(Self.signal).targetSignal > ncStuj) and (TBlkSignal(Self.signal).DNjc = Self)) then
+  begin
+    signal.BottomErrorBroadcast('Chyba povolovací návěsti ' + signal.name, 'TECHNOLOGIE');
+    Self.CancelWithoutTrackRelease();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2271,11 +2287,7 @@ begin
         if (track.zaver > TZaver.no) then
         begin
           // pokud jsme na jinem useku, nez RozpadBlok
-          if ((signal.targetSignal > ncStuj) and (signal.DNjc = Self)) then
-          begin
-            signal.BottomErrorBroadcast('Chyba povolovací návěsti ' + signal.name, 'TECHNOLOGIE');
-            Self.CancelWithoutTrackRelease();
-          end;
+          Self.EmergencyCancelActivePath();
 
           // v trati zaver nerusime, nesmime tam dat ani nouzovy, ani zadny zaver
           if ((i <> Self.m_data.tracks.Count - 1) or (Self.m_data.railwayId = -1)) then
@@ -2285,10 +2297,10 @@ begin
     end;
 
     // kontrola zruseni jizdni cesty vlivem vynuzovani bloku
-    if ((i = Self.destroyBlock) and ((track.Zaver = TZaver.no))) then
+    if ((i = Self.destroyBlock) and (track.Zaver = TZaver.no)) then
     begin
       // pokud usek, na ktery se chystam vkrocit, nema zaver, je neco divne -> zrusit JC (predevsim kvuli predavani loko, ktere by mohlo narusit dalsi JC)
-      Self.CancelWithoutTrackRelease();
+      Self.EmergencyCancelActivePath();
       Exit();
     end;
 
@@ -2441,12 +2453,7 @@ begin
   begin
     Self.CancelActivating('Nelze postavit - obsazen neprofilový úsek');
   end else begin
-    var signal: TBlkSignal := Self.signal as TBlkSignal;
-    if ((signal.targetSignal > ncStuj) and (signal.DNjc = Self)) then
-    begin
-      signal.BottomErrorBroadcast('Chyba povolovací návěsti ' + signal.name, 'TECHNOLOGIE');
-      Self.CancelWithoutTrackRelease();
-    end;
+    Self.EmergencyCancelActivePath();
   end;
 end;
 
@@ -3866,6 +3873,43 @@ end;
 function ContainsCrossing(jc: TJC; blockid: Integer): Boolean;
 begin
   Result := jc.ContainsCrossing(blockid);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TJC.EmergencyStopTrainInVC();
+begin
+  if ((Self.typ = TJCType.train) and (not Self.m_state.nc)) then
+    Self.EmergencyStopTrainInPath();
+end;
+
+procedure TJC.EmergencyStopTrainInPath();
+begin
+  for var trackZav: Integer in Self.m_data.tracks do
+  begin
+    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackZav);
+    if (track <> nil) then
+      Self.EmergencyStopTrainsInTrack(track);
+  end;
+
+  if ((Self.signal <> nil) and (Self.signal.typ = TBlkType.btSignal)) then
+  begin
+    var signalTrack: TBlk := TBlkSignal(Self.signal).track;
+    if ((signalTrack.typ = btTrack) or (signalTrack.typ = btRT)) then
+      Self.EmergencyStopTrainsInTrack(TBlkTrack(signalTrack));
+  end;
+end;
+
+procedure TJC.EmergencyStopTrainsInTrack(track: TBlkTrack);
+begin
+  for var trainI: Integer in track.trains do
+  begin
+    if (trains[trainI].speed > 0) then
+    begin
+      trains[trainI].EmergencyStop();
+      Self.signal.BottomErrorBroadcast('Narušení JC - nouzově zastaven vlak ' + trains[trainI].name + '!', 'TECHNOLOGIE');
+    end;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
