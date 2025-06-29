@@ -27,7 +27,7 @@ object F_splash: TF_splash
     Margins.Right = 2
     Margins.Bottom = 2
     AutoSize = False
-    Caption = #169' Jan Hor'#225#269'ek 2008'#8211'2025'
+    Caption = #169' Jan Malina 2008'#8211'2025'
     Color = clWhite
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clRed
