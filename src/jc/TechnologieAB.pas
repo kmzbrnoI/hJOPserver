@@ -77,8 +77,13 @@ begin
   for var trackId: Integer in jc.data.tracks do
   begin
     var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackId);
-    if ((track <> nil) and (track.zaver = TZaver.ab)) then
-      track.zaver := TZaver.no;
+    if (track <> nil) then
+    begin
+      if (track.zaver = TZaver.ab) then
+        track.zaver := TZaver.no
+      else if ((track.zaver = TZaver.nouz) and (track.IsPathTimerRunning()) and (track.PathTimerTargetZaver() = TZaver.ab)) then // cancelling of zaver in progress
+        track.PathTimerUpdateZaver(TZaver.no);
+    end;
   end;
 
   var i: Integer := Self.JCs.IndexOf(jc);

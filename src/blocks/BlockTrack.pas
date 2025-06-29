@@ -16,6 +16,7 @@ type
   EMultipleTrains = class(Exception);
   EDuplicitTrains = class(Exception);
   ERunningTrain = class(Exception);
+  EPathTimerNotRunning = class(Exception);
 
   TBlkTrackSettings = record
     RCSAddrs: TRCSAddrs;
@@ -238,6 +239,9 @@ type
 
     procedure MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer; rights: TAreaRights);
     procedure SetZaverWithPathTimer(zaver: TZaver);
+    procedure PathTimerUpdateZaver(zaver: TZaver);
+    function IsPathTimerRunning(): Boolean;
+    function PathTimerTargetZaver(): TZaver;
 
     procedure PstAdd(pst: TBlk);
     procedure PstRemove(pst: TBlk);
@@ -2744,6 +2748,23 @@ begin
   Self.m_state.pathCancelZaverTimer.finish := Now + Self.timeJCReleaseZaver;
   Self.m_state.pathCancelZaverTimer.zaver := zaver;
   Self.m_state.pathCancelZaverTimer.running := True;
+end;
+
+procedure TBlkTrack.PathTimerUpdateZaver(zaver: TZaver);
+begin
+  if (not Self.m_state.pathCancelZaverTimer.running) then
+    raise EPathTimerNotRunning.Create('Cannot TBlkTrack.PathTimerUpdateZaver - path timer is not running!');
+  Self.m_state.pathCancelZaverTimer.zaver := zaver;
+end;
+
+function TBlkTrack.IsPathTimerRunning(): Boolean;
+begin
+  Result := Self.m_state.pathCancelZaverTimer.running;
+end;
+
+function TBlkTrack.PathTimerTargetZaver(): TZaver;
+begin
+  Result := Self.m_state.pathCancelZaverTimer.zaver;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
