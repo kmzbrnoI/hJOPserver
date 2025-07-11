@@ -109,7 +109,7 @@ type
 
 implementation
 
-uses AreaDb, TCPServerPanel, ownConvert, Config, timeHelper, colorHelper;
+uses AreaDb, TCPServerPanel, ownConvert, Config, timeHelper, colorHelper, PTUtils;
 
 constructor TBlkIO.Create(index: Integer);
 begin
@@ -444,16 +444,27 @@ begin
       Self.Deactivate();
   end;
 
-  if (reqJson.Contains('activeInput') and (not Self.isRCSinput)) then
+  if (reqJson.Contains('activeInput')) then
   begin
-    if ((reqJson.B['activeInput']) and (not Self.activeInput)) then
+    if (Self.isRCSinput) then
     begin
-      Self.m_state.inputState := TRCSInputState.isOn;
-      Self.Change();
-    end else if ((not reqJson.B['activeInput']) and (Self.activeInput)) then
-    begin
-      Self.m_state.inputState := TRCSInputState.isOff;
-      Self.Change();
+      // Simulation
+      try
+        RCSi.SetInput(Self.m_settings.RCSinput, ownConvert.BoolToInt(reqJson.B['activeInput']));
+      except
+        on e: RCSException do
+          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+      end;
+    end else begin
+      if ((reqJson.B['activeInput']) and (not Self.activeInput)) then
+      begin
+        Self.m_state.inputState := TRCSInputState.isOn;
+        Self.Change();
+      end else if ((not reqJson.B['activeInput']) and (Self.activeInput)) then
+      begin
+        Self.m_state.inputState := TRCSInputState.isOff;
+        Self.Change();
+      end;
     end;
   end;
 
