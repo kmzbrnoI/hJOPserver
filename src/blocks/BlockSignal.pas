@@ -1066,7 +1066,7 @@ begin
       var ir: TBlkIR := Blocks.GetBlkIrByID(Self.m_settings.events[0].stop.data.irId);
       if (ir = nil) then
         Exit();
-      RCSi.SetInput(ir.GetSettings().RCSAddrs[0], ite(enabled, 1, 0));
+      RCSi.SetInput(ir.GetSettings().RCSAddr, ite(enabled, 1, 0));
     end;
   except
     PanelServer.BottomError(SenderPnl, 'Nepodařilo se nastavit stav IR čidla!', TArea(SenderOR).ShortName, 'SIMULACE');

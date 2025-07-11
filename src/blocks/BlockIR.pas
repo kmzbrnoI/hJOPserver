@@ -10,7 +10,7 @@ type
   TIROccupationState = (disabled = -5, none = -1, free = 0, occupied = 1);
 
   TBlkIRSettings = record
-    RCSAddrs: TRCSAddrs; // only 1 address
+    RCSAddr: TRCSAddr;
   end;
 
   TBlkIRState = record
@@ -44,6 +44,7 @@ type
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
+    procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); override;
 
     property occupied: TIROccupationState read m_state.occupied;
   end;
@@ -52,7 +53,7 @@ type
 
 implementation
 
-uses RCS;
+uses RCS, RCSErrors, PTUtils, Config;
 
 constructor TBlkIR.Create(index: Integer);
 begin
@@ -68,17 +69,15 @@ procedure TBlkIR.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel,
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
-  Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
-
-  for var rcsAddr: TRCSAddr in Self.m_settings.RCSAddrs do
-    RCSi.SetNeeded(rcsAddr.board);
+  Self.m_settings.RCSAddr := RCSFromIni(ini_tech, section, 'RCS0', 'RCSb0', 'RCSp0');
+  RCSi.SetNeeded(Self.m_settings.RCSAddr.board);
 end;
 
 procedure TBlkIR.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
   inherited SaveData(ini_tech, section);
 
-  Self.SaveRCS(ini_tech, section, Self.m_settings.RCSAddrs);
+  ini_tech.WriteString(section, 'RCS0', Self.m_settings.RCSAddr.ToString());
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -87,7 +86,7 @@ procedure TBlkIR.Enable();
 var enable: Boolean;
 begin
   try
-    enable := (Self.m_settings.RCSAddrs.Count > 0) and (RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].board));
+    enable := RCSi.IsNonFailedModule(Self.m_settings.RCSAddr.board);
   except
     enable := false;
   end;
@@ -106,7 +105,7 @@ end;
 
 function TBlkIR.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
 begin
-  Result := ((portType = TRCSIOType.input) and (Self.m_settings.RCSAddrs.Contains(addr)));
+  Result := ((portType = TRCSIOType.input) and (Self.m_settings.RCSAddr = addr));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -115,7 +114,7 @@ procedure TBlkIR.Update();
 var state: TRCSInputState;
 begin
   try
-    state := RCSi.GetInput(Self.m_settings.RCSAddrs[0])
+    state := RCSi.GetInput(Self.m_settings.RCSAddr)
   except
     state := failure;
   end;
@@ -147,9 +146,6 @@ end;
 
 procedure TBlkIR.SetSettings(data: TBlkIRSettings);
 begin
-  if (Self.m_settings.RCSAddrs <> data.RCSAddrs) then
-    Self.m_settings.RCSAddrs.free();
-
   Self.m_settings := data;
   Self.Change();
 end;
@@ -160,7 +156,7 @@ procedure TBlkIR.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
   inherited;
 
-  TBlk.RCStoJSON(Self.m_settings.RCSAddrs[0], json['rcs']);
+  TBlk.RCStoJSON(Self.m_settings.RCSAddr, json['rcs']);
 
   if (includeState) then
     Self.GetPtState(json['blockState']);
@@ -178,6 +174,26 @@ begin
     TIROccupationState.occupied:
       json['state'] := 'occupied';
   end;
+end;
+
+procedure TBlkIR.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
+begin
+  if (reqJson.Contains('state')) then
+  begin
+    try
+      if (reqJson.S['state'] = 'free') then
+        RCSi.SetInput(Self.m_settings.RCSAddr, 0)
+      else if (reqJson.S['state'] = 'occupied') then
+        RCSi.SetInput(Self.m_settings.RCSAddr, 1)
+    except
+      on e: RCSException do
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+    end;
+
+    Self.Update(); // to propagate new state into response
+  end;
+
+  inherited;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -83,17 +83,11 @@ begin
   glob := Self.block.GetGlobalSettings();
   settings := Self.block.GetSettings();
 
-  if (settings.RCSAddrs.count > 0) then
-  begin
-    if (settings.RCSAddrs[0].board > Cardinal(Self.SE_module.MaxValue)) then
-      Self.SE_module.MaxValue := 0;
-    Self.SE_port.MaxValue := 0;
-    Self.SE_module.Value := settings.RCSAddrs[0].board;
-    Self.SE_port.Value := settings.RCSAddrs[0].port;
-  end else begin
-    Self.SE_module.Value := 0;
-    Self.SE_port.Value := 0;
-  end;
+  if (settings.RCSAddr.board > Cardinal(Self.SE_module.MaxValue)) then
+    Self.SE_module.MaxValue := 0;
+  Self.SE_port.MaxValue := 0;
+  Self.SE_module.Value := settings.RCSAddr.board;
+  Self.SE_port.Value := settings.RCSAddr.port;
 
   Self.SE_moduleExit(Self);
 
@@ -172,8 +166,7 @@ begin
     end;
 
     var settings: TBlkIRSettings;
-    settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value));
+    settings.RCSAddr := TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value);
 
     Self.block.SetSettings(settings);
     Self.block.Change();
