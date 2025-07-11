@@ -1951,6 +1951,21 @@ begin
       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Nepodorovana navest');
   end;
 
+  if (reqJson.Contains('rcsControllerShunt')) then
+  begin
+    try
+      if (Self.m_settings.PSt.enabled) then
+        RCSi.SetInput(Self.m_settings.PSt.rcsControllerShunt, ownConvert.BoolToInt(reqJson.B['rcsControllerShunt']))
+      else
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Navestidlo nema kontrolery PSt');
+    except
+      on e: RCSException do
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+    end;
+
+    Self.Update(); // to propagate new state into response
+  end;
+
   inherited;
 end;
 
