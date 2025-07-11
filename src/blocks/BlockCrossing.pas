@@ -151,7 +151,8 @@ type
     procedure MenuAdminAnulaceStart(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAdminAnulaceStop(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAdminNUZClick(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
+    procedure SetSimInputs(closed, caution, open: Boolean);
+    procedure SetPanelSimInputs(closed, caution, open: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
 
     procedure FillRCSModules();
     procedure SetState(new: TBlkCrossingBasicState);
@@ -212,6 +213,8 @@ type
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
+    procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); override;
+
   end;
 
   /// /////////////////////////////////////////////////////////////////////////////
@@ -220,7 +223,7 @@ implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCS, UPO,
   Graphics, PanelConnData, Diagnostics, appEv, ownConvert, Config, timeHelper,
-  BlockTrack, BlockTrackRef, colorHelper;
+  BlockTrack, BlockTrackRef, colorHelper, RCSErrors, PTUtils;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
@@ -797,17 +800,17 @@ end;
 
 procedure TBlkCrossing.MenuAdminZavreno(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.SetSimInputs(true, true, false, SenderPnl, SenderOR);
+  Self.SetPanelSimInputs(true, true, false, SenderPnl, SenderOR);
 end;
 
 procedure TBlkCrossing.MenuAdminOtevreno(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.SetSimInputs(false, false, true, SenderPnl, SenderOR);
+  Self.SetPanelSimInputs(false, false, true, SenderPnl, SenderOR);
 end;
 
 procedure TBlkCrossing.MenuAdminVystraha(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  Self.SetSimInputs(false, true, false, SenderPnl, SenderOR);
+  Self.SetPanelSimInputs(false, true, false, SenderPnl, SenderOR);
 end;
 
 procedure TBlkCrossing.MenuAdminAnulaceStart(SenderPnl: TIdContext; SenderOR: TObject);
@@ -848,15 +851,20 @@ begin
   Self.Change();
 end;
 
-procedure TBlkCrossing.SetSimInputs(uzavreno, vystraha, otevreno: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
+procedure TBlkCrossing.SetSimInputs(closed, caution, open: Boolean);
+begin
+  if (Self.m_settings.RCSInputs.closed.enabled) then
+    RCSi.SetInput(Self.m_settings.RCSInputs.closed.addr, ownConvert.BoolToInt(closed));
+  if (Self.m_settings.RCSInputs.caution.enabled) then
+    RCSi.SetInput(Self.m_settings.RCSInputs.caution.addr, ownConvert.BoolToInt(caution));
+  if (Self.m_settings.RCSInputs.open.enabled) then
+    RCSi.SetInput(Self.m_settings.RCSInputs.open.addr, ownConvert.BoolToInt(open));
+end;
+
+procedure TBlkCrossing.SetPanelSimInputs(closed, caution, open: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
 begin
   try
-    if (Self.m_settings.RCSInputs.closed.enabled) then
-      RCSi.SetInput(Self.m_settings.RCSInputs.closed.addr, ownConvert.BoolToInt(uzavreno));
-    if (Self.m_settings.RCSInputs.caution.enabled) then
-      RCSi.SetInput(Self.m_settings.RCSInputs.caution.addr, ownConvert.BoolToInt(vystraha));
-    if (Self.m_settings.RCSInputs.open.enabled) then
-      RCSi.SetInput(Self.m_settings.RCSInputs.open.addr, ownConvert.BoolToInt(otevreno));
+    Self.SetSimInputs(closed, caution, open);
   except
     if ((SenderPnl <> nil) and (SenderOR <> nil)) then
       PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName,
@@ -1181,12 +1189,45 @@ begin
       json['state'] := 'closed';
   end;
 
+  if (Self.note <> '') then
+    json['note'] := Self.m_state.note;
+  if (Self.lockout <> '') then
+    json['lockout'] := Self.m_state.lockout;
+
   json['annulation'] := Self.annulation;
-  json['note'] := Self.m_state.note;
-  json['lockout'] := Self.m_state.lockout;
   json['pcEmOpen'] := Self.m_state.pcEmOpen;
   json['pcClosed'] := Self.m_state.pcClosed;
   json['locks'] := Self.m_state.zaver;
+end;
+
+procedure TBlkCrossing.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
+begin
+  if (reqJson.Contains('pcClosed')) then
+    Self.pcClosed := reqJson.B['pcClosed'];
+
+  if (reqJson.Contains('note')) then
+    Self.note := reqJson.S['note'];
+  if (reqJson.Contains('lockout')) then
+    Self.lockout := reqJson.S['lockout'];
+
+  if (reqJson.Contains('state')) then
+  begin
+    try
+      if (reqJson.S['state'] = 'opened') then
+        Self.SetSimInputs(False, False, True)
+      else if (reqJson.S['state'] = 'closed') then
+        Self.SetSimInputs(True, True, False)
+      else if (reqJson.S['state'] = 'caution') then
+        Self.SetSimInputs(False, True, False);
+    except
+      on e: RCSException do
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+    end;
+
+    Self.Update(); // to propagate new state into response
+  end;
+
+  inherited;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
