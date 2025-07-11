@@ -146,6 +146,7 @@ type
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
+    procedure PutPtState(reqJson: TJsonObject; respJson: TJsonObject); override;
 
   end;
 
@@ -156,7 +157,7 @@ implementation
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
   RCSErrors, RCS, PanelConnData, BlockSignal, Logging, BlockDisconnector, ConfSeq,
-  TechnologieJC, colorHelper, IfThenElse;
+  TechnologieJC, colorHelper, IfThenElse, PTUtils;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -917,6 +918,29 @@ begin
     json['error'] := Self.m_state.error;
   if (Self.m_state.rcsError) then
     json['rcsError'] := Self.m_state.rcsError;
+end;
+
+procedure TBlkPst.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
+begin
+  if (reqJson.Contains('note')) then
+    Self.note := reqJson.S['note'];
+
+  if ((reqJson.Contains('rcsInTake')) or (reqJson.Contains('rcsInRelease'))) then
+  begin
+    try
+      if (reqJson.Contains('rcsInTake')) then
+        RCSi.SetInput(Self.m_settings.rcsInTake, ownConvert.BoolToInt(reqJson.B['rcsInTake']));
+      if (reqJson.Contains('rcsInRelease')) then
+        RCSi.SetInput(Self.m_settings.rcsInRelease, ownConvert.BoolToInt(reqJson.B['rcsInRelease']));
+    except
+      on e: RCSException do
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+    end;
+
+    Self.Update(); // to propagate new state into response
+  end;
+
+  inherited;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
