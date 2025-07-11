@@ -309,7 +309,7 @@ uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
   Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO,
   announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, PanelConnData, ConfSeq,
   Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase, BlockPst, IfThenElse,
-  colorHelper, Config;
+  colorHelper, Config, RCSErrors;
 
 constructor TBlkTrack.Create(index: Integer);
 begin
@@ -1883,10 +1883,10 @@ begin
     for var trainStr: string in reqJson.A['trains'] do
     begin
       var train: Integer := TrainDb.trains.GetTrainIndexByName(trainStr);
-      if (Train > -1) then
+      if (train > -1) then
       begin
         try
-          Self.AddTrainS(Train)
+          Self.AddTrainS(train);
         except
           on E: Exception do
           begin
@@ -1899,6 +1899,41 @@ begin
         PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request',
           'Souprava ' + trainStr + ' neexistuje, ignoruji.');
     end;
+  end;
+
+  if (reqJson.Contains('note')) then
+    Self.note := reqJson.S['note'];
+  if (reqJson.Contains('lockout')) then
+    Self.lockout := reqJson.S['lockout'];
+
+  if (reqJson.Contains('state')) then
+  begin
+    try
+      if (reqJson.S['state'] = 'free') then
+        for var rcsaddr: TRCSAddr in Self.m_settings.RCSAddrs do
+          RCSi.SetInput(rcsaddr, 0)
+      else if (reqJson.S['state'] = 'occupied') then
+        for var rcsaddr: TRCSAddr in Self.m_settings.RCSAddrs do
+          RCSi.SetInput(rcsaddr, 1)
+      else begin
+        for var i: Integer := 0 to reqJson.A['sections'].Count-1 do
+        begin
+          if (i < Self.m_settings.RCSAddrs.Count) then
+          begin
+            var state: string := reqJson.A['sections'][i];
+            if (state = 'free') then
+              RCSi.SetInput(Self.m_settings.RCSAddrs[i], 0)
+            else if (state = 'occupied') then
+              RCSi.SetInput(Self.m_settings.RCSAddrs[i], 1);
+          end;
+        end;
+      end;
+    except
+      on e: RCSException do
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+    end;
+
+    Self.Update(); // to propagate new state into response
   end;
 
   inherited;

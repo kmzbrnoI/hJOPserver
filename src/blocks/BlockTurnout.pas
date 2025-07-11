@@ -1600,6 +1600,40 @@ begin
       Self.SetPosition(TTurnoutPosition.minus);
   end;
 
+  if (reqJson.Contains('note')) then
+    Self.note := reqJson.S['note'];
+  if (reqJson.Contains('lockout')) then
+    Self.lockout := reqJson.S['lockout'];
+
+  if (reqJson.Contains('positionSim')) then
+  begin
+    if (Self.posDetection) then
+    begin
+      try
+        if (reqJson.S['positionSim'] = '+') then begin
+          RCSi.SetInput(Self.rcsInPlus, 1);
+          RCSi.SetInput(Self.rcsInMinus, 0);
+        end else if (reqJson.S['positionSim'] = '-') then begin
+          RCSi.SetInput(Self.rcsInPlus, 0);
+          RCSi.SetInput(Self.rcsInMinus, 1);
+        end else if (reqJson.S['positionSim'] = 'none') then begin
+          RCSi.SetInput(Self.rcsInPlus, 0);
+          RCSi.SetInput(Self.rcsInMinus, 0);
+        end else if (reqJson.S['positionSim'] = 'both') then begin
+          RCSi.SetInput(Self.rcsInPlus, 1);
+          RCSi.SetInput(Self.rcsInMinus, 1);
+        end;
+      except
+        on e: RCSException do
+          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+      end;
+    end else begin
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Tato vyhybka nema RCS vstupy!');
+    end;
+
+    Self.Update(); // to propagate new state into response
+  end;
+
   inherited;
 end;
 
