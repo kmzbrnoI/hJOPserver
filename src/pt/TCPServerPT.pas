@@ -30,7 +30,7 @@ const
   _PT_MAX_CONNECTIONS = 10;
   _PT_COMPACT_RESPONSE = false;
   _PT_CONTENT_TYPE = 'application/json';
-  _PT_DESCRIPTION = 'ptServer v3.0.0';
+  _PT_DESCRIPTION = 'ptServer v3.2.0';
   _PT_CONFIG_SECTION = 'PTServer';
   _PT_TOKENS_SECTION = 'PTServerStaticTokens';
   _RECEIVE_CHECK_PERIOD_MS = 15;

@@ -114,7 +114,7 @@ end;
 
 procedure TModelTime.SetDateTime(dt: TDateTime);
 begin
-  if ((Self.fdateTime <> dt) and (not Self.started)) then
+  if (Self.fdateTime <> dt) then
   begin
     Self.fdateTime := dt;
     Self.BroadcastTime();
@@ -123,7 +123,7 @@ end;
 
 procedure TModelTime.mSetTime(time: TTime);
 begin
-  if ((Self.fdateTime <> Self.date + time) and (not Self.started)) then
+  if (Self.fdateTime <> Self.date + time) then
   begin
     Self.fdateTime := Self.date + time;
     Self.BroadcastTime();
@@ -134,7 +134,7 @@ end;
 
 procedure TModelTime.SetSpeed(speed: Real);
 begin
-  if ((Self.fspeed <> speed) and (not Self.started)) then
+  if (Self.fspeed <> speed) then
   begin
     Self.fspeed := speed;
     Self.BroadcastTime();
@@ -148,6 +148,9 @@ begin
   if (started <> Self.fstarted) then
   begin
     Self.fstarted := started;
+    if ((started) and (not Self.used)) then
+      Self.fused := True;
+
     Self.BroadcastTime();
     Self.UpdateGUIColors();
   end;
@@ -160,6 +163,9 @@ begin
   if (used <> Self.fused) then
   begin
     Self.fused := used;
+    if ((not used) and (Self.started)) then
+      Self.fstarted := False;
+
     Self.BroadcastTime();
     Self.UpdateGUIColors();
   end;
