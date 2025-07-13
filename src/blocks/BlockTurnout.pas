@@ -500,6 +500,25 @@ begin
 
   Self.MapNpEvents();
   Self.Update(); // update will call Change()
+
+  // Activate always-permanent output
+  if ((enable) and (Self.m_settings.outputType = totAlwaysPerm)) then
+  begin
+    try
+      if (Self.position = TTurnoutPosition.plus) then
+      begin
+        RCSi.SetOutput(Self.m_settings.rcs.outp, 1);
+        RCSi.SetOutput(Self.m_settings.rcs.outm, 0);
+      end;
+      if (Self.position = TTurnoutPosition.minus) then
+      begin
+        RCSi.SetOutput(Self.m_settings.rcs.outp, 0);
+        RCSi.SetOutput(Self.m_settings.rcs.outm, 1);
+      end;
+    except
+      // intentionally do nothing
+    end;
+  end;
 end;
 
 procedure TBlkTurnout.Disable();
