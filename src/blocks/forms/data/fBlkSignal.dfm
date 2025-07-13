@@ -146,7 +146,7 @@ object F_BlkSignal: TF_BlkSignal
     object Label6: TLabel
       Left = 8
       Top = 56
-      Width = 62
+      Width = 82
       Height = 13
       Caption = 'Prvn'#237' v'#253'stup:'
     end
@@ -235,7 +235,7 @@ object F_BlkSignal: TF_BlkSignal
     object CHB_RCS_Second_Output: TCheckBox
       Left = 8
       Top = 85
-      Width = 81
+      Width = 104
       Height = 17
       Caption = 'Druh'#253' v'#253'stup:'
       TabOrder = 6
@@ -346,46 +346,46 @@ object F_BlkSignal: TF_BlkSignal
     object Label7: TLabel
       Left = 7
       Top = 64
-      Width = 82
+      Width = 122
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Indikace posunu:'
+      Caption = 'Indikace posunu (v'#253'stup):'
     end
     object Label8: TLabel
       Left = 7
       Top = 96
-      Width = 64
+      Width = 99
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Voli'#269' posunu:'
+      Caption = 'Voli'#269' posunu (vstup):'
     end
     object Label9: TLabel
       Left = 150
-      Top = 40
-      Width = 29
+      Top = 47
+      Width = 53
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Modul'
+      Caption = 'RCS modul'
     end
     object Label10: TLabel
-      Left = 229
-      Top = 40
-      Width = 19
+      Left = 226
+      Top = 47
+      Width = 43
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Port'
+      Caption = 'RCS port'
     end
     object CHB_PSt: TCheckBox
       Left = 7

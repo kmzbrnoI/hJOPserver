@@ -78,13 +78,13 @@ object F_BlkIR: TF_BlkIR
     object L_IR04: TLabel
       Left = 16
       Top = 16
-      Width = 63
+      Width = 59
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS adresa :'
+      Caption = 'RCS modul :'
     end
     object L_IR05: TLabel
       Left = 16

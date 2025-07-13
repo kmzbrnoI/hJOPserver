@@ -4,7 +4,7 @@ object F_BlkRT: TF_BlkRT
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (tratovy usek)'
-  ClientHeight = 600
+  ClientHeight = 610
   ClientWidth = 697
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -75,7 +75,7 @@ object F_BlkRT: TF_BlkRT
   end
   object B_OK: TButton
     Left = 615
-    Top = 566
+    Top = 578
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -89,7 +89,7 @@ object F_BlkRT: TF_BlkRT
   end
   object B_Storno: TButton
     Left = 536
-    Top = 566
+    Top = 578
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -130,7 +130,7 @@ object F_BlkRT: TF_BlkRT
     Left = 7
     Top = 147
     Width = 305
-    Height = 129
+    Height = 142
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -139,7 +139,7 @@ object F_BlkRT: TF_BlkRT
     TabOrder = 5
     object L_Usek04: TLabel
       Left = 12
-      Top = 19
+      Top = 35
       Width = 54
       Height = 13
       Margins.Left = 2
@@ -150,7 +150,7 @@ object F_BlkRT: TF_BlkRT
     end
     object Label2: TLabel
       Left = 12
-      Top = 45
+      Top = 61
       Width = 54
       Height = 13
       Margins.Left = 2
@@ -161,7 +161,7 @@ object F_BlkRT: TF_BlkRT
     end
     object Label3: TLabel
       Left = 12
-      Top = 71
+      Top = 87
       Width = 54
       Height = 13
       Margins.Left = 2
@@ -172,7 +172,7 @@ object F_BlkRT: TF_BlkRT
     end
     object Label4: TLabel
       Left = 12
-      Top = 97
+      Top = 113
       Width = 54
       Height = 13
       Margins.Left = 2
@@ -181,9 +181,31 @@ object F_BlkRT: TF_BlkRT
       Margins.Bottom = 2
       Caption = '3. detektor:'
     end
+    object L_P01: TLabel
+      Left = 136
+      Top = 18
+      Width = 53
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS modul'
+    end
+    object Label8: TLabel
+      Left = 224
+      Top = 18
+      Width = 43
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS port'
+    end
     object SE_Port0: TSpinEdit
       Left = 224
-      Top = 19
+      Top = 35
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -198,7 +220,7 @@ object F_BlkRT: TF_BlkRT
     end
     object SE_Module0: TSpinEdit
       Left = 136
-      Top = 19
+      Top = 35
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -214,7 +236,7 @@ object F_BlkRT: TF_BlkRT
     end
     object CHB_D0: TCheckBox
       Left = 100
-      Top = 20
+      Top = 36
       Width = 17
       Height = 17
       Margins.Left = 2
@@ -228,7 +250,7 @@ object F_BlkRT: TF_BlkRT
     object CHB_D1: TCheckBox
       Tag = 1
       Left = 100
-      Top = 46
+      Top = 62
       Width = 17
       Height = 17
       Margins.Left = 2
@@ -240,7 +262,7 @@ object F_BlkRT: TF_BlkRT
     end
     object SE_Module1: TSpinEdit
       Left = 136
-      Top = 45
+      Top = 61
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -256,7 +278,7 @@ object F_BlkRT: TF_BlkRT
     end
     object SE_Port1: TSpinEdit
       Left = 224
-      Top = 45
+      Top = 61
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -272,7 +294,7 @@ object F_BlkRT: TF_BlkRT
     object CHB_D2: TCheckBox
       Tag = 2
       Left = 100
-      Top = 73
+      Top = 89
       Width = 17
       Height = 17
       Margins.Left = 2
@@ -284,7 +306,7 @@ object F_BlkRT: TF_BlkRT
     end
     object SE_Module2: TSpinEdit
       Left = 136
-      Top = 71
+      Top = 87
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -300,7 +322,7 @@ object F_BlkRT: TF_BlkRT
     end
     object SE_Port2: TSpinEdit
       Left = 224
-      Top = 71
+      Top = 87
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -316,7 +338,7 @@ object F_BlkRT: TF_BlkRT
     object CHB_D3: TCheckBox
       Tag = 3
       Left = 100
-      Top = 99
+      Top = 115
       Width = 17
       Height = 17
       Margins.Left = 2
@@ -328,7 +350,7 @@ object F_BlkRT: TF_BlkRT
     end
     object SE_Module3: TSpinEdit
       Left = 136
-      Top = 97
+      Top = 113
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -344,7 +366,7 @@ object F_BlkRT: TF_BlkRT
     end
     object SE_Port3: TSpinEdit
       Left = 224
-      Top = 97
+      Top = 113
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -537,7 +559,7 @@ object F_BlkRT: TF_BlkRT
   end
   object GB_Speeds: TGroupBox
     Left = 8
-    Top = 281
+    Top = 294
     Width = 305
     Height = 309
     Caption = ' Rychlosti '
@@ -550,6 +572,8 @@ object F_BlkRT: TF_BlkRT
       Align = alTop
       Caption = ' Rychlosti v lich'#233'm sm'#283'ru  '
       TabOrder = 0
+      ExplicitLeft = 9
+      ExplicitTop = 9
     end
     object GB_SpeedsS: TGroupBox
       Left = 2

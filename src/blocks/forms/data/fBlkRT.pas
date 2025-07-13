@@ -58,6 +58,8 @@ type
     GB_Speeds: TGroupBox;
     GB_SpeedsL: TGroupBox;
     GB_SpeedsS: TGroupBox;
+    L_P01: TLabel;
+    Label8: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);

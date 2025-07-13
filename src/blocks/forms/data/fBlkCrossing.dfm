@@ -3,7 +3,7 @@ object F_BlkCrossing: TF_BlkCrossing
   Top = 209
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Prejezd : [Prejezd]'
+  Caption = 'Upravit blok xxx (p'#345'ejezd)'
   ClientHeight = 821
   ClientWidth = 690
   Color = clBtnFace
@@ -112,24 +112,24 @@ object F_BlkCrossing: TF_BlkCrossing
     object L_P01: TLabel
       Left = 178
       Top = 15
-      Width = 29
+      Width = 53
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Modul'
+      Caption = 'RCS modul'
     end
     object Label1: TLabel
       Left = 256
       Top = 15
-      Width = 19
+      Width = 43
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Port'
+      Caption = 'RCS port'
     end
     object GB_RCS_Out: TGroupBox
       Left = 14
@@ -332,7 +332,7 @@ object F_BlkCrossing: TF_BlkCrossing
       object CHB_RCS_Close: TCheckBox
         Left = 140
         Top = 22
-        Width = 15
+        Width = 17
         Height = 17
         TabOrder = 0
         OnClick = CHB_RCS_CloseClick

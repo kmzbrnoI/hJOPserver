@@ -123,24 +123,24 @@ object F_BlkPst: TF_BlkPst
     object Label6: TLabel
       Left = 229
       Top = 16
-      Width = 20
+      Width = 43
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Port'
+      Caption = 'RCS port'
     end
     object Label7: TLabel
       Left = 150
       Top = 16
-      Width = 28
+      Width = 51
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Modul'
+      Caption = 'RCS modul'
     end
     object Label8: TLabel
       Left = 7

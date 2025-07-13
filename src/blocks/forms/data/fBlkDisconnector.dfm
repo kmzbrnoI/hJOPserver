@@ -78,13 +78,13 @@ object F_BlkDisconnector: TF_BlkDisconnector
     object Label3: TLabel
       Left = 16
       Top = 16
-      Width = 60
+      Width = 56
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS adresa:'
+      Caption = 'RCS modul:'
     end
     object Label4: TLabel
       Left = 16
@@ -189,35 +189,35 @@ object F_BlkDisconnector: TF_BlkDisconnector
     object Label6: TLabel
       Left = 7
       Top = 88
-      Width = 26
+      Width = 86
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Voli'#269':'
+      Caption = 'Voli'#269' (RCS vstup):'
     end
     object Label8: TLabel
       Left = 150
       Top = 71
-      Width = 29
+      Width = 53
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Modul'
+      Caption = 'RCS modul'
     end
     object Label9: TLabel
-      Left = 229
+      Left = 226
       Top = 71
-      Width = 19
+      Width = 43
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Port'
+      Caption = 'RCS port'
     end
     object SE_Cont_Module: TSpinEdit
       Left = 150

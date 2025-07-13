@@ -388,7 +388,7 @@ object F_BlkTurnout: TF_BlkTurnout
     end
     object Label5: TLabel
       Left = 150
-      Top = 64
+      Top = 69
       Width = 53
       Height = 13
       Margins.Left = 2
@@ -398,8 +398,8 @@ object F_BlkTurnout: TF_BlkTurnout
       Caption = 'RCS modul'
     end
     object Label6: TLabel
-      Left = 229
-      Top = 64
+      Left = 226
+      Top = 69
       Width = 43
       Height = 13
       Margins.Left = 2
@@ -515,7 +515,7 @@ object F_BlkTurnout: TF_BlkTurnout
     end
     object Label9: TLabel
       Left = 150
-      Top = 64
+      Top = 69
       Width = 53
       Height = 13
       Margins.Left = 2
@@ -525,8 +525,8 @@ object F_BlkTurnout: TF_BlkTurnout
       Caption = 'RCS modul'
     end
     object Label10: TLabel
-      Left = 229
-      Top = 64
+      Left = 226
+      Top = 69
       Width = 43
       Height = 13
       Margins.Left = 2

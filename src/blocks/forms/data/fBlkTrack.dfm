@@ -195,24 +195,24 @@ object F_BlkTrack: TF_BlkTrack
     object L_P01: TLabel
       Left = 224
       Top = 16
-      Width = 29
+      Width = 53
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Modul'
+      Caption = 'RCS modul'
     end
     object Label7: TLabel
       Left = 312
       Top = 15
-      Width = 19
+      Width = 43
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Port'
+      Caption = 'RCS port'
     end
     object SE_Port0: TSpinEdit
       Left = 312
