@@ -620,11 +620,18 @@ begin
         StrMessageBox('Na spojkové výhybce je již jiná Coupling!', 'Varování', MB_OK OR MB_ICONWARNING);
         Exit();
       end;
+      if ((turnoutSettings.outputType <> settings.outputType) and (not Self.CHB_Coupling_Common_Out.Checked) and
+          ((turnoutSettings.rcs.outp = settings.rcs.outp) or (turnoutSettings.rcs.outm = settings.rcs.outm))) then
+      begin
+        StrMessageBox('Spojková výhybka používá stejné výstupy, ale má nastavený jiný typ výstupů!', 'Varování', MB_OK OR MB_ICONWARNING);
+        Exit();
+      end;
 
       if (Self.CHB_Coupling_Common_Out.Checked) then
       begin
         turnoutSettings.rcs.outp := settings.rcs.outp;
         turnoutSettings.rcs.outm := settings.rcs.outm;
+        turnoutSettings.outputType := settings.outputType;
       end;
       if (Self.CHB_Coupling_Common_In.Checked) then
       begin
