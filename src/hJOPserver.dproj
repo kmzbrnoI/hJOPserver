@@ -112,9 +112,10 @@
         <DCC_BplOutput>..\x86-64\outunit\</DCC_BplOutput>
         <DCC_DcuOutput>..\x86-64\outunit\</DCC_DcuOutput>
         <DCC_ExeOutput>..\x86-64\output\</DCC_ExeOutput>
-        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.6.2.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=5.6.3.0;InternalName=;LegalCopyright=Jan Horáček;LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_MinorVer>6</VerInfo_MinorVer>
+        <VerInfo_Release>3</VerInfo_Release>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>True</DCC_LocalDebugSymbols>

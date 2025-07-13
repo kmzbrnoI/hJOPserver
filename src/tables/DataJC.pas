@@ -105,6 +105,8 @@ begin
     TJCType.emergency:
       Self.LV.Items[line].SubItems[7] := 'NC';
   end;
+  if (JCData.emOnly) then
+    Self.LV.Items[line].SubItems[7] := Self.LV.Items[line].SubItems[7] + ' (NC)';
 
   if (JCData.nextSignalType = TJCNextSignalType.no) then
   begin

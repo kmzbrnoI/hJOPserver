@@ -262,7 +262,7 @@ begin
   var lastBlock: TBlkTrack := TBlkTrack(blocks[blocks.Count-1]);
   var JC := Self.FindJC(blocks);
 
-  if (JC <> nil) then
+  if ((JC <> nil) and ((startSignal.selected = TBlkSignalSelection.NC) or (not JC.emOnly))) then
   begin
     // v pripade nouzove cesty klik na DK opet prevest na klienta
     if (startSignal.selected = TBlkSignalSelection.NC) then

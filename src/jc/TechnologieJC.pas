@@ -88,6 +88,7 @@ type
     name: string;
     id: Integer;
     typ: TJCType;
+    emOnly: Boolean; // emergency-only path
 
     signalId: Integer;
     signalCode: Integer; // effective only for shunting jc
@@ -270,6 +271,7 @@ type
     property name: String read m_data.name;
     property id: Integer read m_data.id write m_data.id;
     property typ: TJCType read m_data.typ;
+    property emOnly: Boolean read m_data.emOnly;
 
     property activating: Boolean read IsActivating;
     property cancelling: Boolean read IsCancelling;
@@ -2593,12 +2595,12 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.LoadData(ini: TMemIniFile; section: string);
-var sl: TStrings;
 begin
   Self.m_data.name := ini.ReadString(section, 'nazev', section);
   Self.m_data.id := StrToInt(section);
   Self.m_data.signalId := ini.ReadInteger(section, 'nav', -1);
   Self.m_data.typ := TJCType(ini.ReadInteger(section, 'typ', -1));
+  Self.m_data.emOnly := ini.ReadBool(section, 'pouzeNouzova', False);
   Self.m_data.nextSignalType := TJCNextSignalType(ini.ReadInteger(section, 'dalsiNTyp', 0));
   Self.m_data.nextSignalId := ini.ReadInteger(section, 'dalsiN', 0);
   Self.m_data.railwayId := ini.ReadInteger(section, 'trat', -1);
@@ -2621,7 +2623,7 @@ begin
     end;
   end;
 
-  sl := TStringList.Create();
+  var sl: TStrings := TStringList.Create();
   try
     // tracks
     ExtractStrings([';', ',', '|', '-', '('], [')'], PChar(ini.ReadString(section, 'useky', '')), sl);
@@ -2744,6 +2746,8 @@ begin
   ini.WriteString(section, 'nazev', Self.m_data.name);
   ini.WriteInteger(section, 'nav', Self.m_data.signalId);
   ini.WriteInteger(section, 'typ', Integer(Self.m_data.typ));
+  if (Self.m_data.emOnly) then
+    ini.WriteBool(section, 'pouzeNouzova', True);
   if (Self.m_data.nextSignalType <> TJCNextSignalType.no) then
     ini.WriteInteger(section, 'dalsiNTyp', Integer(Self.m_data.nextSignalType));
   if (Self.m_data.nextSignalType = TJCNextSignalType.signal) then

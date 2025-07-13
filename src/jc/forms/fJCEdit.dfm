@@ -4,7 +4,7 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'J'#237'zdn'#237' cesta ...'
-  ClientHeight = 837
+  ClientHeight = 854
   ClientWidth = 1057
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -73,18 +73,18 @@ object F_JCEdit: TF_JCEdit
     Left = 346
     Top = 325
     Width = 329
-    Height = 300
+    Height = 316
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' V'#253'hybky '
-    TabOrder = 8
+    TabOrder = 9
     object LV_Turnouts: TListView
       Left = 2
       Top = 15
       Width = 325
-      Height = 212
+      Height = 228
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -114,10 +114,11 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_TurnoutsChange
       OnKeyDown = LV_TurnoutsKeyDown
+      ExplicitHeight = 212
     end
     object GB_Turnout_New: TGroupBox
       Left = 2
-      Top = 227
+      Top = 243
       Width = 325
       Height = 71
       Margins.Left = 2
@@ -127,6 +128,7 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit/smazat v'#253'hybku '
       TabOrder = 1
+      ExplicitTop = 227
       object Label10: TLabel
         Left = 8
         Top = 16
@@ -220,7 +222,7 @@ object F_JCEdit: TF_JCEdit
     Caption = ' '#218'seky '
     ParentShowHint = False
     ShowHint = True
-    TabOrder = 7
+    TabOrder = 8
     object GB_Track_New: TGroupBox
       Left = 2
       Top = 239
@@ -320,7 +322,7 @@ object F_JCEdit: TF_JCEdit
   end
   object B_Save: TButton
     Left = 975
-    Top = 806
+    Top = 822
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -329,12 +331,12 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 12
+    TabOrder = 13
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
-    Left = 896
-    Top = 806
+    Left = 888
+    Top = 822
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -342,7 +344,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 13
+    TabOrder = 14
     OnClick = B_StornoClick
   end
   object CB_Signal: TComboBox
@@ -382,15 +384,15 @@ object F_JCEdit: TF_JCEdit
     Caption = 'auto'
     Checked = True
     State = cbChecked
-    TabOrder = 14
+    TabOrder = 15
   end
   object GB_Railway: TGroupBox
     Left = 8
-    Top = 553
+    Top = 568
     Width = 329
     Height = 72
     Caption = ' N'#225'vaznost na tra'#357' '
-    TabOrder = 6
+    TabOrder = 7
     object Label1: TLabel
       Left = 111
       Top = 16
@@ -448,11 +450,11 @@ object F_JCEdit: TF_JCEdit
   end
   object GB_Speeds: TGroupBox
     Left = 8
-    Top = 279
+    Top = 294
     Width = 329
     Height = 268
     Caption = ' Rychlosti '
-    TabOrder = 5
+    TabOrder = 6
     object GB_SpeedsStop: TGroupBox
       Left = 2
       Top = 15
@@ -474,11 +476,11 @@ object F_JCEdit: TF_JCEdit
   end
   object GB_Signal: TGroupBox
     Left = 8
-    Top = 123
+    Top = 138
     Width = 329
     Height = 150
     Caption = ' N'#225'v'#283#353't'#283'n'#237' '
-    TabOrder = 4
+    TabOrder = 5
     object Label9: TLabel
       Left = 12
       Top = 20
@@ -560,7 +562,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Z'#225'mky '
-    TabOrder = 9
+    TabOrder = 10
     object LV_Locks: TListView
       Left = 2
       Top = 15
@@ -697,7 +699,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Odvraty '
-    TabOrder = 10
+    TabOrder = 11
     object LV_Refugees: TListView
       Left = 2
       Top = 15
@@ -858,7 +860,7 @@ object F_JCEdit: TF_JCEdit
   end
   object GB_Crossings: TGroupBox
     Left = 7
-    Top = 627
+    Top = 645
     Width = 668
     Height = 202
     Margins.Left = 2
@@ -866,7 +868,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' P'#345'ejezdy '
-    TabOrder = 11
+    TabOrder = 12
     object LV_Crossings: TListView
       Left = 2
       Top = 15
@@ -1047,5 +1049,14 @@ object F_JCEdit: TF_JCEdit
         OnClick = B_Cros_Names_To_IdsClick
       end
     end
+  end
+  object CHB_emOnly: TCheckBox
+    Left = 136
+    Top = 123
+    Width = 205
+    Height = 17
+    Caption = 'Pouze nouzov'#225' cesta'
+    TabOrder = 4
+    OnClick = CHB_emOnlyClick
   end
 end

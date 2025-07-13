@@ -89,6 +89,7 @@ type
     Label8: TLabel;
     Label17: TLabel;
     B_Cros_Names_To_Ids: TButton;
+    CHB_emOnly: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
@@ -127,6 +128,7 @@ type
     procedure CHB_Crossing_ClosingClick(Sender: TObject);
     procedure B_Crossing_OkClick(Sender: TObject);
     procedure B_Cros_Names_To_IdsClick(Sender: TObject);
+    procedure CHB_emOnlyClick(Sender: TObject);
   private
     OpenIndex: Integer;
     mNewJC: Boolean;
@@ -248,6 +250,7 @@ begin
   Blocks.FillCB(Self.CB_Signal, Self.CB_SignalIds, nil, nil, btSignal);
 
   Self.CB_Typ.ItemIndex := -1;
+  Self.CHB_emOnly.Checked := False;
 
   Self.CB_Signal_Signal.Clear();
   Self.CB_Signal_Signal.Enabled := false;
@@ -280,6 +283,7 @@ begin
   Self.SE_ID.Value := JCData.id;
 
   Self.CB_Typ.ItemIndex := Integer(JCData.typ) - 1;
+  Self.CHB_emOnly.Checked := JCData.emOnly;
 
   // Filling of fTrainSpeedGo & fTrainSpeedGo done in CB_TypChange
   Self.CB_TypChange(Self.CB_Typ);
@@ -705,6 +709,7 @@ begin
     JCsaveData.id := Self.SE_ID.Value;
     JCsaveData.signalId := Self.CB_SignalIds[Self.CB_Signal.ItemIndex];
     JCsaveData.typ := TJCType(Self.CB_Typ.ItemIndex + 1);
+    JCsaveData.emOnly := Self.CHB_emOnly.Checked;
 
     if (JCsaveData.typ = TJCType.shunt) then begin
       case (Self.CB_Signal_Signal.ItemIndex) of
@@ -1053,24 +1058,25 @@ end;
 procedure TF_JCEdit.CB_TypChange(Sender: TObject);
 begin
   Self.JCData.typ := TJCType(Self.CB_Typ.ItemIndex + 1);
+  const speedEnabled = (Self.JCData.typ = TJCType.train) and (not Self.CHB_emOnly.Checked);
 
-  Self.fTrainSpeedGo.LV_Speeds.Enabled := (Self.JCData.typ = TJCType.train);
-  Self.fTrainSpeedStop.LV_Speeds.Enabled := (Self.JCData.typ = TJCType.train);
-  if (Self.JCData.typ = TJCType.shunt) then
+  Self.fTrainSpeedGo.LV_Speeds.Enabled := speedEnabled;
+  Self.fTrainSpeedStop.LV_Speeds.Enabled := speedEnabled;
+  if (speedEnabled) then
   begin
-    Self.fTrainSpeedGo.Clear();
-    Self.fTrainSpeedStop.Clear();
-  end else begin
     if ((Self.JCData.speedsGo <> nil) and (Self.JCData.speedsStop <> nil)) then
     begin
       Self.fTrainSpeedGo.Fill(Self.JCData.speedsGo);
       Self.fTrainSpeedStop.Fill(Self.JCData.speedsStop);
     end;
+  end else begin
+    Self.fTrainSpeedGo.Clear();
+    Self.fTrainSpeedStop.Clear();
   end;
 
   Self.CB_Signal_Signal.Clear();
-  Self.CB_Signal_Signal.Enabled := (Self.JCData.typ = TJCType.shunt);
-  if (Self.JCData.typ = TJCType.train) then begin
+  Self.CB_Signal_Signal.Enabled := (Self.JCData.typ = TJCType.shunt) and (not Self.CHB_emOnly.Checked);
+  if ((Self.JCData.typ = TJCType.train) or (Self.CHB_emOnly.Checked)) then begin
     Self.CB_Signal_Signal.Items.Add('automaticky');
     Self.CB_Signal_Signal.ItemIndex := 0;
   end else begin
@@ -1084,6 +1090,8 @@ begin
       Self.CB_Signal_Signal.ItemIndex := 1;
     end;
   end;
+
+  Self.UpdateNextSignal();
 end;
 
 procedure TF_JCEdit.CHB_Crossing_ClosingClick(Sender: TObject);
@@ -1099,6 +1107,11 @@ begin
     Self.E_Crossing_Close_Ids.Text := '';
     Self.E_Crossing_Close_Names.Text := '';
   end;
+end;
+
+procedure TF_JCEdit.CHB_emOnlyClick(Sender: TObject);
+begin
+  Self.CB_TypChange(Self);
 end;
 
 procedure TF_JCEdit.CHB_RailwayClick(Sender: TObject);
@@ -1144,9 +1157,16 @@ begin
   Self.CB_Next_Signal.Items.Add('Žádné návěstidlo');
   Self.CB_Next_Signal.Items.Add('Trať');
 
+  Self.CB_Signal_Fall.Enabled := (not Self.CHB_emOnly.Checked);
   if (JCData.signalId = -1) then
   begin
     Self.CB_Next_Signal.ItemIndex := -1;
+    Self.CB_Next_Signal.Enabled := false;
+    Exit();
+  end;
+  if (Self.CHB_emOnly.Checked) then
+  begin
+    Self.CB_Next_Signal.ItemIndex := 0;
     Self.CB_Next_Signal.Enabled := false;
     Exit();
   end;
