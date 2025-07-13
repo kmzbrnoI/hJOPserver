@@ -207,6 +207,7 @@ type
     function GetParent(): TBlkTrack;
 
     procedure AddNSItems(var items: TList<TConfSeqItem>);
+    procedure RCSBothOutputsOff();
 
   public
     constructor Create(index: Integer);
@@ -797,6 +798,9 @@ begin
       Self.m_state.position := plus;
       Self.m_state.movingPlus := false;
 
+      if (Self.m_settings.outputType = totActiveUntilEnd) then
+        Self.RCSBothOutputsOff();
+
       // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
       if (Self.coupling <> nil) then
         Self.coupling.Update();
@@ -833,6 +837,9 @@ begin
     begin
       Self.m_state.position := minus;
       Self.m_state.movingMinus := false;
+
+      if (Self.m_settings.outputType = totActiveUntilEnd) then
+        Self.RCSBothOutputsOff();
 
       // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
       if (Self.coupling <> nil) then
@@ -887,6 +894,9 @@ begin
   begin
     Self.movingPlus := false;
     Self.movingMinus := false;
+
+    if (Self.m_settings.outputType = totActiveUntilEnd) then
+      Self.RCSBothOutputsOff();
 
     // aktualizujeme spojku, aby pri volani udalosti byla v konzistentnim stavu
     if (Self.coupling <> nil) then
@@ -951,8 +961,8 @@ begin
   if (new = plus) then
   begin
     try
-      RCSi.SetOutput(Self.rcsOutPlus, 1);
       RCSi.SetOutput(Self.rcsOutMinus, 0);
+      RCSi.SetOutput(Self.rcsOutPlus, 1);
     except
       if (Assigned(callback_err)) then
         callback_err(Self, vseRCS);
@@ -990,7 +1000,7 @@ begin
   Self.m_state.movingOKCallback := callback_ok;
   Self.m_state.movingStart := now;
 
-  if (not lock) then
+  if ((not lock) and (Self.m_settings.outputType = totManShortLockPerm)) then
   begin
     Self.m_nullOutput.enabled := true;
     Self.m_nullOutput.NullOutputTime := now + EncodeTime(
@@ -1011,10 +1021,10 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.Unlock();
+procedure TBlkTurnout.RCSBothOutputsOff;
 begin
   try
-    if ((Self.outputLocked) and (RCSi.Started)) then
+    if (RCSi.Started) then
     begin
       RCSi.SetOutput(Self.rcsOutPlus, 0);
       RCSi.SetOutput(Self.rcsOutMinus, 0);
@@ -1022,6 +1032,12 @@ begin
   except
 
   end;
+end;
+
+procedure TBlkTurnout.Unlock();
+begin
+  if ((Self.outputLocked) and (Self.m_settings.outputType = totManShortLockPerm)) then
+    Self.RCSBothOutputsOff();
 
   Self.m_state.positionLock := TTurnoutPosition.none;
 
@@ -1036,20 +1052,11 @@ end;
 
 procedure TBlkTurnout.CheckNullOutput();
 begin
-  if (not Self.m_nullOutput.enabled) then
-    Exit();
-
-  if (now >= Self.m_nullOutput.NullOutputTime) then
+  if ((Self.m_nullOutput.enabled) and (now >= Self.m_nullOutput.NullOutputTime)) then
   begin
-    try
-      RCSi.SetOutput(Self.rcsOutPlus, 0);
-      RCSi.SetOutput(Self.rcsOutMinus, 0);
-    except
-
-    end;
-
+    Self.RCSBothOutputsOff();
     Self.m_nullOutput.enabled := false;
-    Self.Change();
+    Self.Change(); // why is it here?
   end;
 end;
 
