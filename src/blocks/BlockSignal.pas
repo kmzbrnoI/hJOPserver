@@ -1027,8 +1027,10 @@ begin
       begin
         var justOne: Boolean := True; // print only blocks with just one em lock remaining (but decrease on all toRnz)
         case (blk.typ) of
-          btTurnout:
-              justOne := (TBlkTurnout(blk).state.locks = 1);
+          btTurnout: begin
+              var turnout: TBlkTurnout := TBlkTurnout(blk);
+              justOne := (turnout.state.locks = 1) or ((turnout.state.locks = 2) and (turnout.coupling <> nil) and (Self.m_state.toRnz.ContainsKey(turnout.coupling.id)));
+          end;
           btLock:
               justOne := (TBlkLock(blk).state.emLock = 1);
           btPst:
