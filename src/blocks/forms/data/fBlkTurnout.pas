@@ -19,16 +19,10 @@ type
     SE_Out_Plus_port: TSpinEdit;
     SE_Out_Minus_port: TSpinEdit;
     L_Vyh07: TLabel;
-    L_Vyh08: TLabel;
-    SE_In_Plus_port: TSpinEdit;
-    SE_In_Minus_port: TSpinEdit;
-    L_Vyh09: TLabel;
     B_Storno: TButton;
     B_Save: TButton;
     SE_Out_Plus_module: TSpinEdit;
     SE_Out_Minus_module: TSpinEdit;
-    SE_In_Plus_module: TSpinEdit;
-    SE_In_Minus_module: TSpinEdit;
     Label1: TLabel;
     GB_Lock: TGroupBox;
     CB_Lock: TComboBox;
@@ -45,7 +39,6 @@ type
     CB_Coupling: TComboBox;
     CHB_Coupling_Common_In: TCheckBox;
     CHB_Coupling_Common_Out: TCheckBox;
-    CHB_Feedback: TCheckBox;
     GB_Indications: TGroupBox;
     Label3: TLabel;
     Label4: TLabel;
@@ -69,6 +62,18 @@ type
     CHB_Controllers: TCheckBox;
     CHB_Controllers_Pst: TCheckBox;
     CHB_ManAlwaysEm: TCheckBox;
+    GB_Feedback: TGroupBox;
+    CHB_Feedback: TCheckBox;
+    L_Vyh08: TLabel;
+    L_Vyh09: TLabel;
+    SE_In_Minus_module: TSpinEdit;
+    SE_In_Plus_module: TSpinEdit;
+    SE_In_Plus_port: TSpinEdit;
+    SE_In_Minus_port: TSpinEdit;
+    Label11: TLabel;
+    Label12: TLabel;
+    CB_OutputType: TComboBox;
+    Label13: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -189,11 +194,15 @@ begin
   Self.SE_Out_Plus_module.Value := 1;
   Self.SE_Out_Minus_port.Value := 0;
   Self.SE_Out_Minus_module.Value := 1;
+  Self.CB_OutputType.ItemIndex := 0;
+
   Self.SE_In_Plus_port.Value := 0;
   Self.SE_In_Plus_module.Value := 1;
   Self.SE_In_Minus_port.Value := 0;
   Self.SE_In_Minus_module.Value := 1;
   Self.SE_moduleExit(Self);
+  Self.CHB_Feedback.Checked := true;
+  Self.CHB_FeedbackClick(Self.CHB_Feedback);
 
   Self.CHB_Coupling.Checked := false;
   Self.CHB_Coupling_Common_In.Checked := false;
@@ -208,9 +217,6 @@ begin
 
   Self.CHB_npMinus.Checked := false;
   Self.CHB_npMinusClick(Self.CHB_npMinus);
-
-  Self.CHB_Feedback.Checked := true;
-  Self.CHB_FeedbackClick(Self.CHB_Feedback);
 
   Self.CHB_Indication.Checked := false;
   Self.CHB_IndicationClick(Self.CHB_Indication);
@@ -287,6 +293,7 @@ begin
 
   Self.CHB_Feedback.Checked := settings.posDetection;
   Self.CHB_FeedbackClick(Self.CHB_Feedback);
+  Self.CB_OutputType.ItemIndex := Integer(settings.outputType);
 
   Self.CHB_npPlus.Checked := (settings.npPlus > -1);
   Self.CHB_npPlusClick(Self.CHB_npPlus);
@@ -492,6 +499,11 @@ begin
     StrMessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
+  if (Self.CB_OutputType.ItemIndex < 0) then
+  begin
+    StrMessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
   if ((Self.CHB_Coupling.Checked) and (Self.CB_Coupling.ItemIndex < 0)) then
   begin
     StrMessageBox('Vyberte spojku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
@@ -556,6 +568,7 @@ begin
     var settings: TBlkTurnoutSettings;
     settings.manAlwaysEm := Self.CHB_ManAlwaysEm.Checked;
     settings.posDetection := Self.CHB_Feedback.Checked;
+    settings.outputType := TTurnoutOutputType(Self.CB_OutputType.ItemIndex);
 
     settings.rcs.outp := TRCS.RCSAddr(SE_Out_Plus_module.Value, SE_Out_Plus_port.Value);
     settings.rcs.outm := TRCS.RCSAddr(SE_Out_Minus_module.Value, SE_Out_Minus_port.Value);

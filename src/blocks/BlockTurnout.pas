@@ -24,6 +24,7 @@ type
   TTurnoutSetError = (vseInvalidPos, vseInvalidRCSConfig, vseLocked, vseOccupied, vseRCS, vseTimeout);
   ECoupling = class(Exception);
   TTurnoutSetPosErrCb = procedure(Sender: TObject; error: TTurnoutSetError) of object;
+  TTurnoutOutputType = (totManShortLockPerm = 0, totAlwaysPerm = 1, totActiveUntilEnd = 2);
 
   TBlkTurnoutIndication = record
     // Pst / control panel indication
@@ -45,6 +46,7 @@ type
     rcs: record
       inp, inm, outp, outm: TRCSAddr;
     end;
+    outputType: TTurnoutOutputType;
     coupling: Integer; // coupling turnout id (-1 in case of none); Both coupling turnouts reference each other.
     lock: Integer; // lock id in case of turnout refering to lock, -1 in case of none
     lockPosition: TTurnoutPosition;
@@ -336,6 +338,11 @@ begin
     Self.m_settings.rcs.inm := TRCS.RCSAddr(0, 0);
   end;
 
+  var typ: Integer := ini_tech.ReadInteger(section, 'typVystupu', Integer(totManShortLockPerm));
+  if ((typ <> Integer(totManShortLockPerm)) and (typ <> Integer(totAlwaysPerm)) and (typ <> Integer(totActiveUntilEnd))) then
+    typ := Integer(totManShortLockPerm);
+  Self.m_settings.outputType := TTurnoutOutputType(typ);
+
   Self.m_settings.coupling := ini_tech.ReadInteger(section, 'spojka', -1);
   Self.m_settings.lock := ini_tech.ReadInteger(section, 'zamek', -1);
   Self.m_settings.lockPosition := TTurnoutPosition(ini_tech.ReadInteger(section, 'zamek-pol', 0));
@@ -400,6 +407,8 @@ begin
     ini_tech.WriteString(section, 'RCSin+', Self.m_settings.rcs.inp.ToString());
     ini_tech.WriteString(section, 'RCSin-', Self.m_settings.rcs.inm.ToString());
   end;
+
+  ini_tech.WriteInteger(section, 'typVystupu', Integer(Self.m_settings.outputType));
 
   if (Self.m_settings.coupling > -1) then
     ini_tech.WriteInteger(section, 'spojka', Self.m_settings.coupling);
