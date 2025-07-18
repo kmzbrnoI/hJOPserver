@@ -212,7 +212,7 @@ end;
 procedure TF_DigiReg.LocoChanged(Sender: TObject);
 var functions: TFunctions;
 begin
-  Self.SetElemntsState(((Self.OpenHV.Acquired) and ((Self.OpenHV.pom = pc) or (Self.OpenHV.pom = released))));
+  Self.SetElemntsState(((Self.OpenHV.Acquired) and ((Self.OpenHV.pom = TPomStatus.automat) or (Self.OpenHV.pom = TPomStatus.manual))));
 
   if (Self.OpenHV.Acquired) then
   begin
@@ -243,7 +243,7 @@ begin
   CHB_Total.Checked := OpenHV.ruc;
   Self.L_mine.Caption := ownConvert.BoolToYesNo(OpenHV.Acquired);
 
-  if ((OpenHV.Acquired) and ((OpenHV.pom = pc) or (OpenHV.pom = released))) then
+  if ((OpenHV.Acquired) and ((OpenHV.pom = TPomStatus.automat) or (OpenHV.pom = TPomStatus.manual))) then
   begin
     Self.S_Status.Brush.Color := clGreen;
   end else begin
@@ -260,9 +260,9 @@ begin
       Self.L_POM.Caption := 'progr';
     TPomStatus.error:
       Self.L_POM.Caption := 'error';
-    TPomStatus.pc:
+    TPomStatus.automat:
       Self.L_POM.Caption := 'automat';
-    TPomStatus.released:
+    TPomStatus.manual:
       Self.L_POM.Caption := 'ruční';
   end;
 

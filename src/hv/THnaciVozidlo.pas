@@ -63,7 +63,7 @@ type
   // v jakem smeru se nachazi stanoviste A
   THVSite = (odd = 0, even = 1);
   TFunctions = array [0 .. _HV_FUNC_MAX] of Boolean;
-  TPomStatus = (released = 0, pc = 1, progr = 2, error = 3);
+  TPomStatus = (manual = 0, automat = 1, progr = 2, error = 3);
 
   // typ hnaciho vozidla
   THVType = (other = -1, steam = 0, diesel = 1, motor = 2, electro = 3, car = 4);
@@ -336,9 +336,9 @@ begin
   Self.UpdateFuncDict();
 
   if (not Assigned(Self.data.POMautomat)) then
-    Self.data.POMautomat := TList<THVPomCV>.Create;
+    Self.data.POMautomat := TList<THVPomCV>.Create();
   if (not Assigned(Self.data.POMmanual)) then
-    Self.data.POMmanual := TList<THVPomCV>.Create;
+    Self.data.POMmanual := TList<THVPomCV>.Create();
   if (not Assigned(Self.state.regulators)) then
     Self.state.regulators := TList<THVRegulator>.Create();
   if (not Assigned(Self.state.tokens)) then
@@ -358,8 +358,8 @@ begin
   Self.state.Area := Sender;
   Self.state.last_used := Now;
 
-  Self.data.POMautomat := TList<THVPomCV>.Create;
-  Self.data.POMmanual := TList<THVPomCV>.Create;
+  Self.data.POMautomat := TList<THVPomCV>.Create();
+  Self.data.POMmanual := TList<THVPomCV>.Create();
 
   Self.m_funcDict := TDictionary<string, Integer>.Create();
 
@@ -469,13 +469,13 @@ begin
     ini.WriteInteger(addr, 'max_rychlost', Self.data.maxSpeed);
     ini.WriteInteger(addr, 'prechodnost', Self.data.transience);
 
-    // POM pri prebirani
+    // POM to program for automatic-controlled engines
     var POMautomat: string := '';
     for var pom: THVPomCV in Self.data.POMautomat do
       POMautomat := POMautomat + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
     ini.WriteString(addr, 'pom_take', POMautomat);
 
-    // POM pri uvolneni
+    // POM to program for manually-controller engines
     var POMmanual: string := '';
     for var pom: THVPomCV in Self.data.POMmanual do
       POMmanual := POMmanual + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
@@ -597,13 +597,13 @@ begin
 
   if (mode = TLokStringMode.full) then
   begin
-    // cv-take
+    // cv-automat
     Result := Result + '{';
     for var pomCV: THVPomCV in Self.data.POMautomat do
       Result := Result + '[{' + IntToStr(pomCV.cv) + '|' + IntToStr(pomCV.data) + '}]';
     Result := Result + '}|{';
 
-    // cv-release
+    // cv-manual
     for var pomCV: THVPomCV in Self.data.POMmanual do
       Result := Result + '[{' + IntToStr(pomCV.cv) + '|' + IntToStr(pomCV.data) + '}]';
     Result := Result + '}';
@@ -890,16 +890,16 @@ begin
 
     // nastavit POM rucniho rizeni
     // neprevzatym HV je POM nastaven pri prebirani; prebirni vozidel ale neni nase starost, to si resi volajici fuknce
-    if ((Self.acquired) and (Self.pom <> TPomStatus.released)) then
-      Self.SetPom(TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());
+    if ((Self.acquired) and (Self.pom <> TPomStatus.manual)) then
+      Self.SetPom(TPomStatus.manual, TTrakce.Callback(), TTrakce.Callback());
   end else begin
     // loko je vyjmuto z rucniho rizeni
 
     if (Self.state.train > -1) then
     begin
       // POM automatu
-      if (Self.pom <> TPomStatus.pc) then
-        Self.SetPom(TPomStatus.pc, TTrakce.Callback(), TTrakce.Callback());
+      if (Self.pom <> TPomStatus.automat) then
+        Self.SetPom(TPomStatus.automat, TTrakce.Callback(), TTrakce.Callback());
 
       Trains[Self.train].speed := Trains[Self.train].speed; // tento prikaz nastavi rychlost
     end else begin
@@ -1380,7 +1380,7 @@ begin
   Self.state.lastUpdated := 0;
   Self.state.acquired := false;
   Self.state.stolen := false;
-  Self.state.pom := TPomStatus.released;
+  Self.state.pom := TPomStatus.manual;
   Self.state.trakceError := false;
   Self.state.speedPendingCmds := 0;
 end;
@@ -1540,11 +1540,11 @@ begin
   if (Self.state.ruc) then
   begin
     // manual control
-    Self.SetPom(TPomStatus.released, TTrakce.Callback(Self.TrakceAcquiredPOMSet),
+    Self.SetPom(TPomStatus.manual, TTrakce.Callback(Self.TrakceAcquiredPOMSet),
       TTrakce.Callback(Self.TrakceAcquiredErr));
   end else begin
     // automatic control
-    Self.SetPom(TPomStatus.pc, TTrakce.Callback(Self.TrakceAcquiredPOMSet), TTrakce.Callback(Self.TrakceAcquiredErr));
+    Self.SetPom(TPomStatus.automat, TTrakce.Callback(Self.TrakceAcquiredPOMSet), TTrakce.Callback(Self.TrakceAcquiredErr));
   end;
 end;
 
@@ -1598,8 +1598,8 @@ begin
   Self.RecordUseNow();
   Self.changed := true;
 
-  if (Self.pom <> TPomStatus.released) then
-    Self.SetPom(TPomStatus.released, TTrakce.Callback(Self.TrakceReleasedPOM), TTrakce.Callback(Self.TrakceReleasedPOM))
+  if (Self.pom <> TPomStatus.manual) then
+    Self.SetPom(TPomStatus.manual, TTrakce.Callback(Self.TrakceReleasedPOM), TTrakce.Callback(Self.TrakceReleasedPOM))
   else
     Self.TrakceReleasedPOM(Self, nil);
 end;
@@ -1636,9 +1636,9 @@ begin
   Self.state.pom := TPomStatus.progr;
   Self.changed := true;
 
-  if (pom = TPomStatus.pc) then
+  if (pom = TPomStatus.automat) then
     toProgram := Self.data.POMautomat
-  else if (pom = TPomStatus.released) then
+  else if (pom = TPomStatus.manual) then
     toProgram := Self.data.POMmanual
   else
     raise Exception.Create('Invalid POM!');
@@ -1739,7 +1739,7 @@ begin
     Blocks.ChangeTrackWithTrain(Trains[Self.train]);
   Self.UpdatePanelRuc();
 
-  Self.SetPom(TPomStatus.released, TTrakce.Callback(), TTrakce.Callback());
+  Self.SetPom(TPomStatus.manual, TTrakce.Callback(), TTrakce.Callback());
   Self.changed := true;
 end;
 

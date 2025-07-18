@@ -144,9 +144,9 @@ begin
       Self.LV.Items[line].SubItems[18] := 'progr';
     TPomStatus.error:
       Self.LV.Items[line].SubItems[18] := 'error';
-    TPomStatus.pc:
+    TPomStatus.automat:
       Self.LV.Items[line].SubItems[18] := 'automat';
-    TPomStatus.released:
+    TPomStatus.manual:
       Self.LV.Items[line].SubItems[18] := 'ruční';
   end; // case
 
