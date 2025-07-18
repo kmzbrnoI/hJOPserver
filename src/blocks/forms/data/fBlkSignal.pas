@@ -287,6 +287,7 @@ begin
   Self.SE_RCSmodule1.Enabled := Self.CHB_RCS_Output.Checked;
   Self.SE_RCSport1.Enabled := Self.CHB_RCS_Output.Checked;
   Self.CB_Typ.Enabled := Self.CHB_RCS_Output.Checked;
+  Self.CHB_RCS_Second_Output.Enabled := Self.CHB_RCS_Output.Checked;
 
   if (not Self.CHB_RCS_Output.Checked) then
   begin
