@@ -49,7 +49,7 @@ var
 implementation
 
 uses UserDb, user, TCPServerPanel, Trakce, THVDatabase, TrainDb, PanelConnData, Logging,
-  fRegulator, fMain, Area, AreaDb, TechnologieTrakce, ownConvert;
+  fRegulator, fMain, Area, AreaDb, TechnologieTrakce, ownConvert, IfThenElse;
 
 /// /////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;"
@@ -336,13 +336,13 @@ begin
 
   if (parsed[3] = 'TOTAL') then
   begin
-    HV.ruc := (parsed[4] = '1');
+    HV.manual := (parsed[4] = '1');
     Exit();
   end;
 
   // ---- Total control is required for commands below ----
 
-  if (not HV.ruc) then
+  if (not HV.manual) then
   begin
     PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';RESP;err;Loko ' + parsed[2] + ' není v ručním řízení');
     Exit();
@@ -529,15 +529,9 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TTCPRegulator.LokUpdateRuc(HV: THV);
-var state: string;
 begin
-  if (HV.ruc) then
-    state := '1'
-  else
-    state := '0';
-
   for var i := 0 to HV.state.regulators.Count - 1 do
-    PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;' + IntToStr(HV.addr) + ';TOTAL;' + state);
+    PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;' + IntToStr(HV.addr) + ';TOTAL;' + ite(HV.manual, '1', '0'));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -550,18 +544,20 @@ begin
   // je tento regulator uz v seznamu regulatoru?
   found := false;
   for var i := 0 to HV.state.regulators.Count - 1 do
+  begin
     if (HV.state.regulators[i].conn = Regulator) then
     begin
       found := true;
       reg := HV.state.regulators[i];
       break;
     end;
+  end;
 
   // ne -> pridat do seznamu regulatoru
   if (not found) then
   begin
     reg.conn := Regulator;
-    HV.ruc := HV.ruc or (HV.state.train = -1);
+    HV.manual := HV.manual or (HV.state.train = -1);
     reg.root := (Regulator.Data as TPanelConnData).regulator_user.root;
     HV.RegulatorAdd(reg);
   end;
@@ -599,10 +595,8 @@ begin
   end else begin
     // odpoved na pozadavek o autorizaci rizeni hnaciho vozidla
     // kdyz loko prebirame, je odesilana automaticky
-    if (HV.ruc) then
-      PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(HV.addr) + ';AUTH;total;{' + HV.GetPanelLokString() + '}')
-    else
-      PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(HV.addr) + ';AUTH;ok;{' + HV.GetPanelLokString() + '}');
+    var typ: string := ite(HV.manual, 'total', 'ok');
+    PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(HV.addr) + ';AUTH;' + typ + ';{' + HV.GetPanelLokString() + '}')
   end;
 
   // pridani loko do seznamu autorizovanych loko klientem

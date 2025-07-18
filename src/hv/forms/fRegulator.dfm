@@ -163,7 +163,7 @@ object F_DigiReg: TF_DigiReg
     Alignment = taRightJustify
     Caption = '?'
   end
-  object CHB_svetla: TCheckBox
+  object CHB_Lights: TCheckBox
     Left = 138
     Top = 39
     Width = 80
@@ -175,7 +175,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F0 (sv'#283'tla)'
     TabOrder = 1
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f1: TCheckBox
     Tag = 1
@@ -190,7 +190,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F1'
     TabOrder = 2
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f2: TCheckBox
     Tag = 2
@@ -205,7 +205,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F2'
     TabOrder = 3
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f4: TCheckBox
     Tag = 4
@@ -220,7 +220,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F4'
     TabOrder = 5
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f3: TCheckBox
     Tag = 3
@@ -235,7 +235,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F3'
     TabOrder = 4
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f5: TCheckBox
     Tag = 5
@@ -250,7 +250,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F5'
     TabOrder = 6
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f6: TCheckBox
     Tag = 6
@@ -265,7 +265,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F6'
     TabOrder = 7
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f8: TCheckBox
     Tag = 8
@@ -280,7 +280,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F8'
     TabOrder = 9
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f7: TCheckBox
     Tag = 7
@@ -295,7 +295,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F7'
     TabOrder = 8
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object RG_Smer: TRadioGroup
     Left = 7
@@ -313,7 +313,7 @@ object F_DigiReg: TF_DigiReg
     TabOrder = 0
     OnClick = RG_SmerClick
   end
-  object B_PrevzitLoko: TButton
+  object B_Acquire: TButton
     Left = 117
     Top = 126
     Width = 75
@@ -324,9 +324,9 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'P'#345'evz'#237't loko'
     TabOrder = 10
-    OnClick = B_PrevzitLokoClick
+    OnClick = B_AcquireClick
   end
-  object B_OdhlLoko: TButton
+  object B_Release: TButton
     Left = 196
     Top = 126
     Width = 75
@@ -338,7 +338,7 @@ object F_DigiReg: TF_DigiReg
     Caption = 'Odpojit loko'
     Enabled = False
     TabOrder = 11
-    OnClick = B_OdhlLokoClick
+    OnClick = B_ReleaseClick
   end
   object B_STOP: TButton
     Left = 87
@@ -353,7 +353,7 @@ object F_DigiReg: TF_DigiReg
     TabOrder = 12
     OnClick = B_STOPClick
   end
-  object CHB_Total: TCheckBox
+  object CHB_Manual: TCheckBox
     Left = 7
     Top = 129
     Width = 97
@@ -362,9 +362,9 @@ object F_DigiReg: TF_DigiReg
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Tot'#225'ln'#237' '#345#237'zen'#237
+    Caption = 'Ru'#269'n'#237' '#345#237'zen'#237
     TabOrder = 13
-    OnClick = CHB_TotalClick
+    OnClick = CHB_ManualClick
   end
   object CHB_f9: TCheckBox
     Tag = 9
@@ -379,7 +379,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F9'
     TabOrder = 14
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f10: TCheckBox
     Tag = 10
@@ -394,7 +394,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F10'
     TabOrder = 15
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f12: TCheckBox
     Tag = 12
@@ -409,7 +409,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F12'
     TabOrder = 16
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object CHB_f11: TCheckBox
     Tag = 11
@@ -424,7 +424,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Bottom = 2
     Caption = 'F11'
     TabOrder = 17
-    OnClick = CHB_svetlaClick
+    OnClick = CHB_LightsClick
   end
   object B_Idle: TButton
     Left = 87

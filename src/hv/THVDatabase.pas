@@ -293,7 +293,7 @@ begin
   state.area := (area as TArea);
 
   state.train := -1;
-  state.ruc := false;
+  state.manual := false;
 
   state.regulators := nil;
   state.tokens := nil;

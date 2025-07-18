@@ -1290,7 +1290,7 @@ begin
   var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
   train.EmergencyStop();
 
-  if (train.IsAnyHVRuc()) then
+  if (train.IsAnyHVManual()) then
     train.RucUPO(SenderPnl);
 end;
 

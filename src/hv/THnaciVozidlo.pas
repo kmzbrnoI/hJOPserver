@@ -115,7 +115,7 @@ type
     area: TArea;
     regulators: TList<THVRegulator>; // seznam regulatoru -- klientu
     tokens: TList<THVToken>;
-    ruc: Boolean;
+    manual: Boolean;
     last_used: TDateTime;
     acquired: Boolean;
     stolen: Boolean; // is false if stolen
@@ -266,7 +266,7 @@ type
     property addr: Word read faddr;
     property addrStr: String read GetAddrStr;
     property name: string read data.name;
-    property ruc: Boolean read state.ruc write SetRuc;
+    property manual: Boolean read state.manual write SetRuc;
     property funcDict: TDictionary<string, Integer> read m_funcDict;
     property train: Integer read state.train write SetTrain;
     property speedStep: Byte read slot.step;
@@ -836,7 +836,7 @@ begin
     Self.state.area.BroadcastData('RUC;' + IntToStr(Self.addr) + ';MM. ' + IntToStr(Self.addr) + ' (' + train + ')');
     Exit();
   end else begin
-    if (Self.ruc) then
+    if (Self.manual) then
     begin
       var msg := 'RUC;' + IntToStr(Self.addr) + ';RUČ. ' + IntToStr(Self.addr) + ' (' + train + ')';
       var drivers: string := Self.DriverFullNames();
@@ -866,7 +866,7 @@ begin
       // aktualizace rychlosti v pripade, kdy byla loko rizena rucne (force = true)
       if (Self.state.regulators.Count = 0) then
       begin
-        Self.ruc := false;
+        Self.manual := false;
         Self.CheckRelease();
       end;
 
@@ -917,9 +917,9 @@ end;
 // timto prikazem je lokomotive zapinano / vypinano rucni rizeni
 procedure THV.SetRuc(state: Boolean);
 begin
-  if (Self.state.ruc = state) then
+  if (Self.state.manual = state) then
     Exit();
-  Self.state.ruc := state;
+  Self.state.manual := state;
 
   if (state) then
   begin
@@ -1043,7 +1043,7 @@ begin
     json['train'] := TrainDb.Trains[Self.train].name;
   if (Self.state.area <> nil) then
     json['area'] := Self.state.area.id;
-  json['ruc'] := Self.ruc;
+  json['ruc'] := Self.manual;
   json['lastUsed'] := Self.state.last_used;
   json['acquired'] := Self.acquired;
   json['acquiring'] := Self.acquiring;
@@ -1125,7 +1125,7 @@ end;
 
 procedure THV.CheckRelease();
 begin
-  if ((Self.state.train = -1) and (not Self.ruc) and (Self.state.regulators.Count = 0) and
+  if ((Self.state.train = -1) and (not Self.manual) and (Self.state.regulators.Count = 0) and
     (not RegCollector.IsLoko(Self)) and (Self.acquired)) then
   begin
     Self.SetSpeed(0);
@@ -1550,7 +1550,7 @@ begin
 
   // pokud ma souprava jasne dany smer, nastavime ho
   // podminka na sipky je tu kvuli prebirani z RUCniho rizeni z XpressNETu
-  if ((Self.train > -1) and (not Self.ruc) and (Trains[Self.train].sdata.dir_L xor Trains[Self.train].sdata.dir_S)) then
+  if ((Self.train > -1) and (not Self.manual) and (Trains[Self.train].sdata.dir_L xor Trains[Self.train].sdata.dir_S)) then
   begin
     // souprava ma zadany prave jeden smer
     direction := ((Trains[Self.train].direction = THVSite.even) xor (Self.state.siteA = THVSite.even));
@@ -1578,10 +1578,10 @@ end;
 
 procedure THV.TrakceAcquiredFunctionsSet(Sender: TObject; data: Pointer);
 begin
-  Self.state.ruc := (RegCollector.IsLoko(Self)) or (Self.ruc);
+  Self.state.manual := (RegCollector.IsLoko(Self)) or (Self.manual);
   Self.changed := true;
 
-  if (Self.state.ruc) then
+  if (Self.state.manual) then
   begin
     // manual control
     Self.SetPom(TPomStatus.manual, TTrakce.Callback(Self.TrakceAcquiredPOMSet),
@@ -1593,7 +1593,6 @@ begin
 end;
 
 procedure THV.TrakceAcquiredPOMSet(Sender: TObject; data: Pointer);
-var state: string;
 begin
   // Everything done
   TrakceI.Log(llCommands, 'Loco Fully Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
@@ -1609,11 +1608,7 @@ begin
 
   // odesleme do regulatoru info o uspesne autorizaci
   // to je dobre tehdy, kdyz je loko prebirano z centraly
-  if (Self.ruc) then
-    state := 'total'
-  else
-    state := 'ok';
-
+  var state: string := ite(Self.manual, 'total', 'ok');
   Self.BroadcastRegulators('AUTH;' + state + ';{' + Self.GetPanelLokString() + '}');
 
   if (Assigned(Self.acquiredOk.Callback)) then
@@ -1638,7 +1633,7 @@ procedure THV.TrakceRelease(ok: TCb);
 begin
   TrakceI.Log(llCommands, 'PUT: Loco Release: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.releasedOk := ok;
-  Self.state.ruc := false;
+  Self.state.manual := false;
   Self.RecordUseNow();
   Self.changed := true;
 

@@ -167,7 +167,7 @@ type
      procedure CallChangeToTracks();
      function RucBarriers(): TList<TUPOItem>;
      procedure RucUPO(AContext: TIdContext; ref: TObject = nil; callbackOk: TNotifyEvent = nil; callbackEsc: TNotifyEvent = nil);
-     function IsAnyHVRuc(): Boolean;
+     function IsAnyHVManual(): Boolean;
 
      procedure UpdateTraveled(msSinceLastUpdate: Cardinal);
 
@@ -731,7 +731,7 @@ begin
    if (dir_changed) then
      HVDb[addr].OnPredictedSignalChange();
 
-   if (HVDb[addr].ruc) then
+   if (HVDb[addr].manual) then
     begin
      Self.Log('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', llInfo);
      continue;
@@ -1574,7 +1574,7 @@ begin
         var hv := HVDb[Self.HVs[i]];
 
         var comment: string := '';
-        if (hv.ruc) then
+        if (hv.manual) then
           comment := 'Ruční řízení jízdy i funkcí'
         else if (hv.state.regulators.Count > 0) then
           comment := 'Ruční ovládání funkcí, jízdu řídí hJOP'
@@ -1586,7 +1586,7 @@ begin
         for var regulator in hv.state.regulators do
         begin
           var user := TPanelConnData(regulator.conn.Data).regulator_user;
-          if (hv.ruc) then
+          if (hv.manual) then
             Result.Add(CSItem('  Ruční řízení jízdy - '+user.fullName))
           else
             Result.Add(CSItem('  Ovládání funkcí - '+user.fullName));
@@ -1617,7 +1617,7 @@ function TTrain.RucBarriers(): TList<TUPOItem>;
 begin
   Result := TList<TUPOItem>.Create();
   for var addr: Integer in Self.HVs do
-    if ((Assigned(HVDb[addr])) and (HVDb[addr].ruc)) then
+    if ((Assigned(HVDb[addr])) and (HVDb[addr].manual)) then
       Result.Add(JCBarriers.JCBarrierToMessage(JCBarrier(barHVManual, nil, addr)));
 end;
 
@@ -1631,10 +1631,10 @@ begin
   end;
 end;
 
-function TTrain.IsAnyHVRuc(): Boolean;
+function TTrain.IsAnyHVManual(): Boolean;
 begin
   for var addr: Integer in Self.HVs do
-    if ((Assigned(HVDb[addr])) and (HVDb[addr].ruc)) then
+    if ((Assigned(HVDb[addr])) and (HVDb[addr].manual)) then
       Exit(true);
   Result := false;
 end;

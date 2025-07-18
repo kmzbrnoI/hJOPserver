@@ -886,26 +886,32 @@ begin
 
   if (signalTrack.IsTrain()) then
   begin
-    var someHVsRuc := false;
+    var anyEngineManual := false;
     var train: TTrain := Self.GetTrain(signal, signalTrack);
 
     // manual-controlled engline
     if (Self.typ = TJCType.Train) then
+    begin
       for var addr: Integer in train.HVs do
-        if ((HVDb[addr].data.typ <> THVType.car) and ((HVDb[addr].stolen) or (HVDb[addr].ruc))) then
+        if ((HVDb[addr].data.typ <> THVType.car) and ((HVDb[addr].stolen) or (HVDb[addr].manual))) then
         begin
           barriers.Add(JCBarrier(barHVManual, nil, addr));
-          someHVsRuc := true;
+          anyEngineManual := true;
         end;
+    end;
 
     // only some manual-controlled englines
-    if (someHVsRuc) then
+    if (anyEngineManual) then
+    begin
       for var addr: Integer in train.HVs do
-        if ((HVDb[addr].data.typ <> THVType.car) and (not HVDb[addr].stolen) and (not HVDb[addr].ruc)) then
+      begin
+        if ((HVDb[addr].data.typ <> THVType.car) and (not HVDb[addr].stolen) and (not HVDb[addr].manual)) then
         begin
           barriers.Add(JCBarrier(barHVNotAllManual));
           break;
         end;
+      end;
+    end;
 
     // direction of a train
     if (Self.typ = TJCType.Train) then

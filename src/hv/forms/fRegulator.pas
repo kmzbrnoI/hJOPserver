@@ -8,7 +8,7 @@ uses
 
 type
   TF_DigiReg = class(TForm)
-    CHB_svetla: TCheckBox;
+    CHB_Lights: TCheckBox;
     CHB_f1: TCheckBox;
     CHB_f2: TCheckBox;
     CHB_f4: TCheckBox;
@@ -20,12 +20,12 @@ type
     Label5: TLabel;
     RG_Smer: TRadioGroup;
     Label6: TLabel;
-    B_PrevzitLoko: TButton;
-    B_OdhlLoko: TButton;
+    B_Acquire: TButton;
+    B_Release: TButton;
     B_STOP: TButton;
     Label7: TLabel;
     Label8: TLabel;
-    CHB_Total: TCheckBox;
+    CHB_Manual: TCheckBox;
     CHB_f9: TCheckBox;
     CHB_f10: TCheckBox;
     CHB_f12: TCheckBox;
@@ -42,9 +42,9 @@ type
     Label2: TLabel;
     L_POM: TLabel;
     TB_reg: TTrackBar;
-    procedure CHB_svetlaClick(Sender: TObject);
-    procedure B_PrevzitLokoClick(Sender: TObject);
-    procedure B_OdhlLokoClick(Sender: TObject);
+    procedure CHB_LightsClick(Sender: TObject);
+    procedure B_AcquireClick(Sender: TObject);
+    procedure B_ReleaseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure B_STOPClick(Sender: TObject);
@@ -52,7 +52,7 @@ type
     procedure B_IdleClick(Sender: TObject);
     procedure S_StatusMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure T_SpeedTimer(Sender: TObject);
-    procedure CHB_TotalClick(Sender: TObject);
+    procedure CHB_ManualClick(Sender: TObject);
   private
 
     speed: Integer;
@@ -110,25 +110,25 @@ uses fMain, Trakce, TechnologieTrakce, ownConvert, ownGuiUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TF_DigiReg.CHB_TotalClick(Sender: TObject);
+procedure TF_DigiReg.CHB_ManualClick(Sender: TObject);
 begin
   try
     if (Self.OpenHV <> nil) then
-      Self.OpenHV.ruc := Self.CHB_Total.Checked;
+      Self.OpenHV.manual := Self.CHB_Manual.Checked;
   except
     on E: Exception do
       ExceptionMessageBox('Nepodařilo se nastavit RUČ:', E);
   end;
 end;
 
-procedure TF_DigiReg.CHB_svetlaClick(Sender: TObject);
+procedure TF_DigiReg.CHB_LightsClick(Sender: TObject);
 begin
   OpenHV.SetSingleFunc(TCheckBox(Sender).Tag, TCheckBox(Sender).Checked, TTrakce.Callback(), TTrakce.Callback(), Self);
 end;
 
 procedure TF_DigiReg.OpenForm(HV: THV);
 begin
-  CHB_Total.Checked := HV.ruc;
+  Self.CHB_Manual.Checked := HV.manual;
   Self.OpenHV := HV;
   Self.LocoChanged(nil);
   Self.T_Speed.Enabled := true;
@@ -138,9 +138,9 @@ begin
     Self.TB_reg.SetFocus();
 end;
 
-procedure TF_DigiReg.B_PrevzitLokoClick(Sender: TObject);
+procedure TF_DigiReg.B_AcquireClick(Sender: TObject);
 begin
-  Self.B_PrevzitLoko.Enabled := false;
+  Self.B_Acquire.Enabled := false;
   Self.OpenHV.TrakceAcquire(TTrakce.Callback(Self.Acquired), TTrakce.Callback(Self.AcquireFailed));
 end;
 
@@ -150,9 +150,9 @@ begin
   Self.T_SpeedTimer(Self);
 end;
 
-procedure TF_DigiReg.B_OdhlLokoClick(Sender: TObject);
+procedure TF_DigiReg.B_ReleaseClick(Sender: TObject);
 begin
-  Self.B_OdhlLoko.Enabled := false;
+  Self.B_Release.Enabled := false;
   Self.OpenHV.TrakceRelease(TTrakce.Callback());
 end;
 
@@ -172,7 +172,7 @@ begin
     try
       if ((tmp.Acquired) and (tmp.state.regulators.Count = 0)) then
       begin
-        tmp.ruc := false;
+        tmp.manual := false;
         tmp.CheckRelease();
       end;
     except
@@ -194,7 +194,7 @@ end;
 
 procedure TF_DigiReg.AcquireFailed(Sender: TObject; data: Pointer);
 begin
-  Self.B_PrevzitLoko.Enabled := true;
+  Self.B_Acquire.Enabled := true;
   ErrorMessageBox('Převezetí lokomotivy se nedařilo!');
 end;
 
@@ -238,9 +238,9 @@ begin
   RG_Smer.ItemIndex := Integer(OpenHV.direction);
   Self.L_address.Caption := IntToStr(OpenHV.addr);
   Self.Caption := OpenHV.name + ' (' + OpenHV.data.designation + ') : ' + IntToStr(OpenHV.addr);
-  B_PrevzitLoko.Enabled := not OpenHV.Acquired or OpenHV.state.trakceError;
-  B_OdhlLoko.Enabled := OpenHV.Acquired;
-  CHB_Total.Checked := OpenHV.ruc;
+  Self.B_Acquire.Enabled := not OpenHV.Acquired or OpenHV.state.trakceError;
+  Self.B_Release.Enabled := OpenHV.Acquired;
+  Self.CHB_Manual.Checked := OpenHV.manual;
   Self.L_mine.Caption := ownConvert.BoolToYesNo(OpenHV.Acquired);
 
   if ((OpenHV.Acquired) and ((OpenHV.pom = TPomStatus.automat) or (OpenHV.pom = TPomStatus.manual))) then
@@ -269,48 +269,48 @@ begin
   if (Sender <> Self) then
   begin
     functions := OpenHV.slotFunctions;
-    CHB_svetla.Checked := functions[0];
-    CHB_f1.Checked := functions[1];
-    CHB_f2.Checked := functions[2];
-    CHB_f3.Checked := functions[3];
-    CHB_f4.Checked := functions[4];
-    CHB_f5.Checked := functions[5];
-    CHB_f6.Checked := functions[6];
-    CHB_f7.Checked := functions[7];
-    CHB_f8.Checked := functions[8];
-    CHB_f9.Checked := functions[9];
-    CHB_f10.Checked := functions[10];
-    CHB_f11.Checked := functions[11];
-    CHB_f12.Checked := functions[12];
+    Self.CHB_Lights.Checked := functions[0];
+    Self.CHB_f1.Checked := functions[1];
+    Self.CHB_f2.Checked := functions[2];
+    Self.CHB_f3.Checked := functions[3];
+    Self.CHB_f4.Checked := functions[4];
+    Self.CHB_f5.Checked := functions[5];
+    Self.CHB_f6.Checked := functions[6];
+    Self.CHB_f7.Checked := functions[7];
+    Self.CHB_f8.Checked := functions[8];
+    Self.CHB_f9.Checked := functions[9];
+    Self.CHB_f10.Checked := functions[10];
+    Self.CHB_f11.Checked := functions[11];
+    Self.CHB_f12.Checked := functions[12];
   end;
 end;
 
 procedure TF_DigiReg.SetElemntsState(state: Boolean);
 begin
-  TB_reg.Enabled := state;
-  RG_Smer.Enabled := state;
-  B_STOP.Enabled := state;
-  B_Idle.Enabled := state;
-  CHB_svetla.Enabled := state;
-  CHB_f1.Enabled := state;
-  CHB_f2.Enabled := state;
-  CHB_f3.Enabled := state;
-  CHB_f4.Enabled := state;
-  CHB_f5.Enabled := state;
-  CHB_f6.Enabled := state;
-  CHB_f7.Enabled := state;
-  CHB_f8.Enabled := state;
-  CHB_f9.Enabled := state;
-  CHB_f10.Enabled := state;
-  CHB_f11.Enabled := state;
-  CHB_f12.Enabled := state;
-  CHB_Total.Enabled := state;
+  Self.TB_reg.Enabled := state;
+  Self.RG_Smer.Enabled := state;
+  Self.B_STOP.Enabled := state;
+  Self.B_Idle.Enabled := state;
+  Self.CHB_Lights.Enabled := state;
+  Self.CHB_f1.Enabled := state;
+  Self.CHB_f2.Enabled := state;
+  Self.CHB_f3.Enabled := state;
+  Self.CHB_f4.Enabled := state;
+  Self.CHB_f5.Enabled := state;
+  Self.CHB_f6.Enabled := state;
+  Self.CHB_f7.Enabled := state;
+  Self.CHB_f8.Enabled := state;
+  Self.CHB_f9.Enabled := state;
+  Self.CHB_f10.Enabled := state;
+  Self.CHB_f11.Enabled := state;
+  Self.CHB_f12.Enabled := state;
+  Self.CHB_Manual.Enabled := state;
 end;
 
 procedure TF_DigiReg.S_StatusMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-  if (Self.B_PrevzitLoko.Enabled) then
-    Self.B_PrevzitLokoClick(Self);
+  if (Self.B_Acquire.Enabled) then
+    Self.B_AcquireClick(Self);
 end;
 
 procedure TF_DigiReg.T_SpeedTimer(Sender: TObject);
@@ -333,15 +333,15 @@ begin
   if (not Self.OpenHV.Acquired) then
   begin
     if (key = VK_RETURN) then
-      if (Self.ActiveControl <> Self.B_PrevzitLoko) then
-        Self.B_PrevzitLokoClick(Self);
+      if (Self.ActiveControl <> Self.B_Acquire) then
+        Self.B_AcquireClick(Self);
     Exit();
   end;
 
   handled := true;
   case (key) of
     VK_NUMPAD0:
-      Self.CHB_svetla.Checked := not Self.CHB_svetla.Checked;
+      Self.CHB_Lights.Checked := not Self.CHB_Lights.Checked;
     VK_NUMPAD1:
       Self.CHB_f1.Checked := not Self.CHB_f1.Checked;
     VK_NUMPAD2:
@@ -379,16 +379,14 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 constructor TRegulatorCollector.Create();
-var i: Integer;
 begin
-  for i := 0 to Self._MAX_FORMS - 1 do
+  for var i := 0 to Self._MAX_FORMS - 1 do
     Self.Forms.data[i] := TF_DigiReg.Create(nil);
 end;
 
 destructor TRegulatorCollector.Destroy();
-var i: Integer;
 begin
-  for i := 0 to Self._MAX_FORMS - 1 do
+  for var i := 0 to Self._MAX_FORMS - 1 do
     if (Assigned(Self.Forms.data[i])) then
       FreeAndNil(Self.Forms.data[i]);
 end;
@@ -403,15 +401,17 @@ begin
 end;
 
 procedure TRegulatorCollector.Open(HV: THV);
-var i: Integer;
 begin
-  for i := 0 to Self._MAX_FORMS - 1 do
+  for var i := 0 to Self._MAX_FORMS - 1 do
+  begin
     if ((Self.Forms.data[i].Showing) and (Self.Forms.data[i].OpenHV = HV)) then
     begin
       Self.Forms.data[i].SetFocus;
       Exit();
     end;
+  end;
 
+  var i: Integer := 0;
   for i := 0 to Self._MAX_FORMS - 1 do
     if (not Self.Forms.data[i].Showing) then
       break;
@@ -423,10 +423,9 @@ begin
 end;
 
 function TRegulatorCollector.GetForm(addr: Word): TF_DigiReg;
-var i: Integer;
 begin
   Result := nil;
-  for i := 0 to Self._MAX_FORMS - 1 do
+  for var i := 0 to Self._MAX_FORMS - 1 do
   begin
     if (Self.Forms.data[i].OpenHV = nil) then
       continue;
@@ -436,19 +435,17 @@ begin
 end;
 
 procedure TRegulatorCollector.CloseAll();
-var i: Integer;
 begin
-  for i := 0 to Self._MAX_FORMS - 1 do
+  for var i := 0 to Self._MAX_FORMS - 1 do
     Self.Forms.data[i].Close;
 end;
 
 procedure TRegulatorCollector.KeyPress(key: Integer; var handled: Boolean);
-var i: Integer;
 begin
   if (handled) then
     Exit();
 
-  for i := 0 to _MAX_FORMS - 1 do
+  for var i := 0 to _MAX_FORMS - 1 do
   begin
     if ((Self.Forms.data[i] <> nil) and (Self.Forms.data[i].Active)) then
     begin
@@ -461,12 +458,11 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TRegulatorCollector.IsLoko(HV: THV): Boolean;
-var i: Integer;
 begin
   if (Self = nil) then
     Exit(false);
 
-  for i := 0 to _MAX_FORMS - 1 do
+  for var i := 0 to _MAX_FORMS - 1 do
     if ((Self.Forms.data[i] <> nil) and (Self.Forms.data[i].OpenHV = HV)) then
       Exit(true);
   Result := false;
