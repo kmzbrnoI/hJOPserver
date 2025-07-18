@@ -88,8 +88,8 @@ type
     maxSpeed: Cardinal;
     transience: Cardinal;
 
-    POMtake: TList<THVPomCV>; // seznam POM pri prevzeti do automatu
-    POMrelease: TList<THVPomCV>; // seznam POM pri uvolneni do rucniho rizeni
+    POMautomat: TList<THVPomCV>; // seznam POM pri prevzeti do automatu
+    POMmanual: TList<THVPomCV>; // seznam POM pri uvolneni do rucniho rizeni
 
     funcDescription: array [0 .. _HV_FUNC_MAX] of string; // seznam popisu funkci hnaciho vozidla
     funcType: array [0 .. _HV_FUNC_MAX] of THVFuncType; // typy funkci hnaciho vozidla
@@ -301,8 +301,8 @@ begin
   Self.state.Area := nil;
   Self.CSReset();
 
-  Self.data.POMtake := TList<THVPomCV>.Create();
-  Self.data.POMrelease := TList<THVPomCV>.Create();
+  Self.data.POMautomat := TList<THVPomCV>.Create();
+  Self.data.POMmanual := TList<THVPomCV>.Create();
 
   Self.acquiredOk := TTrakce.Callback();
   Self.acquiredErr := TTrakce.Callback();
@@ -335,10 +335,10 @@ begin
   Self.m_funcDict := TDictionary<string, Integer>.Create();
   Self.UpdateFuncDict();
 
-  if (not Assigned(Self.data.POMtake)) then
-    Self.data.POMtake := TList<THVPomCV>.Create;
-  if (not Assigned(Self.data.POMrelease)) then
-    Self.data.POMrelease := TList<THVPomCV>.Create;
+  if (not Assigned(Self.data.POMautomat)) then
+    Self.data.POMautomat := TList<THVPomCV>.Create;
+  if (not Assigned(Self.data.POMmanual)) then
+    Self.data.POMmanual := TList<THVPomCV>.Create;
   if (not Assigned(Self.state.regulators)) then
     Self.state.regulators := TList<THVRegulator>.Create();
   if (not Assigned(Self.state.tokens)) then
@@ -358,8 +358,8 @@ begin
   Self.state.Area := Sender;
   Self.state.last_used := Now;
 
-  Self.data.POMtake := TList<THVPomCV>.Create;
-  Self.data.POMrelease := TList<THVPomCV>.Create;
+  Self.data.POMautomat := TList<THVPomCV>.Create;
+  Self.data.POMmanual := TList<THVPomCV>.Create;
 
   Self.m_funcDict := TDictionary<string, Integer>.Create();
 
@@ -370,8 +370,8 @@ destructor THV.Destroy();
 begin
   Self.state.regulators.Free();
   Self.state.tokens.Free();
-  Self.data.POMtake.Free();
-  Self.data.POMrelease.Free();
+  Self.data.POMautomat.Free();
+  Self.data.POMmanual.Free();
 
   inherited;
 end;
@@ -394,19 +394,19 @@ begin
   Self.data.maxSpeed := ini.ReadInteger(section, 'max_rychlost', _DEFAUT_MAX_SPEED);
   Self.data.transience := ini.ReadInteger(section, 'prechodnost', 0);
 
-  Self.data.POMtake.Free();
+  Self.data.POMautomat.Free();
   try
-    Self.data.POMtake := Poms(ini.ReadString(section, 'pom_take', ''));
+    Self.data.POMautomat := Poms(ini.ReadString(section, 'pom_take', ''));
   except
-    Self.data.POMtake := TList<THVPomCV>.Create();
+    Self.data.POMautomat := TList<THVPomCV>.Create();
     raise;
   end;
 
-  Self.data.POMrelease.Free();
+  Self.data.POMmanual.Free();
   try
-    Self.data.POMrelease := Poms(ini.ReadString(section, 'pom_release', ''));
+    Self.data.POMmanual := Poms(ini.ReadString(section, 'pom_release', ''));
   except
-    Self.data.POMrelease := TList<THVPomCV>.Create();
+    Self.data.POMmanual := TList<THVPomCV>.Create();
     raise;
   end;
 
@@ -470,16 +470,16 @@ begin
     ini.WriteInteger(addr, 'prechodnost', Self.data.transience);
 
     // POM pri prebirani
-    var pomTake: string := '';
-    for var pom: THVPomCV in Self.data.POMtake do
-      pomTake := pomTake + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
-    ini.WriteString(addr, 'pom_take', pomTake);
+    var POMautomat: string := '';
+    for var pom: THVPomCV in Self.data.POMautomat do
+      POMautomat := POMautomat + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
+    ini.WriteString(addr, 'pom_take', POMautomat);
 
     // POM pri uvolneni
-    var pomRelease: string := '';
-    for var pom: THVPomCV in Self.data.POMrelease do
-      pomRelease := pomRelease + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
-    ini.WriteString(addr, 'pom_release', pomRelease);
+    var POMmanual: string := '';
+    for var pom: THVPomCV in Self.data.POMmanual do
+      POMmanual := POMmanual + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
+    ini.WriteString(addr, 'pom_release', POMmanual);
 
     // vyznam funkci
     var funcDesc: string := '';
@@ -599,12 +599,12 @@ begin
   begin
     // cv-take
     Result := Result + '{';
-    for var pomCV: THVPomCV in Self.data.POMtake do
+    for var pomCV: THVPomCV in Self.data.POMautomat do
       Result := Result + '[{' + IntToStr(pomCV.cv) + '|' + IntToStr(pomCV.data) + '}]';
     Result := Result + '}|{';
 
     // cv-release
-    for var pomCV: THVPomCV in Self.data.POMrelease do
+    for var pomCV: THVPomCV in Self.data.POMmanual do
       Result := Result + '[{' + IntToStr(pomCV.cv) + '|' + IntToStr(pomCV.data) + '}]';
     Result := Result + '}';
   end else begin
@@ -714,22 +714,22 @@ begin
 
     if (strs.Count > 13) then
     begin
-      Self.data.POMtake.Free();
+      Self.data.POMautomat.Free();
       try
-        Self.data.POMtake := Poms(strs[13]);
+        Self.data.POMautomat := Poms(strs[13]);
       except
-        Self.data.POMtake := TList<THVPomCV>.Create();
+        Self.data.POMautomat := TList<THVPomCV>.Create();
         raise;
       end;
     end;
 
     if (strs.Count > 14) then
     begin
-      Self.data.POMrelease.Free();
+      Self.data.POMmanual.Free();
       try
-        Self.data.POMrelease := Poms(strs[14]);
+        Self.data.POMmanual := Poms(strs[14]);
       except
-        Self.data.POMrelease := TList<THVPomCV>.Create();
+        Self.data.POMmanual := TList<THVPomCV>.Create();
         raise;
       end;
     end;
@@ -1637,9 +1637,9 @@ begin
   Self.changed := true;
 
   if (pom = TPomStatus.pc) then
-    toProgram := Self.data.POMtake
+    toProgram := Self.data.POMautomat
   else if (pom = TPomStatus.released) then
-    toProgram := Self.data.POMrelease
+    toProgram := Self.data.POMmanual
   else
     raise Exception.Create('Invalid POM!');
 

@@ -28,10 +28,10 @@ type
     E_Addr: TEdit;
     CB_OR: TComboBox;
     Label1: TLabel;
-    LV_Pom_Load: TListView;
+    LV_Pom_Automat: TListView;
     Label2: TLabel;
     Label3: TLabel;
-    LV_Pom_Release: TListView;
+    LV_Pom_Manual: TListView;
     SB_Rel_Remove: TSpeedButton;
     SB_Rel_Add: TSpeedButton;
     SB_Take_Add: TSpeedButton;
@@ -40,17 +40,17 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure B_StornoClick(Sender: TObject);
     procedure B_NajetoDeleteClick(Sender: TObject);
-    procedure LV_Pom_LoadDblClick(Sender: TObject);
+    procedure LV_Pom_AutomatDblClick(Sender: TObject);
     procedure SB_Take_AddClick(Sender: TObject);
     procedure SB_Take_RemoveClick(Sender: TObject);
-    procedure LV_Pom_LoadChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+    procedure LV_Pom_AutomatChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure SB_Rel_AddClick(Sender: TObject);
     procedure SB_Rel_RemoveClick(Sender: TObject);
-    procedure LV_Pom_ReleaseChange(Sender: TObject; Item: TListItem; Change: TItemChange);
-    procedure LV_Pom_ReleaseDblClick(Sender: TObject);
-    procedure LV_Pom_LoadKeyDown(Sender: TObject; var Key: Word;
+    procedure LV_Pom_ManualChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+    procedure LV_Pom_ManualDblClick(Sender: TObject);
+    procedure LV_Pom_AutomatKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure LV_Pom_ReleaseKeyDown(Sender: TObject; var Key: Word;
+    procedure LV_Pom_ManualKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
     OpenHV: THV;
@@ -95,16 +95,16 @@ begin
   if (F_HV_Pom.saved) then
   begin
     var i: Integer := 0;
-    while ((i < Self.LV_Pom_Release.Items.Count) and (StrToInt(Self.LV_Pom_Release.Items.Item[i].Caption) <
+    while ((i < Self.LV_Pom_Manual.Items.Count) and (StrToInt(Self.LV_Pom_Manual.Items.Item[i].Caption) <
       F_HV_Pom.SE_CV.Value)) do
       Inc(i);
 
-    if ((Assigned(Self.LV_Pom_Release.Items.Item[i])) and (StrToInt(Self.LV_Pom_Release.Items.Item[i].Caption)
+    if ((Assigned(Self.LV_Pom_Manual.Items.Item[i])) and (StrToInt(Self.LV_Pom_Manual.Items.Item[i].Caption)
       = F_HV_Pom.SE_CV.Value)) then
     begin
-      Self.LV_Pom_Release.Items.Item[i].SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
+      Self.LV_Pom_Manual.Items.Item[i].SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
     end else begin
-      var LI: TListItem := Self.LV_Pom_Release.Items.Insert(i);
+      var LI: TListItem := Self.LV_Pom_Manual.Items.Insert(i);
       LI.Caption := IntToStr(F_HV_Pom.SE_CV.Value);
       LI.SubItems.Add(IntToStr(F_HV_Pom.SE_Value.Value));
     end;
@@ -113,8 +113,8 @@ end;
 
 procedure TF_HVEdit.SB_Rel_RemoveClick(Sender: TObject);
 begin
-  if (Self.LV_Pom_Release.Selected <> nil) then
-    Self.LV_Pom_Release.Items.Delete(Self.LV_Pom_Release.ItemIndex);
+  if (Self.LV_Pom_Manual.Selected <> nil) then
+    Self.LV_Pom_Manual.Items.Delete(Self.LV_Pom_Manual.ItemIndex);
 end;
 
 procedure TF_HVEdit.SB_Take_AddClick(Sender: TObject);
@@ -123,16 +123,16 @@ begin
   if (F_HV_Pom.saved) then
   begin
     var i: Integer := 0;
-    while ((i < Self.LV_Pom_Load.Items.Count) and (StrToInt(Self.LV_Pom_Load.Items.Item[i].Caption) <
+    while ((i < Self.LV_Pom_Automat.Items.Count) and (StrToInt(Self.LV_Pom_Automat.Items.Item[i].Caption) <
       F_HV_Pom.SE_CV.Value)) do
       Inc(i);
 
-    if ((Assigned(Self.LV_Pom_Load.Items.Item[i])) and (StrToInt(Self.LV_Pom_Load.Items.Item[i].Caption)
+    if ((Assigned(Self.LV_Pom_Automat.Items.Item[i])) and (StrToInt(Self.LV_Pom_Automat.Items.Item[i].Caption)
       = F_HV_Pom.SE_CV.Value)) then
     begin
-      Self.LV_Pom_Load.Items.Item[i].SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
+      Self.LV_Pom_Automat.Items.Item[i].SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
     end else begin
-      var LI: TListItem := Self.LV_Pom_Load.Items.Insert(i);
+      var LI: TListItem := Self.LV_Pom_Automat.Items.Insert(i);
       LI.Caption := IntToStr(F_HV_Pom.SE_CV.Value);
       LI.SubItems.Add(IntToStr(F_HV_Pom.SE_Value.Value));
     end;
@@ -141,8 +141,8 @@ end;
 
 procedure TF_HVEdit.SB_Take_RemoveClick(Sender: TObject);
 begin
-  if (Self.LV_Pom_Load.Selected <> nil) then
-    Self.LV_Pom_Load.Items.Delete(Self.LV_Pom_Load.ItemIndex);
+  if (Self.LV_Pom_Automat.Selected <> nil) then
+    Self.LV_Pom_Automat.Items.Delete(Self.LV_Pom_Automat.ItemIndex);
 end;
 
 procedure TF_HVEdit.B_SaveClick(Sender: TObject);
@@ -191,37 +191,37 @@ begin
 
   if (Self.OpenHV = nil) then
   begin
-    data.POMtake := TList<THVPomCV>.Create();
-    data.POMrelease := TList<THVPomCV>.Create();
+    data.POMautomat := TList<THVPomCV>.Create();
+    data.POMmanual := TList<THVPomCV>.Create();
   end else begin
-    data.POMtake := Self.OpenHV.data.POMtake;
-    data.POMrelease := Self.OpenHV.data.POMrelease;
+    data.POMautomat := Self.OpenHV.data.POMautomat;
+    data.POMmanual := Self.OpenHV.data.POMmanual;
   end;
 
-  data.POMtake.Clear();
-  data.POMrelease.Clear();
+  data.POMautomat.Clear();
+  data.POMmanual.Clear();
 
   // parse POM take
-  for var i: Integer := 0 to Self.LV_Pom_Load.Items.Count - 1 do
+  for var i: Integer := 0 to Self.LV_Pom_Automat.Items.Count - 1 do
   begin
     try
       var pomCV: THVPomCV;
-      pomCV.cv := StrToInt(Self.LV_Pom_Load.Items.Item[i].Caption);
-      pomCV.data := StrToInt(Self.LV_Pom_Load.Items.Item[i].SubItems.Strings[0]);
-      data.POMtake.Add(pomCV);
+      pomCV.cv := StrToInt(Self.LV_Pom_Automat.Items.Item[i].Caption);
+      pomCV.data := StrToInt(Self.LV_Pom_Automat.Items.Item[i].SubItems.Strings[0]);
+      data.POMautomat.Add(pomCV);
     except
 
     end;
   end;
 
   // parse POM release
-  for var i: Integer := 0 to Self.LV_Pom_Release.Items.Count - 1 do
+  for var i: Integer := 0 to Self.LV_Pom_Manual.Items.Count - 1 do
   begin
     try
       var pomCV: THVPomCV;
-      pomCV.cv := StrToInt(Self.LV_Pom_Release.Items.Item[i].Caption);
-      pomCV.data := StrToInt(Self.LV_Pom_Release.Items.Item[i].SubItems.Strings[0]);
-      data.POMrelease.Add(pomCV);
+      pomCV.cv := StrToInt(Self.LV_Pom_Manual.Items.Item[i].Caption);
+      pomCV.data := StrToInt(Self.LV_Pom_Manual.Items.Item[i].SubItems.Strings[0]);
+      data.POMmanual.Add(pomCV);
     except
 
     end;
@@ -301,50 +301,50 @@ begin
   Self.SB_Take_Remove.Enabled := false;
 end;
 
-procedure TF_HVEdit.LV_Pom_LoadChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_HVEdit.LV_Pom_AutomatChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  Self.SB_Take_Remove.Enabled := (Self.LV_Pom_Load.Selected <> nil);
+  Self.SB_Take_Remove.Enabled := (Self.LV_Pom_Automat.Selected <> nil);
 end;
 
-procedure TF_HVEdit.LV_Pom_LoadDblClick(Sender: TObject);
+procedure TF_HVEdit.LV_Pom_AutomatDblClick(Sender: TObject);
 begin
-  if (Self.LV_Pom_Load.Selected <> nil) then
+  if (Self.LV_Pom_Automat.Selected <> nil) then
   begin
-    F_HV_Pom.OpenForm(StrToInt(Self.LV_Pom_Load.Selected.Caption),
-      StrToInt(Self.LV_Pom_Load.Selected.SubItems.Strings[0]));
+    F_HV_Pom.OpenForm(StrToInt(Self.LV_Pom_Automat.Selected.Caption),
+      StrToInt(Self.LV_Pom_Automat.Selected.SubItems.Strings[0]));
     if (F_HV_Pom.saved) then
-      Self.LV_Pom_Load.Selected.SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
+      Self.LV_Pom_Automat.Selected.SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
   end else begin
     Self.SB_Take_AddClick(Self);
   end;
 end;
 
-procedure TF_HVEdit.LV_Pom_LoadKeyDown(Sender: TObject; var Key: Word;
+procedure TF_HVEdit.LV_Pom_AutomatKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if ((Key = VK_DELETE) and (Self.SB_Take_Remove.Enabled)) then
     Self.SB_Take_RemoveClick(Self);
 end;
 
-procedure TF_HVEdit.LV_Pom_ReleaseChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_HVEdit.LV_Pom_ManualChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  Self.SB_Rel_Remove.Enabled := (Self.LV_Pom_Release.Selected <> nil);
+  Self.SB_Rel_Remove.Enabled := (Self.LV_Pom_Manual.Selected <> nil);
 end;
 
-procedure TF_HVEdit.LV_Pom_ReleaseDblClick(Sender: TObject);
+procedure TF_HVEdit.LV_Pom_ManualDblClick(Sender: TObject);
 begin
-  if (Self.LV_Pom_Release.Selected <> nil) then
+  if (Self.LV_Pom_Manual.Selected <> nil) then
   begin
-    F_HV_Pom.OpenForm(StrToInt(Self.LV_Pom_Release.Selected.Caption),
-      StrToInt(Self.LV_Pom_Release.Selected.SubItems.Strings[0]));
+    F_HV_Pom.OpenForm(StrToInt(Self.LV_Pom_Manual.Selected.Caption),
+      StrToInt(Self.LV_Pom_Manual.Selected.SubItems.Strings[0]));
     if (F_HV_Pom.saved) then
-      Self.LV_Pom_Release.Selected.SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
+      Self.LV_Pom_Manual.Selected.SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
   end else begin
     Self.SB_Rel_AddClick(Self);
   end;
 end;
 
-procedure TF_HVEdit.LV_Pom_ReleaseKeyDown(Sender: TObject; var Key: Word;
+procedure TF_HVEdit.LV_Pom_ManualKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if ((Key = VK_DELETE) and (Self.SB_Rel_Remove.Enabled)) then
@@ -372,20 +372,20 @@ begin
     Self.CB_Trida.ItemIndex := Integer(data.typ);
   Self.CB_Orientace.ItemIndex := Integer(stav.siteA);
 
-  Self.LV_Pom_Load.Clear();
-  for var i: Integer := 0 to data.POMtake.Count - 1 do
+  Self.LV_Pom_Automat.Clear();
+  for var i: Integer := 0 to data.POMautomat.Count - 1 do
   begin
-    var LI: TListItem := Self.LV_Pom_Load.Items.Add;
-    LI.Caption := IntToStr(data.POMtake[i].cv);
-    LI.SubItems.Add(IntToStr(data.POMtake[i].data));
+    var LI: TListItem := Self.LV_Pom_Automat.Items.Add;
+    LI.Caption := IntToStr(data.POMautomat[i].cv);
+    LI.SubItems.Add(IntToStr(data.POMautomat[i].data));
   end;
 
-  Self.LV_Pom_Release.Clear();
-  for var i: Integer := 0 to data.POMrelease.Count - 1 do
+  Self.LV_Pom_Manual.Clear();
+  for var i: Integer := 0 to data.POMmanual.Count - 1 do
   begin
-    var LI: TListItem := Self.LV_Pom_Release.Items.Add;
-    LI.Caption := IntToStr(data.POMrelease[i].cv);
-    LI.SubItems.Add(IntToStr(data.POMrelease[i].data));
+    var LI: TListItem := Self.LV_Pom_Manual.Items.Add;
+    LI.Caption := IntToStr(data.POMmanual[i].cv);
+    LI.SubItems.Add(IntToStr(data.POMmanual[i].data));
   end;
 
   Areas.FillCB(Self.CB_OR, stav.Area);
@@ -406,8 +406,8 @@ begin
   Self.CB_Trida.ItemIndex := -1;
   Self.CB_Orientace.ItemIndex := -1;
 
-  Self.LV_Pom_Load.Clear();
-  Self.LV_Pom_Release.Clear();
+  Self.LV_Pom_Automat.Clear();
+  Self.LV_Pom_Manual.Clear();
 
   Areas.FillCB(Self.CB_OR, nil);
 

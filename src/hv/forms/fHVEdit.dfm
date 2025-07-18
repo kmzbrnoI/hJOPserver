@@ -411,7 +411,7 @@ object F_HVEdit: TF_HVEdit
       'Motor'
       'Elektro')
   end
-  object LV_Pom_Load: TListView
+  object LV_Pom_Automat: TListView
     Left = 287
     Top = 32
     Width = 241
@@ -428,11 +428,11 @@ object F_HVEdit: TF_HVEdit
     RowSelect = True
     TabOrder = 11
     ViewStyle = vsReport
-    OnChange = LV_Pom_LoadChange
-    OnDblClick = LV_Pom_LoadDblClick
-    OnKeyDown = LV_Pom_LoadKeyDown
+    OnChange = LV_Pom_AutomatChange
+    OnDblClick = LV_Pom_AutomatDblClick
+    OnKeyDown = LV_Pom_AutomatKeyDown
   end
-  object LV_Pom_Release: TListView
+  object LV_Pom_Manual: TListView
     Left = 287
     Top = 212
     Width = 241
@@ -449,8 +449,8 @@ object F_HVEdit: TF_HVEdit
     SortType = stData
     TabOrder = 12
     ViewStyle = vsReport
-    OnChange = LV_Pom_ReleaseChange
-    OnDblClick = LV_Pom_ReleaseDblClick
-    OnKeyDown = LV_Pom_ReleaseKeyDown
+    OnChange = LV_Pom_ManualChange
+    OnDblClick = LV_Pom_ManualDblClick
+    OnKeyDown = LV_Pom_ManualKeyDown
   end
 end
