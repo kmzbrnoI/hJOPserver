@@ -55,9 +55,9 @@ const
   _HV_FUNC_MAX = 28; // maximalni funkcni cislo; funkce zacinaji na cisle 0
   _TOKEN_TIMEOUT_MIN = 3; // delka platnosti tokenu pro autorizaci hnaciho vozidla v minutach
   _TOKEN_LEN = 24; // delka autorizacniho tokenu pro prevzeti hnaciho vozidla
-  _DEFAUT_MAX_SPEED = 120; // 120 km/h
+  _DEFAUT_MAX_SPEED = 120; // [km/h]
 
-  _LOK_VERSION_SAVE = '2.0';
+  _LOK_VERSION_SAVE = '2.1';
 
 type
   // v jakem smeru se nachazi stanoviste A
@@ -90,6 +90,7 @@ type
 
     POMautomat: TList<THVPomCV>; // seznam POM pri prevzeti do automatu
     POMmanual: TList<THVPomCV>; // seznam POM pri uvolneni do rucniho rizeni
+    POMrelease: TPomStatus; // [automat, manual] (other values are invalid) - POM to set when releasing engine
 
     funcDescription: array [0 .. _HV_FUNC_MAX] of string; // seznam popisu funkci hnaciho vozidla
     funcType: array [0 .. _HV_FUNC_MAX] of THVFuncType; // typy funkci hnaciho vozidla
@@ -111,7 +112,7 @@ type
     traveled_backward: Real; // in meters
     functions: TFunctions; // stav funkci tak, jak je chceme; uklada se do souboru
     train: Integer; // index soupravy; -1 pokud neni na souprave
-    Area: TArea;
+    area: TArea;
     regulators: TList<THVRegulator>; // seznam regulatoru -- klientu
     tokens: TList<THVToken>;
     ruc: Boolean;
@@ -176,6 +177,7 @@ type
 
     function Poms(str: string): TList<THVPomCV>;
     procedure LoadHVFuncs(str: string);
+    class function PomToJson(pom: THVPomCV): TJsonObject;
 
   public
     index: Word; // index v seznamu vsech hnacich vozidel
@@ -198,7 +200,7 @@ type
     procedure ResetStats();
     function ExportStats(): string;
 
-    function MoveToArea(Area: TArea): Integer;
+    function MoveToArea(area: TArea): Integer;
     function GetPanelLokString(mode: TLokStringMode = normal): string; // vrati HV ve standardnim formatu pro klienta
     procedure UpdatePanelRuc(send_remove: Boolean = true);
     // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
@@ -298,11 +300,25 @@ begin
   Self.state.tokens := TList<THVToken>.Create();
 
   Self.state.train := -1;
-  Self.state.Area := nil;
+  Self.state.area := nil;
   Self.CSReset();
 
+  Self.data.name := '';
+  Self.data.owner := '';
+  Self.data.designation := '';
+  Self.data.note := '';
+  Self.data.typ := THVType.other;
+  Self.data.maxSpeed := _DEFAUT_MAX_SPEED;
+  Self.data.transience := 0;
   Self.data.POMautomat := TList<THVPomCV>.Create();
   Self.data.POMmanual := TList<THVPomCV>.Create();
+  Self.data.POMrelease := TPomStatus.manual;
+
+  for var i := 0 to _HV_FUNC_MAX do
+  begin
+    Self.data.funcDescription[i] := '';
+    Self.data.funcType[i] := THVFuncType.permanent;
+  end;
 
   Self.acquiredOk := TTrakce.Callback();
   Self.acquiredErr := TTrakce.Callback();
@@ -355,7 +371,7 @@ begin
   Self.state.tokens := TList<THVToken>.Create();
 
   Self.state.train := -1;
-  Self.state.Area := Sender;
+  Self.state.area := Sender;
   Self.state.last_used := Now;
 
   Self.data.POMautomat := TList<THVPomCV>.Create();
@@ -396,7 +412,8 @@ begin
 
   Self.data.POMautomat.Free();
   try
-    Self.data.POMautomat := Poms(ini.ReadString(section, 'pom_take', ''));
+    var sectAut: string := ite(ini.ValueExists(section, 'pom_automat'), 'pom_automat', 'pom_take'); // backward compatibility
+    Self.data.POMautomat := Poms(ini.ReadString(section, sectAut, ''));
   except
     Self.data.POMautomat := TList<THVPomCV>.Create();
     raise;
@@ -404,11 +421,19 @@ begin
 
   Self.data.POMmanual.Free();
   try
-    Self.data.POMmanual := Poms(ini.ReadString(section, 'pom_release', ''));
+    var sectMan: string := ite(ini.ValueExists(section, 'pom_manual'), 'pom_manual', 'pom_release'); // backward compatibility
+    Self.data.POMmanual := Poms(ini.ReadString(section, sectMan, ''));
   except
     Self.data.POMmanual := TList<THVPomCV>.Create();
     raise;
   end;
+
+  var pomRelease: string := ini.ReadString(section, 'pom_release', 'manual');
+  if (pomRelease = 'automat') then
+    Self.data.POMrelease := TPomStatus.automat
+  else
+    Self.data.POMrelease := TPomStatus.manual;
+
 
   Self.LoadHVFuncs(ini.ReadString(section, 'func_vyznam', ''));
   Self.UpdateFuncDict();
@@ -426,9 +451,9 @@ end;
 
 procedure THV.LoadState(ini: TMemIniFile; section: string);
 begin
-  Self.state.Area := Areas.Get(ini.ReadString(section, 'stanice', ''));
-  if ((Self.state.Area = nil) and (Areas.Count > 0)) then
-    Self.state.Area := Areas[HVDb.default_or];
+  Self.state.area := Areas.Get(ini.ReadString(section, 'stanice', ''));
+  if ((Self.state.area = nil) and (Areas.Count > 0)) then
+    Self.state.area := Areas[HVDb.default_or];
 
   Self.state.traveled_forward := ini.ReadFloat(section, 'najeto_vpred_metru', 0);
   Self.state.traveled_backward := ini.ReadFloat(section, 'najeto_vzad_metru', 0);
@@ -473,13 +498,15 @@ begin
     var POMautomat: string := '';
     for var pom: THVPomCV in Self.data.POMautomat do
       POMautomat := POMautomat + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
-    ini.WriteString(addr, 'pom_take', POMautomat);
+    ini.WriteString(addr, 'pom_automat', POMautomat);
 
     // POM to program for manually-controller engines
     var POMmanual: string := '';
     for var pom: THVPomCV in Self.data.POMmanual do
       POMmanual := POMmanual + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
-    ini.WriteString(addr, 'pom_release', POMmanual);
+    ini.WriteString(addr, 'pom_manual', POMmanual);
+
+    ini.WriteString(addr, 'pom_release', ite(Self.data.POMrelease = TPomStatus.automat, 'automat', 'manual'));
 
     // vyznam funkci
     var funcDesc: string := '';
@@ -521,8 +548,8 @@ begin
 
   addr := IntToStr(Self.addr);
 
-  if (Self.state.Area <> nil) then
-    ini.WriteString(addr, 'stanice', Self.state.Area.id)
+  if (Self.state.area <> nil) then
+    ini.WriteString(addr, 'stanice', Self.state.area.id)
   else
     ini.WriteString(addr, 'stanice', '');
 
@@ -593,7 +620,7 @@ begin
   end;
 
   Result := Result + '|' + IntToStr(Self.slot.step) + '|' + IntToStr(Self.realSpeed) + '|' +
-    IntToStr(ownConvert.BoolToInt(Self.direction)) + '|' + Self.state.Area.id + '|';
+    IntToStr(ownConvert.BoolToInt(Self.direction)) + '|' + Self.state.area.id + '|';
 
   if (mode = TLokStringMode.full) then
   begin
@@ -609,7 +636,7 @@ begin
     Result := Result + '}';
   end else begin
     Result := Result + '|';
-  end; // else pom
+  end;
 
   // vyznamy funkci
   Result := Result + '|{';
@@ -629,20 +656,21 @@ begin
 
   Result := Result + IntToStr(Self.data.maxSpeed) + '|';
   Result := Result + IntToStr(Self.data.transience) + '|';
+  Result := Result + ite(Self.data.POMrelease = TPomStatus.manual, 'manual', 'automat') + '|';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.MoveToArea(Area: TArea): Integer;
+function THV.MoveToArea(area: TArea): Integer;
 begin
   // zruseni RUC u stare stanice
-  Self.state.Area.BroadcastData('RUC-RM;' + IntToStr(Self.addr));
+  Self.state.area.BroadcastData('RUC-RM;' + IntToStr(Self.addr));
 
   // zmena stanice
-  Self.state.Area := Area;
+  Self.state.area := area;
 
   // RUC do nove stanice
-  Self.UpdatePanelRuc(false);
+  Self.UpdatePanelRuc(False);
 
   Self.changed := true;
   Result := 0;
@@ -760,6 +788,15 @@ begin
 
     if (strs.Count > 18) then
       Self.data.transience := StrToInt(strs[18]);
+
+    if (strs.Count > 19) then
+    begin
+      if (strs[19] = 'automat') then
+        Self.data.POMrelease := TPomStatus.automat
+      else
+        Self.data.POMrelease := TPomStatus.manual;
+    end;
+
   except
     on E: Exception do
     begin
@@ -796,7 +833,7 @@ begin
   if (Self.stolen) then
   begin
     // loko ukradeno ovladacem
-    Self.state.Area.BroadcastData('RUC;' + IntToStr(Self.addr) + ';MM. ' + IntToStr(Self.addr) + ' (' + train + ')');
+    Self.state.area.BroadcastData('RUC;' + IntToStr(Self.addr) + ';MM. ' + IntToStr(Self.addr) + ' (' + train + ')');
     Exit();
   end else begin
     if (Self.ruc) then
@@ -806,11 +843,11 @@ begin
       if (drivers <> '') then
          msg := msg + ' - ' + drivers;
 
-      Self.state.Area.BroadcastData(msg);
+      Self.state.area.BroadcastData(msg);
     end else begin
       // loko neni v rucnim rizeni -> oznamit klientovi
       if (send_remove) then
-        Self.state.Area.BroadcastData('RUC-RM;' + IntToStr(Self.addr));
+        Self.state.area.BroadcastData('RUC-RM;' + IntToStr(Self.addr));
     end;
   end;
 end;
@@ -973,6 +1010,13 @@ begin
   end;
   json['funcTypes'] := types;
 
+  for var pom: THVPomCV in Self.data.POMautomat do
+    json.A['POMautomat'].Add(Self.PomToJson(pom));
+  for var pom: THVPomCV in Self.data.POMmanual do
+    json.A['POMmanual'].Add(Self.PomToJson(pom));
+  if ((Self.data.POMautomat.Count > 0) or (Self.data.POMmanual.Count > 0)) then
+    json['POMrelease'] := ite(Self.data.POMrelease = TPomStatus.automat, 'automat', 'manual');
+
   if (includeState) then
     Self.GetPtState(json['lokState']);
 end;
@@ -997,8 +1041,8 @@ begin
 
   if (Self.IsTrain()) then
     json['train'] := TrainDb.Trains[Self.train].name;
-  if (Self.state.Area <> nil) then
-    json['area'] := Self.state.Area.id;
+  if (Self.state.area <> nil) then
+    json['area'] := Self.state.area.id;
   json['ruc'] := Self.ruc;
   json['lastUsed'] := Self.state.last_used;
   json['acquired'] := Self.acquired;
@@ -1873,6 +1917,15 @@ begin
   finally
     userfullnames.Free();
   end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+class function THV.PomToJson(pom: THVPomCV): TJsonObject;
+begin
+  Result := TJsonObject.Create();
+  Result['cv'] := pom.cv;
+  Result['value'] := pom.data;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
