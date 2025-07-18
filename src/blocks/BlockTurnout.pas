@@ -339,7 +339,7 @@ begin
     Self.m_settings.rcs.inm := TRCS.RCSAddr(0, 0);
   end;
 
-  var typ: Integer := ini_tech.ReadInteger(section, 'typVystupu', Integer(totManShortLockPerm));
+  var typ: Integer := ini_tech.ReadInteger(section, 'outputType', Integer(totManShortLockPerm));
   if ((typ <> Integer(totManShortLockPerm)) and (typ <> Integer(totAlwaysPerm)) and (typ <> Integer(totActiveUntilEnd))) then
     typ := Integer(totManShortLockPerm);
   Self.m_settings.outputType := TTurnoutOutputType(typ);
@@ -409,7 +409,7 @@ begin
     ini_tech.WriteString(section, 'RCSin-', Self.m_settings.rcs.inm.ToString());
   end;
 
-  ini_tech.WriteInteger(section, 'typVystupu', Integer(Self.m_settings.outputType));
+  ini_tech.WriteInteger(section, 'outputType', Integer(Self.m_settings.outputType));
 
   if (Self.m_settings.coupling > -1) then
     ini_tech.WriteInteger(section, 'spojka', Self.m_settings.coupling);
