@@ -210,7 +210,6 @@ begin
 end;
 
 procedure TF_DigiReg.LocoChanged(Sender: TObject);
-var functions: TFunctions;
 begin
   Self.SetElemntsState(((Self.OpenHV.Acquired) and ((Self.OpenHV.pom = TPomStatus.automat) or (Self.OpenHV.pom = TPomStatus.manual))));
 
@@ -256,6 +255,8 @@ begin
   end;
 
   case (OpenHV.pom) of
+    TPomStatus.unknown:
+      Self.L_POM.Caption := '?';
     TPomStatus.progr:
       Self.L_POM.Caption := 'progr';
     TPomStatus.error:
@@ -268,7 +269,7 @@ begin
 
   if (Sender <> Self) then
   begin
-    functions := OpenHV.slotFunctions;
+    var functions: TFunctions := OpenHV.slotFunctions;
     Self.CHB_Lights.Checked := functions[0];
     Self.CHB_f1.Checked := functions[1];
     Self.CHB_f2.Checked := functions[2];

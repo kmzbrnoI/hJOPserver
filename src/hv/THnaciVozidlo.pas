@@ -63,7 +63,7 @@ type
   // v jakem smeru se nachazi stanoviste A
   THVSite = (odd = 0, even = 1);
   TFunctions = array [0 .. _HV_FUNC_MAX] of Boolean;
-  TPomStatus = (manual = 0, automat = 1, progr = 2, error = 3);
+  TPomStatus = (unknown = -1, manual = 0, automat = 1, progr = 2, error = 3);
 
   // typ hnaciho vozidla
   THVType = (other = -1, steam = 0, diesel = 1, motor = 2, electro = 3, car = 4);
@@ -141,7 +141,7 @@ type
     procedure LoadData(ini: TMemIniFile; section: string);
     procedure LoadState(ini: TMemIniFile; section: string);
 
-    procedure SetRuc(state: Boolean);
+    procedure SetManual(state: Boolean);
     procedure UpdateFuncDict();
     procedure SetTrain(new: Integer);
 
@@ -266,7 +266,7 @@ type
     property addr: Word read faddr;
     property addrStr: String read GetAddrStr;
     property name: string read data.name;
-    property manual: Boolean read state.manual write SetRuc;
+    property manual: Boolean read state.manual write SetManual;
     property funcDict: TDictionary<string, Integer> read m_funcDict;
     property train: Integer read state.train write SetTrain;
     property speedStep: Byte read slot.step;
@@ -915,7 +915,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // timto prikazem je lokomotive zapinano / vypinano rucni rizeni
-procedure THV.SetRuc(state: Boolean);
+procedure THV.SetManual(state: Boolean);
 begin
   if (Self.state.manual = state) then
     Exit();
@@ -926,7 +926,7 @@ begin
     // loko je uvedeno do rucniho rizeni
 
     // nastavit POM rucniho rizeni
-    // neprevzatym HV je POM nastaven pri prebirani; prebirni vozidel ale neni nase starost, to si resi volajici fuknce
+    // neprevzatym HV je POM nastaven pri prebirani; prebirani vozidel ale neni nase starost, to si resi volajici fuknce
     if ((Self.acquired) and (Self.pom <> TPomStatus.manual)) then
       Self.SetPom(TPomStatus.manual, TTrakce.Callback(), TTrakce.Callback());
   end else begin
@@ -1424,7 +1424,7 @@ begin
   Self.state.lastUpdated := 0;
   Self.state.acquired := false;
   Self.state.stolen := false;
-  Self.state.pom := TPomStatus.manual;
+  Self.state.pom := TPomStatus.unknown;
   Self.state.trakceError := false;
   Self.state.speedPendingCmds := 0;
 end;
@@ -1637,8 +1637,8 @@ begin
   Self.RecordUseNow();
   Self.changed := true;
 
-  if (Self.pom <> TPomStatus.manual) then
-    Self.SetPom(TPomStatus.manual, TTrakce.Callback(Self.TrakceReleasedPOM), TTrakce.Callback(Self.TrakceReleasedPOM))
+  if (Self.pom <> Self.data.POMrelease) then
+    Self.SetPom(Self.data.POMrelease, TTrakce.Callback(Self.TrakceReleasedPOM), TTrakce.Callback(Self.TrakceReleasedPOM))
   else
     Self.TrakceReleasedPOM(Self, nil);
 end;
@@ -1778,7 +1778,8 @@ begin
     Blocks.ChangeTrackWithTrain(Trains[Self.train]);
   Self.UpdatePanelRuc();
 
-  Self.SetPom(TPomStatus.manual, TTrakce.Callback(), TTrakce.Callback());
+  if (Self.state.pom <> Self.data.POMrelease) then
+    Self.SetPom(Self.data.POMrelease, TTrakce.Callback(), TTrakce.Callback());
   Self.changed := true;
 end;
 

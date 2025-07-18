@@ -20,7 +20,7 @@ type
     M_Poznamky: TMemo;
     B_Save: TButton;
     B_Storno: TButton;
-    B_NajetoDelete: TButton;
+    B_TachoClear: TButton;
     L_HV7: TLabel;
     CB_Orientace: TComboBox;
     CB_Trida: TComboBox;
@@ -36,10 +36,12 @@ type
     SB_Rel_Add: TSpeedButton;
     SB_Take_Add: TSpeedButton;
     SB_Take_Remove: TSpeedButton;
+    Label4: TLabel;
+    CB_POM_Release: TComboBox;
     procedure B_SaveClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure B_StornoClick(Sender: TObject);
-    procedure B_NajetoDeleteClick(Sender: TObject);
+    procedure B_TachoClearClick(Sender: TObject);
     procedure LV_Pom_AutomatDblClick(Sender: TObject);
     procedure SB_Take_AddClick(Sender: TObject);
     procedure SB_Take_RemoveClick(Sender: TObject);
@@ -148,22 +150,22 @@ end;
 procedure TF_HVEdit.B_SaveClick(Sender: TObject);
 var data: THVData;
 begin
-  if (E_Nazev.Text = '') then
+  if (Self.E_Nazev.Text = '') then
   begin
     StrMessageBox('Vypište název hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (CB_Trida.ItemIndex = -1) then
+  if (Self.CB_Trida.ItemIndex = -1) then
   begin
     StrMessageBox('Vyberte typ hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (CB_Orientace.ItemIndex = -1) and (CB_Orientace.Visible) then
+  if (Self.CB_Orientace.ItemIndex = -1) and (CB_Orientace.Visible) then
   begin
     StrMessageBox('Vyberte směr stanoviště A hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (CB_OR.ItemIndex = -1) then
+  if (Self.CB_OR.ItemIndex = -1) then
   begin
     StrMessageBox('Vyberte stanici hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -171,6 +173,11 @@ begin
   if ((not Self.E_Addr.ReadOnly) and (Self.E_Addr.Text = '')) then
   begin
     StrMessageBox('Vyplňte DCC adresu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+  if (Self.CB_POM_Release.ItemIndex < 0) then
+  begin
+    StrMessageBox('Vyberte POM při uvolnění!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -188,6 +195,8 @@ begin
     data.typ := THVType.other
   else
     data.typ := THVType(CB_Trida.ItemIndex);
+
+  data.POMrelease := TPomStatus(Self.CB_POM_Release.ItemIndex);
 
   if (Self.OpenHV = nil) then
   begin
@@ -281,10 +290,10 @@ end;
 
 procedure TF_HVEdit.B_StornoClick(Sender: TObject);
 begin
-  Self.Close;
+  Self.Close();
 end;
 
-procedure TF_HVEdit.B_NajetoDeleteClick(Sender: TObject);
+procedure TF_HVEdit.B_TachoClearClick(Sender: TObject);
 begin
   if (Self.OpenHV = nil) then
     Exit();
@@ -355,8 +364,8 @@ procedure TF_HVEdit.NormalOpenForm();
 var data: THVData;
   stav: THVState;
 begin
-  B_NajetoDelete.Visible := true;
-  E_Addr.ReadOnly := true;
+  Self.B_TachoClear.Enabled := true;
+  Self.E_Addr.ReadOnly := true;
 
   data := Self.OpenHV.data;
   stav := Self.OpenHV.state;
@@ -371,6 +380,7 @@ begin
   else
     Self.CB_Trida.ItemIndex := Integer(data.typ);
   Self.CB_Orientace.ItemIndex := Integer(stav.siteA);
+  Self.CB_POM_Release.ItemIndex := Integer(data.POMrelease);
 
   Self.LV_Pom_Automat.Clear();
   for var i: Integer := 0 to data.POMautomat.Count - 1 do
@@ -395,7 +405,7 @@ end;
 
 procedure TF_HVEdit.NewHVOpenForm();
 begin
-  Self.B_NajetoDelete.Visible := false;
+  Self.B_TachoClear.Enabled := false;
   Self.E_Addr.ReadOnly := false;
 
   Self.E_Nazev.Text := '';
@@ -405,6 +415,7 @@ begin
   Self.M_Poznamky.Text := '';
   Self.CB_Trida.ItemIndex := -1;
   Self.CB_Orientace.ItemIndex := -1;
+  Self.CB_POM_Release.ItemIndex := -1;
 
   Self.LV_Pom_Automat.Clear();
   Self.LV_Pom_Manual.Clear();

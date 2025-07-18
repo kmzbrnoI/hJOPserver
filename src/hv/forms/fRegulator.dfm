@@ -335,7 +335,7 @@ object F_DigiReg: TF_DigiReg
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Odpojit loko'
+    Caption = 'Uvolnit loko'
     Enabled = False
     TabOrder = 11
     OnClick = B_ReleaseClick

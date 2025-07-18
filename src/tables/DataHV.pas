@@ -140,6 +140,8 @@ begin
     Self.LV.Items[line].SubItems[19] := '-';
 
   case (state.pom) of
+    TPomStatus.unknown:
+      Self.LV.Items[line].SubItems[18] := '?';
     TPomStatus.progr:
       Self.LV.Items[line].SubItems[18] := 'progr';
     TPomStatus.error:

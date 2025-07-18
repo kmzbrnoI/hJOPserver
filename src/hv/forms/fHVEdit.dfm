@@ -5,7 +5,7 @@ object F_HVEdit: TF_HVEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Hnaci vozidlo : [HV]'
-  ClientHeight = 361
+  ClientHeight = 381
   ClientWidth = 538
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -107,24 +107,24 @@ object F_HVEdit: TF_HVEdit
   object Label2: TLabel
     Left = 287
     Top = 16
-    Width = 146
+    Width = 126
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'POM p'#345'i p'#345'evzet'#237' do automatu:'
+    Caption = 'POM pro j'#237'zdu v automatu:'
   end
   object Label3: TLabel
     Left = 287
-    Top = 196
-    Width = 141
+    Top = 194
+    Width = 102
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'POM p'#345'i uvoln'#283'n'#237' z automatu:'
+    Caption = 'POM pro ru'#269'n'#237' '#345#237'zen'#237':'
   end
   object SB_Rel_Remove: TSpeedButton
     Left = 505
@@ -262,6 +262,17 @@ object F_HVEdit: TF_HVEdit
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
     OnClick = SB_Take_RemoveClick
   end
+  object Label4: TLabel
+    Left = 9
+    Top = 286
+    Width = 71
+    Height = 13
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = 'POM uvoln'#283'n'#237':'
+  end
   object E_Nazev: TEdit
     Left = 96
     Top = 8
@@ -311,8 +322,8 @@ object F_HVEdit: TF_HVEdit
     TabOrder = 3
   end
   object B_Save: TButton
-    Left = 8
-    Top = 328
+    Left = 7
+    Top = 349
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -325,8 +336,8 @@ object F_HVEdit: TF_HVEdit
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
-    Left = 105
-    Top = 328
+    Left = 104
+    Top = 349
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -337,18 +348,18 @@ object F_HVEdit: TF_HVEdit
     TabOrder = 8
     OnClick = B_StornoClick
   end
-  object B_NajetoDelete: TButton
-    Left = 9
-    Top = 296
+  object B_TachoClear: TButton
+    Left = 8
+    Top = 317
     Width = 265
     Height = 25
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Smazat najet'#225' data'
+    Caption = 'Reset tachometru'
     TabOrder = 7
-    OnClick = B_NajetoDeleteClick
+    OnClick = B_TachoClearClick
   end
   object CB_Orientace: TComboBox
     Left = 96
@@ -426,7 +437,7 @@ object F_HVEdit: TF_HVEdit
     MultiSelect = True
     ReadOnly = True
     RowSelect = True
-    TabOrder = 11
+    TabOrder = 12
     ViewStyle = vsReport
     OnChange = LV_Pom_AutomatChange
     OnDblClick = LV_Pom_AutomatDblClick
@@ -447,10 +458,25 @@ object F_HVEdit: TF_HVEdit
     ReadOnly = True
     RowSelect = True
     SortType = stData
-    TabOrder = 12
+    TabOrder = 13
     ViewStyle = vsReport
     OnChange = LV_Pom_ManualChange
     OnDblClick = LV_Pom_ManualDblClick
     OnKeyDown = LV_Pom_ManualKeyDown
+  end
+  object CB_POM_Release: TComboBox
+    Left = 96
+    Top = 286
+    Width = 177
+    Height = 21
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Style = csDropDownList
+    TabOrder = 11
+    Items.Strings = (
+      'POM ru'#269'n'#237' '#345#237'zen'#237
+      'POM automatick'#233' '#345#237'zen'#237)
   end
 end
