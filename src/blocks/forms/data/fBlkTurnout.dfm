@@ -324,8 +324,8 @@ object F_BlkTurnout: TF_BlkTurnout
     Caption = ' Spojka '
     TabOrder = 5
     object CHB_Coupling: TCheckBox
-      Left = 16
-      Top = 22
+      Left = 12
+      Top = 18
       Width = 64
       Height = 17
       Caption = 'Spojka'
@@ -349,7 +349,7 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 2
     end
     object CHB_Coupling_Common_Out: TCheckBox
-      Left = 16
+      Left = 12
       Top = 46
       Width = 97
       Height = 17

@@ -56,6 +56,7 @@ type
     indication: TBlkTurnoutIndication;
     controllers: TBlkTurnoutControllers;
     manAlwaysEm: Boolean; // if manual position changing should always be 'emergency' ('nouzove staveni')
+    tMovingMock: TTime; // length of moving the turnout when inputs are not used
   end;
 
   TBlkTurnoutState = record
@@ -112,7 +113,7 @@ type
     );
 
     _T_MOVING_TIMEOUT_SEC = 10;
-    _T_MOVING_MOCK_SEC = 2;
+    _DEFAULT_T_MOVING_MOCK = '2.0'; // seconds, same format as in ini file, length of moving when inputs are not used
     _T_MOVING_ACTIVE_OUTPUT_MS = 500;
 
   private
@@ -351,6 +352,8 @@ begin
   Self.m_settings.npPlus := ini_tech.ReadInteger(section, 'npPlus', -1);
   Self.m_settings.npMinus := ini_tech.ReadInteger(section, 'npMinus', -1);
 
+  Self.m_settings.tMovingMock := ownConvert.SecTenthsToTime(ini_tech.ReadString(section, 'tMoving', _DEFAULT_T_MOVING_MOCK));
+
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
   Self.m_state.lockout := ini_stat.ReadString(section, 'vyl', '');
 
@@ -442,6 +445,9 @@ begin
 
   if (Self.m_settings.manAlwaysEm) then
     ini_tech.WriteBool(section, 'manAlwaysEm', True);
+
+  if (not Self.m_settings.posDetection) then
+    ini_tech.WriteString(section, 'tMoving', ownConvert.TimeToSecTenths(Self.m_settings.tMovingMock));
 end;
 
 procedure TBlkTurnout.SaveState(ini_stat: TMemIniFile; const section: string);
@@ -1928,9 +1934,9 @@ begin
     Exit(TBlkTurnoutInputs.Create(isOn, isOff))
   else if (Self.position = TTurnoutPosition.minus) then
     Exit(TBlkTurnoutInputs.Create(isOff, isOn))
-  else if ((Self.movingPlus) and (now > Self.m_state.movingStart + EncodeTime(0, 0, _T_MOVING_MOCK_SEC, 0))) then
+  else if ((Self.movingPlus) and (now > Self.m_state.movingStart + Self.m_settings.tMovingMock)) then
     Exit(TBlkTurnoutInputs.Create(isOn, isOff))
-  else if ((Self.movingMinus) and (now > Self.m_state.movingStart + EncodeTime(0, 0, _T_MOVING_MOCK_SEC, 0))) then
+  else if ((Self.movingMinus) and (now > Self.m_state.movingStart + Self.m_settings.tMovingMock)) then
     Exit(TBlkTurnoutInputs.Create(isOff, isOn))
   else if (Self.position = TTurnoutPosition.disabled) then
   begin

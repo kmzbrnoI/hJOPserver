@@ -113,7 +113,8 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, Block, DataBloky, Area, ifThenElse, ownGuiUtils;
+uses GetSystems, TechnologieRCS, Block, DataBloky, Area, ifThenElse, ownGuiUtils,
+  ownConvert;
 
 {$R *.dfm}
 
@@ -582,6 +583,11 @@ begin
       settings.rcs.inm := RCSi.RCSAddr(0, 0);
     end;
 
+    // Just keep tMovingMock, do not change
+    if (Self.isNewBlock) then
+      settings.tMovingMock := ownConvert.SecTenthsToTime(TBlkTurnout._DEFAULT_T_MOVING_MOCK)
+    else
+      settings.tMovingMock := Self.block.GetSettings().tMovingMock;
 
     var messages := '';
     var another: TBlk;
