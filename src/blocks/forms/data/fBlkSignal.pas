@@ -6,7 +6,7 @@ uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Types,
   Dialogs, StdCtrls, Spin, ExtCtrls, ComCtrls, fMain, BlockSignal,
   fBlkSignalEvent, Generics.Collections, Themes, CloseTabSheet, Buttons,
-  BlockDb;
+  BlockDb, Vcl.NumberBox;
 
 type
   TF_BlkSignal = class(TForm)
@@ -45,6 +45,8 @@ type
     Label10: TLabel;
     SE_Ind_Port: TSpinEdit;
     SE_Cont_Port: TSpinEdit;
+    CHB_changeTime: TCheckBox;
+    NB_ChangeTime: TNumberBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -64,6 +66,7 @@ type
     procedure CHB_PStClick(Sender: TObject);
     procedure SE_Ind_ModuleExit(Sender: TObject);
     procedure SE_Cont_ModuleExit(Sender: TObject);
+    procedure CHB_changeTimeClick(Sender: TObject);
 
   private
     openIndex: Integer;
@@ -93,7 +96,8 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, Block, Area, DataBloky, BlockTrack, ownGuiUtils;
+uses GetSystems, TechnologieRCS, Block, Area, DataBloky, BlockTrack, ownGuiUtils,
+  ownConvert;
 
 {$R *.dfm}
 
@@ -128,6 +132,9 @@ begin
 
   Self.CHB_RCS_Output.Checked := true;
   Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
+
+  Self.CHB_changeTime.Checked := False;
+  Self.CHB_changeTimeClick(Self.CHB_changeTime);
 
   Self.CHB_PSt.Checked := false;
   Self.CHB_PStClick(Self.CHB_PSt);
@@ -179,6 +186,10 @@ begin
   Self.SE_RCSmodule1Exit(Self);
 
   Self.CHB_Locked.Checked := settings.locked;
+
+  Self.CHB_changeTime.Checked := Self.block.IsSpecificChangeTime();
+  Self.NB_ChangeTime.Text := ownConvert.TimeToSecTenths(settings.changeTime);
+  Self.CHB_changeTimeClick(Self.CHB_changeTime);
 
   for var i := 0 to settings.events.count - 1 do
   begin
@@ -248,6 +259,13 @@ begin
   Self.Close();
 end;
 
+procedure TF_BlkSignal.CHB_changeTimeClick(Sender: TObject);
+begin
+  Self.NB_ChangeTime.Enabled := Self.CHB_changeTime.Checked;
+  if (not Self.CHB_changeTime.Checked) then
+    Self.NB_ChangeTime.Text := TBlkSignal.DefaultChangeTime(Self.CHB_RCS_Output.Checked);
+end;
+
 procedure TF_BlkSignal.CHB_PStClick(Sender: TObject);
 begin
   Self.SE_Ind_Module.Enabled := Self.CHB_PSt.Checked;
@@ -278,6 +296,8 @@ begin
     Self.CHB_RCS_Second_Output.Checked := false;
     Self.CHB_RCS_Second_OutputClick(Self);
   end;
+
+  Self.CHB_changeTimeClick(Self.CHB_changeTime);
 end;
 
 procedure TF_BlkSignal.CHB_RCS_Second_OutputClick(Sender: TObject);
@@ -395,6 +415,7 @@ begin
       settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule2.Value, SE_RCSport2.Value));
 
     settings.fallDelay := Self.SE_Delay.Value;
+    settings.changeTime := ownConvert.SecTenthsToTime(Self.NB_ChangeTime.Text);
 
     settings.locked := Self.CHB_Locked.Checked;
     settings.events := TObjectList<TBlkSignalTrainEvent>.Create();

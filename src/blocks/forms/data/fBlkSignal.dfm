@@ -4,7 +4,7 @@ object F_BlkSignal: TF_BlkSignal
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (n'#225'v'#283'stidlo)'
-  ClientHeight = 441
+  ClientHeight = 464
   ClientWidth = 681
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -65,13 +65,13 @@ object F_BlkSignal: TF_BlkSignal
   object Label2: TLabel
     Left = 7
     Top = 104
-    Width = 170
+    Width = 140
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Zpo'#382'd'#283'n'#237' p'#225'du n'#225'v'#283'stidla [sekund]:'
+    Caption = 'Zpo'#382'd'#283'n'#237' p'#225'du n'#225'v'#283'stidla [s]:'
   end
   object E_Name: TEdit
     Left = 119
@@ -100,8 +100,8 @@ object F_BlkSignal: TF_BlkSignal
     Value = 1
   end
   object GB_RCS: TGroupBox
-    Left = 7
-    Top = 131
+    Left = 8
+    Top = 177
     Width = 304
     Height = 147
     Margins.Left = 2
@@ -109,7 +109,7 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' n'#225'v'#283'stidla '
-    TabOrder = 3
+    TabOrder = 6
     object Label3: TLabel
       Left = 131
       Top = 38
@@ -146,7 +146,7 @@ object F_BlkSignal: TF_BlkSignal
     object Label6: TLabel
       Left = 8
       Top = 56
-      Width = 82
+      Width = 62
       Height = 13
       Caption = 'Prvn'#237' v'#253'stup:'
     end
@@ -176,7 +176,7 @@ object F_BlkSignal: TF_BlkSignal
       Style = csDropDownList
       TabOrder = 5
       Items.Strings = (
-        'S-Com'
+        'S-COM'
         'bin'#225'rn'#237' (0/1)')
     end
     object SE_RCSmodule1: TSpinEdit
@@ -197,9 +197,9 @@ object F_BlkSignal: TF_BlkSignal
     object CHB_RCS_Output: TCheckBox
       Left = 8
       Top = 16
-      Width = 201
+      Width = 153
       Height = 17
-      Caption = 'N'#225'v'#283'stidlo m'#225' v'#253'stup na sb'#283'rnici RCS'
+      Caption = 'N'#225'v'#283'stidlo m'#225' RCS v'#253'stup'
       TabOrder = 0
       OnClick = CHB_RCS_OutputClick
     end
@@ -244,7 +244,7 @@ object F_BlkSignal: TF_BlkSignal
   end
   object B_Storno: TButton
     Left = 520
-    Top = 408
+    Top = 432
     Width = 76
     Height = 25
     Margins.Left = 2
@@ -252,12 +252,12 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 7
+    TabOrder = 9
     OnClick = B_StornoClick
   end
   object B_Save: TButton
     Left = 600
-    Top = 408
+    Top = 432
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -266,7 +266,7 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 6
+    TabOrder = 8
     OnClick = B_SaveClick
   end
   object SE_Delay: TSpinEdit
@@ -281,11 +281,11 @@ object F_BlkSignal: TF_BlkSignal
   end
   object CHB_Locked: TCheckBox
     Left = 8
-    Top = 283
+    Top = 155
     Width = 201
     Height = 17
     Caption = 'N'#225'v'#283'stidlo trvale zamknuto do ST'#366'J'
-    TabOrder = 4
+    TabOrder = 5
   end
   object PC_Events: TPageControl
     Left = 317
@@ -294,7 +294,7 @@ object F_BlkSignal: TF_BlkSignal
     Height = 369
     MultiLine = True
     OwnerDraw = True
-    TabOrder = 8
+    TabOrder = 10
     OnDrawTab = PageControlCloseButtonDrawTab
     OnMouseDown = PageControlCloseButtonMouseDown
     OnMouseLeave = PageControlCloseButtonMouseLeave
@@ -333,16 +333,16 @@ object F_BlkSignal: TF_BlkSignal
       FFFFFFFFFFFFFFFFFFFFFFFF000000000000000000AAAAAAFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF09090900
       0000000000B3B3B3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-    TabOrder = 9
+    TabOrder = 11
     OnClick = BB_Event_AddClick
   end
   object GB_PSt: TGroupBox
     Left = 8
-    Top = 306
+    Top = 329
     Width = 303
     Height = 127
     Caption = ' Pomocn'#233' stav'#283'dlo - indikace, voli'#269'e '
-    TabOrder = 5
+    TabOrder = 7
     object Label7: TLabel
       Left = 7
       Top = 64
@@ -454,5 +454,24 @@ object F_BlkSignal: TF_BlkSignal
       TabOrder = 4
       Value = 0
     end
+  end
+  object CHB_changeTime: TCheckBox
+    Left = 8
+    Top = 132
+    Width = 184
+    Height = 17
+    Caption = 'Specifick'#253' '#269'as zm'#283'ny n'#225'v'#283'sti [s]:'
+    TabOrder = 3
+    OnClick = CHB_changeTimeClick
+  end
+  object NB_ChangeTime: TNumberBox
+    Left = 224
+    Top = 132
+    Width = 87
+    Height = 21
+    Decimal = 1
+    Mode = nbmFloat
+    MaxValue = 10.000000000000000000
+    TabOrder = 4
   end
 end

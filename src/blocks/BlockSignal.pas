@@ -77,6 +77,7 @@ type
     // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
     // program si pamatuje vice zastavovacich a zpomalovaich udalosti pro ruzne typy a delky soupravy
     fallDelay: Integer; // zpozdeni padu navestidla v sekundach (standartne 0)
+    changeTime: TTime; // cas zmeny navesti
     locked: Boolean; // jestli je navestidlo trvale zamknuto na STUJ (hodi se napr. u navestidel a konci kusych koleji)
     PSt: record
       enabled: Boolean;
@@ -124,8 +125,8 @@ type
     _PRIVOL_SEC = 90;
 
     _SIG_DEFAULT_DELAY = 2;
-    _SIG_CHANGE_DELAY_MSEC = 1000;
-    _SIG_CHANGE_SHORT_DELAY_MSEC = 200;
+    _SIG_DEFAULT_CHANGE_DELAY_OUTPUT = '1.0'; // seconds, same format as in ini file
+    _SIG_DEFAULT_CHANGE_DELAY_NO_OUTPUT = '0.2'; // seconds, same format as in ini file
 
   private
     m_trackId: TBlk;
@@ -197,6 +198,7 @@ type
     procedure PstCheckActive();
     procedure ShowIndication();
     procedure ReadContollers();
+    function DefaultChangeTime(): string; overload;
 
   protected
     m_settings: TBlkSignalSettings;
@@ -239,8 +241,10 @@ type
 
     function GetTrain(track: TBlk = nil): TTrain;
     procedure PropagatePOdjToRailway();
+    function IsSpecificChangeTime(): Boolean;
 
     class function SignalToString(code: TBlkSignalCode): string;
+    class function DefaultChangeTime(hasRCSoutput: Boolean): string; overload;
 
     procedure PstAdd(pst: TBlk);
     procedure PstRemove(pst: TBlk);
@@ -341,6 +345,7 @@ begin
 
   Self.m_settings.outputType := TBlkSignalOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
   Self.m_settings.fallDelay := ini_tech.ReadInteger(section, 'zpoz', _SIG_DEFAULT_DELAY);
+  Self.m_settings.changeTime := ownConvert.SecTenthsToTime(ini_tech.ReadString(section, 'changeTime', Self.DefaultChangeTime()));
 
   var strs: TStrings := Self.LoadAreas(ini_rel, 'N');
   try
@@ -430,6 +435,9 @@ begin
 
   if (Self.m_settings.fallDelay <> _SIG_DEFAULT_DELAY) then
     ini_tech.WriteInteger(section, 'zpoz', Self.m_settings.fallDelay);
+
+  if (Self.IsSpecificChangeTime()) then
+    ini_tech.WriteString(section, 'changeTime', ownConvert.TimeToSecTenths(Self.m_settings.changeTime));
 
   if (Self.m_settings.locked) then
     ini_tech.WriteBool(section, 'zamknuti', Self.m_settings.locked);
@@ -654,11 +662,7 @@ begin
       Area.pnBlkCnt := area.pnBlkCnt - 1;
   end;
 
-  if (Self.m_settings.RCSAddrs.Count > 0) then
-    Self.m_state.changeEnd := now + EncodeTime(0, 0, _SIG_CHANGE_DELAY_MSEC div 1000, _SIG_CHANGE_DELAY_MSEC mod 1000)
-  else
-    Self.m_state.changeEnd := now + EncodeTime(0, 0, _SIG_CHANGE_SHORT_DELAY_MSEC div 1000,
-      _SIG_CHANGE_SHORT_DELAY_MSEC mod 1000);
+  Self.m_state.changeEnd := now + Self.m_settings.changeTime;
 
   if (not TBlkSignal.IsGoSignal(Self.m_state.targetSignal)) then // zastavujeme ihned
     Self.UpdateTrainSpeed(true);
@@ -2388,6 +2392,23 @@ begin
     on E: RCSException do Exit();
     on E: Exception do raise;
   end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+class function TBlkSignal.DefaultChangeTime(hasRCSoutput: Boolean): string;
+begin
+  Result := ite(hasRCSoutput, _SIG_DEFAULT_CHANGE_DELAY_OUTPUT, _SIG_DEFAULT_CHANGE_DELAY_NO_OUTPUT);
+end;
+
+function TBlkSignal.DefaultChangeTime(): string;
+begin
+  Result := TBlkSignal.DefaultChangeTime(Self.m_settings.RCSAddrs.Count > 0);
+end;
+
+function TBlkSignal.IsSpecificChangeTime(): Boolean;
+begin
+  Result := (ownConvert.TimeToSecTenths(Self.m_settings.changeTime) <> Self.DefaultChangeTime());
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
