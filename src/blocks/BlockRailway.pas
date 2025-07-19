@@ -1200,7 +1200,7 @@ begin
   Result := Result + '}|';
 
   if (not trainPredict) then
-    Result := Result + IntToStr(ownConvert.BoolToInt(Self.Train.emergencyStopped))
+    Result := Result + ownConvert.BoolToStr10(Self.Train.emergencyStopped)
   else
     Result := Result + '-'
 end;
