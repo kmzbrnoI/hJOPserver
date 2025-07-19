@@ -190,10 +190,10 @@ begin
 
   case (Self.m_data.typ) of
     rrtTrack:
-      Result := Result + IntToStr(ownConvert.BoolToInt(Self.m_data.trackState)) + ',' + Self.TrackPartToFile(Self.m_data.trackPart);
+      Result := Result + ownConvert.BoolToStr10(Self.m_data.trackState) + ',' + Self.TrackPartToFile(Self.m_data.trackPart);
 
     rrtIR:
-      Result := Result + IntToStr(ownConvert.BoolToInt(Self.m_data.irState)) + ',' + IntToStr(Self.m_data.irId);
+      Result := Result + ownConvert.BoolToStr10(Self.m_data.irState) + ',' + IntToStr(Self.m_data.irId);
 
     rrtTime:
       Result := Result + FormatDateTime('nn:ss.z', Self.m_data.time);

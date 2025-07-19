@@ -660,7 +660,7 @@ begin
   end;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';' + ownConvert.ColorToStr(bg) + ';' +
-    IntToStr(ownConvert.BoolToInt(railway.request)) + ';';
+    ownConvert.BoolToStr10(railway.request) + ';';
 
   case (railway.direction) of
     TRailwayDirection.disabled, TRailwayDirection.no:

@@ -1907,7 +1907,7 @@ begin
       bg := TJopColor.brown;
   end;
 
-  Result := Result + ownConvert.ColorToStr(bg) + ';' + IntToStr(ownConvert.BoolToInt(Self.NUZ)) + ';' +
+  Result := Result + ownConvert.ColorToStr(bg) + ';' + ownConvert.BoolToStr10(Self.NUZ) + ';' +
     IntToStr(Integer(Self.position)) + ';';
 end;
 

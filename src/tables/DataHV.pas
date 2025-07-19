@@ -168,28 +168,28 @@ begin
     // prevzato
 
     Self.LV.Items[line].SubItems[9] := IntToStr(HV.realSpeed) + 'km/h / ' + IntToStr(slot.step) + ' st';
-    Self.LV.Items[line].SubItems[10] := IntToStr(ownConvert.BoolToInt(slot.direction));
-    Self.LV.Items[line].SubItems[11] := IntToStr(ownConvert.BoolToInt(HV.slotFunctions[0]));
+    Self.LV.Items[line].SubItems[10] := ownConvert.BoolToStr10(slot.direction);
+    Self.LV.Items[line].SubItems[11] := ownConvert.BoolToStr10(HV.slotFunctions[0]);
 
     str := '';
     for var i := 1 to 4 do
-      str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
+      str := str + ownConvert.BoolToStr10(HV.slotFunctions[i]);
     Self.LV.Items[line].SubItems[12] := str;
 
     str := '';
     for var i := 5 to 8 do
-      str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
+      str := str + ownConvert.BoolToStr10(HV.slotFunctions[i]);
     Self.LV.Items[line].SubItems[13] := str;
 
     str := '';
     for var i := 9 to 12 do
-      str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
+      str := str + ownConvert.BoolToStr10(HV.slotFunctions[i]);
     Self.LV.Items[line].SubItems[14] := str;
 
     str := '';
     for var i := 13 to 20 do
     begin
-      str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
+      str := str + ownConvert.BoolToStr10(HV.slotFunctions[i]);
       if (i = 16) then
         str := str + ' ';
     end;
@@ -198,7 +198,7 @@ begin
     str := '';
     for var i := 21 to 28 do
     begin
-      str := str + IntToStr(ownConvert.BoolToInt(HV.slotFunctions[i]));
+      str := str + ownConvert.BoolToStr10(HV.slotFunctions[i]);
       if (i = 24) then
         str := str + ' ';
     end;

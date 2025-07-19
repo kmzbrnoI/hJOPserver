@@ -624,7 +624,7 @@ begin
   end;
 
   Result := Result + '|' + IntToStr(Self.slot.step) + '|' + IntToStr(Self.realSpeed) + '|' +
-    IntToStr(ownConvert.BoolToInt(Self.direction)) + '|' + Self.state.area.id + '|';
+    ownConvert.BoolToStr10(Self.direction) + '|' + Self.state.area.id + '|';
 
   if (mode = TLokStringMode.full) then
   begin
@@ -1037,7 +1037,7 @@ begin
 
   var funcState: string := '';
   for var i: Integer := 0 to _HV_FUNC_MAX do
-    funcState := funcState + IntToStr(ownConvert.BoolToInt(Self.slotFunctions[i]));
+    funcState := funcState + ownConvert.BoolToStr10(Self.slotFunctions[i]);
   json['funcState'] := funcState;
 
   case (Self.state.siteA) of
@@ -1277,7 +1277,7 @@ begin
 
   TrakceI.Callbacks(ok, err, cbOk, cbErr);
   TrakceI.Log(llCommands, 'Loko ' + Self.name + ': rychlostní stupeň: ' + IntToStr(speedStep) + ', směr: ' +
-    IntToStr(ownConvert.BoolToInt(direction)));
+    ownConvert.BoolToStr10(direction));
 
   Inc(Self.state.speedPendingCmds);
 
@@ -1330,7 +1330,7 @@ begin
 
   Self.state.functions[func] := state;
   TrakceI.Callbacks(ok, err, cbOk, cbErr);
-  TrakceI.Log(llCommands, 'Loko ' + Self.name + ': F' + IntToStr(func) + ': ' + IntToStr(ownConvert.BoolToInt(state)));
+  TrakceI.Log(llCommands, 'Loko ' + Self.name + ': F' + IntToStr(func) + ': ' + ownConvert.BoolToStr10(state));
 
   try
     TrakceI.LocoSetSingleFunc(Self.addr, func, Self.slot.functions, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),

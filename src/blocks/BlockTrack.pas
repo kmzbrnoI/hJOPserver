@@ -2573,7 +2573,7 @@ begin
 
   Result := Result + ownConvert.ColorToStr(bg) + ';';
 
-  Result := Result + IntToStr(ownConvert.BoolToInt(Self.NUZ)) + ';' + IntToStr(Integer(Self.jcEnd)) + ';' +
+  Result := Result + ownConvert.BoolToStr10(Self.NUZ) + ';' + IntToStr(Integer(Self.jcEnd)) + ';' +
     ownConvert.ColorToStr(nebarVetve) + ';';
 
   // seznam souprav
@@ -2590,8 +2590,8 @@ begin
       sfg := TJopColor.turq;
 
     Result := Result + '(' + train.name + ';' +
-      IntToStr(ownConvert.BoolToInt(train.sdata.dir_L)) +
-      IntToStr(ownConvert.BoolToInt(train.sdata.dir_S)) + ';';
+      ownConvert.BoolToStr10(train.sdata.dir_L) +
+      ownConvert.BoolToStr10(train.sdata.dir_S) + ';';
 
     if ((train.sdata.note <> '') or (train.HasAnyHVNote())) then
       sbg := TJopColor.turqDark;
@@ -2610,7 +2610,7 @@ begin
     else
       Result := Result + '-;';
 
-    Result := Result + IntToStr(ownConvert.BoolToInt(train.emergencyStopped)) + ';';
+    Result := Result + ownConvert.BoolToStr10(train.emergencyStopped) + ';';
     Result := Result + ')';
   end;
 

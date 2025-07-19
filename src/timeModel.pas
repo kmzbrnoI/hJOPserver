@@ -267,10 +267,10 @@ function TModelTime.GetTCPString(): string;
 begin
   PanelServer.BroadcastData(
     '-;MOD-CAS;'+
-    IntToStr(ownConvert.BoolToInt(Self.started))+';' +
+    ownConvert.BoolToStr10(Self.started)+';' +
     Self.strSpeed + ';' +
     TimeToStr(Self.time) + ';' +
-    IntToStr(ownConvert.BoolToInt(Self.used))
+    ownConvert.BoolToStr10(Self.used)
   );
 end;
 

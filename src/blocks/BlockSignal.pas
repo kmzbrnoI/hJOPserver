@@ -2091,7 +2091,7 @@ begin
   end;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';' + ownConvert.ColorToStr(bg) + ';' +
-    IntToStr(ownConvert.BoolToInt(Self.signal = ncPrivol)) + ';' + IntToStr(ownConvert.BoolToInt(Self.ab)) + ';' +
+    ownConvert.BoolToStr10(Self.signal = ncPrivol) + ';' + ownConvert.BoolToStr10(Self.ab) + ';' +
     ownConvert.ColorToStr(okoli);
 end;
 

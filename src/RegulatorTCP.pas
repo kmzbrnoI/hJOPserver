@@ -512,7 +512,7 @@ begin
   for i := 0 to HV.state.regulators.Count - 1 do
     if (HV.state.regulators[i].conn <> exclude) then
       PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;' + IntToStr(HV.addr) + ';SPD;' + IntToStr(HV.realSpeed) +
-        ';' + IntToStr(HV.speedStep) + ';' + IntToStr(ownConvert.BoolToInt(HV.direction)) + ';');
+        ';' + IntToStr(HV.speedStep) + ';' + ownConvert.BoolToStr10(HV.direction) + ';');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

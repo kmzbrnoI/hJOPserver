@@ -305,7 +305,7 @@ begin
   var flash: Boolean := Self.running;
 
   Result := Result + ownConvert.ColorToStr(fg) + ';' + ownConvert.ColorToStr(bg) + ';' +
-    IntToStr(ownConvert.BoolToInt(flash)) + ';';
+    ownConvert.BoolToStr10(flash) + ';';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
