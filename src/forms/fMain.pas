@@ -301,6 +301,7 @@ type
     Label15: TLabel;
     MI_Block_Delete: TMenuItem;
     PM_Loco_Delete: TMenuItem;
+    MI_Loco_Tacho_Reset: TMenuItem;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_RCS_libClick(Sender: TObject);
@@ -445,6 +446,7 @@ type
     procedure LV_ABKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure MI_Block_DeleteClick(Sender: TObject);
     procedure PM_Loco_DeleteClick(Sender: TObject);
+    procedure MI_Loco_Tacho_ResetClick(Sender: TObject);
   private
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
@@ -1579,8 +1581,21 @@ end;
 
 procedure TF_Main.PM_Loco_EditClick(Sender: TObject);
 begin
-  if (LV_HV.Selected <> nil) then
+  if (Self.LV_HV.Selected <> nil) then
     F_HVEdit.EditHV(HVDb[StrToInt(LV_HV.Selected.Caption)]);
+end;
+
+procedure TF_Main.MI_Loco_Tacho_ResetClick(Sender: TObject);
+begin
+  if (Self.LV_HV.Selected = nil) then
+    Exit();
+  var hv: THV := HVDb[StrToInt(LV_HV.Selected.Caption)];
+
+  if (StrMessageBox('Opravdu vyresetovat ujetou dráhu vozidla '+IntToStr(hv.addr)+'?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+    hv.ResetStats();
+    HVTableData.UpdateLine(hv);
+  end;
 end;
 
 procedure TF_Main.PC_1Change(Sender: TObject);
@@ -1642,7 +1657,9 @@ begin
       on E: Exception do
         StrMessageBox(E.Message, 'Varování', MB_OK OR MB_ICONWARNING);
     end;
-  end; // if
+  end else begin
+    StrMessageBox('Nelze otevřít regulátor, hJOPserver není připojen k trakci!', 'Nelze otevřít regulátor', MB_OK OR MB_ICONWARNING);
+  end;
 end;
 
 procedure TF_Main.FormCloseQuery(Sender: TObject; var CanClose: Boolean);

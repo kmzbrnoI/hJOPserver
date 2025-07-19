@@ -358,19 +358,6 @@ object F_HVEdit: TF_HVEdit
     TabOrder = 13
     OnClick = B_CancelClick
   end
-  object B_TachoClear: TButton
-    Left = 266
-    Top = 374
-    Width = 265
-    Height = 25
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Reset tachometru'
-    TabOrder = 14
-    OnClick = B_TachoClearClick
-  end
   object CB_CabA: TComboBox
     Left = 96
     Top = 216

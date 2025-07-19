@@ -9110,6 +9110,10 @@ object F_Main: TF_Main
     object N6: TMenuItem
       Caption = '-'
     end
+    object MI_Loco_Tacho_Reset: TMenuItem
+      Caption = 'Reset tachometru'
+      OnClick = MI_Loco_Tacho_ResetClick
+    end
     object PM_Loco_Reg: TMenuItem
       Caption = 'Regul'#225'tor'
       OnClick = PM_Loco_RegClick

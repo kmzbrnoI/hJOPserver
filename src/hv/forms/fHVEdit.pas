@@ -20,7 +20,6 @@ type
     M_Note: TMemo;
     B_Save: TButton;
     B_Cancel: TButton;
-    B_TachoClear: TButton;
     L_HV7: TLabel;
     CB_CabA: TComboBox;
     CB_Class: TComboBox;
@@ -43,7 +42,6 @@ type
     procedure B_SaveClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure B_CancelClick(Sender: TObject);
-    procedure B_TachoClearClick(Sender: TObject);
     procedure LV_Pom_AutomatDblClick(Sender: TObject);
     procedure SB_Take_AddClick(Sender: TObject);
     procedure SB_Take_RemoveClick(Sender: TObject);
@@ -296,19 +294,6 @@ begin
   Self.Close();
 end;
 
-procedure TF_HVEdit.B_TachoClearClick(Sender: TObject);
-begin
-  if (Self.OpenHV = nil) then
-    Exit();
-
-  if (StrMessageBox('Opravdu vyresetovat ujetou dráhu vozidla?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
-  begin
-    OpenHV.ResetStats();
-    HVTableData.UpdateLine(Self.OpenHV);
-    StrMessageBox('Operace proběhla úspěšně.', 'OK', MB_OK OR MB_ICONINFORMATION);
-  end;
-end;
-
 procedure TF_HVEdit.CommonOpenForm();
 begin
   Self.SB_Rel_Remove.Enabled := false;
@@ -369,7 +354,6 @@ procedure TF_HVEdit.EditOpenForm();
 var data: THVData;
   stav: THVState;
 begin
-  Self.B_TachoClear.Enabled := true;
   Self.E_Addr.ReadOnly := true;
 
   data := Self.OpenHV.data;
@@ -411,7 +395,6 @@ end;
 
 procedure TF_HVEdit.NewOpenForm();
 begin
-  Self.B_TachoClear.Enabled := false;
   Self.E_Addr.ReadOnly := false;
 
   Self.E_Name.Text := '';
