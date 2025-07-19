@@ -59,14 +59,14 @@ type
   private
     OpenHV: THV;
 
-    procedure NormalOpenForm();
-    procedure NewHVOpenForm();
-    procedure HlavniOpenForm();
+    procedure EditOpenForm();
+    procedure NewOpenForm();
+    procedure CommonOpenForm();
 
   public
-
-    procedure OpenForm(HV: THV);
+    procedure EditHV(HV: THV);
     procedure NewHV();
+
   end;
 
 var
@@ -79,16 +79,16 @@ uses fMain, THVDatabase, DataHV, AreaDb, Area, fHVPomEdit, BlockDb, TrainDb,
 
 {$R *.dfm}
 
-procedure TF_HVEdit.OpenForm(HV: THV);
+procedure TF_HVEdit.EditHV(HV: THV);
 begin
   Self.OpenHV := HV;
   Self.ActiveControl := Self.E_Name;
-  Self.HlavniOpenForm();
+  Self.CommonOpenForm();
 
   if (HV = nil) then
-    Self.NewHVOpenForm()
+    Self.NewOpenForm()
   else
-    Self.NormalOpenForm();
+    Self.EditOpenForm();
 
   Self.ShowModal();
 end;
@@ -283,7 +283,7 @@ end;
 
 procedure TF_HVEdit.NewHV();
 begin
-  Self.OpenForm(nil);
+  Self.EditHV(nil);
 end;
 
 procedure TF_HVEdit.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -309,7 +309,7 @@ begin
   end;
 end;
 
-procedure TF_HVEdit.HlavniOpenForm;
+procedure TF_HVEdit.CommonOpenForm();
 begin
   Self.SB_Rel_Remove.Enabled := false;
   Self.SB_Take_Remove.Enabled := false;
@@ -365,7 +365,7 @@ begin
     Self.SB_Rel_RemoveClick(Self);
 end;
 
-procedure TF_HVEdit.NormalOpenForm();
+procedure TF_HVEdit.EditOpenForm();
 var data: THVData;
   stav: THVState;
 begin
@@ -409,7 +409,7 @@ begin
   F_HVEdit.Caption := 'Vozidlo ' + IntToStr(Self.OpenHV.addr);
 end;
 
-procedure TF_HVEdit.NewHVOpenForm();
+procedure TF_HVEdit.NewOpenForm();
 begin
   Self.B_TachoClear.Enabled := false;
   Self.E_Addr.ReadOnly := false;

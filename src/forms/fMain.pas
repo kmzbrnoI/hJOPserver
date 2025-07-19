@@ -1580,7 +1580,7 @@ end;
 procedure TF_Main.PM_Loco_EditClick(Sender: TObject);
 begin
   if (LV_HV.Selected <> nil) then
-    F_HVEdit.OpenForm(HVDb[StrToInt(LV_HV.Selected.Caption)]);
+    F_HVEdit.EditHV(HVDb[StrToInt(LV_HV.Selected.Caption)]);
 end;
 
 procedure TF_Main.PC_1Change(Sender: TObject);
@@ -3411,7 +3411,7 @@ begin
         ExceptionMessageBox(E);
     end;
   end else begin
-    F_HVEdit.OpenForm(HVDb[StrToInt(LV_HV.Selected.Caption)]);
+    F_HVEdit.EditHV(HVDb[StrToInt(LV_HV.Selected.Caption)]);
   end;
 end;
 
