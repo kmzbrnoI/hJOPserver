@@ -7,6 +7,7 @@ uses Windows, SysUtils, Graphics, StrUtils, Generics.Collections, Classes;
 function BoolToYesNo(bool: Boolean): string;
 function BoolToTick(bool: Boolean): string;
 function BoolToInt(bool: Boolean): Integer;
+function BoolToStr10(bool: Boolean): string;
 function IntToBool(int: Integer): Boolean;
 function StrToBool(str: string): Boolean;
 
@@ -48,6 +49,14 @@ function BoolToInt(bool: Boolean): Integer;
   else
     Result := 0;
  end;
+
+function BoolToStr10(bool: Boolean): string;
+begin
+  if (Bool) then
+    Result := '1'
+  else
+    Result := '0';
+end;
 
 function IntToBool(int: Integer): Boolean;
  begin

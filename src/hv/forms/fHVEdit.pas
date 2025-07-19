@@ -39,6 +39,7 @@ type
     Label4: TLabel;
     CB_POM_Release: TComboBox;
     Label5: TLabel;
+    CHB_Multitrack: TCheckBox;
     procedure B_SaveClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure B_CancelClick(Sender: TObject);
@@ -58,9 +59,9 @@ type
   private
     OpenHV: THV;
 
-    procedure NormalOpenForm;
-    procedure NewHVOpenForm;
-    procedure HlavniOpenForm;
+    procedure NormalOpenForm();
+    procedure NewHVOpenForm();
+    procedure HlavniOpenForm();
 
   public
 
@@ -198,6 +199,7 @@ begin
     data.typ := THVType(Self.CB_Class.ItemIndex);
 
   data.POMrelease := TPomStatus(Self.CB_POM_Release.ItemIndex);
+  data.multitrackCapable := Self.CHB_Multitrack.Checked;
 
   if (Self.OpenHV = nil) then
   begin
@@ -384,6 +386,7 @@ begin
     Self.CB_Class.ItemIndex := Integer(data.typ);
   Self.CB_CabA.ItemIndex := Integer(stav.siteA);
   Self.CB_POM_Release.ItemIndex := Integer(data.POMrelease);
+  Self.CHB_Multitrack.Checked := data.multitrackCapable;
 
   Self.LV_Pom_Automat.Clear();
   for var i: Integer := 0 to data.POMautomat.Count - 1 do
@@ -419,6 +422,7 @@ begin
   Self.CB_Class.ItemIndex := -1;
   Self.CB_CabA.ItemIndex := -1;
   Self.CB_POM_Release.ItemIndex := -1;
+  Self.CHB_Multitrack.Checked := True;
 
   Self.LV_Pom_Automat.Clear();
   Self.LV_Pom_Manual.Clear();

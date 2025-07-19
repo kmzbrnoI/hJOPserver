@@ -342,7 +342,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 9
+    TabOrder = 12
     OnClick = B_SaveClick
   end
   object B_Cancel: TButton
@@ -355,12 +355,12 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 8
+    TabOrder = 13
     OnClick = B_CancelClick
   end
   object B_TachoClear: TButton
-    Left = 8
-    Top = 341
+    Left = 266
+    Top = 374
     Width = 265
     Height = 25
     Margins.Left = 2
@@ -368,7 +368,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Reset tachometru'
-    TabOrder = 7
+    TabOrder = 14
     OnClick = B_TachoClearClick
   end
   object CB_CabA: TComboBox
@@ -425,7 +425,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    TabOrder = 10
+    TabOrder = 7
     Items.Strings = (
       'Parn'#237
       'Diesel'
@@ -447,7 +447,7 @@ object F_HVEdit: TF_HVEdit
     MultiSelect = True
     ReadOnly = True
     RowSelect = True
-    TabOrder = 12
+    TabOrder = 10
     ViewStyle = vsReport
     OnChange = LV_Pom_AutomatChange
     OnDblClick = LV_Pom_AutomatDblClick
@@ -468,7 +468,7 @@ object F_HVEdit: TF_HVEdit
     ReadOnly = True
     RowSelect = True
     SortType = stData
-    TabOrder = 13
+    TabOrder = 11
     ViewStyle = vsReport
     OnChange = LV_Pom_ManualChange
     OnDblClick = LV_Pom_ManualDblClick
@@ -484,9 +484,17 @@ object F_HVEdit: TF_HVEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    TabOrder = 11
+    TabOrder = 8
     Items.Strings = (
       'POM ru'#269'n'#237' '#345#237'zen'#237
       'POM automatick'#233' '#345#237'zen'#237)
+  end
+  object CHB_Multitrack: TCheckBox
+    Left = 95
+    Top = 340
+    Width = 161
+    Height = 17
+    Caption = 'Vozidlo zp'#367'sobil'#233' multitrakce'
+    TabOrder = 9
   end
 end

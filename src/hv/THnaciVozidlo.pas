@@ -87,6 +87,7 @@ type
     typ: THVType;
     maxSpeed: Cardinal;
     transience: Cardinal;
+    multitrackCapable: Boolean;
 
     POMautomat: TList<THVPomCV>; // seznam POM pri prevzeti do automatu
     POMmanual: TList<THVPomCV>; // seznam POM pri uvolneni do rucniho rizeni
@@ -310,6 +311,7 @@ begin
   Self.data.typ := THVType.other;
   Self.data.maxSpeed := _DEFAUT_MAX_SPEED;
   Self.data.transience := 0;
+  Self.data.multitrackCapable := True;
   Self.data.POMautomat := TList<THVPomCV>.Create();
   Self.data.POMmanual := TList<THVPomCV>.Create();
   Self.data.POMrelease := TPomStatus.manual;
@@ -409,6 +411,7 @@ begin
   Self.data.typ := THVType(ini.ReadInteger(section, 'trida', 0));
   Self.data.maxSpeed := ini.ReadInteger(section, 'max_rychlost', _DEFAUT_MAX_SPEED);
   Self.data.transience := ini.ReadInteger(section, 'prechodnost', 0);
+  Self.data.multitrackCapable := ini.ReadBool(section, 'multitrakce', True);
 
   Self.data.POMautomat.Free();
   try
@@ -493,6 +496,7 @@ begin
     ini.WriteInteger(addr, 'trida', Integer(Self.data.typ));
     ini.WriteInteger(addr, 'max_rychlost', Self.data.maxSpeed);
     ini.WriteInteger(addr, 'prechodnost', Self.data.transience);
+    ini.WriteBool(addr, 'multitrakce', Self.data.multitrackCapable);
 
     // POM to program for automatic-controlled engines
     var POMautomat: string := '';
@@ -657,6 +661,7 @@ begin
   Result := Result + IntToStr(Self.data.maxSpeed) + '|';
   Result := Result + IntToStr(Self.data.transience) + '|';
   Result := Result + ite(Self.data.POMrelease = TPomStatus.manual, 'manual', 'automat') + '|';
+  Result := Result + ownConvert.BoolToStr10(Self.data.multitrackCapable) + '|';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -796,6 +801,9 @@ begin
       else
         Self.data.POMrelease := TPomStatus.manual;
     end;
+
+    if (strs.Count > 20) then
+      Self.data.multitrackCapable := ownConvert.StrToBool(strs[20]);
 
   except
     on E: Exception do
