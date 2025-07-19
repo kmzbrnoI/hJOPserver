@@ -9,24 +9,24 @@ uses
 
 type
   TF_HVEdit = class(TForm)
-    E_Nazev: TEdit;
-    E_Oznaceni: TEdit;
-    E_Majitel: TEdit;
+    E_Name: TEdit;
+    E_Designation: TEdit;
+    E_Owner: TEdit;
     L_HV1: TLabel;
     L_HV2: TLabel;
     L_HV3: TLabel;
     L_HV4: TLabel;
     L_HV5: TLabel;
-    M_Poznamky: TMemo;
+    M_Note: TMemo;
     B_Save: TButton;
-    B_Storno: TButton;
+    B_Cancel: TButton;
     B_TachoClear: TButton;
     L_HV7: TLabel;
-    CB_Orientace: TComboBox;
-    CB_Trida: TComboBox;
+    CB_CabA: TComboBox;
+    CB_Class: TComboBox;
     L_HV10: TLabel;
     E_Addr: TEdit;
-    CB_OR: TComboBox;
+    CB_Area: TComboBox;
     Label1: TLabel;
     LV_Pom_Automat: TListView;
     Label2: TLabel;
@@ -38,9 +38,10 @@ type
     SB_Take_Remove: TSpeedButton;
     Label4: TLabel;
     CB_POM_Release: TComboBox;
+    Label5: TLabel;
     procedure B_SaveClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-    procedure B_StornoClick(Sender: TObject);
+    procedure B_CancelClick(Sender: TObject);
     procedure B_TachoClearClick(Sender: TObject);
     procedure LV_Pom_AutomatDblClick(Sender: TObject);
     procedure SB_Take_AddClick(Sender: TObject);
@@ -80,7 +81,7 @@ uses fMain, THVDatabase, DataHV, AreaDb, Area, fHVPomEdit, BlockDb, TrainDb,
 procedure TF_HVEdit.OpenForm(HV: THV);
 begin
   Self.OpenHV := HV;
-  Self.ActiveControl := Self.E_Nazev;
+  Self.ActiveControl := Self.E_Name;
   Self.HlavniOpenForm();
 
   if (HV = nil) then
@@ -150,22 +151,22 @@ end;
 procedure TF_HVEdit.B_SaveClick(Sender: TObject);
 var data: THVData;
 begin
-  if (Self.E_Nazev.Text = '') then
+  if (Self.E_Name.Text = '') then
   begin
     StrMessageBox('Vypište název hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Self.CB_Trida.ItemIndex = -1) then
+  if (Self.CB_Class.ItemIndex = -1) then
   begin
     StrMessageBox('Vyberte typ hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Self.CB_Orientace.ItemIndex = -1) and (CB_Orientace.Visible) then
+  if (Self.CB_CabA.ItemIndex = -1) and (Self.CB_CabA.Visible) then
   begin
     StrMessageBox('Vyberte směr stanoviště A hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
-  if (Self.CB_OR.ItemIndex = -1) then
+  if (Self.CB_Area.ItemIndex = -1) then
   begin
     StrMessageBox('Vyberte stanici hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -181,20 +182,20 @@ begin
     Exit();
   end;
 
-  var area: TArea := Areas[Self.CB_OR.ItemIndex];
+  var area: TArea := Areas[Self.CB_Area.ItemIndex];
   if ((Self.OpenHV <> nil) and (Self.OpenHV.state.train > -1) and (Self.OpenHV.state.Area <> Area)) then
     if (StrMessageBox('Měníte stanici HV, které je na soupravě, opravdu pokračovat?', 'Opravdu?',
       MB_YESNO OR MB_ICONWARNING) = mrNo) then
       Exit();
 
-  data.name := E_Nazev.Text;
-  data.owner := E_Majitel.Text;
-  data.designation := E_Oznaceni.Text;
-  data.note := M_Poznamky.Text;
-  if (CB_Trida.ItemIndex = CB_Trida.Items.Count - 1) then
+  data.name := Self.E_Name.Text;
+  data.owner := Self.E_Owner.Text;
+  data.designation := Self.E_Designation.Text;
+  data.note := Self.M_Note.Text;
+  if (Self.CB_Class.ItemIndex = Self.CB_Class.Items.Count - 1) then
     data.typ := THVType.other
   else
-    data.typ := THVType(CB_Trida.ItemIndex);
+    data.typ := THVType(Self.CB_Class.ItemIndex);
 
   data.POMrelease := TPomStatus(Self.CB_POM_Release.ItemIndex);
 
@@ -241,9 +242,9 @@ begin
     // vytvoreni noveho HV
     data.maxSpeed := _DEFAUT_MAX_SPEED;
     data.transience := 0;
-    Area := Areas[Self.CB_OR.ItemIndex];
+    Area := Areas[Self.CB_Area.ItemIndex];
     try
-      HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVSite(CB_Orientace.ItemIndex), Area);
+      HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVSite(Self.CB_CabA.ItemIndex), Area);
     except
       on E: Exception do
       begin
@@ -261,10 +262,10 @@ begin
     // update HV
     Self.OpenHV.data := data;
 
-    Area := Areas[Self.CB_OR.ItemIndex];
+    Area := Areas[Self.CB_Area.ItemIndex];
 
     var stav: THVState := Self.OpenHV.state;
-    stav.siteA := THVSite(CB_Orientace.ItemIndex);
+    stav.siteA := THVSite(Self.CB_CabA.ItemIndex);
     Self.OpenHV.state := stav;
     Self.OpenHV.MoveToArea(Area);
     Self.OpenHV.UpdateAllRegulators();
@@ -288,7 +289,7 @@ begin
   Self.OpenHV := nil;
 end;
 
-procedure TF_HVEdit.B_StornoClick(Sender: TObject);
+procedure TF_HVEdit.B_CancelClick(Sender: TObject);
 begin
   Self.Close();
 end;
@@ -298,10 +299,12 @@ begin
   if (Self.OpenHV = nil) then
     Exit();
 
-  OpenHV.ResetStats();
-  HVTableData.UpdateLine(Self.OpenHV);
-
-  StrMessageBox('Operace proběhla úspěšně.', 'OK', MB_OK OR MB_ICONINFORMATION);
+  if (StrMessageBox('Opravdu vyresetovat ujetou dráhu vozidla?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+    OpenHV.ResetStats();
+    HVTableData.UpdateLine(Self.OpenHV);
+    StrMessageBox('Operace proběhla úspěšně.', 'OK', MB_OK OR MB_ICONINFORMATION);
+  end;
 end;
 
 procedure TF_HVEdit.HlavniOpenForm;
@@ -370,16 +373,16 @@ begin
   data := Self.OpenHV.data;
   stav := Self.OpenHV.state;
 
-  Self.E_Nazev.Text := data.name;
-  Self.E_Oznaceni.Text := data.designation;
-  Self.E_Majitel.Text := data.owner;
+  Self.E_Name.Text := data.name;
+  Self.E_Designation.Text := data.designation;
+  Self.E_Owner.Text := data.owner;
   Self.E_Addr.Text := IntToStr(Self.OpenHV.addr);
-  Self.M_Poznamky.Text := data.note;
+  Self.M_Note.Text := data.note;
   if (data.typ = THVType.other) then
-    Self.CB_Trida.ItemIndex := CB_Trida.Items.Count - 1
+    Self.CB_Class.ItemIndex := Self.CB_Class.Items.Count - 1
   else
-    Self.CB_Trida.ItemIndex := Integer(data.typ);
-  Self.CB_Orientace.ItemIndex := Integer(stav.siteA);
+    Self.CB_Class.ItemIndex := Integer(data.typ);
+  Self.CB_CabA.ItemIndex := Integer(stav.siteA);
   Self.CB_POM_Release.ItemIndex := Integer(data.POMrelease);
 
   Self.LV_Pom_Automat.Clear();
@@ -398,9 +401,9 @@ begin
     LI.SubItems.Add(IntToStr(data.POMmanual[i].data));
   end;
 
-  Areas.FillCB(Self.CB_OR, stav.Area);
+  Areas.FillCB(Self.CB_Area, stav.Area);
 
-  F_HVEdit.Caption := 'HV ' + IntToStr(Self.OpenHV.addr);
+  F_HVEdit.Caption := 'Vozidlo ' + IntToStr(Self.OpenHV.addr);
 end;
 
 procedure TF_HVEdit.NewHVOpenForm();
@@ -408,21 +411,21 @@ begin
   Self.B_TachoClear.Enabled := false;
   Self.E_Addr.ReadOnly := false;
 
-  Self.E_Nazev.Text := '';
-  Self.E_Oznaceni.Text := '';
-  Self.E_Majitel.Text := '';
+  Self.E_Name.Text := '';
+  Self.E_Designation.Text := '';
+  Self.E_Owner.Text := '';
   Self.E_Addr.Text := '';
-  Self.M_Poznamky.Text := '';
-  Self.CB_Trida.ItemIndex := -1;
-  Self.CB_Orientace.ItemIndex := -1;
+  Self.M_Note.Text := '';
+  Self.CB_Class.ItemIndex := -1;
+  Self.CB_CabA.ItemIndex := -1;
   Self.CB_POM_Release.ItemIndex := -1;
 
   Self.LV_Pom_Automat.Clear();
   Self.LV_Pom_Manual.Clear();
 
-  Areas.FillCB(Self.CB_OR, nil);
+  Areas.FillCB(Self.CB_Area, nil);
 
-  F_HVEdit.Caption := 'Nové hnací vozidlo';
+  F_HVEdit.Caption := 'Nové vozidlo';
 end;
 
 end.// unit

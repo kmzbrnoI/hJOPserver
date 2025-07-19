@@ -4,8 +4,8 @@ object F_HVEdit: TF_HVEdit
   ActiveControl = B_Save
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
-  Caption = 'Hnaci vozidlo : [HV]'
-  ClientHeight = 381
+  Caption = 'Vozidlo 1234'
+  ClientHeight = 406
   ClientWidth = 538
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object F_HVEdit: TF_HVEdit
   TextHeight = 13
   object L_HV1: TLabel
     Left = 8
-    Top = 8
+    Top = 32
     Width = 34
     Height = 13
     Margins.Left = 2
@@ -29,7 +29,7 @@ object F_HVEdit: TF_HVEdit
   end
   object L_HV2: TLabel
     Left = 8
-    Top = 40
+    Top = 64
     Width = 49
     Height = 13
     Margins.Left = 2
@@ -40,7 +40,7 @@ object F_HVEdit: TF_HVEdit
   end
   object L_HV3: TLabel
     Left = 8
-    Top = 72
+    Top = 96
     Width = 33
     Height = 13
     Margins.Left = 2
@@ -51,7 +51,7 @@ object F_HVEdit: TF_HVEdit
   end
   object L_HV4: TLabel
     Left = 8
-    Top = 104
+    Top = 128
     Width = 53
     Height = 13
     Margins.Left = 2
@@ -62,7 +62,7 @@ object F_HVEdit: TF_HVEdit
   end
   object L_HV5: TLabel
     Left = 8
-    Top = 160
+    Top = 184
     Width = 60
     Height = 13
     Margins.Left = 2
@@ -73,7 +73,7 @@ object F_HVEdit: TF_HVEdit
   end
   object L_HV7: TLabel
     Left = 8
-    Top = 192
+    Top = 216
     Width = 63
     Height = 13
     Margins.Left = 2
@@ -84,7 +84,7 @@ object F_HVEdit: TF_HVEdit
   end
   object L_HV10: TLabel
     Left = 8
-    Top = 224
+    Top = 248
     Width = 21
     Height = 13
     Margins.Left = 2
@@ -95,7 +95,7 @@ object F_HVEdit: TF_HVEdit
   end
   object Label1: TLabel
     Left = 9
-    Top = 255
+    Top = 279
     Width = 39
     Height = 13
     Margins.Left = 2
@@ -106,7 +106,7 @@ object F_HVEdit: TF_HVEdit
   end
   object Label2: TLabel
     Left = 287
-    Top = 16
+    Top = 40
     Width = 126
     Height = 13
     Margins.Left = 2
@@ -117,7 +117,7 @@ object F_HVEdit: TF_HVEdit
   end
   object Label3: TLabel
     Left = 287
-    Top = 194
+    Top = 218
     Width = 102
     Height = 13
     Margins.Left = 2
@@ -128,7 +128,7 @@ object F_HVEdit: TF_HVEdit
   end
   object SB_Rel_Remove: TSpeedButton
     Left = 505
-    Top = 188
+    Top = 212
     Width = 23
     Height = 22
     Glyph.Data = {
@@ -162,7 +162,7 @@ object F_HVEdit: TF_HVEdit
   end
   object SB_Rel_Add: TSpeedButton
     Left = 476
-    Top = 188
+    Top = 212
     Width = 23
     Height = 22
     Glyph.Data = {
@@ -196,7 +196,7 @@ object F_HVEdit: TF_HVEdit
   end
   object SB_Take_Add: TSpeedButton
     Left = 476
-    Top = 8
+    Top = 32
     Width = 23
     Height = 22
     Glyph.Data = {
@@ -230,7 +230,7 @@ object F_HVEdit: TF_HVEdit
   end
   object SB_Take_Remove: TSpeedButton
     Left = 505
-    Top = 8
+    Top = 32
     Width = 23
     Height = 22
     Glyph.Data = {
@@ -264,7 +264,7 @@ object F_HVEdit: TF_HVEdit
   end
   object Label4: TLabel
     Left = 9
-    Top = 286
+    Top = 310
     Width = 71
     Height = 13
     Margins.Left = 2
@@ -273,9 +273,19 @@ object F_HVEdit: TF_HVEdit
     Margins.Bottom = 2
     Caption = 'POM uvoln'#283'n'#237':'
   end
-  object E_Nazev: TEdit
+  object Label5: TLabel
+    Left = 8
+    Top = 6
+    Width = 522
+    Height = 13
+    Alignment = taCenter
+    Caption = 
+      'Pozor: tento formul'#225#345' obsahuje pouze vybran'#233' parametry. Pro '#250'pra' +
+      'vu v'#353'ech parametr'#367' pou'#382'ijte hJOPpanel.'
+  end
+  object E_Name: TEdit
     Left = 96
-    Top = 8
+    Top = 32
     Width = 177
     Height = 21
     Margins.Left = 2
@@ -285,9 +295,9 @@ object F_HVEdit: TF_HVEdit
     MaxLength = 32
     TabOrder = 0
   end
-  object E_Oznaceni: TEdit
+  object E_Designation: TEdit
     Left = 96
-    Top = 40
+    Top = 64
     Width = 177
     Height = 21
     Margins.Left = 2
@@ -297,9 +307,9 @@ object F_HVEdit: TF_HVEdit
     MaxLength = 32
     TabOrder = 1
   end
-  object E_Majitel: TEdit
+  object E_Owner: TEdit
     Left = 96
-    Top = 72
+    Top = 96
     Width = 177
     Height = 21
     Margins.Left = 2
@@ -309,9 +319,9 @@ object F_HVEdit: TF_HVEdit
     MaxLength = 32
     TabOrder = 2
   end
-  object M_Poznamky: TMemo
+  object M_Note: TMemo
     Left = 96
-    Top = 104
+    Top = 128
     Width = 177
     Height = 46
     Margins.Left = 2
@@ -323,7 +333,7 @@ object F_HVEdit: TF_HVEdit
   end
   object B_Save: TButton
     Left = 7
-    Top = 349
+    Top = 373
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -335,9 +345,9 @@ object F_HVEdit: TF_HVEdit
     TabOrder = 9
     OnClick = B_SaveClick
   end
-  object B_Storno: TButton
+  object B_Cancel: TButton
     Left = 104
-    Top = 349
+    Top = 373
     Width = 81
     Height = 25
     Margins.Left = 2
@@ -346,11 +356,11 @@ object F_HVEdit: TF_HVEdit
     Margins.Bottom = 2
     Caption = 'Storno'
     TabOrder = 8
-    OnClick = B_StornoClick
+    OnClick = B_CancelClick
   end
   object B_TachoClear: TButton
     Left = 8
-    Top = 317
+    Top = 341
     Width = 265
     Height = 25
     Margins.Left = 2
@@ -361,9 +371,9 @@ object F_HVEdit: TF_HVEdit
     TabOrder = 7
     OnClick = B_TachoClearClick
   end
-  object CB_Orientace: TComboBox
+  object CB_CabA: TComboBox
     Left = 96
-    Top = 192
+    Top = 216
     Width = 177
     Height = 21
     Margins.Left = 2
@@ -376,9 +386,9 @@ object F_HVEdit: TF_HVEdit
       'lich'#253' sm'#283'r'
       'sud'#253' sm'#283'r')
   end
-  object CB_Trida: TComboBox
+  object CB_Class: TComboBox
     Left = 96
-    Top = 224
+    Top = 248
     Width = 177
     Height = 21
     Margins.Left = 2
@@ -397,7 +407,7 @@ object F_HVEdit: TF_HVEdit
   end
   object E_Addr: TEdit
     Left = 96
-    Top = 161
+    Top = 185
     Width = 177
     Height = 21
     MaxLength = 4
@@ -405,9 +415,9 @@ object F_HVEdit: TF_HVEdit
     TabOrder = 4
     Text = '[addr]'
   end
-  object CB_OR: TComboBox
+  object CB_Area: TComboBox
     Left = 96
-    Top = 255
+    Top = 279
     Width = 177
     Height = 21
     Margins.Left = 2
@@ -424,7 +434,7 @@ object F_HVEdit: TF_HVEdit
   end
   object LV_Pom_Automat: TListView
     Left = 287
-    Top = 32
+    Top = 56
     Width = 241
     Height = 150
     Columns = <
@@ -445,7 +455,7 @@ object F_HVEdit: TF_HVEdit
   end
   object LV_Pom_Manual: TListView
     Left = 287
-    Top = 212
+    Top = 236
     Width = 241
     Height = 141
     Columns = <
@@ -466,7 +476,7 @@ object F_HVEdit: TF_HVEdit
   end
   object CB_POM_Release: TComboBox
     Left = 96
-    Top = 286
+    Top = 310
     Width = 177
     Height = 21
     Margins.Left = 2
