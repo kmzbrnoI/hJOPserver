@@ -217,7 +217,7 @@ begin
     try
       var pomCV: THVPomCV;
       pomCV.cv := StrToInt(Self.LV_Pom_Automat.Items.Item[i].Caption);
-      pomCV.data := StrToInt(Self.LV_Pom_Automat.Items.Item[i].SubItems.Strings[0]);
+      pomCV.value := StrToInt(Self.LV_Pom_Automat.Items.Item[i].SubItems.Strings[0]);
       data.POMautomat.Add(pomCV);
     except
 
@@ -230,7 +230,7 @@ begin
     try
       var pomCV: THVPomCV;
       pomCV.cv := StrToInt(Self.LV_Pom_Manual.Items.Item[i].Caption);
-      pomCV.data := StrToInt(Self.LV_Pom_Manual.Items.Item[i].SubItems.Strings[0]);
+      pomCV.value := StrToInt(Self.LV_Pom_Manual.Items.Item[i].SubItems.Strings[0]);
       data.POMmanual.Add(pomCV);
     except
 
@@ -377,7 +377,7 @@ begin
   begin
     var LI: TListItem := Self.LV_Pom_Automat.Items.Add;
     LI.Caption := IntToStr(data.POMautomat[i].cv);
-    LI.SubItems.Add(IntToStr(data.POMautomat[i].data));
+    LI.SubItems.Add(IntToStr(data.POMautomat[i].value));
   end;
 
   Self.LV_Pom_Manual.Clear();
@@ -385,7 +385,7 @@ begin
   begin
     var LI: TListItem := Self.LV_Pom_Manual.Items.Add;
     LI.Caption := IntToStr(data.POMmanual[i].cv);
-    LI.SubItems.Add(IntToStr(data.POMmanual[i].data));
+    LI.SubItems.Add(IntToStr(data.POMmanual[i].value));
   end;
 
   Areas.FillCB(Self.CB_Area, stav.Area);

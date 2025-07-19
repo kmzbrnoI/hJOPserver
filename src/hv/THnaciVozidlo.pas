@@ -74,7 +74,7 @@ type
 
   THVPomCV = record // jeden zaznam POM se sklada z
     cv: Word; // oznaceni CV a
-    data: Byte; // dat, ktera se maji do CV zapsat.
+    value: Byte; // dat, ktera se maji do CV zapsat.
   end;
 
   THVFuncType = (permanent = 0, momentary = 1);
@@ -501,13 +501,13 @@ begin
     // POM to program for automatic-controlled engines
     var POMautomat: string := '';
     for var pom: THVPomCV in Self.data.POMautomat do
-      POMautomat := POMautomat + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
+      POMautomat := POMautomat + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.value) + ')';
     ini.WriteString(addr, 'pom_automat', POMautomat);
 
     // POM to program for manually-controller engines
     var POMmanual: string := '';
     for var pom: THVPomCV in Self.data.POMmanual do
-      POMmanual := POMmanual + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.data) + ')';
+      POMmanual := POMmanual + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.value) + ')';
     ini.WriteString(addr, 'pom_manual', POMmanual);
 
     ini.WriteString(addr, 'pom_release', ite(Self.data.POMrelease = TPomStatus.automat, 'automat', 'manual'));
@@ -631,12 +631,12 @@ begin
     // cv-automat
     Result := Result + '{';
     for var pomCV: THVPomCV in Self.data.POMautomat do
-      Result := Result + '[{' + IntToStr(pomCV.cv) + '|' + IntToStr(pomCV.data) + '}]';
+      Result := Result + '[{' + IntToStr(pomCV.cv) + '|' + IntToStr(pomCV.value) + '}]';
     Result := Result + '}|{';
 
     // cv-manual
     for var pomCV: THVPomCV in Self.data.POMmanual do
-      Result := Result + '[{' + IntToStr(pomCV.cv) + '|' + IntToStr(pomCV.data) + '}]';
+      Result := Result + '[{' + IntToStr(pomCV.cv) + '|' + IntToStr(pomCV.value) + '}]';
     Result := Result + '}';
   end else begin
     Result := Result + '|';
@@ -699,7 +699,7 @@ begin
       pomCV.cv := StrToInt(pomStrs[0]);
       if ((pomCV.cv < 1) or (pomCV.cv > 1023)) then
         continue;
-      pomCV.data := StrToInt(pomStrs[1]);
+      pomCV.value := StrToInt(pomStrs[1]);
       Result.Add(pomCV);
     end;
   except
@@ -990,6 +990,7 @@ begin
   json['maxSpeed'] := Self.data.maxSpeed;
   if (Self.data.note <> '') then
     json['note'] := Self.data.note;
+  json['multitrackCapable'] := Self.data.multitrackCapable;
 
   case (Self.data.typ) of
     THVType.other:
@@ -1930,7 +1931,7 @@ class function THV.PomToJson(pom: THVPomCV): TJsonObject;
 begin
   Result := TJsonObject.Create();
   Result['cv'] := pom.cv;
-  Result['value'] := pom.data;
+  Result['value'] := pom.value;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

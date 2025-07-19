@@ -676,7 +676,7 @@ begin
   Data^.index := 0;
 
   try
-    Self.POMWriteCV(addr, toProgram[0].cv, toProgram[0].Data, TTrakce.callback(Self.POMCvWroteOK, Data),
+    Self.POMWriteCV(addr, toProgram[0].cv, toProgram[0].value, TTrakce.callback(Self.POMCvWroteOK, Data),
       TTrakce.callback(Self.POMCvWroteErr, Data));
   except
     Self.POMCvWroteErr(Self, Data);
@@ -698,7 +698,7 @@ begin
     // send next data
     pomData.index := pomData.index + 1;
 
-    Self.POMWriteCV(pomData.locoAddr, pomData.toProgram[pomData.index].cv, pomData.toProgram[pomData.index].Data,
+    Self.POMWriteCV(pomData.locoAddr, pomData.toProgram[pomData.index].cv, pomData.toProgram[pomData.index].value,
       TTrakce.callback(Self.POMCvWroteOK, Data), TTrakce.callback(Self.POMCvWroteErr, Data));
   end;
 end;
