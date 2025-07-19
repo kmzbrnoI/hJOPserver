@@ -1657,6 +1657,7 @@ procedure THV.TrakceReleased(Sender: TObject; data: Pointer);
 begin
   TrakceI.Log(llCommands, 'Loco Successfully Released: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.state.acquired := false;
+  Self.state.pom := TPomStatus.unknown;
   Self.changed := true;
   RegCollector.LocoChanged(Self, Self.addr);
   if (Assigned(Self.releasedOk.Callback)) then
