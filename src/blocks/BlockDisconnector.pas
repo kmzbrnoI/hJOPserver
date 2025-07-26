@@ -16,9 +16,15 @@ type
     activeInfinite = 3
   );
 
+  TBlkDiscMode = (
+    dmAuto = 0,
+    dmSpace = 1
+  );
+
   TBlkDiscSettings = record
     RCSAddrs: TRCSAddrs; // only 1 address
     outputType: TRCSOutputState;
+    dscMode: TBlkDiscMode;
     rcsController: record
       enabled: Boolean;
       addr: TRCSAddr;
@@ -147,6 +153,7 @@ begin
   Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
   Self.LoadAreas(ini_rel, 'R').Free();
   Self.m_settings.outputType := TRCSOutputState(ini_tech.ReadInteger(section, 'outputType', 1));
+  Self.m_settings.dscMode := TBlkDiscMode(ini_tech.ReadInteger(section, 'mode', 0));
 
   Self.m_settings.rcsController.enabled := (ini_tech.ReadString(section, 'contRcsAddr', '') <> '');
   if (Self.m_settings.rcsController.enabled) then
@@ -168,6 +175,8 @@ begin
 
   if (Self.m_settings.outputType <> osEnabled) then
     ini_tech.WriteInteger(section, 'outputType', Integer(Self.m_settings.outputType));
+
+  ini_tech.WriteInteger(section, 'mode', Integer(Self.m_settings.dscMode));
 
   if (Self.m_settings.rcsController.enabled) then
    begin

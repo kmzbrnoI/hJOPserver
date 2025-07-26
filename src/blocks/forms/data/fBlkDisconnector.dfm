@@ -4,7 +4,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkDisconnector'
-  ClientHeight = 332
+  ClientHeight = 362
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -38,6 +38,13 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Margins.Bottom = 2
     Caption = 'N'#225'zev:'
   end
+  object Label7: TLabel
+    Left = 8
+    Top = 59
+    Width = 106
+    Height = 13
+    Caption = 'Aktivace rozpojova'#269'e:'
+  end
   object E_name: TEdit
     Left = 120
     Top = 8
@@ -51,7 +58,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
     TabOrder = 0
   end
   object SE_ID: TSpinEdit
-    Left = 121
+    Left = 120
     Top = 33
     Width = 193
     Height = 22
@@ -65,8 +72,8 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Value = 1
   end
   object GB_RCS: TGroupBox
-    Left = 7
-    Top = 59
+    Left = 8
+    Top = 85
     Width = 307
     Height = 108
     Margins.Left = 2
@@ -74,10 +81,10 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Ovl'#225'd'#225'n'#237' rozpojova'#269'e  '
-    TabOrder = 2
+    TabOrder = 3
     object Label3: TLabel
-      Left = 16
-      Top = 16
+      Left = 15
+      Top = 17
       Width = 56
       Height = 13
       Margins.Left = 2
@@ -87,8 +94,8 @@ object F_BlkDisconnector: TF_BlkDisconnector
       Caption = 'RCS modul:'
     end
     object Label4: TLabel
-      Left = 16
-      Top = 44
+      Left = 15
+      Top = 43
       Width = 46
       Height = 13
       Margins.Left = 2
@@ -98,8 +105,8 @@ object F_BlkDisconnector: TF_BlkDisconnector
       Caption = 'RCS port:'
     end
     object Label5: TLabel
-      Left = 16
-      Top = 72
+      Left = 15
+      Top = 70
       Width = 74
       Height = 13
       Caption = 'V'#253'stupn'#237' sign'#225'l:'
@@ -154,7 +161,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
   end
   object B_Storno: TButton
     Left = 151
-    Top = 302
+    Top = 328
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -162,12 +169,12 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 5
+    TabOrder = 6
     OnClick = B_StornoClick
   end
   object B_Save: TButton
     Left = 240
-    Top = 302
+    Top = 328
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -176,18 +183,18 @@ object F_BlkDisconnector: TF_BlkDisconnector
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 4
+    TabOrder = 5
     OnClick = B_SaveClick
   end
   object GB_Indications: TGroupBox
     Left = 8
-    Top = 172
-    Width = 302
+    Top = 198
+    Width = 307
     Height = 125
     Caption = ' Voli'#269'e pro ru'#269'n'#237' ovl'#225'd'#225'n'#237' (v pultu)  '
-    TabOrder = 3
+    TabOrder = 4
     object Label6: TLabel
-      Left = 7
+      Left = 15
       Top = 88
       Width = 86
       Height = 13
@@ -249,7 +256,7 @@ object F_BlkDisconnector: TF_BlkDisconnector
       Value = 0
     end
     object CHB_Contoller: TCheckBox
-      Left = 7
+      Left = 15
       Top = 19
       Width = 54
       Height = 17
@@ -258,12 +265,23 @@ object F_BlkDisconnector: TF_BlkDisconnector
       OnClick = CHB_ContollerClick
     end
     object CHB_Contoller_Pst: TCheckBox
-      Left = 7
+      Left = 15
       Top = 42
       Width = 241
       Height = 17
       Caption = 'Aktivn'#237' pouze p'#345'i aktivn'#237'm pomocn'#233'm stav'#283'dle'
       TabOrder = 1
     end
+  end
+  object CB_mode: TComboBox
+    Left = 120
+    Top = 59
+    Width = 193
+    Height = 21
+    Style = csDropDownList
+    TabOrder = 2
+    Items.Strings = (
+      'automaticky'
+      'mezern'#237'kem')
   end
 end

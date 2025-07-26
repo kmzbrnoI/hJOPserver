@@ -29,6 +29,8 @@ type
     SE_Cont_Port: TSpinEdit;
     CHB_Contoller: TCheckBox;
     CHB_Contoller_Pst: TCheckBox;
+    Label7: TLabel;
+    CB_mode: TComboBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -102,6 +104,7 @@ begin
   Self.SE_port.Value := 0;
   Self.SE_moduleExit(Self);
   Self.CB_outputType.ItemIndex := 1;
+  Self.CB_mode.ItemIndex := 0;
 
   Self.CHB_Contoller.Checked := false;
   Self.CHB_ContollerClick(Self.CHB_Contoller);
@@ -133,6 +136,7 @@ begin
 
   Self.E_name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
+  Self.CB_mode.ItemIndex := Integer(settings.dscMode);
 
   case (settings.outputType) of
     osEnabled: Self.CB_outputType.ItemIndex := 0;
@@ -205,6 +209,11 @@ begin
     StrMessageBox('Je třeba vybrat typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
+  if (Self.CB_mode.ItemIndex < 0) then
+  begin
+    StrMessageBox('Vyberte režim aktivace rozpojovače!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
 
   try
     var messages := '';
@@ -259,6 +268,8 @@ begin
     else
       settings.outputType := osEnabled;
     end;
+
+    settings.dscMode := TBlkDiscMode(Self.CB_mode.ItemIndex);
 
     settings.rcsController.enabled := Self.CHB_Contoller.Checked;
     if (Self.CHB_Contoller.Checked) then
