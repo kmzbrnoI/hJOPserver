@@ -155,6 +155,7 @@ type
     function IsBind(ip: string): Boolean;
     function GetBind(ip: string): TIdSocketHandle; overload;
     function GetBindOrZeroBind(ip: string): TIdSocketHandle;
+    procedure BlockRemoved(blk: TBlk);
 
     property openned: Boolean read IsOpenned;
     property bindingsStr: string read GetBind;
@@ -494,6 +495,12 @@ begin
   for var jc: TJC in JCdb do
     if (jc.state.SenderPnl = AContext) then
       jc.ClientDisconnect(AContext);
+
+  if (orsRef.pkey_block <> nil) then
+  begin
+    orsRef.pkey_block.PanelKey(AContext, '', False);
+    orsRef.pkey_block := nil;
+  end;
 
   orsRef.Free();
 
@@ -881,6 +888,11 @@ begin
 
   end else if (parsed[1] = 'SPEED-STEPS-REQ') then begin
     PanelServer.SendLn(AContext, '-;SPEED-STEPS;{'+TrakceI.SpeedTableToStr()+'}');
+
+  end else if ((parsed[1] = 'PKEY') and (parsed.Count >= 4)) then begin
+    const pkey_block = TPanelConnData(AContext.data).pkey_block;
+    if (pkey_block <> nil) then
+      pkey_block.PanelKey(AContext, LowerCase(parsed[2]), ownConvert.StrToBool(parsed[3]));
 
   end;
 end;
@@ -1671,6 +1683,15 @@ begin
   end;
 
   Self.m_DCCStopped := who;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TPanelServer.BlockRemoved(blk: TBlk);
+begin
+  for var i: Integer := 0 to _MAX_CLIENTS - 1 do
+    if (Assigned(Self.clients[i])) then
+      TPanelConnData(Self.clients[i].connection.Data).BlockRemoved(blk);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -81,6 +81,8 @@ type
     ping_received_next_index: Integer;
     ping_unreachable: Boolean;
 
+    pkey_block: TBlk; // blok, kam zavolat funkci PanelKey pri prijmu PKEY
+
     constructor Create(index: Integer);
     destructor Destroy(); override;
 
@@ -96,6 +98,7 @@ type
     procedure DeleteLastPathBlock();
     procedure DeleteAndHideLastPathBlock();
     function PathIsStartSignal(): Boolean;
+    procedure BlockRemoved(blk: TBlk);
 
     property ping: TTime read GetPing;
   end;
@@ -145,6 +148,7 @@ begin
   Self.ping_received := TList<TTime>.Create();
   Self.ping_received_next_index := 0;
   Self.ping_unreachable := false;
+  Self.pkey_block := nil;
 end;
 
 destructor TPanelConnData.Destroy();
@@ -400,6 +404,21 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
+procedure TPanelConnData.BlockRemoved(blk: TBlk);
+begin
+  if (Self.note = blk) then
+    Self.note := nil;
+  if (Self.lockout = blk) then
+    Self.lockout := nil;
+  if (Self.menu = blk) then
+    Self.menu := nil;
+  if (Self.podj_track = blk) then
+    Self.podj_track := nil;
+  if (Self.pkey_block = blk) then
+    Self.pkey_block := nil;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
 // TODO: kontrola co se bude dit kdyz dlouho neodpovida (neplnit frontu)
 
 end.

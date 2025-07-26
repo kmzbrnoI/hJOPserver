@@ -153,7 +153,7 @@ implementation
 
 uses fMain, TJCDatabase, Logging, DataBloky, TrainDb, TechnologieJC,
   AreaStack, GetSystems, appEv, BlockIO, PTUtils, TechnologieAB,
-  ACBlocks;
+  ACBlocks, TCPServerPanel;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -460,6 +460,8 @@ begin
     if (i >= 0) then
       Self.Delete(i);
   end;
+
+  PanelServer.BlockRemoved(deleted);
 
   FreeAndNil(deleted);
   BlocksTablePainter.BlkRemove(index);

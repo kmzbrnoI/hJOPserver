@@ -11,9 +11,10 @@ type
   TBlkDiscBasicState = (
     disabled = -5,
     inactive = 0,
-    active = 1,
-    shortTimeRemaining = 2,
-    activeInfinite = 3
+    selected = 1, // only in dmSpace mode
+    active = 2,
+    shortTimeRemaining = 3,
+    activeInfinite = 4
   );
 
   TBlkDiscMode = (
@@ -73,6 +74,7 @@ type
       UPO_EscCallback: TNotifyEvent);
 
     function IsActive(): Boolean;
+    function IsSelected(): Boolean;
 
     procedure PstCheckActive();
     procedure ReadControllers();
@@ -102,6 +104,7 @@ type
 
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
+    procedure PanelKey(senderPnl: TIdContext; key: string; state: Boolean); override;
 
     function IsActiveByController(): Boolean;
 
@@ -115,6 +118,8 @@ type
     property state: TBlkDiscBasicState read m_state.state write SetState;
     property note: string read m_state.note write SetNote;
     property active: Boolean read IsActive;
+    property selected: Boolean read IsSelected;
+    property mode: TBlkDiscMode read m_settings.dscMode;
 
     procedure GetPtData(json: TJsonObject; includeState: Boolean); override;
     procedure GetPtState(json: TJsonObject); override;
@@ -127,7 +132,7 @@ type
 implementation
 
 uses TCPServerPanel, ownConvert, Graphics, PTUtils, IfThenElse, BlockPst,
-    RCSErrors, UPO, timeHelper, colorHelper;
+    RCSErrors, UPO, timeHelper, colorHelper, PanelConnData;
 
 constructor TBlkDisconnector.Create(index: Integer);
 begin
@@ -308,7 +313,7 @@ begin
     ESCAPE:
       begin
         case (Self.state) of
-          TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining, TBlkDiscBasicState.activeInfinite:
+          TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining, TBlkDiscBasicState.activeInfinite, TBlkDiscBasicState.selected:
             if ((IsWritable(rights)) and (not Self.IsActiveByController())) then
               Self.state := TBlkDiscBasicState.inactive;
         end;
@@ -323,7 +328,7 @@ begin
   Result := inherited;
   if ((IsWritable(rights)) and (not Self.IsActiveByController())) then
   begin
-    if (Self.active) then
+    if ((Self.active) or (Self.selected)) then
       Result := Result + 'AKTIV<,'
     else if ((Self.state <> TBlkDiscBasicState.disabled) and (not Self.PstIsActive())) then
       Result := Result + 'AKTIV>,';
@@ -362,6 +367,20 @@ begin
     Self.MenuAktivOnClick(SenderPnl, SenderOR)
   else if (item = 'AKTIV<') then
     Self.MenuAktivOffClick(SenderPnl, SenderOR);
+end;
+
+procedure TBlkDisconnector.PanelKey(senderPnl: TIdContext; key: string; state: Boolean);
+begin
+  if ((key = 'space') and (Self.state = TBlkDiscBasicState.selected) and (state)) then
+  begin
+    Self.state := TBlkDiscBasicState.activeInfinite;
+  end else if ((key = 'space') and (Self.active) and (not state)) then
+  begin
+    Self.state := TBlkDiscBasicState.selected;
+  end else if ((key = '') and ((Self.active) or (Self.selected)) and (not state)) then
+  begin
+    Self.state := TBlkDiscBasicState.inactive;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -412,7 +431,7 @@ begin
       fg := TJopColor.purple;
     TBlkDiscBasicState.inactive:
       fg := TJopColor.grayDark;
-    TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining, TBlkDiscBasicState.activeInfinite:
+    TBlkDiscBasicState.active, TBlkDiscBasicState.shortTimeRemaining, TBlkDiscBasicState.activeInfinite, TBlkDiscBasicState.selected:
       fg := TJopColor.green;
   else
     fg := TJopColor.purple;
@@ -458,6 +477,8 @@ begin
       json['state'] := 'inactive';
     TBlkDiscBasicState.active:
       json['state'] := 'active';
+    TBlkDiscBasicState.selected:
+      json['state'] := 'selected';
     TBlkDiscBasicState.shortTimeRemaining:
       json['state'] := 'shortTimeRemaining';
     TBlkDiscBasicState.activeInfinite:
@@ -542,6 +563,11 @@ function TBlkDisconnector.IsActive(): Boolean;
 begin
   Result := ((Self.state = TBlkDiscBasicState.active) or (Self.state = TBlkDiscBasicState.shortTimeRemaining)
           or (Self.state = TBlkDiscBasicState.activeInfinite));
+end;
+
+function TBlkDisconnector.IsSelected(): Boolean;
+begin
+  Result := (Self.state = TBlkDiscBasicState.selected);
 end;
 
 function TBlkDisconnector.IsActiveByController(): Boolean;
@@ -653,7 +679,18 @@ end;
 
 procedure TBlkDisconnector.UPOActivDone(Sender: TObject);
 begin
-  Self.state := TBlkDiscBasicState.active;
+  const senderPnl = TIdContext(Sender);
+
+  if (Self.mode = TBlkDiscMode.dmAuto) then
+  begin
+    Self.state := TBlkDiscBasicState.active;
+  end else begin
+    var pkeyBlock: TBlk := TPanelConnData(senderPnl.Data).pkey_block;
+    if ((pkeyBlock <> nil) and (pkeyBlock.typ = TBlkType.btDisconnector)) then
+      TBlkDisconnector(pkeyBlock).state := TBlkDiscBasicState.inactive;
+    Self.state := TBlkDiscBasicState.selected;
+    TPanelConnData(senderPnl.Data).pkey_block := Self;
+  end;
 end;
 
 procedure TBlkDisconnector.NoteUPO(SenderPnl: TIDContext; SenderOR: TObject; UPO_OKCallback: TNotifyEvent;
@@ -663,7 +700,7 @@ begin
   upos := TList<TUPOItem>.Create();
   try
     upos.Add(UPO.NoteUPO(Self.name, Self.note));
-    PanelServer.UPO(SenderPnl, upos, false, UPO_OKCallback, UPO_EscCallback, SenderOR);
+    PanelServer.UPO(SenderPnl, upos, false, UPO_OKCallback, UPO_EscCallback, SenderPnl);
   finally
     upos.Free();
   end;

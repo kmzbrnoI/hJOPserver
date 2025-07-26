@@ -105,6 +105,7 @@ type
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); virtual;
     function PanelStateString(): string; virtual;
     function AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; item: string): Boolean; virtual;
+    procedure PanelKey(senderPnl: TIdContext; key: string; state: Boolean); virtual;
 
     // Tyto procedury vraci json objekt do \json, z dedicich bloku
     // je nutno volat inherited.
@@ -573,6 +574,13 @@ end;
 function TBlk.GetIdName(): string;
 begin
   Result := IntToStr(Self.id) + ' ' + Self.name;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlk.PanelKey(senderPnl: TIdContext; key: string; state: Boolean);
+begin
+  // Intentionally empty
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
