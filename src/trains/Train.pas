@@ -1379,11 +1379,63 @@ begin
        Exit(false);
    end;
 
-   rtsSpeed := TBlkRT(jc.lastTrack).speed(Self);
- end;
+  var rtsSpeed: Integer := -1;
+  var tracks := Blocks.GetBlkWithTrain(Self);
+  var onlyInRailway: Boolean := true;
+  var jc: TJC := nil;
+  try
+    for var track: TBlk in tracks do
+    begin
+      if (track.typ = btRT) then
+      begin
+        var rtSpeed := TBlkRT(track).Speed(Self);
+        rtsSpeed := ite(rtsSpeed = -1, rtSpeed, Min(rtsSpeed, rtSpeed));
+      end else begin
+        // assert TBlk(track).typ = btTrack
+        onlyInRailway := false;
+        var _jc: TJC := JCDb.FindActiveJCWithTrack(track.id);
+        if (jc = nil) then
+          jc := _jc
+        else if ((_jc <> nil) and (jc <> _jc)) then
+          Exit(false); // train in different paths -> definitelly should not be controlled by railway
+      end;
+    end;
+  finally
+    tracks.Free();
+  end;
 
- speed := rtsSpeed;
- Result := true;
+  if ((rtsSpeed = -1) or (not onlyInRailway)) then
+  begin
+    // train not in railway -> it could be on path going to railway
+    // or it could be on path entering area
+    if (jc = nil) then
+      Exit(false);
+    if (jc.lastTrack.typ <> btRT) then
+      Exit(false);
+
+    // all tracks with train (except the last track) cannot contain turnouts
+    for var i: Integer := 0 to jc.data.tracks.Count-1 do
+    begin
+      var trackId: Integer := jc.data.tracks[i];
+      var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackId);
+      if ((i < jc.data.tracks.Count-1) and (track.IsTrain(Self))) then
+      begin
+        // do not consider last track -> could be a railway track with turnout
+        var turnouts: TList<TBlk> := Blocks.GetTurnoutsAtTrack(trackId);
+        try
+          if (turnouts.Count > 0) then
+            Exit(false);
+        finally
+          turnouts.Free();
+        end;
+      end;
+    end;
+
+    rtsSpeed := TBlkRT(jc.lastTrack).speed(Self);
+  end;
+
+  speed := rtsSpeed;
+  Result := true;
 end;
 
 procedure TTrain.UpdateRailwaySpeed();
