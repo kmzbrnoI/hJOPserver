@@ -897,18 +897,26 @@ end;
 function TBlocks.GetBlkWithTrain(Train: TTrain): TBlksList;
 begin
   Result := TList<TBlk>.Create();
-  for var blk: TBlk in Self.data do
-    if (((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain(Train))) then
-      Result.Add(Blk);
+  try
+    for var blk: TBlk in Self.data do
+      if (((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain(Train))) then
+        Result.Add(Blk);
+  except
+    Result.Free();
+  end;
 end;
 
 function TBlocks.GetTurnoutsAtTrack(trackId: Integer): TList<TBlk>;
 begin
   Result := TList<TBlk>.Create();
-  for var blk: TBlk in Self.data do
-    if (blk.typ = btTurnout) then
-      if ((blk as TBlkTurnout).trackID = trackId) then
-        Result.Add(blk);
+  try
+    for var blk: TBlk in Self.data do
+      if (blk.typ = btTurnout) then
+        if ((blk as TBlkTurnout).trackID = trackId) then
+          Result.Add(blk);
+  except
+    Result.Free();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
