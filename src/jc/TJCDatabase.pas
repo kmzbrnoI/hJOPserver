@@ -566,18 +566,9 @@ begin
       JCs := TList<TJC>.Create();
     end; // case
 
-    for var JC: TJC in JCs do
-    begin
-      var tmpSignal := Blocks.GetBlkSignalByID(JC.data.signalId);
-      if ((tmpSignal <> nil) and (tmpSignal.DNjc = JC) and
-          ((tmpSignal.IsGoSignal(TJCType.train) or (tmpSignal.IsGoSignal(TJCType.shunt))) or (tmpSignal.ZAM) or
-          (JC.waitForLastTrackOrRailwayOccupy))) then
-      begin
-        JC.EmergencyCancelActivePath();
-      end else begin
-        JC.EmergencyStopTrainInVC();
-      end;
-    end;
+    for var jc: TJC in JCs do
+      jc.CancelOrStop();
+
   finally
     if (Assigned(JCs)) then
       JCs.Free();

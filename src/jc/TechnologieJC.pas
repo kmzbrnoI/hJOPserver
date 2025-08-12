@@ -219,8 +219,9 @@ type
 
     procedure SetSignalSignal();
     procedure Cancel(Sender: TObject = nil);
-    procedure CancelWithoutTrackRelease();
+    procedure CancelWithoutTrackRelease(showError: Boolean = False);
     procedure EmergencyCancelActivePath();
+    procedure CancelOrStop();
     procedure DynamicCancelling(); // kontroluje projizdeni soupravy useky a rusi jejich zavery
     procedure DynamicCancellingNC(); // rusi poruchu BP trati, ze ktere odjizdi souprava v ramci nouzove jizdni cesty
     procedure NonProfileOccupied(); // volano pri obsazeni kontrolvoaneho neprofiloveho useku
@@ -2161,14 +2162,16 @@ begin
 end;
 
 // ruseni jizdni cesty bez ruseni zaveru bloku
-procedure TJC.CancelWithoutTrackRelease();
+procedure TJC.CancelWithoutTrackRelease(showError: Boolean = False);
 begin
-  var signal: TBlkSignal := TBlkSignal(Self.signal);
   Self.Log('CancelWithoutTrackRelease');
 
-  if ((signal.DNjc = Self) and (signal.targetSignal > ncStuj)) then
+  if ((Self.signal <> nil) and (Self.signal.typ = btSignal) and (TBlkSignal(Self.signal).targetSignal > ncStuj) and (TBlkSignal(Self.signal).DNjc = Self)) then
   begin
+    var signal: TBlkSignal := TBlkSignal(Self.signal);
     signal.signal := ncStuj;
+    if (showError) then
+      signal.BottomErrorBroadcast('Chyba povolovací návěsti ' + signal.name, 'TECHNOLOGIE');
     if (signal.ab) then
     begin
       signal.ab := false; // automaticky zrusi AB
@@ -2184,11 +2187,18 @@ end;
 procedure TJC.EmergencyCancelActivePath();
 begin
   Self.EmergencyStopTrainInVC();
+  Self.CancelWithoutTrackRelease(True);
+end;
 
-  if ((Self.signal <> nil) and (Self.signal.typ = btSignal) and (TBlkSignal(Self.signal).targetSignal > ncStuj) and (TBlkSignal(Self.signal).DNjc = Self)) then
+procedure TJC.CancelOrStop();
+begin
+  if ((Self.signal <> nil) and (Self.signal.typ = TBlkType.btSignal) and (TBlkSignal(Self.signal).DNjc = Self) and
+      ((TBlkSignal(Self.signal).IsGoSignal(TJCType.train) or (TBlkSignal(Self.signal).IsGoSignal(TJCType.shunt))) or (TBlkSignal(Self.signal).ZAM) or
+      (Self.waitForLastTrackOrRailwayOccupy))) then
   begin
-    signal.BottomErrorBroadcast('Chyba povolovací návěsti ' + signal.name, 'TECHNOLOGIE');
-    Self.CancelWithoutTrackRelease();
+    Self.EmergencyCancelActivePath();
+  end else begin
+    Self.EmergencyStopTrainInVC();
   end;
 end;
 
@@ -2295,7 +2305,7 @@ begin
         if (track.zaver > TZaver.no) then
         begin
           // pokud jsme na jinem useku, nez RozpadBlok
-          Self.EmergencyCancelActivePath();
+          Self.CancelOrStop();
 
           // v trati zaver nerusime, nesmime tam dat ani nouzovy, ani zadny zaver
           if ((i <> Self.m_data.tracks.Count - 1) or (Self.m_data.railwayId = -1)) then
@@ -3917,6 +3927,7 @@ begin
     if (trains[trainI].speed > 0) then
     begin
       trains[trainI].EmergencyStop();
+      Self.Log('Narušení JC - nouzově zastaven vlak ' + trains[trainI].name + '!', TLogLevel.llWarning);
       Self.signal.BottomErrorBroadcast('Narušení JC - nouzově zastaven vlak ' + trains[trainI].name + '!', 'TECHNOLOGIE');
     end;
   end;
