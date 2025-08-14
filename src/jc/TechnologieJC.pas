@@ -2302,7 +2302,7 @@ begin
       end else begin // if (i = Self.destroyBlock)
         // obsadil se usek, ktery jsme NEocekavali
 
-        if (track.zaver > TZaver.no) then
+        if ((track.zaver > TZaver.no) and ((i <> Self.m_data.tracks.Count-1) or (not Self.waitForLastTrackOrRailwayOccupy))) then
         begin
           // pokud jsme na jinem useku, nez RozpadBlok
           Self.CancelOrStop();
