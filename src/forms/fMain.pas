@@ -482,6 +482,7 @@ type
     procedure CheckNasobicWidth();
     function SoupravySelectedCount(): Integer;
     function LVSelectedTexts(LV: TListView; single: string; multiple: string): string;
+    procedure PanelServerStartingStarted();
 
     // RCS
     procedure OnRCSStart(Sender: TObject);
@@ -1920,6 +1921,12 @@ begin
     end;
   end;
 
+  if ((SystemData.status = starting) and (PanelServer.openned)) then
+  begin
+    Self.PanelServerStartingStarted();
+    Exit();
+  end;
+
   try
     PanelServer.Start();
     Self.A_PanelServer_Start.Enabled := false;
@@ -1933,6 +1940,21 @@ begin
       ExceptionMessageBox('Chyba při zapínání panelServeru:', E);
       Exit();
     end;
+  end;
+
+  if (SystemData.status = starting) then
+    Self.PanelServerStartingStarted();
+end;
+
+procedure TF_Main.PanelServerStartingStarted();
+begin
+  if (PtServer.autoStart) then
+  begin
+    Self.A_PT_StartExecute(Self)
+  end else begin
+    Self.LogStatus('System: start OK');
+    SystemData.status := null;
+    Self.UpdateSystemButtons();
   end;
 end;
 

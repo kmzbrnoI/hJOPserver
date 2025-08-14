@@ -285,14 +285,6 @@ end;
 
 procedure TPanelServer.Start();
 begin
-  if ((SystemData.status = starting) and (Self.openned)) then
-  begin
-    F_Main.LogStatus('System: start OK');
-    SystemData.status := null;
-    F_Main.UpdateSystemButtons();
-    Exit();
-  end;
-
   if (Self.tcpServer.Active) then
     Exit();
 
@@ -317,18 +309,6 @@ begin
   F_Main.LogStatus('Panel server: spuštěn');
 
   UDPdisc.SendDiscover();
-
-  if (SystemData.status = starting) then
-  begin
-    if (PtServer.autoStart) then
-      F_Main.A_PT_StartExecute(Self)
-    else
-    begin
-      F_Main.LogStatus('System: start OK');
-      SystemData.status := null;
-      F_Main.UpdateSystemButtons();
-    end;
-  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
