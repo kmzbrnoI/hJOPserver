@@ -134,6 +134,7 @@ type
     RCtimer: Integer; // id timeru, ktery se prave ted pouziva pro ruseni JC; -1 pokud se JC nerusi, jinak se prave ted rusi
     RCtimerArea: TArea; // oblast rizeni, ze ktere bylo spusteno mereni casu ruseni JC
     RClongTime: Boolean; // jestli se bude cesta rusit dlouhym nebo kratkym casem
+    occupyStateWhenCancellingStarted: TList<TTrackState>;
   end;
 
   ENavChanged = procedure(Sender: TObject; origNav: TBlk) of object;
@@ -143,7 +144,7 @@ type
   TJC = class
   private const
     _def_jc_state: TJCstate = (step: stepDefault; destroyBlock: _JC_DESTROY_NONE; destroyEndBlock: _JC_DESTROY_NONE;
-      ab: false; crossingWasClosed: false; crossingsToClose: nil; RCtimer: -1; RCtimerArea: nil);
+      ab: false; crossingWasClosed: false; crossingsToClose: nil; RCtimer: -1; RCtimerArea: nil; occupyStateWhenCancellingStarted: nil);
 
   private
     m_data: TJCdata;
@@ -320,6 +321,7 @@ begin
   Self.m_state := _def_jc_state;
   Self.m_state.ncBariery := TJCBarriers.Create();
   Self.m_state.crossingsToClose := TList<Boolean>.Create();
+  Self.m_state.occupyStateWhenCancellingStarted := TList<TTrackState>.Create();
 
   Self.m_data := NewJCData();
 end;
@@ -334,6 +336,8 @@ begin
     Self.m_state.ncBariery := TJCBarriers.Create();
   if (not Assigned(Self.m_state.crossingsToClose)) then
     Self.m_state.crossingsToClose := TList<Boolean>.Create();
+  if (not Assigned(Self.m_state.occupyStateWhenCancellingStarted)) then
+    Self.m_state.occupyStateWhenCancellingStarted := TList<TTrackState>.Create();
 end;
 
 destructor TJC.Destroy();
@@ -342,6 +346,9 @@ begin
     FreeAndNil(Self.m_state.ncBariery);
   if (Assigned(Self.m_state.crossingsToClose)) then
     FreeAndNil(Self.m_state.crossingsToClose);
+  if (Assigned(Self.m_state.occupyStateWhenCancellingStarted)) then
+    FreeAndNil(Self.m_state.occupyStateWhenCancellingStarted);
+
   FreeJCData(Self.m_data);
 
   inherited;
@@ -2113,6 +2120,10 @@ begin
   if (Self.cancelling) then
     Exit();
 
+  Self.m_state.occupyStateWhenCancellingStarted.Clear();
+  for var trackId: Integer in Self.m_data.tracks do
+    Self.m_state.occupyStateWhenCancellingStarted.Add(Blocks.GetBlkTrackOrRTByID(trackId).occupied);
+
   Self.m_state.RCtimerArea := senderArea;
   Self.m_state.RCtimer := senderArea.AddCountdown(Self.Cancel, EncodeTimeSec(Self.CancelTimeSec()));
 
@@ -2141,6 +2152,7 @@ begin
     if (Self.m_state.RCtimerArea.IsCountdown(Self.m_state.RCtimer)) then
       Self.m_state.RCtimerArea.RemoveCountdown(Self.m_state.RCtimer);
 
+  Self.m_state.occupyStateWhenCancellingStarted.Clear();
   Self.m_state.RCtimer := -1;
   Self.m_state.RCtimerArea := nil;
 
@@ -3845,6 +3857,9 @@ procedure TJC.CheckCancellingTracks();
 begin
   var violated: Boolean := False;
 
+  if (Self.m_data.tracks.Count <> Self.m_state.occupyStateWhenCancellingStarted.Count) then
+    raise Exception.Create('Self.m_data.tracks.Count <> Self.m_state.occupyStateWhenCancellingStarted.Count');
+
   for var i: Integer := 0 to Self.m_data.tracks.Count - 1 do
   begin
     var trackId: Integer := Self.m_data.tracks[i];
@@ -3852,8 +3867,8 @@ begin
 
     if ((track <> nil) and ((track.typ = TBlkType.btTrack) or (track.typ = TBlkType.btRT))) then
     begin
-      if ((track.occupied = TTrackState.occupied) and (not ((Self.typ = TJCType.shunt) and (i = Self.m_data.tracks.Count-1))) and
-          (not ((Self.m_state.lastTrackOrRailwayOccupied) and (i = Self.m_data.tracks.Count-1)))) then
+      if ((track.occupied = TTrackState.occupied) and (Self.m_state.occupyStateWhenCancellingStarted[i] = TTrackState.free) and
+          (not ((Self.typ = TJCType.shunt) and (i = Self.m_data.tracks.Count-1)))) then
         violated := True;
       if (track.zaver = TZaver.no) then
         violated := True;
