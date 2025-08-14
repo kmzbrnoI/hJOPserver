@@ -2132,18 +2132,17 @@ begin
     Self.m_state.RCtimerArea.RemoveCountdown(Self.m_state.RCtimer);
   Self.m_state.RCtimer := -1;
   Self.m_state.RCtimerArea := nil;
+  Self.Log('Zastaveno rušení cesty.');
 end;
 
 procedure TJC.Cancel(Sender: TObject = nil);
 begin
   if ((Self.m_state.RCtimer > -1) and (Self.m_state.RCtimerArea <> nil)) then
-  begin
     if (Self.m_state.RCtimerArea.IsCountdown(Self.m_state.RCtimer)) then
       Self.m_state.RCtimerArea.RemoveCountdown(Self.m_state.RCtimer);
-  end else begin
-    Self.m_state.RCtimer := -1;
-    Self.m_state.RCtimerArea := nil;
-  end;
+
+  Self.m_state.RCtimer := -1;
+  Self.m_state.RCtimerArea := nil;
 
   Self.CancelWithoutTrackRelease();
 
