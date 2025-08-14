@@ -2121,6 +2121,7 @@ begin
   Self.CancelWithoutTrackRelease();
   if ((Assigned(Self.signal)) and (Self.signal.typ = TBlkType.btSignal)) then
     Blocks.TrainPrediction(Self.signal as TBlkSignal);
+  Self.Log('Spuštěn odpočet času do definitivního zrušení cesty.');
 end;
 
 procedure TJC.StopCancelling();
@@ -2158,7 +2159,7 @@ begin
   // Ostatni zavery (trate, prejezdy, odvraty, zamky, ...) se zrusit automaticky pri zruseni zaveru
   // referencniho useku.
 
-  Self.Log('Zrusena');
+  Self.Log('Zrušena');
 end;
 
 // ruseni jizdni cesty bez ruseni zaveru bloku
@@ -3862,6 +3863,7 @@ begin
 
   if (violated) then
   begin
+    Self.Log('Obsazen úsek nebo zrušen závěr úseku, zastavuji rušení cesty!');
     Self.StopCancelling();
     if ((Self.signal <> nil) and (Self.signal.typ = TBlkType.btSignal) and (TBlkSignal(Self.signal).dnJC = Self)) then
       TBlkSignal(Self.signal).dnJC := nil;

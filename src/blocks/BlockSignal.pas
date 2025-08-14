@@ -923,6 +923,7 @@ procedure TBlkSignal.MenuRCClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((Self.dnJC = nil) or (Self.dnJC.cancelling)) then
     Exit();
+  Self.Log('RC', TLogLevel.llInfo, TLogSource.lsJC);
   Self.dnJC.StartCancelling(TArea(SenderOR));
 end;
 
