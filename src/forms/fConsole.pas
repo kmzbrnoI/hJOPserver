@@ -33,8 +33,7 @@ var
 
 implementation
 
-uses fMain, RCSc, GetSystems, TechnologieTrakce, appEv,
-  Logging, Block, BlockTrack, BlockDb, Config;
+uses fMain, RCSc, GetSystems, TrakceC, appEv, Logging, Block, BlockTrack, BlockDb, Config;
 
 {$R *.dfm}
 

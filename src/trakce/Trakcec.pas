@@ -1,4 +1,4 @@
-﻿unit TechnologieTrakce;
+﻿unit TrakceC;
 
 {
   TTrakce class (and its singleton instance TrakceI) accesses Trakce function
@@ -13,7 +13,7 @@
 interface
 
 uses
-  SysUtils, Classes, StrUtils, Trakce, ComCtrls, THnaciVozidlo,
+  SysUtils, Classes, StrUtils, TrakceIFace, ComCtrls, THnaciVozidlo,
   Generics.Collections, IniFiles;
 
 const

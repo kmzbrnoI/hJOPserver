@@ -4,9 +4,9 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, Trakce,
+  Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, TrakceIFace,
   inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils,
-  ComObj, TechnologieTrakce, BoosterDb, System.Actions, System.ImageList,
+  ComObj, BoosterDb, System.Actions, System.ImageList,
   Vcl.Mask, Vcl.Samples.Spin, Generics.Collections, Vcl.NumberBox;
 
 const
@@ -542,7 +542,7 @@ uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
   RCSc, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils,
   Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area,
-  BlockSummary, BlockCrossing, TJCDatabase, Logging,
+  BlockSummary, BlockCrossing, TJCDatabase, Logging, TrakceC,
   TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
   fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkCrossing,
   fBlkSignal, fBlkRailway, BlockLinker, TrainDb, DataTrains, DataUsers, fUserEdit, UserDb,

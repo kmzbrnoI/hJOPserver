@@ -59,7 +59,7 @@ var Boosters: TBoosterDb;
 
 implementation
 
-uses BlockDb, fMain, TechnologieTrakce, appEv, logging, DataZesilovac, Trakce;
+uses BlockDb, fMain, TrakceC, appEv, logging, DataZesilovac, TrakceIFace;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

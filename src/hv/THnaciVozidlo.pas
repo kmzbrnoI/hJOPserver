@@ -48,7 +48,7 @@
 
 interface
 
-uses Trakce, Classes, SysUtils, Area, Generics.Collections, IdContext,
+uses TrakceIFace, Classes, SysUtils, Area, Generics.Collections, IdContext,
   IniFiles, JsonDataObjects, Math;
 
 const
@@ -288,7 +288,7 @@ type
 implementation
 
 uses ownStrUtils, AreaDb, THVDatabase, TrainDb, DataHV, fRegulator, BlockDb,
-  RegulatorTCP, fMain, PTUtils, TCPServerPanel, appEv, Logging, TechnologieTrakce,
+  RegulatorTCP, fMain, PTUtils, TCPServerPanel, appEv, Logging, TrakceC,
   ownConvert, BlockSignal, IfThenElse, PanelConnData, Config;
 
 /// /////////////////////////////////////////////////////////////////////////////

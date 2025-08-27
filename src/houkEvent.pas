@@ -50,7 +50,7 @@ type
 
 implementation
 
-uses ownStrUtils, TechnologieTrakce, train, BlockTrack, TrainDb, fMain,
+uses ownStrUtils, TrakceC, train, BlockTrack, TrainDb, fMain,
   THVDatabase;
 
 /// /////////////////////////////////////////////////////////////////////////////

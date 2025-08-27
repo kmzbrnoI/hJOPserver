@@ -30,7 +30,7 @@ var
 
 implementation
 
-uses THvDatabase, ownConvert, fMain, Trakce, TrainDb;
+uses THvDatabase, ownConvert, fMain, TrakceC, TrainDb;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

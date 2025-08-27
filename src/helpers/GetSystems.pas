@@ -24,7 +24,7 @@ var
 
 implementation
 
-uses fMain, RCSc, BlockDb, AreaDb, TCPServerPanel, TechnologieTrakce;
+uses fMain, RCSc, BlockDb, AreaDb, TCPServerPanel, TrakceC;
 
 
 function TGetFunctions.CanClose(): TCloseInfo;

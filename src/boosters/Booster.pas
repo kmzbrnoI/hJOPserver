@@ -81,7 +81,7 @@ type
 
 implementation
 
-uses GetSystems, fMain, RCSIFace, TechnologieTrakce, Trakce, Config;
+uses GetSystems, fMain, RCSIFace, TrakceC, TrakceIFace, Config;
 
 {
   Format datoveho souboru: .ini soubor, kazdy SPAX ma svou sekci

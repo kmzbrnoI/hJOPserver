@@ -4,7 +4,7 @@
 
 interface
 
-uses SysUtils, Train, IniFiles, Classes, Windows, Forms, Trakce, JsonDataObjects;
+uses SysUtils, Train, IniFiles, Classes, Windows, Forms, TrakceIFace, JsonDataObjects;
 
 const
   _MAX_TRAIN = 128;

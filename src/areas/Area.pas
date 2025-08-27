@@ -282,8 +282,8 @@ implementation
 
 uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, TechnologieJC,
   TJCDatabase, ownConvert, TCPServerPanel, AreaDb, block, THVDatabase, TrainDb,
-  UserDb, THnaciVozidlo, Trakce, user, PanelConnData, fRegulator, RegulatorTCP,
-  ownStrUtils, train, changeEvent, TechnologieTrakce, ConfSeq, Config, timeHelper,
+  UserDb, THnaciVozidlo, TrakceIFace, user, PanelConnData, fRegulator, RegulatorTCP,
+  ownStrUtils, train, changeEvent, TrakceC, ConfSeq, Config, timeHelper,
   BlockCrossing;
 
 function IsReadable(right: TAreaRights): Boolean;

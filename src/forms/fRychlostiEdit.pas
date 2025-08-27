@@ -27,7 +27,7 @@ var
 
 implementation
 
-uses fMain, TechnologieTrakce, ownGuiUtils;
+uses fMain, TrakceC, ownGuiUtils;
 
 {$R *.dfm}
 

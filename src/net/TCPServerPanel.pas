@@ -167,8 +167,8 @@ var
 implementation
 
 uses fMain, BlockTrack, BlockTurnout, BlockSignal, AreaDb, BlockLinker,
-  BlockCrossing, Logging, TimeModel, TrainDb, TechnologieTrakce, Config,
-  BlockLock, Trakce, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
+  BlockCrossing, Logging, TimeModel, TrainDb, Config, TrakceC, TrakceIFace,
+  BlockLock, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
   UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks, BlockDb,
   BlockDisconnector, BlockIO, ownConvert, THVDatabase, BlockPst, TCPServerPT;
 

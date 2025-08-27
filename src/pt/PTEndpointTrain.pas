@@ -47,7 +47,7 @@ type
 implementation
 
 uses PTUtils, TrainDb, StrUtils, ownStrUtils, predvidanyOdjezd, BlockDb,
-      Block, BlockTrack, TechnologieTrakce;
+      Block, BlockTrack, TrakceC;
 
 ////////////////////////////////////////////////////////////////////////////////
 

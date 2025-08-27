@@ -69,8 +69,7 @@ implementation
 uses fSplash, fAdminForm, GetSystems, Diagnostics, fMain, ownConvert,
   AreaDb, BlockDb, BoosterDb, THVDatabase,
   TCPServerPT, Logging, TCPServerPanel, TrainDb, UserDb, TimeModel, TMultiJCDatabase,
-  DataBloky, FunkceVyznam, UDPDiscover, appEv, Trakce, fTester,
-  TechnologieTrakce, TJCDatabase;
+  DataBloky, FunkceVyznam, UDPDiscover, appEv, fTester, TrakceC, TJCDatabase;
 
 procedure CreateCfgDirs();
 begin

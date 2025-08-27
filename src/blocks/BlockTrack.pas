@@ -306,9 +306,9 @@ implementation
 
 uses GetSystems, BlockDb, BlockSignal, Logging, RCSIFace, ownStrUtils, Diagnostics,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, THVDatabase, Math,
-  Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO,
+  THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO, TrakceIFace,
   announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, PanelConnData, ConfSeq,
-  Graphics, ownConvert, TechnologieTrakce, TMultiJCDatabase, BlockPst, IfThenElse,
+  Graphics, ownConvert, TrakceC, TMultiJCDatabase, BlockPst, IfThenElse,
   colorHelper, Config, RCSErrors;
 
 constructor TBlkTrack.Create(index: Integer);

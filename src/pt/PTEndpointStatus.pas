@@ -22,7 +22,7 @@ type
 
 implementation
 
-uses PTUtils, RCSc, TechnologieTrakce, Trakce, TCPServerPanel;
+uses PTUtils, RCSc, TrakceC, TrakceIFace, TCPServerPanel;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

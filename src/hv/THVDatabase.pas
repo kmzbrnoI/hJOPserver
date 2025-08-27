@@ -107,7 +107,7 @@ var
 
 implementation
 
-uses fMain, DataHV, area, appEv, Trakce, TechnologieTrakce;
+uses fMain, DataHV, area, appEv, TrakceIFace, TrakceC;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

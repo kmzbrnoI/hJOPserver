@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, SysUtils, Classes, Forms, THnaciVozidlo, JsonDataObjects,
-     Generics.Collections, predvidanyOdjezd, Block, Trakce, Math, IdContext,
+     Generics.Collections, predvidanyOdjezd, Block, TrakceIFace, Math, IdContext,
      Logging, Area, ConfSeq, UPO;
 
 const
@@ -207,7 +207,7 @@ implementation
 uses THVDatabase, ownStrUtils, TrainDb, BlockTrack, appEv,
       DataHV, AreaDb, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
       fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
-      TechnologieTrakce, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
+      TrakceC, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
       PanelConnData, JCBarriers, Config;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -106,7 +106,7 @@ implementation
 
 {$R *.dfm}
 
-uses fMain, Trakce, TechnologieTrakce, ownConvert, ownGuiUtils;
+uses fMain, TrakceC, ownConvert, ownGuiUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

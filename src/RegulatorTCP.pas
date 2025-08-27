@@ -48,8 +48,8 @@ var
 
 implementation
 
-uses UserDb, user, TCPServerPanel, Trakce, THVDatabase, TrainDb, PanelConnData, Logging,
-  fRegulator, fMain, Area, AreaDb, TechnologieTrakce, ownConvert, IfThenElse;
+uses UserDb, user, TCPServerPanel, TrakceC, THVDatabase, TrainDb, PanelConnData, Logging,
+  fRegulator, fMain, Area, AreaDb, ownConvert, IfThenElse;
 
 /// /////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;"
