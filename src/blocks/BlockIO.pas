@@ -150,12 +150,12 @@ begin
   if (Self.isRCSinput) then
   begin
     Self.RCSRegister(Self.m_settings.RCSinput);
-    RCSi.SetNeeded(Self.m_settings.RCSinput.board);
+    RCSi.SetNeeded(Self.m_settings.RCSinput.module);
   end;
   if (Self.isRCSOutput) then
   begin
     Self.RCSRegister(Self.m_settings.RCSoutput);
-    RCSi.SetNeeded(Self.m_settings.RCSoutput.board);
+    RCSi.SetNeeded(Self.m_settings.RCSoutput.module);
   end;
 end;
 
@@ -193,10 +193,10 @@ end;
 
 procedure TBlkIO.Enable();
 begin
-  if ((Self.isRCSOutput) and (Self.RCSoutputNeeded) and (not RCSi.IsNonFailedModule(Self.m_settings.RCSoutput.board)))
+  if ((Self.isRCSOutput) and (Self.RCSoutputNeeded) and (not RCSi.IsNonFailedModule(Self.m_settings.RCSoutput.module)))
   then
     Exit();
-  if ((Self.isRCSinput) and (Self.RCSinputNeeded) and (not RCSi.IsNonFailedModule(Self.m_settings.RCSinput.board))) then
+  if ((Self.isRCSinput) and (Self.RCSinputNeeded) and (not RCSi.IsNonFailedModule(Self.m_settings.RCSinput.module))) then
     Exit();
 
   if (Self.isRCSinput) then
@@ -241,15 +241,15 @@ var inputState: TRCSInputState;
 begin
   inherited;
 
-  if ((not Self.enabled) and (((not Self.isRCSOutput) or (RCSi.IsNonFailedModule(Self.m_settings.RCSoutput.board))) and
-    ((not Self.isRCSinput) or (RCSi.IsNonFailedModule(Self.m_settings.RCSinput.board))))) then
+  if ((not Self.enabled) and (((not Self.isRCSOutput) or (RCSi.IsNonFailedModule(Self.m_settings.RCSoutput.module))) and
+    ((not Self.isRCSinput) or (RCSi.IsNonFailedModule(Self.m_settings.RCSinput.module))))) then
   begin
     Self.Enable();
     Self.Change();
   end;
   if ((Self.enabled) and (((Self.isRCSOutput) and (Self.m_settings.RCSoutputNeeded) and
-    (not RCSi.IsNonFailedModule(Self.m_settings.RCSoutput.board))) or ((Self.isRCSinput) and
-    (Self.m_settings.RCSinputNeeded) and (not RCSi.IsNonFailedModule(Self.m_settings.RCSinput.board))))) then
+    (not RCSi.IsNonFailedModule(Self.m_settings.RCSoutput.module))) or ((Self.isRCSinput) and
+    (Self.m_settings.RCSinputNeeded) and (not RCSi.IsNonFailedModule(Self.m_settings.RCSinput.module))))) then
   begin
     Self.Disable();
     Self.Change(true);

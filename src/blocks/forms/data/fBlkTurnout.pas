@@ -258,35 +258,35 @@ begin
   Self.CHB_LockClick(Self.CHB_Lock);
 
 
-  if (Self.block.rcsInPlus.board > Cardinal(Self.SE_In_Plus_module.MaxValue)) then
+  if (Self.block.rcsInPlus.module > Cardinal(Self.SE_In_Plus_module.MaxValue)) then
     Self.SE_In_Plus_module.MaxValue := 0;
   Self.SE_In_Plus_port.MaxValue := 0;
 
-  Self.SE_In_Plus_module.Value := Self.block.rcsInPlus.board;
+  Self.SE_In_Plus_module.Value := Self.block.rcsInPlus.module;
   Self.SE_In_Plus_port.Value := Self.block.rcsInPlus.port;
 
 
-  if (Self.block.rcsInMinus.board > Cardinal(Self.SE_In_Minus_module.MaxValue)) then
+  if (Self.block.rcsInMinus.module > Cardinal(Self.SE_In_Minus_module.MaxValue)) then
     Self.SE_In_Minus_module.MaxValue := 0;
   Self.SE_In_Minus_port.MaxValue := 0;
 
-  Self.SE_In_Minus_module.Value := Self.block.rcsInMinus.board;
+  Self.SE_In_Minus_module.Value := Self.block.rcsInMinus.module;
   Self.SE_In_Minus_port.Value := Self.block.rcsInMinus.port;
 
 
-  if (Self.block.rcsOutPlus.board > Cardinal(Self.SE_Out_Plus_module.MaxValue)) then
+  if (Self.block.rcsOutPlus.module > Cardinal(Self.SE_Out_Plus_module.MaxValue)) then
     Self.SE_Out_Plus_module.MaxValue := 0;
   Self.SE_Out_Plus_port.MaxValue := 0;
 
-  Self.SE_Out_Plus_module.Value := Self.block.rcsOutPlus.board;
+  Self.SE_Out_Plus_module.Value := Self.block.rcsOutPlus.module;
   Self.SE_Out_Plus_port.Value := Self.block.rcsOutPlus.port;
 
 
-  if (Self.block.rcsOutMinus.board > Cardinal(Self.SE_Out_Minus_module.MaxValue)) then
+  if (Self.block.rcsOutMinus.module > Cardinal(Self.SE_Out_Minus_module.MaxValue)) then
     Self.SE_Out_Minus_module.MaxValue := 0;
   Self.SE_Out_Minus_port.MaxValue := 0;
 
-  Self.SE_Out_Minus_module.Value := Self.block.rcsOutMinus.board;
+  Self.SE_Out_Minus_module.Value := Self.block.rcsOutMinus.module;
   Self.SE_Out_Minus_port.Value := Self.block.rcsOutMinus.port;
 
 
@@ -307,18 +307,18 @@ begin
     Self.CHB_IndicationClick(Self.CHB_Indication);
     if (settings.indication.enabled) then
     begin
-      if (settings.indication.rcsPlus.board > Cardinal(Self.SE_Ind_Plus_Module.MaxValue)) then
+      if (settings.indication.rcsPlus.module > Cardinal(Self.SE_Ind_Plus_Module.MaxValue)) then
         Self.SE_Ind_Plus_Module.MaxValue := 0;
       Self.SE_Ind_Plus_Port.MaxValue := 0;
 
-      Self.SE_Ind_Plus_Module.Value := settings.indication.rcsPlus.board;
+      Self.SE_Ind_Plus_Module.Value := settings.indication.rcsPlus.module;
       Self.SE_Ind_Plus_Port.Value := settings.indication.rcsPlus.port;
 
-      if (settings.indication.rcsMinus.board > Cardinal(Self.SE_Ind_Minus_Module.MaxValue)) then
+      if (settings.indication.rcsMinus.module > Cardinal(Self.SE_Ind_Minus_Module.MaxValue)) then
         Self.SE_Ind_Minus_Module.MaxValue := 0;
       Self.SE_Ind_Minus_Port.MaxValue := 0;
 
-      Self.SE_Ind_Minus_Module.Value := settings.indication.rcsMinus.board;
+      Self.SE_Ind_Minus_Module.Value := settings.indication.rcsMinus.module;
       Self.SE_Ind_Minus_Port.Value := settings.indication.rcsMinus.port;
       Self.CHB_Indication_Pst.Checked := settings.indication.pstOnly;
     end;
@@ -329,18 +329,18 @@ begin
     Self.CHB_ControllersClick(Self.CHB_Controllers);
     if (settings.controllers.enabled) then
     begin
-      if (settings.controllers.rcsPlus.board > Cardinal(Self.SE_Cont_Plus_Module.MaxValue)) then
+      if (settings.controllers.rcsPlus.module > Cardinal(Self.SE_Cont_Plus_Module.MaxValue)) then
         Self.SE_Cont_Plus_Module.MaxValue := 0;
       Self.SE_Cont_Plus_Port.MaxValue := 0;
 
-      Self.SE_Cont_Plus_Module.Value := settings.controllers.rcsPlus.board;
+      Self.SE_Cont_Plus_Module.Value := settings.controllers.rcsPlus.module;
       Self.SE_Cont_Plus_Port.Value := settings.controllers.rcsPlus.port;
 
-      if (settings.controllers.rcsMinus.board > Cardinal(Self.SE_Cont_Minus_Module.MaxValue)) then
+      if (settings.controllers.rcsMinus.module > Cardinal(Self.SE_Cont_Minus_Module.MaxValue)) then
         Self.SE_Cont_Minus_Module.MaxValue := 0;
       Self.SE_Cont_Minus_Port.MaxValue := 0;
 
-      Self.SE_Cont_Minus_Module.Value := settings.controllers.rcsMinus.board;
+      Self.SE_Cont_Minus_Module.Value := settings.controllers.rcsMinus.module;
       Self.SE_Cont_Minus_Port.Value := settings.controllers.rcsMinus.port;
       Self.CHB_Controllers_Pst.Checked := settings.controllers.pstOnly;
     end;
@@ -672,9 +672,9 @@ begin
     settings.indication.enabled := Self.CHB_Indication.Checked;
     if (Self.CHB_Indication.Checked) then
     begin
-      settings.indication.rcsPlus.board := Self.SE_Ind_Plus_Module.Value;
+      settings.indication.rcsPlus.module := Self.SE_Ind_Plus_Module.Value;
       settings.indication.rcsPlus.port := Self.SE_Ind_Plus_Port.Value;
-      settings.indication.rcsMinus.board := Self.SE_Ind_Minus_Module.Value;
+      settings.indication.rcsMinus.module := Self.SE_Ind_Minus_Module.Value;
       settings.indication.rcsMinus.port := Self.SE_Ind_Minus_Port.Value;
       settings.indication.pstOnly := Self.CHB_Indication_Pst.Checked;
 
@@ -690,9 +690,9 @@ begin
     settings.controllers.enabled := Self.CHB_Controllers.Checked;
     if (Self.CHB_Controllers.Checked) then
     begin
-      settings.controllers.rcsPlus.board := Self.SE_Cont_Plus_Module.Value;
+      settings.controllers.rcsPlus.module := Self.SE_Cont_Plus_Module.Value;
       settings.controllers.rcsPlus.port := Self.SE_Cont_Plus_Port.Value;
-      settings.controllers.rcsMinus.board := Self.SE_Cont_Minus_Module.Value;
+      settings.controllers.rcsMinus.module := Self.SE_Cont_Minus_Module.Value;
       settings.controllers.rcsMinus.port := Self.SE_Cont_Minus_Port.Value;
       settings.controllers.pstOnly := Self.CHB_Controllers_Pst.Checked;
 

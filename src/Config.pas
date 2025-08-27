@@ -590,7 +590,7 @@ begin
   end else begin
     if ((oldboard = '') or (oldport = '')) then
       raise Exception.Create('Unable to load old RCS!');
-    Result.board := ini.ReadInteger(section, oldboard, 0);
+    Result.module := ini.ReadInteger(section, oldboard, 0);
     Result.port := ini.ReadInteger(section, oldport, 0);
   end;
 end;
@@ -601,7 +601,7 @@ begin
       and (ini.ReadString(section, oldport, '') = '')) then
   begin
     Result.enabled := False;
-    Result.addr.board := 0;
+    Result.addr.module := 0;
     Result.addr.port := 0;
     Exit();
   end;
@@ -615,12 +615,12 @@ begin
   Result.enabled := enabled.Checked;
   if (Result.enabled) then
   begin
-    Result.addr.board := board.Value;
+    Result.addr.module := board.Value;
     Result.addr.port := port.Value;
     if (rcs <> nil) then
       rcs.Add(Result.addr);
   end else begin
-    Result.addr.board := 0;
+    Result.addr.module := 0;
     Result.addr.port := 0;
   end;
 end;
@@ -631,11 +631,11 @@ begin
   if (Assigned(enabled.OnClick)) then
     enabled.OnClick(enabled);
   board.MaxValue := RCSi.maxModuleAddrSafe;
-  if (addr.addr.board > Cardinal(board.MaxValue)) then
+  if (addr.addr.module > Cardinal(board.MaxValue)) then
     board.MaxValue := 0;
   if (addr.enabled) then
   begin
-    board.Value := addr.addr.board;
+    board.Value := addr.addr.module;
     port.Value := addr.addr.port;
   end;
 end;

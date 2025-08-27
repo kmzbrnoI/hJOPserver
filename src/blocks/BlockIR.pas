@@ -70,7 +70,7 @@ begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
   Self.m_settings.RCSAddr := RCSFromIni(ini_tech, section, 'RCS0', 'RCSb0', 'RCSp0');
-  RCSi.SetNeeded(Self.m_settings.RCSAddr.board);
+  RCSi.SetNeeded(Self.m_settings.RCSAddr.module);
 end;
 
 procedure TBlkIR.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -86,7 +86,7 @@ procedure TBlkIR.Enable();
 var enable: Boolean;
 begin
   try
-    enable := RCSi.IsNonFailedModule(Self.m_settings.RCSAddr.board);
+    enable := RCSi.IsNonFailedModule(Self.m_settings.RCSAddr.module);
   except
     enable := false;
   end;

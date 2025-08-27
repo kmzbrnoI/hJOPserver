@@ -277,17 +277,17 @@ class procedure TBlk.RCSRegister(areas: TList<TArea>; RCSs: TRCSAddrs);
 begin
   for var area: TArea in areas do
     for var rcsAddr: TRCSAddr in RCSs do
-      area.RCSAdd(rcsAddr.board);
+      area.RCSAdd(rcsAddr.module);
 
   for var rcsAddr: TRCSAddr in RCSs do
-    RCSi.SetNeeded(rcsAddr.board);
+    RCSi.SetNeeded(rcsAddr.module);
 end;
 
 class procedure TBlk.RCSRegister(areas: TList<TArea>; RCS: TRCSAddr);
 begin
   for var area: TArea in areas do
-    Area.RCSAdd(RCS.board);
-  RCSi.SetNeeded(RCS.board);
+    Area.RCSAdd(RCS.module);
+  RCSi.SetNeeded(RCS.module);
 end;
 
 procedure TBlk.RCSRegister(RCSs: TRCSAddrs);
@@ -466,14 +466,14 @@ begin
   for var rcsAddr: TRCSAddr in addrs do
   begin
     var newObj: TJsonObject := json.AddObject();
-    newObj['board'] := rcsAddr.board;
+    newObj['board'] := rcsAddr.module;
     newObj['port'] := rcsAddr.port;
   end;
 end;
 
 class procedure TBlk.RCStoJSON(const addr: TRCSAddr; json: TJsonObject);
 begin
-  json['board'] := addr.board;
+  json['board'] := addr.module;
   json['port'] := addr.port;
 end;
 

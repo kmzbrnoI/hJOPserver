@@ -397,6 +397,7 @@
         <DCCReference Include="blocks\BlockProxy.pas"/>
         <DCCReference Include="helpers\ownGuiUtils.pas"/>
         <DCCReference Include="pt\PTEndpointStatus.pas"/>
+        <DCCReference Include="rcs\rcssc.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

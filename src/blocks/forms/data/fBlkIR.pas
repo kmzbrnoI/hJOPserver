@@ -83,10 +83,10 @@ begin
   glob := Self.block.GetGlobalSettings();
   settings := Self.block.GetSettings();
 
-  if (settings.RCSAddr.board > Cardinal(Self.SE_module.MaxValue)) then
+  if (settings.RCSAddr.module > Cardinal(Self.SE_module.MaxValue)) then
     Self.SE_module.MaxValue := 0;
   Self.SE_port.MaxValue := 0;
-  Self.SE_module.Value := settings.RCSAddr.board;
+  Self.SE_module.Value := settings.RCSAddr.module;
   Self.SE_port.Value := settings.RCSAddr.port;
 
   Self.SE_moduleExit(Self);

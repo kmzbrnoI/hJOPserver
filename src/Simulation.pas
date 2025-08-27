@@ -120,7 +120,7 @@ begin
       var track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.state.destroyBlock]);
       var trackSettings := track.GetSettings();
       if (trackSettings.RCSAddrs.Count > 0) then
-        RCSi.SetInput(trackSettings.RCSAddrs[0].board, trackSettings.RCSAddrs[0].port, 1);
+        RCSi.SetInput(trackSettings.RCSAddrs[0].module, trackSettings.RCSAddrs[0].port, 1);
     end; // else
   except
 

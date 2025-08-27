@@ -140,10 +140,10 @@ begin
   Self.CHB_RCS_InputClick(Self);
   if (settings.isRCSinput) then
   begin
-    if (settings.RCSinput.board > Cardinal(Self.SE_RCS_Input_Module.MaxValue)) then
+    if (settings.RCSinput.module > Cardinal(Self.SE_RCS_Input_Module.MaxValue)) then
       Self.SE_RCS_Input_Module.MaxValue := 0;
     Self.SE_RCS_Input_Port.MaxValue := 0;
-    Self.SE_RCS_Input_Module.Value := settings.RCSinput.board;
+    Self.SE_RCS_Input_Module.Value := settings.RCSinput.module;
     Self.SE_RCS_Input_Port.Value := settings.RCSinput.port;
     Self.CHB_RCS_Input_Needed.Checked := settings.RCSinputNeeded;
   end else begin
@@ -157,10 +157,10 @@ begin
   Self.CHB_RCS_OutputClick(Self);
   if (settings.isRCSOutput) then
   begin
-    if (settings.RCSOutput.board > Cardinal(Self.SE_RCS_Output_Module.MaxValue)) then
+    if (settings.RCSOutput.module > Cardinal(Self.SE_RCS_Output_Module.MaxValue)) then
       Self.SE_RCS_Output_Module.MaxValue := 0;
     Self.SE_RCS_Output_Port.MaxValue := 0;
-    Self.SE_RCS_Output_Module.Value := settings.RCSOutput.board;
+    Self.SE_RCS_Output_Module.Value := settings.RCSOutput.module;
     Self.SE_RCS_Output_Port.Value := settings.RCSOutput.port;
     Self.CHB_RCS_Output_Needed.Checked := settings.RCSoutputNeeded;
   end else begin

@@ -149,11 +149,11 @@ begin
 
   if (signalSettings.RCSAddrs.count > 0) then
   begin
-    if (signalSettings.RCSAddrs[0].board > Cardinal(Self.SE_RCSmodule1.MaxValue)) then
+    if (signalSettings.RCSAddrs[0].module > Cardinal(Self.SE_RCSmodule1.MaxValue)) then
       Self.SE_RCSmodule1.MaxValue := 0;
     Self.SE_RCSport1.MaxValue := 0;
 
-    Self.SE_RCSmodule1.Value := signalSettings.RCSAddrs[0].board;
+    Self.SE_RCSmodule1.Value := signalSettings.RCSAddrs[0].module;
     Self.SE_RCSport1.Value := signalSettings.RCSAddrs[0].port;
     Self.CB_Typ.ItemIndex := Integer(signalSettings.OutputType);
   end;
@@ -161,11 +161,11 @@ begin
   Self.CHB_RCS_Second_OutputClick(Self);
   if (signalSettings.RCSAddrs.count > 1) then
   begin
-    if (signalSettings.RCSAddrs[1].board > Cardinal(Self.SE_RCSmodule2.MaxValue)) then
+    if (signalSettings.RCSAddrs[1].module > Cardinal(Self.SE_RCSmodule2.MaxValue)) then
       Self.SE_RCSmodule2.MaxValue := 0;
     Self.SE_RCSport2.MaxValue := 0;
 
-    Self.SE_RCSmodule2.Value := signalSettings.RCSAddrs[1].board;
+    Self.SE_RCSmodule2.Value := signalSettings.RCSAddrs[1].module;
     Self.SE_RCSport2.Value := signalSettings.RCSAddrs[1].port;
   end;
   Self.SE_RCSmodule1Exit(Self);

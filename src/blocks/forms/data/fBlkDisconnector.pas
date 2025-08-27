@@ -121,11 +121,11 @@ begin
 
   if (settings.RCSAddrs.count > 0) then
   begin
-    if (settings.RCSAddrs[0].board > Cardinal(Self.SE_module.MaxValue)) then
+    if (settings.RCSAddrs[0].module > Cardinal(Self.SE_module.MaxValue)) then
       Self.SE_module.MaxValue := 0;
     Self.SE_port.MaxValue := 0;
 
-    Self.SE_module.Value := settings.RCSAddrs[0].board;
+    Self.SE_module.Value := settings.RCSAddrs[0].module;
     Self.SE_port.Value := settings.RCSAddrs[0].port;
   end else begin
     Self.SE_module.Value := 0;
@@ -157,11 +157,11 @@ begin
     Self.CHB_ContollerClick(Self.CHB_Contoller);
     if (settings.rcsController.enabled) then
     begin
-      if (settings.rcsController.addr.board > Cardinal(Self.SE_Cont_Module.MaxValue)) then
+      if (settings.rcsController.addr.module > Cardinal(Self.SE_Cont_Module.MaxValue)) then
         Self.SE_Cont_Module.MaxValue := 0;
       Self.SE_Cont_Port.MaxValue := 0;
 
-      Self.SE_Cont_Module.Value := settings.rcsController.addr.board;
+      Self.SE_Cont_Module.Value := settings.rcsController.addr.module;
       Self.SE_Cont_Port.Value := settings.rcsController.addr.port;
       Self.CHB_Contoller_Pst.Checked := settings.rcsController.pstOnly;
     end;
@@ -274,7 +274,7 @@ begin
     settings.rcsController.enabled := Self.CHB_Contoller.Checked;
     if (Self.CHB_Contoller.Checked) then
     begin
-      settings.rcsController.addr.board := Self.SE_Cont_Module.Value;
+      settings.rcsController.addr.module := Self.SE_Cont_Module.Value;
       settings.rcsController.addr.port := Self.SE_Cont_Port.Value;
       settings.rcsController.pstOnly := Self.CHB_Contoller_Pst.Checked;
 

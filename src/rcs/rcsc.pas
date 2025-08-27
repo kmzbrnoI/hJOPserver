@@ -20,14 +20,14 @@ uses SysUtils, Classes, IniFiles, Generics.Collections, RCSIFace, Generics.Defau
 
 type
   TRCSReadyEvent = procedure(Sender: TObject; ready: Boolean) of object;
-  TRCSBoardChangeEvent = procedure(Sender: TObject; board: Cardinal) of object;
+  TRCSModuleChangeEvent = procedure(Sender: TObject; module: Cardinal) of object;
   TRCSIOType = (input = 0, output = 1);
 
   /// ///////////////////////////////////////////////////////////
 
   // toto se pouziva pro identifikaci desky a portu VSUDE v technologii
   TRCSAddr = record // jedno fyzicke RCS spojeni
-    board: Cardinal; // cislo desky
+    module: Cardinal; // cislo desky
     port: Byte; // cislo portu
     class operator Equal(a, b: TRCSAddr): Boolean;
     procedure Load(str: string);
@@ -39,10 +39,10 @@ type
     enabled: Boolean;
   end;
 
-  TRCSBoard = class // jedna RCS deska
+  TRCSModule = class // jedna RCS deska
     needed: Boolean; // jestli jed eska potrebna pro technologii (tj. jeslti na ni referuji nejake bloky atp.)
-    inputChangedEv: TList<TRCSBoardChangeEvent>;
-    outputChangedEv: TList<TRCSBoardChangeEvent>;
+    inputChangedEv: TList<TRCSModuleChangeEvent>;
+    outputChangedEv: TList<TRCSModuleChangeEvent>;
 
     constructor Create();
     destructor Destroy(); override;
@@ -61,7 +61,7 @@ type
     _DEFAULT_CONFIG_PATH = 'lib-conf';
 
   private
-    boards: TObjectDictionary<Cardinal, TRCSBoard>;
+    modules: TObjectDictionary<Cardinal, TRCSModule>;
     aReady: Boolean; // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
     fGeneralError: Boolean; // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
     fLibDir: string;
@@ -112,18 +112,18 @@ type
     function GetOutput(addr: TRCSAddr): Integer; overload;
     function GetOutputState(addr: TRCSAddr): TRCSOutputState; overload;
 
-    procedure AddInputChangeEvent(board: Cardinal; event: TRCSBoardChangeEvent);
-    procedure RemoveInputChangeEvent(event: TRCSBoardChangeEvent; board: Integer = -1);
+    procedure AddInputChangeEvent(module: Cardinal; event: TRCSModuleChangeEvent);
+    procedure RemoveInputChangeEvent(event: TRCSModuleChangeEvent; module: Integer = -1);
 
-    procedure AddOutputChangeEvent(board: Cardinal; event: TRCSBoardChangeEvent);
-    procedure RemoveOutputChangeEvent(event: TRCSBoardChangeEvent; board: Integer = -1);
+    procedure AddOutputChangeEvent(module: Cardinal; event: TRCSModuleChangeEvent);
+    procedure RemoveOutputChangeEvent(event: TRCSModuleChangeEvent; module: Integer = -1);
 
     function GetModuleInputsCountSafe(module: Cardinal): Cardinal;
     function GetModuleOutputsCountSafe(module: Cardinal): Cardinal;
 
     property generalError: Boolean read fGeneralError;
-    class function RCSAddr(board: Cardinal; port: Byte): TRCSAddr;
-    class function RCSOptionalAddr(board: Cardinal; port: Byte): TRCSAddrOptional; overload;
+    class function RCSAddr(module: Cardinal; port: Byte): TRCSAddr;
+    class function RCSOptionalAddr(module: Cardinal; port: Byte): TRCSAddrOptional; overload;
     class function RCSOptionalAddrDisabled(): TRCSAddrOptional; overload;
 
     // events
@@ -152,7 +152,7 @@ constructor TRCS.Create();
 begin
   inherited;
 
-  Self.boards := TObjectDictionary<Cardinal, TRCSBoard>.Create();
+  Self.modules := TObjectDictionary<Cardinal, TRCSModule>.Create();
 
   Self.logActionInProgress := false;
   Self.log := false;
@@ -170,7 +170,7 @@ end;
 
 destructor TRCS.Destroy();
 begin
-  Self.boards.Free();
+  Self.modules.Free();
   inherited;
 end;
 
@@ -333,36 +333,36 @@ end;
 
 procedure TRCS.DllOnModuleChanged(Sender: TObject; module: Cardinal);
 begin
-  if (Self.boards.ContainsKey(module)) then
-    for var i: Integer := Self.boards[module].outputChangedEv.Count - 1 downto 0 do
-      if (Assigned(Self.boards[module].outputChangedEv[i])) then
-        Self.boards[module].outputChangedEv[i](Self, module)
+  if (Self.modules.ContainsKey(module)) then
+    for var i: Integer := Self.modules[module].outputChangedEv.Count - 1 downto 0 do
+      if (Assigned(Self.modules[module].outputChangedEv[i])) then
+        Self.modules[module].outputChangedEv[i](Self, module)
       else
-        Self.boards[module].outputChangedEv.Delete(i);
+        Self.modules[module].outputChangedEv.Delete(i);
   RCSTableData.UpdateBoard(module);
   F_Tester.RCSModuleChanged(module);
 end;
 
 procedure TRCS.DllOnInputChanged(Sender: TObject; module: Cardinal);
 begin
-  if (Self.boards.ContainsKey(module)) then
-    for var i: Integer := Self.boards[module].inputChangedEv.Count - 1 downto 0 do
-      if (Assigned(Self.boards[module].inputChangedEv[i])) then
-        Self.boards[module].inputChangedEv[i](Self, module)
+  if (Self.modules.ContainsKey(module)) then
+    for var i: Integer := Self.modules[module].inputChangedEv.Count - 1 downto 0 do
+      if (Assigned(Self.modules[module].inputChangedEv[i])) then
+        Self.modules[module].inputChangedEv[i](Self, module)
       else
-        Self.boards[module].inputChangedEv.Delete(i);
+        Self.modules[module].inputChangedEv.Delete(i);
   RCSTableData.UpdateBoardInputs(module);
   F_Tester.RCSModuleInputsChanged(module);
 end;
 
 procedure TRCS.DllOnOutputChanged(Sender: TObject; module: Cardinal);
 begin
-  if (Self.boards.ContainsKey(module)) then
-    for var i: Integer := Self.boards[module].outputChangedEv.Count - 1 downto 0 do
-      if (Assigned(Self.boards[module].outputChangedEv[i])) then
-        Self.boards[module].outputChangedEv[i](Self, module)
+  if (Self.modules.ContainsKey(module)) then
+    for var i: Integer := Self.modules[module].outputChangedEv.Count - 1 downto 0 do
+      if (Assigned(Self.modules[module].outputChangedEv[i])) then
+        Self.modules[module].outputChangedEv[i](Self, module)
       else
-        Self.boards[module].outputChangedEv.Delete(i);
+        Self.modules[module].outputChangedEv.Delete(i);
   RCSTableData.UpdateBoardOutputs(module);
   F_Tester.RCSModuleOutputsChanged(module);
 end;
@@ -372,29 +372,29 @@ end;
 
 procedure TRCS.SetNeeded(RCSAdr: Cardinal; state: Boolean = true);
 begin
-  if (not Self.boards.ContainsKey(RCSAdr)) then
-    Self.boards.Add(RCSAdr, TRCSBoard.Create());
-  Self.boards[RCSAdr].needed := state
+  if (not Self.modules.ContainsKey(RCSAdr)) then
+    Self.modules.Add(RCSAdr, TRCSModule.Create());
+  Self.modules[RCSAdr].needed := state
 end;
 
 function TRCS.GetNeeded(RCSAdr: Cardinal): Boolean;
 begin
-  if (Self.boards.ContainsKey(RCSAdr)) then
-    Result := Self.boards[RCSAdr].needed
+  if (Self.modules.ContainsKey(RCSAdr)) then
+    Result := Self.modules[RCSAdr].needed
   else
     Result := false;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-constructor TRCSBoard.Create();
+constructor TRCSModule.Create();
 begin
   inherited;
-  Self.inputChangedEv := TList<TRCSBoardChangeEvent>.Create();
-  Self.outputChangedEv := TList<TRCSBoardChangeEvent>.Create();
+  Self.inputChangedEv := TList<TRCSModuleChangeEvent>.Create();
+  Self.outputChangedEv := TList<TRCSModuleChangeEvent>.Create();
 end;
 
-destructor TRCSBoard.Destroy();
+destructor TRCSModule.Destroy();
 begin
   Self.inputChangedEv.Free();
   Self.outputChangedEv.Free();
@@ -403,46 +403,46 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.AddInputChangeEvent(board: Cardinal; event: TRCSBoardChangeEvent);
+procedure TRCS.AddInputChangeEvent(module: Cardinal; event: TRCSModuleChangeEvent);
 begin
-  if (not Self.boards.ContainsKey(board)) then
-    Self.boards.Add(board, TRCSBoard.Create());
-  if (Self.boards[board].inputChangedEv.IndexOf(event) = -1) then
-    Self.boards[board].inputChangedEv.Add(event);
+  if (not Self.modules.ContainsKey(module)) then
+    Self.modules.Add(module, TRCSModule.Create());
+  if (Self.modules[module].inputChangedEv.IndexOf(event) = -1) then
+    Self.modules[module].inputChangedEv.Add(event);
 end;
 
-procedure TRCS.RemoveInputChangeEvent(event: TRCSBoardChangeEvent; board: Integer = -1);
-var rcsBoard: TRCSBoard;
+procedure TRCS.RemoveInputChangeEvent(event: TRCSModuleChangeEvent; module: Integer = -1);
+var rcsBoard: TRCSModule;
 begin
-  if (board = -1) then
+  if (module = -1) then
   begin
-    for rcsBoard in Self.boards.Values do
+    for rcsBoard in Self.modules.Values do
       rcsBoard.inputChangedEv.Remove(event);
   end else begin
-    if (Self.boards.ContainsKey(board)) then
-      Self.boards[board].inputChangedEv.Remove(event);
+    if (Self.modules.ContainsKey(module)) then
+      Self.modules[module].inputChangedEv.Remove(event);
   end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.AddOutputChangeEvent(board: Cardinal; event: TRCSBoardChangeEvent);
+procedure TRCS.AddOutputChangeEvent(module: Cardinal; event: TRCSModuleChangeEvent);
 begin
-  if (not Self.boards.ContainsKey(board)) then
-    Self.boards.Add(board, TRCSBoard.Create());
-  if (Self.boards[board].outputChangedEv.IndexOf(event) = -1) then
-    Self.boards[board].outputChangedEv.Add(event);
+  if (not Self.modules.ContainsKey(module)) then
+    Self.modules.Add(module, TRCSModule.Create());
+  if (Self.modules[module].outputChangedEv.IndexOf(event) = -1) then
+    Self.modules[module].outputChangedEv.Add(event);
 end;
 
-procedure TRCS.RemoveOutputChangeEvent(event: TRCSBoardChangeEvent; board: Integer = -1);
+procedure TRCS.RemoveOutputChangeEvent(event: TRCSModuleChangeEvent; module: Integer = -1);
 begin
-  if (board = -1) then
+  if (module = -1) then
   begin
-    for var rcsBoard: TRCSBoard in Self.boards.Values do
+    for var rcsBoard: TRCSModule in Self.modules.Values do
       rcsBoard.outputChangedEv.Remove(event);
   end else begin
-    if (Self.boards.ContainsKey(board)) then
-      Self.boards[board].outputChangedEv.Remove(event);
+    if (Self.modules.ContainsKey(module)) then
+      Self.modules[module].outputChangedEv.Remove(event);
   end;
 end;
 
@@ -468,16 +468,16 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class function TRCS.RCSAddr(board: Cardinal; port: Byte): TRCSAddr;
+class function TRCS.RCSAddr(module: Cardinal; port: Byte): TRCSAddr;
 begin
-  Result.board := board;
+  Result.module := module;
   Result.port := port;
 end;
 
-class function TRCS.RCSOptionalAddr(board: Cardinal; port: Byte): TRCSAddrOptional;
+class function TRCS.RCSOptionalAddr(module: Cardinal; port: Byte): TRCSAddrOptional;
 begin
   Result.enabled := True;
-  Result.addr := RCSAddr(board, port);
+  Result.addr := RCSAddr(module, port);
 end;
 
 class function TRCS.RCSOptionalAddrDisabled(): TRCSAddrOptional;
@@ -527,7 +527,7 @@ end;
 
 procedure TRCS.SetInput(addr: TRCSAddr; state: Integer);
 begin
-  Self.SetInput(addr.board, addr.port, state);
+  Self.SetInput(addr.module, addr.port, state);
 end;
 
 procedure TRCS.SetInputs(addrs: TList<TRCSAddr>; state: Integer);
@@ -538,17 +538,17 @@ end;
 
 function TRCS.GetInput(addr: TRCSAddr): TRCSInputState;
 begin
-  Result := Self.GetInput(addr.board, addr.port);
+  Result := Self.GetInput(addr.module, addr.port);
 end;
 
 procedure TRCS.SetOutput(addr: TRCSAddr; state: Integer);
 begin
-  Self.SetOutput(addr.board, addr.port, state);
+  Self.SetOutput(addr.module, addr.port, state);
 end;
 
 procedure TRCS.SetOutput(addr: TRCSAddr; state: TRCSOutputState);
 begin
-  Self.SetOutput(addr.board, addr.port, state);
+  Self.SetOutput(addr.module, addr.port, state);
 end;
 
 procedure TRCS.SetOutputs(addrs: TList<TRCSAddr>; state: Integer);
@@ -565,24 +565,24 @@ end;
 
 function TRCS.GetOutput(addr: TRCSAddr): Integer;
 begin
-  Result := Self.GetOutput(addr.board, addr.port);
+  Result := Self.GetOutput(addr.module, addr.port);
 end;
 
 function TRCS.GetOutputState(addr: TRCSAddr): TRCSOutputState;
 begin
-  Result := Self.GetOutputState(addr.board, addr.port);
+  Result := Self.GetOutputState(addr.module, addr.port);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 class operator TRCSAddr.Equal(a, b: TRCSAddr): Boolean;
 begin
-  Result := ((a.board = b.board) and (a.port = b.port));
+  Result := ((a.module = b.module) and (a.port = b.port));
 end;
 
 function TRCSAddr.ToString(): string;
 begin
-  Result := IntToStr(board) + ':' + IntToStr(port);
+  Result := IntToStr(module) + ':' + IntToStr(port);
 end;
 
 procedure TRCSAddr.Load(str: string);
@@ -593,7 +593,7 @@ begin
     ExtractStrings([':'], [], PChar(str), strs);
     if (strs.Count <> 2) then
       raise Exception.Create('Unable to load RCS: '+str);
-    board := StrToInt(strs[0]);
+    module := StrToInt(strs[0]);
     port := StrToInt(strs[1]);
   finally
     strs.Free();
@@ -607,9 +607,9 @@ begin
   Result := TComparer<TRCSAddr>.Construct(
     function(const Left, Right: TRCSAddr): Integer
     begin
-      if (Left.board < Right.board) then
+      if (Left.module < Right.module) then
         Exit(-1);
-      if (Left.board > Right.board) then
+      if (Left.module > Right.module) then
         Exit(1);
       if (Left.port < Right.port) then
         Exit(-1);

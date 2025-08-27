@@ -35,7 +35,7 @@ uses
   fBlkTrackState in 'blocks\forms\state\fBlkTrackState.pas' {F_BlkTrackState},
   GetSystems in 'helpers\GetSystems.pas',
   ownConvert in 'helpers\ownConvert.pas',
-  RCSc in 'rcs\rcsc.pas',
+  rcsc in 'rcs\rcsc.pas',
   TechnologieJC in 'jc\TechnologieJC.pas',
   Config in 'Config.pas',
   fConsole in 'forms\fConsole.pas' {F_Console},
@@ -132,7 +132,7 @@ uses
   fBlkSignal in 'blocks\forms\data\fBlkSignal.pas' {F_BlkSignal},
   TrakceIFace in 'trakce\api\TrakceIFace.pas',
   TrakceErrors in 'trakce\api\TrakceErrors.pas',
-  TrakceC in 'trakce\Trakcec.pas',
+  Trakcec in 'trakce\Trakcec.pas' {$R *.res},
   CpuLoad in 'helpers\CpuLoad.pas',
   Diagnostics in 'Diagnostics.pas',
   Simulation in 'Simulation.pas',
@@ -167,7 +167,8 @@ uses
   BlockCrossingPositive in 'blocks\BlockCrossingPositive.pas',
   BlockProxy in 'blocks\BlockProxy.pas',
   ownGuiUtils in 'helpers\ownGuiUtils.pas',
-  PTEndpointStatus in 'pt\PTEndpointStatus.pas';
+  PTEndpointStatus in 'pt\PTEndpointStatus.pas',
+  RCSsc in 'rcs\rcssc.pas';
 
 {$R *.res}
 
@@ -264,7 +265,9 @@ uses
 
   FreeAndNil(trakce);
   FreeAndNil(RCSi);
+  FreeAndNIl(RCSs);
  end.
+
 //08.06.2009 -  9 649 radku
 //03.07.2009 - 13 006 radku
 //16.11.2009 - 19 376 radku

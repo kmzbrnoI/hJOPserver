@@ -460,7 +460,7 @@ begin
   enable := true;
   try
     for var rcsaddr: TRCSAddr in Self.m_settings.RCSAddrs do
-      if (not RCSi.IsNonFailedModule(rcsaddr.board)) then
+      if (not RCSi.IsNonFailedModule(rcsaddr.module)) then
         enable := false;
   except
     enable := false;
@@ -517,7 +517,7 @@ begin
 
   if (Self.m_settings.RCSAddrs.Count > 0) then
   begin
-    if (RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].board)) then
+    if (RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].module)) then
     begin
       if (Self.m_state.signal = ncDisabled) then
       begin

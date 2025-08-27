@@ -1307,7 +1307,7 @@ begin
 
   str := '';
   for var i: Integer := 0 to Self.m_data.lights.Count - 1 do
-    str := str + '(' + Self.m_data.lights[i].name + ' - ' + IntToStr(Self.m_data.lights[i].rcsAddr.board) + ':' +
+    str := str + '(' + Self.m_data.lights[i].name + ' - ' + IntToStr(Self.m_data.lights[i].rcsAddr.module) + ':' +
       IntToStr(Self.m_data.lights[i].rcsAddr.port) + ')';
   LI.SubItems.Strings[5] := str;
 end;
@@ -1347,7 +1347,7 @@ procedure TArea.OsvInit();
 begin
   try
     for var light: TAreaLighting in Self.m_data.lights do
-      if (RCSi.IsModule(light.rcsAddr.board)) then
+      if (RCSi.IsModule(light.rcsAddr.module)) then
         RCSi.SetOutput(light.rcsAddr, ownConvert.BoolToInt(light.default_state));
   except
 

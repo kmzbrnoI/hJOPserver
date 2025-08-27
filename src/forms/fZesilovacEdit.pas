@@ -120,33 +120,33 @@ begin
 
   if (Self.CHB_Short.Checked) then
   begin
-    settings.rcs.overload.addr.board := Self.SE_Short_Module.Value;
+    settings.rcs.overload.addr.module := Self.SE_Short_Module.Value;
     settings.rcs.overload.addr.port := Self.SE_Short_Port.Value;
     settings.rcs.overload.reversed := Self.CHB_short_reversed.Checked;
   end else begin
-    settings.rcs.overload.addr.board := 0;
+    settings.rcs.overload.addr.module := 0;
     settings.rcs.overload.addr.port := 0;
     settings.rcs.overload.reversed := false;
   end;
 
   if (Self.CHB_Power.Checked) then
   begin
-    settings.rcs.power.addr.board := Self.SE_Power_Module.Value;
+    settings.rcs.power.addr.module := Self.SE_Power_Module.Value;
     settings.rcs.power.addr.port := Self.SE_Power_Port.Value;
     settings.rcs.power.reversed := Self.CHB_power_reversed.Checked;
   end else begin
-    settings.rcs.power.addr.board := 0;
+    settings.rcs.power.addr.module := 0;
     settings.rcs.power.addr.port := 0;
     settings.rcs.power.reversed := false;
   end;
 
   if (Self.CHB_DCC.Checked) then
   begin
-    settings.rcs.DCC.addr.board := Self.SE_DCC_module.Value;
+    settings.rcs.DCC.addr.module := Self.SE_DCC_module.Value;
     settings.rcs.DCC.addr.port := Self.SE_DCC_port.Value;
     settings.rcs.DCC.reversed := Self.CHB_dcc_reversed.Checked;
   end else begin
-    settings.rcs.DCC.addr.board := 0;
+    settings.rcs.DCC.addr.module := 0;
     settings.rcs.DCC.addr.port := 0;
     settings.rcs.DCC.reversed := false;
   end;
@@ -213,15 +213,15 @@ begin
   Self.E_ID.Text := bSettings.id;
   Self.E_Name.Text := bSettings.name;
 
-  Self.SE_Short_Module.Value := bSettings.rcs.overload.addr.board;
+  Self.SE_Short_Module.Value := bSettings.rcs.overload.addr.module;
   Self.SE_Short_Port.Value := bSettings.rcs.overload.addr.port;
   Self.CHB_short_reversed.Checked := bSettings.rcs.overload.reversed;
 
-  Self.SE_Power_Module.Value := bSettings.rcs.power.addr.board;
+  Self.SE_Power_Module.Value := bSettings.rcs.power.addr.module;
   Self.SE_Power_Port.Value := bSettings.rcs.power.addr.port;
   Self.CHB_power_reversed.Checked := bSettings.rcs.power.reversed;
 
-  Self.SE_DCC_module.Value := bSettings.rcs.DCC.addr.board;
+  Self.SE_DCC_module.Value := bSettings.rcs.DCC.addr.module;
   Self.SE_DCC_port.Value := bSettings.rcs.DCC.addr.port;
   Self.CHB_dcc_reversed.Checked := bSettings.rcs.DCC.reversed;
 

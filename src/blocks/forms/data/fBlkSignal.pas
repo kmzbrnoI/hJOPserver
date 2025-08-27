@@ -164,11 +164,11 @@ begin
 
   if (settings.RCSAddrs.count > 0) then
   begin
-    if (settings.RCSAddrs[0].board > Cardinal(Self.SE_RCSmodule1.MaxValue)) then
+    if (settings.RCSAddrs[0].module > Cardinal(Self.SE_RCSmodule1.MaxValue)) then
       Self.SE_RCSmodule1.MaxValue := 0;
     Self.SE_RCSport1.MaxValue := 0;
 
-    Self.SE_RCSmodule1.Value := settings.RCSAddrs[0].board;
+    Self.SE_RCSmodule1.Value := settings.RCSAddrs[0].module;
     SE_RCSport1.Value := settings.RCSAddrs[0].port;
     CB_Typ.ItemIndex := Integer(settings.OutputType);
   end;
@@ -176,11 +176,11 @@ begin
   Self.CHB_RCS_Second_OutputClick(Self);
   if (settings.RCSAddrs.count > 1) then
   begin
-    if (settings.RCSAddrs[1].board > Cardinal(Self.SE_RCSmodule2.MaxValue)) then
+    if (settings.RCSAddrs[1].module > Cardinal(Self.SE_RCSmodule2.MaxValue)) then
       Self.SE_RCSmodule2.MaxValue := 0;
     Self.SE_RCSport2.MaxValue := 0;
 
-    Self.SE_RCSmodule2.Value := settings.RCSAddrs[1].board;
+    Self.SE_RCSmodule2.Value := settings.RCSAddrs[1].module;
     SE_RCSport2.Value := settings.RCSAddrs[1].port;
   end;
   Self.SE_RCSmodule1Exit(Self);
@@ -217,18 +217,18 @@ begin
     Self.CHB_PStClick(Self.CHB_PSt);
     if (settings.PSt.enabled) then
     begin
-      if (settings.PSt.rcsIndicationShunt.board > Cardinal(Self.SE_Ind_Module.MaxValue)) then
+      if (settings.PSt.rcsIndicationShunt.module > Cardinal(Self.SE_Ind_Module.MaxValue)) then
         Self.SE_Ind_Module.MaxValue := 0;
       Self.SE_Ind_Port.MaxValue := 0;
 
-      Self.SE_Ind_Module.Value := settings.PSt.rcsIndicationShunt.board;
+      Self.SE_Ind_Module.Value := settings.PSt.rcsIndicationShunt.module;
       Self.SE_Ind_Port.Value := settings.PSt.rcsIndicationShunt.port;
 
-      if (settings.PSt.rcsControllerShunt.board > Cardinal(Self.SE_Cont_Module.MaxValue)) then
+      if (settings.PSt.rcsControllerShunt.module > Cardinal(Self.SE_Cont_Module.MaxValue)) then
         Self.SE_Cont_Module.MaxValue := 0;
       Self.SE_Cont_Port.MaxValue := 0;
 
-      Self.SE_Cont_Module.Value := settings.PSt.rcsControllerShunt.board;
+      Self.SE_Cont_Module.Value := settings.PSt.rcsControllerShunt.module;
       Self.SE_Cont_Port.Value := settings.PSt.rcsControllerShunt.port;
     end;
   end;
@@ -426,9 +426,9 @@ begin
     settings.PSt.enabled := Self.CHB_PSt.Checked;
     if (Self.CHB_PSt.Checked) then
     begin
-      settings.PSt.rcsIndicationShunt.board := Self.SE_Ind_Module.Value;
+      settings.PSt.rcsIndicationShunt.module := Self.SE_Ind_Module.Value;
       settings.PSt.rcsIndicationShunt.port := Self.SE_Ind_Port.Value;
-      settings.PSt.rcsControllerShunt.board := Self.SE_Cont_Module.Value;
+      settings.PSt.rcsControllerShunt.module := Self.SE_Cont_Module.Value;
       settings.PSt.rcsControllerShunt.port := Self.SE_Cont_Port.Value;
 
       var another := Blocks.AnotherBlockUsesRCS(settings.PSt.rcsIndicationShunt, Self.block, TRCSIOType.output);

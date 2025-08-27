@@ -13,7 +13,7 @@ type
   TBoosterChangeEvent = procedure(Sender: TObject; state: TBoosterSignal) of object;
 
   TBoosterRCSSignal = record
-    // disabled input = (addr.board = 0)
+    // disabled input = (addr.module = 0)
     addr: TRCSAddr;
     reversed: Boolean;
   end;
@@ -159,11 +159,11 @@ begin
   Self.m_settings.rcs.DCC.reversed := ini.ReadBool(section, 'dccReversed', false);
 
   if (Self.isPowerDetection) then
-    RCSi.SetNeeded(Self.m_settings.rcs.power.addr.board);
+    RCSi.SetNeeded(Self.m_settings.rcs.power.addr.module);
   if (Self.isOverloadDetection) then
-    RCSi.SetNeeded(Self.m_settings.rcs.overload.addr.board);
+    RCSi.SetNeeded(Self.m_settings.rcs.overload.addr.module);
   if (Self.isDCCdetection) then
-    RCSi.SetNeeded(Self.m_settings.rcs.DCC.addr.board);
+    RCSi.SetNeeded(Self.m_settings.rcs.DCC.addr.module);
 end;
 
 procedure TBooster.SaveDataToFile(var ini: TMemIniFile; const section: string);
@@ -282,26 +282,26 @@ end;
 
 function TBooster.GetRCSPresent(): Boolean;
 begin
-  Result := (((not Self.isOverloadDetection) or RCSi.IsModule(Self.m_settings.rcs.overload.addr.board)) and
-    ((not Self.isPowerDetection) or RCSi.IsModule(Self.m_settings.rcs.power.addr.board)) and
-    ((not Self.isDCCdetection) or RCSi.IsModule(Self.m_settings.rcs.DCC.addr.board)));
+  Result := (((not Self.isOverloadDetection) or RCSi.IsModule(Self.m_settings.rcs.overload.addr.module)) and
+    ((not Self.isPowerDetection) or RCSi.IsModule(Self.m_settings.rcs.power.addr.module)) and
+    ((not Self.isDCCdetection) or RCSi.IsModule(Self.m_settings.rcs.DCC.addr.module)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBooster.GetDCCDetection(): Boolean;
 begin
-  Result := (Self.m_settings.rcs.DCC.addr.board > 0);
+  Result := (Self.m_settings.rcs.DCC.addr.module > 0);
 end;
 
 function TBooster.GetOverloadDetection(): Boolean;
 begin
-  Result := (Self.m_settings.rcs.overload.addr.board > 0);
+  Result := (Self.m_settings.rcs.overload.addr.module > 0);
 end;
 
 function TBooster.GetPowerDetection(): Boolean;
 begin
-  Result := (Self.m_settings.rcs.power.addr.board > 0);
+  Result := (Self.m_settings.rcs.power.addr.module > 0);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

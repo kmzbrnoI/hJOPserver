@@ -484,15 +484,15 @@ begin
 
   if (Self.posDetection) then
   begin
-    if (not RCSi.IsNonFailedModule(Self.rcsInPlus.board)) then
+    if (not RCSi.IsNonFailedModule(Self.rcsInPlus.module)) then
       enable := false;
-    if (not RCSi.IsNonFailedModule(Self.rcsInMinus.board)) then
+    if (not RCSi.IsNonFailedModule(Self.rcsInMinus.module)) then
       enable := false;
   end;
 
-  if (not RCSi.IsNonFailedModule(Self.rcsOutPlus.board)) then
+  if (not RCSi.IsNonFailedModule(Self.rcsOutPlus.module)) then
     enable := false;
-  if (not RCSi.IsNonFailedModule(Self.rcsOutMinus.board)) then
+  if (not RCSi.IsNonFailedModule(Self.rcsOutMinus.module)) then
     enable := false;
 
   if (enable) then
@@ -775,10 +775,10 @@ begin
   end;
 
   try
-    if ((inp.plus = failure) or (inp.minus = failure) or (not RCSi.IsModule(Self.rcsOutPlus.board)) or
-      (not RCSi.IsModule(Self.rcsOutMinus.board)) or
-      ((coupling <> nil) and ((not RCSi.IsModule(coupling.rcsOutPlus.board)) or
-      (not RCSi.IsModule(coupling.rcsOutMinus.board))))) then
+    if ((inp.plus = failure) or (inp.minus = failure) or (not RCSi.IsModule(Self.rcsOutPlus.module)) or
+      (not RCSi.IsModule(Self.rcsOutMinus.module)) or
+      ((coupling <> nil) and ((not RCSi.IsModule(coupling.rcsOutPlus.module)) or
+      (not RCSi.IsModule(coupling.rcsOutMinus.module))))) then
     begin
       if (Self.state.position <> TTurnoutPosition.disabled) then
       begin

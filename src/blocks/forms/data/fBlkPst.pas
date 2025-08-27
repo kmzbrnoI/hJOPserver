@@ -253,34 +253,34 @@ begin
   Blocks.FillCB(Self.CB_Disconnector, Self.CB_DiscItems, nil, Self.block.areas, btDisconnector);
   Self.B_Disc_Ok.Enabled := Self.CB_Disconnector.Enabled;
 
-  if (pstSettings.rcsInTake.board > Cardinal(Self.SE_RCS_Take_Module.MaxValue)) then
+  if (pstSettings.rcsInTake.module > Cardinal(Self.SE_RCS_Take_Module.MaxValue)) then
     Self.SE_RCS_Take_Module.MaxValue := 0;
   Self.SE_RCS_Take_Port.MaxValue := 0;
-  Self.SE_RCS_Take_Module.Value := pstSettings.rcsInTake.board;
+  Self.SE_RCS_Take_Module.Value := pstSettings.rcsInTake.module;
   Self.SE_RCS_Take_Port.Value := pstSettings.rcsInTake.port;
 
-  if (pstSettings.rcsInRelease.board > Cardinal(Self.SE_RCS_Release_Module.MaxValue)) then
+  if (pstSettings.rcsInRelease.module > Cardinal(Self.SE_RCS_Release_Module.MaxValue)) then
     Self.SE_RCS_Release_Module.MaxValue := 0;
   Self.SE_RCS_Release_Port.MaxValue := 0;
-  Self.SE_RCS_Release_Module.Value := pstSettings.rcsInRelease.board;
+  Self.SE_RCS_Release_Module.Value := pstSettings.rcsInRelease.module;
   Self.SE_RCS_Release_Port.Value := pstSettings.rcsInRelease.port;
 
-  if (pstSettings.rcsOutTaken.board > Cardinal(Self.SE_RCS_Indication_Module.MaxValue)) then
+  if (pstSettings.rcsOutTaken.module > Cardinal(Self.SE_RCS_Indication_Module.MaxValue)) then
     Self.SE_RCS_Indication_Module.MaxValue := 0;
   Self.SE_RCS_Indication_Port.MaxValue := 0;
-  Self.SE_RCS_Indication_Module.Value := pstSettings.rcsOutTaken.board;
+  Self.SE_RCS_Indication_Module.Value := pstSettings.rcsOutTaken.module;
   Self.SE_RCS_Indication_Port.Value := pstSettings.rcsOutTaken.port;
 
-  if (pstSettings.rcsOutHorn.board > Cardinal(Self.SE_RCS_Horn_Module.MaxValue)) then
+  if (pstSettings.rcsOutHorn.module > Cardinal(Self.SE_RCS_Horn_Module.MaxValue)) then
     Self.SE_RCS_Horn_Module.MaxValue := 0;
   Self.SE_RCS_Horn_Port.MaxValue := 0;
-  Self.SE_RCS_Horn_Module.Value := pstSettings.rcsOutHorn.board;
+  Self.SE_RCS_Horn_Module.Value := pstSettings.rcsOutHorn.module;
   Self.SE_RCS_Horn_Port.Value := pstSettings.rcsOutHorn.port;
 
-  if (pstSettings.rcsOutActive.board > Cardinal(Self.SE_RCS_Active_Module.MaxValue)) then
+  if (pstSettings.rcsOutActive.module > Cardinal(Self.SE_RCS_Active_Module.MaxValue)) then
     Self.SE_RCS_Active_Module.MaxValue := 0;
   Self.SE_RCS_Active_Port.MaxValue := 0;
-  Self.SE_RCS_Active_Module.Value := pstSettings.rcsOutActive.board;
+  Self.SE_RCS_Active_Module.Value := pstSettings.rcsOutActive.module;
   Self.SE_RCS_Active_Port.Value := pstSettings.rcsOutActive.port;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (pomocné stavědlo)';
@@ -415,19 +415,19 @@ begin
     for var LI: TListItem in Self.LV_Disconnectors.Items do
       pstSettings.disconnectors.Add(StrToInt(LI.SubItems[0]));
 
-    pstSettings.rcsInTake.board := Self.SE_RCS_Take_Module.Value;
+    pstSettings.rcsInTake.module := Self.SE_RCS_Take_Module.Value;
     pstSettings.rcsInTake.port := Self.SE_RCS_Take_Port.Value;
 
-    pstSettings.rcsInRelease.board := Self.SE_RCS_Release_Module.Value;
+    pstSettings.rcsInRelease.module := Self.SE_RCS_Release_Module.Value;
     pstSettings.rcsInRelease.port := Self.SE_RCS_Release_Port.Value;
 
-    pstSettings.rcsOutTaken.board := Self.SE_RCS_Indication_Module.Value;
+    pstSettings.rcsOutTaken.module := Self.SE_RCS_Indication_Module.Value;
     pstSettings.rcsOutTaken.port := Self.SE_RCS_Indication_Port.Value;
 
-    pstSettings.rcsOutHorn.board := Self.SE_RCS_Horn_Module.Value;
+    pstSettings.rcsOutHorn.module := Self.SE_RCS_Horn_Module.Value;
     pstSettings.rcsOutHorn.port := Self.SE_RCS_Horn_Port.Value;
 
-    pstSettings.rcsOutActive.board := Self.SE_RCS_Active_Module.Value;
+    pstSettings.rcsOutActive.module := Self.SE_RCS_Active_Module.Value;
     pstSettings.rcsOutActive.port := Self.SE_RCS_Active_Port.Value;
 
     Self.block.SetSettings(pstSettings);

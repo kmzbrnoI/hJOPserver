@@ -252,12 +252,12 @@ begin
 
   if (Usettings.RCSAddrs.count > 0) then
   begin
-    if (Usettings.RCSAddrs[0].board > Cardinal(Self.SE_Module0.MaxValue)) then
+    if (Usettings.RCSAddrs[0].module > Cardinal(Self.SE_Module0.MaxValue)) then
       Self.SE_Module0.MaxValue := 0;
     Self.SE_Port0.MaxValue := 0;
 
     Self.SE_Port0.Value := Usettings.RCSAddrs[0].port;
-    Self.SE_Module0.Value := Usettings.RCSAddrs[0].board;
+    Self.SE_Module0.Value := Usettings.RCSAddrs[0].module;
   end else begin
     Self.SE_Port0.Value := 0;
     Self.SE_Module0.Value := 0;
@@ -265,12 +265,12 @@ begin
 
   if (Usettings.RCSAddrs.count > 1) then
   begin
-    if (Usettings.RCSAddrs[1].board > Cardinal(Self.SE_Module1.MaxValue)) then
+    if (Usettings.RCSAddrs[1].module > Cardinal(Self.SE_Module1.MaxValue)) then
       Self.SE_Module1.MaxValue := 0;
     Self.SE_Port1.MaxValue := 0;
 
     Self.SE_Port1.Value := Usettings.RCSAddrs[1].port;
-    Self.SE_Module1.Value := Usettings.RCSAddrs[1].board;
+    Self.SE_Module1.Value := Usettings.RCSAddrs[1].module;
   end else begin
     Self.SE_Port1.Value := 0;
     Self.SE_Module1.Value := 0;
@@ -278,12 +278,12 @@ begin
 
   if (Usettings.RCSAddrs.count > 2) then
   begin
-    if (Usettings.RCSAddrs[2].board > Cardinal(Self.SE_Module2.MaxValue)) then
+    if (Usettings.RCSAddrs[2].module > Cardinal(Self.SE_Module2.MaxValue)) then
       Self.SE_Module2.MaxValue := 0;
     Self.SE_Port2.MaxValue := 0;
 
     Self.SE_Port2.Value := Usettings.RCSAddrs[2].port;
-    Self.SE_Module2.Value := Usettings.RCSAddrs[2].board;
+    Self.SE_Module2.Value := Usettings.RCSAddrs[2].module;
   end else begin
     Self.SE_Port2.Value := 0;
     Self.SE_Module2.Value := 0;
@@ -291,12 +291,12 @@ begin
 
   if (Usettings.RCSAddrs.count > 3) then
   begin
-    if (Usettings.RCSAddrs[3].board > Cardinal(Self.SE_Module3.MaxValue)) then
+    if (Usettings.RCSAddrs[3].module > Cardinal(Self.SE_Module3.MaxValue)) then
       Self.SE_Module3.MaxValue := 0;
     Self.SE_Port3.MaxValue := 0;
 
     Self.SE_Port3.Value := Usettings.RCSAddrs[3].port;
-    Self.SE_Module3.Value := Usettings.RCSAddrs[3].board;
+    Self.SE_Module3.Value := Usettings.RCSAddrs[3].module;
   end else begin
     Self.SE_Port3.Value := 0;
     Self.SE_Module3.Value := 0;
