@@ -2,8 +2,8 @@
 	path = lib/JsonDataObjects
 	url = git@github.com:ahausladen/JsonDataObjects
 [submodule "src/rcs"]
-	path = src/rcs
+	path = src/rcs/api
 	url = git@github.com:kmzbrnoI/rcs-delphi
 [submodule "src/trakce"]
-	path = src/trakce
+	path = src/trakce/api
 	url = https://github.com/kmzbrnoI/trakce-delphi
