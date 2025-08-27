@@ -262,7 +262,7 @@ uses
 
   Application.Run();
 
-  FreeAndNil(TrakceI);
+  FreeAndNil(trakce);
   FreeAndNil(RCSi);
  end.
 //08.06.2009 -  9 649 radku

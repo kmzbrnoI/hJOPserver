@@ -176,7 +176,7 @@ type
   end;
 
 var
-  TrakceI: TTrakce;
+  trakce: TTrakce;
 
 implementation
 
@@ -718,7 +718,7 @@ end;
 
 procedure TTrakce.LokFuncToggle(Sender: TObject; HV: THV; fIndex: Cardinal);
 begin
-  HV.SetSingleFunc(fIndex, true, TrakceI.callback(), TrakceI.callback(), Sender);
+  HV.SetSingleFunc(fIndex, true, trakce.callback(), trakce.callback(), Sender);
   Self.toggleQueue.Enqueue(hvFunc(HV, fIndex, Now + EncodeTime(0, 0, 0, 500)));
 end;
 
@@ -784,7 +784,7 @@ end;
 
 initialization
 
-TrakceI := TTrakce.Create();
+trakce := TTrakce.Create();
 
 finalization
 

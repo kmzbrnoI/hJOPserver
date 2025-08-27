@@ -34,15 +34,15 @@ begin
   rcso.B['started'] := RCSi.NoExStarted();
 
   var trakceo: TJsonObject := respJSON.O['trakce'];
-  trakceo.B['connected'] := TrakceI.Connected();
-  case (TrakceI.TrackStatusSafe()) of
+  trakceo.B['connected'] := trakce.Connected();
+  case (trakce.TrackStatusSafe()) of
     TTrkStatus.tsOff: trakceo.S['status'] := 'off';
     TTrkStatus.tsOn: trakceo.S['status'] := 'on';
     TTrkStatus.tsProgramming: trakceo.S['status'] := 'programming';
   else
     trakceo.S['status'] := 'unknown';
   end;
-  trakceo.B['emergency'] := TrakceI.emergency;
+  trakceo.B['emergency'] := trakce.emergency;
 
   respJSON.O['panelserver'].B['running'] := PanelServer.openned;
 end;

@@ -669,7 +669,7 @@ end;
 // pred uvolnenim loko take zastavime
 procedure TTrain.ReleaseAllLoko();
 begin
-  if ((not Assigned(HVDb)) or (not Assigned(TrakceI))) then Exit();
+  if ((not Assigned(HVDb)) or (not Assigned(trakce))) then Exit();
 
   for var addr in Self.HVs do
   begin
@@ -789,7 +789,7 @@ end;
 
 procedure TTrain.HVComErr(Sender: TObject; Data: Pointer);
 begin
-  TrakceI.emergency := True;
+  trakce.emergency := True;
   if (Self.data.area <> nil) then
    (Self.data.area as TArea).BlkWriteError(nil, 'Souprava '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
 end;
@@ -987,7 +987,7 @@ begin
   begin
     var HV := HVDb[addr];
     if (HV.CanPlayHouk(desc)) then
-      TrakceI.LokFuncToggle(Self, HV, HV.funcDict[desc]);
+      trakce.LokFuncToggle(Self, HV, HV.funcDict[desc]);
   end;
 end;
 
@@ -1176,7 +1176,7 @@ function TTrain.GetMaxSpeedStep(): Cardinal;
 begin
   // vraci rychlost <= max rychlosti takovou, ze pro ni mame prirazeni stupne
   // tj. tuto rychlost lze skutene nastavit
-  Result := TrakceI.NearestLowerSpeed(Self.maxSpeed);
+  Result := trakce.NearestLowerSpeed(Self.maxSpeed);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

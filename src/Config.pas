@@ -150,7 +150,7 @@ begin
   F_Splash.AddStav('Načítám trakci...');
   Log('Načítám trakci...', TLogLevel.llInfo, lsData);
   try
-    TrakceI.LoadFromFile(inidata);
+    trakce.LoadFromFile(inidata);
   except
     on e: Exception do
       AppEvents.LogException(e);
@@ -220,7 +220,7 @@ begin
   end;
 
   F_Splash.AddStav('Načítám vedlejší databáze...');
-  TrakceI.LoadSpeedTable('data\rychlosti.csv', F_Main.LV_DigiRych);
+  trakce.LoadSpeedTable('data\rychlosti.csv', F_Main.LV_DigiRych);
 end;
 
 procedure CompleteSaveToFile(inidata: TMemIniFile);
@@ -244,7 +244,7 @@ begin
   end;
 
   try
-    TrakceI.SaveToFile(inidata);
+    trakce.SaveToFile(inidata);
   except
     on e: Exception do
       AppEvents.LogException(e);
@@ -309,7 +309,7 @@ begin
   end;
 
   try
-    TrakceI.SaveSpeedTable('data/rychlosti.csv');
+    trakce.SaveSpeedTable('data/rychlosti.csv');
   except
     on e: Exception do
       AppEvents.LogException(e);

@@ -34,7 +34,7 @@ uses fMain, TrakceC, ownGuiUtils;
 procedure TF_RychlostiEdit.OpenForm(step: Cardinal);
 begin
   Self.openStep := step;
-  SE_Rychlost.Value := TrakceI.Speed(step);
+  SE_Rychlost.Value := trakce.Speed(step);
   F_RychlostiEdit.Caption := 'Editovat stupeň ' + IntToStr(step);
   Self.ActiveControl := Self.SE_Rychlost;
   Self.ShowModal();
@@ -48,7 +48,7 @@ end;
 procedure TF_RychlostiEdit.B_SaveClick(Sender: TObject);
 begin
   try
-    TrakceI.SetStepSpeed(Self.openStep, SE_Rychlost.Value);
+    trakce.SetStepSpeed(Self.openStep, SE_Rychlost.Value);
   except
     on E: Exception do
     begin

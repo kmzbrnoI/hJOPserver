@@ -574,7 +574,7 @@ end;
 procedure THVDb.AcquiredErr(Sender: TObject; Data: Pointer);
 begin
   Self.mAcquiring := false;
-  TrakceI.Log(llErrors, 'ERR: LOKO ' + IntToStr(Word(Data)) + ' se nepodařilo převzít');
+  trakce.Log(llErrors, 'ERR: LOKO ' + IntToStr(Word(Data)) + ' se nepodařilo převzít');
   F_Main.LogStatus('LOKO: loko ' + IntToStr(Word(Data)) + ' se nepodařilo převzít');
   if (Assigned(Self.eAcquiredErr)) then
     Self.eAcquiredErr(Self);

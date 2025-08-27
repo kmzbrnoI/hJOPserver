@@ -2067,17 +2067,17 @@ begin
       if ((subItem = 'ZVUK>') or (subItem = 'ZVUK<')) then
       begin
         PanelServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
-        TrakceI.LoksSetFunc(_SOUND_FUNC, (subItem = 'ZVUK>'), TTrakce.callback(Self.DkHvFuncsSetOk, Sender),
+        trakce.LoksSetFunc(_SOUND_FUNC, (subItem = 'ZVUK>'), TTrakce.callback(Self.DkHvFuncsSetOk, Sender),
           TTrakce.callback(Self.DkHvFuncsSetErr, Sender));
       end else if (subItem = 'ZVUK ztlum') then
       begin
         PanelServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
-        TrakceI.TurnOffSound(TTrakce.callback(Self.DkHvFuncsSetOk, Sender),
+        trakce.TurnOffSound(TTrakce.callback(Self.DkHvFuncsSetOk, Sender),
           TTrakce.callback(Self.DkHvFuncsSetErr, Sender))
       end else if (subItem = 'ZVUK obnov') then
       begin
         PanelServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
-        TrakceI.RestoreSound(TTrakce.callback(Self.DkHvFuncsSetOk, Sender),
+        trakce.RestoreSound(TTrakce.callback(Self.DkHvFuncsSetOk, Sender),
           TTrakce.callback(Self.DkHvFuncsSetErr, Sender));
       end;
     end;

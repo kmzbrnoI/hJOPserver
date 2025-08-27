@@ -241,7 +241,7 @@ end;
 procedure TBoosterDb.ControlBeep();
 var short: Boolean;
 begin
-  if (TrakceI.TrackStatusSafe() <> TTrkStatus.tsOn) then
+  if (trakce.TrackStatusSafe() <> TTrkStatus.tsOn) then
     Exit();
 
   short := false;

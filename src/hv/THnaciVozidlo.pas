@@ -1138,7 +1138,7 @@ begin
     (not RegCollector.IsLoko(Self)) and (Self.acquired)) then
   begin
     Self.SetSpeed(0);
-    Self.TrakceRelease(TrakceI.Callback());
+    Self.TrakceRelease(trakce.Callback());
   end;
 end;
 
@@ -1224,7 +1224,7 @@ end;
 
 procedure THV.SetSpeed(speed: Integer; Sender: TObject = nil);
 begin
-  Self.SetSpeed(speed, TrakceI.Callback(), TrakceI.Callback(), Sender);
+  Self.SetSpeed(speed, trakce.Callback(), trakce.Callback(), Sender);
 end;
 
 procedure THV.SetDirection(dir: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
@@ -1234,17 +1234,17 @@ end;
 
 procedure THV.SetDirection(dir: Boolean; Sender: TObject = nil);
 begin
-  Self.SetDirection(dir, TrakceI.Callback(), TrakceI.Callback(), Sender);
+  Self.SetDirection(dir, trakce.Callback(), trakce.Callback(), Sender);
 end;
 
 procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 begin
-  Self.SetSpeedStepDir(TrakceI.step(speed), direction, ok, err, Sender);
+  Self.SetSpeedStepDir(trakce.step(speed), direction, ok, err, Sender);
 end;
 
 procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; Sender: TObject = nil);
 begin
-  Self.SetSpeedDir(speed, direction, TrakceI.Callback(), TrakceI.Callback(), Sender);
+  Self.SetSpeedDir(speed, direction, trakce.Callback(), trakce.Callback(), Sender);
 end;
 
 procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
@@ -1276,14 +1276,14 @@ begin
   Self.slot.direction := direction;
   Self.slot.step := speedStep;
 
-  TrakceI.Callbacks(ok, err, cbOk, cbErr);
-  TrakceI.Log(llCommands, 'Loko ' + Self.name + ': rychlostní stupeň: ' + IntToStr(speedStep) + ', směr: ' +
+  trakce.Callbacks(ok, err, cbOk, cbErr);
+  trakce.Log(llCommands, 'Loko ' + Self.name + ': rychlostní stupeň: ' + IntToStr(speedStep) + ', směr: ' +
     ownConvert.BoolToStr10(direction));
 
   Inc(Self.state.speedPendingCmds);
 
   try
-    TrakceI.LocoSetSpeed(Self.addr, Self.slot.step, Self.direction, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
+    trakce.LocoSetSpeed(Self.addr, Self.slot.step, Self.direction, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
       TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
   except
     on E: Exception do
@@ -1298,7 +1298,7 @@ end;
 
 procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender: TObject = nil);
 begin
-  Self.SetSpeedStepDir(speedStep, direction, TrakceI.Callback(), TrakceI.Callback(), Sender);
+  Self.SetSpeedStepDir(speedStep, direction, trakce.Callback(), trakce.Callback(), Sender);
 end;
 
 procedure THV.SetSingleFunc(func: Integer; state: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
@@ -1330,11 +1330,11 @@ begin
     Self.slot.functions := Self.slot.functions and (not(1 shl func));
 
   Self.state.functions[func] := state;
-  TrakceI.Callbacks(ok, err, cbOk, cbErr);
-  TrakceI.Log(llCommands, 'Loko ' + Self.name + ': F' + IntToStr(func) + ': ' + ownConvert.BoolToStr10(state));
+  trakce.Callbacks(ok, err, cbOk, cbErr);
+  trakce.Log(llCommands, 'Loko ' + Self.name + ': F' + IntToStr(func) + ': ' + ownConvert.BoolToStr10(state));
 
   try
-    TrakceI.LocoSetSingleFunc(Self.addr, func, Self.slot.functions, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
+    trakce.LocoSetSingleFunc(Self.addr, func, Self.slot.functions, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
       TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
   except
     on E: Exception do
@@ -1382,11 +1382,11 @@ begin
     Exit();
   end;
 
-  TrakceI.Log(llCommands, 'Loko ' + Self.name + ': změna více funkcí');
+  trakce.Log(llCommands, 'Loko ' + Self.name + ': změna více funkcí');
   Self.slot.functions := funcState;
 
   try
-    TrakceI.LocoSetFunc(Self.addr, funcMask, funcState, ok, err);
+    trakce.LocoSetFunc(Self.addr, funcMask, funcState, ok, err);
   except
     if (Assigned(err.Callback)) then
       err.Callback(Self, err.data);
@@ -1408,10 +1408,10 @@ begin
   end;
 
   Self.slot.step := 0;
-  TrakceI.Callbacks(ok, err, cbOk, cbErr);
+  trakce.Callbacks(ok, err, cbOk, cbErr);
 
   try
-    TrakceI.LocoEmergencyStop(Self.addr, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
+    trakce.LocoEmergencyStop(Self.addr, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
       TTrakce.Callback(Self.TrakceCallbackEmergencyErr, cbErr));
   except
     on E: Exception do
@@ -1475,7 +1475,7 @@ end;
 
 procedure THV.TrakceCallbackEmergencyErr(Sender: TObject; data: Pointer);
 begin
-  TrakceI.emergency := True;
+  trakce.emergency := True;
   Self.TrakceCallbackErr(Sender, data);
 end;
 
@@ -1506,7 +1506,7 @@ end;
 
 function THV.GetRealSpeed(): Cardinal;
 begin
-  Result := TrakceI.speed(Self.slot.step);
+  Result := trakce.speed(Self.slot.step);
   if (Result > Self.data.maxSpeed) then
     Result := Self.data.maxSpeed;
 end;
@@ -1536,7 +1536,7 @@ end;
 
 procedure THV.TrakceAcquire(ok: TCb; err: TCb);
 begin
-  TrakceI.Log(llCommands, 'PUT: Loco Acquire: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log(llCommands, 'PUT: Loco Acquire: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.RecordUseNow();
   Self.state.acquiring := true;
   Self.acquiredOk := ok;
@@ -1544,7 +1544,7 @@ begin
   Self.changed := true;
 
   try
-    TrakceI.LocoAcquire(Self.addr, Self.TrakceAcquired, TTrakce.Callback(Self.TrakceAcquiredErr));
+    trakce.LocoAcquire(Self.addr, Self.TrakceAcquired, TTrakce.Callback(Self.TrakceAcquiredErr));
   except
     Self.TrakceAcquiredErr(Self, nil);
   end;
@@ -1563,7 +1563,7 @@ begin
   begin
     // souprava ma zadany prave jeden smer
     direction := ((Trains[Self.train].direction = THVSite.even) xor (Self.state.siteA = THVSite.even));
-    speedStep := TrakceI.step(Trains[Self.train].speed);
+    speedStep := trakce.step(Trains[Self.train].speed);
   end else begin
     direction := Self.slot.direction;
     if (Self.stolen) then
@@ -1604,7 +1604,7 @@ end;
 procedure THV.TrakceAcquiredPOMSet(Sender: TObject; data: Pointer);
 begin
   // Everything done
-  TrakceI.Log(llCommands, 'Loco Fully Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log(llCommands, 'Loco Fully Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.state.acquired := true;
   Self.state.acquiring := false;
   Self.changed := true;
@@ -1626,7 +1626,7 @@ end;
 
 procedure THV.TrakceAcquiredErr(Sender: TObject; data: Pointer);
 begin
-  TrakceI.Log(llCommands, 'ERR: Loco Not Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log(llCommands, 'ERR: Loco Not Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.state.acquiring := false;
   Self.changed := true;
   RegCollector.LocoChanged(Self, Self.addr);
@@ -1640,7 +1640,7 @@ end;
 
 procedure THV.TrakceRelease(ok: TCb);
 begin
-  TrakceI.Log(llCommands, 'PUT: Loco Release: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log(llCommands, 'PUT: Loco Release: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.releasedOk := ok;
   Self.state.manual := false;
   Self.RecordUseNow();
@@ -1656,7 +1656,7 @@ procedure THV.TrakceReleasedPOM(Sender: TObject; data: Pointer);
 begin
   // POM done (we do not care is successfully or unsuccessfully)
   try
-    TrakceI.LocoRelease(Self.addr, TTrakce.Callback(Self.TrakceReleased));
+    trakce.LocoRelease(Self.addr, TTrakce.Callback(Self.TrakceReleased));
   except
     Self.TrakceReleased(Self, nil);
   end;
@@ -1664,7 +1664,7 @@ end;
 
 procedure THV.TrakceReleased(Sender: TObject; data: Pointer);
 begin
-  TrakceI.Log(llCommands, 'Loco Successfully Released: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log(llCommands, 'Loco Successfully Released: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.state.acquired := false;
   Self.state.pom := TPomStatus.unknown;
   Self.changed := true;
@@ -1692,7 +1692,7 @@ begin
   else
     raise Exception.Create('Invalid POM!');
 
-  TrakceI.POMWriteCVs(Self.addr, toProgram, TTrakce.Callback(Self.TrakcePOMOK), TTrakce.Callback(Self.TrakcePOMErr));
+  trakce.POMWriteCVs(Self.addr, toProgram, TTrakce.Callback(Self.TrakcePOMOK), TTrakce.Callback(Self.TrakcePOMErr));
 end;
 
 procedure THV.TrakcePOMOK(Sender: TObject; data: Pointer);
@@ -1726,13 +1726,13 @@ begin
   if (Self.updating) then
     raise Exception.Create('Update already in progress!');
 
-  TrakceI.Log(llCommands, 'PUT: Loco Update Info: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log(llCommands, 'PUT: Loco Update Info: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.acquiredOk := ok;
   Self.acquiredErr := err;
   Self.state.updating := true;
 
   try
-    TrakceI.LocoAcquire(Self.addr, Self.TrakceUpdated, TTrakce.Callback(Self.TrakceUpdatedErr));
+    trakce.LocoAcquire(Self.addr, Self.TrakceUpdated, TTrakce.Callback(Self.TrakceUpdatedErr));
   except
     Self.TrakceUpdatedErr(Self, nil);
   end;
@@ -1741,7 +1741,7 @@ end;
 procedure THV.TrakceUpdated(Sender: TObject; LocoInfo: TTrkLocoInfo);
 var slotOld: TTrkLocoInfo;
 begin
-  TrakceI.Log(llCommands, 'Loco Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log(llCommands, 'Loco Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
 
   slotOld := Self.slot;
   Self.slot := LocoInfo;
@@ -1761,7 +1761,7 @@ end;
 
 procedure THV.TrakceUpdatedErr(Sender: TObject; data: Pointer);
 begin
-  TrakceI.Log(llCommands, 'ERR: Loco Not Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log(llCommands, 'ERR: Loco Not Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.state.updating := false;
   Self.state.trakceError := true;
   Self.state.lastUpdated := Now;

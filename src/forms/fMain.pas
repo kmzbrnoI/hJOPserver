@@ -1085,12 +1085,12 @@ begin
   fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
 
   Screen.Cursor := crHourGlass;
-  TrakceI.Log(TTrkLogLevel.llInfo, 'Změna knihovny -> ' + fn);
+  trakce.Log(TTrkLogLevel.llInfo, 'Změna knihovny -> ' + fn);
   Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-';
   try
-    TrakceI.LoadLib(TrakceI.libDir + '\' + fn);
+    trakce.LoadLib(trakce.libDir + '\' + fn);
     Self.LogStatus('Trakce: načteno ' + fn);
-    Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(TrakceI.Lib);
+    Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(trakce.Lib);
   except
     on E: Exception do
     begin
@@ -1118,7 +1118,7 @@ var SR: TSearchRec;
 begin
   Self.MI_Trk_Libs.Clear();
 
-  if (FindFirst(TrakceI.libDir + '\*.dll', faAnyFile, SR) = 0) then
+  if (FindFirst(trakce.libDir + '\*.dll', faAnyFile, SR) = 0) then
   begin
     if ((SR.Attr AND faDirectory) = 0) then
       AddLib(SR.name);
@@ -1133,7 +1133,7 @@ end;
 
 procedure TF_Main.A_Trk_Lib_CfgExecute(Sender: TObject);
 begin
-  if (not TrakceI.HasDialog()) then
+  if (not trakce.HasDialog()) then
   begin
     StrMessageBox('Aktuální knihovna nemá konfigurační okno.', 'Info', MB_OK OR MB_ICONINFORMATION);
     Exit();
@@ -1141,7 +1141,7 @@ begin
 
   Screen.Cursor := crHourGlass;
   try
-    TrakceI.ShowConfigDialog();
+    trakce.ShowConfigDialog();
   except
     on E: Exception do
     begin
@@ -1168,18 +1168,18 @@ end;
 
 procedure TF_Main.A_Trk_ConnectExecute(Sender: TObject);
 begin
-  if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
+  if ((SystemData.Status = starting) and (trakce.ConnectedSafe())) then
   begin
     Self.A_DCC_GoExecute(Self);
     Exit();
   end;
 
   try
-    TrakceI.Connect();
+    trakce.Connect();
   except
     on E: Exception do
     begin
-      if (TrakceI.opening) then
+      if (trakce.opening) then
       begin
         Self.OnTrkErrOpen(Self, E.Message);
         Self.OnTrkAfterClose(Self);
@@ -1192,18 +1192,18 @@ end;
 
 procedure TF_Main.A_Trk_DisconnectExecute(Sender: TObject);
 begin
-  if ((SystemData.Status = stopping) and (not TrakceI.ConnectedSafe())) then
+  if ((SystemData.Status = stopping) and (not trakce.ConnectedSafe())) then
   begin
     Self.A_RCS_StopExecute(nil);
     Exit();
   end;
 
   try
-    TrakceI.Disconnect();
+    trakce.Disconnect();
   except
     on E: Exception do
     begin
-      TrakceI.Log(llErrors, 'CLOSE: error: ' + E.Message);
+      trakce.Log(llErrors, 'CLOSE: error: ' + E.Message);
       StrMessageBox('Chyba pri uzavírání komunikace s centrálou:' + #13#10 + E.Message + #13#10 +
         'Více informací naleznete v logu.', 'Chyba', MB_OK OR MB_ICONERROR);
     end;
@@ -1296,7 +1296,7 @@ end;
 
 procedure TF_Main.A_DCC_GoExecute(Sender: TObject);
 begin
-  if ((SystemData.Status = starting) and (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn)) then
+  if ((SystemData.Status = starting) and (trakce.TrackStatusSafe() = TTrkStatus.tsOn)) then
   begin
     Self.A_Locos_AcquireExecute(Self);
     Exit();
@@ -1305,7 +1305,7 @@ begin
   Self.LogStatus('DCC: zapínám');
 
   try
-    TrakceI.SetTrackStatus(tsOn, TTrakce.Callback(Self.OnDCCGoOk), TTrakce.Callback(Self.OnDCCGoError));
+    trakce.SetTrackStatus(tsOn, TTrakce.Callback(Self.OnDCCGoOk), TTrakce.Callback(Self.OnDCCGoError));
   except
     on E: Exception do
     begin
@@ -1321,7 +1321,7 @@ begin
   Self.LogStatus('DCC: vypínám');
 
   try
-    TrakceI.SetTrackStatus(tsOff, TTrakce.Callback(Self.OnDCCStopOk), TTrakce.Callback(Self.OnDCCStopError));
+    trakce.SetTrackStatus(tsOff, TTrakce.Callback(Self.OnDCCStopOk), TTrakce.Callback(Self.OnDCCStopError));
   except
     on E: Exception do
     begin
@@ -1338,7 +1338,7 @@ end;
 
 procedure TF_Main.OnDCCGoOk(Sender: TObject; Data: Pointer);
 begin
-  TrakceI.emergency := False;
+  trakce.emergency := False;
 end;
 
 procedure TF_Main.OnDCCGoError(Sender: TObject; Data: Pointer);
@@ -1354,12 +1354,12 @@ end;
 
 procedure TF_Main.OnDCCStopOk(Sender: TObject; Data: Pointer);
 begin
-  TrakceI.emergency := False;
+  trakce.emergency := False;
 end;
 
 procedure TF_Main.OnDCCStopError(Sender: TObject; Data: Pointer);
 begin
-  TrakceI.emergency := True;
+  trakce.emergency := True;
   Self.LogStatus('DCC: STOP: ERR: centrála neodpověděla na příkaz');
   Self.UpdateSystemButtons();
   Self.A_DCC_Go.Enabled := true;
@@ -1449,7 +1449,7 @@ end;
 
 procedure TF_Main.OnTrkReady(Sender: TObject; ready: Boolean);
 begin
-  Self.A_Trk_Connect.Enabled := ready and (not TrakceI.ConnectedSafe());
+  Self.A_Trk_Connect.Enabled := ready and (not trakce.ConnectedSafe());
 end;
 
 procedure TF_Main.OnTrkErrOpen(Sender: TObject; errMsg: string);
@@ -1461,19 +1461,19 @@ begin
     Self.A_System_Stop.Enabled := true;
   end;
 
-  TrakceI.opening := false;
+  trakce.opening := false;
   Self.LogStatus('ERR: Trakce OPEN FAIL: ' + errMsg);
   ErrorMessageBox('Při otevírání Trakce nastala chyba:', errMsg);
 end;
 
 procedure TF_Main.CB_centrala_loglevel_fileChange(Sender: TObject);
 begin
-  TrakceI.logLevelFile := TTrkLogLevel(Self.CB_centrala_loglevel_file.ItemIndex);
+  trakce.logLevelFile := TTrkLogLevel(Self.CB_centrala_loglevel_file.ItemIndex);
 end;
 
 procedure TF_Main.CB_centrala_loglevel_tableChange(Sender: TObject);
 begin
-  TrakceI.logLevelTable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex);
+  trakce.logLevelTable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex);
 end;
 
 procedure TF_Main.OnTrkStatusChange(Sender: TObject; trkStatus: TTrkStatus);
@@ -1481,17 +1481,17 @@ begin
   if (trkStatus = TTrkStatus.tsOn) then
   begin
     // je DCC
-    TrakceI.DCCGoTime := Now;
+    trakce.DCCGoTime := Now;
     Self.S_DCC.Brush.Color := clLime;
     Self.LogStatus('DCC: go');
 
-    if (TrakceI.ConnectedSafe()) then
+    if (trakce.ConnectedSafe()) then
     begin
       Self.A_DCC_Go.Enabled := false;
       Self.A_DCC_Stop.Enabled := true;
     end;
 
-    if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
+    if ((SystemData.Status = starting) and (trakce.ConnectedSafe())) then
       Self.A_Locos_AcquireExecute(nil);
 
     PanelServer.DCCStart();
@@ -1503,12 +1503,12 @@ begin
     Self.S_DCC.Brush.Color := clRed;
     Self.LogStatus('DCC: stop');
 
-    if (TrakceI.ConnectedSafe()) then
+    if (trakce.ConnectedSafe()) then
     begin
       Self.A_DCC_Go.Enabled := true;
       Self.A_DCC_Stop.Enabled := false;
     end;
-    if ((SystemData.Status = starting) and (TrakceI.ConnectedSafe())) then
+    if ((SystemData.Status = starting) and (trakce.ConnectedSafe())) then
       Self.A_DCC_GoExecute(Self);
 
     PanelServer.DCCStop();
@@ -1519,7 +1519,7 @@ procedure TF_Main.A_Turnoff_FunctionsExecute(Sender: TObject);
 begin
   Self.LogStatus('Vypínám zvuky hnacích vozidel...');
   Application.ProcessMessages();
-  TrakceI.TurnOffSound(TTrakce.Callback(Self.OnTrkAllFunctionTurnedOff),
+  trakce.TurnOffSound(TTrakce.Callback(Self.OnTrkAllFunctionTurnedOff),
     TTrakce.Callback(Self.OnTrkAllFunctionTurnedOff));
 end;
 
@@ -1547,7 +1547,7 @@ begin
     Areas.Update();
     UpdateCallMethod();
     RCSd.Update();
-    TrakceI.Update();
+    trakce.Update();
     ABlist.Update();
     trains.UpdateTraveled(Self.T_Main.Interval);
   except
@@ -1650,7 +1650,7 @@ begin
   if (Self.LV_HV.Selected = nil) then
     Exit();
 
-  if (TrakceI.ConnectedSafe()) then
+  if (trakce.ConnectedSafe()) then
   begin
     try
       RegCollector.Open(HVDb[StrToInt(Self.LV_HV.Selected.Caption)]);
@@ -1723,7 +1723,7 @@ begin
         Log('Pokus o zavření okna bez odpojení od centrály', llWarning);
         if (StrMessageBox('Program není odpojen od centrály, odpojit?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
-          TrakceI.Disconnect();
+          trakce.Disconnect();
       end;
 
     TCloseInfo.ci_yes:
@@ -1764,15 +1764,15 @@ begin
   RCSi.OnReady := Self.OnRCSReady;
 
   // assign Trakce events:
-  TrakceI.BeforeOpen := Self.OnTrkBeforeOpen;
-  TrakceI.AfterOpen := Self.OnTrkAfterOpen;
-  TrakceI.BeforeClose := Self.OnTrkBeforeClose;
-  TrakceI.AfterClose := Self.OnTrkAfterClose;
-  TrakceI.OnReady := Self.OnTrkReady;
-  TrakceI.OnTrackStatusChanged := Self.OnTrkStatusChange;
-  TrakceI.OnOpenError := Self.OnTrkErrOpen;
+  trakce.BeforeOpen := Self.OnTrkBeforeOpen;
+  trakce.AfterOpen := Self.OnTrkAfterOpen;
+  trakce.BeforeClose := Self.OnTrkBeforeClose;
+  trakce.AfterClose := Self.OnTrkAfterClose;
+  trakce.OnReady := Self.OnTrkReady;
+  trakce.OnTrackStatusChanged := Self.OnTrkStatusChange;
+  trakce.OnOpenError := Self.OnTrkErrOpen;
 
-  TrakceI.LogObj := Self.LV_log_lnet;
+  trakce.LogObj := Self.LV_log_lnet;
 
   FuncNames.OnChange := Self.OnFuncNameChange;
 
@@ -1834,12 +1834,12 @@ begin
     PBT_APMSUSPEND:
       begin
         // windows is going to sleep -> disconnect all devices
-        if (TrakceI.ConnectedSafe()) then
+        if (trakce.ConnectedSafe()) then
         begin
           PanelServer.Stop();
           try
-            TrakceI.EmergencyStop();
-            TrakceI.Disconnect();
+            trakce.EmergencyStop();
+            trakce.Disconnect();
           except
 
           end;
@@ -1875,12 +1875,12 @@ procedure TF_Main.WMEndSession(var Msg: TWMEndSession);
 begin
   if (Msg.EndSession = true) then
   begin
-    if (TrakceI.ConnectedSafe()) then
+    if (trakce.ConnectedSafe()) then
     begin
       PanelServer.Stop();
       try
-        TrakceI.EmergencyStop();
-        TrakceI.Disconnect();
+        trakce.EmergencyStop();
+        trakce.Disconnect();
       except
 
       end;
@@ -2062,7 +2062,7 @@ begin
       end;
 
       try
-        TrakceI.SaveToFile(ini);
+        trakce.SaveToFile(ini);
       except
         on E: Exception do
           AppEvents.LogException(E, 'Save Trakce');
@@ -2110,7 +2110,7 @@ begin
     Self.LogStatus('ERR: Systém nelze spustit, RCS není připraveno k zapnutí systému');
     Exit();
   end;
-  if (not TrakceI.ready) then
+  if (not trakce.ready) then
   begin
     StrMessageBox('Systém nelze spustit, Trakce není připravena k zapnutí systému' + #13#10 +
       'Možné příčiny:' + #13#10 + ' - nenačtena validní knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
@@ -2596,7 +2596,7 @@ begin
   TurnoutSimulator.timer.Enabled := false;
 
   Self.A_SaveStavExecute(Self);
-  TrakceI.LogObj := nil;
+  trakce.LogObj := nil;
 
   Log('###############################################', llInfo);
 end;
@@ -2852,13 +2852,13 @@ begin
   Self.UpdateRCSLibsList();
   Self.UpdateTrkLibsList();
 
-  Self.CB_centrala_loglevel_file.ItemIndex := Integer(TrakceI.logLevelFile);
-  Self.CB_centrala_loglevel_table.ItemIndex := Integer(TrakceI.logLevelTable);
+  Self.CB_centrala_loglevel_file.ItemIndex := Integer(trakce.logLevelFile);
+  Self.CB_centrala_loglevel_table.ItemIndex := Integer(trakce.logLevelTable);
 
-  if (TrakceI.Lib = '') then
+  if (trakce.Lib = '') then
     Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-'
   else
-    Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(TrakceI.Lib);
+    Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(trakce.Lib);
 
   if (RCSi.Lib = '') then
     Self.SB1.Panels.Items[_SB_RCS_LIB].Text := '-'
@@ -3419,7 +3419,7 @@ end;
 
 procedure TF_Main.LV_HVChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  B_HV_Delete.Enabled := (LV_HV.Selected <> nil) and (not TrakceI.ConnectedSafe());
+  B_HV_Delete.Enabled := (LV_HV.Selected <> nil) and (not trakce.ConnectedSafe());
 end;
 
 procedure TF_Main.LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -3441,7 +3441,7 @@ begin
   if (LV_HV.Selected = nil) then
     Exit();
 
-  if (TrakceI.ConnectedSafe()) then
+  if (trakce.ConnectedSafe()) then
   begin
     try
       RegCollector.Open(HVDb[StrToInt(Self.LV_HV.Selected.Caption)]);
@@ -3541,9 +3541,9 @@ end;
 
 procedure TF_Main.UpdateSystemButtons();
 begin
-  Self.A_System_Start.Enabled := ((not RCSi.NoExStarted) or (not TrakceI.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
+  Self.A_System_Start.Enabled := ((not RCSi.NoExStarted) or (not trakce.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
     or (not PanelServer.openned) or (not Blocks.Enabled) or ((PtServer.autoStart) and (not PtServer.openned)));
-  Self.A_System_Stop.Enabled := (RCSi.NoExOpened) or (TrakceI.ConnectedSafe()) or (PanelServer.openned) or
+  Self.A_System_Stop.Enabled := (RCSi.NoExOpened) or (trakce.ConnectedSafe()) or (PanelServer.openned) or
     (PtServer.openned);
 end;
 

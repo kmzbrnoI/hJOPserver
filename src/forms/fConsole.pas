@@ -92,14 +92,14 @@ begin
         if (strings[1] = 'open') then
         begin
           Self.Print('Connecting to Trakce...');
-          TrakceI.Connect();
+          trakce.Connect();
           Self.Print('Done');
         end;
 
         if (strings[1] = 'close') then
         begin
           Self.Print('Disconnecting from Trakce...');
-          TrakceI.Disconnect();
+          trakce.Disconnect();
           Self.Print('Done');
         end;
       end

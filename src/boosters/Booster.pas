@@ -250,7 +250,7 @@ begin
 
   if (not Self.isDCCdetection) then
   begin
-    case (TrakceI.TrackStatusSafe()) of
+    case (trakce.TrackStatusSafe()) of
       TTrkStatus.tsUnknown:
         Exit(TBoosterSignal.undef);
       TTrkStatus.tsOff:

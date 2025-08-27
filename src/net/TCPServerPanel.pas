@@ -622,9 +622,9 @@ begin
     PanelServer.GUIQueueLineToRefresh(connData.index);
     modelTime.SendTimeToPanel(AContext);
 
-    if (TrakceI.TrackStatusSafe() = tsOn) then
+    if (trakce.TrackStatusSafe() = tsOn) then
       Self.SendLn(AContext, '-;DCC;GO')
-    else if ((Self.DCCStopped <> nil) or (TrakceI.TrackStatusSafe() <> tsOff)) then
+    else if ((Self.DCCStopped <> nil) or (trakce.TrackStatusSafe() <> tsOff)) then
       Self.SendLn(AContext, '-;DCC;DISABLED')
     else
       Self.SendLn(AContext, '-;DCC;STOP');
@@ -756,19 +756,19 @@ begin
 
   else if (parsed[1] = 'DCC') then
   begin
-    if ((parsed[2] = 'GO') and (TrakceI.TrackStatusSafe() <> tsOn)) then
+    if ((parsed[2] = 'GO') and (trakce.TrackStatusSafe() <> tsOn)) then
     begin
       try
-        TrakceI.SetTrackStatus(tsOn, TTrakce.callback(), TTrakce.callback(Self.OnDCCCmdErr, AContext));
+        trakce.SetTrackStatus(tsOn, TTrakce.callback(), TTrakce.callback(Self.OnDCCCmdErr, AContext));
       except
         on E: Exception do
           Self.BottomError(AContext, E.Message, '-', 'CENTRÁLA');
       end;
-    end else if ((parsed[2] = 'STOP') and (TrakceI.TrackStatusSafe() = tsOn)) then
+    end else if ((parsed[2] = 'STOP') and (trakce.TrackStatusSafe() = tsOn)) then
     begin
       Self.DCCStopped := AContext;
       try
-        TrakceI.SetTrackStatus(tsOff, TTrakce.callback(), TTrakce.callback(Self.OnDCCCmdErr, AContext));
+        trakce.SetTrackStatus(tsOff, TTrakce.callback(), TTrakce.callback(Self.OnDCCCmdErr, AContext));
       except
         on E: Exception do
           Self.BottomError(AContext, E.Message, '-', 'CENTRÁLA');
@@ -867,7 +867,7 @@ begin
       PanelServer.SendLn(AContext, '-;HV;ASK;' + IntToStr(i) + ';NOT-FOUND');
 
   end else if (parsed[1] = 'SPEED-STEPS-REQ') then begin
-    PanelServer.SendLn(AContext, '-;SPEED-STEPS;{'+TrakceI.SpeedTableToStr()+'}');
+    PanelServer.SendLn(AContext, '-;SPEED-STEPS;{'+trakce.SpeedTableToStr()+'}');
 
   end else if ((parsed[1] = 'PKEY') and (parsed.Count >= 4)) then begin
     const pkey_block = TPanelConnData(AContext.data).pkey_block;
@@ -1500,7 +1500,7 @@ begin
   begin
     if (Assigned(Self.clients[i])) then
     begin
-      if ((Self.DCCStopped = Self.clients[i].connection) and (TrakceI.TrackStatusSafe() = tsOff)) then
+      if ((Self.DCCStopped = Self.clients[i].connection) and (trakce.TrackStatusSafe() = tsOff)) then
         Self.SendLn(Self.clients[i].connection, '-;DCC;STOP')
       else
         Self.SendLn(Self.clients[i].connection, '-;DCC;DISABLED');
@@ -1513,7 +1513,7 @@ end;
 procedure TPanelServer.OnDCCCmdErr(Sender: TObject; data: Pointer);
 begin
   Self.BottomError(TIdContext(data), 'Centrála neodpověděla na příkaz', '-', 'CENTRÁLA');
-  TrakceI.emergency := True;
+  trakce.emergency := True;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

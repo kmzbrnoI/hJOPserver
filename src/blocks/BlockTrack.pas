@@ -822,7 +822,7 @@ begin
     Self.power := Boosters[Self.m_settings.boosterId].power;
     Self.shortCircuit := Boosters[Self.m_settings.boosterId].overload;
   end else begin
-    Self.DCC := (TrakceI.TrackStatusSafe() = TTrkStatus.tsOn);
+    Self.DCC := (trakce.TrackStatusSafe() = TTrkStatus.tsOn);
     Self.power := TBoosterSignal.undef;
     Self.shortCircuit := TBoosterSignal.undef;
   end;

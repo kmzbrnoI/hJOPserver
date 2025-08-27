@@ -36,7 +36,7 @@ uses fMain, TrakceC, ownGuiUtils;
 
 procedure TF_FuncsSet.B_ApplyClick(Sender: TObject);
 begin
-  if (not TrakceI.ConnectedSafe()) then
+  if (not trakce.ConnectedSafe()) then
   begin
     StrMessageBox('Aplikace není připojena k centrále', 'Nelze pokračovat', MB_OK OR MB_ICONWARNING);
     Exit();
@@ -56,7 +56,7 @@ begin
 
   Application.ProcessMessages();
 
-  TrakceI.LoksSetFunc(Self.CB_Vyznam.Text, (Self.RG_Stav.ItemIndex = 1), TTrakce.Callback(Self.FuncsSetOk),
+  trakce.LoksSetFunc(Self.CB_Vyznam.Text, (Self.RG_Stav.ItemIndex = 1), TTrakce.Callback(Self.FuncsSetOk),
     TTrakce.Callback(Self.FuncsSetErr));
 end;
 
