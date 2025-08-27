@@ -58,7 +58,7 @@ type
     PM_Tester: TMenuItem;
     M_Help: TMenuItem;
     PM_Help_RP: TMenuItem;
-    MI_Centrala: TMenuItem;
+    MI_Trakce: TMenuItem;
     MI_DCC_on: TMenuItem;
     MI_DCC_Off: TMenuItem;
     MI_Trk_Disconnect: TMenuItem;
@@ -540,7 +540,7 @@ implementation
 uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fAbout, version, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
-  RCSc, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils,
+  RCSc, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils, RCSsc,
   Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area,
   BlockSummary, BlockCrossing, TJCDatabase, Logging, TrakceC,
   TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
@@ -554,6 +554,7 @@ uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fRychlostiEdit, THnaciVozidlo;
 
 {$R *.dfm}
+
 /// /////////////////////////////////////////////////////////////////////////////
 // RCS BEGIN
 /// /////////////////////////////////////////////////////////////////////////////
@@ -561,7 +562,7 @@ uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
 procedure TF_Main.MI_RCS_libClick(Sender: TObject);
 var fn: string;
 begin
-  fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+{  fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
 
   Screen.Cursor := crHourGlass;
   Log('RCS -> ' + fn, llInfo, lsRCS);
@@ -580,7 +581,7 @@ begin
     end;
   end;
   RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
-  Screen.Cursor := crDefault;
+  Screen.Cursor := crDefault; }
 end;
 
 procedure TF_Main.UpdateRCSLibsList();
@@ -596,7 +597,7 @@ var SR: TSearchRec;
   end;
 
 begin
-  Self.MI_RCS_Libs.Clear();
+{  Self.MI_RCS_Libs.Clear();
 
   if (FindFirst(RCSi.libDir + '\*.dll', faAnyFile, SR) = 0) then
   begin
@@ -608,7 +609,7 @@ begin
         AddLib(SR.name);
 
     SysUtils.FindClose(SR);
-  end;
+  end; }
 end;
 
 procedure TF_Main.A_RCS_lib_cfgExecute(Sender: TObject);
@@ -2055,7 +2056,7 @@ begin
     ini := TMemIniFile.Create(_INIDATA_FN, TEncoding.UTF8);
     try
       try
-        RCSi.SaveToFile(ini);
+        RCSs.SaveToFile(ini);
       except
         on E: Exception do
           AppEvents.LogException(E, 'Save RCS');
@@ -2575,7 +2576,7 @@ end;
 
 procedure TF_Main.CHB_log_rcsClick(Sender: TObject);
 begin
-  RCSi.Log := Self.CHB_log_rcs.Checked;
+  RCSi.logEnabled := Self.CHB_log_rcs.Checked;
 end;
 
 procedure TF_Main.CHB_RCS_Show_Only_ActiveClick(Sender: TObject);
@@ -2774,7 +2775,7 @@ begin
     Self.CHB_log_rcs.Checked := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'rcs', false);
     Self.CHB_log_auth.Checked := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'auth', false);
 
-    RCSi.Log := Self.CHB_log_rcs.Checked;
+    RCSi.logEnabled := Self.CHB_log_rcs.Checked;
     Logging.auth_logging := Self.CHB_Log_Auth.Checked;
   finally
     inidata.Free();

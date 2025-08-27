@@ -3,7 +3,7 @@
 interface
 
 uses
-  SysUtils, Classes, Forms, IniFiles, ComCtrls, StrUtils, RCSc, Spin,
+  SysUtils, Classes, Forms, IniFiles, ComCtrls, StrUtils, RCSc, RCSsc, Spin,
   StdCtrls, Generics.Collections;
 
 const
@@ -140,7 +140,7 @@ begin
   F_Splash.AddStav('Načítám RCS...');
   Log('Načítám RCS...', TLogLevel.llInfo, lsData);
   try
-    RCSi.LoadFromFile(inidata);
+    RCSs.LoadFromFile(inidata);
   except
     on e: Exception do
       AppEvents.LogException(e);
@@ -237,7 +237,7 @@ begin
   end;
 
   try
-    RCSi.SaveToFile(inidata);
+    RCSs.SaveToFile(inidata);
   except
     on e: Exception do
       AppEvents.LogException(e);

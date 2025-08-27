@@ -6112,35 +6112,26 @@ object F_Main: TF_Main
         Caption = 'Central stop'
       end
     end
-    object MI_PanelServer: TMenuItem
-      Caption = 'Panel server'
-      object Start1: TMenuItem
-        Action = A_PanelServer_Start
-      end
-      object Stop1: TMenuItem
-        Action = A_PanelServer_Stop
-      end
-    end
     object MI_RCS: TMenuItem
-      Caption = #344#237'zen'#237' p'#345#237'slu'#353'enstv'#237' (RCS)'
+      Caption = 'RCS'
       object MI_RCS_Open: TMenuItem
         Action = A_RCS_Open
-        Caption = 'Otev'#345#237't za'#345#237'zen'#237
+        Caption = 'Otev'#345#237't v'#353'echna za'#345#237'zen'#237
       end
       object MI_RCS_Close: TMenuItem
         Action = A_RCS_Close
-        Caption = 'Zav'#345#237't za'#345#237'zen'#237
+        Caption = 'Zav'#345#237't v'#353'echna za'#345#237'zen'#237
       end
       object N8: TMenuItem
         Caption = '-'
       end
       object MI_RCS_Go: TMenuItem
         Action = A_RCS_Go
-        Caption = 'Zapnout komunikaci'
+        Caption = 'Zapnout v'#353'echny komunikace'
       end
       object MI_RCS_Stop: TMenuItem
         Action = A_RCS_Stop
-        Caption = 'Vypnout komunikaci'
+        Caption = 'Vypnout v'#353'echny komunikace'
       end
       object N1: TMenuItem
         Caption = '-'
@@ -6196,8 +6187,8 @@ object F_Main: TF_Main
         OnClick = PM_TesterClick
       end
     end
-    object MI_Centrala: TMenuItem
-      Caption = #344#237'zen'#237' j'#237'zdy (trakce)'
+    object MI_Trakce: TMenuItem
+      Caption = 'Trakce'
       object MI_Trk_connect: TMenuItem
         Action = A_Trk_Connect
       end
@@ -6247,6 +6238,24 @@ object F_Main: TF_Main
         Action = A_FuncsSet
       end
     end
+    object MI_PanelServer: TMenuItem
+      Caption = 'Panel server'
+      object Start1: TMenuItem
+        Action = A_PanelServer_Start
+      end
+      object Stop1: TMenuItem
+        Action = A_PanelServer_Stop
+      end
+    end
+    object MI_PT: TMenuItem
+      Caption = 'PT server'
+      object MI_Start: TMenuItem
+        Action = A_PT_Start
+      end
+      object MI_Stop: TMenuItem
+        Action = A_PT_Stop
+      end
+    end
     object MI_Provoz: TMenuItem
       Caption = 'Provoz'
       object PM_ResetV: TMenuItem
@@ -6278,15 +6287,6 @@ object F_Main: TF_Main
       end
       object PM_SaveLayout: TMenuItem
         Action = A_SaveStav
-      end
-    end
-    object MI_PT: TMenuItem
-      Caption = 'PT server'
-      object MI_Start: TMenuItem
-        Action = A_PT_Start
-      end
-      object MI_Stop: TMenuItem
-        Action = A_PT_Stop
       end
     end
     object M_Zobrazeni: TMenuItem

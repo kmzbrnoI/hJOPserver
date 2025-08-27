@@ -3,7 +3,7 @@ unit RCSsc;
 interface
 
 uses Generics.Defaults, RCSc, RCSIFace, IniFiles, Generics.Collections, Classes,
-  RCSErrors;
+  RCSErrors, Logging;
 
 type
   // Single RCS address with system too
@@ -28,14 +28,21 @@ type
 
   // Access to multiple Railroad Control Systems
   TRCSs = class
+  private const
+    _INIFILE_SECTNAME = 'RCS';
+    _DEFAULT_CONFIG_PATH = 'lib-conf';
+
   public const
     _RCSS_COUNT = 4;
     _RCSS_MAX = _RCSS_COUNT-1;
 
   private
     m_rcss: array[0.._RCSS_MAX] of TRCS;
+    mLibDir: string;
+    mConfigDir: string;
 
     function IsGeneralError(): Boolean;
+    procedure Log(msg: string; level: TLogLevel);
 
   public
     constructor Create();
@@ -87,8 +94,8 @@ type
 
 //    property OnReady: TRCSReadyEvent read fOnReady write fOnReady;
 //    property ready: Boolean read aReady;
-//    property libDir: string read fLibDir;
-//    property configDir: string read mConfigDir;
+    property libDir: string read mLibDir;
+    property configDir: string read mConfigDir;
 //    property maxModuleAddr: Cardinal read GetMaxModuleAddr;
 //    property maxModuleAddrSafe: Cardinal read GetMaxModuleAddrSafe;
   end;
@@ -102,7 +109,7 @@ function RCSAddrComparer(): IComparer<TRCSsAddr>;
 
 implementation
 
-uses SysUtils;
+uses SysUtils, fMain;
 
 constructor EInvalidSystem.Create(system: Cardinal);
 begin
@@ -114,7 +121,7 @@ begin
   inherited;
 
   for var i: Integer := 0 to _RCSS_MAX do
-    Self.m_rcss[i] := TRCS.Create();
+    Self.m_rcss[i] := TRCS.Create(i);
 end;
 
 destructor TRCSs.Destroy();
@@ -123,6 +130,11 @@ begin
     Self.m_rcss[i].Free();
 
   inherited;
+end;
+
+procedure TRCSs.Log(msg: string; level: TLogLevel);
+begin
+  Logging.Log(msg, level, lsRCS);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -195,12 +207,18 @@ end;
 
 function TRCSs.NoExStarted(): Boolean;
 begin
-  // TODO
+  for var i: Integer := 0 to _RCSS_MAX do
+    if ((Self.m_rcss[i].libLoaded) and (not Self.m_rcss[i].NoExStarted())) then
+      Exit(False);
+  Result := True;
 end;
 
 function TRCSs.NoExOpened(): Boolean;
 begin
-  // TODO
+  for var i: Integer := 0 to _RCSS_MAX do
+    if ((Self.m_rcss[i].libLoaded) and (not Self.m_rcss[i].NoExOpened())) then
+      Exit(False);
+  Result := True;
 end;
 
 procedure TRCSs.SetNeeded(system: Cardinal; module: Cardinal; state: Boolean = true);
@@ -224,12 +242,35 @@ end;
 
 procedure TRCSs.LoadFromFile(ini: TMemIniFile);
 begin
+  Self.mLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
+  Self.mConfigDir := ini.ReadString(_INIFILE_SECTNAME, 'configDir', _DEFAULT_CONFIG_PATH);
 
+  for var i: Integer := 0 to _RCSS_MAX do
+  begin
+    var dllFile: string := ini.ReadString(_INIFILE_SECTNAME, 'lib'+IntToStr(i), '');
+    if ((i = 0) and (dllFile = '')) then
+      dllFile := ini.ReadString(_INIFILE_SECTNAME, 'lib', ''); // backward-compatibility
+
+    if (dllFile <> '') then
+    begin
+      try
+        Self.m_rcss[i].LoadLib(dllFile, Self.configDir + '\rcs'+IntToStr(i) + '_' + ChangeFileExt(ExtractFileName(dllFile), '.ini'));
+      except
+        on E: Exception do
+        begin
+          Self.m_rcss[i].LogFMainStatusError('Nelze naèíst knihovnu ' + Self.mLibDir + '\' + dllFile + ': ' + E.Message);
+          Self.m_rcss[i].Log('Nelze naèíst knihovnu ' + Self.mLibDir + '\' + dllFile + ': ' + E.Message, llError);
+        end;
+      end;
+    end;
+  end;
 end;
 
 procedure TRCSs.SaveToFile(ini: TMemIniFile);
 begin
-
+  ini.DeleteKey(_INIFILE_SECTNAME, 'lib'); // old name
+  for var i: Integer := 0 to _RCSS_MAX do
+    ini.WriteString(_INIFILE_SECTNAME, 'lib'+IntToStr(i), ExtractFileName(Self.m_rcss[i].lib));
 end;
 
 procedure TRCSs.SetOutput(addr: TRCSsAddr; state: Integer);
@@ -378,4 +419,4 @@ finalization
   // Free in hJOPserver.dpr, because we must gurantee preload gets destructed after all shared libraries
 
 end.
-q
+

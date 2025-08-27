@@ -16,7 +16,8 @@
 
 interface
 
-uses SysUtils, Classes, IniFiles, Generics.Collections, RCSIFace, Generics.Defaults;
+uses SysUtils, Classes, IniFiles, Generics.Collections, RCSIFace, Generics.Defaults,
+  Logging, RCSErrors;
 
 type
   TRCSReadyEvent = procedure(Sender: TObject; ready: Boolean) of object;
@@ -55,17 +56,11 @@ type
   public const
     _MODULE_DEFAULT_IO = 256; // cannot be more than Max(TRCSAddr.port)+1
 
-  private const
-    _DEFAULT_LIB = 'simulator.dll';
-    _INIFILE_SECTNAME = 'RCS';
-    _DEFAULT_CONFIG_PATH = 'lib-conf';
-
   private
+    mSystemI: Cardinal;
     modules: TObjectDictionary<Cardinal, TRCSModule>;
     mLoadedOk: Boolean; // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
     fGeneralError: Boolean; // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
-    mLibDir: string;
-    mConfigDir: string;
 
     // events to the main program
     fOnReady: TRCSReadyEvent;
@@ -83,13 +78,13 @@ type
     function IsReady(): Boolean;
 
   public
-    log: Boolean;
+    logEnabled: Boolean;
     logActionInProgress: Boolean;
 
-    constructor Create();
+    constructor Create(systemI: Cardinal);
     destructor Destroy(); override;
 
-    procedure LoadLib(filename: string);
+    procedure LoadLib(libFn: string; configFn: string);
     procedure UnloadLib();
 
     function NoExStarted(): Boolean;
@@ -97,9 +92,6 @@ type
 
     procedure SetNeeded(module: Cardinal; state: Boolean = true);
     function GetNeeded(module: Cardinal): Boolean;
-
-    procedure LoadFromFile(ini: TMemIniFile);
-    procedure SaveToFile(ini: TMemIniFile);
 
     procedure SetOutput(addr: TRCSAddr; state: Integer); overload;
     procedure SetOutput(addr: TRCSAddr; state: TRCSOutputState); overload;
@@ -131,13 +123,14 @@ type
     class function RCSOptionalAddr(module: Cardinal; port: Byte): TRCSAddrOptional; overload;
     class function RCSOptionalAddrDisabled(): TRCSAddrOptional; overload;
 
+    procedure Log(msg: string; level: TLogLevel);
+    procedure LogFMainStatusError(msg: string);
+
     // events
     property AfterClose: TNotifyEvent read fAfterClose write fAfterClose;
 
     property OnReady: TRCSReadyEvent read fOnReady write fOnReady;
     property ready: Boolean read IsReady;
-    property libDir: string read mLibDir;
-    property configDir: string read mConfigDir;
     property maxModuleAddr: Cardinal read GetMaxModuleAddr;
     property maxModuleAddrSafe: Cardinal read GetMaxModuleAddrSafe;
   end;
@@ -150,19 +143,20 @@ var
 implementation
 
 uses fMain, diagnostics, GetSystems, BlockDb, Block, BlockTurnout, BlockTrack,
-  BoosterDb, BlockCrossing, RCSErrors, AreaDb, IfThenElse,
-  Logging, TCPServerPanel, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
+  BoosterDb, BlockCrossing, AreaDb, IfThenElse,
+  TCPServerPanel, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
-constructor TRCS.Create();
+constructor TRCS.Create(systemI: Cardinal);
 begin
-  inherited;
+  inherited Create();
+  Self.mSystemI := systemI;
 
   Self.modules := TObjectDictionary<Cardinal, TRCSModule>.Create();
 
-  Self.logActionInProgress := false;
-  Self.log := false;
-  Self.mLoadedOk := false;
-  Self.fGeneralError := false;
+  Self.logActionInProgress := False;
+  Self.logEnabled := False;
+  Self.mLoadedOk := False;
+  Self.fGeneralError := False;
 
   // assign events
   TRCSIFace(Self).AfterClose := Self.DllAfterClose;
@@ -179,13 +173,23 @@ begin
   inherited;
 end;
 
-procedure TRCS.LoadLib(filename: string);
+procedure TRCS.Log(msg: string; level: TLogLevel);
+begin
+  Logging.Log('RCS'+IntToStr(Self.mSystemI) + ': ' + msg, level, lsRCS);
+end;
+
+procedure TRCS.LogFMainStatusError(msg: string);
+begin
+  F_Main.LogStatus('ERR: RCS'+IntToStr(Self.mSystemI) + ': ' + msg);
+end;
+
+procedure TRCS.LoadLib(libFn: string; configFn: string);
 var libName: string;
 begin
-  libName := ExtractFileName(filename);
+  libName := ExtractFileName(libFn);
 
-  if (not FileExists(filename)) then
-    raise Exception.Create('Library file not found, not loading');
+  if (not FileExists(libFn)) then
+    raise RCSException.Create('Library file not found, not loading');
 
   if (Self.ready) then
   begin
@@ -194,12 +198,13 @@ begin
       Self.OnReady(Self, Self.ready);
   end;
 
-  if not DirectoryExists(Self.configDir) then
-    CreateDir(Self.configDir);
+  const configDir: string = ExtractFileDir(configFn);
+  if (not DirectoryExists(configDir)) then
+    CreateDir(configDir);
 
-  TRCSIFace(Self).LoadLib(filename, Self.configDir + '\' + ChangeFileExt(libName, '.ini'));
+  TRCSIFace(Self).LoadLib(libFn, configFn);
 
-  Logging.Log('Načtena knihovna ' + libName + ', RCS API v'+Self.apiVersionStr(), llInfo, lsRCS);
+  Self.Log('Načtena knihovna ' + libName + ', RCS API v'+Self.apiVersionStr() + ', konfigurace '+configFn, llInfo);
 
   // kontrola bindnuti vsech eventu
 
@@ -217,7 +222,7 @@ begin
     for var tmp in Self.unbound do
       str := str + tmp + ', ';
     str := LeftStr(str, Length(str) - 2);
-    F_Main.LogStatus('ERR: RCS: nepodařilo se svázat následující funkce : ' + str);
+    Self.LogFMainStatusError('Nepodařilo se svázat následující funkce: ' + str);
   end;
 end;
 
@@ -226,7 +231,7 @@ begin
   Self.mLoadedOk := False;
   Self.fGeneralError := False;
   TRCSIFace(Self).UnloadLib();
-  Logging.Log('Knihovna odnačtena', llInfo, lsRCS);
+  Self.Log('Knihovna odnačtena', llInfo);
 end;
 
 procedure TRCS.InputSim();
@@ -275,30 +280,6 @@ begin
   end;
 end;
 
-procedure TRCS.LoadFromFile(ini: TMemIniFile);
-var lib: string;
-begin
-  Self.mLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
-  lib := ini.ReadString(_INIFILE_SECTNAME, 'lib', _DEFAULT_LIB);
-  Self.mConfigDir := ini.ReadString(_INIFILE_SECTNAME, 'configDir', _DEFAULT_CONFIG_PATH);
-
-  try
-    Self.LoadLib(Self.mLibDir + '\' + lib);
-  except
-    on E: Exception do
-    begin
-      F_Main.LogStatus('ERR: RCS: Nelze načíst knihovnu ' + Self.mLibDir + '\' + lib + ': ' + E.Message);
-      Logging.Log('Nelze načíst knihovnu ' + Self.mLibDir + '\' + lib + ': ' + E.Message, llError, lsRCS);
-    end;
-  end;
-end;
-
-procedure TRCS.SaveToFile(ini: TMemIniFile);
-begin
-  if (Self.lib <> '') then
-    ini.WriteString(_INIFILE_SECTNAME, 'lib', ExtractFileName(Self.lib));
-end;
-
 procedure TRCS.DllAfterClose(Sender: TObject);
 begin
   Self.fGeneralError := false;
@@ -308,13 +289,13 @@ end;
 
 procedure TRCS.DllOnError(Sender: TObject; errValue: word; errAddr: Cardinal; errMsg: PChar);
 begin
-  Logging.Log('RCS ERR: ' + errMsg + ' (' + IntToStr(errValue) + ':' + IntToStr(errAddr) + ')', llError, lsRCS);
+  Self.Log('RCS ERR: ' + errMsg + ' (' + IntToStr(errValue) + ':' + IntToStr(errAddr) + ')', llError);
 
   if (SystemData.Status = TSystemStatus.starting) then
     SystemData.Status := TSystemStatus.null;
 
   if (Self.logActionInProgress) then
-    F_Main.LogStatus('ERR: ' + errMsg);
+    Self.LogFMainStatusError(errMsg);
 
   case (errValue) of
     RCS_MODULE_FAILED:
@@ -324,7 +305,7 @@ end;
 
 procedure TRCS.DllOnLog(Sender: TObject; logLevel: TRCSLogLevel; msg: string);
 begin
-  if (not Self.log) then
+  if (not Self.logEnabled) then
     Exit();
 
   var systemLogLevel: TLogLevel;
@@ -341,7 +322,7 @@ begin
     systemLogLevel := TLogLevel.llInfo;
   end;
 
-  Logging.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, systemLogLevel, lsRCS);
+  Self.Log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, systemLogLevel);
 end;
 
 procedure TRCS.DllOnModuleChanged(Sender: TObject; module: Cardinal);
@@ -643,7 +624,7 @@ end;
 
 initialization
 
-RCSi := TRCS.Create();
+RCSi := TRCS.Create(8); // TODO remove
 
 finalization
 
