@@ -5,8 +5,8 @@
 interface
 
 uses IniFiles, Block, SysUtils, BlockTrack, Menus, AreaDb, ConfSeq,
-  Classes, IdContext, Generics.Collections, JsonDataObjects, RCS,
-  Area, TechnologieRCS;
+  Classes, IdContext, Generics.Collections, JsonDataObjects, RCSIFace,
+  Area, RCSc;
 
 {
   intentionalLock:

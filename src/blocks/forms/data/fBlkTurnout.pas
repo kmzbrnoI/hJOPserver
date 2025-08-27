@@ -113,7 +113,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, Block, DataBloky, Area, ifThenElse, ownGuiUtils,
+uses GetSystems, RCSc, Block, DataBloky, Area, ifThenElse, ownGuiUtils,
   ownConvert;
 
 {$R *.dfm}

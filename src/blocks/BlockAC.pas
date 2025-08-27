@@ -103,7 +103,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, BlockDb, ownConvert, Diagnostics, ConfSeq,
+uses GetSystems, RCSc, BlockDb, ownConvert, Diagnostics, ConfSeq,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout,
   TCPServerPT, ownStrUtils, colorHelper;
 

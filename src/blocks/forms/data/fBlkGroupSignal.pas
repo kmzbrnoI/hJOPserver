@@ -71,7 +71,7 @@ var
 
 implementation
 
-uses Block, Area, DataBloky, TechnologieRCS, BlockSignal, ownGuiUtils;
+uses Block, Area, DataBloky, RCSc, BlockSignal, ownGuiUtils;
 
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
@@ -322,7 +322,7 @@ begin
     Self.block.SetSettings(settings);
 
     var signalSettings: TBlkSignalSettings;
-    signalSettings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+    signalSettings.RCSAddrs := TList<RCSc.TRCSAddr>.Create();
     if (Self.CHB_RCS_Output.Checked) then
     begin
       signalSettings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value));

@@ -5,7 +5,7 @@ unit BlockDisconnector;
 interface
 
 uses IniFiles, Block, Classes, AreaDb, SysUtils, JsonDataObjects,
-  IdContext, Area, TechnologieRCS, RCS, Generics.Collections;
+  IdContext, Area, RCSc, RCSIFace, Generics.Collections;
 
 type
   TBlkDiscBasicState = (

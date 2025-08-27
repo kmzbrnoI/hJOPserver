@@ -14,7 +14,7 @@
 interface
 
 uses IniFiles, SysUtils, Classes, Graphics, Menus, announcement,
-  IdContext, TechnologieRCS, StrUtils, ComCtrls, Forms, AreaLighting,
+  IdContext, RCSc, StrUtils, ComCtrls, Forms, AreaLighting,
   Generics.Collections, AreaStack, Windows, Generics.Defaults,
   JsonDataObjects, Logging, UPO;
 

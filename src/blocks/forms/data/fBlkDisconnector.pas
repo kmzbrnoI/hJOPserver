@@ -58,7 +58,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, BlockDb, Block, DataBloky, Area, RCS, ownGuiUtils;
+uses GetSystems, RCSc, BlockDb, Block, DataBloky, Area, RCSIFace, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -252,7 +252,7 @@ begin
       end;
     end;
 
-    settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+    settings.RCSAddrs := TList<RCSc.TRCSAddr>.Create();
     settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value));
 
     case (Self.CB_outputType.ItemIndex) of

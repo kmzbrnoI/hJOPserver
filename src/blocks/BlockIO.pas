@@ -10,8 +10,8 @@ unit BlockIO;
 
 interface
 
-uses IniFiles, Block, TechnologieRCS, Classes, SysUtils, IdContext, Area,
-  Graphics, JsonDataObjects, RCSErrors, RCS;
+uses IniFiles, Block, RCSc, Classes, SysUtils, IdContext, Area,
+  Graphics, JsonDataObjects, RCSErrors, RCSIFace;
 
 type
 

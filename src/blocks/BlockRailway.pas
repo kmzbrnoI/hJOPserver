@@ -200,7 +200,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, BlockDb, Area, BlockSignal, Logging,
+uses GetSystems, RCSc, BlockDb, Area, BlockSignal, Logging,
   TJCDatabase, fMain, TCPServerPanel, BlockTrack, BlockLinker, TrainDb, THVDatabase,
   appEv, timeHelper, ownConvert, Graphics, colorHelper, TechnologieJC;
 

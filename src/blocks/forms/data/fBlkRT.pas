@@ -96,7 +96,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, BoosterDb, DataBloky, ownStrUtils,
+uses GetSystems, RCSc, BoosterDb, DataBloky, ownStrUtils,
   AreaDb, Booster, Area, TrainSpeed, ownGuiUtils;
 
 {$R *.dfm}
@@ -454,7 +454,7 @@ begin
     end;
 
     var settings: TBlkTrackSettings;
-    settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+    settings.RCSAddrs := TList<RCSc.TRCSAddr>.Create();
     if (Self.CHB_D0.Checked) then
       settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module0.Value, Self.SE_Port0.Value));
     if (Self.CHB_D1.Checked) then

@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, rrEvent, System.Math,
   TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo, JCBarriers,
-  Area, StrUtils, JsonDataObjects, TechnologieRCS, Train, RegularExpressions;
+  Area, StrUtils, JsonDataObjects, RCSc, Train, RegularExpressions;
 
 type
   TBlkSignalSelection = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
@@ -308,7 +308,7 @@ implementation
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSignal,
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
-  predvidanyOdjezd, ownConvert, RCS, IfThenElse, RCSErrors, UPO, PanelConnData,
+  predvidanyOdjezd, ownConvert, RCSIFace, IfThenElse, RCSErrors, UPO, PanelConnData,
   TrainSpeed, ConfSeq, PTUtils, timeHelper, Config, colorHelper;
 
 constructor TBlkSignal.Create(index: Integer);

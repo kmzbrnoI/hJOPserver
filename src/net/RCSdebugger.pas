@@ -24,7 +24,7 @@
 
 interface
 
-uses SysUtils, TechnologieRCS, Generics.Collections, Classes, IdContext;
+uses SysUtils, RCSc, Generics.Collections, Classes, IdContext;
 
 type
   TRCSdModule = record
@@ -125,7 +125,7 @@ implementation
   * typy vystupu (B=binarni vystup, S=S-COM, -=nedostupny port)
 }
 
-uses TCPServerPanel, UserDb, User, RCSErrors, RCS;
+uses TCPServerPanel, UserDb, User, RCSErrors, RCSIFace;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

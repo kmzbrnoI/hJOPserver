@@ -3,7 +3,7 @@
 interface
 
 uses
-  SysUtils, Classes, Forms, IniFiles, ComCtrls, StrUtils, TechnologieRCS, Spin,
+  SysUtils, Classes, Forms, IniFiles, ComCtrls, StrUtils, RCSc, Spin,
   StdCtrls, Generics.Collections;
 
 const

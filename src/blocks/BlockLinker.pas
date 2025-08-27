@@ -112,7 +112,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, BlockDb, UPO, Graphics, Train, ownConvert, TrainDb,
+uses GetSystems, RCSc, BlockDb, UPO, Graphics, Train, ownConvert, TrainDb,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack,
   Logging, ConfSeq, TechnologieJC, colorHelper, IfThenElse;
 

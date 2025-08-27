@@ -2,7 +2,7 @@ unit AreaLighting;
 
 interface
 
-uses TechnologieRCS, Classes, ownStrUtils, SysUtils;
+uses RCSc, Classes, ownStrUtils, SysUtils;
 
 type
   TAreaLighting = class

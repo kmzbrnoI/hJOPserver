@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, Booster, houkEvent,
   IdContext, Generics.Collections, JsonDataObjects, Area, Train,
-  announcement, changeEvent, predvidanyOdjezd, TechnologieRCS;
+  announcement, changeEvent, predvidanyOdjezd, RCSc;
 
 type
   TTrackState = (disabled = -5, none = -1, free = 0, occupied = 1);
@@ -304,7 +304,7 @@ type
 
 implementation
 
-uses GetSystems, BlockDb, BlockSignal, Logging, RCS, ownStrUtils, Diagnostics,
+uses GetSystems, BlockDb, BlockSignal, Logging, RCSIFace, ownStrUtils, Diagnostics,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, THVDatabase, Math,
   Trakce, THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO,
   announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, PanelConnData, ConfSeq,

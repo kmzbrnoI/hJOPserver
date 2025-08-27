@@ -5,7 +5,7 @@
 
 interface
 
-uses IniFiles, TechnologieRCS, SysUtils, AreaDb, Generics.Collections, Logging,
+uses IniFiles, RCSc, SysUtils, AreaDb, Generics.Collections, Logging,
   IdContext, JsonDataObjects, Area, changeEvent, Classes;
 
 const
@@ -225,7 +225,7 @@ end;
 
 class function TBlk.LoadRCS(ini: TMemIniFile; section: string): TRCSAddrs;
 begin
-  Result := TList<TechnologieRCS.TRCSAddr>.Create(RCSAddrComparer);
+  Result := TList<RCSc.TRCSAddr>.Create(RCSAddrComparer);
 
   for var i: Integer := 0 to _MAX_RCS-1 do
   begin

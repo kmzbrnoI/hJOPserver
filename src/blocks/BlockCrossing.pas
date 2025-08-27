@@ -4,7 +4,7 @@
 
 interface
 
-uses IniFiles, Block, SysUtils, Menus, AreaDb, Classes, TechnologieRCS,
+uses IniFiles, Block, SysUtils, Menus, AreaDb, Classes, RCSc,
   IdContext, Area, Generics.Collections, JsonDataObjects, ConfSeq,
   BlockCrossingLogic, BlockCrossingPositive;
 
@@ -221,7 +221,7 @@ type
 
 implementation
 
-uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCS, UPO,
+uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCSIFace, UPO,
   Graphics, PanelConnData, Diagnostics, appEv, ownConvert, Config, timeHelper,
   BlockTrack, BlockTrackRef, colorHelper, RCSErrors, PTUtils;
 

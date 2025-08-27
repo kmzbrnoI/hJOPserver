@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, IdContext,
-  Generics.Collections, Area, JsonDataObjects, TechnologieRCS, BlockTurnout,
+  Generics.Collections, Area, JsonDataObjects, RCSc, BlockTurnout,
   JCBarriers, UPO;
 
 type
@@ -156,7 +156,7 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTrack,
-  RCSErrors, RCS, PanelConnData, BlockSignal, Logging, BlockDisconnector, ConfSeq,
+  RCSErrors, RCSIFace, PanelConnData, BlockSignal, Logging, BlockDisconnector, ConfSeq,
   TechnologieJC, colorHelper, IfThenElse, PTUtils;
 
 constructor TBlkPst.Create(index: Integer);

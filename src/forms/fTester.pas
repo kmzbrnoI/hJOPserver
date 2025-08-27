@@ -81,7 +81,7 @@ var
 
 implementation
 
-uses TechnologieRCS, Logging, RCS, BlockSignal, RCSErrors, IfThenElse, ownGuiUtils;
+uses RCSc, Logging, RCSIFace, BlockSignal, RCSErrors, IfThenElse, ownGuiUtils;
 
 {$R *.dfm}
 

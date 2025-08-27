@@ -41,7 +41,7 @@ var
 
 implementation
 
-uses version, TechnologieRCS, Logging, appEv;
+uses version, RCSc, Logging, appEv;
 
 {$R *.dfm}
 

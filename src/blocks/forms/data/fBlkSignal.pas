@@ -96,7 +96,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, Block, Area, DataBloky, BlockTrack, ownGuiUtils,
+uses GetSystems, RCSc, Block, Area, DataBloky, BlockTrack, ownGuiUtils,
   ownConvert;
 
 {$R *.dfm}
@@ -406,7 +406,7 @@ begin
     end;
 
     var settings: TBlkSignalSettings;
-    settings.RCSAddrs := TList<TechnologieRCS.TRCSAddr>.Create();
+    settings.RCSAddrs := TList<RCSc.TRCSAddr>.Create();
     if (Self.CHB_RCS_Output.Checked) then
     begin
       settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_RCSmodule1.Value, SE_RCSport1.Value));

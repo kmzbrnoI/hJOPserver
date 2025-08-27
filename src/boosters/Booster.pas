@@ -6,7 +6,7 @@ unit Booster;
 
 interface
 
-uses IniFiles, TechnologieRCS, SysUtils, Generics.Defaults;
+uses IniFiles, RCSc, SysUtils, Generics.Defaults;
 
 type
   TBoosterSignal = (undef = -1, error = 0, ok = 1);
@@ -81,7 +81,7 @@ type
 
 implementation
 
-uses GetSystems, fMain, RCS, TechnologieTrakce, Trakce, Config;
+uses GetSystems, fMain, RCSIFace, TechnologieTrakce, Trakce, Config;
 
 {
   Format datoveho souboru: .ini soubor, kazdy SPAX ma svou sekci

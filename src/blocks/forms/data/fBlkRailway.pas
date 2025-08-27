@@ -74,7 +74,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, BoosterDb, DataBloky, Block, Area, ownGuiUtils;
+uses GetSystems, RCSc, BoosterDb, DataBloky, Block, Area, ownGuiUtils;
 
 {$R *.dfm}
 

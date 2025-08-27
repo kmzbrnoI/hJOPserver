@@ -212,7 +212,7 @@
         </DCCReference>
         <DCCReference Include="helpers\GetSystems.pas"/>
         <DCCReference Include="helpers\ownConvert.pas"/>
-        <DCCReference Include="rcs\TechnologieRCS.pas"/>
+        <DCCReference Include="rcs\rcsc.pas"/>
         <DCCReference Include="jc\TechnologieJC.pas"/>
         <DCCReference Include="Config.pas"/>
         <DCCReference Include="forms\fConsole.pas">
@@ -313,7 +313,7 @@
         <DCCReference Include="pt\PTEndpointLoks.pas"/>
         <DCCReference Include="pt\PTEndpointBlockState.pas"/>
         <DCCReference Include="pt\PTEndpointLokState.pas"/>
-        <DCCReference Include="rcs\api\RCS.pas"/>
+        <DCCReference Include="rcs\api\RCSIFace.pas"/>
         <DCCReference Include="rcs\api\RCSErrors.pas"/>
         <DCCReference Include="rrEvent.pas"/>
         <DCCReference Include="houkEvent.pas"/>

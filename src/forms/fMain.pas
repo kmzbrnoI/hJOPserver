@@ -540,7 +540,7 @@ implementation
 uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fAbout, version, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
-  TechnologieRCS, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils,
+  RCSc, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils,
   Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area,
   BlockSummary, BlockCrossing, TJCDatabase, Logging,
   TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,

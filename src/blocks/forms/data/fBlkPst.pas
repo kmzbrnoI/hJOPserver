@@ -136,7 +136,7 @@ var
 
 implementation
 
-uses BlockDb, Block, Area, DataBloky, IfThenElse, BlockTurnout, TechnologieRCS,
+uses BlockDb, Block, Area, DataBloky, IfThenElse, BlockTurnout, RCSc,
   ownGuiUtils;
 
 {$R *.dfm}

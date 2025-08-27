@@ -305,7 +305,7 @@ type
 
 implementation
 
-uses GetSystems, TechnologieRCS, THnaciVozidlo, BlockSignal, AreaDb, PanelConnData,
+uses GetSystems, RCSc, THnaciVozidlo, BlockSignal, AreaDb, PanelConnData,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
   BlockPSt, appEv, ConfSeq, BlockDb, Config, colorHelper;

@@ -38,7 +38,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, BlockDb, Block, DataBloky, Area, ownGuiUtils;
+uses GetSystems, RCSc, BlockDb, Block, DataBloky, Area, ownGuiUtils;
 
 {$R *.dfm}
 

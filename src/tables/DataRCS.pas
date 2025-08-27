@@ -31,7 +31,7 @@ var
 
 implementation
 
-uses TechnologieRCS, RCS, IfThenElse;
+uses RCSc, RCSIFace, IfThenElse;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

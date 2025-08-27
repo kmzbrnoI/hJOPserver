@@ -22,7 +22,7 @@ var
 
 implementation
 
-uses Simulation, TechnologieRCS, Logging;
+uses Simulation, RCSc, Logging;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

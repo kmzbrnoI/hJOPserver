@@ -15,7 +15,7 @@
 interface
 
 uses IniFiles, Block, SysUtils, Windows, AreaDb, Area, StdCtrls,
-  Generics.Collections, Classes, IdContext, TechnologieRCS,
+  Generics.Collections, Classes, IdContext, RCSc,
   JsonDataObjects, Train, System.Math,
   BlockTrack, BlockTurnout, BlockIR, BlockLock, BlockRailway, BlockGroupSignal,
   BlockLinker, BlockAC, BlockRailwayTrack, BlockPst, BlockSignal, BlockSummary,

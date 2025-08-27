@@ -1,4 +1,4 @@
-﻿unit TechnologieRCS;
+﻿unit RCSc;
 
 {
   Technologie RCS: rozhrani pro pouzivani Railroad Control System.
@@ -16,7 +16,7 @@
 
 interface
 
-uses SysUtils, Classes, IniFiles, Generics.Collections, RCS, Generics.Defaults;
+uses SysUtils, Classes, IniFiles, Generics.Collections, RCSIFace, Generics.Defaults;
 
 type
   TRCSReadyEvent = procedure(Sender: TObject; ready: Boolean) of object;

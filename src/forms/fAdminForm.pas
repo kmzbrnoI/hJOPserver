@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses Diagnostics, Simulation, fMain, TechnologieRCS, Logging, ownGuiUtils;
+uses Diagnostics, Simulation, fMain, RCSc, Logging, ownGuiUtils;
 
 {$R *.dfm}
 

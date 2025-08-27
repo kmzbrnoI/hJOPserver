@@ -58,7 +58,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, BoosterDb, DataZesilovac, BlockDb, ownGuiUtils;
+uses GetSystems, RCSc, BoosterDb, DataZesilovac, BlockDb, ownGuiUtils;
 
 {$R *.dfm}
 

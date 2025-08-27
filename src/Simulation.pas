@@ -47,7 +47,7 @@ var
 
 implementation
 
-uses GetSystems, TechnologieRCS, TJCDatabase, Block, BlockTrack, BlockDb, BlockSignal,
+uses GetSystems, RCSc, TJCDatabase, Block, BlockTrack, BlockDb, BlockSignal,
   BlockRailwayTrack, BlockTurnout;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@ unit BlockIR;
 
 interface
 
-uses IniFiles, Block, JsonDataObjects, TechnologieRCS;
+uses IniFiles, Block, JsonDataObjects, RCSc;
 
 type
   TIROccupationState = (disabled = -5, none = -1, free = 0, occupied = 1);
@@ -53,7 +53,7 @@ type
 
 implementation
 
-uses RCS, RCSErrors, PTUtils, Config;
+uses RCSIFace, RCSErrors, PTUtils, Config;
 
 constructor TBlkIR.Create(index: Integer);
 begin
