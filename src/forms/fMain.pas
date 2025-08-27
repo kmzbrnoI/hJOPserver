@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, TrakceIFace,
-  inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils,
+  inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils, RCSsc,
   ComObj, BoosterDb, System.Actions, System.ImageList,
   Vcl.Mask, Vcl.Samples.Spin, Generics.Collections, Vcl.NumberBox;
 
@@ -44,13 +44,23 @@ type
 
   TAutostartState = (asDisabled, asEnabled, asWaiting);
 
+  TRCSMI = record
+    MI_Root: TMenuItem;
+    MI_Open: TMenuItem;
+    MI_Close: TMenuItem;
+    MI_Start: TMenuItem;
+    MI_Stop: TMenuItem;
+    MI_Settings: TMenuItem;
+    MI_NoLib: TMenuItem;
+    MI_Libs: TList<TMenuItem>;
+  end;
+
   TF_Main = class(TForm)
     T_Main: TTimer;
     Menu_1: TMainMenu;
     MI_RCS: TMenuItem;
     MI_RCS_Go: TMenuItem;
     MI_RCS_Stop: TMenuItem;
-    MI_RCS_Options: TMenuItem;
     MI_Provoz: TMenuItem;
     PM_ResetV: TMenuItem;
     SB1: TStatusBar;
@@ -84,8 +94,6 @@ type
     P_SystemSet: TPanel;
     SB_SystemStart: TSpeedButton;
     SB_SystemStop: TSpeedButton;
-    MI_RCS_Libs: TMenuItem;
-    N2: TMenuItem;
     PM_SaveFormPos: TMenuItem;
     IL_Bloky: TImageList;
     IL_RCS: TImageList;
@@ -304,7 +312,6 @@ type
     MI_Loco_Tacho_Reset: TMenuItem;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
-    procedure MI_RCS_libClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure AE_1Message(var Msg: tagMSG; var Handled: Boolean);
@@ -321,7 +328,6 @@ type
     procedure PM_ConsoleClick(Sender: TObject);
     procedure A_RCS_GoExecute(Sender: TObject);
     procedure A_RCS_StopExecute(Sender: TObject);
-    procedure A_RCS_lib_cfgExecute(Sender: TObject);
     procedure A_DCC_GoExecute(Sender: TObject);
     procedure A_DCC_StopExecute(Sender: TObject);
     procedure A_System_StartExecute(Sender: TObject);
@@ -447,13 +453,24 @@ type
     procedure MI_Block_DeleteClick(Sender: TObject);
     procedure PM_Loco_DeleteClick(Sender: TObject);
     procedure MI_Loco_Tacho_ResetClick(Sender: TObject);
+
   private
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
+    MI_RCSs: array [0..TRCSs._RCSS_MAX] of TRCSMI;
 
     procedure UpdateCallMethod();
     procedure OnFuncNameChange(Sender: TObject);
     procedure UpdateFuncMemo();
+
+    procedure CreateMIRCSs();
+    procedure RCSInit();
+    procedure RCSMIUpdateRoot();
+    procedure RCSMIUpdateAll();
+    procedure RCSMIUpdateI(i: Integer);
+    procedure MI_RCS_Settings_Click(Sender: TObject);
+    procedure MI_RCS_Lib_Click(Sender: TObject);
+    procedure MI_RCS_UnloadLib_Click(Sender: TObject);
 
     procedure WMPowerBroadcast(var Msg: TMessage); message WM_POWERBROADCAST;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
@@ -540,8 +557,8 @@ implementation
 uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fAbout, version, fSystemInfo, fBlkTrack, fBlkTurnout, fAdminForm, Simulation,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
-  RCSc, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils, RCSsc,
-  Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area,
+  RCSc, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils,
+  Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area, RCSIFace,
   BlockSummary, BlockCrossing, TJCDatabase, Logging, TrakceC,
   TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
   fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkCrossing,
@@ -559,18 +576,157 @@ uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
 // RCS BEGIN
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TF_Main.MI_RCS_libClick(Sender: TObject);
-var fn: string;
+procedure TF_Main.RCSInit();
 begin
-{  fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+  Self.CreateMIRCSs();
+
+  if (RCSi.Lib = '') then
+    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := '-'
+  else
+    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := ExtractFileName(RCSi.Lib);
+
+  try
+    if ((RCSi.ready) and (diag.simInputs) and (RCSi.Simulation)) then
+      RCSi.InputSim();
+  except
+    on E: Exception do
+      Log('Nelze provést inputSim : ' + E.Message, llInfo, lsRCS);
+  end;
+
+end;
+
+procedure TF_Main.CreateMIRCSs();
+begin
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+  begin
+    Self.MI_RCSs[i].MI_Root := TMenuItem.Create(Self.MI_RCS);
+    Self.MI_RCSs[i].MI_Root.Caption := 'RCS '+IntToStr(i);
+    Self.MI_RCS.Insert(6+i, Self.MI_RCSs[i].MI_Root);
+
+    Self.MI_RCSs[i].MI_Open := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
+    Self.MI_RCSs[i].MI_Open.Caption := 'Otevřít zařízení';
+    Self.MI_RCSs[i].MI_Open.ImageIndex := 2;
+    Self.MI_RCSs[i].MI_Open.Tag := i;
+    Self.MI_RCSs[i].MI_Root.Add(Self.MI_RCSs[i].MI_Open);
+
+    Self.MI_RCSs[i].MI_Close := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
+    Self.MI_RCSs[i].MI_Close.Caption := 'Zavřít zařízení';
+    Self.MI_RCSs[i].MI_Close.ImageIndex := 3;
+    Self.MI_RCSs[i].MI_Close.Tag := i;
+    Self.MI_RCSs[i].MI_Root.Add(Self.MI_RCSs[i].MI_Close);
+
+    Self.MI_RCSs[i].MI_Root.Add(ownGuiUtils.MenuItemSeparator(Self.MI_RCSs[i].MI_Root));
+
+    Self.MI_RCSs[i].MI_Start := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
+    Self.MI_RCSs[i].MI_Start.Caption := 'Zapnout komunikaci';
+    Self.MI_RCSs[i].MI_Start.ImageIndex := 4;
+    Self.MI_RCSs[i].MI_Start.Tag := i;
+    Self.MI_RCSs[i].MI_Root.Add(Self.MI_RCSs[i].MI_Start);
+
+    Self.MI_RCSs[i].MI_Stop := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
+    Self.MI_RCSs[i].MI_Stop.Caption := 'Vypnout komunikaci';
+    Self.MI_RCSs[i].MI_Stop.ImageIndex := 5;
+    Self.MI_RCSs[i].MI_Stop.Tag := i;
+    Self.MI_RCSs[i].MI_Root.Add(Self.MI_RCSs[i].MI_Stop);
+
+    Self.MI_RCSs[i].MI_Root.Add(ownGuiUtils.MenuItemSeparator(Self.MI_RCSs[i].MI_Root));
+
+    Self.MI_RCSs[i].MI_Settings := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
+    Self.MI_RCSs[i].MI_Settings.Caption := 'Nastavení';
+    Self.MI_RCSs[i].MI_Settings.ImageIndex := 18;
+    Self.MI_RCSs[i].MI_Settings.Tag := i;
+    Self.MI_RCSs[i].MI_Settings.OnClick := Self.MI_RCS_Settings_Click;
+    if (i = 0) then
+      Self.MI_RCSs[i].MI_Settings.ShortCut := ShortCut(Word('D'), [ssCtrl]);
+    Self.MI_RCSs[i].MI_Root.Add(Self.MI_RCSs[i].MI_Settings);
+
+    Self.MI_RCSs[i].MI_Root.Add(ownGuiUtils.MenuItemSeparator(Self.MI_RCSs[i].MI_Root));
+
+    Self.MI_RCSs[i].MI_NoLib := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
+    Self.MI_RCSs[i].MI_NoLib.Caption := 'Žádná knihovna';
+    Self.MI_RCSs[i].MI_NoLib.RadioItem := True;
+    Self.MI_RCSs[i].MI_NoLib.OnClick := Self.MI_RCS_UnloadLib_Click;
+    Self.MI_RCSs[i].MI_NoLib.Tag := i;
+    Self.MI_RCSs[i].MI_Root.Add(Self.MI_RCSs[i].MI_NoLib);
+
+    Self.MI_RCSs[i].MI_Libs := TList<TMenuItem>.Create();
+  end;
+
+  Self.UpdateRCSLibsList();
+  Self.RCSMIUpdateAll();
+end;
+
+procedure TF_Main.RCSMIUpdateAll();
+begin
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+    Self.RCSMIUpdateI(i);
+  Self.RCSMIUpdateRoot();
+end;
+
+procedure TF_Main.RCSMIUpdateRoot();
+var anyOpenEnabled: Boolean;
+    allCloseEnabled: Boolean;
+    anyStartEnabled: Boolean;
+    allStopEnabled: Boolean;
+begin
+  anyOpenEnabled := False;
+  allCloseEnabled := True;
+  anyStartEnabled := False;
+  allStopEnabled := True;
+
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+  begin
+    if (Self.MI_RCSs[i].MI_Open.Enabled) then
+      anyOpenEnabled := True;
+    if (not Self.MI_RCSs[i].MI_Close.Enabled) then
+      allCloseEnabled := False;
+    if (Self.MI_RCSs[i].MI_Start.Enabled) then
+      anyStartEnabled := True;
+    if (not Self.MI_RCSs[i].MI_Stop.Enabled) then
+      allStopEnabled := False;
+  end;
+
+  Self.MI_RCS_Open.Enabled := anyOpenEnabled;
+  Self.MI_RCS_Close.Enabled := allCloseEnabled;
+  Self.MI_RCS_Go.Enabled := ((anyStartEnabled) and (not anyOpenEnabled));
+  Self.MI_Stop.Enabled := allStopEnabled;
+end;
+
+procedure TF_Main.RCSMIUpdateI(i: Integer);
+begin
+  Self.MI_RCSs[i].MI_Open.Enabled := ((RCSs[i].state = TRCSState.rsClosed) and (RCSs[i].libLoaded) and (RCSs[i].ready));
+  Self.MI_RCSs[i].MI_Close.Enabled := (RCSs[i].state = TRCSState.rsOpenStopped);
+  Self.MI_RCSs[i].MI_Start.Enabled := (RCSs[i].state = TRCSState.rsOpenStopped);
+  Self.MI_RCSs[i].MI_Stop.Enabled := (RCSs[i].state = TRCSState.rsStarted);
+  Self.MI_RCSs[i].MI_Settings.Enabled := RCSs[i].libLoaded;
+
+  var anyLoaded: Boolean := False;
+  for var libmi: TMenuItem in Self.MI_RCSs[i].MI_Libs do
+  begin
+    libmi.Enabled := (RCSs[i].state = TRCSState.rsClosed);
+    const libFn: string = StringReplace(libmi.Caption, '&', '', [rfReplaceAll]);
+    libmi.Checked := (libFn = ExtractFileName(RCSs[i].lib));
+    if (libmi.Checked) then
+      anyLoaded := True;
+  end;
+  if (not anyLoaded) then
+    Self.MI_RCSs[i].MI_NoLib.Checked := True;
+end;
+
+procedure TF_Main.MI_RCS_Lib_Click(Sender: TObject);
+begin
+  const rcsi: Integer = TMenuItem(Sender).Tag;
+  const fn: string = StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
+  var rcs: TRCS := RCSs[rcsi];
 
   Screen.Cursor := crHourGlass;
-  Log('RCS -> ' + fn, llInfo, lsRCS);
+  rcs.Log('-> ' + fn, llInfo);
   Self.SB1.Panels.Items[_SB_RCS_LIB].Text := '-';
+
   try
-    RCSi.LoadLib(RCSi.libDir + '\' + fn);
-    Self.LogStatus('RCS: načteno ' + fn);
-    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := ExtractFileName(RCSi.Lib);
+    RCSs.LoadLib(rcsi, fn);
+    Self.LogStatus('RCS'+IntToStr(rcsi)+': načteno ' + fn);
+    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := ExtractFileName(rcs.lib);
   except
     on E: Exception do
     begin
@@ -580,60 +736,115 @@ begin
       Exit();
     end;
   end;
+
   RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
-  Screen.Cursor := crDefault; }
+  Self.RCSMIUpdateI(rcsi);
+  Self.RCSMIUpdateRoot();
+  Screen.Cursor := crDefault;
+end;
+
+procedure TF_Main.MI_RCS_UnloadLib_Click(Sender: TObject);
+begin
+  const rcsi: Integer = TMenuItem(Sender).Tag;
+  var rcs: TRCS := RCSs[rcsi];
+
+  if (not rcs.libLoaded) then
+    Exit(); // already not loaded
+
+  Screen.Cursor := crHourGlass;
+  rcs.Log('-> žádná knihovna', llInfo);
+  Self.SB1.Panels.Items[_SB_RCS_LIB].Text := '-';
+
+  try
+    rcs.UnloadLib();
+    Self.LogStatus('RCS'+IntToStr(rcsi)+': načtena žádná knihovna');
+  except
+    on E: Exception do
+    begin
+      Screen.Cursor := crDefault;
+      StrMessageBox('Nelze odnačíst knihovnu:' + #13#10 + E.Message, 'Nelze odnačíst knihovnu', MB_OK OR MB_ICONWARNING);
+      Exit();
+    end;
+  end;
+
+  RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
+  Self.RCSMIUpdateI(rcsi);
+  Self.RCSMIUpdateRoot();
+  Screen.Cursor := crDefault;
 end;
 
 procedure TF_Main.UpdateRCSLibsList();
-var SR: TSearchRec;
-  Item: TMenuItem;
-
+var sr: TSearchRec;
   procedure AddLib(name: string);
   begin
-    Item := TMenuItem.Create(Self.MI_RCS_Libs);
-    Item.Caption := name;
-    Item.OnClick := Self.MI_RCS_libClick;
-    Self.MI_RCS_Libs.Add(Item);
+    for var i: Integer := 0 to RCSs._RCSS_MAX do
+    begin
+      var item := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
+      item.Caption := name;
+      item.RadioItem := True;
+      item.Tag := i;
+      item.OnClick := Self.MI_RCS_Lib_Click;
+      Self.MI_RCSs[i].MI_Root.Add(item);
+      Self.MI_RCSs[i].MI_Libs.Add(item)
+    end;
   end;
 
 begin
-{  Self.MI_RCS_Libs.Clear();
-
-  if (FindFirst(RCSi.libDir + '\*.dll', faAnyFile, SR) = 0) then
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
   begin
-    if ((SR.Attr AND faDirectory) = 0) then
-      AddLib(SR.name);
+    for var libmi: TMenuItem in Self.MI_RCSs[i].MI_Libs do
+    begin
+      Self.MI_RCSs[i].MI_Root.Remove(libmi);
+      libmi.Free();
+    end;
+    Self.MI_RCSs[i].MI_Libs.Clear();
+  end;
 
-    while (FindNext(SR) = 0) do
-      if ((SR.Attr AND faDirectory) = 0) then
-        AddLib(SR.name);
+  if (FindFirst(RCSs.libDir + '\*.dll', faAnyFile, sr) = 0) then
+  begin
+    if ((sr.Attr AND faDirectory) = 0) then
+      AddLib(sr.name);
 
-    SysUtils.FindClose(SR);
-  end; }
+    while (FindNext(sr) = 0) do
+      if ((sr.Attr AND faDirectory) = 0) then
+        AddLib(sr.name);
+
+    SysUtils.FindClose(sr);
+  end;
+
+  Self.RCSMIUpdateAll();
 end;
 
-procedure TF_Main.A_RCS_lib_cfgExecute(Sender: TObject);
+procedure TF_Main.MI_RCS_Settings_Click(Sender: TObject);
 begin
-  if (not RCSi.HasDialog()) then
+  const rcsi: Integer = TMenuItem(Sender).Tag;
+
+  if (not RCSs[rcsi].libLoaded) then
   begin
-    StrMessageBox('Aktuální knihovna nemá konfigurační okno.', 'Info', MB_OK OR MB_ICONINFORMATION);
+    StrMessageBox('RCS knihovna není načtena!', 'Info', MB_OK OR MB_ICONINFORMATION);
+    Exit();
+  end;
+
+  if (not RCSs[rcsi].HasDialog()) then
+  begin
+    StrMessageBox('Používaná knihovna nemá konfigurační okno.', 'Info', MB_OK OR MB_ICONINFORMATION);
     Exit();
   end;
 
   Screen.Cursor := crHourGlass;
   try
-    RCSi.ShowConfigDialog();
+    RCSs[rcsi].ShowConfigDialog();
   except
     on E: Exception do
     begin
       Screen.Cursor := crDefault;
-      StrMessageBox('Nelze zobrazit konfigurační dialog RCS : ' + E.Message, 'Varování',
+      StrMessageBox('Nelze zobrazit konfigurační dialog RCS'+IntToStr(rcsi)+': ' + E.Message, 'Varování',
         MB_OK OR MB_ICONWARNING);
       Exit();
     end;
   end;
   Screen.Cursor := crDefault;
-  Log('Zobrazen ConfigDialog knihovny', llInfo, lsRCS);
+  RCSs[rcsi].Log('Zobrazen ConfigDialog', llInfo);
 end;
 
 procedure TF_Main.A_RCS_CloseExecute(Sender: TObject);
@@ -883,7 +1094,7 @@ begin
   Self.A_RCS_Close.Enabled := true;
   Self.A_RCS_Go.Enabled := true;
   Self.A_RCS_Stop.Enabled := false;
-  Self.MI_RCS_Libs.Enabled := false;
+//  Self.MI_RCS_Libs.Enabled := false;
   Self.UpdateSystemButtons();
 
   Self.S_RCS_open.Brush.Color := clLime;
@@ -930,7 +1141,7 @@ begin
   Self.A_RCS_Stop.Enabled := false;
   Self.A_RCS_Close.Enabled := false;
   Self.A_RCS_Open.Enabled := true;
-  Self.MI_RCS_Libs.Enabled := true;
+//  Self.MI_RCS_Libs.Enabled := true;
   Self.UpdateSystemButtons();
 
   // may happen when RCS USB disconnects
@@ -951,7 +1162,6 @@ begin
   SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 
   PanelServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
-  Trains.StopAllTrains();
 
   if (SystemData.Status = stopping) then
   begin
@@ -1204,7 +1414,7 @@ begin
   except
     on E: Exception do
     begin
-      trakce.Log(llErrors, 'CLOSE: error: ' + E.Message);
+      trakce.Log(TTrkLogLevel.llErrors, 'CLOSE: error: ' + E.Message);
       StrMessageBox('Chyba pri uzavírání komunikace s centrálou:' + #13#10 + E.Message + #13#10 +
         'Více informací naleznete v logu.', 'Chyba', MB_OK OR MB_ICONERROR);
     end;
@@ -1787,6 +1997,9 @@ end;
 procedure TF_Main.FormDestroy(Sender: TObject);
 begin
   Self.mCpuLoad.Free();
+
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+    Self.MI_RCSs[i].MI_Libs.Free();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2844,13 +3057,10 @@ begin
   modelTime.UpdateGUIColors();
   Self.FillGlobalConfig();
 
-  Self.Visible := true;
+  // RCS
+  Self.RCSInit();
 
-  Self.T_Main.Enabled := true;
-  Self.T_GUI_refresh.Enabled := true;
-  Self.T_clear_log_msg.Enabled := true;
-
-  Self.UpdateRCSLibsList();
+  // Trakce
   Self.UpdateTrkLibsList();
 
   Self.CB_centrala_loglevel_file.ItemIndex := Integer(trakce.logLevelFile);
@@ -2861,21 +3071,16 @@ begin
   else
     Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(trakce.Lib);
 
-  if (RCSi.Lib = '') then
-    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := '-'
-  else
-    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := ExtractFileName(RCSi.Lib);
-
-  try
-    if ((RCSi.ready) and (diag.simInputs) and (RCSi.Simulation)) then
-      RCSi.InputSim();
-  except
-    on E: Exception do
-      Log('Nelze provést inputSim : ' + E.Message, llInfo, lsRCS);
-  end;
-
+  // PT Server
   Self.S_PTServer.Visible := (PtServer.autoStart);
   Self.L_PTServer.Visible := (PtServer.autoStart);
+
+  // --- FINISHED ---
+  Self.Visible := true;
+
+  Self.T_Main.Enabled := true;
+  Self.T_GUI_refresh.Enabled := true;
+  Self.T_clear_log_msg.Enabled := true;
 
   if (not Self.CloseMessage) then
   begin

@@ -43,10 +43,13 @@ type
 
     function IsGeneralError(): Boolean;
     procedure Log(msg: string; level: TLogLevel);
+    function GetItem(i: Integer): TRCS;
 
   public
     constructor Create();
     destructor Destroy(); override;
+
+    procedure LoadLib(system: Cardinal; libFn: string);
 
     function NoExStarted(): Boolean;
     function NoExOpened(): Boolean;
@@ -88,6 +91,8 @@ type
     class function RCSsAddr(system: Cardinal; module: Cardinal; port: Byte): TRCSsAddr;
     class function RCSsOptionalAddr(system: Cardinal; module: Cardinal; port: Byte): TRCSsAddrOptional; overload;
     class function RCSsOptionalAddrDisabled(): TRCSsAddrOptional; overload;
+
+    property items[index: Integer]: TRCS read GetItem; default;
 
     // events
 //    property AfterClose: TNotifyEvent read fAfterClose write fAfterClose;
@@ -197,6 +202,23 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function TRCSs.GetItem(i: Integer): TRCS;
+begin
+  if (i > _RCSS_MAX) then
+    raise EInvalidSystem.Create(i);
+  Result := Self.m_rcss[i];
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TRCSs.LoadLib(system: Cardinal; libFn: string);
+begin
+  if (system > _RCSS_MAX) then
+    raise EInvalidSystem.Create(system);
+
+  Self.m_rcss[system].LoadLib(Self.libDir + '\' + libFn, Self.configDir + '\rcs'+IntToStr(system) + '_' + ChangeFileExt(ExtractFileName(libFn), '.ini'));
+end;
+
 function TRCSs.IsGeneralError(): Boolean;
 begin
   for var i: Integer := 0 to _RCSS_MAX do
@@ -254,7 +276,7 @@ begin
     if (dllFile <> '') then
     begin
       try
-        Self.m_rcss[i].LoadLib(dllFile, Self.configDir + '\rcs'+IntToStr(i) + '_' + ChangeFileExt(ExtractFileName(dllFile), '.ini'));
+        Self.LoadLib(i, dllFile);
       except
         on E: Exception do
         begin

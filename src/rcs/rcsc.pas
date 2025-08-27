@@ -204,7 +204,7 @@ begin
 
   TRCSIFace(Self).LoadLib(libFn, configFn);
 
-  Self.Log('Načtena knihovna ' + libName + ', RCS API v'+Self.apiVersionStr() + ', konfigurace '+configFn, llInfo);
+  Self.Log('Načtena knihovna ' + libName + ', RCS API v'+Self.apiVersionStr() + ', '+configFn, llInfo);
 
   // kontrola bindnuti vsech eventu
 
