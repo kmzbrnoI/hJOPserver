@@ -212,7 +212,7 @@
         </DCCReference>
         <DCCReference Include="helpers\GetSystems.pas"/>
         <DCCReference Include="helpers\ownConvert.pas"/>
-        <DCCReference Include="hw\TechnologieRCS.pas"/>
+        <DCCReference Include="rcs\TechnologieRCS.pas"/>
         <DCCReference Include="jc\TechnologieJC.pas"/>
         <DCCReference Include="Config.pas"/>
         <DCCReference Include="forms\fConsole.pas">
@@ -292,7 +292,7 @@
         <DCCReference Include="blocks\forms\data\fBlkRTStopEvent.pas">
             <Form>F_BlkRTStopEvent</Form>
         </DCCReference>
-        <DCCReference Include="RCSdebugger.pas"/>
+        <DCCReference Include="net\RCSdebugger.pas"/>
         <DCCReference Include="net\UDPdiscover.pas"/>
         <DCCReference Include="helpers\USock.pas"/>
         <DCCReference Include="helpers\appEv.pas"/>
@@ -313,8 +313,8 @@
         <DCCReference Include="pt\PTEndpointLoks.pas"/>
         <DCCReference Include="pt\PTEndpointBlockState.pas"/>
         <DCCReference Include="pt\PTEndpointLokState.pas"/>
-        <DCCReference Include="rcs\RCS.pas"/>
-        <DCCReference Include="rcs\RCSErrors.pas"/>
+        <DCCReference Include="rcs\api\RCS.pas"/>
+        <DCCReference Include="rcs\api\RCSErrors.pas"/>
         <DCCReference Include="rrEvent.pas"/>
         <DCCReference Include="houkEvent.pas"/>
         <DCCReference Include="forms\frrEv.pas">
@@ -345,12 +345,12 @@
         <DCCReference Include="blocks\forms\data\fBlkSignal.pas">
             <Form>F_BlkSignal</Form>
         </DCCReference>
-        <DCCReference Include="trakce\Trakce.pas"/>
-        <DCCReference Include="trakce\TrakceErrors.pas"/>
-        <DCCReference Include="hw\TechnologieTrakce.pas">
+        <DCCReference Include="trakce\api\Trakce.pas"/>
+        <DCCReference Include="trakce\api\TrakceErrors.pas"/>
+        <DCCReference Include="trakce\TechnologieTrakce.pas">
             <Form>$R *.res</Form>
         </DCCReference>
-        <DCCReference Include="CpuLoad.pas"/>
+        <DCCReference Include="helpers\CpuLoad.pas"/>
         <DCCReference Include="Diagnostics.pas"/>
         <DCCReference Include="Simulation.pas"/>
         <DCCReference Include="pt\PTEndpointJCs.pas"/>
@@ -359,7 +359,7 @@
         <DCCReference Include="blocks\forms\data\fBlkAC.pas">
             <Form>F_BlkAC</Form>
         </DCCReference>
-        <DCCReference Include="ACBlocks.pas"/>
+        <DCCReference Include="net\ACBlocks.pas"/>
         <DCCReference Include="blocks\BlockCrossingLogic.pas"/>
         <DCCReference Include="blocks\BlockTrackRef.pas"/>
         <DCCReference Include="blocks\BlockTrackRefs.pas"/>
@@ -378,22 +378,18 @@
         <DCCReference Include="blocks\BlockPst.pas"/>
         <DCCReference Include="blocks\forms\data\fBlkPst.pas">
             <Form>F_BlkPst</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="jc\JCBarriers.pas"/>
         <DCCReference Include="trains\TrainSpeed.pas"/>
         <DCCReference Include="forms\fTrainSpeed.pas">
             <Form>F_TrainSpeed</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="ConfSeq.pas"/>
         <DCCReference Include="blocks\forms\state\fBlkCrossingState.pas">
             <Form>F_BlkCrossingState</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="blocks\forms\state\fBlkSignalState.pas">
             <Form>F_BlkSignalState</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="pt\PTEndpointTime.pas"/>
         <DCCReference Include="helpers\colorHelper.pas"/>
