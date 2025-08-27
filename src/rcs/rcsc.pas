@@ -62,16 +62,16 @@ type
 
   private
     modules: TObjectDictionary<Cardinal, TRCSModule>;
-    aReady: Boolean; // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
+    mLoadedOk: Boolean; // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
     fGeneralError: Boolean; // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
-    fLibDir: string;
+    mLibDir: string;
     mConfigDir: string;
 
     // events to the main program
     fOnReady: TRCSReadyEvent;
     fAfterClose: TNotifyEvent;
 
-    // events from libraly
+    // events from library
     procedure DllAfterClose(Sender: TObject);
 
     procedure DllOnLog(Sender: TObject; logLevel: TRCSLogLevel; msg: string);
@@ -80,24 +80,23 @@ type
     procedure DllOnInputChanged(Sender: TObject; module: Cardinal);
     procedure DllOnOutputChanged(Sender: TObject; module: Cardinal);
     function GetMaxModuleAddrSafe(): Cardinal;
+    function IsReady(): Boolean;
 
   public
     log: Boolean;
     logActionInProgress: Boolean;
 
     constructor Create();
-    destructor Destroy; override;
+    destructor Destroy(); override;
 
-    procedure LoadLib(filename: string); // nacte knihovnu
-
-    procedure InputSim(); // pokud je nactena knihovna Simulator.dll, simuluje vstupy (koncove polohy vyhybek atp.)
-    procedure SoupravaUsekSim(); // nastavit RCS vstupy tak, aby useky, n akterych existuje souprava, byly obsazene
+    procedure LoadLib(filename: string);
+    procedure UnloadLib();
 
     function NoExStarted(): Boolean;
     function NoExOpened(): Boolean;
 
-    procedure SetNeeded(RCSAdr: Cardinal; state: Boolean = true);
-    function GetNeeded(RCSAdr: Cardinal): Boolean;
+    procedure SetNeeded(module: Cardinal; state: Boolean = true);
+    function GetNeeded(module: Cardinal): Boolean;
 
     procedure LoadFromFile(ini: TMemIniFile);
     procedure SaveToFile(ini: TMemIniFile);
@@ -106,9 +105,12 @@ type
     procedure SetOutput(addr: TRCSAddr; state: TRCSOutputState); overload;
     procedure SetOutputs(addrs: TList<TRCSAddr>; state: Integer); overload;
     procedure SetOutputs(addrs: TList<TRCSAddr>; state: TRCSOutputState); overload;
+
     function GetInput(addr: TRCSAddr): TRCSInputState; overload;
+
     procedure SetInput(addr: TRCSAddr; state: Integer); overload;
     procedure SetInputs(addrs: TList<TRCSAddr>; state: Integer); overload;
+
     function GetOutput(addr: TRCSAddr): Integer; overload;
     function GetOutputState(addr: TRCSAddr): TRCSOutputState; overload;
 
@@ -121,6 +123,9 @@ type
     function GetModuleInputsCountSafe(module: Cardinal): Cardinal;
     function GetModuleOutputsCountSafe(module: Cardinal): Cardinal;
 
+    procedure InputSim(); // nastavit simulovane vstupy (koncove polohy vyhybek atp.)
+    procedure TrainOccupySim(); // nastavit RCS vstupy tak, aby useky, ve kterych je souprava, byly obsazene
+
     property generalError: Boolean read fGeneralError;
     class function RCSAddr(module: Cardinal; port: Byte): TRCSAddr;
     class function RCSOptionalAddr(module: Cardinal; port: Byte): TRCSAddrOptional; overload;
@@ -130,8 +135,8 @@ type
     property AfterClose: TNotifyEvent read fAfterClose write fAfterClose;
 
     property OnReady: TRCSReadyEvent read fOnReady write fOnReady;
-    property ready: Boolean read aReady;
-    property libDir: string read fLibDir;
+    property ready: Boolean read IsReady;
+    property libDir: string read mLibDir;
     property configDir: string read mConfigDir;
     property maxModuleAddr: Cardinal read GetMaxModuleAddr;
     property maxModuleAddrSafe: Cardinal read GetMaxModuleAddrSafe;
@@ -156,7 +161,7 @@ begin
 
   Self.logActionInProgress := false;
   Self.log := false;
-  Self.aReady := false;
+  Self.mLoadedOk := false;
   Self.fGeneralError := false;
 
   // assign events
@@ -184,9 +189,9 @@ begin
 
   if (Self.ready) then
   begin
-    Self.aReady := false;
+    Self.mLoadedOk := false;
     if (Assigned(Self.OnReady)) then
-      Self.OnReady(Self, Self.aReady);
+      Self.OnReady(Self, Self.ready);
   end;
 
   if not DirectoryExists(Self.configDir) then
@@ -204,9 +209,9 @@ begin
 
   if (Self.unbound.Count = 0) then
   begin
-    Self.aReady := true;
+    Self.mLoadedOk := true;
     if (Assigned(Self.OnReady)) then
-      Self.OnReady(Self, Self.aReady);
+      Self.OnReady(Self, Self.ready);
   end else begin
     var str := '';
     for var tmp in Self.unbound do
@@ -214,6 +219,14 @@ begin
     str := LeftStr(str, Length(str) - 2);
     F_Main.LogStatus('ERR: RCS: nepodařilo se svázat následující funkce : ' + str);
   end;
+end;
+
+procedure TRCS.UnloadLib();
+begin
+  Self.mLoadedOk := False;
+  Self.fGeneralError := False;
+  TRCSIFace(Self).UnloadLib();
+  Logging.Log('Knihovna odnačtena', llInfo, lsRCS);
 end;
 
 procedure TRCS.InputSim();
@@ -251,7 +264,7 @@ begin
 end;
 
 // simulace obaszeni useku, na kterem je souprava
-procedure TRCS.SoupravaUsekSim;
+procedure TRCS.TrainOccupySim();
 begin
   for var blk: TBlk in Blocks do
   begin
@@ -265,17 +278,17 @@ end;
 procedure TRCS.LoadFromFile(ini: TMemIniFile);
 var lib: string;
 begin
-  Self.fLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
+  Self.mLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
   lib := ini.ReadString(_INIFILE_SECTNAME, 'lib', _DEFAULT_LIB);
   Self.mConfigDir := ini.ReadString(_INIFILE_SECTNAME, 'configDir', _DEFAULT_CONFIG_PATH);
 
   try
-    Self.LoadLib(fLibDir + '\' + lib);
+    Self.LoadLib(Self.mLibDir + '\' + lib);
   except
     on E: Exception do
     begin
-      F_Main.LogStatus('ERR: RCS: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message);
-      Logging.Log('Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message, llError, lsRCS);
+      F_Main.LogStatus('ERR: RCS: Nelze načíst knihovnu ' + Self.mLibDir + '\' + lib + ': ' + E.Message);
+      Logging.Log('Nelze načíst knihovnu ' + Self.mLibDir + '\' + lib + ': ' + E.Message, llError, lsRCS);
     end;
   end;
 end;
@@ -370,17 +383,17 @@ end;
 // ----- events from dll end -----
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TRCS.SetNeeded(RCSAdr: Cardinal; state: Boolean = true);
+procedure TRCS.SetNeeded(module: Cardinal; state: Boolean = true);
 begin
-  if (not Self.modules.ContainsKey(RCSAdr)) then
-    Self.modules.Add(RCSAdr, TRCSModule.Create());
-  Self.modules[RCSAdr].needed := state
+  if (not Self.modules.ContainsKey(module)) then
+    Self.modules.Add(module, TRCSModule.Create());
+  Self.modules[module].needed := state
 end;
 
-function TRCS.GetNeeded(RCSAdr: Cardinal): Boolean;
+function TRCS.GetNeeded(module: Cardinal): Boolean;
 begin
-  if (Self.modules.ContainsKey(RCSAdr)) then
-    Result := Self.modules[RCSAdr].needed
+  if (Self.modules.ContainsKey(module)) then
+    Result := Self.modules[module].needed
   else
     Result := false;
 end;
@@ -571,6 +584,13 @@ end;
 function TRCS.GetOutputState(addr: TRCSAddr): TRCSOutputState;
 begin
   Result := Self.GetOutputState(addr.module, addr.port);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TRCS.IsReady(): Boolean;
+begin
+  Result := (Self.libLoaded) and (Self.mLoadedOk);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

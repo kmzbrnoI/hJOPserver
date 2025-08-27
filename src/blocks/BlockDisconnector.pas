@@ -238,7 +238,7 @@ end;
 
 procedure TBlkDisconnector.Update();
 begin
-  if ((Self.state <> TBlkDiscBasicState.disabled) and (not RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].board)))
+  if ((Self.state <> TBlkDiscBasicState.disabled) and (not RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].module)))
   then
   begin
     Self.state := TBlkDiscBasicState.disabled;
@@ -248,7 +248,7 @@ begin
   case (Self.state) of
     TBlkDiscBasicState.disabled:
       begin
-        if ((Self.m_state.rcsFailed) and (RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].board))) then
+        if ((Self.m_state.rcsFailed) and (RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].module))) then
         begin
           Self.m_state.rcsFailed := false;
           Self.state := TBlkDiscBasicState.inactive;
