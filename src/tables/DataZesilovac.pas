@@ -51,16 +51,16 @@ begin
 
     LI.Caption := Booster.id;
     LI.SubItems.Add(Booster.name);
-    if (Booster.isOverloadDetection) then
-      LI.SubItems.Add(ite(Booster.settings.rcs.overload.reversed, '! ', '') + Booster.settings.rcs.overload.addr.ToString())
+    if (Booster.settings.rcs.overload.addr.enabled) then
+      LI.SubItems.Add(ite(Booster.settings.rcs.overload.reversed, '! ', '') + Booster.settings.rcs.overload.addr.addr.ToString())
     else
       LI.SubItems.Add('-');
-    if (Booster.isPowerDetection) then
-      LI.SubItems.Add(ite(Booster.settings.rcs.power.reversed, '! ', '') + Booster.settings.rcs.power.addr.ToString())
+    if (Booster.settings.rcs.power.addr.enabled) then
+      LI.SubItems.Add(ite(Booster.settings.rcs.power.reversed, '! ', '') + Booster.settings.rcs.power.addr.addr.ToString())
     else
       LI.SubItems.Add('-');
-    if (Booster.isDCCdetection) then
-      LI.SubItems.Add(ite(Booster.settings.rcs.DCC.reversed, '! ', '') + Booster.settings.rcs.DCC.addr.ToString())
+    if (Booster.settings.rcs.DCC.addr.enabled) then
+      LI.SubItems.Add(ite(Booster.settings.rcs.DCC.reversed, '! ', '') + Booster.settings.rcs.DCC.addr.addr.ToString())
     else
       LI.SubItems.Add('-');
   end;

@@ -6,7 +6,7 @@ unit Booster;
 
 interface
 
-uses IniFiles, RCSc, SysUtils, Generics.Defaults;
+uses IniFiles, RCSc, RCSsc, SysUtils, Generics.Defaults;
 
 type
   TBoosterSignal = (undef = -1, error = 0, ok = 1);
@@ -14,7 +14,7 @@ type
 
   TBoosterRCSSignal = record
     // disabled input = (addr.module = 0)
-    addr: TRCSAddr;
+    addr: TRCSsAddrOptional;
     reversed: Boolean;
   end;
 
@@ -151,19 +151,16 @@ begin
   Self.m_settings.id := section;
   Self.m_settings.name := ini.ReadString(section, 'name', 'booster');
 
-  Self.m_settings.rcs.overload.addr := RCSFromIni(ini, section, 'short', 'zkr_module', 'zkr_port');
+  Self.m_settings.rcs.overload.addr := RCSsOptionalFromIni(ini, section, 'short', 'zkr_module', 'zkr_port');
   Self.m_settings.rcs.overload.reversed := ini.ReadBool(section, 'shortReversed', false);
-  Self.m_settings.rcs.power.addr := RCSFromIni(ini, section, 'power', 'nap_module', 'nap_port');
+  Self.m_settings.rcs.power.addr := RCSsOptionalFromIni(ini, section, 'power', 'nap_module', 'nap_port');
   Self.m_settings.rcs.power.reversed := ini.ReadBool(section, 'powerReversed', false);
-  Self.m_settings.rcs.DCC.addr := RCSFromIni(ini, section, 'dcc', 'dcc_module', 'dcc_port');
+  Self.m_settings.rcs.DCC.addr := RCSsOptionalFromIni(ini, section, 'dcc', 'dcc_module', 'dcc_port');
   Self.m_settings.rcs.DCC.reversed := ini.ReadBool(section, 'dccReversed', false);
 
-  if (Self.isPowerDetection) then
-    RCSi.SetNeeded(Self.m_settings.rcs.power.addr.module);
-  if (Self.isOverloadDetection) then
-    RCSi.SetNeeded(Self.m_settings.rcs.overload.addr.module);
-  if (Self.isDCCdetection) then
-    RCSi.SetNeeded(Self.m_settings.rcs.DCC.addr.module);
+  RCSs.SetNeeded(Self.m_settings.rcs.power.addr);
+  RCSs.SetNeeded(Self.m_settings.rcs.overload.addr);
+  RCSs.SetNeeded(Self.m_settings.rcs.DCC.addr);
 end;
 
 procedure TBooster.SaveDataToFile(var ini: TMemIniFile; const section: string);
@@ -172,19 +169,19 @@ begin
 
   if (Self.isOverloadDetection) then
   begin
-    ini.WriteString(section, 'short', Self.m_settings.rcs.overload.addr.ToString());
+    ini.WriteString(section, 'short', Self.m_settings.rcs.overload.addr.addr.ToString());
     if (Self.m_settings.rcs.overload.reversed) then
       ini.WriteBool(section, 'shortReversed', true);
   end;
   if (Self.isPowerDetection) then
   begin
-    ini.WriteString(section, 'power', Self.m_settings.rcs.power.addr.ToString());
+    ini.WriteString(section, 'power', Self.m_settings.rcs.power.addr.addr.ToString());
     if (Self.m_settings.rcs.power.reversed) then
       ini.WriteBool(section, 'powerReversed', true);
   end;
   if (Self.isDCCdetection) then
   begin
-    ini.WriteString(section, 'dcc', Self.m_settings.rcs.DCC.addr.ToString());
+    ini.WriteString(section, 'dcc', Self.m_settings.rcs.DCC.addr.addr.ToString());
     if (Self.m_settings.rcs.DCC.reversed) then
       ini.WriteBool(section, 'dccReversed', true);
   end;
@@ -195,9 +192,6 @@ end;
 function TBooster.GetOverload(): TBoosterSignal;
 var val: TRCSInputState;
 begin
-  if ((not RCSi.ready) or (not RCSi.Started)) then
-    Exit(TBoosterSignal.undef);
-
   // if not a power, not a overload
   if (Self.power = TBoosterSignal.error) then
     Exit(TBoosterSignal.undef);
@@ -205,8 +199,11 @@ begin
   if (not Self.isOverloadDetection) then
     Exit(TBoosterSignal.ok);
 
+  if ((not RCSs[Self.m_settings.rcs.overload.addr.addr.system].ready) or (not RCSs[Self.m_settings.rcs.overload.addr.addr.system].Started())) then
+    Exit(TBoosterSignal.undef);
+
   try
-    val := RCSi.GetInput(Self.m_settings.rcs.overload.addr);
+    val := RCSs.GetInput(Self.m_settings.rcs.overload.addr.addr);
   except
     Exit(TBoosterSignal.undef);
   end;
@@ -222,14 +219,14 @@ end;
 function TBooster.GetPower(): TBoosterSignal;
 var val: TRCSInputState;
 begin
-  if ((not RCSi.ready) or (not RCSi.Started)) then
-    Exit(TBoosterSignal.undef);
-
   if (not Self.isPowerDetection) then
     Exit(TBoosterSignal.ok);
 
+  if ((not RCSs[Self.m_settings.rcs.power.addr.addr.system].ready) or (not RCSs[Self.m_settings.rcs.power.addr.addr.system].Started())) then
+    Exit(TBoosterSignal.undef);
+
   try
-    val := RCSi.GetInput(Self.m_settings.rcs.power.addr);
+    val := RCSs.GetInput(Self.m_settings.rcs.power.addr.addr);
   except
     Exit(TBoosterSignal.undef);
   end;
@@ -245,9 +242,6 @@ end;
 function TBooster.GetDCC(): TBoosterSignal;
 var val: TRCSInputState;
 begin
-  if ((not RCSi.ready) or (not RCSi.Started)) then
-    Exit(TBoosterSignal.undef);
-
   if (not Self.isDCCdetection) then
   begin
     case (trakce.TrackStatusSafe()) of
@@ -264,8 +258,11 @@ begin
     end;
   end;
 
+  if ((not RCSs[Self.m_settings.rcs.DCC.addr.addr.system].ready) or (not RCSs[Self.m_settings.rcs.DCC.addr.addr.system].Started())) then
+    Exit(TBoosterSignal.undef);
+
   try
-    val := RCSi.GetInput(Self.m_settings.rcs.DCC.addr);
+    val := RCSs.GetInput(Self.m_settings.rcs.DCC.addr.addr);
   except
     Exit(TBoosterSignal.undef);
   end;
@@ -282,26 +279,26 @@ end;
 
 function TBooster.GetRCSPresent(): Boolean;
 begin
-  Result := (((not Self.isOverloadDetection) or RCSi.IsModule(Self.m_settings.rcs.overload.addr.module)) and
-    ((not Self.isPowerDetection) or RCSi.IsModule(Self.m_settings.rcs.power.addr.module)) and
-    ((not Self.isDCCdetection) or RCSi.IsModule(Self.m_settings.rcs.DCC.addr.module)));
+  Result := (((not Self.isOverloadDetection) or RCSs.IsModule(Self.m_settings.rcs.overload.addr.addr)) and
+    ((not Self.isPowerDetection) or RCSs.IsModule(Self.m_settings.rcs.power.addr.addr)) and
+    ((not Self.isDCCdetection) or RCSs.IsModule(Self.m_settings.rcs.DCC.addr.addr)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBooster.GetDCCDetection(): Boolean;
 begin
-  Result := (Self.m_settings.rcs.DCC.addr.module > 0);
+  Result := Self.m_settings.rcs.DCC.addr.enabled;
 end;
 
 function TBooster.GetOverloadDetection(): Boolean;
 begin
-  Result := (Self.m_settings.rcs.overload.addr.module > 0);
+  Result := Self.m_settings.rcs.overload.addr.enabled;
 end;
 
 function TBooster.GetPowerDetection(): Boolean;
 begin
-  Result := (Self.m_settings.rcs.power.addr.module > 0);
+  Result := Self.m_settings.rcs.power.addr.enabled;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

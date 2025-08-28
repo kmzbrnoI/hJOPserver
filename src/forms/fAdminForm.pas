@@ -42,7 +42,7 @@ var
 
 implementation
 
-uses Diagnostics, Simulation, fMain, RCSc, Logging, ownGuiUtils;
+uses Diagnostics, Simulation, fMain, RCSsc, Logging, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -127,15 +127,12 @@ end;
 
 procedure TF_Admin.B_InputSimClick(Sender: TObject);
 begin
-  if (RCSi.Simulation) then
-  begin
-    try
-      RCSi.InputSim();
-      Log('Proveden InputSim', llInfo, lsRCS);
-    except
-      on E: Exception do
-        ExceptionMessageBox(E);
-    end;
+  try
+    RCSs.InputSim();
+    Log('Proveden InputSim', llInfo, lsRCS);
+  except
+    on E: Exception do
+      ExceptionMessageBox(E);
   end;
 end;
 

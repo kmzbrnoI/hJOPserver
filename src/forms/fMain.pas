@@ -620,8 +620,8 @@ begin
   Self.RCSGUIUpdateAll();
 
   try
-    if ((RCSi.ready) and (diag.simInputs) and (RCSi.Simulation)) then
-      RCSi.InputSim();
+    if (diag.simInputs) then
+      RCSs.InputSim();
   except
     on E: Exception do
       Log('Nelze provést inputSim : ' + E.Message, llInfo, lsRCS);
@@ -1350,7 +1350,7 @@ begin
 
   try
     if ((ready) and (diag.simInputs) and (rcs.simulation)) then
-      rcs.InputSim();
+      RCSs.InputSim();
   except
     on E: Exception do
       rcs.Log('Nelze provést inputSim: ' + E.Message, llError);

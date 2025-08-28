@@ -12,34 +12,33 @@ type
     E_Name: TEdit;
     B_Save: TButton;
     GB_Short: TGroupBox;
-    Label8: TLabel;
-    Label7: TLabel;
     SE_Short_Port: TSpinEdit;
     GB_Power: TGroupBox;
-    Label5: TLabel;
-    Label6: TLabel;
     SE_Power_Port: TSpinEdit;
     B_Storno: TButton;
     SE_Short_Module: TSpinEdit;
     SE_Power_Module: TSpinEdit;
     GB_DCC: TGroupBox;
-    Label1: TLabel;
-    Label2: TLabel;
-    SE_DCC_port: TSpinEdit;
-    SE_DCC_module: TSpinEdit;
+    SE_DCC_Port: TSpinEdit;
+    SE_DCC_Module: TSpinEdit;
     CHB_DCC: TCheckBox;
     E_ID: TEdit;
     Label3: TLabel;
     CHB_Power: TCheckBox;
     CHB_Short: TCheckBox;
-    CHB_short_reversed: TCheckBox;
-    CHB_power_reversed: TCheckBox;
-    CHB_dcc_reversed: TCheckBox;
+    CHB_Short_Reversed: TCheckBox;
+    CHB_Power_Reversed: TCheckBox;
+    CHB_DCC_Reversed: TCheckBox;
+    SE_DCC_System: TSpinEdit;
+    Label7: TLabel;
+    Label10: TLabel;
+    Label11: TLabel;
+    SE_Short_System: TSpinEdit;
+    SE_Power_System: TSpinEdit;
     procedure B_SaveClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure CHB_DCCClick(Sender: TObject);
-    procedure SE_RCS_moduleExit(Sender: TObject);
     procedure CHB_ShortClick(Sender: TObject);
     procedure CHB_PowerClick(Sender: TObject);
   private
@@ -58,7 +57,7 @@ var
 
 implementation
 
-uses GetSystems, RCSc, BoosterDb, DataZesilovac, BlockDb, ownGuiUtils;
+uses GetSystems, RCSsc, BoosterDb, DataZesilovac, BlockDb, ownGuiUtils, Config;
 
 {$R *.dfm}
 
@@ -73,13 +72,6 @@ begin
     Self.NormalOpenForm();
 
   Self.ShowModal();
-end;
-
-procedure TF_Booster_Edit.SE_RCS_moduleExit(Sender: TObject);
-begin
-  Self.SE_Power_Port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Power_Module.Value)) - 1, 0);
-  Self.SE_DCC_port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_DCC_module.Value)) - 1, 0);
-  Self.SE_Short_Port.MaxValue := Max(Integer(RCSi.GetModuleInputsCountSafe(Self.SE_Short_Module.Value)) - 1, 0);
 end;
 
 procedure TF_Booster_Edit.B_SaveClick(Sender: TObject);
@@ -118,38 +110,14 @@ begin
   settings.name := E_Name.Text;
   settings.id := E_ID.Text;
 
-  if (Self.CHB_Short.Checked) then
-  begin
-    settings.rcs.overload.addr.module := Self.SE_Short_Module.Value;
-    settings.rcs.overload.addr.port := Self.SE_Short_Port.Value;
-    settings.rcs.overload.reversed := Self.CHB_short_reversed.Checked;
-  end else begin
-    settings.rcs.overload.addr.module := 0;
-    settings.rcs.overload.addr.port := 0;
-    settings.rcs.overload.reversed := false;
-  end;
+  settings.rcs.overload.addr := RCSsOptionalFromUI(Self.CHB_Short, Self.SE_Short_System, Self.SE_Short_Module, Self.SE_Short_Port);
+  settings.rcs.overload.reversed := (Self.CHB_Short.Checked) and (Self.CHB_Short_Reversed.Checked);
 
-  if (Self.CHB_Power.Checked) then
-  begin
-    settings.rcs.power.addr.module := Self.SE_Power_Module.Value;
-    settings.rcs.power.addr.port := Self.SE_Power_Port.Value;
-    settings.rcs.power.reversed := Self.CHB_power_reversed.Checked;
-  end else begin
-    settings.rcs.power.addr.module := 0;
-    settings.rcs.power.addr.port := 0;
-    settings.rcs.power.reversed := false;
-  end;
+  settings.rcs.power.addr := RCSsOptionalFromUI(Self.CHB_Power, Self.SE_Power_System, Self.SE_Power_Module, Self.SE_Power_Port);
+  settings.rcs.power.reversed := (Self.CHB_Power.Checked) and (Self.CHB_Power_Reversed.Checked);
 
-  if (Self.CHB_DCC.Checked) then
-  begin
-    settings.rcs.DCC.addr.module := Self.SE_DCC_module.Value;
-    settings.rcs.DCC.addr.port := Self.SE_DCC_port.Value;
-    settings.rcs.DCC.reversed := Self.CHB_dcc_reversed.Checked;
-  end else begin
-    settings.rcs.DCC.addr.module := 0;
-    settings.rcs.DCC.addr.port := 0;
-    settings.rcs.DCC.reversed := false;
-  end;
+  settings.rcs.DCC.addr := RCSsOptionalFromUI(Self.CHB_DCC, Self.SE_DCC_System, Self.SE_DCC_Module, Self.SE_DCC_Port);
+  settings.rcs.DCC.reversed := (Self.CHB_DCC.Checked) and (Self.CHB_DCC_Reversed.Checked);
 
   Self.open_booster.settings := settings;
 
@@ -166,23 +134,26 @@ end;
 
 procedure TF_Booster_Edit.CHB_DCCClick(Sender: TObject);
 begin
-  Self.SE_DCC_module.Enabled := Self.CHB_DCC.Checked;
-  Self.SE_DCC_port.Enabled := Self.CHB_DCC.Checked;
-  Self.CHB_dcc_reversed.Enabled := Self.CHB_DCC.Checked;
+  Self.SE_DCC_System.Enabled := Self.CHB_DCC.Checked;
+  Self.SE_DCC_Module.Enabled := Self.CHB_DCC.Checked;
+  Self.SE_DCC_Port.Enabled := Self.CHB_DCC.Checked;
+  Self.CHB_DCC_Reversed.Enabled := Self.CHB_DCC.Checked;
 end;
 
 procedure TF_Booster_Edit.CHB_PowerClick(Sender: TObject);
 begin
+  Self.SE_Power_System.Enabled := Self.CHB_Power.Checked;
   Self.SE_Power_Module.Enabled := Self.CHB_Power.Checked;
   Self.SE_Power_Port.Enabled := Self.CHB_Power.Checked;
-  Self.CHB_power_reversed.Enabled := Self.CHB_Power.Checked;
+  Self.CHB_Power_Reversed.Enabled := Self.CHB_Power.Checked;
 end;
 
 procedure TF_Booster_Edit.CHB_ShortClick(Sender: TObject);
 begin
+  Self.SE_Short_System.Enabled := Self.CHB_Short.Checked;
   Self.SE_Short_Module.Enabled := Self.CHB_Short.Checked;
   Self.SE_Short_Port.Enabled := Self.CHB_Short.Checked;
-  Self.CHB_short_reversed.Enabled := Self.CHB_Short.Checked;
+  Self.CHB_Short_Reversed.Enabled := Self.CHB_Short.Checked;
 end;
 
 procedure TF_Booster_Edit.NewBooster;
@@ -200,9 +171,9 @@ procedure TF_Booster_Edit.CommonOpenForm();
 begin
   Self.ActiveControl := Self.B_Save;
 
-  Self.SE_Power_Module.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_Short_Module.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_DCC_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_Power_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_Short_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_DCC_System.MaxValue := RCSs._RCSS_MAX;
 end;
 
 procedure TF_Booster_Edit.NormalOpenForm();
@@ -213,28 +184,14 @@ begin
   Self.E_ID.Text := bSettings.id;
   Self.E_Name.Text := bSettings.name;
 
-  Self.SE_Short_Module.Value := bSettings.rcs.overload.addr.module;
-  Self.SE_Short_Port.Value := bSettings.rcs.overload.addr.port;
-  Self.CHB_short_reversed.Checked := bSettings.rcs.overload.reversed;
+  RCSsOptionalToUI(bSettings.rcs.overload.addr, Self.CHB_Short, Self.SE_Short_System, Self.SE_Short_Module, Self.SE_Short_Port);
+  Self.CHB_Short_Reversed.Checked := bSettings.rcs.overload.reversed;
 
-  Self.SE_Power_Module.Value := bSettings.rcs.power.addr.module;
-  Self.SE_Power_Port.Value := bSettings.rcs.power.addr.port;
-  Self.CHB_power_reversed.Checked := bSettings.rcs.power.reversed;
+  RCSsOptionalToUI(bSettings.rcs.power.addr, Self.CHB_Power, Self.SE_Power_System, Self.SE_Power_Module, Self.SE_Power_Port);
+  Self.CHB_Power_Reversed.Checked := bSettings.rcs.power.reversed;
 
-  Self.SE_DCC_module.Value := bSettings.rcs.DCC.addr.module;
-  Self.SE_DCC_port.Value := bSettings.rcs.DCC.addr.port;
-  Self.CHB_dcc_reversed.Checked := bSettings.rcs.DCC.reversed;
-
-  Self.CHB_Short.Checked := open_booster.isOverloadDetection;
-  Self.CHB_ShortClick(Self.CHB_Short);
-
-  Self.CHB_Power.Checked := open_booster.isPowerDetection;
-  Self.CHB_PowerClick(Self.CHB_Power);
-
-  Self.CHB_DCC.Checked := open_booster.isDCCdetection;
-  Self.CHB_DCCClick(Self.CHB_DCC);
-
-  Self.SE_RCS_moduleExit(Self);
+  RCSsOptionalToUI(bSettings.rcs.DCC.addr, Self.CHB_DCC, Self.SE_DCC_System, Self.SE_DCC_Module, Self.SE_DCC_Port);
+  Self.CHB_DCC_Reversed.Checked := bSettings.rcs.DCC.reversed;
 
   Self.Caption := 'Zesilovač: ' + bSettings.name;
 end;
@@ -244,17 +201,20 @@ begin
   Self.E_ID.Text := '';
   Self.E_Name.Text := '';
 
+  Self.SE_Short_System.Value := 0;
   Self.SE_Short_Module.Value := 1;
   Self.SE_Short_Port.Value := 0;
-  Self.CHB_short_reversed.Checked := false;
+  Self.CHB_Short_Reversed.Checked := False;
 
+  Self.SE_Power_System.Value := 0;
   Self.SE_Power_Module.Value := 1;
   Self.SE_Power_Port.Value := 0;
-  Self.CHB_power_reversed.Checked := false;
+  Self.CHB_Power_Reversed.Checked := False;
 
-  Self.SE_DCC_module.Value := 1;
-  Self.SE_DCC_port.Value := 0;
-  Self.CHB_dcc_reversed.Checked := false;
+  Self.SE_DCC_System.Value := 0;
+  Self.SE_DCC_Module.Value := 1;
+  Self.SE_DCC_Port.Value := 0;
+  Self.CHB_DCC_Reversed.Checked := False;
 
   Self.CHB_Short.Checked := true;
   Self.CHB_ShortClick(Self.CHB_Short);
@@ -264,8 +224,6 @@ begin
 
   Self.CHB_DCC.Checked := false;
   Self.CHB_DCCClick(Self.CHB_DCC);
-
-  Self.SE_RCS_moduleExit(Self);
 
   Self.Caption := 'Nový zesilovač';
 end;

@@ -60,6 +60,7 @@ type
 
     procedure SetNeeded(system: Cardinal; module: Cardinal; state: Boolean = true); overload;
     procedure SetNeeded(addr: TRCSsAddr; state: Boolean = true); overload;
+    procedure SetNeeded(addr: TRCSsAddrOptional; state: Boolean = true); overload;
     function GetNeeded(system: Cardinal; module: Cardinal): Boolean;
 
     procedure LoadFromFile(ini: TMemIniFile);
@@ -86,6 +87,8 @@ type
 
     function GetModuleInputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
     function GetModuleOutputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
+
+    function IsModule(addr: TRCSsAddr): Boolean;
 
     procedure InputSim(); // nastavit simulovane vstupy (koncove polohy vyhybek atp.)
     procedure TrainOccupySim(); // nastavit RCS vstupy tak, aby useky, ve kterych je souprava, byly obsazene
@@ -120,7 +123,8 @@ function RCSAddrComparer(): IComparer<TRCSsAddr>;
 
 implementation
 
-uses SysUtils, fMain;
+uses SysUtils, fMain, Block, BlockDb, BlockTurnout, BlockCrossing, Booster,
+  BoosterDb, BlockTrack, IfThenElse;
 
 constructor EInvalidSystem.Create(system: Cardinal);
 begin
@@ -293,6 +297,12 @@ begin
   Self.SetNeeded(addr.system, addr.module, state);
 end;
 
+procedure TRCSs.SetNeeded(addr: TRCSsAddrOptional; state: Boolean = true);
+begin
+  if (addr.enabled) then
+    Self.SetNeeded(addr.addr.system, addr.addr.module, state);
+end;
+
 function TRCSs.GetNeeded(system: Cardinal; module: Cardinal): Boolean;
 begin
   if (system > _RCSS_MAX) then
@@ -439,16 +449,56 @@ begin
   Result := Self.m_rcss[system].GetModuleOutputsCountSafe(module);
 end;
 
+function TRCSs.IsModule(addr: TRCSsAddr): Boolean;
+begin
+  if (addr.system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[addr.system].IsModule(addr.module);
+end;
+
 procedure TRCSs.InputSim();
 begin
-  for var i: Integer := 0 to _RCSS_MAX do
-    Self.m_rcss[i].InputSim();
+  // vychozi stav bloku
+  for var blk: TBlk in Blocks do
+  begin
+    try
+{      if ((Blk.GetGlobalSettings.typ = btTurnout) and ((Blk as TBlkTurnout).posDetection)) then
+        Self.SetInput(TBlkTurnout(Blk).rcsInPlus, 1);
+      if ((Blk.typ = btCrossing) and (TBlkCrossing(Blk).GetSettings().RCSInputs.open.enabled)) then
+        Self.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open.addr, 1);
+      if ((diag.simSoupravaObsaz) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain()) and
+        ((Blk as TBlkTrack).occupAvailable)) then
+        Self.SetInput(TBlkTrack(Blk).GetSettings().RCSAddrs[0], 1); } // TODO
+    except
+
+    end;
+  end;
+
+  // vychozi stav zesilovacu
+  for var booster: TBooster in Boosters.sorted do
+  begin
+    try
+      if ((Booster.isPowerDetection) and (Self.m_rcss[Booster.settings.rcs.power.addr.addr.system].simulation)) then
+        Self.SetInput(Booster.settings.rcs.power.addr.addr, ite(Booster.settings.rcs.power.reversed, 1, 0));
+      if ((Booster.isOverloadDetection) and (Self.m_rcss[Booster.settings.rcs.overload.addr.addr.system].simulation)) then
+        Self.SetInput(Booster.settings.rcs.overload.addr.addr, ite(Booster.settings.rcs.overload.reversed, 1, 0));
+      if ((Booster.isDCCdetection) and (Self.m_rcss[Booster.settings.rcs.DCC.addr.addr.system].simulation)) then
+        Self.SetInput(Booster.settings.rcs.DCC.addr.addr, ite(Booster.settings.rcs.DCC.reversed, 1, 0));
+    except
+
+    end;
+  end;
 end;
 
 procedure TRCSs.TrainOccupySim();
 begin
-  for var i: Integer := 0 to _RCSS_MAX do
-    Self.m_rcss[i].TrainOccupySim();
+  for var blk: TBlk in Blocks do
+  begin
+    if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then
+      continue;
+{    if (((Blk as TBlkTrack).IsTrain()) and ((Blk as TBlkTrack).occupAvailable)) then
+      Self.SetInput((Blk as TBlkTrack).GetSettings().RCSAddrs[0], 1); } // TODO
+  end;
 end;
 
 class function TRCSs.RCSsAddr(system: Cardinal; module: Cardinal; port: Byte): TRCSsAddr;

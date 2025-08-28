@@ -55,6 +55,11 @@ type
   function RCSOptionalFromUI(enabled: TCheckBox; board: TSpinEdit; port: TSpinEdit; rcs: TList<TRCSAddr> = nil): TRCSAddrOptional;
   procedure RCSOptionalToUI(const addr: TRCSAddrOptional; var enabled: TCheckBox; var board: TSpinEdit; var port: TSpinEdit);
 
+  function RCSsFromIni(ini: TMemIniFile; section: string; key: string; oldboard: string = ''; oldport: string = ''): TRCSsAddr;
+  function RCSsOptionalFromIni(ini: TMemIniFile; section: string; key: string; oldboard: string = ''; oldport: string = ''): TRCSsAddrOptional;
+  function RCSsOptionalFromUI(enabled: TCheckBox; system: TSpinEdit; module: TSpinEdit; port: TSpinEdit; rcs: TList<TRCSsAddr> = nil): TRCSsAddrOptional;
+  procedure RCSsOptionalToUI(const addr: TRCSsAddrOptional; var enabled: TCheckBox; var system: TSpinEdit; var module: TSpinEdit; var port: TSpinEdit);
+
   procedure CreateCfgDirs();
   procedure CompleteLoadFromFile(inidata: TMemIniFile);
   procedure CompleteSaveToFile(inidata: TMemIniFile);
@@ -641,6 +646,67 @@ begin
   if (addr.enabled) then
   begin
     board.Value := addr.addr.module;
+    port.Value := addr.addr.port;
+  end;
+end;
+
+function RCSsFromIni(ini: TMemIniFile; section: string; key: string; oldboard: string = ''; oldport: string = ''): TRCSsAddr;
+begin
+  var triplet := ini.ReadString(section, key, '');
+  if (triplet <> '') then
+  begin
+    Result.Load(triplet);
+  end else begin
+    if ((oldboard = '') or (oldport = '')) then
+      raise Exception.Create('Unable to load old RCS!');
+    Result.system := 0;
+    Result.module := ini.ReadInteger(section, oldboard, 0);
+    Result.port := ini.ReadInteger(section, oldport, 0);
+  end;
+end;
+
+function RCSsOptionalFromIni(ini: TMemIniFile; section: string; key: string; oldboard: string = ''; oldport: string = ''): TRCSsAddrOptional;
+begin
+  if ((ini.ReadString(section, key, '') = '') and (ini.ReadString(section, oldboard, '') = '')
+      and (ini.ReadString(section, oldport, '') = '')) then
+  begin
+    Result.enabled := False;
+    Result.addr.system := 0;
+    Result.addr.module := 0;
+    Result.addr.port := 0;
+    Exit();
+  end;
+
+  Result.enabled := True;
+  Result.addr := RCSsFromIni(ini, section, key, oldboard, oldport);
+end;
+
+function RCSsOptionalFromUI(enabled: TCheckBox; system: TSpinEdit; module: TSpinEdit; port: TSpinEdit; rcs: TList<TRCSsAddr> = nil): TRCSsAddrOptional;
+begin
+  Result.enabled := enabled.Checked;
+  if (Result.enabled) then
+  begin
+    Result.addr.system := system.Value;
+    Result.addr.module := module.Value;
+    Result.addr.port := port.Value;
+    if (rcs <> nil) then
+      rcs.Add(Result.addr);
+  end else begin
+    Result.addr.system := 0;
+    Result.addr.module := 0;
+    Result.addr.port := 0;
+  end;
+end;
+
+procedure RCSsOptionalToUI(const addr: TRCSsAddrOptional; var enabled: TCheckBox; var system: TSpinEdit; var module: TSpinEdit; var port: TSpinEdit);
+begin
+  enabled.Checked := addr.enabled;
+  if (Assigned(enabled.OnClick)) then
+    enabled.OnClick(enabled);
+  if (addr.enabled) then
+  begin
+    system.Value := addr.addr.system;
+    module.Value := addr.addr.module;
     port.Value := addr.addr.port;
   end;
 end;
