@@ -16,7 +16,7 @@ interface
 uses IniFiles, SysUtils, Classes, Graphics, Menus, announcement,
   IdContext, RCSc, StrUtils, ComCtrls, Forms, AreaLighting,
   Generics.Collections, AreaStack, Windows, Generics.Defaults,
-  JsonDataObjects, Logging, UPO;
+  JsonDataObjects, Logging, UPO, RCSsc;
 
 const
   _MAX_CON_PNL = 16; // max number of panels connected to single area
@@ -80,7 +80,7 @@ type
   end;
 
   TAreaRCSs = class
-    modules: TObjectDictionary<Cardinal, TAreaRCSModule>;
+    modules: TObjectDictionary<TRCSsSystemModule, TAreaRCSModule>;
     failure: Boolean; // any RCS module failed in area?
     lastFailureTime: TDateTime;
 
@@ -179,8 +179,8 @@ type
     procedure RemoveCountdown(id: Integer);
     function IsCountdown(id: Integer): Boolean;
 
-    procedure RCSAdd(addr: Integer);
-    procedure RCSFail(addr: Integer);
+    procedure RCSAdd(addr: TRCSsSystemModule);
+    procedure RCSFail(addr: TRCSsSystemModule);
 
     procedure UpdateLine(LI: TListItem);
 
@@ -355,7 +355,7 @@ end;
 constructor TAreaRCSs.Create();
 begin
   inherited;
-  Self.modules := TObjectDictionary<Cardinal, TAreaRCSModule>.Create();
+  Self.modules := TObjectDictionary<TRCSsSystemModule, TAreaRCSModule>.Create();
 end;
 
 destructor TAreaRCSs.Destroy();
@@ -1240,7 +1240,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.RCSAdd(addr: Integer);
+procedure TArea.RCSAdd(addr: TRCSsSystemModule);
 begin
   try
     if (not Self.RCSs.modules.ContainsKey(addr)) then
@@ -1250,7 +1250,7 @@ begin
   end;
 end;
 
-procedure TArea.RCSFail(addr: Integer);
+procedure TArea.RCSFail(addr: TRCSsSystemModule);
 begin
   try
     if (not Self.RCSs.modules.ContainsKey(addr)) then
@@ -1271,12 +1271,14 @@ begin
   if ((Self.RCSs.lastFailureTime + EncodeTime(0, 0, 0, 500)) < Now) then
   begin
     var str: string := 'Výpadek RCS modulu ';
-    for var addr: Integer in Self.RCSs.modules.Keys do
+    for var addr: TRCSsSystemModule in Self.RCSs.modules.Keys do
+    begin
       if (Self.RCSs.modules[addr].failed) then
       begin
-        str := str + IntToStr(addr) + ', ';
+        str := str + IntToStr(addr.system)+':'+IntToStr(addr.module) + ', ';
         Self.RCSs.modules[addr].failed := false;
       end;
+    end;
 
     str := LeftStr(str, Length(str) - 2);
     Self.RCSs.failure := false;

@@ -65,7 +65,7 @@ type
     warningTimeout: TDateTime;
     barriersClosed: Boolean;
     shs: TList<TBlk>; // seznam souctovych hlasek, kam hlasi prejezd stav
-    rcsModules: TList<Cardinal>; // seznam RCS modulu, ktere vyuziva prejezd
+    rcsModules: TList<TRCSsSystemModule>; // seznam RCS modulu, ktere vyuziva prejezd
     lastInputValid: TDateTime;
     lastWantClose: Boolean;
     lastPositive: Boolean;
@@ -232,7 +232,7 @@ begin
   Self.m_globSettings.typ := btCrossing;
   Self.m_state := Self._def_crossing_state;
   Self.m_state.shs := TList<TBlk>.Create();
-  Self.m_state.rcsModules := TList<Cardinal>.Create();
+  Self.m_state.rcsModules := TList<TRCSsSystemModule>.Create();
   Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
   Self.positiveRules := TPositiveRules.Create();
 end;
@@ -311,10 +311,10 @@ begin
   Self.LoadAreas(ini_rel, 'PRJ').Free();
 
   Self.FillRCSModules();
-  for var module: Cardinal in Self.m_state.rcsModules do
-    RCSi.SetNeeded(module);
+  for var module: TRCSsSystemModule in Self.m_state.rcsModules do
+    RCSs.SetNeeded(module);
   for var area: TArea in Self.m_areas do
-    for var module: Cardinal in Self.m_state.rcsModules do
+    for var module: TRCSsSystemModule in Self.m_state.rcsModules do
       area.RCSAdd(module);
 end;
 
@@ -380,8 +380,8 @@ end;
 procedure TBlkCrossing.Enable();
 begin
   try
-    for var module: Cardinal in Self.m_state.rcsModules do
-      if (not RCSi.IsNonFailedModule(module)) then
+    for var module: TRCSsSystemModule in Self.m_state.rcsModules do
+      if (not RCSs.IsNonFailedModule(module)) then
         Exit();
   except
     Exit();
@@ -1038,48 +1038,48 @@ begin
   Self.m_state.rcsModules.Clear();
 
   if (Self.m_settings.RCSInputs.closed.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.closed.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.closed.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSInputs.closed.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSInputs.closed.addr));
 
   if (Self.m_settings.RCSInputs.open.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.open.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.open.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSInputs.open.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSInputs.open.addr));
 
   if (Self.m_settings.RCSInputs.caution.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.caution.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.caution.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSInputs.caution.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSInputs.caution.addr));
 
   if (Self.m_settings.RCSInputs.annulation.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSInputs.annulation.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSInputs.annulation.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSInputs.annulation.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSInputs.annulation.addr));
 
   if (Self.m_settings.RCSOutputs.close.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.close.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.close.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.close.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.close.addr));
 
   if (Self.m_settings.RCSOutputs.lights.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.lights.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.lights.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.lights.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.lights.addr));
 
   if (Self.m_settings.RCSOutputs.emOpen.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.emOpen.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.emOpen.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.emOpen.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.emOpen.addr));
 
   if (Self.m_settings.RCSOutputs.positive.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.positive.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.positive.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.positive.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.positive.addr));
 
   if (Self.m_settings.RCSOutputs.barriersDown.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.barriersDown.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.barriersDown.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.barriersDown.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.barriersDown.addr));
 
   if (Self.m_settings.RCSOutputs.barriersUp.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.barriersUp.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.barriersUp.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.barriersUp.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.barriersUp.addr));
 
   if (Self.m_settings.RCSOutputs.bell.enabled) then
-    if (not Self.m_state.rcsModules.Contains(Self.m_settings.RCSOutputs.bell.addr.module)) then
-      Self.m_state.rcsModules.Add(Self.m_settings.RCSOutputs.bell.addr.module);
+    if (not Self.m_state.rcsModules.Contains(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.bell.addr))) then
+      Self.m_state.rcsModules.Add(TRCSs.RCSsSystemModule(Self.m_settings.RCSOutputs.bell.addr));
 
   Self.m_state.rcsModules.Sort();
 end;
@@ -1366,8 +1366,8 @@ function TBlkCrossing.RCSModulesAvailable(): Boolean;
 begin
   Result := True;
   try
-    for var module: Cardinal in Self.m_state.rcsModules do
-      Result := Result and RCSi.IsNonFailedModule(module);
+    for var module: TRCSsSystemModule in Self.m_state.rcsModules do
+      Result := Result and RCSs.IsNonFailedModule(module);
   except
     Result := false;
   end;

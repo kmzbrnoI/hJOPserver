@@ -142,7 +142,7 @@ var
 implementation
 
 uses fMain, diagnostics, GetSystems, BlockDb, Block, BlockTurnout, BlockTrack,
-  BoosterDb, BlockCrossing, AreaDb, IfThenElse,
+  BoosterDb, BlockCrossing, AreaDb, IfThenElse, RCSsc,
   TCPServerPanel, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
 constructor TRCS.Create(systemI: Cardinal);
@@ -261,7 +261,7 @@ begin
 
   case (errValue) of
     RCS_MODULE_FAILED:
-      Areas.RCSFail(errAddr); // communication with module failed
+      Areas.RCSFail(TRCSs.RCSsSystemModule(Self.mSystemI, errAddr)); // communication with module failed
   end;
 end;
 

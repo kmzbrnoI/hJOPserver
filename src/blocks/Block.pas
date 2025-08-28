@@ -277,7 +277,7 @@ class procedure TBlk.RCSsRegister(areas: TList<TArea>; addrs: TRCSsAddrs);
 begin
   for var area: TArea in areas do
     for var rcsAddr: TRCSsAddr in addrs do
-      area.RCSAdd(rcsAddr.module);
+      area.RCSAdd(TRCSs.RCSsSystemModule(rcsAddr));
 
   for var rcsAddr: TRCSsAddr in addrs do
     RCSs.SetNeeded(rcsAddr);
@@ -286,7 +286,7 @@ end;
 class procedure TBlk.RCSsRegister(areas: TList<TArea>; addr: TRCSsAddr);
 begin
   for var area: TArea in areas do
-    Area.RCSAdd(addr.module);
+    Area.RCSAdd(TRCSs.RCSsSystemModule(addr));
   RCSs.SetNeeded(addr);
 end;
 

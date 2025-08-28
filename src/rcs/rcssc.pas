@@ -16,6 +16,12 @@ type
     function ToString(): string;
   end;
 
+  TRCSsSystemModule = record
+    system: Cardinal;
+    module: Cardinal;
+    class operator Equal(a, b: TRCSsSystemModule): Boolean;
+  end;
+
   TRCSsAddrOptional = record
     addr: TRCSsAddr;
     enabled: Boolean;
@@ -61,6 +67,7 @@ type
     procedure SetNeeded(system: Cardinal; module: Cardinal; state: Boolean = true); overload;
     procedure SetNeeded(addr: TRCSsAddr; state: Boolean = true); overload;
     procedure SetNeeded(addr: TRCSsAddrOptional; state: Boolean = true); overload;
+    procedure SetNeeded(addr: TRCSsSystemModule; state: Boolean = true); overload;
     function GetNeeded(system: Cardinal; module: Cardinal): Boolean;
 
     procedure LoadFromFile(ini: TMemIniFile);
@@ -88,11 +95,16 @@ type
     function GetModuleInputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
     function GetModuleOutputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
 
-    function IsModule(addr: TRCSsAddr): Boolean;
-    function IsModuleFailure(addr: TRCSsAddr): Boolean;
-    function IsModuleError(addr: TRCSsAddr): Boolean;
-    function IsModuleWarning(addr: TRCSsAddr): Boolean;
-    function IsNonFailedModule(addr: TRCSsAddr): Boolean;
+    function IsModule(addr: TRCSsAddr): Boolean; overload;
+    function IsModule(addr: TRCSsSystemModule): Boolean; overload;
+    function IsModuleFailure(addr: TRCSsAddr): Boolean; overload;
+    function IsModuleFailure(addr: TRCSsSystemModule): Boolean; overload;
+    function IsModuleError(addr: TRCSsAddr): Boolean; overload;
+    function IsModuleError(addr: TRCSsSystemModule): Boolean; overload;
+    function IsModuleWarning(addr: TRCSsAddr): Boolean; overload;
+    function IsModuleWarning(addr: TRCSsSystemModule): Boolean; overload;
+    function IsNonFailedModule(addr: TRCSsAddr): Boolean; overload;
+    function IsNonFailedModule(addr: TRCSsSystemModule): Boolean; overload;
 
     procedure InputSim(); // nastavit simulovane vstupy (koncove polohy vyhybek atp.)
     procedure TrainOccupySim(); // nastavit RCS vstupy tak, aby useky, ve kterych je souprava, byly obsazene
@@ -104,6 +116,8 @@ type
     class function RCSsAddr(system: Cardinal; module: Cardinal; port: Byte): TRCSsAddr;
     class function RCSsOptionalAddr(system: Cardinal; module: Cardinal; port: Byte): TRCSsAddrOptional; overload;
     class function RCSsOptionalAddrDisabled(): TRCSsAddrOptional; overload;
+    class function RCSsSystemModule(system: Cardinal; module: Cardinal): TRCSsSystemModule; overload;
+    class function RCSsSystemModule(addr: TRCSsAddr): TRCSsSystemModule; overload;
 
     property items[index: Integer]: TRCS read GetItem; default;
 
@@ -216,6 +230,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+class operator TRCSsSystemModule.Equal(a, b: TRCSsSystemModule): Boolean;
+begin
+  Result := ((a.system = b.system) and (a.module = b.module));
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 function TRCSs.GetItem(i: Integer): TRCS;
 begin
   if (i > _RCSS_MAX) then
@@ -305,6 +326,11 @@ procedure TRCSs.SetNeeded(addr: TRCSsAddrOptional; state: Boolean = true);
 begin
   if (addr.enabled) then
     Self.SetNeeded(addr.addr.system, addr.addr.module, state);
+end;
+
+procedure TRCSs.SetNeeded(addr: TRCSsSystemModule; state: Boolean = true);
+begin
+  Self.SetNeeded(addr.system, addr.module, state);
 end;
 
 function TRCSs.GetNeeded(system: Cardinal; module: Cardinal): Boolean;
@@ -460,11 +486,21 @@ begin
   Result := Self.m_rcss[addr.system].IsModule(addr.module);
 end;
 
+function TRCSs.IsModule(addr: TRCSsSystemModule): Boolean;
+begin
+
+end;
+
 function TRCSs.IsModuleFailure(addr: TRCSsAddr): Boolean;
 begin
   if (addr.system > _RCSS_MAX) then
     Exit(False);
   Result := Self.m_rcss[addr.system].IsModuleFailure(addr.module);
+end;
+
+function TRCSs.IsModuleFailure(addr: TRCSsSystemModule): Boolean;
+begin
+
 end;
 
 function TRCSs.IsModuleError(addr: TRCSsAddr): Boolean;
@@ -474,6 +510,11 @@ begin
   Result := Self.m_rcss[addr.system].IsModuleError(addr.module);
 end;
 
+function TRCSs.IsModuleError(addr: TRCSsSystemModule): Boolean;
+begin
+
+end;
+
 function TRCSs.IsModuleWarning(addr: TRCSsAddr): Boolean;
 begin
   if (addr.system > _RCSS_MAX) then
@@ -481,11 +522,21 @@ begin
   Result := Self.m_rcss[addr.system].IsModuleWarning(addr.module);
 end;
 
+function TRCSs.IsModuleWarning(addr: TRCSsSystemModule): Boolean;
+begin
+
+end;
+
 function TRCSs.IsNonFailedModule(addr: TRCSsAddr): Boolean;
 begin
   if (addr.system > _RCSS_MAX) then
     Exit(False);
   Result := Self.m_rcss[addr.system].IsNonFailedModule(addr.module);
+end;
+
+function TRCSs.IsNonFailedModule(addr: TRCSsSystemModule): Boolean;
+begin
+
 end;
 
 procedure TRCSs.InputSim();
@@ -550,6 +601,18 @@ class function TRCSs.RCSsOptionalAddrDisabled(): TRCSsAddrOptional;
 begin
   Result.enabled := False;
   Result.addr := RCSsAddr(0, 0, 0);
+end;
+
+class function TRCSs.RCSsSystemModule(system: Cardinal; module: Cardinal): TRCSsSystemModule;
+begin
+  Result.system := system;
+  Result.module := module;
+end;
+
+class function TRCSs.RCSsSystemModule(addr: TRCSsAddr): TRCSsSystemModule;
+begin
+  Result.system := addr.system;
+  Result.module := addr.module;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -5,7 +5,7 @@
 interface
 
 uses Area, IniFiles, SysUtils, Classes, COmCtrls, IdContext,
-  StdCtrls, Generics.Collections, JsonDataObjects;
+  StdCtrls, Generics.Collections, JsonDataObjects, RCSsc;
 
 type
   TAreas = class
@@ -29,7 +29,7 @@ type
     function Get(id: string): TArea; overload;
 
     function ParseORs(str: string): TList<TArea>;
-    procedure RCSFail(addr: Integer); // je vyvolano pri vypadku RCS modulu, resi zobrazeni chyby do panelu v OR
+    procedure RCSFail(addr: TRCSsSystemModule); // je vyvolano pri vypadku RCS modulu, resi zobrazeni chyby do panelu v OR
 
     procedure Update();
     procedure DisconnectPanels();
