@@ -79,7 +79,6 @@ type
 
   public
     logEnabled: Boolean;
-    logActionInProgress: Boolean;
 
     constructor Create(systemI: Cardinal);
     destructor Destroy(); override;
@@ -125,6 +124,8 @@ type
 
     procedure Log(msg: string; level: TLogLevel);
     procedure LogFMainStatusError(msg: string);
+    procedure LogFMainStatusWarning(msg: string);
+    procedure LogFMainStatus(msg: string);
 
     // events
     property AfterClose: TNotifyEvent read fAfterClose write fAfterClose;
@@ -133,6 +134,7 @@ type
     property ready: Boolean read IsReady;
     property maxModuleAddr: Cardinal read GetMaxModuleAddr;
     property maxModuleAddrSafe: Cardinal read GetMaxModuleAddrSafe;
+    property systemI: Cardinal read mSystemI;
   end;
 
 function RCSAddrComparer(): IComparer<TRCSAddr>;
@@ -153,7 +155,6 @@ begin
 
   Self.modules := TObjectDictionary<Cardinal, TRCSModule>.Create();
 
-  Self.logActionInProgress := False;
   Self.logEnabled := False;
   Self.mLoadedOk := False;
   Self.fGeneralError := False;
@@ -178,9 +179,19 @@ begin
   Logging.Log('RCS'+IntToStr(Self.mSystemI) + ': ' + msg, level, lsRCS);
 end;
 
+procedure TRCS.LogFMainStatus(msg: string);
+begin
+  F_Main.LogStatus('RCS'+IntToStr(Self.mSystemI) + ': ' + msg);
+end;
+
 procedure TRCS.LogFMainStatusError(msg: string);
 begin
   F_Main.LogStatus('ERR: RCS'+IntToStr(Self.mSystemI) + ': ' + msg);
+end;
+
+procedure TRCS.LogFMainStatusWarning(msg: string);
+begin
+  F_Main.LogStatus('WARN: RCS'+IntToStr(Self.mSystemI) + ': ' + msg);
 end;
 
 procedure TRCS.LoadLib(libFn: string; configFn: string);
@@ -294,7 +305,7 @@ begin
   if (SystemData.Status = TSystemStatus.starting) then
     SystemData.Status := TSystemStatus.null;
 
-  if (Self.logActionInProgress) then
+  if (Self.IsStateActionInProgress()) then
     Self.LogFMainStatusError(errMsg);
 
   case (errValue) of

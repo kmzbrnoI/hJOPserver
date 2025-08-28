@@ -3584,7 +3584,7 @@ object F_Main: TF_Main
       object GB_stav_technologie: TGroupBox
         Left = 16
         Top = 15
-        Width = 197
+        Width = 201
         Height = 186
         Margins.Left = 2
         Margins.Top = 2
@@ -3594,7 +3594,7 @@ object F_Main: TF_Main
         ParentShowHint = False
         ShowHint = False
         TabOrder = 1
-        object S_RCS_open: TShape
+        object S_RCS0_open: TShape
           Left = 16
           Top = 24
           Width = 17
@@ -3605,7 +3605,7 @@ object F_Main: TF_Main
           Margins.Bottom = 2
           Brush.Color = clRed
         end
-        object S_RCS_start: TShape
+        object S_RCS0_started: TShape
           Left = 16
           Top = 39
           Width = 17
@@ -3649,8 +3649,8 @@ object F_Main: TF_Main
           Margins.Bottom = 2
           Brush.Color = clRed
         end
-        object L_StavS_1: TLabel
-          Left = 40
+        object L_RCS_open: TLabel
+          Left = 104
           Top = 24
           Width = 68
           Height = 13
@@ -3660,9 +3660,9 @@ object F_Main: TF_Main
           Margins.Bottom = 2
           Caption = 'RCS otev'#345'eno'
         end
-        object L_StavS_2: TLabel
+        object L_RCS_started: TLabel
           Tag = 1
-          Left = 40
+          Left = 104
           Top = 39
           Width = 83
           Height = 13
@@ -3766,6 +3766,72 @@ object F_Main: TF_Main
           Margins.Bottom = 2
           Caption = 'PT server'
           Visible = False
+        end
+        object S_RCS1_open: TShape
+          Left = 37
+          Top = 24
+          Width = 17
+          Height = 9
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Brush.Color = clRed
+        end
+        object S_RCS1_started: TShape
+          Left = 37
+          Top = 39
+          Width = 17
+          Height = 9
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Brush.Color = clRed
+        end
+        object S_RCS2_open: TShape
+          Left = 58
+          Top = 24
+          Width = 17
+          Height = 9
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Brush.Color = clRed
+        end
+        object S_RCS2_started: TShape
+          Left = 58
+          Top = 39
+          Width = 17
+          Height = 9
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Brush.Color = clRed
+        end
+        object S_RCS3_open: TShape
+          Left = 79
+          Top = 24
+          Width = 17
+          Height = 9
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Brush.Color = clRed
+        end
+        object S_RCS3_started: TShape
+          Left = 79
+          Top = 39
+          Width = 17
+          Height = 9
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Brush.Color = clRed
         end
       end
       object GB_Log: TGroupBox
@@ -6114,31 +6180,31 @@ object F_Main: TF_Main
     end
     object MI_RCS: TMenuItem
       Caption = 'RCS'
-      object MI_RCS_Open: TMenuItem
+      object MI_RCSs_Open: TMenuItem
         Action = A_RCS_Open
         Caption = 'Otev'#345#237't v'#353'echna za'#345#237'zen'#237
       end
-      object MI_RCS_Close: TMenuItem
+      object MI_RCSs_Close: TMenuItem
         Action = A_RCS_Close
         Caption = 'Zav'#345#237't v'#353'echna za'#345#237'zen'#237
       end
       object N8: TMenuItem
         Caption = '-'
       end
-      object MI_RCS_Go: TMenuItem
+      object MI_RCSs_Go: TMenuItem
         Action = A_RCS_Go
-        Caption = 'Zapnout v'#353'echny komunikace'
+        Caption = 'Spustit v'#353'echny komunikace'
       end
-      object MI_RCS_Stop: TMenuItem
+      object MI_RCSs_Stop: TMenuItem
         Action = A_RCS_Stop
-        Caption = 'Vypnout v'#353'echny komunikace'
+        Caption = 'Zastavit v'#353'echny komunikace'
       end
       object N1: TMenuItem
         Caption = '-'
       end
-      object MI_RCS_Update: TMenuItem
+      object MI_RCSs_Update: TMenuItem
         Caption = 'Aktualizovat seznam knihoven'
-        OnClick = MI_RCS_UpdateClick
+        OnClick = MI_RCSs_UpdateClick
       end
       object N11: TMenuItem
         Caption = '-'
@@ -8941,13 +9007,11 @@ object F_Main: TF_Main
       Enabled = False
       Hint = 'P'#345'ipojit se k RCS'
       ImageIndex = 4
-      OnExecute = A_RCS_GoExecute
     end
     object A_RCS_Stop: TAction
       Enabled = False
       Hint = 'Odpojit se od RCS'
       ImageIndex = 5
-      OnExecute = A_RCS_StopExecute
     end
     object A_RCS_lib_cfg: TAction
       Hint = 'Otev'#345#237't konfiguraci knihovny'
@@ -9020,13 +9084,11 @@ object F_Main: TF_Main
       Caption = 'Otev'#345#237't MTB'
       Enabled = False
       ImageIndex = 2
-      OnExecute = A_RCS_OpenExecute
     end
     object A_RCS_Close: TAction
       Caption = 'Zav'#345#237't MTB'
       Enabled = False
       ImageIndex = 3
-      OnExecute = A_RCS_CloseExecute
     end
     object A_SaveStav: TAction
       Caption = 'Ulo'#382'it stav koleji'#353't'#283

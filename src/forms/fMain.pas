@@ -11,10 +11,8 @@ uses
 
 const
   _SB_LOG = 0;
-  _SB_RCS = 1;
   _SB_TRAKCE_STAV = 2;
   _SB_TRAKCE_LIB = 3;
-  _SB_RCS_LIB = 4;
   _SB_PROC = 5;
 
   _INIDATA_FN = 'inidata.ini';
@@ -59,8 +57,8 @@ type
     T_Main: TTimer;
     Menu_1: TMainMenu;
     MI_RCS: TMenuItem;
-    MI_RCS_Go: TMenuItem;
-    MI_RCS_Stop: TMenuItem;
+    MI_RCSs_Go: TMenuItem;
+    MI_RCSs_Stop: TMenuItem;
     MI_Provoz: TMenuItem;
     PM_ResetV: TMenuItem;
     SB1: TStatusBar;
@@ -117,8 +115,8 @@ type
     Stop1: TMenuItem;
     A_RCS_Open: TAction;
     A_RCS_Close: TAction;
-    MI_RCS_Open: TMenuItem;
-    MI_RCS_Close: TMenuItem;
+    MI_RCSs_Open: TMenuItem;
+    MI_RCSs_Close: TMenuItem;
     N8: TMenuItem;
     PC_1: TPageControl;
     TS_Technologie: TTabSheet;
@@ -173,13 +171,13 @@ type
     GB_Connected_Panels: TGroupBox;
     LV_Clients: TListView;
     GB_stav_technologie: TGroupBox;
-    S_RCS_open: TShape;
-    S_RCS_start: TShape;
+    S_RCS0_open: TShape;
+    S_RCS0_started: TShape;
     S_Trakce_Connected: TShape;
     S_DCC: TShape;
     S_Server: TShape;
-    L_StavS_1: TLabel;
-    L_StavS_2: TLabel;
+    L_RCS_open: TLabel;
+    L_RCS_started: TLabel;
     L_StavS_3: TLabel;
     L_StavS_4: TLabel;
     L_StavS_6: TLabel;
@@ -238,7 +236,7 @@ type
     A_PT_Start: TAction;
     A_PT_Stop: TAction;
     MI_Block_Houk: TMenuItem;
-    MI_RCS_Update: TMenuItem;
+    MI_RCSs_Update: TMenuItem;
     TS_AB: TTabSheet;
     Panel4: TPanel;
     LV_AB: TListView;
@@ -310,6 +308,12 @@ type
     MI_Block_Delete: TMenuItem;
     PM_Loco_Delete: TMenuItem;
     MI_Loco_Tacho_Reset: TMenuItem;
+    S_RCS1_open: TShape;
+    S_RCS1_started: TShape;
+    S_RCS2_open: TShape;
+    S_RCS2_started: TShape;
+    S_RCS3_open: TShape;
+    S_RCS3_started: TShape;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -326,8 +330,6 @@ type
     procedure PM_SaveFormPosClick(Sender: TObject);
     procedure FormPaint(Sender: TObject);
     procedure PM_ConsoleClick(Sender: TObject);
-    procedure A_RCS_GoExecute(Sender: TObject);
-    procedure A_RCS_StopExecute(Sender: TObject);
     procedure A_DCC_GoExecute(Sender: TObject);
     procedure A_DCC_StopExecute(Sender: TObject);
     procedure A_System_StartExecute(Sender: TObject);
@@ -338,8 +340,6 @@ type
     procedure A_Locos_ReleaseExecute(Sender: TObject);
     procedure A_PanelServer_StartExecute(Sender: TObject);
     procedure A_PanelServer_StopExecute(Sender: TObject);
-    procedure A_RCS_OpenExecute(Sender: TObject);
-    procedure A_RCS_CloseExecute(Sender: TObject);
     procedure LV_ClientsCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure PC_1Change(Sender: TObject);
@@ -418,7 +418,7 @@ type
     procedure LV_Stav_RCSCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure MI_Block_HoukClick(Sender: TObject);
-    procedure MI_RCS_UpdateClick(Sender: TObject);
+    procedure MI_RCSs_UpdateClick(Sender: TObject);
     procedure B_AB_DeleteClick(Sender: TObject);
     procedure LV_ABChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure CHB_RCS_Show_Only_ActiveClick(Sender: TObject);
@@ -458,19 +458,30 @@ type
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
     MI_RCSs: array [0..TRCSs._RCSS_MAX] of TRCSMI;
+    S_RCS_Open: array [0..TRCSs._RCSS_MAX] of TShape;
+    S_RCS_Started: array [0..TRCSs._RCSS_MAX] of TShape;
+    mRCSGUIInitialized: Boolean;
 
     procedure UpdateCallMethod();
     procedure OnFuncNameChange(Sender: TObject);
     procedure UpdateFuncMemo();
 
-    procedure CreateMIRCSs();
     procedure RCSInit();
+    procedure RCSGUIUpdateAll();
+
+    procedure CreateMIRCSs();
     procedure RCSMIUpdateRoot();
-    procedure RCSMIUpdateAll();
     procedure RCSMIUpdateI(i: Integer);
     procedure MI_RCS_Settings_Click(Sender: TObject);
     procedure MI_RCS_Lib_Click(Sender: TObject);
     procedure MI_RCS_UnloadLib_Click(Sender: TObject);
+    procedure MI_RCS_Open_Click(Sender: TObject);
+    procedure MI_RCS_Close_Click(Sender: TObject);
+    procedure MI_RCS_Start_Click(Sender: TObject);
+    procedure MI_RCS_Stop_Click(Sender: TObject);
+
+    procedure RCSShapesInit();
+    procedure RCSShapesUpdate();
 
     procedure WMPowerBroadcast(var Msg: TMessage); message WM_POWERBROADCAST;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
@@ -502,10 +513,14 @@ type
     procedure PanelServerStartingStarted();
 
     // RCS
+    procedure OnRCSBeforeStart(Sender: TObject);
     procedure OnRCSStart(Sender: TObject);
     procedure OnRCSScanned(Sender: TObject);
+    procedure OnRCSBeforeStop(Sender: TObject);
     procedure OnRCSStop(Sender: TObject);
+    procedure OnRCSBeforeOpen(Sender: TObject);
     procedure OnRCSOpen(Sender: TObject);
+    procedure OnRCSBeforeClose(Sender: TObject);
     procedure OnRCSClose(Sender: TObject);
     procedure OnRCSErrOpen(Sender: TObject; errMsg: string);
     procedure OnRCSErrClose(Sender: TObject; errMsg: string);
@@ -578,12 +593,11 @@ uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
 
 procedure TF_Main.RCSInit();
 begin
-  Self.CreateMIRCSs();
+  Self.RCSShapesInit();
+  Self.mRCSGUIInitialized := True;
 
-  if (RCSi.Lib = '') then
-    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := '-'
-  else
-    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := ExtractFileName(RCSi.Lib);
+  Self.CreateMIRCSs();
+  Self.RCSGUIUpdateAll();
 
   try
     if ((RCSi.ready) and (diag.simInputs) and (RCSi.Simulation)) then
@@ -592,7 +606,6 @@ begin
     on E: Exception do
       Log('Nelze provést inputSim : ' + E.Message, llInfo, lsRCS);
   end;
-
 end;
 
 procedure TF_Main.CreateMIRCSs();
@@ -607,26 +620,30 @@ begin
     Self.MI_RCSs[i].MI_Open.Caption := 'Otevřít zařízení';
     Self.MI_RCSs[i].MI_Open.ImageIndex := 2;
     Self.MI_RCSs[i].MI_Open.Tag := i;
+    Self.MI_RCSs[i].MI_Open.OnClick := Self.MI_RCS_Open_Click;
     Self.MI_RCSs[i].MI_Root.Add(Self.MI_RCSs[i].MI_Open);
 
     Self.MI_RCSs[i].MI_Close := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
     Self.MI_RCSs[i].MI_Close.Caption := 'Zavřít zařízení';
     Self.MI_RCSs[i].MI_Close.ImageIndex := 3;
     Self.MI_RCSs[i].MI_Close.Tag := i;
+    Self.MI_RCSs[i].MI_Close.OnClick := Self.MI_RCS_Close_Click;
     Self.MI_RCSs[i].MI_Root.Add(Self.MI_RCSs[i].MI_Close);
 
     Self.MI_RCSs[i].MI_Root.Add(ownGuiUtils.MenuItemSeparator(Self.MI_RCSs[i].MI_Root));
 
     Self.MI_RCSs[i].MI_Start := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
-    Self.MI_RCSs[i].MI_Start.Caption := 'Zapnout komunikaci';
+    Self.MI_RCSs[i].MI_Start.Caption := 'Spustit komunikaci';
     Self.MI_RCSs[i].MI_Start.ImageIndex := 4;
     Self.MI_RCSs[i].MI_Start.Tag := i;
+    Self.MI_RCSs[i].MI_Start.OnClick := Self.MI_RCS_Start_Click;
     Self.MI_RCSs[i].MI_Root.Add(Self.MI_RCSs[i].MI_Start);
 
     Self.MI_RCSs[i].MI_Stop := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
-    Self.MI_RCSs[i].MI_Stop.Caption := 'Vypnout komunikaci';
+    Self.MI_RCSs[i].MI_Stop.Caption := 'Zastavit komunikaci';
     Self.MI_RCSs[i].MI_Stop.ImageIndex := 5;
     Self.MI_RCSs[i].MI_Stop.Tag := i;
+    Self.MI_RCSs[i].MI_Stop.OnClick := Self.MI_RCS_Stop_Click;
     Self.MI_RCSs[i].MI_Root.Add(Self.MI_RCSs[i].MI_Stop);
 
     Self.MI_RCSs[i].MI_Root.Add(ownGuiUtils.MenuItemSeparator(Self.MI_RCSs[i].MI_Root));
@@ -653,14 +670,20 @@ begin
   end;
 
   Self.UpdateRCSLibsList();
-  Self.RCSMIUpdateAll();
 end;
 
-procedure TF_Main.RCSMIUpdateAll();
+procedure TF_Main.RCSGUIUpdateAll();
 begin
+  if (not Self.mRCSGUIInitialized) then
+    Exit();
+
   for var i: Integer := 0 to RCSs._RCSS_MAX do
     Self.RCSMIUpdateI(i);
   Self.RCSMIUpdateRoot();
+  Self.RCSShapesUpdate();
+
+  Self.PM_Tester.Enabled := (RCSs.AnyRCSState(rsStartedNotScanned) or RCSs.AnyRCSState(rsStartedScanned));
+  Self.PM_ResetV.Enabled := Self.PM_Tester.Enabled;
 end;
 
 procedure TF_Main.RCSMIUpdateRoot();
@@ -686,10 +709,10 @@ begin
       allStopEnabled := False;
   end;
 
-  Self.MI_RCS_Open.Enabled := anyOpenEnabled;
-  Self.MI_RCS_Close.Enabled := allCloseEnabled;
-  Self.MI_RCS_Go.Enabled := ((anyStartEnabled) and (not anyOpenEnabled));
-  Self.MI_Stop.Enabled := allStopEnabled;
+  Self.MI_RCSs_Open.Enabled := anyOpenEnabled;
+  Self.MI_RCSs_Close.Enabled := allCloseEnabled;
+  Self.MI_RCSs_Go.Enabled := ((anyStartEnabled) and (not anyOpenEnabled));
+  Self.MI_RCSs_Stop.Enabled := allStopEnabled;
 end;
 
 procedure TF_Main.RCSMIUpdateI(i: Integer);
@@ -697,7 +720,7 @@ begin
   Self.MI_RCSs[i].MI_Open.Enabled := ((RCSs[i].state = TRCSState.rsClosed) and (RCSs[i].libLoaded) and (RCSs[i].ready));
   Self.MI_RCSs[i].MI_Close.Enabled := (RCSs[i].state = TRCSState.rsOpenStopped);
   Self.MI_RCSs[i].MI_Start.Enabled := (RCSs[i].state = TRCSState.rsOpenStopped);
-  Self.MI_RCSs[i].MI_Stop.Enabled := (RCSs[i].state = TRCSState.rsStarted);
+  Self.MI_RCSs[i].MI_Stop.Enabled := ((RCSs[i].state = TRCSState.rsStartedScanned) or (RCSs[i].state = TRCSState.rsStartedNotScanned));
   Self.MI_RCSs[i].MI_Settings.Enabled := RCSs[i].libLoaded;
 
   var anyLoaded: Boolean := False;
@@ -721,12 +744,10 @@ begin
 
   Screen.Cursor := crHourGlass;
   rcs.Log('-> ' + fn, llInfo);
-  Self.SB1.Panels.Items[_SB_RCS_LIB].Text := '-';
 
   try
     RCSs.LoadLib(rcsi, fn);
     Self.LogStatus('RCS'+IntToStr(rcsi)+': načteno ' + fn);
-    Self.SB1.Panels.Items[_SB_RCS_LIB].Text := ExtractFileName(rcs.lib);
   except
     on E: Exception do
     begin
@@ -738,8 +759,7 @@ begin
   end;
 
   RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
-  Self.RCSMIUpdateI(rcsi);
-  Self.RCSMIUpdateRoot();
+  Self.RCSGUIUpdateAll();
   Screen.Cursor := crDefault;
 end;
 
@@ -753,7 +773,6 @@ begin
 
   Screen.Cursor := crHourGlass;
   rcs.Log('-> žádná knihovna', llInfo);
-  Self.SB1.Panels.Items[_SB_RCS_LIB].Text := '-';
 
   try
     rcs.UnloadLib();
@@ -768,8 +787,7 @@ begin
   end;
 
   RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
-  Self.RCSMIUpdateI(rcsi);
-  Self.RCSMIUpdateRoot();
+  Self.RCSGUIUpdateAll();
   Screen.Cursor := crDefault;
 end;
 
@@ -812,7 +830,7 @@ begin
     SysUtils.FindClose(sr);
   end;
 
-  Self.RCSMIUpdateAll();
+  Self.RCSGUIUpdateAll();
 end;
 
 procedure TF_Main.MI_RCS_Settings_Click(Sender: TObject);
@@ -847,9 +865,36 @@ begin
   RCSs[rcsi].Log('Zobrazen ConfigDialog', llInfo);
 end;
 
-procedure TF_Main.A_RCS_CloseExecute(Sender: TObject);
+procedure TF_Main.MI_RCS_Open_Click(Sender: TObject);
 begin
-  if ((SystemData.Status = stopping) and (not RCSi.NoExOpened)) then
+  const rcsi: Integer = TMenuItem(Sender).Tag;
+  var rcs: TRCS := RCSs[rcsi];
+
+  if ((SystemData.Status = starting) and (rcs.NoExOpened())) then
+  begin
+    Self.MI_RCS_Start_Click(Self.MI_RCSs[rcsi].MI_Start);
+    Exit();
+  end;
+
+  try
+    rcs.Open();
+  except
+    on E: ERCSAlreadyOpened do
+      Self.OnRCSErrOpen(Self, 'RCS je již otevřeno!');
+    on E: ERCSCannotOpenPort do
+      Self.OnRCSErrOpen(Self,
+        'Nepodařilo se otevřít USB port, otevřete konfigurační okno RCS driveru a zkontrolujte, že je vybrán správný port!');
+    on E: Exception do
+      Self.OnRCSErrOpen(Self, 'Nastala kritická chyba : ' + E.Message);
+  end;
+end;
+
+procedure TF_Main.MI_RCS_Close_Click(Sender: TObject);
+begin
+  const rcsi: Integer = TMenuItem(Sender).Tag;
+  var rcs: TRCS := RCSs[rcsi];
+
+  if ((SystemData.Status = stopping) and (RCSs.AllRCSsState(rsClosed))) then
   begin
     Self.LogStatus('System: stop OK');
     SystemData.Status := null;
@@ -857,23 +902,8 @@ begin
     Exit();
   end;
 
-  Self.S_RCS_open.Brush.Color := clBlue;
-  Self.LogStatus('RCS: uzavírám zařízení...');
-
-  Log('----- RCS CLOSING -----', llInfo, lsRCS);
-
-  with (F_Main) do
-  begin
-    A_RCS_Open.Enabled := false;
-    A_RCS_Close.Enabled := false;
-    SB1.Panels.Items[_SB_RCS].Text := 'Zavírám RCS...';
-
-    A_System_Start.Enabled := false;
-    A_System_Stop.Enabled := false;
-  end; // with F_Main do
-
   try
-    RCSi.Close();
+    rcs.Close();
   except
     on E: ERCSNotOpened do
       Self.OnRCSErrClose(Self, 'RCS není otevřeno, nelze jej proto zavřít!');
@@ -884,33 +914,19 @@ begin
   end;
 end;
 
-procedure TF_Main.A_RCS_GoExecute(Sender: TObject);
+procedure TF_Main.MI_RCS_Start_Click(Sender: TObject);
 begin
-  if ((SystemData.Status = starting) and (RCSi.NoExStarted)) then
+  const rcsi: Integer = TMenuItem(Sender).Tag;
+  var rcs: TRCS := RCSs[rcsi];
+
+  if ((SystemData.Status = starting) and (RCSs.AllRCSsState(rsStartedScanned))) then
   begin
     Self.A_Trk_ConnectExecute(nil);
     Exit();
   end;
 
-  with (F_Main) do
-  begin
-    A_RCS_Go.Enabled := false;
-    A_RCS_Stop.Enabled := false;
-    A_RCS_Close.Enabled := false;
-
-    A_System_Start.Enabled := false;
-    A_System_Stop.Enabled := false;
-
-    SB1.Panels.Items[_SB_RCS].Text := 'Spouštím RCS...';
-  end; // with F_Main do
-
-  Self.LogStatus('RCS: Spouštím komunikaci...');
-  Self.S_RCS_start.Brush.Color := clBlue;
-
-  Log('----- RCS STARTING -----', llInfo, lsRCS);
-
   try
-    RCSi.Start();
+    rcs.Start();
   except
     on E: ERCSAlreadyStarted do
       Self.OnRCSErrStart(Self, 'Komunikace již probíhá!');
@@ -927,70 +943,19 @@ begin
   end;
 end;
 
-procedure TF_Main.A_RCS_OpenExecute(Sender: TObject);
+procedure TF_Main.MI_RCS_Stop_Click(Sender: TObject);
 begin
-  if ((SystemData.Status = starting) and (RCSi.NoExOpened)) then
+  const rcsi: Integer = TMenuItem(Sender).Tag;
+  var rcs: TRCS := RCSs[rcsi];
+
+  if ((SystemData.Status = stopping) and (not rcs.NoExStarted())) then
   begin
-    Self.A_RCS_GoExecute(nil);
+    Self.MI_RCS_Close_Click(Self.MI_RCSs[rcsi].MI_Close);
     Exit();
   end;
 
-  with (F_Main) do
-  begin
-    A_RCS_Open.Enabled := false;
-    A_RCS_Close.Enabled := false;
-
-    SB1.Panels.Items[_SB_RCS].Text := 'Otevírám RCS...';
-
-    A_System_Start.Enabled := false;
-    A_System_Stop.Enabled := false;
-  end; // with F_Main do
-
-  Self.LogStatus('RCS: Otevírám zařízení, hledám moduly...');
-  Self.S_RCS_open.Brush.Color := clBlue;
-
-  Log('----- RCS OPENING -----', llInfo, lsRCS);
-
   try
-    RCSi.logActionInProgress := true;
-    RCSi.Open();
-  except
-    on E: ERCSAlreadyOpened do
-      Self.OnRCSErrOpen(Self, 'RCS je již otevřeno!');
-    on E: ERCSCannotOpenPort do
-      Self.OnRCSErrOpen(Self,
-        'Nepodařilo se otevřít USB port, otevřete konfigurační okno RCS driveru a zkontrolujte, že je vybrán správný port!');
-    on E: Exception do
-      Self.OnRCSErrOpen(Self, 'Nastala kritická chyba : ' + E.Message);
-  end;
-end;
-
-procedure TF_Main.A_RCS_StopExecute(Sender: TObject);
-begin
-  if ((SystemData.Status = stopping) and (not RCSi.NoExStarted)) then
-  begin
-    Self.A_RCS_CloseExecute(nil);
-    Exit();
-  end;
-
-  Self.S_RCS_start.Brush.Color := clGray;
-  Self.LogStatus('RCS: zastavuji komunikaci...');
-
-  Log('----- RCS STOPPING -----', llInfo, lsRCS);
-
-  with (F_Main) do
-  begin
-    A_RCS_Go.Enabled := false;
-    A_RCS_Stop.Enabled := false;
-    SB1.Panels.Items[_SB_RCS].Text := 'Zastavuji RCS...';
-
-    A_System_Start.Enabled := false;
-    A_System_Stop.Enabled := false;
-  end; // with F_Main do
-
-  try
-    RCSi.logActionInProgress := true;
-    RCSi.Stop();
+    rcs.Stop();
   except
     on E: ERCSNotStarted do
       Self.OnRCSErrStop(Self, 'RCS komunikace není spuštěna, nelze ji proto zastavit!');
@@ -999,152 +964,143 @@ begin
   end;
 end;
 
-// --- events from RCS lib begin ---
-procedure TF_Main.OnRCSStart(Sender: TObject);
+procedure TF_Main.RCSShapesInit();
 begin
-  RCSi.logActionInProgress := false;
+  Self.S_RCS_Open[0] := Self.S_RCS0_open;
+  Self.S_RCS_Open[1] := Self.S_RCS1_open;
+  Self.S_RCS_Open[2] := Self.S_RCS2_open;
+  Self.S_RCS_Open[3] := Self.S_RCS3_open;
 
-  with (F_Main) do
-  begin
-    A_RCS_Go.Enabled := false;
-    A_RCS_Stop.Enabled := true;
-
-    PM_Tester.Enabled := true;
-    PM_ResetV.Enabled := true;
-
-    SB1.Panels.Items[_SB_RCS].Text := 'RCS spuštěno';
-    UpdateSystemButtons();
-  end; // with F_Main do
-
-  Log('----- RCS START OK -----', llInfo, lsRCS);
-
-  Self.LogStatus('RCS: komunikace spuštěna, čekám na první sken všech modulů...');
-  RCSTableData.UpdateTable();
+  Self.S_RCS_Started[0] := Self.S_RCS0_started;
+  Self.S_RCS_Started[1] := Self.S_RCS1_started;
+  Self.S_RCS_Started[2] := Self.S_RCS2_started;
+  Self.S_RCS_Started[3] := Self.S_RCS3_started;
 end;
 
-procedure TF_Main.OnRCSScanned(Sender: TObject);
+procedure TF_Main.RCSShapesUpdate();
+const SPACE_PX: Integer = 5;
 begin
-  Self.S_RCS_start.Brush.Color := clLime;
-  RCSTableData.UpdateTable();
+  if (not Self.mRCSGUIInitialized) then
+    Exit();
 
-  Log('----- RCS SCANNED -----', llInfo, lsRCS);
-  Self.LogStatus('RCS: moduly naskenovány');
-
-  // inicialziace osvetleni
-  Areas.InitOsv();
-
-  if (SystemData.Status = starting) then
-    Self.A_Trk_ConnectExecute(nil);
-end;
-
-procedure TF_Main.OnRCSStop(Sender: TObject);
-begin
-  RCSi.logActionInProgress := false;
-
-  if (Blocks.Enabled) then
+  var left: Integer := Self.S_RCS0_open.Left;
+  for var i:Integer := 0 to RCSs._RCSS_MAX do
   begin
-    Blocks.Disable();
-    Trains.ClearPOdj();
-    Self.A_SaveStavExecute(Self);
+    Self.S_RCS_Open[i].Visible := (RCSs[i].lib <> ''); // true if lib unsuccessfully loaded
+    Self.S_RCS_Open[i].Left := left;
+    Self.S_RCS_Started[i].Visible := Self.S_RCS_Open[i].Visible;
+    Self.S_RCS_Started[i].Left := Self.S_RCS_Open[i].Left;
+
+    if (Self.S_RCS_Open[i].Visible) then
+      left := left + Self.S_RCS0_open.Width + SPACE_PX;
+
+    case (RCSs[i].state) of
+      rsClosed: begin
+        Self.S_RCS_Open[i].Brush.Color := clRed;
+        Self.S_RCS_Started[i].Brush.Color := clRed;
+      end;
+      rsOpening, rsClosing: begin
+        Self.S_RCS_Open[i].Brush.Color := clBlue;
+        Self.S_RCS_Started[i].Brush.Color := clRed;
+      end;
+      rsOpenStopped: begin
+        Self.S_RCS_Open[i].Brush.Color := clLime;
+        Self.S_RCS_Started[i].Brush.Color := clRed;
+      end;
+      rsStarting, rsStopping, rsStartedNotScanned: begin
+        Self.S_RCS_Open[i].Brush.Color := clLime;
+        Self.S_RCS_Started[i].Brush.Color := clBlue;
+      end;
+      rsStartedScanned: begin
+        Self.S_RCS_Open[i].Brush.Color := clLime;
+        Self.S_RCS_Started[i].Brush.Color := clLime;
+      end;
+    end;
   end;
 
-  modelTime.started := false;
+  Self.L_RCS_open.Left := left;
+  Self.L_RCS_started.Left := left;
+end;
+
+// --- events from RCS lib begin ---
+
+procedure TF_Main.OnRCSBeforeOpen(Sender: TObject);
+begin
+  var rcs: TRCS := TRCS(Sender);
+
+  Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
-  if (F_Tester.Showing) then
-    F_Tester.Close();
+  Self.A_System_Start.Enabled := false;
+  Self.A_System_Stop.Enabled := false;
 
-  Self.S_RCS_start.Brush.Color := clRed;
-
-  with (Self) do
-  begin
-    A_RCS_Go.Enabled := true;
-    A_RCS_Stop.Enabled := false;
-    A_RCS_Close.Enabled := true;
-
-    PM_ResetV.Enabled := false;
-    PM_Tester.Enabled := false;
-
-    SB1.Panels.Items[_SB_RCS].Text := 'RCS otevřeno';
-  end; // with F_Main do
-
-  Log('----- RCS STOP OK -----', llInfo, lsRCS);
-
-  Self.LogStatus('RCS: komunikace zastavena');
-
-  RCSTableData.UpdateTable();
-
-  if ((Self.Showing) and (Self.PC_1.ActivePage = F_Main.TS_Bloky)) then
-    BlocksTablePainter.UpdateTable();
-
-  PanelServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
-  Trains.StopAllTrains();
-
-  if (SystemData.Status = stopping) then
-    Self.A_RCS_CloseExecute(nil);
+  rcs.LogFMainStatus('Otevírám zařízení, hledám moduly...');
+  rcs.Log('Otevírám zařízení, hledám moduly...', llInfo);
 end;
 
 procedure TF_Main.OnRCSOpen(Sender: TObject);
-var i: Integer;
-  str: string;
 begin
-  RCSi.logActionInProgress := false;
+  var rcs: TRCS := TRCS(Sender);
 
-  Self.A_RCS_Open.Enabled := false;
-  Self.A_RCS_Close.Enabled := true;
-  Self.A_RCS_Go.Enabled := true;
-  Self.A_RCS_Stop.Enabled := false;
-//  Self.MI_RCS_Libs.Enabled := false;
+  Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
-  Self.S_RCS_open.Brush.Color := clLime;
-
   try
-    Log('----- RCS OPEN OK : ' + IntToStr(RCSi.GetModuleCount) + ' modules -----', llInfo, lsRCS);
+    rcs.Log('Otevřeno, modulů: ' + IntToStr(rcs.GetModuleCount()), llInfo);
   except
-    Log('----- RCS OPEN OK : unknown amount of modules -----', llWarning, lsRCS);
+    rcs.Log('Otevřeno, neznámý počet modulů!', llWarning);
   end;
 
-  Self.LogStatus('RCS: otevřeno');
-  SB1.Panels.Items[_SB_RCS].Text := 'RCS otevřeno';
-
-  F_Tester.AfterRCSOpen();
-
-  RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
+  rcs.LogFMainStatus('Otevřeno');
+  F_Tester.AfterRCSOpen(); // TODO
+  RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked); // TODO
 
   if (SystemData.Status = starting) then
   begin
-    // scan, jestli nahodou nechybi RCS desky
-    str := '';
-    for i := 0 to RCSi.maxModuleAddr + 1 do
-      if ((RCSi.GetNeeded(i)) and (not RCSi.IsModule(i))) then
+    // any RCS modules missing?
+    var str: string := '';
+    for var i := 0 to rcs.maxModuleAddr + 1 do
+    begin
+      if ((rcs.GetNeeded(i)) and (not rcs.IsModule(i))) then
       begin
         if (Length(str) > 0) then
           str := str + ', ';
         str := str + IntToStr(i);
       end;
+    end;
     if (str <> '') then
     begin
-      Log('Chybí RCS moduly ' + str, llWarning, lsRCS);
-      Self.LogStatus('WARN: Chybí RCS moduly ' + str);
+      rcs.Log('Chybí moduly ' + str, llWarning);
+      rcs.LogFMainStatusWarning('Chybí moduly ' + str);
     end;
 
-    Self.A_RCS_GoExecute(nil);
+    Self.MI_RCS_Start_Click(Self.MI_RCSs[rcs.systemI].MI_Start);
   end;
+end;
+
+procedure TF_Main.OnRCSBeforeClose(Sender: TObject);
+begin
+  var rcs: TRCS := TRCS(Sender);
+
+  Self.RCSGUIUpdateAll();
+  Self.UpdateSystemButtons();
+
+  Self.A_System_Start.Enabled := false;
+  Self.A_System_Stop.Enabled := false;
+
+  rcs.LogFMainStatus('Uzavírám zařízení...');
+  rcs.Log('Uzavírám zařízení...', llInfo);
 end;
 
 procedure TF_Main.OnRCSClose(Sender: TObject);
 begin
-  RCSi.logActionInProgress := false;
+  var rcs: TRCS := TRCS(Sender);
 
-  Self.A_RCS_Go.Enabled := false;
-  Self.A_RCS_Stop.Enabled := false;
-  Self.A_RCS_Close.Enabled := false;
-  Self.A_RCS_Open.Enabled := true;
-//  Self.MI_RCS_Libs.Enabled := true;
+  Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
   // may happen when RCS USB disconnects
+  // TODO too strict -> disable just blocks related to specific RCS
   if (Blocks.Enabled) then
   begin
     Blocks.Disable();
@@ -1153,17 +1109,12 @@ begin
   end;
   Trains.StopAllTrains();
 
-  Self.S_RCS_open.Brush.Color := clRed;
-  Self.S_RCS_start.Brush.Color := clRed;
+  rcs.Log('Uzavřeno', llInfo);
+  rcs.LogFMainStatus('Uzavřeno');
 
-  Log('----- RCS CLOSE OK -----', llInfo, lsRCS);
+  PanelServer.BroadcastBottomError('Výpadek RCS'+IntToStr(rcs.systemI)+'!', 'TECHNOLOGIE');
 
-  Self.LogStatus('RCS: uzavřeno');
-  SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
-
-  PanelServer.BroadcastBottomError('Výpadek systému RCS!', 'TECHNOLOGIE');
-
-  if (SystemData.Status = stopping) then
+  if ((SystemData.Status = stopping) and (RCSs.AllRCSsState(rsClosed))) then
   begin
     Self.LogStatus('System: stop OK');
     SystemData.Status := null;
@@ -1175,108 +1126,165 @@ end;
 
 procedure TF_Main.OnRCSErrOpen(Sender: TObject; errMsg: string);
 begin
-  RCSi.logActionInProgress := false;
+  var rcs: TRCS := TRCS(Sender);
 
-  Self.A_RCS_Go.Enabled := false;
-  Self.A_RCS_Stop.Enabled := false;
-  Self.A_RCS_Open.Enabled := true;
+  Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
-
-  Self.S_RCS_open.Brush.Color := clRed;
 
   SystemData.Status := TSystemStatus.null;
 
-  Self.LogStatus('ERR: RCS OPEN FAIL: ' + errMsg);
-  Log('----- RCS OPEN FAIL - ' + errMsg + ' -----', llError, lsRCS);
-  SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
+  rcs.LogFMainStatusError('Chyba otevírání: ' + errMsg);
+  rcs.Log('Chyba otevírání: ' + errMsg, llError);
 
-  ErrorMessageBox('Při otevírání RCS nastala chyba:', errMsg);
+  ErrorMessageBox('Při otevírání RCS'+IntToStr(rcs.systemI)+' nastala chyba:', errMsg);
 end;
 
 procedure TF_Main.OnRCSErrClose(Sender: TObject; errMsg: string);
 begin
-  RCSi.logActionInProgress := false;
+  var rcs: TRCS := TRCS(Sender);
 
-  A_RCS_Go.Enabled := false;
-  A_RCS_Stop.Enabled := false;
-  A_RCS_Open.Enabled := true;
-
-  Self.S_RCS_open.Brush.Color := clRed;
+  Self.RCSGUIUpdateAll();
+  Self.UpdateSystemButtons();
 
   SystemData.Status := null;
 
-  Self.LogStatus('ERR: RCS CLOSE FAIL: ' + errMsg);
-  SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
+  rcs.LogFMainStatusError('Chyba uzavírání: ' + errMsg);
+  rcs.Log('Chyba uzavírání: ' + errMsg, llError);
 
-  ErrorMessageBox('Při uzavírání RCS nastala chyba:', errMsg);
-  Log('----- RCS CLOSE FAIL - ' + errMsg + ' -----', llError, lsRCS);
+  ErrorMessageBox('Při uzavírání RCS'+IntToStr(rcs.systemI)+' nastala chyba:', errMsg);
+end;
+
+procedure TF_Main.OnRCSBeforeStart(Sender: TObject);
+begin
+  var rcs: TRCS := TRCS(Sender);
+
+  Self.RCSGUIUpdateAll();
+  Self.UpdateSystemButtons();
+
+  Self.A_System_Start.Enabled := false;
+  Self.A_System_Stop.Enabled := false;
+
+  rcs.LogFMainStatus('Spouštím komunikaci...');
+  rcs.Log('Spouštím komunikaci...', llInfo);
+end;
+
+procedure TF_Main.OnRCSStart(Sender: TObject);
+begin
+  var rcs: TRCS := TRCS(Sender);
+
+  Self.RCSGUIUpdateAll();
+  Self.UpdateSystemButtons();
+
+  rcs.Log('Komunikace spuštěna, čekám na první sken všech modulů...', llInfo);
+  rcs.LogFMainStatus('Komunikace spuštěna, čekám na první sken všech modulů...');
+
+  RCSTableData.UpdateTable();
+end;
+
+procedure TF_Main.OnRCSScanned(Sender: TObject);
+begin
+  var rcs: TRCS := TRCS(Sender);
+
+  Self.RCSGUIUpdateAll();
+  RCSTableData.UpdateTable();
+
+  rcs.Log('Moduly naskenovány', llInfo);
+  rcs.LogFMainStatus('Moduly naskenovány');
+
+  Areas.InitOsv(); // TODO
+
+  if ((SystemData.Status = starting) and (RCSs.AllRCSsState(rsStartedScanned))) then
+    Self.A_Trk_ConnectExecute(nil);
+end;
+
+procedure TF_Main.OnRCSBeforeStop(Sender: TObject);
+begin
+  var rcs: TRCS := TRCS(Sender);
+
+  Self.RCSGUIUpdateAll();
+  Self.UpdateSystemButtons();
+
+  Self.A_System_Start.Enabled := false;
+  Self.A_System_Stop.Enabled := false;
+
+  rcs.LogFMainStatus('Zastavuji komunikaci...');
+  rcs.Log('Zastavovuji komunikaci...', llInfo);
+end;
+
+procedure TF_Main.OnRCSStop(Sender: TObject);
+begin
+  var rcs: TRCS := TRCS(Sender);
+
+  if (Blocks.Enabled) then // TODO maybe too strict?
+  begin
+    Blocks.Disable();
+    Trains.ClearPOdj();
+    Self.A_SaveStavExecute(Self);
+  end;
+
+  modelTime.started := false;
+
+  Self.RCSGUIUpdateAll();
+  Self.UpdateSystemButtons();
+
+  if ((F_Tester.Showing) and (not RCSs.AnyRCSState(rsStartedScanned)) and (not RCSs.AnyRCSState(rsStartedNotScanned))) then
+    F_Tester.Close();
+
+  rcs.Log('Komunikace zastavena', llInfo);
+  rcs.LogFMainStatus('Komunikace zastavena');
+  RCSTableData.UpdateTable();
+
+  if ((Self.Showing) and (Self.PC_1.ActivePage = F_Main.TS_Bloky)) then
+    BlocksTablePainter.UpdateTable();
+
+  PanelServer.BroadcastBottomError('Výpadek systému RCS'+IntToStr(rcs.systemI)+'!', 'TECHNOLOGIE');
+  Trains.StopAllTrains(); // TODO maybe too strict?
+
+  if (SystemData.Status = stopping) then
+    Self.MI_RCS_Close_Click(Self.MI_RCSs[rcs.systemI].MI_Close);
 end;
 
 procedure TF_Main.OnRCSErrStart(Sender: TObject; errMsg: string);
 begin
-  RCSi.logActionInProgress := false;
+  var rcs: TRCS := TRCS(Sender);
 
-  A_RCS_Close.Enabled := true;
+  Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
-  A_RCS_Go.Enabled := true;
-
-  SB1.Panels.Items[_SB_RCS].Text := 'RCS otevřeno';
-  S_RCS_start.Brush.Color := clRed;
 
   SystemData.Status := TSystemStatus.null;
 
-  Self.LogStatus('ERR: RCS START FAIL: ' + errMsg);
-  Log('----- RCS START FAIL - ' + errMsg + ' -----', llError, lsRCS);
-
-  ErrorMessageBox('Při zapínání komunikace nastala chyba:', errMsg);
+  rcs.LogFMainStatusError('Chyba spouštění komunikace: ' + errMsg);
+  rcs.Log('Chyba spouštění komunikace: ' + errMsg, llError);
+  ErrorMessageBox('Při spoušění komunikace RCS'+IntToStr(rcs.systemI)+' nastala chyba:', errMsg);
 end;
 
 procedure TF_Main.OnRCSErrStop(Sender: TObject; errMsg: string);
 begin
-  RCSi.logActionInProgress := false;
+  var rcs: TRCS := TRCS(Sender);
 
-  A_RCS_Open.Enabled := true;
-  A_RCS_Close.Enabled := true;
-  A_RCS_Go.Enabled := true;
+  Self.RCSGUIUpdateAll();
 
-  SB1.Panels.Items[_SB_RCS].Text := 'RCS otevřeno';
-  S_RCS_start.Brush.Color := clRed;
+  SystemData.Status := TSystemStatus.null;
 
-  SystemData.Status := null;
-
-  Self.LogStatus('ERR: RCS STOP FAIL: ' + errMsg);
-
-  StrMessageBox('Při vypínání komunikace nastala chyba:' + #13#10 + errMsg, 'Chyba',
-    MB_OK OR MB_ICONWARNING);
-  Log('----- RCS STOP FAIL - ' + errMsg + ' -----', llError, lsRCS);
+  rcs.LogFMainStatusError('Chyba zastavování komunikace: ' + errMsg);
+  rcs.Log('Chyba zastavování komunikace: ' + errMsg, llError);
+  StrMessageBox('Při zastavování komunikace RCS'+IntToStr(rcs.systemI)+' nastala chyba:' + #13#10 + errMsg,
+    'Chyba', MB_OK OR MB_ICONWARNING);
 end;
 
 procedure TF_Main.OnRCSReady(Sender: TObject; ready: Boolean);
 var started, opened: Boolean;
 begin
-  try
-    started := RCSi.started;
-    opened := RCSi.opened;
-  except
-    on E: Exception do
-    begin
-      started := false;
-      opened := false;
-      AppEvents.LogException(E, 'OnRCSReady');
-    end;
-  end;
+  var rcs: TRCS := TRCS(Sender);
 
-  Self.A_RCS_Open.Enabled := ready and (not opened);
-  Self.A_RCS_Close.Enabled := ready and opened;
-  Self.A_RCS_Go.Enabled := ready and opened and (not started);
-  Self.A_RCS_Stop.Enabled := ready and started;
+  Self.RCSGUIUpdateAll();
 
   try
-    if ((ready) and (diag.simInputs) and (RCSi.Simulation)) then
-      RCSi.InputSim();
+    if ((ready) and (diag.simInputs) and (rcs.simulation)) then
+      rcs.InputSim();
   except
     on E: Exception do
-      Log('Nelze provést inputSim : ' + E.Message, llError, lsRCS);
+      rcs.Log('Nelze provést inputSim: ' + E.Message, llError);
   end;
 end;
 
@@ -1405,7 +1413,9 @@ procedure TF_Main.A_Trk_DisconnectExecute(Sender: TObject);
 begin
   if ((SystemData.Status = stopping) and (not trakce.ConnectedSafe())) then
   begin
-    Self.A_RCS_StopExecute(nil);
+    for var i: Integer := 0 to RCSs._RCSS_MAX do
+      if (RCSs[i].NoExStarted()) then
+        Self.MI_RCS_Stop_Click(Self.MI_RCSs[i].MI_Stop);
     Exit();
   end;
 
@@ -1655,7 +1665,9 @@ begin
   PanelServer.BroadcastBottomError('Výpadek systému řízení trakce, ztráta kontroly nad jízdou!', 'TECHNOLOGIE');
 
   if (SystemData.Status = stopping) then
-    Self.A_RCS_StopExecute(Self);
+    for var i: Integer := 0 to RCSs._RCSS_MAX do
+      if (RCSs[i].NoExStarted()) then
+        Self.MI_RCS_Stop_Click(Self.MI_RCSs[i].MI_Stop);
 end;
 
 procedure TF_Main.OnTrkReady(Sender: TObject; ready: Boolean);
@@ -1953,6 +1965,7 @@ end;
 
 procedure TF_Main.FormCreate(Sender: TObject);
 begin
+  Self.mRCSGUIInitialized := False;
   Self.CloseMessage := true;
   Self.mCpuLoad := TCpuLoad.Create();
 
@@ -1967,12 +1980,19 @@ begin
   MultiJCTableData := TMultiJCTableData.Create(Self.LV_MultiJC);
 
   // assign RCS events:
-  RCSi.AfterOpen := Self.OnRCSOpen;
-  RCSi.AfterClose := Self.OnRCSClose;
-  RCSi.AfterStart := Self.OnRCSStart;
-  RCSi.AfterStop := Self.OnRCSStop;
-  RCSi.OnScanned := Self.OnRCSScanned;
-  RCSi.OnReady := Self.OnRCSReady;
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+  begin
+    RCSs[i].BeforeOpen := Self.OnRCSBeforeOpen;
+    RCSs[i].AfterOpen := Self.OnRCSOpen;
+    RCSs[i].BeforeClose := Self.OnRCSBeforeClose;
+    RCSs[i].AfterClose := Self.OnRCSClose;
+    RCSs[i].BeforeStart := Self.OnRCSBeforeStart;
+    RCSs[i].AfterStart := Self.OnRCSStart;
+    RCSs[i].BeforeStop := Self.OnRCSBeforeStop;
+    RCSs[i].AfterStop := Self.OnRCSStop;
+    RCSs[i].OnScanned := Self.OnRCSScanned;
+    RCSs[i].OnReady := Self.OnRCSReady;
+  end;
 
   // assign Trakce events:
   trakce.BeforeOpen := Self.OnTrkBeforeOpen;
@@ -1991,7 +2011,6 @@ begin
 
   Self.Caption := 'hJOPserver – v' + VersionStr(Application.ExeName) +
     ' (build ' + FormatDateTime('dd.mm.yyyy', BuildDateTime()) + ')';
-  Self.SB1.Panels.Items[_SB_RCS].Text := 'RCS zavřeno';
 end;
 
 procedure TF_Main.FormDestroy(Sender: TObject);
@@ -2341,7 +2360,10 @@ begin
   Self.LogStatus('Zapínám systémy...');
   SystemData.Status := starting;
   Self.A_System_Start.Enabled := false;
-  Self.A_RCS_OpenExecute(nil);
+
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+    if ((RCSs[i].libLoaded) and (RCSs[i].ready)) then
+      Self.MI_RCS_Open_Click(Self.MI_RCSs[i].MI_Open);
 end;
 
 procedure TF_Main.A_System_StopExecute(Sender: TObject);
@@ -2886,7 +2908,7 @@ begin
     Self.LV_BlocksDblClick(Self.LV_Blocks);
 end;
 
-procedure TF_Main.MI_RCS_UpdateClick(Sender: TObject);
+procedure TF_Main.MI_RCSs_UpdateClick(Sender: TObject);
 begin
   try
     Self.UpdateRCSLibsList();
@@ -3747,10 +3769,10 @@ end;
 
 procedure TF_Main.UpdateSystemButtons();
 begin
-  Self.A_System_Start.Enabled := ((not RCSi.NoExStarted) or (not trakce.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
+  Self.A_System_Start.Enabled := ((not RCSs.AllRCSsState(rsStartedScanned)) or (not trakce.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
     or (not PanelServer.openned) or (not Blocks.Enabled) or ((PtServer.autoStart) and (not PtServer.openned)));
-  Self.A_System_Stop.Enabled := (RCSi.NoExOpened) or (trakce.ConnectedSafe()) or (PanelServer.openned) or
-    (PtServer.openned);
+  Self.A_System_Stop.Enabled := ((RCSs.AnyRCSStateGTE(rsOpenStopped)) or (trakce.ConnectedSafe()) or (PanelServer.openned) or
+    (PtServer.openned));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

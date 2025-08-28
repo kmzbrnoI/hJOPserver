@@ -439,7 +439,7 @@ end;
 
 procedure TF_Tester.AfterRCSOpen();
 begin
-  Self.FillRCSAddrs();
+//  Self.FillRCSAddrs(); // TODO
 end;
 
 procedure TF_Tester.RCSModuleChanged(addr: Cardinal);

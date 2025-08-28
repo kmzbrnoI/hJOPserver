@@ -53,6 +53,9 @@ type
 
     function NoExStarted(): Boolean;
     function NoExOpened(): Boolean;
+    function AnyRCSState(state: TRCSState): Boolean;
+    function AnyRCSStateGTE(state: TRCSState): Boolean;
+    function AllRCSsState(state: TRCSState): Boolean;
 
     procedure SetNeeded(system: Cardinal; module: Cardinal; state: Boolean = true); overload;
     procedure SetNeeded(addr: TRCSsAddr; state: Boolean = true); overload;
@@ -239,6 +242,30 @@ function TRCSs.NoExOpened(): Boolean;
 begin
   for var i: Integer := 0 to _RCSS_MAX do
     if ((Self.m_rcss[i].libLoaded) and (not Self.m_rcss[i].NoExOpened())) then
+      Exit(False);
+  Result := True;
+end;
+
+function TRCSs.AnyRCSState(state: TRCSState): Boolean;
+begin
+  for var i: Integer := 0 to _RCSS_MAX do
+    if (Self.m_rcss[i].state = state) then
+      Exit(True);
+  Result := False;
+end;
+
+function TRCSs.AnyRCSStateGTE(state: TRCSState): Boolean;
+begin
+  for var i: Integer := 0 to _RCSS_MAX do
+    if (Self.m_rcss[i].state >= state) then
+      Exit(True);
+  Result := False;
+end;
+
+function TRCSs.AllRCSsState(state: TRCSState): Boolean;
+begin
+  for var i: Integer := 0 to _RCSS_MAX do
+    if (Self.m_rcss[i].state <> state) then
       Exit(False);
   Result := True;
 end;

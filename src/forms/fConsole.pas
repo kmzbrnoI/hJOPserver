@@ -33,7 +33,8 @@ var
 
 implementation
 
-uses fMain, RCSc, GetSystems, TrakceC, appEv, Logging, Block, BlockTrack, BlockDb, Config;
+uses fMain, RCSc, GetSystems, TrakceC, appEv, Logging, Block, BlockTrack, BlockDb,
+  Config, RCSsc;
 
 {$R *.dfm}
 
@@ -76,12 +77,12 @@ begin
       if (strings[0] = 'help') then
       begin
         Self.Print('Help:');
-        Self.Print('trakce [open/close]         Trakce control');
-        Self.Print('rcs [start/stop/open/close] RCS control');
-        Self.Print('clear                       Clear console window');
-        Self.Print('app-exit                    Emergency exit of hJOPserver');
-        Self.Print('nuz [blockid]               Emergency zaver release');
-        Self.Print('supress-exception           Supress critical system exception blocking system start');
+        Self.Print('trakce [open/close]          Trakce control');
+        Self.Print('rcs i [start/stop/open/close] RCS control');
+        Self.Print('clear                         Clear console window');
+        Self.Print('app-exit                      Emergency exit of hJOPserver');
+        Self.Print('nuz [blockid]                 Emergency zaver release');
+        Self.Print('supress-exception             Supress critical system exception blocking system start');
       end
 
       else if (strings[0] = 'clear') then
@@ -104,19 +105,21 @@ begin
         end;
       end
 
-      else if (strings[0] = 'rcs') and (strings.Count >= 2) then
+      else if (strings[0] = 'rcs') and (strings.Count >= 3) then
       begin
-        if (strings[1] = 'start') then
-          F_Main.A_RCS_GoExecute(self);
+        var rcsi: Integer := StrToInt(strings[1]);
 
-        if (strings[1] = 'stop') then
-          F_Main.A_RCS_StopExecute(self);
+        if (strings[2] = 'start') then
+          RCSs[rcsi].Start();
 
-        if (strings[1] = 'open') then
-          F_Main.A_RCS_OpenExecute(self);
+        if (strings[2] = 'stop') then
+          RCSs[rcsi].Stop();
 
-        if (strings[1] = 'close') then
-          F_Main.A_RCS_CloseExecute(self);
+        if (strings[2] = 'open') then
+          RCSs[rcsi].Open();
+
+        if (strings[2] = 'close') then
+          RCSs[rcsi].Close();
       end
 
       else if (strings[0] = 'app-exit') then
