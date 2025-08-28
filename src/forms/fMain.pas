@@ -1135,8 +1135,6 @@ begin
 
   rcs.LogFMainStatusError('Chyba otevírání: ' + errMsg);
   rcs.Log('Chyba otevírání: ' + errMsg, llError);
-
-  ErrorMessageBox('Při otevírání RCS'+IntToStr(rcs.systemI)+' nastala chyba:', errMsg);
 end;
 
 procedure TF_Main.OnRCSErrClose(Sender: TObject; errMsg: string);
@@ -1150,8 +1148,6 @@ begin
 
   rcs.LogFMainStatusError('Chyba uzavírání: ' + errMsg);
   rcs.Log('Chyba uzavírání: ' + errMsg, llError);
-
-  ErrorMessageBox('Při uzavírání RCS'+IntToStr(rcs.systemI)+' nastala chyba:', errMsg);
 end;
 
 procedure TF_Main.OnRCSBeforeStart(Sender: TObject);
@@ -1255,7 +1251,6 @@ begin
 
   rcs.LogFMainStatusError('Chyba spouštění komunikace: ' + errMsg);
   rcs.Log('Chyba spouštění komunikace: ' + errMsg, llError);
-  ErrorMessageBox('Při spoušění komunikace RCS'+IntToStr(rcs.systemI)+' nastala chyba:', errMsg);
 end;
 
 procedure TF_Main.OnRCSErrStop(Sender: TObject; errMsg: string);
@@ -1268,8 +1263,6 @@ begin
 
   rcs.LogFMainStatusError('Chyba zastavování komunikace: ' + errMsg);
   rcs.Log('Chyba zastavování komunikace: ' + errMsg, llError);
-  StrMessageBox('Při zastavování komunikace RCS'+IntToStr(rcs.systemI)+' nastala chyba:' + #13#10 + errMsg,
-    'Chyba', MB_OK OR MB_ICONWARNING);
 end;
 
 procedure TF_Main.OnRCSReady(Sender: TObject; ready: Boolean);
