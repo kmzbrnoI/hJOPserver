@@ -56,6 +56,7 @@ type
     function AnyRCSState(state: TRCSState): Boolean;
     function AnyRCSStateGTE(state: TRCSState): Boolean;
     function AllRCSsState(state: TRCSState): Boolean;
+    function AnyLibLoaded(): Boolean;
 
     procedure SetNeeded(system: Cardinal; module: Cardinal; state: Boolean = true); overload;
     procedure SetNeeded(addr: TRCSsAddr; state: Boolean = true); overload;
@@ -88,6 +89,8 @@ type
 
     procedure InputSim(); // nastavit simulovane vstupy (koncove polohy vyhybek atp.)
     procedure TrainOccupySim(); // nastavit RCS vstupy tak, aby useky, ve kterych je souprava, byly obsazene
+
+    function IsStateActionInProgress(): Boolean;
 
     property generalError: Boolean read IsGeneralError;
 
@@ -268,6 +271,14 @@ begin
     if (Self.m_rcss[i].state <> state) then
       Exit(False);
   Result := True;
+end;
+
+function TRCSs.AnyLibLoaded(): Boolean;
+begin
+  for var i: Integer := 0 to _RCSS_MAX do
+    if (Self.m_rcss[i].libLoaded) then
+      Exit(True);
+  Result := False;
 end;
 
 procedure TRCSs.SetNeeded(system: Cardinal; module: Cardinal; state: Boolean = true);
@@ -457,6 +468,16 @@ class function TRCSs.RCSsOptionalAddrDisabled(): TRCSsAddrOptional;
 begin
   Result.enabled := False;
   Result.addr := RCSsAddr(0, 0, 0);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TRCSs.IsStateActionInProgress(): Boolean;
+begin
+  for var i: Integer := 0 to _RCSS_MAX do
+    if (Self.m_rcss[i].IsStateActionInProgress()) then
+      Exit(True);
+  Result := False;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

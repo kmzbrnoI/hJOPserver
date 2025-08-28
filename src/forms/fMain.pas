@@ -97,9 +97,8 @@ type
     IL_RCS: TImageList;
     PM_Console: TMenuItem;
     AL_Main: TActionList;
-    A_RCS_Go: TAction;
-    A_RCS_Stop: TAction;
-    A_RCS_lib_cfg: TAction;
+    A_RCSs_Go: TAction;
+    A_RCSs_Stop: TAction;
     A_DCC_Go: TAction;
     A_DCC_Stop: TAction;
     A_System_Start: TAction;
@@ -113,8 +112,8 @@ type
     A_PanelServer_Stop: TAction;
     Start1: TMenuItem;
     Stop1: TMenuItem;
-    A_RCS_Open: TAction;
-    A_RCS_Close: TAction;
+    A_RCSs_Open: TAction;
+    A_RCSs_Close: TAction;
     MI_RCSs_Open: TMenuItem;
     MI_RCSs_Close: TMenuItem;
     N8: TMenuItem;
@@ -453,6 +452,10 @@ type
     procedure MI_Block_DeleteClick(Sender: TObject);
     procedure PM_Loco_DeleteClick(Sender: TObject);
     procedure MI_Loco_Tacho_ResetClick(Sender: TObject);
+    procedure A_RCSs_OpenExecute(Sender: TObject);
+    procedure A_RCSs_CloseExecute(Sender: TObject);
+    procedure A_RCSs_GoExecute(Sender: TObject);
+    procedure A_RCSs_StopExecute(Sender: TObject);
 
   private
     call_method: TNotifyEvent;
@@ -688,36 +691,36 @@ end;
 
 procedure TF_Main.RCSMIUpdateRoot();
 var anyOpenEnabled: Boolean;
-    allCloseEnabled: Boolean;
+    anyCloseEnabled: Boolean;
     anyStartEnabled: Boolean;
-    allStopEnabled: Boolean;
+    anyStopEnabled: Boolean;
 begin
   anyOpenEnabled := False;
-  allCloseEnabled := True;
+  anyCloseEnabled := False;
   anyStartEnabled := False;
-  allStopEnabled := True;
+  anyStopEnabled := False;
 
   for var i: Integer := 0 to RCSs._RCSS_MAX do
   begin
     if (Self.MI_RCSs[i].MI_Open.Enabled) then
       anyOpenEnabled := True;
-    if (not Self.MI_RCSs[i].MI_Close.Enabled) then
-      allCloseEnabled := False;
+    if (Self.MI_RCSs[i].MI_Close.Enabled) then
+      anyCloseEnabled := True;
     if (Self.MI_RCSs[i].MI_Start.Enabled) then
       anyStartEnabled := True;
-    if (not Self.MI_RCSs[i].MI_Stop.Enabled) then
-      allStopEnabled := False;
+    if (Self.MI_RCSs[i].MI_Stop.Enabled) then
+      anyStopEnabled := True;
   end;
 
-  Self.MI_RCSs_Open.Enabled := anyOpenEnabled;
-  Self.MI_RCSs_Close.Enabled := allCloseEnabled;
-  Self.MI_RCSs_Go.Enabled := ((anyStartEnabled) and (not anyOpenEnabled));
-  Self.MI_RCSs_Stop.Enabled := allStopEnabled;
+  Self.A_RCSs_Open.Enabled := anyOpenEnabled;
+  Self.A_RCSs_Close.Enabled := anyCloseEnabled;
+  Self.A_RCSs_Go.Enabled := ((anyStartEnabled) and (not anyOpenEnabled));
+  Self.A_RCSs_Stop.Enabled := anyStopEnabled;
 end;
 
 procedure TF_Main.RCSMIUpdateI(i: Integer);
 begin
-  Self.MI_RCSs[i].MI_Open.Enabled := ((RCSs[i].state = TRCSState.rsClosed) and (RCSs[i].libLoaded) and (RCSs[i].ready));
+  Self.MI_RCSs[i].MI_Open.Enabled := ((RCSs[i].state = TRCSState.rsClosed) and (RCSs[i].ready));
   Self.MI_RCSs[i].MI_Close.Enabled := (RCSs[i].state = TRCSState.rsOpenStopped);
   Self.MI_RCSs[i].MI_Start.Enabled := (RCSs[i].state = TRCSState.rsOpenStopped);
   Self.MI_RCSs[i].MI_Stop.Enabled := ((RCSs[i].state = TRCSState.rsStartedScanned) or (RCSs[i].state = TRCSState.rsStartedNotScanned));
@@ -865,6 +868,35 @@ begin
   RCSs[rcsi].Log('Zobrazen ConfigDialog', llInfo);
 end;
 
+procedure TF_Main.A_RCSs_OpenExecute(Sender: TObject);
+begin
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+  begin
+    if ((RCSs[i].libLoaded) and (not RCSs[i].ready)) then
+    begin
+      StrMessageBox('RCS'+IntToStr(i)+' není připraveno k zapnutí systému' + #13#10 +
+        'Možné příčiny:' + #13#10 + ' - nenačtena platná knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+      Exit();
+    end;
+  end;
+  if (not RCSs.AnyLibLoaded()) then
+  begin
+    StrMessageBox('Nanačtena žádná RCS knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+    if ((RCSs[i].libLoaded) and (RCSs[i].state = rsClosed)) then
+      Self.MI_RCS_Open_Click(Self.MI_RCSs[i].MI_Open);
+end;
+
+procedure TF_Main.A_RCSs_StopExecute(Sender: TObject);
+begin
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+    if ((RCSs[i].state = rsStartedNotScanned) or (RCSs[i].state = rsStartedScanned)) then
+      Self.MI_RCS_Stop_Click(Self.MI_RCSs[i].MI_Stop);
+end;
+
 procedure TF_Main.MI_RCS_Open_Click(Sender: TObject);
 begin
   const rcsi: Integer = TMenuItem(Sender).Tag;
@@ -887,6 +919,13 @@ begin
     on E: Exception do
       Self.OnRCSErrOpen(Self, 'Nastala kritická chyba : ' + E.Message);
   end;
+end;
+
+procedure TF_Main.A_RCSs_CloseExecute(Sender: TObject);
+begin
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+    if (RCSs[i].state = rsOpenStopped) then
+      Self.MI_RCS_Close_Click(Self.MI_RCSs[i].MI_Close);
 end;
 
 procedure TF_Main.MI_RCS_Close_Click(Sender: TObject);
@@ -914,12 +953,24 @@ begin
   end;
 end;
 
+procedure TF_Main.A_RCSs_GoExecute(Sender: TObject);
+begin
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+    if (RCSs[i].state = rsOpenStopped) then
+      Self.MI_RCS_Start_Click(Self.MI_RCSs[i].MI_Start);
+end;
+
 procedure TF_Main.MI_RCS_Start_Click(Sender: TObject);
 begin
   const rcsi: Integer = TMenuItem(Sender).Tag;
   var rcs: TRCS := RCSs[rcsi];
 
-  if ((SystemData.Status = starting) and (RCSs.AllRCSsState(rsStartedScanned))) then
+  var allStaredScanned := True;
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+    if ((RCSs[i].state <> rsStartedScanned) and (RCSs[i].libLoaded)) then
+      allStaredScanned := False;
+
+  if ((SystemData.Status = starting) and (allStaredScanned)) then
   begin
     Self.A_Trk_ConnectExecute(nil);
     Exit();
@@ -1031,9 +1082,6 @@ begin
   Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
-  Self.A_System_Start.Enabled := false;
-  Self.A_System_Stop.Enabled := false;
-
   rcs.LogFMainStatus('Otevírám zařízení, hledám moduly...');
   rcs.Log('Otevírám zařízení, hledám moduly...', llInfo);
 end;
@@ -1084,9 +1132,6 @@ begin
 
   Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
-
-  Self.A_System_Start.Enabled := false;
-  Self.A_System_Stop.Enabled := false;
 
   rcs.LogFMainStatus('Uzavírám zařízení...');
   rcs.Log('Uzavírám zařízení...', llInfo);
@@ -1157,9 +1202,6 @@ begin
   Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
-  Self.A_System_Start.Enabled := false;
-  Self.A_System_Stop.Enabled := false;
-
   rcs.LogFMainStatus('Spouštím komunikaci...');
   rcs.Log('Spouštím komunikaci...', llInfo);
 end;
@@ -1189,7 +1231,12 @@ begin
 
   Areas.InitOsv(); // TODO
 
-  if ((SystemData.Status = starting) and (RCSs.AllRCSsState(rsStartedScanned))) then
+  var allStaredScanned := True;
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+    if ((RCSs[i].state <> rsStartedScanned) and (RCSs[i].libLoaded)) then
+      allStaredScanned := False;
+
+  if ((SystemData.Status = starting) and (allStaredScanned)) then
     Self.A_Trk_ConnectExecute(nil);
 end;
 
@@ -1199,9 +1246,6 @@ begin
 
   Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
-
-  Self.A_System_Start.Enabled := false;
-  Self.A_System_Stop.Enabled := false;
 
   rcs.LogFMainStatus('Zastavuji komunikaci...');
   rcs.Log('Zastavovuji komunikaci...', llInfo);
@@ -1407,7 +1451,7 @@ begin
   if ((SystemData.Status = stopping) and (not trakce.ConnectedSafe())) then
   begin
     for var i: Integer := 0 to RCSs._RCSS_MAX do
-      if (RCSs[i].NoExStarted()) then
+      if (RCSs[i].libLoaded) then
         Self.MI_RCS_Stop_Click(Self.MI_RCSs[i].MI_Stop);
     Exit();
   end;
@@ -2221,6 +2265,7 @@ begin
   Self.UpdateSystemButtons();
 end;
 
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.A_SaveStavExecute(Sender: TObject);
@@ -2329,24 +2374,34 @@ procedure TF_Main.A_System_StartExecute(Sender: TObject);
 begin
   Self.LB_Log.Items.Insert(0, '--------------------------------------------------------------------------------');
 
-  if (not RCSi.ready) then
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
   begin
-    StrMessageBox('Systém nelze spustit, RCS není připraveno k zapnutí systému' + #13#10 +
-      'Možné příčiny:' + #13#10 + ' - nenačtena validní knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
-    Self.LogStatus('ERR: Systém nelze spustit, RCS není připraveno k zapnutí systému');
+    if ((RCSs[i].libLoaded) and (not RCSs[i].ready)) then
+    begin
+      Self.LogStatus('ERR: Systém nelze spustit, RCS není připraveno k zapnutí systému');
+      StrMessageBox('Systém nelze spustit, RCS'+IntToStr(i)+' není připraveno k zapnutí systému' + #13#10 +
+        'Možné příčiny:' + #13#10 + ' - nenačtena platná knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
+      Exit();
+    end;
+  end;
+  if (not RCSs.AnyLibLoaded()) then
+  begin
+    Self.LogStatus('ERR: Systém nelze spustit, nanačtena žádná RCS knihovna');
+    StrMessageBox('Systém nelze spustit, nanačtena žádná RCS knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
+
   if (not trakce.ready) then
   begin
-    StrMessageBox('Systém nelze spustit, Trakce není připravena k zapnutí systému' + #13#10 +
-      'Možné příčiny:' + #13#10 + ' - nenačtena validní knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Self.LogStatus('ERR: Systém nelze spustit, Trakce není připravena k zapnutí systému');
+    StrMessageBox('Systém nelze spustit, Trakce není připravena k zapnutí systému' + #13#10 +
+      'Možné příčiny:' + #13#10 + ' - nenačtena platná knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (AppEvents.lastException <> nil) then
   begin
-    StrMessageBox('Systém nelze spustit, v minulosti nastala kritická výjimka!', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Self.LogStatus('ERR: Systém nelze spustit, AppEvents hlásí výjimku');
+    StrMessageBox('Systém nelze spustit, v minulosti nastala kritická výjimka!', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
@@ -2355,7 +2410,7 @@ begin
   Self.A_System_Start.Enabled := false;
 
   for var i: Integer := 0 to RCSs._RCSS_MAX do
-    if ((RCSs[i].libLoaded) and (RCSs[i].ready)) then
+    if (RCSs[i].ready) then
       Self.MI_RCS_Open_Click(Self.MI_RCSs[i].MI_Open);
 end;
 
@@ -3763,9 +3818,9 @@ end;
 procedure TF_Main.UpdateSystemButtons();
 begin
   Self.A_System_Start.Enabled := ((not RCSs.AllRCSsState(rsStartedScanned)) or (not trakce.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
-    or (not PanelServer.openned) or (not Blocks.Enabled) or ((PtServer.autoStart) and (not PtServer.openned)));
-  Self.A_System_Stop.Enabled := ((RCSs.AnyRCSStateGTE(rsOpenStopped)) or (trakce.ConnectedSafe()) or (PanelServer.openned) or
-    (PtServer.openned));
+    or (not PanelServer.openned) or (not Blocks.Enabled) or ((PtServer.autoStart) and (not PtServer.openned))) and (not RCSs.IsStateActionInProgress());
+  Self.A_System_Stop.Enabled := (((RCSs.AnyRCSStateGTE(rsOpenStopped)) or (trakce.ConnectedSafe()) or (PanelServer.openned) or
+    (PtServer.openned)) and (not RCSs.IsStateActionInProgress()));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

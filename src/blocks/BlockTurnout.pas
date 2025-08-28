@@ -2019,7 +2019,7 @@ end;
 
 procedure TBlkTurnout.ShowIndication();
 begin
-  if ((not Self.m_settings.indication.enabled) or (not RCSi.Started)) then
+  if ((not Self.m_settings.indication.enabled) or (not RCSi.NoExStarted())) then
     Exit();
 
   try

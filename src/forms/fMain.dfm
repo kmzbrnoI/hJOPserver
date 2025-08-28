@@ -6181,33 +6181,29 @@ object F_Main: TF_Main
     object MI_RCS: TMenuItem
       Caption = 'RCS'
       object MI_RCSs_Open: TMenuItem
-        Action = A_RCS_Open
-        Caption = 'Otev'#345#237't v'#353'echna za'#345#237'zen'#237
+        Action = A_RCSs_Open
       end
       object MI_RCSs_Close: TMenuItem
-        Action = A_RCS_Close
-        Caption = 'Zav'#345#237't v'#353'echna za'#345#237'zen'#237
+        Action = A_RCSs_Close
       end
       object N8: TMenuItem
         Caption = '-'
       end
       object MI_RCSs_Go: TMenuItem
-        Action = A_RCS_Go
-        Caption = 'Spustit v'#353'echny komunikace'
+        Action = A_RCSs_Go
       end
       object MI_RCSs_Stop: TMenuItem
-        Action = A_RCS_Stop
-        Caption = 'Zastavit v'#353'echny komunikace'
+        Action = A_RCSs_Stop
       end
       object N1: TMenuItem
+        Caption = '-'
+      end
+      object N11: TMenuItem
         Caption = '-'
       end
       object MI_RCSs_Update: TMenuItem
         Caption = 'Aktualizovat seznam knihoven'
         OnClick = MI_RCSs_UpdateClick
-      end
-      object N11: TMenuItem
-        Caption = '-'
       end
       object PM_Tester: TMenuItem
         Caption = 'RCS tester'
@@ -9003,20 +8999,17 @@ object F_Main: TF_Main
     Images = IL_Menu
     Left = 920
     Top = 456
-    object A_RCS_Go: TAction
+    object A_RCSs_Go: TAction
+      Caption = 'Spustit v'#353'echny komunikace'
       Enabled = False
-      Hint = 'P'#345'ipojit se k RCS'
       ImageIndex = 4
+      OnExecute = A_RCSs_GoExecute
     end
-    object A_RCS_Stop: TAction
+    object A_RCSs_Stop: TAction
+      Caption = 'Zastavit v'#353'echny komunikace'
       Enabled = False
-      Hint = 'Odpojit se od RCS'
       ImageIndex = 5
-    end
-    object A_RCS_lib_cfg: TAction
-      Hint = 'Otev'#345#237't konfiguraci knihovny'
-      ImageIndex = 18
-      ShortCut = 16452
+      OnExecute = A_RCSs_StopExecute
     end
     object A_DCC_Go: TAction
       Enabled = False
@@ -9080,15 +9073,17 @@ object F_Main: TF_Main
       ShortCut = 16497
       OnExecute = A_PanelServer_StopExecute
     end
-    object A_RCS_Open: TAction
-      Caption = 'Otev'#345#237't MTB'
+    object A_RCSs_Open: TAction
+      Caption = 'Otev'#345#237't v'#353'echna za'#345#237'zen'#237
       Enabled = False
       ImageIndex = 2
+      OnExecute = A_RCSs_OpenExecute
     end
-    object A_RCS_Close: TAction
-      Caption = 'Zav'#345#237't MTB'
+    object A_RCSs_Close: TAction
+      Caption = 'Zav'#345#237't v'#353'echna za'#345#237'zen'#237
       Enabled = False
       ImageIndex = 3
+      OnExecute = A_RCSs_CloseExecute
     end
     object A_SaveStav: TAction
       Caption = 'Ulo'#382'it stav koleji'#353't'#283

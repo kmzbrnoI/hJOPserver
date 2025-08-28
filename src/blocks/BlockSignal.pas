@@ -2358,7 +2358,7 @@ end;
 
 procedure TBlkSignal.ShowIndication();
 begin
-  if ((not Self.m_settings.PSt.enabled) or (not RCSi.Started)) then
+  if ((not Self.m_settings.PSt.enabled) or (not RCSi.NoExStarted())) then
     Exit();
 
   try
