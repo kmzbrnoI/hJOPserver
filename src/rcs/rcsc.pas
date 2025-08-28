@@ -345,7 +345,7 @@ begin
       else
         Self.modules[module].outputChangedEv.Delete(i);
   RCSTableData[Self.mSystemI].UpdateBoard(module);
-  F_Tester.RCSModuleChanged(module);
+  F_Tester.RCSModuleChanged(Self.mSystemI, module);
 end;
 
 procedure TRCS.DllOnInputChanged(Sender: TObject; module: Cardinal);
@@ -357,7 +357,7 @@ begin
       else
         Self.modules[module].inputChangedEv.Delete(i);
   RCSTableData[Self.mSystemI].UpdateBoardInputs(module);
-  F_Tester.RCSModuleInputsChanged(module);
+  F_Tester.RCSModuleInputsChanged(Self.mSystemI, module);
 end;
 
 procedure TRCS.DllOnOutputChanged(Sender: TObject; module: Cardinal);
@@ -369,7 +369,7 @@ begin
       else
         Self.modules[module].outputChangedEv.Delete(i);
   RCSTableData[Self.mSystemI].UpdateBoardOutputs(module);
-  F_Tester.RCSModuleOutputsChanged(module);
+  F_Tester.RCSModuleOutputsChanged(Self.mSystemI, module);
 end;
 
 // ----- events from dll end -----

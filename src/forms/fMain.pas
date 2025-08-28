@@ -1132,7 +1132,7 @@ begin
   end;
 
   rcs.LogFMainStatus('Otevřeno');
-  F_Tester.AfterRCSOpen(); // TODO
+  F_Tester.AfterRCSOpen(rcs.systemI);
   RCSTableData[rcs.systemI].LoadToTable(not Self.CHB_RCSs_Show_Only_Active[rcs.systemI].Checked);
 
   if (SystemData.Status = starting) then
@@ -1989,17 +1989,7 @@ begin
         Log('Pokus o zavření okna bez uzavření RCS', llWarning);
         if (StrMessageBox('Program není odpojen od RCS, odpojit?', 'Nelze ukončit program',
           MB_YESNO OR MB_ICONWARNING) = mrYes) then
-        begin
-          try
-            if (RCSi.started) then
-              RCSi.Stop()
-            else if (RCSi.opened) then
-              RCSi.Close();
-          except
-            on E: Exception do
-              ExceptionMessageBox('Nastala výjimka', E);
-          end;
-        end;
+          Self.A_System_StopExecute(Self);
       end;
 
     TCloseInfo.ci_server:

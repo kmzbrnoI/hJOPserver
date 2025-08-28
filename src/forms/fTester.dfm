@@ -3,7 +3,7 @@ object F_Tester: TF_Tester
   Top = 124
   BorderIcons = [biSystemMenu]
   Caption = 'RCS tester'
-  ClientHeight = 446
+  ClientHeight = 465
   ClientWidth = 360
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -41,17 +41,17 @@ object F_Tester: TF_Tester
   OnDestroy = FormDestroy
   OnResize = FormResize
   TextHeight = 13
-  object L_1: TLabel
+  object L_Module: TLabel
     Left = 7
-    Top = 7
-    Width = 63
+    Top = 40
+    Width = 32
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Alignment = taCenter
-    Caption = 'RCS adresa :'
+    Caption = 'Modul:'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -11
@@ -59,9 +59,16 @@ object F_Tester: TF_Tester
     Font.Style = []
     ParentFont = False
   end
+  object L_System: TLabel
+    Left = 7
+    Top = 13
+    Width = 37
+    Height = 13
+    Caption = 'Syst'#233'm:'
+  end
   object GB_Inputs: TGroupBox
     Left = 7
-    Top = 49
+    Top = 65
     Width = 164
     Height = 390
     Margins.Left = 2
@@ -72,7 +79,7 @@ object F_Tester: TF_Tester
     Color = clBtnFace
     ParentBackground = False
     ParentColor = False
-    TabOrder = 1
+    TabOrder = 2
     object CB_AddrIn: TComboBox
       Left = 2
       Top = 15
@@ -95,21 +102,21 @@ object F_Tester: TF_Tester
     end
   end
   object CB_Addr: TComboBox
-    Left = 8
-    Top = 24
-    Width = 345
+    Left = 104
+    Top = 40
+    Width = 249
     Height = 21
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
     Style = csDropDownList
-    TabOrder = 0
+    TabOrder = 1
     OnChange = CB_AddrChange
   end
   object GB_Outputs: TGroupBox
     Left = 175
-    Top = 49
+    Top = 65
     Width = 178
     Height = 390
     Margins.Left = 2
@@ -120,7 +127,7 @@ object F_Tester: TF_Tester
     Color = clBtnFace
     ParentBackground = False
     ParentColor = False
-    TabOrder = 2
+    TabOrder = 3
     object CB_AddrOut: TComboBox
       Left = 2
       Top = 15
@@ -140,5 +147,16 @@ object F_Tester: TF_Tester
       BevelOuter = bvNone
       TabOrder = 1
     end
+  end
+  object SE_System: TSpinEdit
+    Left = 104
+    Top = 13
+    Width = 248
+    Height = 22
+    MaxValue = 0
+    MinValue = 0
+    TabOrder = 0
+    Value = 0
+    OnChange = SE_SystemChange
   end
 end

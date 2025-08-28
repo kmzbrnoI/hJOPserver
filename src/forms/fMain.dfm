@@ -3506,12 +3506,11 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_RCS0
+    ActivePage = TS_log
     Align = alClient
     MultiLine = True
     TabOrder = 2
     OnChange = PC_1Change
-    ExplicitWidth = 1297
     object TS_Technologie: TTabSheet
       Margins.Left = 2
       Margins.Top = 2
@@ -6240,7 +6239,7 @@ object F_Main: TF_Main
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Prim'#225'rn'#237' LOG'
+      Caption = 'Hlavn'#237' LOG'
       ImageIndex = 3
       object LV_log: TListView
         Left = 0
@@ -6372,7 +6371,7 @@ object F_Main: TF_Main
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'LOG komunikace s centr'#225'lou'
+      Caption = 'LOG trakce'
       ImageIndex = 14
       object LV_log_lnet: TListView
         Left = 0

@@ -24,18 +24,23 @@ var
 
 implementation
 
-uses fMain, RCSc, BlockDb, AreaDb, TCPServerPanel, TrakceC;
+uses fMain, RCSIFace, RCSsc, BlockDb, AreaDb, TCPServerPanel, TrakceC;
 
 
 function TGetFunctions.CanClose(): TCloseInfo;
 begin
-  if (SystemData.Status <> TSystemStatus.null) then Exit(TCloseInfo.ci_system_changing);
-  if (GetFunctions.GetSystemStart) then Exit(TCloseInfo.ci_system_started);
-  if (trakce.ConnectedSafe()) then Exit(TCloseInfo.ci_trakce);
-  if (PanelServer.openned) then Exit(TCloseInfo.ci_server);
+  if ((SystemData.Status <> TSystemStatus.null) or (RCSs.IsStateActionInProgress())) then
+    Exit(TCloseInfo.ci_system_changing);
+  if (GetFunctions.GetSystemStart) then
+    Exit(TCloseInfo.ci_system_started);
+  if (trakce.ConnectedSafe()) then
+    Exit(TCloseInfo.ci_trakce);
+  if (PanelServer.openned) then
+    Exit(TCloseInfo.ci_server);
 
   try
-    if ((RCSi.ready) and (RCSi.Opened)) then Exit(TCloseInfo.ci_rcs);
+    if (RCSs.AnyRCSStateGTE(rsOpening)) then
+      Exit(TCloseInfo.ci_rcs);
   except
 
   end;
@@ -48,7 +53,7 @@ end;
 function TGetFunctions.GetSystemStart(): Boolean;
  begin
   try
-    Result := ((trakce.ConnectedSafe()) and (RCSi.ready) and (PanelServer.openned) and (RCSi.NoExStarted));
+    Result := ((trakce.ConnectedSafe()) and (RCSs.AllRCSsState(rsStartedScanned)) and (PanelServer.openned));
   except
     Result := false;
   end;
