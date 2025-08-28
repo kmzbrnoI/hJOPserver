@@ -4,13 +4,13 @@ unit BlockIR;
 
 interface
 
-uses IniFiles, Block, JsonDataObjects, RCSc;
+uses IniFiles, Block, JsonDataObjects, RCSc, RCSsc;
 
 type
   TIROccupationState = (disabled = -5, none = -1, free = 0, occupied = 1);
 
   TBlkIRSettings = record
-    RCSAddr: TRCSAddr;
+    RCSAddr: TRCSsAddr;
   end;
 
   TBlkIRState = record
@@ -33,7 +33,7 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
-    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
+    function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
 
@@ -69,7 +69,7 @@ procedure TBlkIR.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel,
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
-  Self.m_settings.RCSAddr := RCSFromIni(ini_tech, section, 'RCS0', 'RCSb0', 'RCSp0');
+  Self.m_settings.RCSAddr := RCSsFromIni(ini_tech, section, 'RCS0', 'RCSb0', 'RCSp0');
   RCSi.SetNeeded(Self.m_settings.RCSAddr.module);
 end;
 
@@ -103,7 +103,7 @@ begin
   Self.Change(true);
 end;
 
-function TBlkIR.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkIR.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
 begin
   Result := ((portType = TRCSIOType.input) and (Self.m_settings.RCSAddr = addr));
 end;
@@ -114,7 +114,7 @@ procedure TBlkIR.Update();
 var state: TRCSInputState;
 begin
   try
-    state := RCSi.GetInput(Self.m_settings.RCSAddr)
+    state := RCSs.GetInput(Self.m_settings.RCSAddr)
   except
     state := failure;
   end;
@@ -182,9 +182,9 @@ begin
   begin
     try
       if (reqJson.S['state'] = 'free') then
-        RCSi.SetInput(Self.m_settings.RCSAddr, 0)
+        RCSs.SetInput(Self.m_settings.RCSAddr, 0)
       else if (reqJson.S['state'] = 'occupied') then
-        RCSi.SetInput(Self.m_settings.RCSAddr, 1)
+        RCSs.SetInput(Self.m_settings.RCSAddr, 1)
     except
       on e: RCSException do
         PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);

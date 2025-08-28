@@ -100,10 +100,21 @@ type
     Label18: TLabel;
     B_Positive_Name_To_Ids: TButton;
     B_Positive_Help: TButton;
+    SE_out_close_system: TSpinEdit;
+    Label20: TLabel;
+    SE_out_open_system: TSpinEdit;
+    SE_out_positive_system: TSpinEdit;
+    SE_out_barriers_down_system: TSpinEdit;
+    SE_out_barriers_up_system: TSpinEdit;
+    SE_out_lights_system: TSpinEdit;
+    SE_out_ring_system: TSpinEdit;
+    SE_in_annulation_system: TSpinEdit;
+    SE_in_caution_system: TSpinEdit;
+    SE_in_open_system: TSpinEdit;
+    SE_in_close_system: TSpinEdit;
     procedure B_save_PClick(Sender: TObject);
     procedure B_StornoClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure SE_RCS_boardExit(Sender: TObject);
     procedure CHB_JOP_controlClick(Sender: TObject);
     procedure CB_TrackChange(Sender: TObject);
     procedure B_Track_DeleteClick(Sender: TObject);
@@ -133,9 +144,9 @@ type
     procedure SaveTracks();
 
   public
-
     procedure EditBlock(BlokIndex: Integer);
     procedure NewBlock();
+
   end;
 
 var
@@ -143,7 +154,7 @@ var
 
 implementation
 
-uses GetSystems, RCSc, AreaDb, Area, Block, DataBloky, Config,
+uses GetSystems, RCSc, RCSsc, AreaDb, Area, Block, DataBloky, Config,
   BlockCrossingPositive, ownGuiUtils;
 
 {$R *.dfm}
@@ -159,22 +170,6 @@ begin
   Self.CommonOpenForm();
   Self.EditOpenForm();
   Self.ShowModal();
-end;
-
-procedure TF_BlkCrossing.SE_RCS_boardExit(Sender: TObject);
-begin
-  Self.SE_out_close_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_close_board.Value, Self.SE_out_close_port.Value);
-  Self.SE_out_open_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_open_board.Value, Self.SE_out_open_port.Value);
-  Self.SE_out_positive_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_positive_board.Value, Self.SE_out_positive_port.Value);
-  Self.SE_out_barriers_down_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_barriers_down_board.Value, Self.SE_out_barriers_down_port.Value);
-  Self.SE_out_barriers_up_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_barriers_up_board.Value, Self.SE_out_barriers_up_port.Value);
-  Self.SE_out_ring_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_ring_board.Value, Self.SE_out_ring_port.Value);
-  Self.SE_out_lights_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_out_lights_board.Value, Self.SE_out_lights_port.Value);
-
-  Self.SE_in_close_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_close_board.Value, Self.SE_in_close_port.Value);
-  Self.SE_in_open_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_open_board.Value, Self.SE_in_open_port.Value);
-  Self.SE_in_caution_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_caution_board.Value, Self.SE_in_caution_port.Value);
-  Self.SE_in_annulation_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_in_annulation_board.Value, Self.SE_in_annulation_port.Value);
 end;
 
 procedure TF_BlkCrossing.B_Positive_HelpClick(Sender: TObject);
@@ -257,22 +252,22 @@ begin
   end;
 
   var settings: TBlkCrossingSettings;
-  var addrsIn := TList<TRCSAddr>.Create();
-  var addrsOut := TList<TRCSAddr>.Create();
+  var addrsIn := TList<TRCSsAddr>.Create();
+  var addrsOut := TList<TRCSsAddr>.Create();
   try
     try
-      settings.RCSOutputs.close := RCSOptionalFromUI(Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port, addrsOut);
-      settings.RCSOutputs.emOpen := RCSOptionalFromUI(Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port, addrsOut);
-      settings.RCSOutputs.positive := RCSOptionalFromUI(Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port, addrsOut);
-      settings.RCSOutputs.barriersDown := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port, addrsOut);
-      settings.RCSOutputs.barriersUp := RCSOptionalFromUI(Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port, addrsOut);
-      settings.RCSOutputs.bell := RCSOptionalFromUI(Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port, addrsOut);
-      settings.RCSOutputs.lights := RCSOptionalFromUI(Self.CHB_RCS_Lights, Self.SE_out_lights_board, Self.SE_out_lights_port, addrsOut);
+      settings.RCSOutputs.close := RCSsOptionalFromUI(Self.CHB_RCS_Close, Self.SE_out_close_system, Self.SE_out_close_board, Self.SE_out_close_port, addrsOut);
+      settings.RCSOutputs.emOpen := RCSsOptionalFromUI(Self.CHB_RCS_NOT, Self.SE_out_open_system, Self.SE_out_open_board, Self.SE_out_open_port, addrsOut);
+      settings.RCSOutputs.positive := RCSsOptionalFromUI(Self.CHB_RCS_Positive, Self.SE_out_positive_system, Self.SE_out_positive_board, Self.SE_out_positive_port, addrsOut);
+      settings.RCSOutputs.barriersDown := RCSsOptionalFromUI(Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_system, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port, addrsOut);
+      settings.RCSOutputs.barriersUp := RCSsOptionalFromUI(Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_system, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port, addrsOut);
+      settings.RCSOutputs.bell := RCSsOptionalFromUI(Self.CHB_RCS_Ring, Self.SE_out_ring_system, Self.SE_out_ring_board, Self.SE_out_ring_port, addrsOut);
+      settings.RCSOutputs.lights := RCSsOptionalFromUI(Self.CHB_RCS_Lights, Self.SE_out_lights_system, Self.SE_out_lights_board, Self.SE_out_lights_port, addrsOut);
 
-      settings.RCSInputs.open := RCSOptionalFromUI(Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port, addrsIn);
-      settings.RCSInputs.closed := RCSOptionalFromUI(Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port, addrsIn);
-      settings.RCSInputs.caution := RCSOptionalFromUI(Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port, addrsIn);
-      settings.RCSInputs.annulation := RCSOptionalFromUI(Self.CHB_RCS_Anullation, Self.SE_in_annulation_board, Self.SE_in_annulation_port, addrsIn);
+      settings.RCSInputs.open := RCSsOptionalFromUI(Self.CHB_RCS_Open, Self.SE_in_open_system, Self.SE_in_open_board, Self.SE_in_open_port, addrsIn);
+      settings.RCSInputs.closed := RCSsOptionalFromUI(Self.CHB_RCS_Closed, Self.SE_in_close_system, Self.SE_in_close_board, Self.SE_in_close_port, addrsIn);
+      settings.RCSInputs.caution := RCSsOptionalFromUI(Self.CHB_RCS_Caution, Self.SE_in_caution_system, Self.SE_in_caution_board, Self.SE_in_caution_port, addrsIn);
+      settings.RCSInputs.annulation := RCSsOptionalFromUI(Self.CHB_RCS_Anullation, Self.SE_in_annulation_system, Self.SE_in_annulation_board, Self.SE_in_annulation_port, addrsIn);
 
       settings.RCSOutputs.positiveInvert := (Self.CB_Positive_Type.ItemIndex = 1);
       settings.RCSOutputs.positiveFlick := (Self.CB_Positive_Type.ItemIndex = 2);
@@ -305,13 +300,13 @@ begin
       Self.block.positiveRules := positiveRules;
 
       var messages := '';
-      for var addr: TRCSAddr in addrsIn do
+      for var addr: TRCSsAddr in addrsIn do
       begin
         var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.input);
         if (another <> nil) then
           messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
       end;
-      for var addr: TRCSAddr in addrsOut do
+      for var addr: TRCSsAddr in addrsOut do
       begin
         var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
         if (another <> nil) then
@@ -416,6 +411,7 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_AnullationClick(Sender: TObject);
 begin
+  Self.SE_in_annulation_system.Enabled := Self.CHB_RCS_Anullation.Checked;
   Self.SE_in_annulation_board.Enabled := Self.CHB_RCS_Anullation.Checked;
   Self.SE_in_annulation_port.Enabled := Self.CHB_RCS_Anullation.Checked;
   if (not Self.CHB_RCS_Anullation.Checked) then
@@ -427,10 +423,12 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_Barriers_DownClick(Sender: TObject);
 begin
+  Self.SE_out_barriers_down_system.Enabled := Self.CHB_RCS_Barriers_Down.Checked;
   Self.SE_out_barriers_down_board.Enabled := Self.CHB_RCS_Barriers_Down.Checked;
   Self.SE_out_barriers_down_port.Enabled := Self.CHB_RCS_Barriers_Down.Checked;
   if (not Self.CHB_RCS_Barriers_Down.Checked) then
   begin
+    Self.SE_out_barriers_down_system.Value := 0;
     Self.SE_out_barriers_down_board.Value := 0;
     Self.SE_out_barriers_down_port.Value := 0;
   end;
@@ -438,10 +436,12 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_Barriers_UpClick(Sender: TObject);
 begin
+  Self.SE_out_barriers_up_system.Enabled := Self.CHB_RCS_Barriers_Up.Checked;
   Self.SE_out_barriers_up_board.Enabled := Self.CHB_RCS_Barriers_Up.Checked;
   Self.SE_out_barriers_up_port.Enabled := Self.CHB_RCS_Barriers_Up.Checked;
   if (not Self.CHB_RCS_Barriers_Up.Checked) then
   begin
+    Self.SE_out_barriers_up_system.Value := 0;
     Self.SE_out_barriers_up_board.Value := 0;
     Self.SE_out_barriers_up_port.Value := 0;
   end;
@@ -449,10 +449,12 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_NOTClick(Sender: TObject);
 begin
+  Self.SE_out_open_system.Enabled := Self.CHB_RCS_NOT.Checked;
   Self.SE_out_open_board.Enabled := Self.CHB_RCS_NOT.Checked;
   Self.SE_out_open_port.Enabled := Self.CHB_RCS_NOT.Checked;
   if (not Self.CHB_RCS_NOT.Checked) then
   begin
+    Self.SE_out_open_system.Value := 0;
     Self.SE_out_open_board.Value := 0;
     Self.SE_out_open_port.Value := 0;
   end;
@@ -460,10 +462,12 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_OpenClick(Sender: TObject);
 begin
+  Self.SE_in_open_system.Enabled := Self.CHB_RCS_Open.Checked;
   Self.SE_in_open_board.Enabled := Self.CHB_RCS_Open.Checked;
   Self.SE_in_open_port.Enabled := Self.CHB_RCS_Open.Checked;
   if (not Self.CHB_RCS_Open.Checked) then
   begin
+    Self.SE_in_open_system.Value := 0;
     Self.SE_in_open_board.Value := 0;
     Self.SE_in_open_port.Value := 0;
   end;
@@ -471,11 +475,13 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_PositiveClick(Sender: TObject);
 begin
+  Self.SE_out_positive_system.Enabled := Self.CHB_RCS_Positive.Checked;
   Self.SE_out_positive_board.Enabled := Self.CHB_RCS_Positive.Checked;
   Self.SE_out_positive_port.Enabled := Self.CHB_RCS_Positive.Checked;
   Self.CB_Positive_Type.Enabled := Self.CHB_RCS_Positive.Checked;
   if (not Self.CHB_RCS_Positive.Checked) then
   begin
+    Self.SE_out_positive_system.Value := 0;
     Self.SE_out_positive_board.Value := 0;
     Self.SE_out_positive_port.Value := 0;
     Self.CB_Positive_Type.ItemIndex := -1;
@@ -484,11 +490,13 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_RingClick(Sender: TObject);
 begin
+  Self.SE_out_ring_system.Enabled := Self.CHB_RCS_Ring.Checked;
   Self.SE_out_ring_board.Enabled := Self.CHB_RCS_Ring.Checked;
   Self.SE_out_ring_port.Enabled := Self.CHB_RCS_Ring.Checked;
   Self.CHB_Ring_Active_Down.Enabled := Self.CHB_RCS_Ring.Checked;
   if (not Self.CHB_RCS_Ring.Checked) then
   begin
+    Self.SE_out_ring_system.Value := 0;
     Self.SE_out_ring_board.Value := 0;
     Self.SE_out_ring_port.Value := 0;
     Self.CHB_Ring_Active_Down.Checked := False;
@@ -497,10 +505,12 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_CautionClick(Sender: TObject);
 begin
+  Self.SE_in_caution_system.Enabled := Self.CHB_RCS_Caution.Checked;
   Self.SE_in_caution_board.Enabled := Self.CHB_RCS_Caution.Checked;
   Self.SE_in_caution_port.Enabled := Self.CHB_RCS_Caution.Checked;
   if (not Self.CHB_RCS_Caution.Checked) then
   begin
+    Self.SE_in_caution_system.Value := 0;
     Self.SE_in_caution_board.Value := 0;
     Self.SE_in_caution_port.Value := 0;
   end;
@@ -508,10 +518,12 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_CloseClick(Sender: TObject);
 begin
+  Self.SE_out_close_system.Enabled := Self.CHB_RCS_Close.Checked;
   Self.SE_out_close_board.Enabled := Self.CHB_RCS_Close.Checked;
   Self.SE_out_close_port.Enabled := Self.CHB_RCS_Close.Checked;
   if (not Self.CHB_RCS_Close.Checked) then
   begin
+    Self.SE_out_close_system.Value := 0;
     Self.SE_out_close_board.Value := 0;
     Self.SE_out_close_port.Value := 0;
   end;
@@ -519,10 +531,12 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_ClosedClick(Sender: TObject);
 begin
+  Self.SE_in_close_system.Enabled := Self.CHB_RCS_Closed.Checked;
   Self.SE_in_close_board.Enabled := Self.CHB_RCS_Closed.Checked;
   Self.SE_in_close_port.Enabled := Self.CHB_RCS_Closed.Checked;
   if (not Self.CHB_RCS_Closed.Checked) then
   begin
+    Self.SE_in_close_system.Value := 0;
     Self.SE_in_close_board.Value := 0;
     Self.SE_in_close_port.Value := 0;
   end;
@@ -530,10 +544,12 @@ end;
 
 procedure TF_BlkCrossing.CHB_RCS_LightsClick(Sender: TObject);
 begin
+  Self.SE_out_lights_system.Enabled := Self.CHB_RCS_Lights.Checked;
   Self.SE_out_lights_board.Enabled := Self.CHB_RCS_Lights.Checked;
   Self.SE_out_lights_port.Enabled := Self.CHB_RCS_Lights.Checked;
   if (not Self.CHB_RCS_Lights.Checked) then
   begin
+    Self.SE_out_lights_system.Value := 0;
     Self.SE_out_lights_board.Value := 0;
     Self.SE_out_lights_port.Value := 0;
   end;
@@ -541,6 +557,18 @@ end;
 
 procedure TF_BlkCrossing.CommonOpenForm();
 begin
+  Self.SE_out_close_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_out_open_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_out_positive_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_out_barriers_down_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_out_barriers_up_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_out_lights_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_out_ring_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_in_close_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_in_open_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_in_caution_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_in_annulation_system.MaxValue := RCSs._RCSS_MAX;
+
   Self.ActiveControl := Self.E_Name;
 end;
 
@@ -556,20 +584,18 @@ begin
   Self.SE_Prering_Time.Value := settings.preringTime;
   Self.CHB_Closed_Required.Checked := settings.closedRequired;
 
-  RCSOptionalToUI(settings.RCSOutputs.close, Self.CHB_RCS_Close, Self.SE_out_close_board, Self.SE_out_close_port);
-  RCSOptionalToUI(settings.RCSOutputs.emOpen, Self.CHB_RCS_NOT, Self.SE_out_open_board, Self.SE_out_open_port);
-  RCSOptionalToUI(settings.RCSOutputs.positive, Self.CHB_RCS_Positive, Self.SE_out_positive_board, Self.SE_out_positive_port);
-  RCSOptionalToUI(settings.RCSOutputs.barriersDown, Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port);
-  RCSOptionalToUI(settings.RCSOutputs.barriersUp, Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port);
-  RCSOptionalToUI(settings.RCSOutputs.bell, Self.CHB_RCS_Ring, Self.SE_out_ring_board, Self.SE_out_ring_port);
-  RCSOptionalToUI(settings.RCSOutputs.lights, Self.CHB_RCS_Lights, Self.SE_out_lights_board, Self.SE_out_lights_port);
+  RCSsOptionalToUI(settings.RCSOutputs.close, Self.CHB_RCS_Close, Self.SE_out_close_system, Self.SE_out_close_board, Self.SE_out_close_port);
+  RCSsOptionalToUI(settings.RCSOutputs.emOpen, Self.CHB_RCS_NOT, Self.SE_out_open_system, Self.SE_out_open_board, Self.SE_out_open_port);
+  RCSsOptionalToUI(settings.RCSOutputs.positive, Self.CHB_RCS_Positive, Self.SE_out_positive_system, Self.SE_out_positive_board, Self.SE_out_positive_port);
+  RCSsOptionalToUI(settings.RCSOutputs.barriersDown, Self.CHB_RCS_Barriers_Down, Self.SE_out_barriers_down_system, Self.SE_out_barriers_down_board, Self.SE_out_barriers_down_port);
+  RCSsOptionalToUI(settings.RCSOutputs.barriersUp, Self.CHB_RCS_Barriers_Up, Self.SE_out_barriers_up_system, Self.SE_out_barriers_up_board, Self.SE_out_barriers_up_port);
+  RCSsOptionalToUI(settings.RCSOutputs.bell, Self.CHB_RCS_Ring, Self.SE_out_ring_system, Self.SE_out_ring_board, Self.SE_out_ring_port);
+  RCSsOptionalToUI(settings.RCSOutputs.lights, Self.CHB_RCS_Lights, Self.SE_out_lights_system, Self.SE_out_lights_board, Self.SE_out_lights_port);
 
-  RCSOptionalToUI(settings.RCSInputs.open, Self.CHB_RCS_Open, Self.SE_in_open_board, Self.SE_in_open_port);
-  RCSOptionalToUI(settings.RCSInputs.closed, Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port);
-  RCSOptionalToUI(settings.RCSInputs.caution, Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port);
-  RCSOptionalToUI(settings.RCSInputs.annulation, Self.CHB_RCS_Anullation, Self.SE_in_annulation_board, Self.SE_in_annulation_port);
-
-  Self.SE_RCS_boardExit(Self);
+  RCSsOptionalToUI(settings.RCSInputs.open, Self.CHB_RCS_Open, Self.SE_in_open_system, Self.SE_in_open_board, Self.SE_in_open_port);
+  RCSsOptionalToUI(settings.RCSInputs.closed, Self.CHB_RCS_Closed, Self.SE_in_close_system, Self.SE_in_close_board, Self.SE_in_close_port);
+  RCSsOptionalToUI(settings.RCSInputs.caution, Self.CHB_RCS_Caution, Self.SE_in_caution_system, Self.SE_in_caution_board, Self.SE_in_caution_port);
+  RCSsOptionalToUI(settings.RCSInputs.annulation, Self.CHB_RCS_Anullation, Self.SE_in_annulation_system, Self.SE_in_annulation_board, Self.SE_in_annulation_port);
 
   if (settings.RCSOutputs.positive.enabled) then
   begin
@@ -628,8 +654,6 @@ begin
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Closed, Self.SE_in_close_board, Self.SE_in_close_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Caution, Self.SE_in_caution_board, Self.SE_in_caution_port);
   RCSOptionalToUI(TRCS.RCSOptionalAddrDisabled(), Self.CHB_RCS_Anullation, Self.SE_in_caution_port, Self.SE_in_annulation_port);
-
-  Self.SE_RCS_boardExit(Self);
 
   Self.CHB_JOP_control.Checked := false;
   Self.CHB_JOP_controlClick(Self);

@@ -4,7 +4,7 @@ object F_BlkIR: TF_BlkIR
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (IR)'
-  ClientHeight = 189
+  ClientHeight = 218
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -68,7 +68,7 @@ object F_BlkIR: TF_BlkIR
     Left = 10
     Top = 66
     Width = 304
-    Height = 79
+    Height = 110
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -77,29 +77,54 @@ object F_BlkIR: TF_BlkIR
     TabOrder = 2
     object L_IR04: TLabel
       Left = 16
-      Top = 16
-      Width = 59
+      Top = 48
+      Width = 56
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS modul :'
+      Caption = 'RCS modul:'
     end
     object L_IR05: TLabel
       Left = 16
-      Top = 44
-      Width = 49
+      Top = 76
+      Width = 46
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS port :'
+      Caption = 'RCS port:'
+    end
+    object Label1: TLabel
+      Left = 16
+      Top = 22
+      Width = 56
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS modul:'
     end
     object SE_port: TSpinEdit
       Left = 216
-      Top = 43
+      Top = 75
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 0
+    end
+    object SE_module: TSpinEdit
+      Left = 216
+      Top = 49
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -109,11 +134,12 @@ object F_BlkIR: TF_BlkIR
       MaxValue = 0
       MinValue = 0
       TabOrder = 1
-      Value = 0
+      Value = 1
+      OnExit = SE_moduleExit
     end
-    object SE_module: TSpinEdit
+    object SE_system: TSpinEdit
       Left = 216
-      Top = 17
+      Top = 23
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -129,7 +155,7 @@ object F_BlkIR: TF_BlkIR
   end
   object B_Storno: TButton
     Left = 151
-    Top = 158
+    Top = 187
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -142,7 +168,7 @@ object F_BlkIR: TF_BlkIR
   end
   object B_Save: TButton
     Left = 240
-    Top = 158
+    Top = 187
     Width = 74
     Height = 24
     Margins.Left = 2

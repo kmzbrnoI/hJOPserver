@@ -5,7 +5,7 @@ unit BlockDisconnector;
 interface
 
 uses IniFiles, Block, Classes, AreaDb, SysUtils, JsonDataObjects,
-  IdContext, Area, RCSc, RCSIFace, Generics.Collections;
+  IdContext, Area, RCSc, RCSsc, RCSIFace, Generics.Collections;
 
 type
   TBlkDiscBasicState = (
@@ -23,12 +23,12 @@ type
   );
 
   TBlkDiscSettings = record
-    RCSAddrs: TRCSAddrs; // only 1 address
+    RCSAddrs: TRCSsAddrs; // only 1 address
     outputType: TRCSOutputState;
     dscMode: TBlkDiscMode;
     rcsController: record
       enabled: Boolean;
-      addr: TRCSAddr;
+      addr: TRCSsAddr;
       pstOnly: Boolean;
     end;
   end;
@@ -89,7 +89,7 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
-    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
+    function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
 
@@ -165,11 +165,11 @@ begin
    begin
     Self.m_settings.rcsController.addr.Load(ini_tech.ReadString(section, 'contRcsAddr', '0:0'));
     Self.m_settings.rcsController.pstOnly := ini_tech.ReadBool(section, 'contPstOnly', false);
-    Self.RCSRegister(Self.m_settings.rcsController.addr);
+    Self.RCSsRegister(Self.m_settings.rcsController.addr);
    end;
 
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
-  Self.RCSRegister(Self.m_settings.RCSAddrs);
+  Self.RCSsRegister(Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkDisconnector.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -226,7 +226,7 @@ begin
   Self.Change(true);
 end;
 
-function TBlkDisconnector.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkDisconnector.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
 begin
   if ((portType = TRCSIOType.input) and (Self.m_settings.rcsController.enabled) and (addr = Self.m_settings.rcsController.addr)) then
     Exit(true);
@@ -340,7 +340,7 @@ begin
   if ((IsWritable(rights)) and (RCSi.simulation) and (Self.m_settings.rcsController.enabled)) then
   begin
     try
-      if (RCSi.GetInput(Self.m_settings.rcsController.addr) = isOn) then
+      if (RCSs.GetInput(Self.m_settings.rcsController.addr) = isOn) then
         Result := Result + '-,*RAD<,'
       else
         Result := Result + '-,*RAD>,';
@@ -408,9 +408,9 @@ procedure TBlkDisconnector.UpdateOutput();
 begin
   try
     if (Self.active) then
-      RCSi.SetOutputs(Self.m_settings.RCSAddrs, Self.m_settings.outputType)
+      RCSs.SetOutputs(Self.m_settings.RCSAddrs, Self.m_settings.outputType)
     else
-      RCSi.SetOutputs(Self.m_settings.RCSAddrs, 0);
+      RCSs.SetOutputs(Self.m_settings.RCSAddrs, 0);
   except
     Self.m_state.rcsFailed := true;
     Self.state := TBlkDiscBasicState.disabled;
@@ -537,7 +537,7 @@ begin
     Exit();
 
   try
-    RCSi.SetInput(Self.m_settings.rcsController.addr, 1);
+    RCSs.SetInput(Self.m_settings.rcsController.addr, 1);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -550,7 +550,7 @@ begin
     Exit();
 
   try
-    RCSi.SetInput(Self.m_settings.rcsController.addr, 0);
+    RCSs.SetInput(Self.m_settings.rcsController.addr, 0);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -579,7 +579,7 @@ begin
 
   var controller: TRCSInputState;
   try
-    controller := RCSi.GetInput(Self.m_settings.rcsController.addr);
+    controller := RCSs.GetInput(Self.m_settings.rcsController.addr);
   except
     controller := TRCSInputState.isOff;
   end;
@@ -640,7 +640,7 @@ begin
     Exit(true);
 
   try
-    Result := (RCSi.GetInput(Self.m_settings.rcsController.addr) <> isOn);
+    Result := (RCSs.GetInput(Self.m_settings.rcsController.addr) <> isOn);
   except
     Result := false;
   end;
@@ -656,7 +656,7 @@ begin
     Exit();
 
   try
-    var state := RCSi.GetInput(Self.m_settings.rcsController.addr);
+    var state := RCSs.GetInput(Self.m_settings.rcsController.addr);
     if ((state = TRCSInputState.isOn) and (not Self.active)) then
       Self.state := TBlkDiscBasicState.activeInfinite;
     if ((state = TRCSInputState.isOff) and (Self.state = TBlkDiscBasicState.activeInfinite)) then

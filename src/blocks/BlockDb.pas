@@ -15,7 +15,7 @@
 interface
 
 uses IniFiles, Block, SysUtils, Windows, AreaDb, Area, StdCtrls,
-  Generics.Collections, Classes, IdContext, RCSc,
+  Generics.Collections, Classes, IdContext, RCSc, RCSsc,
   JsonDataObjects, Train, System.Math,
   BlockTrack, BlockTurnout, BlockIR, BlockLock, BlockRailway, BlockGroupSignal,
   BlockLinker, BlockAC, BlockRailwayTrack, BlockPst, BlockSignal, BlockSummary,
@@ -133,7 +133,7 @@ type
     procedure NouzZaverZrusen(Sender: TBlk);
     procedure MoveTurnoutBasicPosition();
 
-    function AnotherBlockUsesRCS(addr: TRCSAddr; me: TBlk; typ: TRCSIOType): TBlk;
+    function AnotherBlockUsesRCS(addr: TRCSsAddr; me: TBlk; typ: TRCSIOType): TBlk;
 
     procedure OnClientDisconnect(client: TIdContext);
 
@@ -1225,7 +1225,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlocks.AnotherBlockUsesRCS(addr: TRCSAddr; me: TBlk; typ: TRCSIOType): TBlk;
+function TBlocks.AnotherBlockUsesRCS(addr: TRCSsAddr; me: TBlk; typ: TRCSIOType): TBlk;
 begin
   for var blk: TBlk in Self.data do
     if (Blk <> me) and (Blk.UsesRCS(addr, typ)) then

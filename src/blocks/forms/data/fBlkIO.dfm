@@ -4,7 +4,7 @@ object F_BlkIO: TF_BlkIO
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (IO)'
-  ClientHeight = 430
+  ClientHeight = 511
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -68,7 +68,7 @@ object F_BlkIO: TF_BlkIO
     Left = 10
     Top = 148
     Width = 304
-    Height = 114
+    Height = 157
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -77,29 +77,54 @@ object F_BlkIO: TF_BlkIO
     TabOrder = 6
     object L_IR04: TLabel
       Left = 16
-      Top = 56
-      Width = 59
+      Top = 96
+      Width = 56
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS modul :'
+      Caption = 'RCS modul:'
     end
     object L_IR05: TLabel
       Left = 16
-      Top = 84
-      Width = 49
+      Top = 124
+      Width = 46
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS port :'
+      Caption = 'RCS port:'
+    end
+    object Label4: TLabel
+      Left = 16
+      Top = 70
+      Width = 60
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS syst'#233'm:'
     end
     object SE_RCS_Input_Port: TSpinEdit
       Left = 216
-      Top = 83
+      Top = 123
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 4
+      Value = 0
+    end
+    object SE_RCS_Input_Module: TSpinEdit
+      Left = 216
+      Top = 97
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -109,22 +134,7 @@ object F_BlkIO: TF_BlkIO
       MaxValue = 0
       MinValue = 0
       TabOrder = 3
-      Value = 0
-    end
-    object SE_RCS_Input_Module: TSpinEdit
-      Left = 216
-      Top = 57
-      Width = 73
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 2
       Value = 1
-      OnExit = SE_RCS_Input_ModuleExit
     end
     object CHB_RCS_Input: TCheckBox
       Left = 16
@@ -137,16 +147,30 @@ object F_BlkIO: TF_BlkIO
     end
     object CHB_RCS_Input_Needed: TCheckBox
       Left = 16
-      Top = 34
+      Top = 41
       Width = 220
       Height = 17
       Caption = 'Deaktivovat blok p'#345'i ztr'#225't'#283' RCS vstupu'
       TabOrder = 1
     end
+    object SE_RCS_Input_System: TSpinEdit
+      Left = 216
+      Top = 71
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 1
+    end
   end
   object B_Storno: TButton
     Left = 151
-    Top = 398
+    Top = 478
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -159,7 +183,7 @@ object F_BlkIO: TF_BlkIO
   end
   object B_Save: TButton
     Left = 240
-    Top = 398
+    Top = 478
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -200,9 +224,9 @@ object F_BlkIO: TF_BlkIO
   end
   object GB_RCS_Output: TGroupBox
     Left = 10
-    Top = 266
+    Top = 309
     Width = 304
-    Height = 111
+    Height = 156
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -210,30 +234,55 @@ object F_BlkIO: TF_BlkIO
     Caption = ' RCS v'#253'stup '
     TabOrder = 7
     object Label1: TLabel
-      Left = 13
-      Top = 56
-      Width = 59
+      Left = 16
+      Top = 96
+      Width = 56
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS modul :'
+      Caption = 'RCS modul:'
     end
     object Label2: TLabel
-      Left = 13
-      Top = 84
-      Width = 49
+      Left = 16
+      Top = 124
+      Width = 46
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS port :'
+      Caption = 'RCS port:'
+    end
+    object Label3: TLabel
+      Left = 16
+      Top = 70
+      Width = 60
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS syst'#233'm:'
     end
     object SE_RCS_Output_Port: TSpinEdit
-      Left = 213
-      Top = 83
+      Left = 216
+      Top = 123
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 4
+      Value = 0
+    end
+    object SE_RCS_Output_Module: TSpinEdit
+      Left = 216
+      Top = 97
       Width = 73
       Height = 22
       Margins.Left = 2
@@ -243,22 +292,7 @@ object F_BlkIO: TF_BlkIO
       MaxValue = 0
       MinValue = 0
       TabOrder = 3
-      Value = 0
-    end
-    object SE_RCS_Output_Module: TSpinEdit
-      Left = 213
-      Top = 57
-      Width = 73
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 2
       Value = 1
-      OnExit = SE_RCS_Output_ModuleExit
     end
     object CHB_RCS_Output: TCheckBox
       Left = 16
@@ -271,11 +305,25 @@ object F_BlkIO: TF_BlkIO
     end
     object CHB_RCS_Output_Needed: TCheckBox
       Left = 16
-      Top = 34
+      Top = 40
       Width = 217
       Height = 17
       Caption = 'Deaktivovat blok p'#345'i ztr'#225't'#283' RCS v'#253'stupu'
       TabOrder = 1
+    end
+    object SE_RCS_Output_System: TSpinEdit
+      Left = 216
+      Top = 71
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 1
     end
   end
   object CHB_AllowOutChange: TCheckBox

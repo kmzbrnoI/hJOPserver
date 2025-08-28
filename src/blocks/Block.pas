@@ -5,7 +5,7 @@
 
 interface
 
-uses IniFiles, RCSc, SysUtils, AreaDb, Generics.Collections, Logging,
+uses IniFiles, RCSc, RCSsc, SysUtils, AreaDb, Generics.Collections, Logging,
   IdContext, JsonDataObjects, Area, changeEvent, Classes;
 
 const
@@ -23,7 +23,7 @@ type
     btPst = 14);
 
   TZaver = (undefinned = -1, no = 0, vlak = 1, posun = 2, nouz = 3, staveni = 4, ab = 5);
-  TRCSAddrs = TList<TRCSAddr>;
+  TRCSsAddrs = TList<TRCSsAddr>;
 
   /// ////////////////////////////
   TBlkSettings = record
@@ -56,13 +56,13 @@ type
 
     procedure Log(text: string; level: TLogLevel; source: TLogSource = lsAny);
 
-    class function LoadRCS(ini: TMemIniFile; section: string): TRCSAddrs;
-    class procedure SaveRCS(ini: TMemIniFile; section: string; data: TRCSAddrs);
+    class function LoadRCS(ini: TMemIniFile; section: string): TRCSsAddrs;
+    class procedure SaveRCS(ini: TMemIniFile; section: string; data: TRCSsAddrs);
 
-    class procedure RCSRegister(areas: TList<TArea>; RCSs: TRCSAddrs); overload;
-    class procedure RCSRegister(areas: TList<TArea>; RCS: TRCSAddr); overload;
-    procedure RCSRegister(RCSs: TRCSAddrs); overload;
-    procedure RCSRegister(RCS: TRCSAddr); overload;
+    class procedure RCSsRegister(areas: TList<TArea>; addrs: TRCSsAddrs); overload;
+    class procedure RCSsRegister(areas: TList<TArea>; addr: TRCSsAddr); overload;
+    procedure RCSsRegister(RCSs: TRCSsAddrs); overload;
+    procedure RCSsRegister(RCS: TRCSsAddr); overload;
 
     procedure CallChangeEvents(var events: TChangeEvents);
     function LoadAreas(ini: TMemIniFile; section: string): TStrings; // user must free result!
@@ -91,7 +91,7 @@ type
     procedure Freeze(); virtual;
     procedure UnFreeze(); virtual;
 
-    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; virtual;
+    function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; virtual;
 
     // zobrazuje menu, vraci string urcujici menu
     // kazdy blok ma sve zakladni menu, ktere obsahuje pouze hlavicku s jeho nazvem a oddelovac
@@ -123,8 +123,8 @@ type
 
     class function BlkTypeToStr(typ: TBlkType): string;
     class function BlkTypeFromStr(typ: string): TBlkType;
-    class procedure RCSstoJSON(const addrs: TRCSAddrs; json: TJsonArray);
-    class procedure RCStoJSON(const addr: TRCSAddr; json: TJsonObject);
+    class procedure RCSstoJSON(const addrs: TRCSsAddrs; json: TJsonArray);
+    class procedure RCStoJSON(const addr: TRCSsAddr; json: TJsonObject);
 
     // if some local variable is changed, this event is called to the program
     property OnChange: TOnBlkChange read FOnChange write FOnChange;
@@ -223,20 +223,20 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class function TBlk.LoadRCS(ini: TMemIniFile; section: string): TRCSAddrs;
+class function TBlk.LoadRCS(ini: TMemIniFile; section: string): TRCSsAddrs;
 begin
-  Result := TList<RCSc.TRCSAddr>.Create(RCSAddrComparer);
+  Result := TList<RCSsc.TRCSsAddr>.Create(RCSAddrComparer);
 
   for var i: Integer := 0 to _MAX_RCS-1 do
   begin
     if ((ini.ReadString(section, 'RCS'+IntToStr(i), '') = '') and (ini.ReadInteger(section, 'RCSb'+IntToStr(i), -1) = -1)) then
       Break; // no more RCS addresses
 
-    Result.Add(RCSFromIni(ini, section, 'RCS'+IntToStr(i), 'RCSb'+IntToStr(i), 'RCSp'+IntToStr(i)));
+    Result.Add(RCSsFromIni(ini, section, 'RCS'+IntToStr(i), 'RCSb'+IntToStr(i), 'RCSp'+IntToStr(i)));
   end;
 end;
 
-class procedure TBlk.SaveRCS(ini: TMemIniFile; section: string; data: TRCSAddrs);
+class procedure TBlk.SaveRCS(ini: TMemIniFile; section: string; data: TRCSsAddrs);
 begin
   for var i: Integer := 0 to data.count - 1 do
     ini.WriteString(section, 'RCS'+IntToStr(i), data[i].ToString());
@@ -266,38 +266,38 @@ begin
   Self.ffrozen := false;
 end;
 
-function TBlk.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlk.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
 begin
   Result := false;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class procedure TBlk.RCSRegister(areas: TList<TArea>; RCSs: TRCSAddrs);
+class procedure TBlk.RCSsRegister(areas: TList<TArea>; addrs: TRCSsAddrs);
 begin
   for var area: TArea in areas do
-    for var rcsAddr: TRCSAddr in RCSs do
+    for var rcsAddr: TRCSsAddr in addrs do
       area.RCSAdd(rcsAddr.module);
 
-  for var rcsAddr: TRCSAddr in RCSs do
-    RCSi.SetNeeded(rcsAddr.module);
+  for var rcsAddr: TRCSsAddr in addrs do
+    RCSs.SetNeeded(rcsAddr);
 end;
 
-class procedure TBlk.RCSRegister(areas: TList<TArea>; RCS: TRCSAddr);
+class procedure TBlk.RCSsRegister(areas: TList<TArea>; addr: TRCSsAddr);
 begin
   for var area: TArea in areas do
-    Area.RCSAdd(RCS.module);
-  RCSi.SetNeeded(RCS.module);
+    Area.RCSAdd(addr.module);
+  RCSs.SetNeeded(addr);
 end;
 
-procedure TBlk.RCSRegister(RCSs: TRCSAddrs);
+procedure TBlk.RCSsRegister(RCSs: TRCSsAddrs);
 begin
-  TBlk.RCSRegister(Self.areas, RCSs);
+  TBlk.RCSsRegister(Self.areas, RCSs);
 end;
 
-procedure TBlk.RCSRegister(RCS: TRCSAddr);
+procedure TBlk.RCSsRegister(RCS: TRCSsAddr);
 begin
-  TBlk.RCSRegister(Self.areas, RCS);
+  TBlk.RCSsRegister(Self.areas, RCS);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -461,18 +461,20 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class procedure TBlk.RCSstoJSON(const addrs: TRCSAddrs; json: TJsonArray);
+class procedure TBlk.RCSstoJSON(const addrs: TRCSsAddrs; json: TJsonArray);
 begin
-  for var rcsAddr: TRCSAddr in addrs do
+  for var rcsAddr: TRCSsAddr in addrs do
   begin
     var newObj: TJsonObject := json.AddObject();
+    newObj['system'] := rcsAddr.system;
     newObj['board'] := rcsAddr.module;
     newObj['port'] := rcsAddr.port;
   end;
 end;
 
-class procedure TBlk.RCStoJSON(const addr: TRCSAddr; json: TJsonObject);
+class procedure TBlk.RCStoJSON(const addr: TRCSsAddr; json: TJsonObject);
 begin
+  json['system'] := addr.system;
   json['board'] := addr.module;
   json['port'] := addr.port;
 end;

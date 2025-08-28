@@ -178,7 +178,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
     Left = 7
     Top = 66
     Width = 304
-    Height = 147
+    Height = 135
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -186,7 +186,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
     Caption = ' Ovl'#225'd'#225'n'#237' n'#225'v'#283'stidla '
     TabOrder = 2
     object Label3: TLabel
-      Left = 131
+      Left = 170
       Top = 38
       Width = 51
       Height = 13
@@ -197,7 +197,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       Caption = 'RCS modul'
     end
     object Label4: TLabel
-      Left = 221
+      Left = 234
       Top = 38
       Width = 43
       Height = 13
@@ -208,8 +208,8 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       Caption = 'RCS port'
     end
     object Label5: TLabel
-      Left = 7
-      Top = 117
+      Left = 8
+      Top = 108
       Width = 64
       Height = 13
       Margins.Left = 2
@@ -225,10 +225,21 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       Height = 13
       Caption = 'Prvn'#237' v'#253'stup:'
     end
+    object Label1: TLabel
+      Left = 106
+      Top = 38
+      Width = 57
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS syst'#233'm'
+    end
     object SE_RCSport1: TSpinEdit
-      Left = 221
+      Left = 234
       Top = 55
-      Width = 73
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -236,28 +247,28 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       Margins.Bottom = 2
       MaxValue = 0
       MinValue = 0
-      TabOrder = 4
+      TabOrder = 3
       Value = 0
     end
     object CB_Typ: TComboBox
-      Left = 93
-      Top = 117
-      Width = 201
+      Left = 106
+      Top = 108
+      Width = 188
       Height = 21
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
       Style = csDropDownList
-      TabOrder = 5
+      TabOrder = 8
       Items.Strings = (
         'S-Com'
         'bin'#225'rn'#237' (0/1)')
     end
     object SE_RCSmodule1: TSpinEdit
-      Left = 131
+      Left = 170
       Top = 55
-      Width = 73
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -265,9 +276,8 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       Margins.Bottom = 2
       MaxValue = 0
       MinValue = 0
-      TabOrder = 1
-      Value = 1
-      OnExit = SE_RCSmodule1Exit
+      TabOrder = 2
+      Value = 0
     end
     object CHB_RCS_Output: TCheckBox
       Left = 8
@@ -279,9 +289,9 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       OnClick = CHB_RCS_OutputClick
     end
     object SE_RCSmodule2: TSpinEdit
-      Left = 131
-      Top = 86
-      Width = 73
+      Left = 170
+      Top = 82
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -289,14 +299,13 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       Margins.Bottom = 2
       MaxValue = 0
       MinValue = 0
-      TabOrder = 2
-      Value = 1
-      OnExit = SE_RCSmodule2Exit
+      TabOrder = 6
+      Value = 0
     end
     object SE_RCSport2: TSpinEdit
-      Left = 221
-      Top = 85
-      Width = 73
+      Left = 234
+      Top = 81
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -304,17 +313,45 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       Margins.Bottom = 2
       MaxValue = 0
       MinValue = 0
-      TabOrder = 3
+      TabOrder = 7
       Value = 0
     end
     object CHB_RCS_Second_Output: TCheckBox
-      Left = 8
-      Top = 85
+      Left = 7
+      Top = 82
       Width = 89
       Height = 17
       Caption = 'Druh'#253' v'#253'stup:'
-      TabOrder = 6
+      TabOrder = 4
       OnClick = CHB_RCS_Second_OutputClick
+    end
+    object SE_RCSsystem1: TSpinEdit
+      Left = 106
+      Top = 55
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 1
+      Value = 0
+    end
+    object SE_RCSsystem2: TSpinEdit
+      Left = 106
+      Top = 82
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 5
+      Value = 0
     end
   end
 end

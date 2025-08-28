@@ -89,6 +89,10 @@ type
     function GetModuleOutputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
 
     function IsModule(addr: TRCSsAddr): Boolean;
+    function IsModuleFailure(addr: TRCSsAddr): Boolean;
+    function IsModuleError(addr: TRCSsAddr): Boolean;
+    function IsModuleWarning(addr: TRCSsAddr): Boolean;
+    function IsNonFailedModule(addr: TRCSsAddr): Boolean;
 
     procedure InputSim(); // nastavit simulovane vstupy (koncove polohy vyhybek atp.)
     procedure TrainOccupySim(); // nastavit RCS vstupy tak, aby useky, ve kterych je souprava, byly obsazene
@@ -124,7 +128,7 @@ function RCSAddrComparer(): IComparer<TRCSsAddr>;
 implementation
 
 uses SysUtils, fMain, Block, BlockDb, BlockTurnout, BlockCrossing, Booster,
-  BoosterDb, BlockTrack, IfThenElse;
+  BoosterDb, BlockTrack, IfThenElse, Diagnostics;
 
 constructor EInvalidSystem.Create(system: Cardinal);
 begin
@@ -456,19 +460,47 @@ begin
   Result := Self.m_rcss[addr.system].IsModule(addr.module);
 end;
 
+function TRCSs.IsModuleFailure(addr: TRCSsAddr): Boolean;
+begin
+  if (addr.system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[addr.system].IsModuleFailure(addr.module);
+end;
+
+function TRCSs.IsModuleError(addr: TRCSsAddr): Boolean;
+begin
+  if (addr.system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[addr.system].IsModuleError(addr.module);
+end;
+
+function TRCSs.IsModuleWarning(addr: TRCSsAddr): Boolean;
+begin
+  if (addr.system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[addr.system].IsModuleWarning(addr.module);
+end;
+
+function TRCSs.IsNonFailedModule(addr: TRCSsAddr): Boolean;
+begin
+  if (addr.system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[addr.system].IsNonFailedModule(addr.module);
+end;
+
 procedure TRCSs.InputSim();
 begin
   // vychozi stav bloku
   for var blk: TBlk in Blocks do
   begin
     try
-{      if ((Blk.GetGlobalSettings.typ = btTurnout) and ((Blk as TBlkTurnout).posDetection)) then
+      if ((Blk.GetGlobalSettings.typ = btTurnout) and ((Blk as TBlkTurnout).posDetection)) then
         Self.SetInput(TBlkTurnout(Blk).rcsInPlus, 1);
       if ((Blk.typ = btCrossing) and (TBlkCrossing(Blk).GetSettings().RCSInputs.open.enabled)) then
         Self.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open.addr, 1);
       if ((diag.simSoupravaObsaz) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain()) and
         ((Blk as TBlkTrack).occupAvailable)) then
-        Self.SetInput(TBlkTrack(Blk).GetSettings().RCSAddrs[0], 1); } // TODO
+        Self.SetInput(TBlkTrack(Blk).GetSettings().RCSAddrs[0], 1);
     except
 
     end;
@@ -496,8 +528,8 @@ begin
   begin
     if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then
       continue;
-{    if (((Blk as TBlkTrack).IsTrain()) and ((Blk as TBlkTrack).occupAvailable)) then
-      Self.SetInput((Blk as TBlkTrack).GetSettings().RCSAddrs[0], 1); } // TODO
+    if (((Blk as TBlkTrack).IsTrain()) and ((Blk as TBlkTrack).occupAvailable)) then
+      Self.SetInput((Blk as TBlkTrack).GetSettings().RCSAddrs[0], 1);
   end;
 end;
 

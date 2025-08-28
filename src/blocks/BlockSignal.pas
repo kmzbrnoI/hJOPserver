@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, rrEvent, System.Math,
   TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo, JCBarriers,
-  Area, StrUtils, JsonDataObjects, RCSc, Train, RegularExpressions;
+  Area, StrUtils, JsonDataObjects, RCSc, RCSsc, Train, RegularExpressions;
 
 type
   TBlkSignalSelection = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
@@ -71,7 +71,7 @@ type
   end;
 
   TBlkSignalSettings = record
-    RCSAddrs: TRCSAddrs;
+    RCSAddrs: TRCSsAddrs;
     outputType: TBlkSignalOutputType;
     events: TObjectList<TBlkSignalTrainEvent>;
     // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
@@ -81,8 +81,8 @@ type
     locked: Boolean; // jestli je navestidlo trvale zamknuto na STUJ (hodi se napr. u navestidel a konci kusych koleji)
     PSt: record
       enabled: Boolean;
-      rcsIndicationShunt: TRCSAddr;
-      rcsControllerShunt: TRCSAddr;
+      rcsIndicationShunt: TRCSsAddr;
+      rcsControllerShunt: TRCSsAddr;
     end;
   end;
 
@@ -219,7 +219,7 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
-    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
+    function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
     procedure Change(now: Boolean = false); override;
@@ -414,11 +414,11 @@ begin
   begin
     Self.m_settings.PSt.rcsIndicationShunt.Load(ini_tech.ReadString(section, 'indShunt', ''));
     Self.m_settings.PSt.rcsControllerShunt.Load(ini_tech.ReadString(section, 'contShunt', ''));
-    Self.RCSRegister(Self.m_settings.PSt.rcsIndicationShunt);
-    Self.RCSRegister(Self.m_settings.PSt.rcsControllerShunt);
+    Self.RCSsRegister(Self.m_settings.PSt.rcsIndicationShunt);
+    Self.RCSsRegister(Self.m_settings.PSt.rcsControllerShunt);
   end;
 
-  Self.RCSRegister(Self.m_settings.RCSAddrs);
+  Self.RCSsRegister(Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkSignal.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -459,8 +459,8 @@ begin
 
   enable := true;
   try
-    for var rcsaddr: TRCSAddr in Self.m_settings.RCSAddrs do
-      if (not RCSi.IsNonFailedModule(rcsaddr.module)) then
+    for var rcsaddr: TRCSsAddr in Self.m_settings.RCSAddrs do
+      if (not RCSs.IsNonFailedModule(rcsaddr)) then
         enable := false;
   except
     enable := false;
@@ -491,7 +491,7 @@ begin
   Self.Change(true);
 end;
 
-function TBlkSignal.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkSignal.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
 begin
   Result := ((portType = TRCSIOType.output) and (Self.m_settings.RCSAddrs.Contains(addr)));
 
@@ -619,11 +619,11 @@ begin
   try
     case (Self.m_settings.outputType) of
       TBlkSignalOutputType.scom:
-        RCSi.SetOutputs(Self.m_settings.RCSAddrs, Integer(code));
+        RCSs.SetOutputs(Self.m_settings.RCSAddrs, Integer(code));
       TBlkSignalOutputType.binary:
-        RCSi.SetOutputs(Self.m_settings.RCSAddrs, Integer(TBlkSignal.IsGoSignal(code, TJCType.train)));
+        RCSs.SetOutputs(Self.m_settings.RCSAddrs, Integer(TBlkSignal.IsGoSignal(code, TJCType.train)));
     else
-      RCSi.SetOutputs(Self.m_settings.RCSAddrs, Integer(TBlkSignalCode.ncStuj));
+      RCSs.SetOutputs(Self.m_settings.RCSAddrs, Integer(TBlkSignalCode.ncStuj));
     end;
   except
     if (Assigned(changeCallbackErr)) then
@@ -1073,7 +1073,7 @@ begin
       var ir: TBlkIR := Blocks.GetBlkIrByID(Self.m_settings.events[0].stop.data.irId);
       if (ir = nil) then
         Exit();
-      RCSi.SetInput(ir.GetSettings().RCSAddr, ite(enabled, 1, 0));
+      RCSs.SetInput(ir.GetSettings().RCSAddr, ite(enabled, 1, 0));
     end;
   except
     PanelServer.BottomError(SenderPnl, 'Nepodařilo se nastavit stav IR čidla!', TArea(SenderOR).ShortName, 'SIMULACE');
@@ -1086,7 +1086,7 @@ begin
     Exit();
 
   try
-    RCSi.SetInput(Self.m_settings.PSt.rcsControllerShunt, 1);
+    RCSs.SetInput(Self.m_settings.PSt.rcsControllerShunt, 1);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1099,7 +1099,7 @@ begin
     Exit();
 
   try
-    RCSi.SetInput(Self.m_settings.PSt.rcsControllerShunt, 0);
+    RCSs.SetInput(Self.m_settings.PSt.rcsControllerShunt, 0);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1311,7 +1311,7 @@ begin
     if (Self.m_settings.PSt.enabled) then
     begin
       try
-        if (RCSi.GetInput(Self.m_settings.PSt.rcsControllerShunt) = isOn) then
+        if (RCSs.GetInput(Self.m_settings.PSt.rcsControllerShunt) = isOn) then
           Result := Result + '*RAD<,'
         else
           Result := Result + '*RAD>,';
@@ -1962,7 +1962,7 @@ begin
   begin
     try
       if (Self.m_settings.PSt.enabled) then
-        RCSi.SetInput(Self.m_settings.PSt.rcsControllerShunt, ownConvert.BoolToInt(reqJson.B['rcsControllerShunt']))
+        RCSs.SetInput(Self.m_settings.PSt.rcsControllerShunt, ownConvert.BoolToInt(reqJson.B['rcsControllerShunt']))
       else
         PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Navestidlo nema kontrolery PSt');
     except
@@ -2348,7 +2348,7 @@ begin
     Exit(true);
 
   try
-    Result := (RCSi.GetInput(Self.m_settings.PSt.rcsControllerShunt) <> isOn);
+    Result := (RCSs.GetInput(Self.m_settings.PSt.rcsControllerShunt) <> isOn);
   except
     Result := false;
   end;
@@ -2364,14 +2364,14 @@ begin
   try
     if (not Self.PstIsActive()) then
     begin
-      RCSi.SetOutput(Self.m_settings.PSt.rcsIndicationShunt, 0);
+      RCSs.SetOutput(Self.m_settings.PSt.rcsIndicationShunt, 0);
       Exit();
     end;
 
     if (Self.changing) then
-      RCSi.SetOutput(Self.m_settings.PSt.rcsIndicationShunt, TRCSOutputState.osf240)
+      RCSs.SetOutput(Self.m_settings.PSt.rcsIndicationShunt, TRCSOutputState.osf240)
     else
-      RCSi.SetOutput(Self.m_settings.PSt.rcsIndicationShunt,
+      RCSs.SetOutput(Self.m_settings.PSt.rcsIndicationShunt,
         ite((Self.signal = ncPosunZaj) or (Self.signal = ncPosunNezaj), 1, 0));
   except
 
@@ -2384,7 +2384,7 @@ begin
     Exit();
 
   try
-    var state := RCSi.GetInput(Self.m_settings.PSt.rcsControllerShunt);
+    var state := RCSs.GetInput(Self.m_settings.PSt.rcsControllerShunt);
     if ((state = TRCSInputState.isOn) and (Self.signal <> ncPosunZaj)) then
       Self.signal := ncPosunZaj;
     if ((state = TRCSInputState.isOff) and (Self.signal <> ncStuj)) then

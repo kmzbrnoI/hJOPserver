@@ -16,13 +16,13 @@ type
     GB_RCS: TGroupBox;
     L_Vyh05: TLabel;
     L_Vyh06: TLabel;
-    SE_Out_Plus_port: TSpinEdit;
-    SE_Out_Minus_port: TSpinEdit;
+    SE_Out_Plus_Port: TSpinEdit;
+    SE_Out_Minus_Port: TSpinEdit;
     L_Vyh07: TLabel;
     B_Storno: TButton;
     B_Save: TButton;
-    SE_Out_Plus_module: TSpinEdit;
-    SE_Out_Minus_module: TSpinEdit;
+    SE_Out_Plus_Module: TSpinEdit;
+    SE_Out_Minus_Module: TSpinEdit;
     Label1: TLabel;
     GB_Lock: TGroupBox;
     CB_Lock: TComboBox;
@@ -66,14 +66,26 @@ type
     CHB_Feedback: TCheckBox;
     L_Vyh08: TLabel;
     L_Vyh09: TLabel;
-    SE_In_Minus_module: TSpinEdit;
-    SE_In_Plus_module: TSpinEdit;
-    SE_In_Plus_port: TSpinEdit;
-    SE_In_Minus_port: TSpinEdit;
+    SE_In_Minus_Module: TSpinEdit;
+    SE_In_Plus_Module: TSpinEdit;
+    SE_In_Plus_Port: TSpinEdit;
+    SE_In_Minus_Port: TSpinEdit;
     Label11: TLabel;
     Label12: TLabel;
     CB_OutputType: TComboBox;
     Label13: TLabel;
+    Label14: TLabel;
+    SE_In_Plus_System: TSpinEdit;
+    SE_In_Minus_System: TSpinEdit;
+    Label15: TLabel;
+    SE_Out_Plus_System: TSpinEdit;
+    SE_Out_Minus_System: TSpinEdit;
+    Label16: TLabel;
+    SE_Ind_Plus_System: TSpinEdit;
+    SE_Ind_Minus_System: TSpinEdit;
+    Label17: TLabel;
+    SE_Cont_Plus_System: TSpinEdit;
+    SE_Cont_Minus_System: TSpinEdit;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -81,12 +93,7 @@ type
     procedure CHB_LockClick(Sender: TObject);
     procedure CHB_npPlusClick(Sender: TObject);
     procedure CHB_npMinusClick(Sender: TObject);
-    procedure SE_moduleExit(Sender: TObject);
     procedure CHB_FeedbackClick(Sender: TObject);
-    procedure SE_Ind_Plus_ModuleExit(Sender: TObject);
-    procedure SE_Ind_Minus_ModuleExit(Sender: TObject);
-    procedure SE_Cont_Plus_ModuleExit(Sender: TObject);
-    procedure SE_Cont_Minus_ModuleExit(Sender: TObject);
     procedure CHB_IndicationClick(Sender: TObject);
     procedure CHB_ControllersClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -113,7 +120,7 @@ var
 
 implementation
 
-uses GetSystems, RCSc, Block, DataBloky, Area, ifThenElse, ownGuiUtils,
+uses GetSystems, RCSsc, RCSc, Block, DataBloky, Area, ifThenElse, ownGuiUtils,
   ownConvert;
 
 {$R *.dfm}
@@ -156,52 +163,30 @@ begin
   Self.ShowModal();
 end;
 
-procedure TF_BlkTurnout.SE_Cont_Minus_ModuleExit(Sender: TObject);
-begin
-  Self.SE_Cont_Minus_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Cont_Minus_Module.Value, Self.SE_Cont_Minus_Port.Value);
-end;
-
-procedure TF_BlkTurnout.SE_Cont_Plus_ModuleExit(Sender: TObject);
-begin
-  Self.SE_Cont_Plus_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Cont_Plus_Module.Value, Self.SE_Cont_Plus_Port.Value);
-end;
-
-procedure TF_BlkTurnout.SE_Ind_Minus_ModuleExit(Sender: TObject);
-begin
-  Self.SE_Ind_Minus_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_Ind_Minus_Module.Value, Self.SE_Ind_Minus_Port.Value);
-end;
-
-procedure TF_BlkTurnout.SE_Ind_Plus_ModuleExit(Sender: TObject);
-begin
-  Self.SE_Ind_Plus_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_Ind_Plus_Module.Value, Self.SE_Ind_Plus_Port.Value);
-end;
-
-procedure TF_BlkTurnout.SE_moduleExit(Sender: TObject);
-begin
-  Self.SE_Out_Plus_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_Out_Plus_module.Value, Self.SE_Out_Plus_port.Value);
-  Self.SE_Out_Minus_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_Out_Minus_module.Value,
-    Self.SE_Out_Minus_port.Value);
-  Self.SE_In_Plus_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_In_Plus_module.Value, Self.SE_In_Plus_port.Value);
-  Self.SE_In_Minus_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_In_Minus_module.Value, Self.SE_In_Minus_port.Value);
-end;
-
 procedure TF_BlkTurnout.NewOpenForm();
 begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
   Self.CHB_ManAlwaysEm.Checked := False;
 
-  Self.SE_Out_Plus_port.Value := 0;
-  Self.SE_Out_Plus_module.Value := 1;
-  Self.SE_Out_Minus_port.Value := 0;
-  Self.SE_Out_Minus_module.Value := 1;
+  Self.SE_Out_Plus_System.Value := 0;
+  Self.SE_Out_Plus_Module.Value := 0;
+  Self.SE_Out_Plus_Port.Value := 0;
+
+  Self.SE_Out_Minus_System.Value := 0;
+  Self.SE_Out_Minus_Module.Value := 0;
+  Self.SE_Out_Minus_Port.Value := 0;
+
   Self.CB_OutputType.ItemIndex := 0;
 
-  Self.SE_In_Plus_port.Value := 0;
-  Self.SE_In_Plus_module.Value := 1;
-  Self.SE_In_Minus_port.Value := 0;
-  Self.SE_In_Minus_module.Value := 1;
-  Self.SE_moduleExit(Self);
+  Self.SE_In_Plus_System.Value := 0;
+  Self.SE_In_Plus_Module.Value := 0;
+  Self.SE_In_Plus_Port.Value := 0;
+
+  Self.SE_In_Minus_System.Value := 0;
+  Self.SE_In_Minus_Module.Value := 0;
+  Self.SE_In_Minus_Port.Value := 0;
+
   Self.CHB_Feedback.Checked := true;
   Self.CHB_FeedbackClick(Self.CHB_Feedback);
 
@@ -258,39 +243,22 @@ begin
   Self.CHB_LockClick(Self.CHB_Lock);
 
 
-  if (Self.block.rcsInPlus.module > Cardinal(Self.SE_In_Plus_module.MaxValue)) then
-    Self.SE_In_Plus_module.MaxValue := 0;
-  Self.SE_In_Plus_port.MaxValue := 0;
+  Self.SE_In_Plus_System.Value := Self.block.rcsInPlus.system;
+  Self.SE_In_Plus_Module.Value := Self.block.rcsInPlus.module;
+  Self.SE_In_Plus_Port.Value := Self.block.rcsInPlus.port;
 
-  Self.SE_In_Plus_module.Value := Self.block.rcsInPlus.module;
-  Self.SE_In_Plus_port.Value := Self.block.rcsInPlus.port;
+  Self.SE_In_Minus_System.Value := Self.block.rcsInMinus.system;
+  Self.SE_In_Minus_Module.Value := Self.block.rcsInMinus.module;
+  Self.SE_In_Minus_Port.Value := Self.block.rcsInMinus.port;
 
+  Self.SE_Out_Plus_System.Value := Self.block.rcsOutPlus.system;
+  Self.SE_Out_Plus_Module.Value := Self.block.rcsOutPlus.module;
+  Self.SE_Out_Plus_Port.Value := Self.block.rcsOutPlus.port;
 
-  if (Self.block.rcsInMinus.module > Cardinal(Self.SE_In_Minus_module.MaxValue)) then
-    Self.SE_In_Minus_module.MaxValue := 0;
-  Self.SE_In_Minus_port.MaxValue := 0;
+  Self.SE_Out_Minus_System.Value := Self.block.rcsOutMinus.system;
+  Self.SE_Out_Minus_Module.Value := Self.block.rcsOutMinus.module;
+  Self.SE_Out_Minus_Port.Value := Self.block.rcsOutMinus.port;
 
-  Self.SE_In_Minus_module.Value := Self.block.rcsInMinus.module;
-  Self.SE_In_Minus_port.Value := Self.block.rcsInMinus.port;
-
-
-  if (Self.block.rcsOutPlus.module > Cardinal(Self.SE_Out_Plus_module.MaxValue)) then
-    Self.SE_Out_Plus_module.MaxValue := 0;
-  Self.SE_Out_Plus_port.MaxValue := 0;
-
-  Self.SE_Out_Plus_module.Value := Self.block.rcsOutPlus.module;
-  Self.SE_Out_Plus_port.Value := Self.block.rcsOutPlus.port;
-
-
-  if (Self.block.rcsOutMinus.module > Cardinal(Self.SE_Out_Minus_module.MaxValue)) then
-    Self.SE_Out_Minus_module.MaxValue := 0;
-  Self.SE_Out_Minus_port.MaxValue := 0;
-
-  Self.SE_Out_Minus_module.Value := Self.block.rcsOutMinus.module;
-  Self.SE_Out_Minus_port.Value := Self.block.rcsOutMinus.port;
-
-
-  Self.SE_moduleExit(Self);
 
   Self.CHB_Feedback.Checked := settings.posDetection;
   Self.CHB_FeedbackClick(Self.CHB_Feedback);
@@ -307,17 +275,11 @@ begin
     Self.CHB_IndicationClick(Self.CHB_Indication);
     if (settings.indication.enabled) then
     begin
-      if (settings.indication.rcsPlus.module > Cardinal(Self.SE_Ind_Plus_Module.MaxValue)) then
-        Self.SE_Ind_Plus_Module.MaxValue := 0;
-      Self.SE_Ind_Plus_Port.MaxValue := 0;
-
+      Self.SE_Ind_Plus_System.Value := settings.indication.rcsPlus.system;
       Self.SE_Ind_Plus_Module.Value := settings.indication.rcsPlus.module;
       Self.SE_Ind_Plus_Port.Value := settings.indication.rcsPlus.port;
 
-      if (settings.indication.rcsMinus.module > Cardinal(Self.SE_Ind_Minus_Module.MaxValue)) then
-        Self.SE_Ind_Minus_Module.MaxValue := 0;
-      Self.SE_Ind_Minus_Port.MaxValue := 0;
-
+      Self.SE_Ind_Minus_System.Value := settings.indication.rcsMinus.system;
       Self.SE_Ind_Minus_Module.Value := settings.indication.rcsMinus.module;
       Self.SE_Ind_Minus_Port.Value := settings.indication.rcsMinus.port;
       Self.CHB_Indication_Pst.Checked := settings.indication.pstOnly;
@@ -329,17 +291,11 @@ begin
     Self.CHB_ControllersClick(Self.CHB_Controllers);
     if (settings.controllers.enabled) then
     begin
-      if (settings.controllers.rcsPlus.module > Cardinal(Self.SE_Cont_Plus_Module.MaxValue)) then
-        Self.SE_Cont_Plus_Module.MaxValue := 0;
-      Self.SE_Cont_Plus_Port.MaxValue := 0;
-
+      Self.SE_Cont_Plus_System.Value := settings.controllers.rcsPlus.system;
       Self.SE_Cont_Plus_Module.Value := settings.controllers.rcsPlus.module;
       Self.SE_Cont_Plus_Port.Value := settings.controllers.rcsPlus.port;
 
-      if (settings.controllers.rcsMinus.module > Cardinal(Self.SE_Cont_Minus_Module.MaxValue)) then
-        Self.SE_Cont_Minus_Module.MaxValue := 0;
-      Self.SE_Cont_Minus_Port.MaxValue := 0;
-
+      Self.SE_Cont_Minus_System.Value := settings.controllers.rcsMinus.system;
       Self.SE_Cont_Minus_Module.Value := settings.controllers.rcsMinus.module;
       Self.SE_Cont_Minus_Port.Value := settings.controllers.rcsMinus.port;
       Self.CHB_Controllers_Pst.Checked := settings.controllers.pstOnly;
@@ -351,10 +307,15 @@ end;
 
 procedure TF_BlkTurnout.CommonOpenForm();
 begin
-  Self.SE_Out_Plus_module.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_Out_Minus_module.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_In_Plus_module.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_In_Minus_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_Out_Plus_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_Out_Minus_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_In_Plus_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_In_Minus_System.MaxValue := RCSs._RCSS_MAX;
+
+  Self.SE_Cont_Plus_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_Cont_Minus_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_Ind_Plus_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_Ind_Minus_System.MaxValue := RCSs._RCSS_MAX;
 
   if (Self.block <> nil) then
   begin
@@ -407,16 +368,20 @@ end;
 procedure TF_BlkTurnout.CHB_ControllersClick(Sender: TObject);
 begin
   Self.CHB_Controllers_Pst.Enabled := Self.CHB_Controllers.Checked;
+  Self.SE_Cont_Plus_System.Enabled := Self.CHB_Controllers.Checked;
   Self.SE_Cont_Plus_Module.Enabled := Self.CHB_Controllers.Checked;
   Self.SE_Cont_Plus_Port.Enabled := Self.CHB_Controllers.Checked;
+  Self.SE_Cont_Minus_System.Enabled := Self.CHB_Controllers.Checked;
   Self.SE_Cont_Minus_Module.Enabled := Self.CHB_Controllers.Checked;
   Self.SE_Cont_Minus_Port.Enabled := Self.CHB_Controllers.Checked;
 
   if (not Self.CHB_Controllers.Checked) then
   begin
     Self.CHB_Controllers_Pst.Checked := false;
+    Self.SE_Cont_Plus_System.Value := 0;
     Self.SE_Cont_Plus_Module.Value := 0;
     Self.SE_Cont_Plus_Port.Value := 0;
+    Self.SE_Cont_Minus_System.Value := 0;
     Self.SE_Cont_Minus_Module.Value := 0;
     Self.SE_Cont_Minus_Port.Value := 0;
   end;
@@ -424,33 +389,41 @@ end;
 
 procedure TF_BlkTurnout.CHB_FeedbackClick(Sender: TObject);
 begin
-  Self.SE_In_Plus_module.Enabled := Self.CHB_Feedback.Checked;
-  Self.SE_In_Plus_port.Enabled := Self.CHB_Feedback.Checked;
-  Self.SE_In_Minus_module.Enabled := Self.CHB_Feedback.Checked;
-  Self.SE_In_Minus_port.Enabled := Self.CHB_Feedback.Checked;
+  Self.SE_In_Plus_System.Enabled := Self.CHB_Feedback.Checked;
+  Self.SE_In_Plus_Module.Enabled := Self.CHB_Feedback.Checked;
+  Self.SE_In_Plus_Port.Enabled := Self.CHB_Feedback.Checked;
+  Self.SE_In_Minus_System.Enabled := Self.CHB_Feedback.Checked;
+  Self.SE_In_Minus_Module.Enabled := Self.CHB_Feedback.Checked;
+  Self.SE_In_Minus_Port.Enabled := Self.CHB_Feedback.Checked;
 
   if (not Self.CHB_Feedback.Checked) then
   begin
-    Self.SE_In_Plus_module.Value := 0;
-    Self.SE_In_Plus_port.Value := 0;
-    Self.SE_In_Minus_module.Value := 0;
-    Self.SE_In_Minus_port.Value := 0;
+    Self.SE_In_Plus_System.Value := 0;
+    Self.SE_In_Plus_Module.Value := 0;
+    Self.SE_In_Plus_Port.Value := 0;
+    Self.SE_In_Minus_System.Value := 0;
+    Self.SE_In_Minus_Module.Value := 0;
+    Self.SE_In_Minus_Port.Value := 0;
   end;
 end;
 
 procedure TF_BlkTurnout.CHB_IndicationClick(Sender: TObject);
 begin
   Self.CHB_Indication_Pst.Enabled := Self.CHB_Indication.Checked;
+  Self.SE_Ind_Plus_System.Enabled := Self.CHB_Indication.Checked;
   Self.SE_Ind_Plus_Module.Enabled := Self.CHB_Indication.Checked;
   Self.SE_Ind_Plus_Port.Enabled := Self.CHB_Indication.Checked;
+  Self.SE_Ind_Minus_System.Enabled := Self.CHB_Indication.Checked;
   Self.SE_Ind_Minus_Module.Enabled := Self.CHB_Indication.Checked;
   Self.SE_Ind_Minus_Port.Enabled := Self.CHB_Indication.Checked;
 
   if (not Self.CHB_Indication.Checked) then
   begin
     Self.CHB_Indication_Pst.Checked := false;
+    Self.SE_Ind_Plus_System.Value := 0;
     Self.SE_Ind_Plus_Module.Value := 0;
     Self.SE_Ind_Plus_Port.Value := 0;
+    Self.SE_Ind_Minus_System.Value := 0;
     Self.SE_Ind_Minus_Module.Value := 0;
     Self.SE_Ind_Minus_Port.Value := 0;
   end;
@@ -571,16 +544,16 @@ begin
     settings.posDetection := Self.CHB_Feedback.Checked;
     settings.outputType := TTurnoutOutputType(Self.CB_OutputType.ItemIndex);
 
-    settings.rcs.outp := TRCS.RCSAddr(SE_Out_Plus_module.Value, SE_Out_Plus_port.Value);
-    settings.rcs.outm := TRCS.RCSAddr(SE_Out_Minus_module.Value, SE_Out_Minus_port.Value);
+    settings.rcs.outp := TRCSs.RCSsAddr(SE_Out_Plus_System.Value, SE_Out_Plus_Module.Value, SE_Out_Plus_Port.Value);
+    settings.rcs.outm := TRCSs.RCSsAddr(SE_Out_Minus_System.Value, SE_Out_Minus_Module.Value, SE_Out_Minus_Port.Value);
 
     if (Self.CHB_Feedback.Checked) then
     begin
-      settings.rcs.inp := TRCS.RCSAddr(SE_In_Plus_module.Value, SE_In_Plus_port.Value);
-      settings.rcs.inm := TRCS.RCSAddr(SE_In_Minus_module.Value, SE_In_Minus_port.Value);
+      settings.rcs.inp := TRCSs.RCSsAddr(SE_In_Plus_System.Value, SE_In_Plus_Module.Value, SE_In_Plus_Port.Value);
+      settings.rcs.inm := TRCSs.RCSsAddr(SE_In_Minus_System.Value, SE_In_Minus_Module.Value, SE_In_Minus_Port.Value);
     end else begin
-      settings.rcs.inp := RCSi.RCSAddr(0, 0);
-      settings.rcs.inm := RCSi.RCSAddr(0, 0);
+      settings.rcs.inp := TRCSs.RCSsAddr(0, 0, 0);
+      settings.rcs.inm := TRCSs.RCSsAddr(0, 0, 0);
     end;
 
     // Just keep tMovingMock, do not change
@@ -672,10 +645,8 @@ begin
     settings.indication.enabled := Self.CHB_Indication.Checked;
     if (Self.CHB_Indication.Checked) then
     begin
-      settings.indication.rcsPlus.module := Self.SE_Ind_Plus_Module.Value;
-      settings.indication.rcsPlus.port := Self.SE_Ind_Plus_Port.Value;
-      settings.indication.rcsMinus.module := Self.SE_Ind_Minus_Module.Value;
-      settings.indication.rcsMinus.port := Self.SE_Ind_Minus_Port.Value;
+      settings.indication.rcsPlus := TRCSs.RCSsAddr(Self.SE_Ind_Plus_System.Value, Self.SE_Ind_Plus_Module.Value, Self.SE_Ind_Plus_Port.Value);
+      settings.indication.rcsMinus := TRCSs.RCSsAddr(Self.SE_Ind_Minus_System.Value, Self.SE_Ind_Minus_Module.Value, Self.SE_Ind_Minus_Port.Value);
       settings.indication.pstOnly := Self.CHB_Indication_Pst.Checked;
 
       another := Blocks.AnotherBlockUsesRCS(settings.indication.rcsPlus, Self.block, TRCSIOType.output);
@@ -690,10 +661,8 @@ begin
     settings.controllers.enabled := Self.CHB_Controllers.Checked;
     if (Self.CHB_Controllers.Checked) then
     begin
-      settings.controllers.rcsPlus.module := Self.SE_Cont_Plus_Module.Value;
-      settings.controllers.rcsPlus.port := Self.SE_Cont_Plus_Port.Value;
-      settings.controllers.rcsMinus.module := Self.SE_Cont_Minus_Module.Value;
-      settings.controllers.rcsMinus.port := Self.SE_Cont_Minus_Port.Value;
+      settings.controllers.rcsPlus := TRCSs.RCSsAddr(Self.SE_Cont_Plus_System.Value, Self.SE_Cont_Plus_Module.Value, Self.SE_Cont_Plus_Port.Value);
+      settings.controllers.rcsMinus := TRCSs.RCSsAddr(Self.SE_Cont_Minus_System.Value, Self.SE_Cont_Minus_Module.Value, Self.SE_Cont_Minus_Port.Value);
       settings.controllers.pstOnly := Self.CHB_Controllers_Pst.Checked;
 
       another := Blocks.AnotherBlockUsesRCS(settings.controllers.rcsPlus, Self.block, TRCSIOType.input);

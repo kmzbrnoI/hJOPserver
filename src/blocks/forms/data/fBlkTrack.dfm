@@ -146,7 +146,7 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Detekce obsazen'#237' - vstupy - RCS  '
+    Caption = ' Detekce obsazen'#237' - vstupy - RCS '
     TabOrder = 8
     object L_det1: TLabel
       Left = 12
@@ -193,7 +193,7 @@ object F_BlkTrack: TF_BlkTrack
       Caption = '3. detektor:'
     end
     object L_P01: TLabel
-      Left = 224
+      Left = 235
       Top = 16
       Width = 53
       Height = 13
@@ -214,8 +214,34 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Bottom = 2
       Caption = 'RCS port'
     end
+    object Label8: TLabel
+      Left = 158
+      Top = 16
+      Width = 57
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS syst'#233'm'
+    end
     object SE_Port0: TSpinEdit
       Left = 312
+      Top = 32
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 3
+      Value = 0
+    end
+    object SE_Module0: TSpinEdit
+      Left = 235
       Top = 32
       Width = 73
       Height = 22
@@ -229,24 +255,8 @@ object F_BlkTrack: TF_BlkTrack
       TabOrder = 2
       Value = 0
     end
-    object SE_Module0: TSpinEdit
-      Left = 224
-      Top = 32
-      Width = 73
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Enabled = False
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 1
-      Value = 1
-      OnExit = SE_RCS_BoardExit
-    end
     object CHB_D0: TCheckBox
-      Left = 188
+      Left = 124
       Top = 33
       Width = 17
       Height = 17
@@ -259,7 +269,7 @@ object F_BlkTrack: TF_BlkTrack
     end
     object CHB_D1: TCheckBox
       Tag = 1
-      Left = 188
+      Left = 124
       Top = 59
       Width = 17
       Height = 17
@@ -267,11 +277,11 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      TabOrder = 3
+      TabOrder = 4
       OnClick = CHB_D0Click
     end
     object SE_Module1: TSpinEdit
-      Left = 224
+      Left = 235
       Top = 58
       Width = 73
       Height = 22
@@ -282,9 +292,8 @@ object F_BlkTrack: TF_BlkTrack
       Enabled = False
       MaxValue = 0
       MinValue = 0
-      TabOrder = 4
-      Value = 1
-      OnExit = SE_RCS_BoardExit
+      TabOrder = 6
+      Value = 0
     end
     object SE_Port1: TSpinEdit
       Left = 312
@@ -298,12 +307,12 @@ object F_BlkTrack: TF_BlkTrack
       Enabled = False
       MaxValue = 0
       MinValue = 0
-      TabOrder = 5
+      TabOrder = 7
       Value = 0
     end
     object CHB_D2: TCheckBox
       Tag = 2
-      Left = 188
+      Left = 124
       Top = 86
       Width = 17
       Height = 17
@@ -311,11 +320,11 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      TabOrder = 6
+      TabOrder = 8
       OnClick = CHB_D0Click
     end
     object SE_Module2: TSpinEdit
-      Left = 224
+      Left = 235
       Top = 84
       Width = 73
       Height = 22
@@ -326,9 +335,8 @@ object F_BlkTrack: TF_BlkTrack
       Enabled = False
       MaxValue = 0
       MinValue = 0
-      TabOrder = 7
-      Value = 1
-      OnExit = SE_RCS_BoardExit
+      TabOrder = 10
+      Value = 0
     end
     object SE_Port2: TSpinEdit
       Left = 312
@@ -342,12 +350,12 @@ object F_BlkTrack: TF_BlkTrack
       Enabled = False
       MaxValue = 0
       MinValue = 0
-      TabOrder = 8
+      TabOrder = 11
       Value = 0
     end
     object CHB_D3: TCheckBox
       Tag = 3
-      Left = 188
+      Left = 124
       Top = 112
       Width = 17
       Height = 17
@@ -355,11 +363,11 @@ object F_BlkTrack: TF_BlkTrack
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      TabOrder = 9
+      TabOrder = 12
       OnClick = CHB_D0Click
     end
     object SE_Module3: TSpinEdit
-      Left = 224
+      Left = 235
       Top = 110
       Width = 73
       Height = 22
@@ -370,9 +378,8 @@ object F_BlkTrack: TF_BlkTrack
       Enabled = False
       MaxValue = 0
       MinValue = 0
-      TabOrder = 10
-      Value = 1
-      OnExit = SE_RCS_BoardExit
+      TabOrder = 14
+      Value = 0
     end
     object SE_Port3: TSpinEdit
       Left = 312
@@ -386,7 +393,67 @@ object F_BlkTrack: TF_BlkTrack
       Enabled = False
       MaxValue = 0
       MinValue = 0
-      TabOrder = 11
+      TabOrder = 15
+      Value = 0
+    end
+    object SE_System0: TSpinEdit
+      Left = 158
+      Top = 32
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 1
+      Value = 0
+    end
+    object SE_System1: TSpinEdit
+      Left = 158
+      Top = 58
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 5
+      Value = 0
+    end
+    object SE_System2: TSpinEdit
+      Left = 158
+      Top = 84
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 9
+      Value = 0
+    end
+    object SE_System3: TSpinEdit
+      Left = 158
+      Top = 109
+      Width = 73
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 13
       Value = 0
     end
   end

@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, Booster, houkEvent,
   IdContext, Generics.Collections, JsonDataObjects, Area, Train,
-  announcement, changeEvent, predvidanyOdjezd, RCSc;
+  announcement, changeEvent, predvidanyOdjezd, RCSc, RCSsc;
 
 type
   TTrackState = (disabled = -5, none = -1, free = 0, occupied = 1);
@@ -19,7 +19,7 @@ type
   EPathTimerNotRunning = class(Exception);
 
   TBlkTrackSettings = record
-    RCSAddrs: TRCSAddrs;
+    RCSAddrs: TRCSsAddrs;
     lenght: double; // in meters
     loop: Boolean;
     boosterId: string;
@@ -199,7 +199,7 @@ type
     procedure Enable(); override;
     procedure Disable(); override;
     procedure Reset(); override;
-    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
+    function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
     procedure Freeze(); override;
@@ -424,7 +424,7 @@ begin
     strs.free();
   end;
 
-  Self.RCSRegister(Self.m_settings.RCSAddrs);
+  Self.RCSsRegister(Self.m_settings.RCSAddrs);
 end;
 
 procedure TBlkTrack.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -495,8 +495,8 @@ var enable: Boolean;
 begin
   enable := true;
   try
-    for var rcsaddr: TRCSAddr in Self.m_settings.RCSAddrs do
-      if (not RCSi.IsNonFailedModule(rcsaddr.module)) then
+    for var rcsaddr: TRCSsAddr in Self.m_settings.RCSAddrs do
+      if (not RCSs.IsNonFailedModule(rcsaddr)) then
         enable := false;
   except
     enable := false;
@@ -551,7 +551,7 @@ begin
   Self.m_state.psts.Clear();
 end;
 
-function TBlkTrack.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkTrack.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
 begin
   Result := ((portType = TRCSIOType.input) and (Self.m_settings.RCSAddrs.Contains(addr)));
 end;
@@ -598,7 +598,7 @@ begin
   begin
     var state: TRCSInputState;
     try
-      state := RCSi.GetInput(Self.m_settings.RCSAddrs[i]);
+      state := RCSs.GetInput(Self.m_settings.RCSAddrs[i]);
     except
       state := failure;
     end;
@@ -1350,8 +1350,8 @@ end;
 procedure TBlkTrack.MenuObsazClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   try
-    for var rcsaddr: TRCSAddr in Self.m_settings.RCSAddrs do
-      RCSi.SetInput(rcsaddr, 1);
+    for var rcsaddr: TRCSsAddr in Self.m_settings.RCSAddrs do
+      RCSs.SetInput(rcsaddr, 1);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1361,8 +1361,8 @@ end;
 procedure TBlkTrack.MenuUvolClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   try
-    for var rcsaddr: TRCSAddr in Self.m_settings.RCSAddrs do
-      RCSi.SetInput(rcsaddr, 0);
+    for var rcsaddr: TRCSsAddr in Self.m_settings.RCSAddrs do
+      RCSs.SetInput(rcsaddr, 0);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1375,7 +1375,7 @@ begin
     Exit();
 
   try
-    RCSi.SetInput(Self.m_settings.RCSAddrs[id], ownConvert.BoolToInt(state));
+    RCSs.SetInput(Self.m_settings.RCSAddrs[id], ownConvert.BoolToInt(state));
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1910,11 +1910,11 @@ begin
   begin
     try
       if (reqJson.S['state'] = 'free') then
-        for var rcsaddr: TRCSAddr in Self.m_settings.RCSAddrs do
-          RCSi.SetInput(rcsaddr, 0)
+        for var rcsaddr: TRCSsAddr in Self.m_settings.RCSAddrs do
+          RCSs.SetInput(rcsaddr, 0)
       else if (reqJson.S['state'] = 'occupied') then
-        for var rcsaddr: TRCSAddr in Self.m_settings.RCSAddrs do
-          RCSi.SetInput(rcsaddr, 1)
+        for var rcsaddr: TRCSsAddr in Self.m_settings.RCSAddrs do
+          RCSs.SetInput(rcsaddr, 1)
       else begin
         for var i: Integer := 0 to reqJson.A['sections'].Count-1 do
         begin
@@ -1922,9 +1922,9 @@ begin
           begin
             var state: string := reqJson.A['sections'][i];
             if (state = 'free') then
-              RCSi.SetInput(Self.m_settings.RCSAddrs[i], 0)
+              RCSs.SetInput(Self.m_settings.RCSAddrs[i], 0)
             else if (state = 'occupied') then
-              RCSi.SetInput(Self.m_settings.RCSAddrs[i], 1);
+              RCSs.SetInput(Self.m_settings.RCSAddrs[i], 1);
           end;
         end;
       end;

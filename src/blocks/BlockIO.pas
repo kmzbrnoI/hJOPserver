@@ -10,7 +10,7 @@ unit BlockIO;
 
 interface
 
-uses IniFiles, Block, RCSc, Classes, SysUtils, IdContext, Area,
+uses IniFiles, Block, RCSc, RCSsc, Classes, SysUtils, IdContext, Area,
   Graphics, JsonDataObjects, RCSErrors, RCSIFace;
 
 type
@@ -18,11 +18,11 @@ type
   TBlkIOsettings = record
     isRCSinput: Boolean;
     RCSinputNeeded: Boolean;
-    RCSinput: TRCSAddr;
+    RCSinput: TRCSsAddr;
 
     isRCSOutput: Boolean;
     RCSoutputNeeded: Boolean;
-    RCSoutput: TRCSAddr;
+    RCSoutput: TRCSsAddr;
     allowOutChange: Boolean;
 
     setOutputOnStart: Boolean;
@@ -70,7 +70,7 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
-    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
+    function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Activate();
     procedure Deactivate();
@@ -131,14 +131,14 @@ begin
   Self.m_settings.allowOutChange := ini_tech.ReadBool(section, 'allowOutChange', Self.m_settings.isRCSOutput);
   if (Self.m_settings.isRCSOutput) then
   begin
-    Self.m_settings.RCSoutput := RCSFromIni(ini_tech, section, 'RCSout', 'RCSb0', 'RCSp0');
+    Self.m_settings.RCSoutput := RCSsFromIni(ini_tech, section, 'RCSout', 'RCSb0', 'RCSp0');
     Self.m_settings.RCSoutputNeeded := ini_tech.ReadBool(section, 'RCSno', true) or ini_tech.ReadBool(section, 'RCSn0', true);
   end;
 
   Self.m_settings.isRCSinput := (ini_tech.ReadString(section, 'RCSin', '') <> '') or (ini_tech.ReadInteger(section, 'RCSbi', -1) <> -1); // old format
   if (Self.m_settings.isRCSinput) then
   begin
-    Self.m_settings.RCSinput := RCSFromIni(ini_tech, section, 'RCSin', 'RCSbi', 'RCSpi');
+    Self.m_settings.RCSinput := RCSsFromIni(ini_tech, section, 'RCSin', 'RCSbi', 'RCSpi');
     Self.m_settings.RCSinputNeeded := ini_tech.ReadBool(section, 'RCSni', true);
   end;
 
@@ -149,12 +149,12 @@ begin
 
   if (Self.isRCSinput) then
   begin
-    Self.RCSRegister(Self.m_settings.RCSinput);
+    Self.RCSsRegister(Self.m_settings.RCSinput);
     RCSi.SetNeeded(Self.m_settings.RCSinput.module);
   end;
   if (Self.isRCSOutput) then
   begin
-    Self.RCSRegister(Self.m_settings.RCSoutput);
+    Self.RCSsRegister(Self.m_settings.RCSoutput);
     RCSi.SetNeeded(Self.m_settings.RCSoutput.module);
   end;
 end;
@@ -214,7 +214,7 @@ begin
   Self.m_state.inputState := TRCSInputState.isOff;
 end;
 
-function TBlkIO.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkIO.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
 begin
   Result := (((Self.isRCSOutput) and (portType = TRCSIOType.output) and (Self.m_settings.RCSoutput = addr)) or
     ((Self.isRCSinput) and (portType = TRCSIOType.input) and (Self.m_settings.RCSinput = addr)));
@@ -258,7 +258,7 @@ begin
   if ((Self.enabled) and (Self.isRCSinput)) then
   begin
     try
-      inputState := RCSi.GetInput(Self.m_settings.RCSinput);
+      inputState := RCSs.GetInput(Self.m_settings.RCSinput);
     except
       on E: RCSException do
         inputState := TRCSInputState.failure;
@@ -274,7 +274,7 @@ begin
   if ((Self.enabled) and (Self.isRCSOutput)) then
   begin
     try
-      outputState := RCSi.GetOutputState(Self.m_settings.RCSoutput);
+      outputState := RCSs.GetOutputState(Self.m_settings.RCSoutput);
     except
       on E: RCSException do
         outputState := TRCSOutputState.osFailure;
@@ -301,7 +301,7 @@ begin
   if (Self.isRCSOutput) then
   begin
     try
-      RCSi.SetOutput(Self.m_settings.RCSoutput, 1);
+      RCSs.SetOutput(Self.m_settings.RCSoutput, 1);
     except
 
     end;
@@ -325,7 +325,7 @@ begin
   if (Self.isRCSOutput) then
   begin
     try
-      RCSi.SetOutput(Self.m_settings.RCSoutput, 0);
+      RCSs.SetOutput(Self.m_settings.RCSoutput, 0);
     except
 
     end;
@@ -450,7 +450,7 @@ begin
     begin
       // Simulation
       try
-        RCSi.SetInput(Self.m_settings.RCSinput, ownConvert.BoolToInt(reqJson.B['activeInput']));
+        RCSs.SetInput(Self.m_settings.RCSinput, ownConvert.BoolToInt(reqJson.B['activeInput']));
       except
         on e: RCSException do
           PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
@@ -551,7 +551,7 @@ end;
 procedure TBlkIO.MenuInClick(SenderPnl: TIdContext; SenderOR: TObject; target: Boolean);
 begin
   try
-    RCSi.SetInput(Self.m_settings.RCSinput, ownConvert.BoolToInt(target));
+    RCSs.SetInput(Self.m_settings.RCSinput, ownConvert.BoolToInt(target));
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupù!', TArea(SenderOR).shortName,
       'SIMULACE');

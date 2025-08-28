@@ -4,28 +4,28 @@
 
 interface
 
-uses IniFiles, Block, SysUtils, Menus, AreaDb, Classes, RCSc,
+uses IniFiles, Block, SysUtils, Menus, AreaDb, Classes, RCSc, RCSsc,
   IdContext, Area, Generics.Collections, JsonDataObjects, ConfSeq,
   BlockCrossingLogic, BlockCrossingPositive;
 
 type
   TBlkCrossingRCSInputs = record
-    closed: TRCSAddrOptional; // or barriers closed
-    open: TRCSAddrOptional; // or barriers open
-    caution: TRCSAddrOptional;
-    annulation: TRCSAddrOptional;
+    closed: TRCSsAddrOptional; // or barriers closed
+    open: TRCSsAddrOptional; // or barriers open
+    caution: TRCSsAddrOptional;
+    annulation: TRCSsAddrOptional;
   end;
 
   TBlkCrossingRCSOutputs = record
-    close: TRCSAddrOptional;
-    lights: TRCSAddrOptional;
-    emOpen: TRCSAddrOptional;
-    positive: TRCSAddrOptional;
+    close: TRCSsAddrOptional;
+    lights: TRCSsAddrOptional;
+    emOpen: TRCSsAddrOptional;
+    positive: TRCSsAddrOptional;
     positiveInvert: Boolean;
     positiveFlick: Boolean;
-    barriersDown: TRCSAddrOptional;
-    barriersUp: TRCSAddrOptional;
-    bell: TRCSAddrOptional;
+    barriersDown: TRCSsAddrOptional;
+    barriersUp: TRCSsAddrOptional;
+    bell: TRCSsAddrOptional;
     bellActiveDown: Boolean;
   end;
 
@@ -175,7 +175,7 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
-    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
+    function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
     procedure Change(now: Boolean = false); override;
@@ -255,23 +255,23 @@ begin
   Self.m_state.note := '';
   Self.m_state.lockout := '';
 
-  Self.m_settings.RCSInputs.closed := RCSOptionalFromIni(ini_tech, section, _SECT_RCSICLOSED, 'RCSIzm', 'RCSIz');
-  Self.m_settings.RCSInputs.open := RCSOptionalFromIni(ini_tech, section, _SECT_RCSIOPEN, 'RCSIom', 'RCSIo');
-  Self.m_settings.RCSInputs.caution := RCSOptionalFromIni(ini_tech, section, _SECT_RCSICAUTION, 'RCSIvm', 'RCSIv');
-  Self.m_settings.RCSInputs.annulation := RCSOptionalFromIni(ini_tech, section, _SECT_RCSIANNULATION, 'RCSam', 'RCSa');
+  Self.m_settings.RCSInputs.closed := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSICLOSED, 'RCSIzm', 'RCSIz');
+  Self.m_settings.RCSInputs.open := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSIOPEN, 'RCSIom', 'RCSIo');
+  Self.m_settings.RCSInputs.caution := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSICAUTION, 'RCSIvm', 'RCSIv');
+  Self.m_settings.RCSInputs.annulation := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSIANNULATION, 'RCSam', 'RCSa');
 
-  Self.m_settings.RCSOutputs.close := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOCLOSE, 'RCSOzm', 'RCSOz');
-  Self.m_settings.RCSOutputs.emOpen := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOEMOPEN, 'RCSOnotm', 'RCSOnot');
-  Self.m_settings.RCSOutputs.lights := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOLIGHTS);
-  Self.m_settings.RCSOutputs.positive := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOPOSITIVE);
+  Self.m_settings.RCSOutputs.close := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSOCLOSE, 'RCSOzm', 'RCSOz');
+  Self.m_settings.RCSOutputs.emOpen := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSOEMOPEN, 'RCSOnotm', 'RCSOnot');
+  Self.m_settings.RCSOutputs.lights := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSOLIGHTS);
+  Self.m_settings.RCSOutputs.positive := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSOPOSITIVE);
   if (not Self.m_settings.RCSOutputs.positive.enabled) then // backward compatibility
-    Self.m_settings.RCSOutputs.positive := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBLOCKPOSITIVE, 'RCSObpm', 'RCSObp');
+    Self.m_settings.RCSOutputs.positive := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSOBLOCKPOSITIVE, 'RCSObpm', 'RCSObp');
   Self.m_settings.RCSOutputs.positiveInvert := ini_tech.ReadBool(section, _SECT_RCSOPOSITIVE_INVERT, False);
   Self.m_settings.RCSOutputs.positiveFlick := ini_tech.ReadBool(section, _SECT_RCSOPOSITIVE_FLICK, False);
 
-  Self.m_settings.RCSOutputs.barriersDown := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBARRIERS_DOWN);
-  Self.m_settings.RCSOutputs.barriersUp := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBARRIERS_UP);
-  Self.m_settings.RCSOutputs.bell := RCSOptionalFromIni(ini_tech, section, _SECT_RCSOBELL);
+  Self.m_settings.RCSOutputs.barriersDown := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSOBARRIERS_DOWN);
+  Self.m_settings.RCSOutputs.barriersUp := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSOBARRIERS_UP);
+  Self.m_settings.RCSOutputs.bell := RCSsOptionalFromIni(ini_tech, section, _SECT_RCSOBELL);
   Self.m_settings.RCSOutputs.bellActiveDown := ini_tech.ReadBool(section, _SECT_RCSOBELL_ACTIVE_DOWN, False);
 
   Self.m_settings.preringTime := ini_tech.ReadInteger(section, _SECT_PRERING_TIME, 0);
@@ -401,7 +401,7 @@ begin
   Self.Change(true);
 end;
 
-function TBlkCrossing.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkCrossing.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
 begin
   Result := False;
 
@@ -483,7 +483,7 @@ begin
       // closing started by hJOP
       Self.m_state.warningTimeout := Now + EncodeTime(0, _UZ_UPOZ_MIN, 0, 0);
       if ((RCSi.simulation) and (Self.m_settings.RCSInputs.caution.enabled)) then
-        RCSi.SetInput(Self.m_settings.RCSInputs.caution.addr, 1); // so error state is prevented
+        RCSs.SetInput(Self.m_settings.RCSInputs.caution.addr, 1); // so error state is prevented
     end;
   end;
 
@@ -600,24 +600,24 @@ procedure TBlkCrossing.UpdateOutputs();
 begin
   try
     if (Self.m_settings.RCSOutputs.close.enabled) then
-      RCSi.SetOutput(Self.m_settings.RCSOutputs.close.addr, ownConvert.BoolToInt(Self.WantClose()));
+      RCSs.SetOutput(Self.m_settings.RCSOutputs.close.addr, ownConvert.BoolToInt(Self.WantClose()));
     if (Self.m_settings.RCSOutputs.emOpen.enabled) then
-      RCSi.SetOutput(Self.m_settings.RCSOutputs.emOpen.addr, ownConvert.BoolToInt(Self.m_state.pcEmOpen));
+      RCSs.SetOutput(Self.m_settings.RCSOutputs.emOpen.addr, ownConvert.BoolToInt(Self.m_state.pcEmOpen));
 
     if (Self.m_settings.RCSOutputs.lights.enabled) then
-      RCSi.SetOutput(Self.m_settings.RCSOutputs.lights.addr, ownConvert.BoolToInt(
+      RCSs.SetOutput(Self.m_settings.RCSOutputs.lights.addr, ownConvert.BoolToInt(
         (Self.state = TBlkCrossingBasicState.caution) or (Self.state = TBlkCrossingBasicState.closed)
       ));
 
     var barriersToDown: Boolean := (Self.WantClose() and Self.IsPreringElapsed());
     if (Self.m_settings.RCSOutputs.barriersDown.enabled) then
-      RCSi.SetOutput(Self.m_settings.RCSOutputs.barriersDown.addr, ownConvert.BoolToInt(barriersToDown));
+      RCSs.SetOutput(Self.m_settings.RCSOutputs.barriersDown.addr, ownConvert.BoolToInt(barriersToDown));
     if (Self.m_settings.RCSOutputs.barriersUp.enabled) then
-      RCSi.SetOutput(Self.m_settings.RCSOutputs.barriersUp.addr, ownConvert.BoolToInt(not barriersToDown));
+      RCSs.SetOutput(Self.m_settings.RCSOutputs.barriersUp.addr, ownConvert.BoolToInt(not barriersToDown));
 
     if (Self.m_settings.RCSOutputs.bell.enabled) then
     begin
-      RCSi.SetOutput(Self.m_settings.RCSOutputs.bell.addr, ownConvert.BoolToInt(
+      RCSs.SetOutput(Self.m_settings.RCSOutputs.bell.addr, ownConvert.BoolToInt(
         (Self.state = TBlkCrossingBasicState.caution) or ((Self.state = TBlkCrossingBasicState.closed) and (Self.m_settings.RCSOutputs.bellActiveDown))
       ));
     end;
@@ -627,11 +627,11 @@ begin
       if (Self.m_settings.RCSOutputs.positiveFlick) then
       begin
         if (Self.positive) then
-          RCSi.SetOutput(Self.m_settings.RCSOutputs.positive.addr, TRCSOutputState.osf33)
+          RCSs.SetOutput(Self.m_settings.RCSOutputs.positive.addr, TRCSOutputState.osf33)
         else
-          RCSi.SetOutput(Self.m_settings.RCSOutputs.positive.addr, TRCSOutputState.osDisabled);
+          RCSs.SetOutput(Self.m_settings.RCSOutputs.positive.addr, TRCSOutputState.osDisabled);
       end else begin
-        RCSi.SetOutput(Self.m_settings.RCSOutputs.positive.addr, ownConvert.BoolToInt(Self.positive xor Self.m_settings.RCSOutputs.positiveInvert));
+        RCSs.SetOutput(Self.m_settings.RCSOutputs.positive.addr, ownConvert.BoolToInt(Self.positive xor Self.m_settings.RCSOutputs.positiveInvert));
       end;
     end;
   except
@@ -822,7 +822,7 @@ begin
   end;
 
   try
-    RCSi.SetInput(Self.m_settings.RCSInputs.annulation.addr, 1);
+    RCSs.SetInput(Self.m_settings.RCSInputs.annulation.addr, 1);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName,
       'SIMULACE');
@@ -838,7 +838,7 @@ begin
   end;
 
   try
-    RCSi.SetInput(Self.m_settings.RCSInputs.annulation.addr, 0);
+    RCSs.SetInput(Self.m_settings.RCSInputs.annulation.addr, 0);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).shortName,
       'SIMULACE');
@@ -854,11 +854,11 @@ end;
 procedure TBlkCrossing.SetSimInputs(closed, caution, open: Boolean);
 begin
   if (Self.m_settings.RCSInputs.closed.enabled) then
-    RCSi.SetInput(Self.m_settings.RCSInputs.closed.addr, ownConvert.BoolToInt(closed));
+    RCSs.SetInput(Self.m_settings.RCSInputs.closed.addr, ownConvert.BoolToInt(closed));
   if (Self.m_settings.RCSInputs.caution.enabled) then
-    RCSi.SetInput(Self.m_settings.RCSInputs.caution.addr, ownConvert.BoolToInt(caution));
+    RCSs.SetInput(Self.m_settings.RCSInputs.caution.addr, ownConvert.BoolToInt(caution));
   if (Self.m_settings.RCSInputs.open.enabled) then
-    RCSi.SetInput(Self.m_settings.RCSInputs.open.addr, ownConvert.BoolToInt(open));
+    RCSs.SetInput(Self.m_settings.RCSInputs.open.addr, ownConvert.BoolToInt(open));
 end;
 
 procedure TBlkCrossing.SetPanelSimInputs(closed, caution, open: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
@@ -913,7 +913,7 @@ begin
     Result := Result + '-,*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
     if (Self.m_settings.RCSInputs.annulation.enabled) then
     begin
-      if (RCSi.GetInput(Self.m_settings.RCSInputs.annulation.addr) = TRCSInputState.isOn) then
+      if (RCSs.GetInput(Self.m_settings.RCSInputs.annulation.addr) = TRCSInputState.isOn) then
         Result := Result + '*ANULACE<'
       else
         Result := Result + '*ANULACE>';
@@ -1258,7 +1258,7 @@ begin
   if (Self.m_settings.RCSInputs.annulation.enabled and RCSi.Started) then
   begin
     try
-      Result := (RCSi.GetInput(Self.m_settings.RCSInputs.annulation.addr) = isOn);
+      Result := (RCSs.GetInput(Self.m_settings.RCSInputs.annulation.addr) = isOn);
     except
 
     end;
@@ -1279,7 +1279,7 @@ begin
   if (Self.m_settings.RCSInputs.closed.enabled) then
   begin
     try
-      Result := Result and (RCSi.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOn);
+      Result := Result and (RCSs.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOn);
     except
       Exit(False);
     end;
@@ -1295,7 +1295,7 @@ begin
   if (Self.m_settings.RCSInputs.caution.enabled) then
   begin
     try
-      Result := Result or (RCSi.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOn);
+      Result := Result or (RCSs.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOn);
     except
       Exit();
     end;
@@ -1309,7 +1309,7 @@ begin
   if ((Result) and (Self.m_settings.RCSInputs.open.enabled)) then
   begin
     try
-      Result := Result and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn);
+      Result := Result and (RCSs.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn);
     except
       Exit(False);
     end;
@@ -1344,14 +1344,14 @@ end;
 function TBlkCrossing.IsInputValid(): Boolean;
 begin
   try
-    if (((Self.m_settings.RCSInputs.open.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn)) and
-        ((Self.m_settings.RCSInputs.closed.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOn))) then
+    if (((Self.m_settings.RCSInputs.open.enabled) and (RCSs.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn)) and
+        ((Self.m_settings.RCSInputs.closed.enabled) and (RCSs.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOn))) then
       Exit(False);
-    if (((Self.m_settings.RCSInputs.open.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.open.addr) = isOff)) and
-        ((Self.m_settings.RCSInputs.closed.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOff)) and
-        ((Self.m_settings.RCSInputs.caution.enabled) and (RCSi.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOff))) then
+    if (((Self.m_settings.RCSInputs.open.enabled) and (RCSs.GetInput(Self.m_settings.RCSInputs.open.addr) = isOff)) and
+        ((Self.m_settings.RCSInputs.closed.enabled) and (RCSs.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOff)) and
+        ((Self.m_settings.RCSInputs.caution.enabled) and (RCSs.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOff))) then
       Exit(False);
-    if ((Self.m_settings.RCSInputs.caution.enabled) and (Self.WantClose()) and (RCSi.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOff)) then
+    if ((Self.m_settings.RCSInputs.caution.enabled) and (Self.WantClose()) and (RCSs.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOff)) then
       Exit(False);
   except
     Exit(False);

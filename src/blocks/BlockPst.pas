@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, IdContext,
-  Generics.Collections, Area, JsonDataObjects, RCSc, BlockTurnout,
+  Generics.Collections, Area, JsonDataObjects, RCSc, RCSsc, BlockTurnout,
   JCBarriers, UPO;
 
 type
@@ -22,11 +22,11 @@ type
     signals: TList<Integer>;
     refugees: TList<TPstRefugeeZav>;
     disconnectors: TList<Integer>;
-    rcsInTake: TRCSAddr;
-    rcsInRelease: TRCSAddr;
-    rcsOutTaken: TRCSAddr;
-    rcsOutHorn: TRCSAddr;
-    rcsOutActive: TRCSAddr;
+    rcsInTake: TRCSsAddr;
+    rcsInRelease: TRCSsAddr;
+    rcsOutTaken: TRCSsAddr;
+    rcsOutHorn: TRCSsAddr;
+    rcsOutActive: TRCSsAddr;
   end;
 
   TBlkPstState = record
@@ -116,7 +116,7 @@ type
     procedure Disable(); override;
     procedure Reset(); override;
     procedure SetStatus(new: TBlkPstStatus);
-    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
+    function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
 
@@ -270,11 +270,11 @@ begin
   Self.m_state.note := ini_stat.ReadString(section, 'stit', '');
   Self.LoadAreas(ini_rel, 'Pst').Free();
 
-  Self.RCSRegister(Self.m_settings.rcsInTake);
-  Self.RCSRegister(Self.m_settings.rcsInRelease);
-  Self.RCSRegister(Self.m_settings.rcsOutTaken);
-  Self.RCSRegister(Self.m_settings.rcsOutHorn);
-  Self.RCSRegister(Self.m_settings.rcsOutActive);
+  Self.RCSsRegister(Self.m_settings.rcsInTake);
+  Self.RCSsRegister(Self.m_settings.rcsInRelease);
+  Self.RCSsRegister(Self.m_settings.rcsOutTaken);
+  Self.RCSsRegister(Self.m_settings.rcsOutHorn);
+  Self.RCSsRegister(Self.m_settings.rcsOutActive);
 end;
 
 procedure TBlkPst.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -467,7 +467,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkPst.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkPst.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
 begin
   if ((portType = TRCSIOType.output) and
       ((addr = Self.m_settings.rcsOutTaken) or (addr = Self.m_settings.rcsOutHorn) or (addr = Self.m_settings.rcsOutActive))) then
@@ -496,8 +496,8 @@ begin
   take := TRCSInputState.failure;
   release := TRCSInputState.failure;
   try
-    take := RCSi.GetInput(Self.m_settings.rcsInTake);
-    release := RCSi.GetInput(Self.m_settings.rcsInRelease);
+    take := RCSs.GetInput(Self.m_settings.rcsInTake);
+    release := RCSs.GetInput(Self.m_settings.rcsInRelease);
   except
     on E: RCSException do begin end;
   end;
@@ -624,7 +624,7 @@ end;
 procedure TBlkPst.MenuHoukEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   try
-    RCSi.SetOutput(Self.m_settings.rcsOutHorn, osf60);
+    RCSs.SetOutput(Self.m_settings.rcsOutHorn, osf60);
   except
     PanelServer.BottomError(SenderPnl, 'Nelze nastavit RCS výstup!', TArea(SenderOR).ShortName, 'TECHNOLOGIE');
   end;
@@ -633,7 +633,7 @@ end;
 procedure TBlkPst.MenuHoukDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   try
-    RCSi.SetOutput(Self.m_settings.rcsOutHorn, osDisabled);
+    RCSs.SetOutput(Self.m_settings.rcsOutHorn, osDisabled);
   except
     PanelServer.BottomError(SenderPnl, 'Nelze nastavit RCS výstup!', TArea(SenderOR).ShortName, 'TECHNOLOGIE');
   end;
@@ -642,8 +642,8 @@ end;
 procedure TBlkPst.MenuAdminPoOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   try
-    RCSi.SetInput(Self.m_settings.rcsInRelease, 0);
-    RCSi.SetInput(Self.m_settings.rcsInTake, 1);
+    RCSs.SetInput(Self.m_settings.rcsInRelease, 0);
+    RCSs.SetInput(Self.m_settings.rcsInTake, 1);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -653,8 +653,8 @@ end;
 procedure TBlkPst.MenuAdminPoOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   try
-    RCSi.SetInput(Self.m_settings.rcsInRelease, 1);
-    RCSi.SetInput(Self.m_settings.rcsInTake, 0);
+    RCSs.SetInput(Self.m_settings.rcsInRelease, 1);
+    RCSs.SetInput(Self.m_settings.rcsInTake, 0);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -677,7 +677,7 @@ begin
       Result := Result + '!NPST,';
 
     try
-      var output := RCSi.GetOutputState(Self.m_settings.rcsOutHorn);
+      var output := RCSs.GetOutputState(Self.m_settings.rcsOutHorn);
       if ((output >= TRCSOutputState.osEnabled) and (output <= TRCSOutputState.osf600)) then
         Result := Result + 'HOUK<,'
       else if (output = TRCSOutputState.osDisabled) then
@@ -929,9 +929,9 @@ begin
   begin
     try
       if (reqJson.Contains('rcsInTake')) then
-        RCSi.SetInput(Self.m_settings.rcsInTake, ownConvert.BoolToInt(reqJson.B['rcsInTake']));
+        RCSs.SetInput(Self.m_settings.rcsInTake, ownConvert.BoolToInt(reqJson.B['rcsInTake']));
       if (reqJson.Contains('rcsInRelease')) then
-        RCSi.SetInput(Self.m_settings.rcsInRelease, ownConvert.BoolToInt(reqJson.B['rcsInRelease']));
+        RCSs.SetInput(Self.m_settings.rcsInRelease, ownConvert.BoolToInt(reqJson.B['rcsInRelease']));
     except
       on e: RCSException do
         PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
@@ -977,16 +977,16 @@ begin
   try
     case (Self.status) of
       pstDisabled, pstOff, pstRefuging: begin
-        RCSi.SetOutput(Self.m_settings.rcsOutTaken, 0);
-        RCSi.SetOutput(Self.m_settings.rcsOutActive, 0);
+        RCSs.SetOutput(Self.m_settings.rcsOutTaken, 0);
+        RCSs.SetOutput(Self.m_settings.rcsOutActive, 0);
       end;
       pstTakeReady: begin
-        RCSi.SetOutput(Self.m_settings.rcsOutTaken, TRCSOutputState.osf180);
-        RCSi.SetOutput(Self.m_settings.rcsOutActive, 0);
+        RCSs.SetOutput(Self.m_settings.rcsOutTaken, TRCSOutputState.osf180);
+        RCSs.SetOutput(Self.m_settings.rcsOutActive, 0);
       end;
       pstActive: begin
-        RCSi.SetOutput(Self.m_settings.rcsOutTaken, 1);
-        RCSi.SetOutput(Self.m_settings.rcsOutActive, 1);
+        RCSs.SetOutput(Self.m_settings.rcsOutTaken, 1);
+        RCSs.SetOutput(Self.m_settings.rcsOutActive, 1);
       end;
     end;
   except

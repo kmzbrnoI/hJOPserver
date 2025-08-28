@@ -79,8 +79,8 @@ object F_BlkTurnout: TF_BlkTurnout
     Caption = ' Ovl'#225'd'#225'n'#237' v'#253'hybky - RCS v'#253'stupy '
     TabOrder = 2
     object L_Vyh05: TLabel
-      Left = 151
-      Top = 20
+      Left = 165
+      Top = 23
       Width = 53
       Height = 13
       Margins.Left = 2
@@ -113,7 +113,7 @@ object F_BlkTurnout: TF_BlkTurnout
     end
     object Label1: TLabel
       Left = 230
-      Top = 20
+      Top = 23
       Width = 43
       Height = 13
       Margins.Left = 2
@@ -129,10 +129,49 @@ object F_BlkTurnout: TF_BlkTurnout
       Height = 13
       Caption = 'Typ v'#253'stupu:'
     end
-    object SE_Out_Plus_port: TSpinEdit
+    object Label15: TLabel
+      Left = 101
+      Top = 23
+      Width = 57
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS syst'#233'm'
+    end
+    object SE_Out_Plus_Port: TSpinEdit
       Left = 230
       Top = 40
-      Width = 67
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 0
+    end
+    object SE_Out_Minus_Port: TSpinEdit
+      Left = 230
+      Top = 66
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 5
+      Value = 0
+    end
+    object SE_Out_Plus_Module: TSpinEdit
+      Left = 166
+      Top = 40
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -143,10 +182,50 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 1
       Value = 0
     end
-    object SE_Out_Minus_port: TSpinEdit
-      Left = 230
-      Top = 72
-      Width = 67
+    object SE_Out_Minus_Module: TSpinEdit
+      Left = 166
+      Top = 66
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 4
+      Value = 0
+    end
+    object CB_OutputType: TComboBox
+      Left = 8
+      Top = 123
+      Width = 289
+      Height = 21
+      Style = csDropDownList
+      TabOrder = 6
+      Items.Strings = (
+        'Kr'#225'tkodob'#283' aktivn'#237' p'#345'i ru'#269'n'#237'm stav'#283'n'#237', trvale aktivn'#237' p'#345'i z'#225'v'#283'ru'
+        'V'#382'dy trvale aktivn'#237
+        'Aktivn'#237' do dosa'#382'en'#237' koncov'#233' polohy (nebo timeout)')
+    end
+    object SE_Out_Plus_System: TSpinEdit
+      Left = 102
+      Top = 40
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 0
+      Value = 0
+    end
+    object SE_Out_Minus_System: TSpinEdit
+      Left = 102
+      Top = 66
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -156,48 +235,6 @@ object F_BlkTurnout: TF_BlkTurnout
       MinValue = 0
       TabOrder = 3
       Value = 0
-    end
-    object SE_Out_Plus_module: TSpinEdit
-      Left = 151
-      Top = 40
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 0
-      Value = 1
-      OnExit = SE_moduleExit
-    end
-    object SE_Out_Minus_module: TSpinEdit
-      Left = 151
-      Top = 72
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 2
-      Value = 1
-      OnExit = SE_moduleExit
-    end
-    object CB_OutputType: TComboBox
-      Left = 8
-      Top = 123
-      Width = 289
-      Height = 21
-      Style = csDropDownList
-      TabOrder = 4
-      Items.Strings = (
-        'Kr'#225'tkodob'#283' aktivn'#237' p'#345'i ru'#269'n'#237'm stav'#283'n'#237', trvale aktivn'#237' p'#345'i z'#225'v'#283'ru'
-        'V'#382'dy trvale aktivn'#237
-        'Aktivn'#237' do dosa'#382'en'#237' koncov'#233' polohy (nebo timeout)')
     end
   end
   object B_Storno: TButton
@@ -387,8 +424,8 @@ object F_BlkTurnout: TF_BlkTurnout
       Caption = 'Poloha -'
     end
     object Label5: TLabel
-      Left = 150
-      Top = 69
+      Left = 162
+      Top = 71
       Width = 53
       Height = 13
       Margins.Left = 2
@@ -399,7 +436,7 @@ object F_BlkTurnout: TF_BlkTurnout
     end
     object Label6: TLabel
       Left = 226
-      Top = 69
+      Top = 71
       Width = 43
       Height = 13
       Margins.Left = 2
@@ -408,10 +445,21 @@ object F_BlkTurnout: TF_BlkTurnout
       Margins.Bottom = 2
       Caption = 'RCS port'
     end
+    object Label16: TLabel
+      Left = 98
+      Top = 71
+      Width = 57
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS syst'#233'm'
+    end
     object SE_Ind_Minus_Module: TSpinEdit
-      Left = 150
-      Top = 120
-      Width = 67
+      Left = 162
+      Top = 114
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -419,29 +467,13 @@ object F_BlkTurnout: TF_BlkTurnout
       Margins.Bottom = 2
       MaxValue = 0
       MinValue = 0
-      TabOrder = 4
-      Value = 1
-      OnExit = SE_Ind_Minus_ModuleExit
+      TabOrder = 6
+      Value = 0
     end
     object SE_Ind_Plus_Module: TSpinEdit
-      Left = 150
+      Left = 162
       Top = 88
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 2
-      Value = 1
-      OnExit = SE_Ind_Plus_ModuleExit
-    end
-    object SE_Ind_Plus_Port: TSpinEdit
-      Left = 226
-      Top = 88
-      Width = 67
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -452,10 +484,10 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 3
       Value = 0
     end
-    object SE_Ind_Minus_Port: TSpinEdit
+    object SE_Ind_Plus_Port: TSpinEdit
       Left = 226
-      Top = 120
-      Width = 67
+      Top = 88
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -463,7 +495,21 @@ object F_BlkTurnout: TF_BlkTurnout
       Margins.Bottom = 2
       MaxValue = 0
       MinValue = 0
-      TabOrder = 5
+      TabOrder = 4
+      Value = 0
+    end
+    object SE_Ind_Minus_Port: TSpinEdit
+      Left = 226
+      Top = 114
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 7
       Value = 0
     end
     object CHB_Indication: TCheckBox
@@ -482,6 +528,34 @@ object F_BlkTurnout: TF_BlkTurnout
       Height = 17
       Caption = 'Indikace aktivn'#237' pouze p'#345'i aktivn'#237'm pomocn'#233'm stav'#283'dle'
       TabOrder = 1
+    end
+    object SE_Ind_Plus_System: TSpinEdit
+      Left = 98
+      Top = 88
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 0
+    end
+    object SE_Ind_Minus_System: TSpinEdit
+      Left = 98
+      Top = 114
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 5
+      Value = 0
     end
   end
   object GB_Controllers: TGroupBox
@@ -514,8 +588,8 @@ object F_BlkTurnout: TF_BlkTurnout
       Caption = 'Poloha -'
     end
     object Label9: TLabel
-      Left = 150
-      Top = 69
+      Left = 161
+      Top = 71
       Width = 53
       Height = 13
       Margins.Left = 2
@@ -526,7 +600,7 @@ object F_BlkTurnout: TF_BlkTurnout
     end
     object Label10: TLabel
       Left = 226
-      Top = 69
+      Top = 71
       Width = 43
       Height = 13
       Margins.Left = 2
@@ -535,10 +609,21 @@ object F_BlkTurnout: TF_BlkTurnout
       Margins.Bottom = 2
       Caption = 'RCS port'
     end
+    object Label17: TLabel
+      Left = 97
+      Top = 71
+      Width = 57
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS syst'#233'm'
+    end
     object SE_Cont_Minus_Module: TSpinEdit
-      Left = 150
-      Top = 120
-      Width = 67
+      Left = 162
+      Top = 114
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -546,29 +631,13 @@ object F_BlkTurnout: TF_BlkTurnout
       Margins.Bottom = 2
       MaxValue = 0
       MinValue = 0
-      TabOrder = 4
-      Value = 1
-      OnExit = SE_Cont_Minus_ModuleExit
+      TabOrder = 6
+      Value = 0
     end
     object SE_Cont_Plus_Module: TSpinEdit
-      Left = 150
+      Left = 162
       Top = 88
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 2
-      Value = 1
-      OnExit = SE_Cont_Plus_ModuleExit
-    end
-    object SE_Cont_Plus_Port: TSpinEdit
-      Left = 226
-      Top = 88
-      Width = 67
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -579,10 +648,10 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 3
       Value = 0
     end
-    object SE_Cont_Minus_Port: TSpinEdit
+    object SE_Cont_Plus_Port: TSpinEdit
       Left = 226
-      Top = 120
-      Width = 67
+      Top = 88
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -590,7 +659,21 @@ object F_BlkTurnout: TF_BlkTurnout
       Margins.Bottom = 2
       MaxValue = 0
       MinValue = 0
-      TabOrder = 5
+      TabOrder = 4
+      Value = 0
+    end
+    object SE_Cont_Minus_Port: TSpinEdit
+      Left = 226
+      Top = 114
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 7
       Value = 0
     end
     object CHB_Controllers: TCheckBox
@@ -609,6 +692,34 @@ object F_BlkTurnout: TF_BlkTurnout
       Height = 17
       Caption = 'Voli'#269'e aktivn'#237' pouze p'#345'i aktivn'#237'm pomocn'#233'm stav'#283'dle'
       TabOrder = 1
+    end
+    object SE_Cont_Plus_System: TSpinEdit
+      Left = 98
+      Top = 88
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 0
+    end
+    object SE_Cont_Minus_System: TSpinEdit
+      Left = 98
+      Top = 114
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 5
+      Value = 0
     end
   end
   object CHB_ManAlwaysEm: TCheckBox
@@ -639,7 +750,7 @@ object F_BlkTurnout: TF_BlkTurnout
     end
     object L_Vyh09: TLabel
       Left = 7
-      Top = 95
+      Top = 90
       Width = 77
       Height = 13
       Margins.Left = 2
@@ -649,8 +760,8 @@ object F_BlkTurnout: TF_BlkTurnout
       Caption = 'Poloha - (vstup):'
     end
     object Label11: TLabel
-      Left = 150
-      Top = 45
+      Left = 164
+      Top = 47
       Width = 53
       Height = 13
       Margins.Left = 2
@@ -661,7 +772,7 @@ object F_BlkTurnout: TF_BlkTurnout
     end
     object Label12: TLabel
       Left = 229
-      Top = 45
+      Top = 47
       Width = 43
       Height = 13
       Margins.Left = 2
@@ -669,6 +780,17 @@ object F_BlkTurnout: TF_BlkTurnout
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'RCS port'
+    end
+    object Label14: TLabel
+      Left = 100
+      Top = 47
+      Width = 57
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS syst'#233'm'
     end
     object CHB_Feedback: TCheckBox
       Left = 7
@@ -679,10 +801,10 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 0
       OnClick = CHB_FeedbackClick
     end
-    object SE_In_Minus_module: TSpinEdit
-      Left = 150
-      Top = 95
-      Width = 67
+    object SE_In_Minus_Module: TSpinEdit
+      Left = 165
+      Top = 90
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -690,29 +812,13 @@ object F_BlkTurnout: TF_BlkTurnout
       Margins.Bottom = 2
       MaxValue = 0
       MinValue = 0
-      TabOrder = 3
-      Value = 1
-      OnExit = SE_moduleExit
+      TabOrder = 5
+      Value = 0
     end
-    object SE_In_Plus_module: TSpinEdit
-      Left = 150
+    object SE_In_Plus_Module: TSpinEdit
+      Left = 165
       Top = 64
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 1
-      Value = 1
-      OnExit = SE_moduleExit
-    end
-    object SE_In_Plus_port: TSpinEdit
-      Left = 229
-      Top = 64
-      Width = 67
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -723,10 +829,52 @@ object F_BlkTurnout: TF_BlkTurnout
       TabOrder = 2
       Value = 0
     end
-    object SE_In_Minus_port: TSpinEdit
+    object SE_In_Plus_Port: TSpinEdit
       Left = 229
-      Top = 95
-      Width = 67
+      Top = 64
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 3
+      Value = 0
+    end
+    object SE_In_Minus_Port: TSpinEdit
+      Left = 229
+      Top = 90
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 6
+      Value = 0
+    end
+    object SE_In_Plus_System: TSpinEdit
+      Left = 101
+      Top = 64
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 1
+      Value = 0
+    end
+    object SE_In_Minus_System: TSpinEdit
+      Left = 101
+      Top = 90
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2

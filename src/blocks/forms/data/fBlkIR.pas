@@ -19,6 +19,8 @@ type
     B_Storno: TButton;
     B_Save: TButton;
     SE_module: TSpinEdit;
+    SE_system: TSpinEdit;
+    Label1: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -43,7 +45,7 @@ var
 
 implementation
 
-uses GetSystems, RCSc, BlockDb, Block, DataBloky, ownGuiUtils;
+uses GetSystems, RCSc, RCSsc, BlockDb, Block, DataBloky, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -69,7 +71,8 @@ procedure TF_BlkIR.NewOpenForm();
 begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
-  Self.SE_module.Value := 1;
+  Self.SE_system.Value := 0;
+  Self.SE_module.Value := 0;
   Self.SE_port.Value := 0;
   Self.SE_moduleExit(Self);
 
@@ -83,9 +86,7 @@ begin
   glob := Self.block.GetGlobalSettings();
   settings := Self.block.GetSettings();
 
-  if (settings.RCSAddr.module > Cardinal(Self.SE_module.MaxValue)) then
-    Self.SE_module.MaxValue := 0;
-  Self.SE_port.MaxValue := 0;
+  Self.SE_system.Value := settings.RCSAddr.system;
   Self.SE_module.Value := settings.RCSAddr.module;
   Self.SE_port.Value := settings.RCSAddr.port;
 
@@ -99,7 +100,7 @@ end;
 
 procedure TF_BlkIR.CommonOpenForm();
 begin
-  Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_system.MaxValue := RCSs._RCSS_MAX;
   Self.ActiveControl := Self.E_Name;
 end;
 
@@ -127,8 +128,7 @@ begin
     Exit();
   end;
 
-  var another := Blocks.AnotherBlockUsesRCS(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value), Self.block,
-    TRCSIOType.input);
+  var another := Blocks.AnotherBlockUsesRCS(TRCSs.RCSsAddr(Self.SE_system.Value, Self.SE_module.Value, Self.SE_port.Value), Self.block, TRCSIOType.input);
   if (another <> nil) then
   begin
     if (StrMessageBox('RCS adresa se již používá na bloku ' + another.name + ', chcete pokračovat?',
@@ -166,7 +166,7 @@ begin
     end;
 
     var settings: TBlkIRSettings;
-    settings.RCSAddr := TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value);
+    settings.RCSAddr := TRCSs.RCSsAddr(Self.SE_system.Value, Self.SE_module.Value, Self.SE_port.Value);
 
     Self.block.SetSettings(settings);
     Self.block.Change();

@@ -182,7 +182,7 @@ object F_BlkRT: TF_BlkRT
       Caption = '3. detektor:'
     end
     object L_P01: TLabel
-      Left = 136
+      Left = 168
       Top = 18
       Width = 53
       Height = 13
@@ -193,7 +193,7 @@ object F_BlkRT: TF_BlkRT
       Caption = 'RCS modul'
     end
     object Label8: TLabel
-      Left = 224
+      Left = 232
       Top = 18
       Width = 43
       Height = 13
@@ -203,10 +203,36 @@ object F_BlkRT: TF_BlkRT
       Margins.Bottom = 2
       Caption = 'RCS port'
     end
+    object Label9: TLabel
+      Left = 104
+      Top = 18
+      Width = 57
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS syst'#233'm'
+    end
     object SE_Port0: TSpinEdit
-      Left = 224
+      Left = 232
       Top = 35
-      Width = 73
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 3
+      Value = 0
+    end
+    object SE_Module0: TSpinEdit
+      Left = 168
+      Top = 35
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -218,24 +244,8 @@ object F_BlkRT: TF_BlkRT
       TabOrder = 2
       Value = 0
     end
-    object SE_Module0: TSpinEdit
-      Left = 136
-      Top = 35
-      Width = 73
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Enabled = False
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 1
-      Value = 1
-      OnExit = SE_RCS_BoardExit
-    end
     object CHB_D0: TCheckBox
-      Left = 100
+      Left = 80
       Top = 36
       Width = 17
       Height = 17
@@ -249,7 +259,7 @@ object F_BlkRT: TF_BlkRT
     end
     object CHB_D1: TCheckBox
       Tag = 1
-      Left = 100
+      Left = 80
       Top = 62
       Width = 17
       Height = 17
@@ -257,13 +267,13 @@ object F_BlkRT: TF_BlkRT
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      TabOrder = 3
+      TabOrder = 4
       OnClick = CHB_D0Click
     end
     object SE_Module1: TSpinEdit
-      Left = 136
+      Left = 168
       Top = 61
-      Width = 73
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -272,14 +282,129 @@ object F_BlkRT: TF_BlkRT
       Enabled = False
       MaxValue = 0
       MinValue = 0
-      TabOrder = 4
-      Value = 1
-      OnExit = SE_RCS_BoardExit
+      TabOrder = 6
+      Value = 0
     end
     object SE_Port1: TSpinEdit
-      Left = 224
+      Left = 232
       Top = 61
-      Width = 73
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 7
+      Value = 0
+    end
+    object CHB_D2: TCheckBox
+      Tag = 2
+      Left = 80
+      Top = 89
+      Width = 17
+      Height = 17
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      TabOrder = 8
+      OnClick = CHB_D0Click
+    end
+    object SE_Module2: TSpinEdit
+      Left = 168
+      Top = 87
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 10
+      Value = 0
+    end
+    object SE_Port2: TSpinEdit
+      Left = 232
+      Top = 87
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 11
+      Value = 0
+    end
+    object CHB_D3: TCheckBox
+      Tag = 3
+      Left = 80
+      Top = 115
+      Width = 17
+      Height = 17
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      TabOrder = 12
+      OnClick = CHB_D0Click
+    end
+    object SE_Module3: TSpinEdit
+      Left = 168
+      Top = 113
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 14
+      Value = 0
+    end
+    object SE_Port3: TSpinEdit
+      Left = 232
+      Top = 113
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 15
+      Value = 0
+    end
+    object SE_System0: TSpinEdit
+      Left = 104
+      Top = 35
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Enabled = False
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 1
+      Value = 0
+    end
+    object SE_System1: TSpinEdit
+      Left = 104
+      Top = 61
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -291,23 +416,10 @@ object F_BlkRT: TF_BlkRT
       TabOrder = 5
       Value = 0
     end
-    object CHB_D2: TCheckBox
-      Tag = 2
-      Left = 100
-      Top = 89
-      Width = 17
-      Height = 17
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      TabOrder = 6
-      OnClick = CHB_D0Click
-    end
-    object SE_Module2: TSpinEdit
-      Left = 136
+    object SE_System2: TSpinEdit
+      Left = 104
       Top = 87
-      Width = 73
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -316,42 +428,13 @@ object F_BlkRT: TF_BlkRT
       Enabled = False
       MaxValue = 0
       MinValue = 0
-      TabOrder = 7
-      Value = 1
-      OnExit = SE_RCS_BoardExit
-    end
-    object SE_Port2: TSpinEdit
-      Left = 224
-      Top = 87
-      Width = 73
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Enabled = False
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 8
+      TabOrder = 9
       Value = 0
     end
-    object CHB_D3: TCheckBox
-      Tag = 3
-      Left = 100
-      Top = 115
-      Width = 17
-      Height = 17
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      TabOrder = 9
-      OnClick = CHB_D0Click
-    end
-    object SE_Module3: TSpinEdit
-      Left = 136
-      Top = 113
-      Width = 73
+    object SE_System3: TSpinEdit
+      Left = 104
+      Top = 112
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -360,23 +443,7 @@ object F_BlkRT: TF_BlkRT
       Enabled = False
       MaxValue = 0
       MinValue = 0
-      TabOrder = 10
-      Value = 1
-      OnExit = SE_RCS_BoardExit
-    end
-    object SE_Port3: TSpinEdit
-      Left = 224
-      Top = 113
-      Width = 73
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Enabled = False
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 11
+      TabOrder = 13
       Value = 0
     end
   end
@@ -572,8 +639,6 @@ object F_BlkRT: TF_BlkRT
       Align = alTop
       Caption = ' Rychlosti v lich'#233'm sm'#283'ru  '
       TabOrder = 0
-      ExplicitLeft = 9
-      ExplicitTop = 9
     end
     object GB_SpeedsS: TGroupBox
       Left = 2

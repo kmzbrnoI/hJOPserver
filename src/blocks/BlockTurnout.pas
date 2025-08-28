@@ -6,7 +6,7 @@ interface
 
 uses IniFiles, Block, SysUtils, BlockTrack, Menus, AreaDb, ConfSeq,
   Classes, IdContext, Generics.Collections, JsonDataObjects, RCSIFace,
-  Area, RCSc;
+  Area, RCSc, RCSsc;
 
 {
   intentionalLock:
@@ -29,22 +29,22 @@ type
   TBlkTurnoutIndication = record
     // Pst / control panel indication
     enabled: Boolean;
-    rcsPlus: TRCSAddr;
-    rcsMinus: TRCSAddr;
+    rcsPlus: TRCSsAddr;
+    rcsMinus: TRCSsAddr;
     pstOnly: Boolean;
   end;
 
   TBlkTurnoutControllers = record
     // Pst / control panel buttons
     enabled: Boolean;
-    rcsPlus: TRCSAddr;
-    rcsMinus: TRCSAddr;
+    rcsPlus: TRCSsAddr;
+    rcsMinus: TRCSsAddr;
     pstOnly: Boolean;
   end;
 
   TBlkTurnoutSettings = record
     rcs: record
-      inp, inm, outp, outm: TRCSAddr;
+      inp, inm, outp, outm: TRCSsAddr;
     end;
     outputType: TTurnoutOutputType;
     coupling: Integer; // coupling turnout id (-1 in case of none); Both coupling turnouts reference each other.
@@ -221,7 +221,7 @@ type
     procedure Enable(); override;
     procedure Disable(); override;
     procedure Reset(); override;
-    function UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean; override;
+    function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
     procedure Change(now: Boolean = false); override;
@@ -273,10 +273,10 @@ type
     property movingPlus: Boolean read m_state.movingPlus write m_state.movingPlus;
     property movingMinus: Boolean read m_state.movingMinus write m_state.movingMinus;
 
-    property rcsInPlus: TRCSAddr read m_settings.rcs.inp;
-    property rcsInMinus: TRCSAddr read m_settings.rcs.inm;
-    property rcsOutPlus: TRCSAddr read m_settings.rcs.outp;
-    property rcsOutMinus: TRCSAddr read m_settings.rcs.outm;
+    property rcsInPlus: TRCSsAddr read m_settings.rcs.inp;
+    property rcsInMinus: TRCSsAddr read m_settings.rcs.inm;
+    property rcsOutPlus: TRCSsAddr read m_settings.rcs.outp;
+    property rcsOutMinus: TRCSsAddr read m_settings.rcs.outm;
 
     // Panel:
     procedure PanelMenuClick(SenderPnl: TIDContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
@@ -327,17 +327,17 @@ procedure TBlkTurnout.LoadData(ini_tech: TMemIniFile; const section: string; ini
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
-  Self.m_settings.rcs.outp := RCSFromIni(ini_tech, section, 'RCSout+', 'RCSb2', 'RCSp2');
-  Self.m_settings.rcs.outm := RCSFromIni(ini_tech, section, 'RCSout-', 'RCSb3', 'RCSp3');
+  Self.m_settings.rcs.outp := RCSsFromIni(ini_tech, section, 'RCSout+', 'RCSb2', 'RCSp2');
+  Self.m_settings.rcs.outm := RCSsFromIni(ini_tech, section, 'RCSout-', 'RCSb3', 'RCSp3');
 
   Self.m_settings.posDetection := (ini_tech.ReadString(section, 'RCSin+', '') <> '') or (ini_tech.ReadInteger(section, 'RCSb0', -1) <> -1);
   if (Self.m_settings.posDetection) then
   begin
-    Self.m_settings.rcs.inp := RCSFromIni(ini_tech, section, 'RCSin+', 'RCSb0', 'RCSp0');
-    Self.m_settings.rcs.inm := RCSFromIni(ini_tech, section, 'RCSin-', 'RCSb1', 'RCSp1');
+    Self.m_settings.rcs.inp := RCSsFromIni(ini_tech, section, 'RCSin+', 'RCSb0', 'RCSp0');
+    Self.m_settings.rcs.inm := RCSsFromIni(ini_tech, section, 'RCSin-', 'RCSb1', 'RCSp1');
   end else begin
-    Self.m_settings.rcs.inp := TRCS.RCSAddr(0, 0);
-    Self.m_settings.rcs.inm := TRCS.RCSAddr(0, 0);
+    Self.m_settings.rcs.inp := TRCSs.RCSsAddr(0, 0, 0);
+    Self.m_settings.rcs.inm := TRCSs.RCSsAddr(0, 0, 0);
   end;
 
   var typ: Integer := ini_tech.ReadInteger(section, 'outputType', Integer(totManShortLockPerm));
@@ -375,8 +375,8 @@ begin
     Self.m_settings.indication.rcsPlus.Load(ini_tech.ReadString(section, 'indRcsPlus', '0:0'));
     Self.m_settings.indication.rcsMinus.Load(ini_tech.ReadString(section, 'indRcsMinus', '0:0'));
     Self.m_settings.indication.pstOnly := ini_tech.ReadBool(section, 'indPstOnly', false);
-    Self.RCSRegister(Self.m_settings.indication.rcsPlus);
-    Self.RCSRegister(Self.m_settings.indication.rcsMinus);
+    Self.RCSsRegister(Self.m_settings.indication.rcsPlus);
+    Self.RCSsRegister(Self.m_settings.indication.rcsMinus);
   end;
 
   Self.m_settings.controllers.enabled := (ini_tech.ReadString(section, 'contRcsPlus', '') <> '');
@@ -385,19 +385,19 @@ begin
     Self.m_settings.controllers.rcsPlus.Load(ini_tech.ReadString(section, 'contRcsPlus', '0:0'));
     Self.m_settings.controllers.rcsMinus.Load(ini_tech.ReadString(section, 'contRcsMinus', '0:0'));
     Self.m_settings.controllers.pstOnly := ini_tech.ReadBool(section, 'contPstOnly', false);
-    Self.RCSRegister(Self.m_settings.controllers.rcsPlus);
-    Self.RCSRegister(Self.m_settings.controllers.rcsMinus);
+    Self.RCSsRegister(Self.m_settings.controllers.rcsPlus);
+    Self.RCSsRegister(Self.m_settings.controllers.rcsMinus);
   end;
 
   Self.m_settings.manAlwaysEm := ini_tech.ReadBool(section, 'manAlwaysEm', False);
 
   if (Self.posDetection) then
   begin
-    Self.RCSRegister(Self.m_settings.rcs.inp);
-    Self.RCSRegister(Self.m_settings.rcs.inm);
+    Self.RCSsRegister(Self.m_settings.rcs.inp);
+    Self.RCSsRegister(Self.m_settings.rcs.inm);
   end;
-  Self.RCSRegister(Self.m_settings.rcs.outp);
-  Self.RCSRegister(Self.m_settings.rcs.outm);
+  Self.RCSsRegister(Self.m_settings.rcs.outp);
+  Self.RCSsRegister(Self.m_settings.rcs.outm);
 end;
 
 procedure TBlkTurnout.SaveData(ini_tech: TMemIniFile; const section: string);
@@ -513,13 +513,13 @@ begin
     try
       if (Self.position = TTurnoutPosition.plus) then
       begin
-        RCSi.SetOutput(Self.m_settings.rcs.outp, 1);
-        RCSi.SetOutput(Self.m_settings.rcs.outm, 0);
+        RCSs.SetOutput(Self.m_settings.rcs.outp, 1);
+        RCSs.SetOutput(Self.m_settings.rcs.outm, 0);
       end;
       if (Self.position = TTurnoutPosition.minus) then
       begin
-        RCSi.SetOutput(Self.m_settings.rcs.outp, 0);
-        RCSi.SetOutput(Self.m_settings.rcs.outm, 1);
+        RCSs.SetOutput(Self.m_settings.rcs.outp, 0);
+        RCSs.SetOutput(Self.m_settings.rcs.outm, 1);
       end;
     except
       // intentionally do nothing
@@ -552,7 +552,7 @@ begin
   Self.ShowIndication();
 end;
 
-function TBlkTurnout.UsesRCS(addr: TRCSAddr; portType: TRCSIOType): Boolean;
+function TBlkTurnout.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
 begin
   if ((portType = TRCSIOType.input) and (Self.posDetection) and ((Self.rcsInPlus = addr) or (Self.rcsInMinus = addr))) then
     Exit(true);
@@ -739,8 +739,8 @@ function TBlkTurnout.GetInputs(): TBlkTurnoutInputs;
 begin
   if (Self.posDetection) then
   begin
-    Result.plus := RCSi.GetInput(Self.rcsInPlus);
-    Result.minus := RCSi.GetInput(Self.rcsInMinus);
+    Result.plus := RCSs.GetInput(Self.rcsInPlus);
+    Result.minus := RCSs.GetInput(Self.rcsInMinus);
   end else begin
     Result := Self.MockInputs();
   end;
@@ -986,8 +986,8 @@ begin
   if (new = plus) then
   begin
     try
-      RCSi.SetOutput(Self.rcsOutMinus, 0);
-      RCSi.SetOutput(Self.rcsOutPlus, 1);
+      RCSs.SetOutput(Self.rcsOutMinus, 0);
+      RCSs.SetOutput(Self.rcsOutPlus, 1);
     except
       if (Assigned(callback_err)) then
         callback_err(Self, vseRCS);
@@ -1005,8 +1005,8 @@ begin
   if (new = minus) then
   begin
     try
-      RCSi.SetOutput(Self.rcsOutPlus, 0);
-      RCSi.SetOutput(Self.rcsOutMinus, 1);
+      RCSs.SetOutput(Self.rcsOutPlus, 0);
+      RCSs.SetOutput(Self.rcsOutMinus, 1);
     except
       if (Assigned(callback_err)) then
         callback_err(Self, vseRCS);
@@ -1051,8 +1051,8 @@ begin
   try
     if (RCSi.Started) then
     begin
-      RCSi.SetOutput(Self.rcsOutPlus, 0);
-      RCSi.SetOutput(Self.rcsOutMinus, 0);
+      RCSs.SetOutput(Self.rcsOutPlus, 0);
+      RCSs.SetOutput(Self.rcsOutMinus, 0);
     end;
   except
 
@@ -1220,8 +1220,8 @@ end;
 procedure TBlkTurnout.MenuAdminPolPlusCLick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
   try
-    RCSi.SetInput(Self.rcsInPlus, 1);
-    RCSi.SetInput(Self.rcsInMinus, 0);
+    RCSs.SetInput(Self.rcsInPlus, 1);
+    RCSs.SetInput(Self.rcsInMinus, 0);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1231,8 +1231,8 @@ end;
 procedure TBlkTurnout.MenuAdminPolMinusCLick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
   try
-    RCSi.SetInput(Self.rcsInPlus, 0);
-    RCSi.SetInput(Self.rcsInMinus, 1);
+    RCSs.SetInput(Self.rcsInPlus, 0);
+    RCSs.SetInput(Self.rcsInMinus, 1);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1242,8 +1242,8 @@ end;
 procedure TBlkTurnout.MenuAdminNepolCLick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
   try
-    RCSi.SetInput(Self.rcsInPlus, 0);
-    RCSi.SetInput(Self.rcsInMinus, 0);
+    RCSs.SetInput(Self.rcsInPlus, 0);
+    RCSs.SetInput(Self.rcsInMinus, 0);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1256,8 +1256,8 @@ begin
     Exit();
 
   try
-    RCSi.SetInput(Self.m_settings.controllers.rcsPlus, 1);
-    RCSi.SetInput(Self.m_settings.controllers.rcsMinus, 0);
+    RCSs.SetInput(Self.m_settings.controllers.rcsPlus, 1);
+    RCSs.SetInput(Self.m_settings.controllers.rcsMinus, 0);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1270,8 +1270,8 @@ begin
     Exit();
 
   try
-    RCSi.SetInput(Self.m_settings.controllers.rcsPlus, 0);
-    RCSi.SetInput(Self.m_settings.controllers.rcsMinus, 1);
+    RCSs.SetInput(Self.m_settings.controllers.rcsPlus, 0);
+    RCSs.SetInput(Self.m_settings.controllers.rcsMinus, 1);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1284,8 +1284,8 @@ begin
     Exit();
 
   try
-    RCSi.SetInput(Self.m_settings.controllers.rcsPlus, 0);
-    RCSi.SetInput(Self.m_settings.controllers.rcsMinus, 0);
+    RCSs.SetInput(Self.m_settings.controllers.rcsPlus, 0);
+    RCSs.SetInput(Self.m_settings.controllers.rcsMinus, 0);
   except
     PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
       'SIMULACE');
@@ -1359,8 +1359,8 @@ begin
       if (Self.m_settings.controllers.enabled) then
       begin
         try
-          var plus := (RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = isOn);
-          var minus := (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) = isOn);
+          var plus := (RCSs.GetInput(Self.m_settings.controllers.rcsPlus) = isOn);
+          var minus := (RCSs.GetInput(Self.m_settings.controllers.rcsMinus) = isOn);
 
           if (not plus) then
             Result := Result + '*RAD+,';
@@ -1652,17 +1652,17 @@ begin
     begin
       try
         if (reqJson.S['positionSim'] = '+') then begin
-          RCSi.SetInput(Self.rcsInPlus, 1);
-          RCSi.SetInput(Self.rcsInMinus, 0);
+          RCSs.SetInput(Self.rcsInPlus, 1);
+          RCSs.SetInput(Self.rcsInMinus, 0);
         end else if (reqJson.S['positionSim'] = '-') then begin
-          RCSi.SetInput(Self.rcsInPlus, 0);
-          RCSi.SetInput(Self.rcsInMinus, 1);
+          RCSs.SetInput(Self.rcsInPlus, 0);
+          RCSs.SetInput(Self.rcsInMinus, 1);
         end else if (reqJson.S['positionSim'] = 'none') then begin
-          RCSi.SetInput(Self.rcsInPlus, 0);
-          RCSi.SetInput(Self.rcsInMinus, 0);
+          RCSs.SetInput(Self.rcsInPlus, 0);
+          RCSs.SetInput(Self.rcsInMinus, 0);
         end else if (reqJson.S['positionSim'] = 'both') then begin
-          RCSi.SetInput(Self.rcsInPlus, 1);
-          RCSi.SetInput(Self.rcsInMinus, 1);
+          RCSs.SetInput(Self.rcsInPlus, 1);
+          RCSs.SetInput(Self.rcsInMinus, 1);
         end;
       except
         on e: RCSException do
@@ -2025,20 +2025,20 @@ begin
   try
     if ((Self.m_settings.indication.pstOnly) and (not Self.PstIsActive())) then
     begin
-      RCSi.SetOutput(Self.m_settings.indication.rcsPlus, 0);
-      RCSi.SetOutput(Self.m_settings.indication.rcsMinus, 0);
+      RCSs.SetOutput(Self.m_settings.indication.rcsPlus, 0);
+      RCSs.SetOutput(Self.m_settings.indication.rcsMinus, 0);
       Exit();
     end;
 
     if (Self.movingPlus) then
-      RCSi.SetOutput(Self.m_settings.indication.rcsPlus, osf180)
+      RCSs.SetOutput(Self.m_settings.indication.rcsPlus, osf180)
     else
-      RCSi.SetOutput(Self.m_settings.indication.rcsPlus, ite(Self.position = TTurnoutPosition.plus, 1, 0));
+      RCSs.SetOutput(Self.m_settings.indication.rcsPlus, ite(Self.position = TTurnoutPosition.plus, 1, 0));
 
     if (Self.movingMinus) then
-      RCSi.SetOutput(Self.m_settings.indication.rcsMinus, osf180)
+      RCSs.SetOutput(Self.m_settings.indication.rcsMinus, osf180)
     else
-      RCSi.SetOutput(Self.m_settings.indication.rcsMinus, ite(Self.position = TTurnoutPosition.minus, 1, 0));
+      RCSs.SetOutput(Self.m_settings.indication.rcsMinus, ite(Self.position = TTurnoutPosition.minus, 1, 0));
   except
 
   end;
@@ -2052,15 +2052,15 @@ begin
     Exit();
 
   try
-    if ((RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) and
-        (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) = TRCSInputState.isOn)) then
+    if ((RCSs.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) and
+        (RCSs.GetInput(Self.m_settings.controllers.rcsMinus) = TRCSInputState.isOn)) then
       Exit();
 
-    if (RCSi.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) then
+    if (RCSs.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) then
       if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.plus) and (not Self.movingPlus)) then
         Self.SetPosition(TTurnoutPosition.plus, false, true);
 
-    if (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) = TRCSInputState.isOn) then
+    if (RCSs.GetInput(Self.m_settings.controllers.rcsMinus) = TRCSInputState.isOn) then
       if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.minus) and (not Self.movingMinus)) then
         Self.SetPosition(TTurnoutPosition.minus, false, true);
 
@@ -2118,8 +2118,8 @@ begin
     Exit(true);
 
   try
-    Result := ((RCSi.GetInput(Self.m_settings.controllers.rcsPlus) <> isOn) and
-               (RCSi.GetInput(Self.m_settings.controllers.rcsMinus) <> isOn));
+    Result := ((RCSs.GetInput(Self.m_settings.controllers.rcsPlus) <> isOn) and
+               (RCSs.GetInput(Self.m_settings.controllers.rcsMinus) <> isOn));
   except
     Result := false;
   end;

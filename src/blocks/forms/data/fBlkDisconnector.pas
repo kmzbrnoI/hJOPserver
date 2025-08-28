@@ -31,10 +31,13 @@ type
     CHB_Contoller_Pst: TCheckBox;
     Label7: TLabel;
     CB_mode: TComboBox;
+    Label10: TLabel;
+    SE_Cont_System: TSpinEdit;
+    SE_system: TSpinEdit;
+    Label11: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure SE_moduleExit(Sender: TObject);
     procedure CHB_ContollerClick(Sender: TObject);
     procedure SE_Cont_ModuleExit(Sender: TObject);
   private
@@ -58,7 +61,7 @@ var
 
 implementation
 
-uses GetSystems, RCSc, BlockDb, Block, DataBloky, Area, RCSIFace, ownGuiUtils;
+uses GetSystems, RCSc, RCSsc, BlockDb, Block, DataBloky, Area, RCSIFace, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -91,18 +94,15 @@ begin
   Self.SE_Cont_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Cont_Module.Value, Self.SE_Cont_Port.Value);
 end;
 
-procedure TF_BlkDisconnector.SE_moduleExit(Sender: TObject);
-begin
-  Self.SE_port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
-end;
-
 procedure TF_BlkDisconnector.NewOpenForm();
 begin
   Self.E_name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
-  Self.SE_module.Value := 1;
+
+  Self.SE_system.Value := 0;
+  Self.SE_module.Value := 0;
   Self.SE_port.Value := 0;
-  Self.SE_moduleExit(Self);
+
   Self.CB_outputType.ItemIndex := 1;
   Self.CB_mode.ItemIndex := 0;
 
@@ -121,18 +121,14 @@ begin
 
   if (settings.RCSAddrs.count > 0) then
   begin
-    if (settings.RCSAddrs[0].module > Cardinal(Self.SE_module.MaxValue)) then
-      Self.SE_module.MaxValue := 0;
-    Self.SE_port.MaxValue := 0;
-
+    Self.SE_system.Value := settings.RCSAddrs[0].system;
     Self.SE_module.Value := settings.RCSAddrs[0].module;
     Self.SE_port.Value := settings.RCSAddrs[0].port;
   end else begin
+    Self.SE_system.Value := 0;
     Self.SE_module.Value := 0;
     Self.SE_port.Value := 0;
   end;
-
-  Self.SE_moduleExit(Self);
 
   Self.E_name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
@@ -173,12 +169,14 @@ end;
 procedure TF_BlkDisconnector.CHB_ContollerClick(Sender: TObject);
 begin
   Self.CHB_Contoller_Pst.Enabled := Self.CHB_Contoller.Checked;
+  Self.SE_Cont_System.Enabled := Self.CHB_Contoller.Checked;
   Self.SE_Cont_Module.Enabled := Self.CHB_Contoller.Checked;
   Self.SE_Cont_Port.Enabled := Self.CHB_Contoller.Checked;
 
   if (not Self.CHB_Contoller.Checked) then
   begin
     Self.CHB_Contoller_Pst.Checked := false;
+    Self.SE_Cont_System.Value := 0;
     Self.SE_Cont_Module.Value := 0;
     Self.SE_Cont_Port.Value := 0;
   end;
@@ -186,7 +184,9 @@ end;
 
 procedure TF_BlkDisconnector.CommonOpenForm;
 begin
-  Self.SE_module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_Cont_System.MaxValue := RCSs._RCSS_MAX;
+
   Self.ActiveControl := Self.E_name;
 end;
 
@@ -219,7 +219,7 @@ begin
     var messages := '';
 
     begin
-      var addr := TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value);
+      var addr := TRCSs.RCSsAddr(Self.SE_system.Value, Self.SE_module.Value, Self.SE_port.Value);
       var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
       if (another <> nil) then
         messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
@@ -252,8 +252,8 @@ begin
       end;
     end;
 
-    settings.RCSAddrs := TList<RCSc.TRCSAddr>.Create();
-    settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_module.Value, Self.SE_port.Value));
+    settings.RCSAddrs := TList<RCSsc.TRCSsAddr>.Create();
+    settings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_system.Value, Self.SE_module.Value, Self.SE_port.Value));
 
     case (Self.CB_outputType.ItemIndex) of
       0: settings.outputType := osEnabled;
@@ -274,8 +274,7 @@ begin
     settings.rcsController.enabled := Self.CHB_Contoller.Checked;
     if (Self.CHB_Contoller.Checked) then
     begin
-      settings.rcsController.addr.module := Self.SE_Cont_Module.Value;
-      settings.rcsController.addr.port := Self.SE_Cont_Port.Value;
+      settings.rcsController.addr := TRCSs.RCSsAddr(Self.SE_Cont_System.Value, Self.SE_Cont_Module.Value, Self.SE_Cont_Port.Value);
       settings.rcsController.pstOnly := Self.CHB_Contoller_Pst.Checked;
 
       var another := Blocks.AnotherBlockUsesRCS(settings.rcsController.addr, Self.block, TRCSIOType.input);

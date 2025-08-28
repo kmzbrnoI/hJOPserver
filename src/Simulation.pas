@@ -48,7 +48,7 @@ var
 implementation
 
 uses GetSystems, RCSc, TJCDatabase, Block, BlockTrack, BlockDb, BlockSignal,
-  BlockRailwayTrack, BlockTurnout;
+  BlockRailwayTrack, BlockTurnout, RCSsc;
 
 /// /////////////////////////////////////////////////////////////////////////////
 // simulator obsazovani useku v jizdni ceste
@@ -97,7 +97,7 @@ begin
       if (track.occupied = TTrackState.occupied) then
       begin
         var trackSettings := track.GetSettings();
-        RCSi.SetInputs(trackSettings.RCSAddrs, 0);
+        RCSs.SetInputs(trackSettings.RCSAddrs, 0);
         Exit();
       end;
     end; // uvolnit usek pred navestidlem
@@ -111,7 +111,7 @@ begin
       // uvolnit RozpadRuseniBlok
       var track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.state.destroyEndBlock]);
       var trackSettings := track.GetSettings();
-      RCSi.SetInputs(trackSettings.RCSAddrs, 0);
+      RCSs.SetInputs(trackSettings.RCSAddrs, 0);
     end else begin
       // obsadit RozpadBlok
       if (JC.state.destroyBlock >= JC.data.tracks.Count) then
@@ -120,7 +120,7 @@ begin
       var track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.state.destroyBlock]);
       var trackSettings := track.GetSettings();
       if (trackSettings.RCSAddrs.Count > 0) then
-        RCSi.SetInput(trackSettings.RCSAddrs[0].module, trackSettings.RCSAddrs[0].port, 1);
+        RCSs.SetInput(trackSettings.RCSAddrs[0], 1);
     end; // else
   except
 
@@ -177,7 +177,7 @@ begin
       if ((rt.bpInBlk) and (rt.prevRT <> nil) and (rt.prevRT.occupied = TTrackState.occupied) and
         (rt.prevRT.train = rt.train)) then
       begin
-        RCSi.SetInput(TBlkTrack(rt.prevRT).GetSettings().RCSAddrs[0], 0);
+        RCSs.SetInput(TBlkTrack(rt.prevRT).GetSettings().RCSAddrs[0], 0);
         Exit();
       end;
     end;
@@ -190,7 +190,7 @@ begin
         (rt.nextRT.occupied = TTrackState.free) and ((rt.nextRT.signalCover = nil) or
         (TBlkSignal(rt.nextRT.signalCover).signal > ncStuj))) then
       begin
-        RCSi.SetInput(TBlkTrack(rt.nextRT).GetSettings().RCSAddrs[0], 1);
+        RCSs.SetInput(TBlkTrack(rt.nextRT).GetSettings().RCSAddrs[0], 1);
         Exit();
       end;
     end;
@@ -241,18 +241,18 @@ begin
           0) < Now)) then
         begin
           if (turnout.movingPlus) then
-            RCSi.SetInput(turnout.rcsInMinus, 0)
+            RCSs.SetInput(turnout.rcsInMinus, 0)
           else
-            RCSi.SetInput(turnout.rcsInPlus, 0);
+            RCSs.SetInput(turnout.rcsInPlus, 0);
         end;
 
         // po 3 sekundach oznamime koncovou polohu
         if (turnout.state.movingStart + EncodeTime(0, 0, 3, 0) < Now) then
         begin
           if (turnout.movingMinus) then
-            RCSi.SetInput(turnout.rcsInMinus, 1)
+            RCSs.SetInput(turnout.rcsInMinus, 1)
           else
-            RCSi.SetInput(turnout.rcsInPlus, 1);
+            RCSs.SetInput(turnout.rcsInPlus, 1);
         end;
       end;
     end;

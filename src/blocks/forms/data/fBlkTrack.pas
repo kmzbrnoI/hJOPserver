@@ -44,11 +44,15 @@ type
     CHB_TimeJCZav: TCheckBox;
     L_P01: TLabel;
     Label7: TLabel;
+    SE_System0: TSpinEdit;
+    Label8: TLabel;
+    SE_System1: TSpinEdit;
+    SE_System2: TSpinEdit;
+    SE_System3: TSpinEdit;
     procedure B_StornoClick(Sender: TObject);
     procedure B_OKClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_D0Click(Sender: TObject);
-    procedure SE_RCS_BoardExit(Sender: TObject);
     procedure CHB_TimeJCZavClick(Sender: TObject);
   private
     isNewBlock: Boolean;
@@ -69,7 +73,7 @@ var
 implementation
 
 uses GetSystems, RCSc, BoosterDb, DataBloky, Booster, Area, ownConvert,
-  ownGuiUtils;
+  ownGuiUtils, rcssc;
 
 {$R *.dfm}
 
@@ -97,14 +101,6 @@ begin
   Self.ShowModal();
 end;
 
-procedure TF_BlkTrack.SE_RCS_BoardExit(Sender: TObject);
-begin
-  Self.SE_Port0.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Module0.Value, Self.SE_Port0.Value);
-  Self.SE_Port1.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Module1.Value, Self.SE_Port1.Value);
-  Self.SE_Port2.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Module2.Value, Self.SE_Port2.Value);
-  Self.SE_Port3.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Module3.Value, Self.SE_Port3.Value);
-end;
-
 procedure TF_BlkTrack.NewOpenForm();
 begin
   Self.E_Name.Text := '';
@@ -117,15 +113,21 @@ begin
   Self.CHB_TimeJCZav.Checked := False;
   Self.CHB_TimeJCZavClick(Self.CHB_TimeJCZav);
 
+  Self.SE_System0.Value := 0;
+  Self.SE_Module0.Value := 0;
   Self.SE_Port0.Value := 0;
-  Self.SE_Module0.Value := 1;
+
+  Self.SE_System1.Value := 0;
+  Self.SE_Module1.Value := 0;
   Self.SE_Port1.Value := 0;
-  Self.SE_Module1.Value := 1;
+
+  Self.SE_System2.Value := 0;
+  Self.SE_Module2.Value := 0;
   Self.SE_Port2.Value := 0;
-  Self.SE_Module2.Value := 1;
+
+  Self.SE_System3.Value := 0;
+  Self.SE_Module3.Value := 0;
   Self.SE_Port3.Value := 0;
-  Self.SE_Module3.Value := 1;
-  Self.SE_RCS_BoardExit(Self);
 
   Self.CHB_D0.Checked := false;
   Self.CHB_D0Click(Self.CHB_D0);
@@ -184,52 +186,44 @@ begin
 
   if (settings.RCSAddrs.count > 0) then
   begin
-    if (settings.RCSAddrs[0].module > Cardinal(Self.SE_Module0.MaxValue)) then
-      Self.SE_Module0.MaxValue := 0;
-    Self.SE_Port0.MaxValue := 0;
-
+    Self.SE_System0.Value := settings.RCSAddrs[0].system;
     Self.SE_Port0.Value := settings.RCSAddrs[0].port;
     Self.SE_Module0.Value := settings.RCSAddrs[0].module;
   end else begin
+    Self.SE_System0.Value := 0;
     Self.SE_Port0.Value := 0;
     Self.SE_Module0.Value := 0;
   end;
 
   if (settings.RCSAddrs.count > 1) then
   begin
-    if (settings.RCSAddrs[1].module > Cardinal(Self.SE_Module1.MaxValue)) then
-      Self.SE_Module1.MaxValue := 0;
-    Self.SE_Port1.MaxValue := 0;
-
+    Self.SE_System1.Value := settings.RCSAddrs[1].system;
     Self.SE_Port1.Value := settings.RCSAddrs[1].port;
     Self.SE_Module1.Value := settings.RCSAddrs[1].module;
   end else begin
+    Self.SE_System1.Value := 0;
     Self.SE_Port1.Value := 0;
     Self.SE_Module1.Value := 0;
   end;
 
   if (settings.RCSAddrs.count > 2) then
   begin
-    if (settings.RCSAddrs[2].module > Cardinal(Self.SE_Module2.MaxValue)) then
-      Self.SE_Module2.MaxValue := 0;
-    Self.SE_Port2.MaxValue := 0;
-
+    Self.SE_System2.Value := settings.RCSAddrs[2].system;
     Self.SE_Port2.Value := settings.RCSAddrs[2].port;
     Self.SE_Module2.Value := settings.RCSAddrs[2].module;
   end else begin
+    Self.SE_System2.Value := 0;
     Self.SE_Port2.Value := 0;
     Self.SE_Module2.Value := 0;
   end;
 
   if (settings.RCSAddrs.count > 3) then
   begin
-    if (settings.RCSAddrs[3].module > Cardinal(Self.SE_Module3.MaxValue)) then
-      Self.SE_Module3.MaxValue := 0;
-    Self.SE_Port3.MaxValue := 0;
-
+    Self.SE_System3.Value := settings.RCSAddrs[3].system;
     Self.SE_Port3.Value := settings.RCSAddrs[3].port;
     Self.SE_Module3.Value := settings.RCSAddrs[3].module;
   end else begin
+    Self.SE_System3.Value := 0;
     Self.SE_Port3.Value := 0;
     Self.SE_Module3.Value := 0;
   end;
@@ -244,8 +238,6 @@ begin
     end;
   end;
 
-  Self.SE_RCS_BoardExit(Self);
-
   Self.E_Length.Text := FloatToStr(settings.lenght);
   Self.CHB_Loop.Checked := settings.loop;
 
@@ -254,10 +246,10 @@ end;
 
 procedure TF_BlkTrack.CommonOpenForm();
 begin
-  Self.SE_Module0.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_Module1.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_Module2.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_Module3.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_System0.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_System1.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_System2.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_System3.MaxValue := RCSs._RCSS_MAX;
 
   Self.CB_Booster.Clear();
   for var booster in Boosters.sorted do
@@ -315,15 +307,15 @@ begin
 
     // save block-specific data
     var settings: TBlkTrackSettings;
-    settings.RCSAddrs := TList<RCSc.TRCSAddr>.Create();
+    settings.RCSAddrs := TList<RCSsc.TRCSsAddr>.Create();
     if (Self.CHB_D0.Checked) then
-      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module0.Value, Self.SE_Port0.Value));
+      settings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_System0.Value, Self.SE_Module0.Value, Self.SE_Port0.Value));
     if (Self.CHB_D1.Checked) then
-      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module1.Value, Self.SE_Port1.Value));
+      settings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_System1.Value, Self.SE_Module1.Value, Self.SE_Port1.Value));
     if (Self.CHB_D2.Checked) then
-      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module2.Value, Self.SE_Port2.Value));
+      settings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_System2.Value, Self.SE_Module2.Value, Self.SE_Port2.Value));
     if (Self.CHB_D3.Checked) then
-      settings.RCSAddrs.Add(TRCS.RCSAddr(Self.SE_Module3.Value, Self.SE_Port3.Value));
+      settings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_System3.Value, Self.SE_Module3.Value, Self.SE_Port3.Value));
 
     settings.lenght := StrToFloatDef(Self.E_Length.Text, 0);
     settings.loop := Self.CHB_Loop.Checked;
@@ -367,24 +359,28 @@ begin
   case ((Sender as TCheckBox).Tag) of
     0:
       begin
+        Self.SE_System0.Enabled := (Sender as TCheckBox).Checked;
         Self.SE_Port0.Enabled := (Sender as TCheckBox).Checked;
         Self.SE_Module0.Enabled := (Sender as TCheckBox).Checked;
       end;
 
     1:
       begin
+        Self.SE_System1.Enabled := (Sender as TCheckBox).Checked;
         Self.SE_Port1.Enabled := (Sender as TCheckBox).Checked;
         Self.SE_Module1.Enabled := (Sender as TCheckBox).Checked;
       end;
 
     2:
       begin
+        Self.SE_System2.Enabled := (Sender as TCheckBox).Checked;
         Self.SE_Port2.Enabled := (Sender as TCheckBox).Checked;
         Self.SE_Module2.Enabled := (Sender as TCheckBox).Checked;
       end;
 
     3:
       begin
+        Self.SE_System3.Enabled := (Sender as TCheckBox).Checked;
         Self.SE_Port3.Enabled := (Sender as TCheckBox).Checked;
         Self.SE_Module3.Enabled := (Sender as TCheckBox).Checked;
       end;
