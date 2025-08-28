@@ -156,8 +156,8 @@ type
     P_Users_pozadi: TPanel;
     P_Users_Left: TPanel;
     E_dataload_users: TEdit;
-    TS_Stav_RCS: TTabSheet;
-    LV_Stav_RCS: TListView;
+    TS_RCS0: TTabSheet;
+    LV_RCS0_State: TListView;
     TS_VC: TTabSheet;
     P_JC_Bg: TPanel;
     P_JC_Left: TPanel;
@@ -255,7 +255,7 @@ type
     E_dataload_HV_state: TEdit;
     E_dataload_users_stat: TEdit;
     P_dataload_rcs: TPanel;
-    CHB_RCS_Show_Only_Active: TCheckBox;
+    CHB_RCS0_Show_Only_Active: TCheckBox;
     N11: TMenuItem;
     CHB_log_rcs: TCheckBox;
     N12: TMenuItem;
@@ -313,6 +313,18 @@ type
     S_RCS2_started: TShape;
     S_RCS3_open: TShape;
     S_RCS3_started: TShape;
+    TS_RCS1: TTabSheet;
+    TS_RCS2: TTabSheet;
+    TS_RCS3: TTabSheet;
+    LV_RCS1_State: TListView;
+    Panel1: TPanel;
+    CHB_RCS1_Show_Only_Active: TCheckBox;
+    Panel2: TPanel;
+    CHB_RCS2_Show_Only_Active: TCheckBox;
+    Panel5: TPanel;
+    CHB_RCS3_Show_Only_Active: TCheckBox;
+    LV_RCS2_State: TListView;
+    LV_RCS3_State: TListView;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -414,13 +426,13 @@ type
     procedure CB_centrala_loglevel_tableChange(Sender: TObject);
     procedure A_PT_StartExecute(Sender: TObject);
     procedure A_PT_StopExecute(Sender: TObject);
-    procedure LV_Stav_RCSCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+    procedure LV_RCS0_StateCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure MI_Block_HoukClick(Sender: TObject);
     procedure MI_RCSs_UpdateClick(Sender: TObject);
     procedure B_AB_DeleteClick(Sender: TObject);
     procedure LV_ABChange(Sender: TObject; Item: TListItem; Change: TItemChange);
-    procedure CHB_RCS_Show_Only_ActiveClick(Sender: TObject);
+    procedure CHB_RCS0_Show_Only_ActiveClick(Sender: TObject);
     procedure CHB_log_rcsClick(Sender: TObject);
     procedure A_Trk_Lib_CfgExecute(Sender: TObject);
     procedure MI_Trk_UpdateClick(Sender: TObject);
@@ -463,6 +475,7 @@ type
     MI_RCSs: array [0..TRCSs._RCSS_MAX] of TRCSMI;
     S_RCS_Open: array [0..TRCSs._RCSS_MAX] of TShape;
     S_RCS_Started: array [0..TRCSs._RCSS_MAX] of TShape;
+    LV_RCSs_State: array [0..TRCSs._RCSS_MAX] of TListView;
     mRCSGUIInitialized: Boolean;
 
     procedure UpdateCallMethod();
@@ -485,12 +498,15 @@ type
 
     procedure RCSShapesInit();
     procedure RCSShapesUpdate();
+    procedure RCSSLVStateInit();
 
     procedure WMPowerBroadcast(var Msg: TMessage); message WM_POWERBROADCAST;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
     procedure WMEndSession(var Msg: TWMEndSession); message WM_ENDSESSION;
 
   public
+    CHB_RCSs_Show_Only_Active: array [0..TRCSs._RCSS_MAX] of TCheckBox;
+
     autostart: record
       goTime: TDateTime;
       state: TAutostartState;
@@ -600,6 +616,7 @@ begin
   Self.mRCSGUIInitialized := True;
 
   Self.CreateMIRCSs();
+  Self.UpdateRCSLibsList();
   Self.RCSGUIUpdateAll();
 
   try
@@ -671,8 +688,6 @@ begin
 
     Self.MI_RCSs[i].MI_Libs := TList<TMenuItem>.Create();
   end;
-
-  Self.UpdateRCSLibsList();
 end;
 
 procedure TF_Main.RCSGUIUpdateAll();
@@ -687,6 +702,10 @@ begin
 
   Self.PM_Tester.Enabled := (RCSs.AnyRCSState(rsStartedNotScanned) or RCSs.AnyRCSState(rsStartedScanned));
   Self.PM_ResetV.Enabled := Self.PM_Tester.Enabled;
+  Self.TS_RCS0.TabVisible := (RCSs[0].lib <> '');
+  Self.TS_RCS1.TabVisible := (RCSs[1].lib <> '');
+  Self.TS_RCS2.TabVisible := (RCSs[2].lib <> '');
+  Self.TS_RCS3.TabVisible := (RCSs[3].lib <> '');
 end;
 
 procedure TF_Main.RCSMIUpdateRoot();
@@ -761,7 +780,7 @@ begin
     end;
   end;
 
-  RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
+  RCSTableData[rcsi].LoadToTable(not Self.CHB_RCSs_Show_Only_Active[rcsi].Checked);
   Self.RCSGUIUpdateAll();
   Screen.Cursor := crDefault;
 end;
@@ -789,7 +808,7 @@ begin
     end;
   end;
 
-  RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
+  RCSTableData[rcsi].LoadToTable(not Self.CHB_RCSs_Show_Only_Active[rcsi].Checked);
   Self.RCSGUIUpdateAll();
   Screen.Cursor := crDefault;
 end;
@@ -1073,6 +1092,19 @@ begin
   Self.L_RCS_started.Left := left;
 end;
 
+procedure TF_Main.RCSSLVStateInit();
+begin
+  Self.LV_RCSs_State[0] := Self.LV_RCS0_State;
+  Self.LV_RCSs_State[1] := Self.LV_RCS1_State;
+  Self.LV_RCSs_State[2] := Self.LV_RCS2_State;
+  Self.LV_RCSs_State[3] := Self.LV_RCS3_State;
+
+  Self.CHB_RCSs_Show_Only_Active[0] := Self.CHB_RCS0_Show_Only_Active;
+  Self.CHB_RCSs_Show_Only_Active[1] := Self.CHB_RCS1_Show_Only_Active;
+  Self.CHB_RCSs_Show_Only_Active[2] := Self.CHB_RCS2_Show_Only_Active;
+  Self.CHB_RCSs_Show_Only_Active[3] := Self.CHB_RCS3_Show_Only_Active;
+end;
+
 // --- events from RCS lib begin ---
 
 procedure TF_Main.OnRCSBeforeOpen(Sender: TObject);
@@ -1101,7 +1133,7 @@ begin
 
   rcs.LogFMainStatus('Otevřeno');
   F_Tester.AfterRCSOpen(); // TODO
-  RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked); // TODO
+  RCSTableData[rcs.systemI].LoadToTable(not Self.CHB_RCSs_Show_Only_Active[rcs.systemI].Checked);
 
   if (SystemData.Status = starting) then
   begin
@@ -1166,7 +1198,7 @@ begin
     Self.UpdateSystemButtons();
   end;
 
-  RCSTableData.UpdateTable();
+  RCSTableData[rcs.systemI].UpdateTable();
 end;
 
 procedure TF_Main.OnRCSErrOpen(Sender: TObject; errMsg: string);
@@ -1216,7 +1248,7 @@ begin
   rcs.Log('Komunikace spuštěna, čekám na první sken všech modulů...', llInfo);
   rcs.LogFMainStatus('Komunikace spuštěna, čekám na první sken všech modulů...');
 
-  RCSTableData.UpdateTable();
+  RCSTableData[rcs.systemI].UpdateTable();
 end;
 
 procedure TF_Main.OnRCSScanned(Sender: TObject);
@@ -1224,7 +1256,7 @@ begin
   var rcs: TRCS := TRCS(Sender);
 
   Self.RCSGUIUpdateAll();
-  RCSTableData.UpdateTable();
+  RCSTableData[rcs.systemI].UpdateTable();
 
   rcs.Log('Moduly naskenovány', llInfo);
   rcs.LogFMainStatus('Moduly naskenovány');
@@ -1272,7 +1304,7 @@ begin
 
   rcs.Log('Komunikace zastavena', llInfo);
   rcs.LogFMainStatus('Komunikace zastavena');
-  RCSTableData.UpdateTable();
+  RCSTableData[rcs.systemI].UpdateTable();
 
   if ((Self.Showing) and (Self.PC_1.ActivePage = F_Main.TS_Bloky)) then
     BlocksTablePainter.UpdateTable();
@@ -2006,10 +2038,13 @@ begin
   Self.CloseMessage := true;
   Self.mCpuLoad := TCpuLoad.Create();
 
+  Self.RCSSLVStateInit();
+
   JCTableData := TJCTableData.Create(Self.LV_JC);
   ABTableData := TABTableData.Create(Self.LV_AB);
   UsersTableData := TUsersTableData.Create(Self.LV_Users);
-  RCSTableData := TRCSTableData.Create(Self.LV_Stav_RCS);
+  for var rcsi := 0 to RCSs._RCSS_MAX do
+    RCSTableData[rcsi] := TRCSTableData.Create(Self.LV_RCSs_State[rcsi], RCSs[rcsi]);
   TrainTableData := TTrainTableData.Create(Self.LV_Soupravy);
   HVTableData := THVTableData.Create(Self.LV_HV);
   ZesTableData := TZesTableData.Create(Self.LV_Zesilovace);
@@ -2359,7 +2394,8 @@ begin
     try
       modelTime.SaveData(ini);
       ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.PanelStr());
-      ini.WriteBool('RCS', 'ShowOnlyActive', Self.CHB_RCS_Show_Only_Active.Checked);
+      for var rcsi := 0 to RCSs._RCSS_MAX do
+        ini.WriteBool('RCS'+IntToStr(rcsi), 'ShowOnlyActive', Self.CHB_RCSs_Show_Only_Active[rcsi].Checked);
       ini.UpdateFile();
     finally
       ini.Free();
@@ -2862,10 +2898,11 @@ begin
   RCSi.logEnabled := Self.CHB_log_rcs.Checked;
 end;
 
-procedure TF_Main.CHB_RCS_Show_Only_ActiveClick(Sender: TObject);
+procedure TF_Main.CHB_RCS0_Show_Only_ActiveClick(Sender: TObject);
 begin
-  if (RCSi.Lib <> '') then
-    RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
+  var rcsi: Integer := TCheckBox(Sender).Tag;
+  if ((rcsi >= 0) and (rcsi < RCSs._RCSS_COUNT) and (RCSs[rcsi].Lib <> '')) then
+    RCSTableData[rcsi].LoadToTable(not Self.CHB_RCSs_Show_Only_Active[rcsi].Checked);
 end;
 
 procedure TF_Main.CloseForm();
@@ -3117,7 +3154,8 @@ begin
 
   BlocksTablePainter.LoadTable();
   JCTableData.LoadToTable();
-  RCSTableData.LoadToTable(not Self.CHB_RCS_Show_Only_Active.Checked);
+  for var rcsi: Integer := 0 to RCSs._RCSS_MAX do
+    RCSTableData[rcsi].LoadToTable(not Self.CHB_RCSs_Show_Only_Active[rcsi].Checked);
   UsersTableData.LoadToTable();
   ORsTableData.LoadToTable();
 
@@ -3358,15 +3396,15 @@ begin
   end;
 end;
 
-procedure TF_Main.LV_Stav_RCSCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+procedure TF_Main.LV_RCS0_StateCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
   if ((Item.SubItems.Count > 5) and ((Item.SubItems[5] = 'Fail') or (Item.SubItems[5] = 'Error'))) then
-    Self.LV_Stav_RCS.Canvas.Brush.Color := _TABLE_COLOR_RED
+    Sender.Canvas.Brush.Color := _TABLE_COLOR_RED
   else if ((Item.SubItems.Count > 5) and (Item.SubItems[5] = 'Warning')) then
-    Self.LV_Stav_RCS.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
+    Sender.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
   else
-    Self.LV_Stav_RCS.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
+    Sender.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
 end;
 
 procedure TF_Main.LV_UsersChange(Sender: TObject; Item: TListItem; Change: TItemChange);

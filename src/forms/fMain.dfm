@@ -3,7 +3,7 @@ object F_Main: TF_Main
   Top = 316
   Caption = 'hJOPserver'
   ClientHeight = 695
-  ClientWidth = 1297
+  ClientWidth = 1371
   Color = clWhite
   Constraints.MinHeight = 244
   Constraints.MinWidth = 772
@@ -3142,7 +3142,7 @@ object F_Main: TF_Main
   object P_Pozadi: TPanel
     Left = 0
     Top = 0
-    Width = 1297
+    Width = 1371
     Height = 33
     Margins.Left = 2
     Margins.Top = 2
@@ -3153,6 +3153,7 @@ object F_Main: TF_Main
     Color = clGray
     ParentBackground = False
     TabOrder = 0
+    ExplicitWidth = 1297
     object P_Date: TPanel
       Left = 897
       Top = 4
@@ -3450,7 +3451,7 @@ object F_Main: TF_Main
   object SB1: TStatusBar
     Left = 0
     Top = 675
-    Width = 1297
+    Width = 1371
     Height = 20
     Hint = 'Status bar'
     Margins.Left = 2
@@ -3494,21 +3495,23 @@ object F_Main: TF_Main
     ParentDoubleBuffered = False
     ParentShowHint = False
     ShowHint = False
+    ExplicitWidth = 1297
   end
   object PC_1: TPageControl
     Left = 0
     Top = 33
-    Width = 1297
+    Width = 1371
     Height = 642
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Technologie
+    ActivePage = TS_RCS0
     Align = alClient
     MultiLine = True
     TabOrder = 2
     OnChange = PC_1Change
+    ExplicitWidth = 1297
     object TS_Technologie: TTabSheet
       Margins.Left = 2
       Margins.Top = 2
@@ -3867,7 +3870,7 @@ object F_Main: TF_Main
       object LV_Blocks: TListView
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Margins.Left = 2
         Margins.Top = 2
@@ -3935,11 +3938,12 @@ object F_Main: TF_Main
         OnDblClick = LV_BlocksDblClick
         OnKeyDown = LV_BlocksKeyDown
         OnKeyPress = LV_BlocksKeyPress
+        ExplicitWidth = 1289
       end
       object P_BlkPozadi: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -3950,8 +3954,9 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1289
         object P_Blk_Ostatni: TPanel
-          Left = 1176
+          Left = 1250
           Top = 0
           Width = 113
           Height = 40
@@ -3963,6 +3968,7 @@ object F_Main: TF_Main
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 1
+          ExplicitLeft = 1176
           object L_BlkPocet: TLabel
             Left = 30
             Top = 12
@@ -4070,7 +4076,7 @@ object F_Main: TF_Main
       object LV_HV: TListView
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Margins.Left = 2
         Margins.Top = 2
@@ -4180,11 +4186,12 @@ object F_Main: TF_Main
         OnDblClick = LV_HVDblClick
         OnKeyDown = LV_HVKeyDown
         OnKeyPress = LV_HVKeyPress
+        ExplicitWidth = 1289
       end
       object P_HV_Pozadi: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -4195,6 +4202,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1289
         object P_HV_Left: TPanel
           Left = 0
           Top = 0
@@ -4308,7 +4316,7 @@ object F_Main: TF_Main
       object LV_Soupravy: TListView
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Margins.Left = 2
         Margins.Top = 2
@@ -4398,11 +4406,12 @@ object F_Main: TF_Main
         OnChange = LV_SoupravyChange
         OnCustomDrawItem = LV_SoupravyCustomDrawItem
         OnKeyDown = LV_SoupravyKeyDown
+        ExplicitWidth = 1289
       end
       object P_Soupravy_pozadi: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -4413,6 +4422,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1289
         object P_Spr_Left: TPanel
           Left = 0
           Top = 0
@@ -4479,7 +4489,7 @@ object F_Main: TF_Main
       object LV_Stanice: TListView
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Margins.Left = 2
         Margins.Top = 2
@@ -4530,11 +4540,12 @@ object F_Main: TF_Main
         TabOrder = 0
         ViewStyle = vsReport
         OnChange = LV_StaniceChange
+        ExplicitWidth = 1289
       end
       object P_Stanice_Pozadi: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -4545,6 +4556,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1289
         object P_St_Left: TPanel
           Left = 0
           Top = 0
@@ -4600,7 +4612,7 @@ object F_Main: TF_Main
       object LV_Zesilovace: TListView
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Margins.Left = 2
         Margins.Top = 2
@@ -4643,11 +4655,12 @@ object F_Main: TF_Main
         OnDblClick = LV_ZesilovaceDblClick
         OnKeyDown = LV_ZesilovaceKeyDown
         OnKeyPress = LV_ZesilovaceKeyPress
+        ExplicitWidth = 1289
       end
       object P_zes_pozadi: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -4658,8 +4671,9 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1289
         object P_Zes_Right: TPanel
-          Left = 1064
+          Left = 1138
           Top = 0
           Width = 225
           Height = 40
@@ -4671,6 +4685,7 @@ object F_Main: TF_Main
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 1
+          ExplicitLeft = 1064
           object L_Zes_Napajeni: TLabel
             Left = 12
             Top = 20
@@ -4824,7 +4839,7 @@ object F_Main: TF_Main
       object LV_Users: TListView
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Margins.Left = 2
         Margins.Top = 2
@@ -4895,11 +4910,12 @@ object F_Main: TF_Main
         OnDblClick = LV_UsersDblClick
         OnKeyDown = LV_UsersKeyDown
         OnKeyPress = LV_UsersKeyPress
+        ExplicitWidth = 1289
       end
       object P_Users_pozadi: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -4910,6 +4926,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1289
         object P_Users_Left: TPanel
           Left = 0
           Top = 0
@@ -5005,17 +5022,17 @@ object F_Main: TF_Main
         end
       end
     end
-    object TS_Stav_RCS: TTabSheet
+    object TS_RCS0: TTabSheet
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Stav RCS modul'#367
+      Caption = 'Stav RCS0'
       ImageIndex = -1
-      object LV_Stav_RCS: TListView
+      object LV_RCS0_State: TListView
         Left = 0
         Top = 24
-        Width = 1289
+        Width = 1363
         Height = 590
         Margins.Left = 2
         Margins.Top = 2
@@ -5076,12 +5093,13 @@ object F_Main: TF_Main
         SmallImages = IL_RCS
         TabOrder = 0
         ViewStyle = vsReport
-        OnCustomDrawItem = LV_Stav_RCSCustomDrawItem
+        OnCustomDrawItem = LV_RCS0_StateCustomDrawItem
+        ExplicitWidth = 1289
       end
       object P_dataload_rcs: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 24
         Margins.Left = 2
         Margins.Top = 2
@@ -5091,15 +5109,307 @@ object F_Main: TF_Main
         BevelOuter = bvNone
         Color = clWhite
         TabOrder = 1
-        object CHB_RCS_Show_Only_Active: TCheckBox
+        ExplicitWidth = 1289
+        object CHB_RCS0_Show_Only_Active: TCheckBox
           Left = 9
           Top = 2
           Width = 169
           Height = 17
           Caption = 'Zobrazit jen aktivn'#237' moduly'
           TabOrder = 0
-          OnClick = CHB_RCS_Show_Only_ActiveClick
+          OnClick = CHB_RCS0_Show_Only_ActiveClick
         end
+      end
+    end
+    object TS_RCS1: TTabSheet
+      Caption = 'Stav RCS1'
+      ImageIndex = 15
+      object LV_RCS1_State: TListView
+        Tag = 1
+        Left = 0
+        Top = 24
+        Width = 1363
+        Height = 590
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Align = alClient
+        Columns = <
+          item
+            Caption = 'Adresa modulu'
+            Width = 71
+          end
+          item
+            Caption = 'X'
+            Width = 30
+          end
+          item
+            Caption = 'N'#225'zev modulu'
+            Width = 125
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Typ modulu'
+            Width = 70
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Stav vstup'#367
+            Width = 200
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Stav v'#253'stup'#367
+            Width = 200
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Stav'
+            Width = 60
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Firmware'
+            Width = 100
+          end>
+        DoubleBuffered = True
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        GridLines = True
+        ReadOnly = True
+        RowSelect = True
+        ParentDoubleBuffered = False
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = False
+        SmallImages = IL_RCS
+        TabOrder = 0
+        ViewStyle = vsReport
+        OnCustomDrawItem = LV_RCS0_StateCustomDrawItem
+        ExplicitWidth = 1289
+      end
+      object Panel1: TPanel
+        Left = 0
+        Top = 0
+        Width = 1363
+        Height = 24
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Align = alTop
+        BevelOuter = bvNone
+        Color = clWhite
+        TabOrder = 1
+        ExplicitTop = 8
+        object CHB_RCS1_Show_Only_Active: TCheckBox
+          Tag = 1
+          Left = 9
+          Top = 2
+          Width = 169
+          Height = 17
+          Caption = 'Zobrazit jen aktivn'#237' moduly'
+          TabOrder = 0
+          OnClick = CHB_RCS0_Show_Only_ActiveClick
+        end
+      end
+    end
+    object TS_RCS2: TTabSheet
+      Caption = 'Stav RCS2'
+      ImageIndex = 16
+      object Panel2: TPanel
+        Left = 0
+        Top = 0
+        Width = 1363
+        Height = 24
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Align = alTop
+        BevelOuter = bvNone
+        Color = clWhite
+        TabOrder = 0
+        ExplicitTop = 8
+        object CHB_RCS2_Show_Only_Active: TCheckBox
+          Tag = 2
+          Left = 9
+          Top = 2
+          Width = 169
+          Height = 17
+          Caption = 'Zobrazit jen aktivn'#237' moduly'
+          TabOrder = 0
+          OnClick = CHB_RCS0_Show_Only_ActiveClick
+        end
+      end
+      object LV_RCS2_State: TListView
+        Tag = 2
+        Left = 0
+        Top = 24
+        Width = 1363
+        Height = 590
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Align = alClient
+        Columns = <
+          item
+            Caption = 'Adresa modulu'
+            Width = 71
+          end
+          item
+            Caption = 'X'
+            Width = 30
+          end
+          item
+            Caption = 'N'#225'zev modulu'
+            Width = 125
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Typ modulu'
+            Width = 70
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Stav vstup'#367
+            Width = 200
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Stav v'#253'stup'#367
+            Width = 200
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Stav'
+            Width = 60
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Firmware'
+            Width = 100
+          end>
+        DoubleBuffered = True
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        GridLines = True
+        ReadOnly = True
+        RowSelect = True
+        ParentDoubleBuffered = False
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = False
+        SmallImages = IL_RCS
+        TabOrder = 1
+        ViewStyle = vsReport
+        OnCustomDrawItem = LV_RCS0_StateCustomDrawItem
+        ExplicitWidth = 1289
+      end
+    end
+    object TS_RCS3: TTabSheet
+      Caption = 'Stav RCS3'
+      ImageIndex = 17
+      object Panel5: TPanel
+        Left = 0
+        Top = 0
+        Width = 1363
+        Height = 24
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Align = alTop
+        BevelOuter = bvNone
+        Color = clWhite
+        TabOrder = 0
+        ExplicitTop = 8
+        object CHB_RCS3_Show_Only_Active: TCheckBox
+          Tag = 3
+          Left = 9
+          Top = 2
+          Width = 169
+          Height = 17
+          Caption = 'Zobrazit jen aktivn'#237' moduly'
+          TabOrder = 0
+          OnClick = CHB_RCS0_Show_Only_ActiveClick
+        end
+      end
+      object LV_RCS3_State: TListView
+        Tag = 3
+        Left = 0
+        Top = 24
+        Width = 1363
+        Height = 590
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Align = alClient
+        Columns = <
+          item
+            Caption = 'Adresa modulu'
+            Width = 71
+          end
+          item
+            Caption = 'X'
+            Width = 30
+          end
+          item
+            Caption = 'N'#225'zev modulu'
+            Width = 125
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Typ modulu'
+            Width = 70
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Stav vstup'#367
+            Width = 200
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Stav v'#253'stup'#367
+            Width = 200
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Stav'
+            Width = 60
+          end
+          item
+            Alignment = taCenter
+            Caption = 'Firmware'
+            Width = 100
+          end>
+        DoubleBuffered = True
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clBlack
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        GridLines = True
+        ReadOnly = True
+        RowSelect = True
+        ParentDoubleBuffered = False
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = False
+        SmallImages = IL_RCS
+        TabOrder = 1
+        ViewStyle = vsReport
+        OnCustomDrawItem = LV_RCS0_StateCustomDrawItem
+        ExplicitWidth = 1289
       end
     end
     object TS_VC: TTabSheet
@@ -5112,7 +5422,7 @@ object F_Main: TF_Main
       object P_JC_Bg: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -5123,6 +5433,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1289
         object P_JC_Left: TPanel
           Left = 0
           Top = 0
@@ -5219,7 +5530,7 @@ object F_Main: TF_Main
       object LV_JC: TListView
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Margins.Left = 2
         Margins.Top = 2
@@ -5311,6 +5622,7 @@ object F_Main: TF_Main
         OnDblClick = LV_JCDblClick
         OnKeyDown = LV_JCKeyDown
         OnKeyPress = LV_JCKeyPress
+        ExplicitWidth = 1289
       end
     end
     object TS_MultiJC: TTabSheet
@@ -5319,7 +5631,7 @@ object F_Main: TF_Main
       object Panel6: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -5330,6 +5642,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 0
+        ExplicitWidth = 1289
         object P_MJC_Left: TPanel
           Left = 0
           Top = 0
@@ -5406,7 +5719,7 @@ object F_Main: TF_Main
       object LV_MultiJC: TListView
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Margins.Left = 2
         Margins.Top = 2
@@ -5450,6 +5763,7 @@ object F_Main: TF_Main
         OnDblClick = LV_MultiJCDblClick
         OnKeyDown = LV_MultiJCKeyDown
         OnKeyPress = LV_MultiJCKeyPress
+        ExplicitWidth = 1289
       end
     end
     object TS_AB: TTabSheet
@@ -5458,7 +5772,7 @@ object F_Main: TF_Main
       object Panel4: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -5469,6 +5783,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 0
+        ExplicitWidth = 1289
         object P_AB_Left: TPanel
           Left = 0
           Top = 0
@@ -5507,7 +5822,7 @@ object F_Main: TF_Main
       object LV_AB: TListView
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Margins.Left = 2
         Margins.Top = 2
@@ -5534,6 +5849,7 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnChange = LV_ABChange
         OnKeyDown = LV_ABKeyDown
+        ExplicitWidth = 1289
       end
     end
     object TS_Config: TTabSheet
@@ -5542,7 +5858,7 @@ object F_Main: TF_Main
       object P_ConfigHeader: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -5553,6 +5869,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 0
+        ExplicitWidth = 1289
         object E_configFilename: TEdit
           Left = 9
           Top = 9
@@ -5868,24 +6185,26 @@ object F_Main: TF_Main
       object M_funcsVyznam: TMemo
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Align = alClient
         DoubleBuffered = True
         ParentDoubleBuffered = False
         ScrollBars = ssVertical
         TabOrder = 0
+        ExplicitWidth = 1289
       end
       object P_funcsVyznamBg: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Align = alTop
         BevelOuter = bvNone
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1289
         object B_FuncChange: TButton
           Left = 9
           Top = 6
@@ -5926,7 +6245,7 @@ object F_Main: TF_Main
       object LV_log: TListView
         Left = 0
         Top = 40
-        Width = 1289
+        Width = 1363
         Height = 574
         Margins.Left = 2
         Margins.Top = 2
@@ -5965,11 +6284,12 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnCustomDrawItem = LV_logCustomDrawItem
         OnDblClick = LV_logDblClick
+        ExplicitWidth = 1289
       end
       object P_log: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 40
         Margins.Left = 2
         Margins.Top = 2
@@ -5980,6 +6300,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1289
         object Label3: TLabel
           Left = 11
           Top = 1
@@ -6056,7 +6377,7 @@ object F_Main: TF_Main
       object LV_log_lnet: TListView
         Left = 0
         Top = 26
-        Width = 1289
+        Width = 1363
         Height = 588
         Margins.Left = 2
         Margins.Top = 2
@@ -6090,11 +6411,12 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnCustomDrawItem = LV_log_lnetCustomDrawItem
         OnDblClick = LV_log_lnetDblClick
+        ExplicitWidth = 1289
       end
       object Panel3: TPanel
         Left = 0
         Top = 0
-        Width = 1289
+        Width = 1363
         Height = 26
         Margins.Left = 2
         Margins.Top = 2
@@ -6105,6 +6427,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
+        ExplicitWidth = 1289
         object Label2: TLabel
           Left = 11
           Top = 1

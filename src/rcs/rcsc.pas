@@ -344,7 +344,7 @@ begin
         Self.modules[module].outputChangedEv[i](Self, module)
       else
         Self.modules[module].outputChangedEv.Delete(i);
-  RCSTableData.UpdateBoard(module);
+  RCSTableData[Self.mSystemI].UpdateBoard(module);
   F_Tester.RCSModuleChanged(module);
 end;
 
@@ -356,7 +356,7 @@ begin
         Self.modules[module].inputChangedEv[i](Self, module)
       else
         Self.modules[module].inputChangedEv.Delete(i);
-  RCSTableData.UpdateBoardInputs(module);
+  RCSTableData[Self.mSystemI].UpdateBoardInputs(module);
   F_Tester.RCSModuleInputsChanged(module);
 end;
 
@@ -368,7 +368,7 @@ begin
         Self.modules[module].outputChangedEv[i](Self, module)
       else
         Self.modules[module].outputChangedEv.Delete(i);
-  RCSTableData.UpdateBoardOutputs(module);
+  RCSTableData[Self.mSystemI].UpdateBoardOutputs(module);
   F_Tester.RCSModuleOutputsChanged(module);
 end;
 

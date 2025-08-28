@@ -373,7 +373,9 @@ begin
     modelTime.LoadData(ini);
     FuncNames.Clear();
     FuncNames.Add(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
-    F_Main.CHB_RCS_Show_Only_Active.Checked := ini.ReadBool('RCS', 'ShowOnlyActive', false);
+
+    for var rcsi: Integer := 0 to RCSs._RCSS_MAX do
+      F_Main.CHB_RCSs_Show_Only_Active[rcsi].Checked := ini.ReadBool('RCS'+IntToStr(rcsi), 'ShowOnlyActive', false);
 
     try
       PanelServer.LoadConfig(ini);
@@ -450,7 +452,10 @@ begin
     ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', Self.autosave_period));
 
     ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.PanelStr());
-    ini.WriteBool('RCS', 'ShowOnlyActive', F_Main.CHB_RCS_Show_Only_Active.Checked);
+
+    ini.EraseSection('RCS'); // old section
+    for var rcsi: Integer := 0 to RCSs._RCSS_MAX do
+      ini.WriteBool('RCS'+IntToStr(rcsi), 'ShowOnlyActive', F_Main.CHB_RCSs_Show_Only_Active[rcsi].Checked);
 
     ini.WriteInteger('times', 'rcFree', Self.times.rcFree);
     ini.WriteInteger('times', 'rcVcOccupied', Self.times.rcVcOccupied);
