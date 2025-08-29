@@ -86,9 +86,6 @@ type
     procedure LoadLib(libFn: string; configFn: string);
     procedure UnloadLib();
 
-    function NoExStarted(): Boolean;
-    function NoExOpened(): Boolean;
-
     procedure SetNeeded(module: Cardinal; state: Boolean = true);
     function GetNeeded(module: Cardinal): Boolean;
 
@@ -396,26 +393,6 @@ begin
   end else begin
     if (Self.modules.ContainsKey(module)) then
       Self.modules[module].outputChangedEv.Remove(event);
-  end;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-function TRCS.NoExStarted(): Boolean;
-begin
-  try
-    Result := Self.Started();
-  except
-    Result := false;
-  end;
-end;
-
-function TRCS.NoExOpened(): Boolean;
-begin
-  try
-    Result := Self.Opened();
-  except
-    Result := false;
   end;
 end;
 

@@ -93,7 +93,7 @@ begin
       try
         if (rcs.lib <> '') then
         begin
-          if (rcs.NoExOpened()) then
+          if (rcs.Opened()) then
             str := rcs.GetDeviceVersion()
           else
             str := 'zařízení uzavřeno';

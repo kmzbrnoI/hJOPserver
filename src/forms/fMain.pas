@@ -925,7 +925,7 @@ begin
   const rcsi: Integer = TMenuItem(Sender).Tag;
   var rcs: TRCS := RCSs[rcsi];
 
-  if ((SystemData.Status = starting) and (rcs.NoExOpened())) then
+  if ((SystemData.Status = starting) and (rcs.Opened())) then
   begin
     Self.MI_RCS_Start_Click(Self.MI_RCSs[rcsi].MI_Start);
     Exit();
@@ -1022,7 +1022,7 @@ begin
   const rcsi: Integer = TMenuItem(Sender).Tag;
   var rcs: TRCS := RCSs[rcsi];
 
-  if ((SystemData.Status = stopping) and (not rcs.NoExStarted())) then
+  if ((SystemData.Status = stopping) and (not rcs.Started())) then
   begin
     Self.MI_RCS_Close_Click(Self.MI_RCSs[rcsi].MI_Close);
     Exit();
@@ -1744,7 +1744,7 @@ begin
 
   if (SystemData.Status = stopping) then
     for var i: Integer := 0 to RCSs._RCSS_MAX do
-      if (RCSs[i].NoExStarted()) then
+      if (RCSs[i].Started()) then
         Self.MI_RCS_Stop_Click(Self.MI_RCSs[i].MI_Stop);
 end;
 

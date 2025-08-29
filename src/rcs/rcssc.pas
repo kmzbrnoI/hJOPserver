@@ -310,7 +310,7 @@ end;
 function TRCSs.AllOpened(): Boolean;
 begin
   for var i: Integer := 0 to _RCSS_MAX do
-    if ((Self.m_rcss[i].libLoaded) and (not Self.m_rcss[i].NoExOpened())) then
+    if ((Self.m_rcss[i].libLoaded) and (not Self.m_rcss[i].Opened())) then
       Exit(False);
   Result := True;
 end;
@@ -318,7 +318,7 @@ end;
 function TRCSs.AllStarted(): Boolean;
 begin
   for var i: Integer := 0 to _RCSS_MAX do
-    if ((Self.m_rcss[i].libLoaded) and (not Self.m_rcss[i].NoExStarted())) then
+    if ((Self.m_rcss[i].libLoaded) and (not Self.m_rcss[i].Started())) then
       Exit(False);
   Result := True;
 end;
@@ -327,7 +327,7 @@ function TRCSs.Started(system: Cardinal): Boolean;
 begin
   if (system > _RCSS_MAX) then
     Exit(False);
-  Result := Self.m_rcss[system].NoExStarted();
+  Result := Self.m_rcss[system].Started();
 end;
 
 function TRCSs.Started(addr: TRCSsAddr): Boolean;
@@ -340,7 +340,7 @@ begin
   for var i: Integer := 0 to _RCSS_MAX do
   begin
     try
-      if (Self.m_rcss[i].NoExOpened()) then
+      if (Self.m_rcss[i].Opened()) then
         Self.m_rcss[i].Close();
     except
 

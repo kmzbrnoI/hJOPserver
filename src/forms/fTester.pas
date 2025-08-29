@@ -202,7 +202,7 @@ end;
 
 procedure TF_Tester.UpdateInputs();
 begin
-  if ((not Self.rcs.NoExStarted()) or (Self.RCSModuleInputs < 0)) then
+  if ((not Self.rcs.Started()) or (Self.RCSModuleInputs < 0)) then
   begin
     for var i := 0 to Self.inputs.Count-1 do
       Self.inputs[i].shape.Brush.Color := clGray;
@@ -240,7 +240,7 @@ end;
 
 procedure TF_Tester.UpdateOutputs();
 begin
-  if ((not Self.rcs.NoExStarted()) or (Self.RCSModuleOutputs < 0)) then
+  if ((not Self.rcs.Started()) or (Self.RCSModuleOutputs < 0)) then
   begin
     for var i := 0 to Self.outputs.Count-1 do
       Self.outputs[i].shape.Brush.Color := clGray;

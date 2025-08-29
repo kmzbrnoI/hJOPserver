@@ -39,8 +39,8 @@ begin
     var rcsso: TJsonObject := TJsonObject.Create();
     rcsso.S['lib'] := RCSs[i].lib;
     rcsso.B['used'] := (RCSs[i].lib <> '');
-    rcsso.B['opened'] := RCSs[i].NoExOpened();
-    rcsso.B['started'] := RCSs[i].NoExStarted();
+    rcsso.B['opened'] := RCSs[i].Opened();
+    rcsso.B['started'] := RCSs[i].Started();
     rcssa.Add(rcsso);
   end;
 
