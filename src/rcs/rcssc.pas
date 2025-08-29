@@ -67,6 +67,8 @@ type
     function AnyRCSState(state: TRCSState): Boolean;
     function AnyRCSStateGTE(state: TRCSState): Boolean;
     function AllRCSsState(state: TRCSState): Boolean;
+    function AllActiveRCSsState(state: TRCSState): Boolean;
+    function AllActiveRCSsStateGTE(state: TRCSState): Boolean;
     function AnyLibLoaded(): Boolean;
 
     procedure SetNeeded(system: Cardinal; module: Cardinal; state: Boolean = true); overload;
@@ -321,6 +323,22 @@ function TRCSs.AllRCSsState(state: TRCSState): Boolean;
 begin
   for var i: Integer := 0 to _RCSS_MAX do
     if (Self.m_rcss[i].state <> state) then
+      Exit(False);
+  Result := True;
+end;
+
+function TRCSs.AllActiveRCSsState(state: TRCSState): Boolean;
+begin
+  for var i: Integer := 0 to _RCSS_MAX do
+    if ((Self.m_rcss[i].lib <> '') and (Self.m_rcss[i].state <> state)) then
+      Exit(False);
+  Result := True;
+end;
+
+function TRCSs.AllActiveRCSsStateGTE(state: TRCSState): Boolean;
+begin
+  for var i: Integer := 0 to _RCSS_MAX do
+    if ((Self.m_rcss[i].lib <> '') and (Self.m_rcss[i].state < state)) then
       Exit(False);
   Result := True;
 end;

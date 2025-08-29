@@ -3153,7 +3153,6 @@ object F_Main: TF_Main
     Color = clGray
     ParentBackground = False
     TabOrder = 0
-    ExplicitWidth = 1297
     object P_Date: TPanel
       Left = 897
       Top = 4
@@ -3495,7 +3494,6 @@ object F_Main: TF_Main
     ParentDoubleBuffered = False
     ParentShowHint = False
     ShowHint = False
-    ExplicitWidth = 1297
   end
   object PC_1: TPageControl
     Left = 0
@@ -6283,7 +6281,6 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnCustomDrawItem = LV_logCustomDrawItem
         OnDblClick = LV_logDblClick
-        ExplicitWidth = 1289
       end
       object P_log: TPanel
         Left = 0
@@ -6299,7 +6296,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1289
         object Label3: TLabel
           Left = 11
           Top = 1

@@ -197,7 +197,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TAreas.RCSFail(addr: Integer);
+procedure TAreas.RCSFail(addr: TRCSsSystemModule);
 begin
   for var area: TArea in Self.db do
     area.RCSFail(addr);

@@ -2436,7 +2436,7 @@ begin
   Self.A_System_Start.Enabled := false;
 
   for var i: Integer := 0 to RCSs._RCSS_MAX do
-    if (RCSs[i].ready) then
+    if ((RCSs[i].ready) and (SystemData.Status = TSystemStatus.starting)) then // otevreni prvniho RCS muze zpusobit az dokonceni inicalizace, v takovem pripade neotrvirat dalsi
       Self.MI_RCS_Open_Click(Self.MI_RCSs[i].MI_Open);
 end;
 
@@ -3845,7 +3845,7 @@ end;
 
 procedure TF_Main.UpdateSystemButtons();
 begin
-  Self.A_System_Start.Enabled := ((not RCSs.AllRCSsState(rsStartedScanned)) or (not trakce.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
+  Self.A_System_Start.Enabled := ((not RCSs.AllActiveRCSsStateGTE(rsStartedNotScanned)) or (not trakce.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
     or (not PanelServer.openned) or (not Blocks.Enabled) or ((PtServer.autoStart) and (not PtServer.openned))) and (not RCSs.IsStateActionInProgress());
   Self.A_System_Stop.Enabled := (((RCSs.AnyRCSStateGTE(rsOpenStopped)) or (trakce.ConnectedSafe()) or (PanelServer.openned) or
     (PtServer.openned)) and (not RCSs.IsStateActionInProgress()));
