@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, StdCtrls, fMain, ShellAPI, pngimage;
+  ExtCtrls, StdCtrls, fMain, ShellAPI, pngimage, Vcl.ComCtrls;
 
 type
   TF_About = class(TForm)
@@ -14,24 +14,26 @@ type
     ST_about4: TStaticText;
     ST_kmz_web: TStaticText;
     B_Close: TButton;
-    I_Horasystems: TImage;
     GB_Info: TGroupBox;
     Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
     L_VApp: TLabel;
-    L_VRCSLib: TLabel;
-    L_VRCSUSB: TLabel;
-    Label6: TLabel;
-    L_VRCSDriver: TLabel;
     I_AppIcon: TImage;
     ST_hJOP_web: TStaticText;
+    GB_RCS: TGroupBox;
+    LV_RCS: TListView;
+    Label2: TLabel;
+    L_Trakce_Lib: TLabel;
+    Label3: TLabel;
+    L_Trakce_APIv: TLabel;
+    Label4: TLabel;
+    L_BuildApp: TLabel;
     procedure FormShow(Sender: TObject);
     procedure B_CloseClick(Sender: TObject);
     procedure ST_linkClick(Sender: TObject);
     procedure ST_emailClick(Sender: TObject);
   private
-    { Private declarations }
+    procedure RefreshRCSTable();
+
   public
     { Public declarations }
   end;
@@ -41,36 +43,75 @@ var
 
 implementation
 
-uses version, RCSc, Logging, appEv;
+uses version, RCSc, RCSsc, Logging, appEv, Trakcec;
 
 {$R *.dfm}
 
 procedure TF_About.FormShow(Sender: TObject);
 begin
-  Self.L_VApp.Caption := VersionStr(Application.ExeName) + ' (' + FormatDateTime('dd.mm.yyyy hh:nn:ss', BuildDateTime()) + ')';
-  Self.L_VRCSLib.Caption := RCSi.Lib;
+  Self.L_VApp.Caption := VersionStr(Application.ExeName);
+  Self.L_BuildApp.Caption := FormatDateTime('dd.mm.yyyy hh:nn:ss', BuildDateTime());
 
-  try
-    Self.L_VRCSDriver.Caption := RCSi.GetDllVersion();
-  except
-    on E: Exception do
+  Self.L_Trakce_Lib.Caption := trakce.Lib;
+  if (trakce.libLoaded) then
+    Self.L_Trakce_APIv.Caption := trakce.apiVersionStr
+  else
+    Self.L_Trakce_APIv.Caption := '-';
+
+  Self.RefreshRCSTable();
+end;
+
+procedure TF_About.RefreshRCSTable();
+begin
+  Self.LV_RCS.Clear();
+  for var rcsi: Integer := 0 to RCSs._RCSS_MAX do
+  begin
+    var rcs: TRCS := RCSs[rcsi];
+    var li: TListItem := Self.LV_RCS.Items.Add;
+    li.Caption := IntToStr(rcsi);
+    li.SubItems.Add(rcs.lib);
+
     begin
-      Self.L_VRCSDriver.Caption := 'nelze získat';
-      AppEvents.LogException(E, 'RCS.GetDllVersion');
+      var str: string := '-';
+      if (rcs.lib <> '') then
+      begin
+        try
+          str := rcs.GetDllVersion();
+        except
+          on E: Exception do
+          begin
+            str := 'nelze získat';
+            AppEvents.LogException(E, 'rcs'+IntToStr(rcsi)+'.GetDllVersion');
+          end;
+        end;
+      end;
+      li.SubItems.Add(str);
     end;
-  end;
 
-  try
-    if (RCSi.Opened) then
-      Self.L_VRCSUSB.Caption := RCSi.GetDeviceVersion()
+    begin
+      var str: string := '-';
+      try
+        if (rcs.lib <> '') then
+        begin
+          if (rcs.NoExOpened()) then
+            str := rcs.GetDeviceVersion()
+          else
+            str := 'zařízení uzavřeno';
+        end;
+      except
+        on E: Exception do
+        begin
+          str := 'nelze získat';
+          AppEvents.LogException(E, 'rcs'+IntToStr(rcsi)+'.GetDeviceVersion');
+        end;
+      end;
+      li.SubItems.Add(str);
+    end;
+
+    if (rcs.lib <> '') then
+      li.SubItems.Add(rcs.apiVersionStr())
     else
-      Self.L_VRCSUSB.Caption := 'zařízení uzavřeno';
-  except
-    on E: Exception do
-    begin
-      Self.L_VRCSUSB.Caption := 'nelze získat';
-      AppEvents.LogException(E, 'RCS.GetDeviceVersion');
-    end;
+      li.SubItems.Add('-');
   end;
 end;
 
