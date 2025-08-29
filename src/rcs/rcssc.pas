@@ -63,6 +63,7 @@ type
     function AllStarted(): Boolean;
     function Started(system: Cardinal): Boolean; overload;
     function Started(addr: TRCSsAddr): Boolean; overload;
+    procedure EmergencyCloseAll();
 
     function AnyRCSState(state: TRCSState): Boolean;
     function AnyRCSStateGTE(state: TRCSState): Boolean;
@@ -301,6 +302,19 @@ end;
 function TRCSs.Started(addr: TRCSsAddr): Boolean;
 begin
   Result := Self.Started(addr.system);
+end;
+
+procedure TRCSs.EmergencyCloseAll();
+begin
+  for var i: Integer := 0 to _RCSS_MAX do
+  begin
+    try
+      if (Self.m_rcss[i].NoExOpened()) then
+        Self.m_rcss[i].Close();
+    except
+
+    end;
+  end;
 end;
 
 function TRCSs.AnyRCSState(state: TRCSState): Boolean;

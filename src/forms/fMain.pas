@@ -142,8 +142,8 @@ type
     P_St_Left: TPanel;
     E_dataload_spnl: TEdit;
     TS_Zesilovace: TTabSheet;
-    LV_Zesilovace: TListView;
-    P_zes_pozadi: TPanel;
+    LV_Boosters: TListView;
+    P_bst_bg: TPanel;
     P_Zes_Right: TPanel;
     L_Zes_Napajeni: TLabel;
     L_Zes_OK: TLabel;
@@ -153,7 +153,7 @@ type
     E_dataload_zes: TEdit;
     TS_Users: TTabSheet;
     LV_Users: TListView;
-    P_Users_pozadi: TPanel;
+    P_Users_Bg: TPanel;
     P_Users_Left: TPanel;
     E_dataload_users: TEdit;
     TS_RCS0: TTabSheet;
@@ -257,7 +257,6 @@ type
     P_dataload_rcs: TPanel;
     CHB_RCS0_Show_Only_Active: TCheckBox;
     N11: TMenuItem;
-    CHB_log_rcs: TCheckBox;
     N12: TMenuItem;
     MI_Trk_Options: TMenuItem;
     N13: TMenuItem;
@@ -325,6 +324,10 @@ type
     CHB_RCS3_Show_Only_Active: TCheckBox;
     LV_RCS2_State: TListView;
     LV_RCS3_State: TListView;
+    CHB_RCS0_Log: TCheckBox;
+    CHB_RCS1_Log: TCheckBox;
+    CHB_RCS2_Log: TCheckBox;
+    CHB_RCS3_Log: TCheckBox;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -354,10 +357,10 @@ type
     procedure LV_ClientsCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure PC_1Change(Sender: TObject);
-    procedure LV_ZesilovaceDblClick(Sender: TObject);
+    procedure LV_BoostersDblClick(Sender: TObject);
     procedure B_zes_addClick(Sender: TObject);
     procedure B_zes_deleteClick(Sender: TObject);
-    procedure LV_ZesilovaceCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+    procedure LV_BoostersCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure LV_HVChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure LV_HVDblClick(Sender: TObject);
@@ -376,7 +379,7 @@ type
       var DefaultDraw: Boolean);
     procedure LV_log_lnetCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
-    procedure LV_ZesilovaceChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+    procedure LV_BoostersChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure LV_JCChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure MI_Save_configClick(Sender: TObject);
     procedure LB_LogDblClick(Sender: TObject);
@@ -419,7 +422,7 @@ type
     procedure LV_JCKeyPress(Sender: TObject; var Key: Char);
     procedure LV_MultiJCKeyPress(Sender: TObject; var Key: Char);
     procedure LV_UsersKeyPress(Sender: TObject; var Key: Char);
-    procedure LV_ZesilovaceKeyPress(Sender: TObject; var Key: Char);
+    procedure LV_BoostersKeyPress(Sender: TObject; var Key: Char);
     procedure LV_HVKeyPress(Sender: TObject; var Key: Char);
     procedure B_ClearStatsClick(Sender: TObject);
     procedure B_HVStats_ExportClick(Sender: TObject);
@@ -433,7 +436,6 @@ type
     procedure B_AB_DeleteClick(Sender: TObject);
     procedure LV_ABChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure CHB_RCS0_Show_Only_ActiveClick(Sender: TObject);
-    procedure CHB_log_rcsClick(Sender: TObject);
     procedure A_Trk_Lib_CfgExecute(Sender: TObject);
     procedure MI_Trk_UpdateClick(Sender: TObject);
     procedure A_Turnoff_FunctionsExecute(Sender: TObject);
@@ -453,7 +455,7 @@ type
     procedure LV_HVKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure LV_SoupravyKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure LV_ZesilovaceKeyDown(Sender: TObject; var Key: Word;
+    procedure LV_BoostersKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure LV_UsersKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -468,6 +470,7 @@ type
     procedure A_RCSs_CloseExecute(Sender: TObject);
     procedure A_RCSs_GoExecute(Sender: TObject);
     procedure A_RCSs_StopExecute(Sender: TObject);
+    procedure CHB_RCS0_LogClick(Sender: TObject);
 
   private
     call_method: TNotifyEvent;
@@ -506,6 +509,7 @@ type
 
   public
     CHB_RCSs_Show_Only_Active: array [0..TRCSs._RCSS_MAX] of TCheckBox;
+    CHB_RCSs_Log: array [0..TRCSs._RCSS_MAX] of TCheckBox;
 
     autostart: record
       goTime: TDateTime;
@@ -1103,6 +1107,11 @@ begin
   Self.CHB_RCSs_Show_Only_Active[1] := Self.CHB_RCS1_Show_Only_Active;
   Self.CHB_RCSs_Show_Only_Active[2] := Self.CHB_RCS2_Show_Only_Active;
   Self.CHB_RCSs_Show_Only_Active[3] := Self.CHB_RCS3_Show_Only_Active;
+
+  Self.CHB_RCSs_Log[0] := Self.CHB_RCS0_Log;
+  Self.CHB_RCSs_Log[1] := Self.CHB_RCS1_Log;
+  Self.CHB_RCSs_Log[2] := Self.CHB_RCS2_Log;
+  Self.CHB_RCSs_Log[3] := Self.CHB_RCS3_Log;
 end;
 
 // --- events from RCS lib begin ---
@@ -2037,7 +2046,7 @@ begin
     RCSTableData[rcsi] := TRCSTableData.Create(Self.LV_RCSs_State[rcsi], RCSs[rcsi]);
   TrainTableData := TTrainTableData.Create(Self.LV_Soupravy);
   HVTableData := THVTableData.Create(Self.LV_HV);
-  ZesTableData := TZesTableData.Create(Self.LV_Zesilovace);
+  ZesTableData := TZesTableData.Create(Self.LV_Boosters);
   ORsTableData := TORsTableData.Create(Self.LV_Stanice);
   MultiJCTableData := TMultiJCTableData.Create(Self.LV_MultiJC);
 
@@ -2123,14 +2132,7 @@ begin
           end;
         end;
 
-        try
-          if (RCSi.started) then
-            RCSi.Stop();
-          if (RCSi.opened) then
-            RCSi.Close();
-        except
-
-        end;
+        RCSs.EmergencyCloseAll();
       end;
 
   end; // case
@@ -2164,14 +2166,7 @@ begin
       end;
     end;
 
-    try
-      if (RCSi.started) then
-        RCSi.Stop();
-      if (RCSi.opened) then
-        RCSi.Close();
-    except
-
-    end;
+    RCSs.EmergencyCloseAll();
 
     Self.CloseMessage := false;
     Self.NUZClose := true;
@@ -2349,7 +2344,9 @@ begin
 
       ini.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-file-loglevel', Self.CB_global_loglevel_file.ItemIndex);
       ini.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-table-loglevel', Self.CB_global_loglevel_table.ItemIndex);
-      ini.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'rcs', Self.CHB_log_rcs.Checked);
+      ini.DeleteKey(_INIDATA_PATHS_LOG_SECTION, 'rcs'); // old key
+      for var i: Integer := 0 to RCSs._RCSS_MAX do
+        ini.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'rcs'+IntToStr(i), Self.CHB_RCSs_Log[i].Checked);
       ini.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'auth', Self.CHB_log_auth.Checked);
 
       ini.UpdateFile();
@@ -2774,13 +2771,13 @@ end;
 procedure TF_Main.B_zes_deleteClick(Sender: TObject);
 var pozice: Integer;
 begin
-  pozice := LV_Zesilovace.ItemIndex;
+  pozice := LV_Boosters.ItemIndex;
   Beep;
   if (StrMessageBox('Opravdu chcete smazat zesilovač ' + Boosters.sorted[pozice].name + '?',
     'Mazání zesilovace', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
   begin
     Boosters.Remove(Boosters.sorted[pozice].id);
-    LV_Zesilovace.Items.Delete(pozice);
+    LV_Boosters.Items.Delete(pozice);
   end; // if MessageBox
 end;
 
@@ -2866,9 +2863,10 @@ begin
   Logging.auth_logging := Self.CHB_Log_Auth.Checked;
 end;
 
-procedure TF_Main.CHB_log_rcsClick(Sender: TObject);
+procedure TF_Main.CHB_RCS0_LogClick(Sender: TObject);
 begin
-  RCSi.logEnabled := Self.CHB_log_rcs.Checked;
+  var rcsi: Integer := TCheckBox(Sender).Tag;
+  RCSs[rcsi].logEnabled := TCheckBox(Sender).Checked;
 end;
 
 procedure TF_Main.CHB_RCS0_Show_Only_ActiveClick(Sender: TObject);
@@ -3065,10 +3063,14 @@ begin
   try
     Self.CB_global_loglevel_file.ItemIndex := inidata.ReadInteger(_INIDATA_PATHS_LOG_SECTION, 'main-file-loglevel', 3);
     Self.CB_global_loglevel_table.ItemIndex := inidata.ReadInteger(_INIDATA_PATHS_LOG_SECTION, 'main-table-loglevel', 3);
-    Self.CHB_log_rcs.Checked := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'rcs', false);
+    for var i: Integer := 0 to RCSs._RCSS_MAX do
+    begin
+      var log: Boolean := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'rcs'+IntToStr(i), false);
+      Self.CHB_RCSs_Log[i].Checked := log;
+      RCSs[i].logEnabled := log;
+    end;
     Self.CHB_log_auth.Checked := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'auth', false);
 
-    RCSi.logEnabled := Self.CHB_log_rcs.Checked;
     Logging.auth_logging := Self.CHB_Log_Auth.Checked;
   finally
     inidata.Free();
@@ -3404,9 +3406,9 @@ begin
     Self.LV_UsersDblClick(LV_Blocks);
 end;
 
-procedure TF_Main.LV_ZesilovaceChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_Main.LV_BoostersChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  B_zes_delete.Enabled := LV_Zesilovace.Selected <> nil;
+  B_zes_delete.Enabled := LV_Boosters.Selected <> nil;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3754,44 +3756,44 @@ begin
     Self.LV_HVDblClick(LV_Blocks);
 end;
 
-procedure TF_Main.LV_ZesilovaceCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+procedure TF_Main.LV_BoostersCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
-  if ((not RCSi.NoExStarted()) or (not Boosters.sorted[Item.Index].rcsPresent)) then
+  if (not Boosters.sorted[Item.Index].rcsPresent) then
   begin
-    LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
+    LV_Boosters.Canvas.Brush.Color := _TABLE_COLOR_GRAY;
   end else begin
     if (Boosters.sorted[Item.Index].power = TBoosterSignal.ok) then
     begin
       if (Boosters.sorted[Item.Index].overload = TBoosterSignal.ok) then
       begin
-        LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
+        LV_Boosters.Canvas.Brush.Color := _TABLE_COLOR_GREEN;
       end else begin
-        LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_RED;
+        LV_Boosters.Canvas.Brush.Color := _TABLE_COLOR_RED;
       end;
     end else begin
-      LV_Zesilovace.Canvas.Brush.Color := _TABLE_COLOR_BLUE;
+      LV_Boosters.Canvas.Brush.Color := _TABLE_COLOR_BLUE;
     end;
   end; // if not Zarizeni.Start
 end;
 
-procedure TF_Main.LV_ZesilovaceDblClick(Sender: TObject);
+procedure TF_Main.LV_BoostersDblClick(Sender: TObject);
 begin
-  if (LV_Zesilovace.Selected <> nil) then
-    F_Booster_Edit.EditBooster(Boosters.sorted[LV_Zesilovace.ItemIndex]);
+  if (LV_Boosters.Selected <> nil) then
+    F_Booster_Edit.EditBooster(Boosters.sorted[LV_Boosters.ItemIndex]);
 end;
 
-procedure TF_Main.LV_ZesilovaceKeyDown(Sender: TObject; var Key: Word;
+procedure TF_Main.LV_BoostersKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if ((Key = VK_DELETE) and (Self.B_zes_delete.Enabled)) then
     Self.B_zes_deleteClick(Self);
 end;
 
-procedure TF_Main.LV_ZesilovaceKeyPress(Sender: TObject; var Key: Char);
+procedure TF_Main.LV_BoostersKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
-    Self.LV_ZesilovaceDblClick(LV_Blocks);
+    Self.LV_BoostersDblClick(LV_Blocks);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
