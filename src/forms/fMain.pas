@@ -2089,31 +2089,14 @@ procedure TF_Main.AE_1Message(var Msg: tagMSG; var Handled: Boolean);
 begin
   Handled := false;
 
-  // STISK KLAVESY
   case (Msg.Message) of
-    WM_KEYDOWN:
+    WM_KEYDOWN: // key press
       begin
         Handled := false;
         RegCollector.KeyPress(Msg.wParam, Handled);
-        if (Handled) then
-          Exit();
-
-        case (Msg.wParam) of
-          VK_F9:
-            begin
-              try
-                RCSi.HideConfigDialog();
-              except
-                on E: Exception do
-                  ExceptionMessageBox('Nelze skrýt konfigurační dialog RCS', E, 'Varování',
-                    MB_OK OR MB_ICONWARNING);
-              end;
-            end;
-
-          VK_ESCAPE:
-            if (F_About.Showing) then
-              F_About.Close;
-        end; // case
+        // if (Handled) then
+        //  Exit();
+        // continue with the rest of handling...
       end;
   end;
 end;
