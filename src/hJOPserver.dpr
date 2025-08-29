@@ -264,7 +264,6 @@ uses
   Application.Run();
 
   FreeAndNil(trakce);
-  FreeAndNil(RCSi);
   FreeAndNIl(RCSs);
  end.
 

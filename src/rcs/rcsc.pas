@@ -136,9 +136,6 @@ type
 
 function RCSAddrComparer(): IComparer<TRCSAddr>;
 
-var
-  RCSi: TRCS;
-
 implementation
 
 uses fMain, diagnostics, GetSystems, BlockDb, Block, BlockTurnout, BlockTrack,
@@ -583,14 +580,6 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-
-initialization
-
-RCSi := TRCS.Create(8); // TODO remove
-
-finalization
-
-// Free in hJOPserver.dpr, because we must gurantee preload gets destructed after all shared libraries
 
 end.// unit
 
