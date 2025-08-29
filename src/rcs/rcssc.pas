@@ -57,8 +57,11 @@ type
 
     procedure LoadLib(system: Cardinal; libFn: string);
 
-    function NoExStarted(): Boolean;
-    function NoExOpened(): Boolean;
+    function AllOpened(): Boolean;
+    function AllStarted(): Boolean;
+    function Started(system: Cardinal): Boolean; overload;
+    function Started(addr: TRCSsAddr): Boolean; overload;
+
     function AnyRCSState(state: TRCSState): Boolean;
     function AnyRCSStateGTE(state: TRCSState): Boolean;
     function AllRCSsState(state: TRCSState): Boolean;
@@ -266,7 +269,15 @@ begin
   Result := False;
 end;
 
-function TRCSs.NoExStarted(): Boolean;
+function TRCSs.AllOpened(): Boolean;
+begin
+  for var i: Integer := 0 to _RCSS_MAX do
+    if ((Self.m_rcss[i].libLoaded) and (not Self.m_rcss[i].NoExOpened())) then
+      Exit(False);
+  Result := True;
+end;
+
+function TRCSs.AllStarted(): Boolean;
 begin
   for var i: Integer := 0 to _RCSS_MAX do
     if ((Self.m_rcss[i].libLoaded) and (not Self.m_rcss[i].NoExStarted())) then
@@ -274,12 +285,16 @@ begin
   Result := True;
 end;
 
-function TRCSs.NoExOpened(): Boolean;
+function TRCSs.Started(system: Cardinal): Boolean;
 begin
-  for var i: Integer := 0 to _RCSS_MAX do
-    if ((Self.m_rcss[i].libLoaded) and (not Self.m_rcss[i].NoExOpened())) then
-      Exit(False);
-  Result := True;
+  if (system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[system].NoExStarted();
+end;
+
+function TRCSs.Started(addr: TRCSsAddr): Boolean;
+begin
+  Result := Self.Started(addr.system);
 end;
 
 function TRCSs.AnyRCSState(state: TRCSState): Boolean;
@@ -492,7 +507,9 @@ end;
 
 function TRCSs.IsModule(addr: TRCSsSystemModule): Boolean;
 begin
-
+  if (addr.system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[addr.system].IsModule(addr.module);
 end;
 
 function TRCSs.IsModuleFailure(addr: TRCSsAddr): Boolean;
@@ -504,7 +521,9 @@ end;
 
 function TRCSs.IsModuleFailure(addr: TRCSsSystemModule): Boolean;
 begin
-
+  if (addr.system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[addr.system].IsModuleFailure(addr.module);
 end;
 
 function TRCSs.IsModuleError(addr: TRCSsAddr): Boolean;
@@ -516,7 +535,9 @@ end;
 
 function TRCSs.IsModuleError(addr: TRCSsSystemModule): Boolean;
 begin
-
+  if (addr.system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[addr.system].IsModuleError(addr.module);
 end;
 
 function TRCSs.IsModuleWarning(addr: TRCSsAddr): Boolean;
@@ -528,7 +549,9 @@ end;
 
 function TRCSs.IsModuleWarning(addr: TRCSsSystemModule): Boolean;
 begin
-
+  if (addr.system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[addr.system].IsModuleWarning(addr.module);
 end;
 
 function TRCSs.IsNonFailedModule(addr: TRCSsAddr): Boolean;

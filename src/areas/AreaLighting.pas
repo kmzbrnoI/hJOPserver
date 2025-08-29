@@ -2,12 +2,12 @@ unit AreaLighting;
 
 interface
 
-uses RCSc, Classes, ownStrUtils, SysUtils;
+uses RCSc, RCSsc, RCSIFace, Classes, ownStrUtils, SysUtils;
 
 type
   TAreaLighting = class
     name: string;
-    rcsAddr: TRCSAddr;
+    rcsAddr: TRCSsAddr;
     default_state: Boolean;
 
     constructor Create(spnlitem: string);
@@ -28,22 +28,14 @@ begin
 end;
 
 procedure TAreaLighting.Parse(spnlitem: string);
-var strs: TStrings;
 begin
-  strs := TStringList.Create();
-  try
-    ExtractStringsEx(['|', ','], [], spnlitem, strs);
-    Self.name := strs[2];
-    Self.rcsAddr := TRCS.rcsAddr(StrToInt(strs[0]), StrToInt(strs[1]));
-  finally
-    strs.Free();
-  end;
+  Self.rcsAddr.Load(spnlitem);
 end;
 
 function TAreaLighting.GetActive(): Boolean;
 begin
   try
-    Result := (RCSi.GetOutput(Self.rcsAddr) = 1);
+    Result := (RCSs.GetOutputState(Self.rcsAddr) = TRCSOutputState.osEnabled);
   except
     Result := false;
   end;

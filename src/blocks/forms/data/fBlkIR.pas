@@ -24,7 +24,6 @@ type
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure SE_moduleExit(Sender: TObject);
   private
     isNewBlock: Boolean;
     block: TBlkIR;
@@ -62,11 +61,6 @@ begin
   Self.ShowModal();
 end;
 
-procedure TF_BlkIR.SE_moduleExit(Sender: TObject);
-begin
-  Self.SE_port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_module.Value, Self.SE_port.Value);
-end;
-
 procedure TF_BlkIR.NewOpenForm();
 begin
   Self.E_Name.Text := '';
@@ -74,7 +68,6 @@ begin
   Self.SE_system.Value := 0;
   Self.SE_module.Value := 0;
   Self.SE_port.Value := 0;
-  Self.SE_moduleExit(Self);
 
   Self.Caption := 'Nový blok IR';
 end;
@@ -89,8 +82,6 @@ begin
   Self.SE_system.Value := settings.RCSAddr.system;
   Self.SE_module.Value := settings.RCSAddr.module;
   Self.SE_port.Value := settings.RCSAddr.port;
-
-  Self.SE_moduleExit(Self);
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;

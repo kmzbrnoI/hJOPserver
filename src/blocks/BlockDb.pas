@@ -125,9 +125,6 @@ type
     procedure BlkNameChanged(previous: string; index: Integer);
     procedure ClearPOdj();
 
-    class function SEInPortMaxValue(addr: Integer; currentValue: Integer): Integer;
-    class function SEOutPortMaxValue(addr: Integer; currentValue: Integer): Integer;
-
     procedure GetPtData(json: TJsonObject; includeState: Boolean; Area: TArea = nil; typ: TBlkType = btAny);
 
     procedure NouzZaverZrusen(Sender: TBlk);
@@ -1201,27 +1198,6 @@ begin
       TBlkTurnout(Blk).SetPosition(plus);
 end;
 
-/// /////////////////////////////////////////////////////////////////////////////
-
-class function TBlocks.SEInPortMaxValue(addr: Integer; currentValue: Integer): Integer;
-var tmpMax: Integer;
-begin
-  tmpMax := Max(Integer(RCSi.GetModuleInputsCountSafe(addr)) - 1, 0);
-  if (currentValue > tmpMax) then
-    Result := TRCS._MODULE_DEFAULT_IO-1
-  else
-    Result := tmpMax;
-end;
-
-class function TBlocks.SEOutPortMaxValue(addr: Integer; currentValue: Integer): Integer;
-var tmpMax: Integer;
-begin
-  tmpMax := Max(Integer(RCSi.GetModuleOutputsCountSafe(addr)) - 1, 0);
-  if (currentValue > tmpMax) then
-    Result := TRCS._MODULE_DEFAULT_IO-1
-  else
-    Result := tmpMax;
-end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

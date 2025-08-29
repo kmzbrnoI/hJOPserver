@@ -39,7 +39,6 @@ type
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_ContollerClick(Sender: TObject);
-    procedure SE_Cont_ModuleExit(Sender: TObject);
   private
     isNewBlock: Boolean;
     block: TBlkDisconnector;
@@ -87,11 +86,6 @@ begin
   Self.CommonOpenForm();
   Self.NewOpenForm();
   Self.ShowModal();
-end;
-
-procedure TF_BlkDisconnector.SE_Cont_ModuleExit(Sender: TObject);
-begin
-  Self.SE_Cont_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_Cont_Module.Value, Self.SE_Cont_Port.Value);
 end;
 
 procedure TF_BlkDisconnector.NewOpenForm();

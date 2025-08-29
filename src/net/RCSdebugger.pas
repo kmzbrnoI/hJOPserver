@@ -24,7 +24,7 @@
 
 interface
 
-uses SysUtils, RCSc, Generics.Collections, Classes, IdContext;
+uses SysUtils, RCSc, RCSsc, Generics.Collections, Classes, IdContext;
 
 type
   TRCSdModule = record
@@ -431,7 +431,7 @@ begin
   begin
     var str := '';
     for var i := 0 to RCSi.maxModuleAddr do
-      if (RCSi.IsModule(i)) then
+      if (RCSs.IsModule(RCSs.RCSsSystemModule(0, i))) then // TODO
         str := str + '{' + TRCSd.GetRCSInfo(i) + '}';
     PanelServer.SendLn(Self.conn, '-;RCSd;INFO;{' + str + '}');
   end;

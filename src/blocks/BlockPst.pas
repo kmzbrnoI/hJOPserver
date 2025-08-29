@@ -490,9 +490,6 @@ end;
 procedure TBlkPst.CheckInputs();
 var take, release: TRCSInputState;
 begin
-  if (not RCSi.Started) then
-    Exit();
-
   take := TRCSInputState.failure;
   release := TRCSInputState.failure;
   try
@@ -694,7 +691,7 @@ begin
   begin
     Result := Result + ite(Self.emLock, '!ZAV<,', 'ZAV>,');
 
-    if (RCSi.simulation) then
+    if ((RCSs.IsSimulation(Self.m_settings.rcsInTake)) and (RCSs.IsSimulation(Self.m_settings.rcsInRelease))) then
     begin
       Result := Result + '-,';
 
@@ -971,7 +968,7 @@ end;
 
 procedure TBlkPst.ShowIndication();
 begin
-  if (not RCSi.Started) then
+  if ((not RCSs.Started(Self.m_settings.rcsOutTaken)) or (not RCSs.Started(Self.m_settings.rcsOutActive))) then
     Exit();
 
   try

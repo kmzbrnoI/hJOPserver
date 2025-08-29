@@ -135,7 +135,6 @@ object F_BlkIR: TF_BlkIR
       MinValue = 0
       TabOrder = 1
       Value = 1
-      OnExit = SE_moduleExit
     end
     object SE_system: TSpinEdit
       Left = 216
@@ -150,7 +149,6 @@ object F_BlkIR: TF_BlkIR
       MinValue = 0
       TabOrder = 0
       Value = 1
-      OnExit = SE_moduleExit
     end
   end
   object B_Storno: TButton

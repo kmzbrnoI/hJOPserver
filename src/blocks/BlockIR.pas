@@ -70,7 +70,7 @@ begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
   Self.m_settings.RCSAddr := RCSsFromIni(ini_tech, section, 'RCS0', 'RCSb0', 'RCSp0');
-  RCSi.SetNeeded(Self.m_settings.RCSAddr.module);
+  RCSs.SetNeeded(Self.m_settings.RCSAddr);
 end;
 
 procedure TBlkIR.SaveData(ini_tech: TMemIniFile; const section: string);

@@ -274,7 +274,6 @@ object F_BlkDisconnector: TF_BlkDisconnector
       MinValue = 0
       TabOrder = 2
       Value = 1
-      OnExit = SE_Cont_ModuleExit
     end
     object SE_Cont_Port: TSpinEdit
       Left = 239
@@ -320,7 +319,6 @@ object F_BlkDisconnector: TF_BlkDisconnector
       MinValue = 0
       TabOrder = 4
       Value = 1
-      OnExit = SE_Cont_ModuleExit
     end
   end
   object CB_mode: TComboBox

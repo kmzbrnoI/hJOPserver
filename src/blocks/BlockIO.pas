@@ -150,12 +150,12 @@ begin
   if (Self.isRCSinput) then
   begin
     Self.RCSsRegister(Self.m_settings.RCSinput);
-    RCSi.SetNeeded(Self.m_settings.RCSinput.module);
+    RCSs.SetNeeded(Self.m_settings.RCSinput);
   end;
   if (Self.isRCSOutput) then
   begin
     Self.RCSsRegister(Self.m_settings.RCSoutput);
-    RCSi.SetNeeded(Self.m_settings.RCSoutput.module);
+    RCSs.SetNeeded(Self.m_settings.RCSoutput);
   end;
 end;
 

@@ -775,10 +775,10 @@ begin
   end;
 
   try
-    if ((inp.plus = failure) or (inp.minus = failure) or (not RCSi.IsModule(Self.rcsOutPlus.module)) or
-      (not RCSi.IsModule(Self.rcsOutMinus.module)) or
-      ((coupling <> nil) and ((not RCSi.IsModule(coupling.rcsOutPlus.module)) or
-      (not RCSi.IsModule(coupling.rcsOutMinus.module))))) then
+    if ((inp.plus = failure) or (inp.minus = failure) or (not RCSs.IsModule(Self.rcsOutPlus)) or
+      (not RCSs.IsModule(Self.rcsOutMinus)) or
+      ((coupling <> nil) and ((not RCSs.IsModule(coupling.rcsOutPlus)) or
+      (not RCSs.IsModule(coupling.rcsOutMinus))))) then
     begin
       if (Self.state.position <> TTurnoutPosition.disabled) then
       begin

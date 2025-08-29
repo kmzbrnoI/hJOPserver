@@ -100,7 +100,7 @@ type
     m_state: TAreaState;
     m_next_countdown_id: Byte;
     countdowns: TDictionary<Byte, TAreaCountdown>;
-    RCSs: TAreaRCSs; // list of RCS addresses in area (based on blocks)
+    m_rcss: TAreaRCSs; // list of RCS addresses in area (based on blocks)
 
     procedure PanelDbAdd(Panel: TIDContext; rights: TAreaRights; user: string);
     procedure PanelDbRemove(Panel: TIDContext; contextDestroyed: Boolean = false);
@@ -314,7 +314,7 @@ begin
 
   Self.m_data.lights := TObjectList<TAreaLighting>.Create();
   Self.connected := TList<TAreaPanel>.Create();
-  Self.RCSs := TAreaRCSs.Create();
+  Self.m_rcss := TAreaRCSs.Create();
 
   Self.m_state.dkClickCallback := nil;
   Self.m_state.regPlease := nil;
@@ -337,7 +337,7 @@ begin
   Self.m_data.lights.Free();
   Self.countdowns.Free();
   Self.connected.Free();
-  Self.RCSs.Free();
+  Self.m_rcss.Free();
 
   inherited;
 end;
@@ -1243,8 +1243,8 @@ end;
 procedure TArea.RCSAdd(addr: TRCSsSystemModule);
 begin
   try
-    if (not Self.RCSs.modules.ContainsKey(addr)) then
-      Self.RCSs.modules.Add(addr, TAreaRCSModule.Create(false));
+    if (not Self.m_rcss.modules.ContainsKey(addr)) then
+      Self.m_rcss.modules.Add(addr, TAreaRCSModule.Create(false));
   except
 
   end;
@@ -1253,11 +1253,11 @@ end;
 procedure TArea.RCSFail(addr: TRCSsSystemModule);
 begin
   try
-    if (not Self.RCSs.modules.ContainsKey(addr)) then
+    if (not Self.m_rcss.modules.ContainsKey(addr)) then
       Exit();
-    Self.RCSs.modules[addr].failed := true;
-    Self.RCSs.failure := true;
-    Self.RCSs.lastFailureTime := Now;
+    Self.m_rcss.modules[addr].failed := true;
+    Self.m_rcss.failure := true;
+    Self.m_rcss.lastFailureTime := Now;
   except
 
   end;
@@ -1265,23 +1265,23 @@ end;
 
 procedure TArea.RCSUpdate();
 begin
-  if (not Self.RCSs.failure) then
+  if (not Self.m_rcss.failure) then
     Exit();
 
-  if ((Self.RCSs.lastFailureTime + EncodeTime(0, 0, 0, 500)) < Now) then
+  if ((Self.m_rcss.lastFailureTime + EncodeTime(0, 0, 0, 500)) < Now) then
   begin
     var str: string := 'Výpadek RCS modulu ';
-    for var addr: TRCSsSystemModule in Self.RCSs.modules.Keys do
+    for var addr: TRCSsSystemModule in Self.m_rcss.modules.Keys do
     begin
-      if (Self.RCSs.modules[addr].failed) then
+      if (Self.m_rcss.modules[addr].failed) then
       begin
         str := str + IntToStr(addr.system)+':'+IntToStr(addr.module) + ', ';
-        Self.RCSs.modules[addr].failed := false;
+        Self.m_rcss.modules[addr].failed := false;
       end;
     end;
 
     str := LeftStr(str, Length(str) - 2);
-    Self.RCSs.failure := false;
+    Self.m_rcss.failure := false;
 
     for var panel: TAreaPanel in Self.connected do
       if (panel.rights >= read) then
@@ -1309,8 +1309,7 @@ begin
 
   str := '';
   for var i: Integer := 0 to Self.m_data.lights.Count - 1 do
-    str := str + '(' + Self.m_data.lights[i].name + ' - ' + IntToStr(Self.m_data.lights[i].rcsAddr.module) + ':' +
-      IntToStr(Self.m_data.lights[i].rcsAddr.port) + ')';
+    str := str + '(' + Self.m_data.lights[i].name + ' - ' + Self.m_data.lights[i].rcsAddr.ToString() + ')';
   LI.SubItems.Strings[5] := str;
 end;
 
@@ -1335,7 +1334,7 @@ begin
     if (light.name = id) then
     begin
       try
-        RCSi.SetOutput(light.rcsAddr, ownConvert.BoolToInt(state));
+        RCSs.SetOutput(light.rcsAddr, ownConvert.BoolToInt(state));
         light.default_state := state;
       except
 
@@ -1349,8 +1348,8 @@ procedure TArea.OsvInit();
 begin
   try
     for var light: TAreaLighting in Self.m_data.lights do
-      if (RCSi.IsModule(light.rcsAddr.module)) then
-        RCSi.SetOutput(light.rcsAddr, ownConvert.BoolToInt(light.default_state));
+      if (RCSs.IsModule(light.rcsAddr)) then
+        RCSs.SetOutput(light.rcsAddr, ownConvert.BoolToInt(light.default_state));
   except
 
   end;
