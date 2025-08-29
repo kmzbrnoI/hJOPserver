@@ -22,6 +22,9 @@ type
     system: Cardinal;
     module: Cardinal;
     class operator Equal(a, b: TRCSsSystemModule): Boolean;
+    procedure Load(str: string);
+    function ToString(): string;
+    function ToStringAvoidSystem0(): string;
   end;
 
   TRCSsAddrOptional = record
@@ -93,12 +96,6 @@ type
 
     function GetOutput(addr: TRCSsAddr): Integer; overload;
     function GetOutputState(addr: TRCSsAddr): TRCSOutputState; overload;
-
-    procedure AddInputChangeEvent(module: Cardinal; event: TRCSModuleChangeEvent);
-    procedure RemoveInputChangeEvent(event: TRCSModuleChangeEvent; module: Integer = -1);
-
-    procedure AddOutputChangeEvent(module: Cardinal; event: TRCSModuleChangeEvent);
-    procedure RemoveOutputChangeEvent(event: TRCSModuleChangeEvent; module: Integer = -1);
 
     function GetModuleInputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
     function GetModuleOutputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
@@ -247,6 +244,40 @@ end;
 class operator TRCSsSystemModule.Equal(a, b: TRCSsSystemModule): Boolean;
 begin
   Result := ((a.system = b.system) and (a.module = b.module));
+end;
+
+procedure TRCSsSystemModule.Load(str: string);
+var strs: TStrings;
+begin
+  strs := TStringList.Create();
+  try
+    ExtractStrings([':'], [], PChar(str), strs);
+    if (strs.Count = 1) then
+    begin
+      system := 0;
+      module := StrToInt(strs[0]);
+    end else if (strs.Count = 2) then begin
+      system := StrToInt(strs[0]);
+      module := StrToInt(strs[1]);
+    end else begin
+      raise Exception.Create('Unable to load RCSsSystemModule: '+str);
+    end;
+  finally
+    strs.Free();
+  end;
+end;
+
+function TRCSsSystemModule.ToString(): string;
+begin
+  Result := IntToStr(system) + ':' + IntToStr(module);
+end;
+
+function TRCSsSystemModule.ToStringAvoidSystem0(): string;
+begin
+  if (system = 0) then
+    Result := IntToStr(module)
+  else
+    Result := IntToStr(system) + ':' + IntToStr(module);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -498,26 +529,6 @@ begin
   if (addr.system > _RCSS_MAX) then
     raise EInvalidSystem.Create(addr.system);
   Result := Self.m_rcss[addr.system].GetOutputState(addr.module, addr.port);
-end;
-
-procedure TRCSs.AddInputChangeEvent(module: Cardinal; event: TRCSModuleChangeEvent);
-begin
-  // TODO
-end;
-
-procedure TRCSs.RemoveInputChangeEvent(event: TRCSModuleChangeEvent; module: Integer = -1);
-begin
-  // TODO
-end;
-
-procedure TRCSs.AddOutputChangeEvent(module: Cardinal; event: TRCSModuleChangeEvent);
-begin
-  // TODO
-end;
-
-procedure TRCSs.RemoveOutputChangeEvent(event: TRCSModuleChangeEvent; module: Integer = -1);
-begin
-  // TODO
 end;
 
 function TRCSs.GetModuleInputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;

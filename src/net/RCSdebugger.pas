@@ -28,7 +28,7 @@ uses SysUtils, RCSc, RCSsc, Generics.Collections, Classes, IdContext;
 
 type
   TRCSdModule = record
-    addr: Integer;
+    addr: TRCSsSystemModule;
     output_changed, input_changed: Boolean;
   end;
 
@@ -38,13 +38,13 @@ type
     modules: TList<TRCSdModule>; // seznam autorizovanych modulu klienta
     conn: TIdContext; // spojeni ke klientovi
 
-    procedure SendOutput(addr: Integer); // odesle stav vystupnich portu RCS \addr
-    procedure SendInput(addr: Integer); // odesle stav vstupnich portu RCS \addr
+    procedure SendOutput(addr: TRCSsSystemModule); // odesle stav vystupnich portu RCS \addr
+    procedure SendInput(addr: TRCSsSystemModule); // odesle stav vstupnich portu RCS \addr
 
-    function ModuleIndexOf(addr: Integer): Integer; // vrati index \addr adresy v seznamu modulu \modules
+    function ModuleIndexOf(addr: TRCSsSystemModule): Integer; // vrati index \addr adresy v seznamu modulu \modules
 
-    procedure OnRCSInputChange(Sender: TObject; board: Cardinal); // event z TRCS volany pri zmene RCS vstupu
-    procedure OnRCSOutputChange(Sender: TObject; board: Cardinal); // event z TRCS volany pri zmene RCS vystupu
+    procedure OnRCSInputChange(Sender: TObject; module: Cardinal); // event z TRCS volany pri zmene RCS vstupu
+    procedure OnRCSOutputChange(Sender: TObject; module: Cardinal); // event z TRCS volany pri zmene RCS vystupu
 
   public
     constructor Create(conn: TIdContext);
@@ -75,7 +75,7 @@ type
     procedure RemoveAllClients(); // smazani vsech RCSd klientu
     procedure Update(); // propagace stavu RCS k RCSd klientum
 
-    class function GetRCSInfo(board: Cardinal): string; // vraci INFO string
+    class function GetRCSInfo(addr: TRCSsSystemModule): string; // vraci INFO string
 
   end;
 
@@ -87,13 +87,15 @@ implementation
 {
   Popis TCP protokolu RCS debuggeru:
 
+  addr je buf cislo modulu (napr. 15) nebo cislo systemu : cislo modulu (napr. 0:15).
+
   @ server -> klient
   -;RCSd;AUTH;[ok,not];message                                                odpoved na autorizaci klienta
   -;RCSd;MOD-AUTH;addr;[ok,not]                                               odpoved na autorizaci RCS modulu
   -;RCSd;MODULE;addr;CHANGE;I;stav_vstupu                                     zmena stavu vstupu RCS modulu \addr
   -;RCSd;MODULE;addr;CHANGE;O;stav_vystupu                                    zmena stavu vystupu RCS modulu \addr
   -;RCSd;ERR;error_message                                                    chybova zprava
-  -;RCSd;INFO;board1, board2, ...                                             INFO o modulu (modulech)
+  -;RCSd;INFO;module1, module2, ...                                           INFO o modulu (modulech)
 
   @ klient -> server
   -;RCSd;AUTH;username;hashed_password                                        zadost o povoleni RCS debugger, je nutne se prihlasit rootem
@@ -101,7 +103,7 @@ implementation
   -;RCSd;RELEASE;addr                                                         uvolneni RCS modulu \addr
   -;RCSd;SETOUT;addr;port;stav                                                nastaveni vystupu \port RCS modulu \addr na stav \stav
   -;RCSd;UPDATE;addr;                                                         pozadavek na zaslani aktualniho stavu vsech portu RCS \addr
-  -;RCSd;LIST;                                                                zadost o info vsech existujicich RCS
+  -;RCSd;LIST;system                                                          zadost o info vsech existujicich RCS
   -;RCSd;INFO;addr                                                            zadost o info konkretniho RCS
 
   # stav_vstupu, stav_vystupu: az 16 cisel oddelenych "|"
@@ -238,25 +240,29 @@ end;
 
 destructor TRCSdClient.Destroy();
 begin
-  RCSi.RemoveInputChangeEvent(Self.OnRCSInputChange);
-  RCSi.RemoveInputChangeEvent(Self.OnRCSOutputChange);
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+  begin
+    RCSs[i].RemoveInputChangeEvent(Self.OnRCSInputChange);
+    RCSs[i].RemoveInputChangeEvent(Self.OnRCSOutputChange);
+  end;
   FreeAndNil(Self.modules);
   inherited;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSdClient.SendOutput(addr: Integer);
+procedure TRCSdClient.SendOutput(addr: TRCSsSystemModule);
 var str: string;
   max: Cardinal;
 begin
+  var rcs := RCSs[addr.system];
   str := '';
-  max := RCSi.GetModuleOutputsCountSafe(addr);
+  max := rcs.GetModuleOutputsCountSafe(addr.module);
 
   for var i := 0 to max - 1 do
   begin
     try
-      str := str + IntToStr(RCSi.GetOutput(addr, i)) + '|';
+      str := str + IntToStr(rcs.GetOutput(addr.module, i)) + '|';
     except
       on E: Exception do
       begin
@@ -265,20 +271,21 @@ begin
       end;
     end;
   end;
-  PanelServer.SendLn(Self.conn, '-;RCSd;MODULE;' + IntToStr(addr) + ';CHANGE;O;{' + str + '}');
+  PanelServer.SendLn(Self.conn, '-;RCSd;MODULE;' + addr.ToStringAvoidSystem0() + ';CHANGE;O;{' + str + '}');
 end;
 
-procedure TRCSdClient.SendInput(addr: Integer);
+procedure TRCSdClient.SendInput(addr: TRCSsSystemModule);
 var str: string;
   max: Cardinal;
 begin
+  var rcs := RCSs[addr.system];
   str := '';
-  max := RCSi.GetModuleInputsCountSafe(addr);
+  max := rcs.GetModuleInputsCountSafe(addr.module);
 
   for var i := 0 to max - 1 do
   begin
     try
-      str := str + IntToStr(Integer(RCSi.GetInput(addr, i))) + '|';
+      str := str + IntToStr(Integer(rcs.GetInput(addr.module, i))) + '|';
     except
       on E: Exception do
       begin
@@ -287,40 +294,38 @@ begin
       end;
     end;
   end;
-  PanelServer.SendLn(Self.conn, '-;RCSd;MODULE;' + IntToStr(addr) + ';CHANGE;I;{' + str + '}');
+  PanelServer.SendLn(Self.conn, '-;RCSd;MODULE;' + addr.ToStringAvoidSystem0() + ';CHANGE;I;{' + str + '}');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TRCSdClient.OnRCSInputChange(Sender: TObject; board: Cardinal);
+procedure TRCSdClient.OnRCSInputChange(Sender: TObject; module: Cardinal);
 var index: Integer;
-  module: TRCSdModule;
 begin
-  index := Self.ModuleIndexOf(board);
+  index := Self.ModuleIndexOf(RCSs.RCSsSystemModule(TRCS(Sender).systemI, module));
   if (index > -1) then
   begin
-    module := Self.modules[index];
-    module.input_changed := true;
-    Self.modules[index] := module;
+    var modl := Self.modules[index];
+    modl.input_changed := true;
+    Self.modules[index] := modl;
   end;
 end;
 
-procedure TRCSdClient.OnRCSOutputChange(Sender: TObject; board: Cardinal);
+procedure TRCSdClient.OnRCSOutputChange(Sender: TObject; module: Cardinal);
 var index: Integer;
-  module: TRCSdModule;
 begin
-  index := Self.ModuleIndexOf(board);
+  index := Self.ModuleIndexOf(RCSs.RCSsSystemModule(TRCS(Sender).systemI, module));
   if (index > -1) then
   begin
-    module := Self.modules[index];
-    module.output_changed := true;
-    Self.modules[index] := module;
+    var modl := Self.modules[index];
+    modl.output_changed := true;
+    Self.modules[index] := modl;
   end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TRCSdClient.ModuleIndexOf(addr: Integer): Integer;
+function TRCSdClient.ModuleIndexOf(addr: TRCSsSystemModule): Integer;
 begin
   Result := -1;
   for var i := 0 to Self.modules.Count - 1 do
@@ -356,9 +361,9 @@ procedure TRCSdClient.Parse(parsed: TStrings);
 begin
   if (parsed[2] = 'PLEASE') then
   begin
-    var addr: Integer;
+    var addr: TRCSsSystemModule;
     try
-      addr := StrToInt(parsed[3]);
+      addr.Load(parsed[3]);
     except
       PanelServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;' + parsed[2] + ';not;Neplatná adresa modulu');
       Exit();
@@ -372,18 +377,18 @@ begin
       module.output_changed := false;
       module.input_changed := false;
       Self.modules.Add(module);
-      RCSi.AddInputChangeEvent(addr, Self.OnRCSInputChange);
-      RCSi.AddOutputChangeEvent(addr, Self.OnRCSOutputChange);
-      PanelServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;' + IntToStr(addr) + ';ok');
+      RCSs[addr.system].AddInputChangeEvent(addr.module, Self.OnRCSInputChange);
+      RCSs[addr.system].AddOutputChangeEvent(addr.module, Self.OnRCSOutputChange);
+      PanelServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;' + addr.ToStringAvoidSystem0() + ';ok');
       Self.SendInput(addr);
       Self.SendOutput(addr);
     end;
 
   end else if (parsed[2] = 'RELEASE') then
   begin
-    var addr: Integer;
+    var addr: TRCSsSystemModule;
     try
-      addr := StrToInt(parsed[3]);
+      addr.Load(parsed[3]);
     except
       PanelServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
       Exit();
@@ -392,29 +397,29 @@ begin
     var index := Self.ModuleIndexOf(addr);
     if (index > -1) then
     begin
-      RCSi.RemoveInputChangeEvent(Self.OnRCSInputChange, addr);
-      RCSi.RemoveOutputChangeEvent(Self.OnRCSOutputChange, addr);
+      RCSs[addr.system].RemoveInputChangeEvent(Self.OnRCSInputChange, addr.module);
+      RCSs[addr.system].RemoveOutputChangeEvent(Self.OnRCSOutputChange, addr.module);
       Self.modules.Delete(index);
-      PanelServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;' + IntToStr(addr) + ';not');
+      PanelServer.SendLn(Self.conn, '-;RCSd;MOD-AUTH;' + addr.ToStringAvoidSystem0() + ';not');
     end;
 
   end else if (parsed[2] = 'SETOUT') then
   begin
-    var addr: Integer;
+    var addr: TRCSsSystemModule;
     try
-      addr := StrToInt(parsed[3]);
+      addr.Load(parsed[3]);
     except
       PanelServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
       Exit();
     end;
 
-    RCSi.SetOutput(addr, StrToInt(parsed[4]), StrToInt(parsed[5]));
+    RCSs[addr.system].SetOutput(addr.module, StrToInt(parsed[4]), StrToInt(parsed[5]));
 
   end else if (parsed[2] = 'UPDATE') then
   begin
-    var addr: Integer;
+    var addr: TRCSsSystemModule;
     try
-      addr := StrToInt(parsed[3]);
+      addr.Load(parsed[3]);
     except
       PanelServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
       Exit();
@@ -425,26 +430,45 @@ begin
 
   end else if (parsed[2] = 'INFO') then
   begin
-    PanelServer.SendLn(Self.conn, '-;RCSd;INFO;{{' + TRCSd.GetRCSInfo(StrToInt(parsed[3])) + '}}');
+    var addr: TRCSsSystemModule;
+    try
+      addr.Load(parsed[3]);
+    except
+      PanelServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatná adresa RCS modulu');
+      Exit();
+    end;
+
+    PanelServer.SendLn(Self.conn, '-;RCSd;INFO;{{' + TRCSd.GetRCSInfo(addr) + '}}');
 
   end else if (parsed[2] = 'LIST') then
   begin
+    var system: Integer := 0;
+    if (parsed.Count >= 4) then
+      system := StrToIntDef(parsed[3], 0);
+    if (system > RCSs._RCSS_MAX) then
+    begin
+      PanelServer.SendLn(Self.conn, '-;RCSd;ERR;Neplatný systém');
+      Exit();
+    end;
+
+    var rcs := RCSs[system];
     var str := '';
-    for var i := 0 to RCSi.maxModuleAddr do
-      if (RCSs.IsModule(RCSs.RCSsSystemModule(0, i))) then // TODO
-        str := str + '{' + TRCSd.GetRCSInfo(i) + '}';
+    for var i := 0 to rcs.maxModuleAddr do
+      if (rcs.IsModule(i)) then
+        str := str + '{' + TRCSd.GetRCSInfo(TRCSs.RCSsSystemModule(system, i)) + '}';
     PanelServer.SendLn(Self.conn, '-;RCSd;INFO;{' + str + '}');
   end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class function TRCSd.GetRCSInfo(board: Cardinal): string;
+class function TRCSd.GetRCSInfo(addr: TRCSsSystemModule): string;
 begin
-  Result := IntToStr(board) + '|';
+  var rcs: TRCS := RCSs[addr.system];
+  Result := addr.ToStringAvoidSystem0() + '|';
 
   try
-    Result := Result + RCSi.GetModuleName(board) + '|';
+    Result := Result + rcs.GetModuleName(addr.module) + '|';
   except
     on E: ERCSInvalidModuleAddr do
       Result := Result + '-|';
@@ -453,7 +477,7 @@ begin
   end;
 
   try
-    Result := Result + RCSi.GetModuleType(board) + '|';
+    Result := Result + rcs.GetModuleType(addr.module) + '|';
   except
     on E: ERCSInvalidModuleAddr do
       Result := Result + '-|';
@@ -462,7 +486,7 @@ begin
   end;
 
   try
-    case (RCSi.IsModule(board)) of
+    case (rcs.IsModule(addr.module)) of
       false:
         Result := Result + '0|';
       true:
@@ -473,7 +497,7 @@ begin
   end;
 
   try
-    Result := Result + RCSi.GetModuleFW(board) + '|';
+    Result := Result + rcs.GetModuleFW(addr.module) + '|';
   except
     on E: ERCSInvalidModuleAddr do
       Result := Result + '-|';
@@ -481,10 +505,10 @@ begin
       Result := Result + 'Nelze ziskat FW - vyjimka|';
   end;
 
-  for var port := 0 to RCSi.GetModuleInputsCountSafe(board) - 1 do
+  for var port := 0 to rcs.GetModuleInputsCountSafe(addr.module) - 1 do
   begin
     try
-      case (RCSi.GetInputType(board, port)) of
+      case (rcs.GetInputType(addr.module, port)) of
         TRCSIPortType.iptPlain:
           Result := Result + 'B';
         TRCSIPortType.iptIR:
@@ -496,10 +520,10 @@ begin
   end;
   Result := Result + '|';
 
-  for var port := 0 to RCSi.GetModuleOutputsCountSafe(board) - 1 do
+  for var port := 0 to rcs.GetModuleOutputsCountSafe(addr.module) - 1 do
   begin
     try
-      case (RCSi.GetOutputType(board, port)) of
+      case (rcs.GetOutputType(addr.module, port)) of
         TRCSOPortType.optPlain:
           Result := Result + 'B';
         TRCSOPortType.optSCom:
