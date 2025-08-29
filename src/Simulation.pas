@@ -72,14 +72,13 @@ begin
 end;
 
 procedure TJCSimulator.OnTimer(Sender: TObject);
-var JC: TJC;
 begin
-  if ((not GetFunctions.GetSystemStart()) or (not RCSi.Simulation)) then
+  if ((not GetFunctions.GetSystemStart()) or (not RCSs.IsAnySimulation())) then
     Exit();
 
-  for JC in JCDb do
-    if (JC.state.destroyBlock > -1) then
-      Self.UpdateJC(JC);
+  for var jc: TJC in JCDb do
+    if (jc.state.destroyBlock > -1) then
+      Self.UpdateJC(jc);
 end;
 
 procedure TJCSimulator.UpdateJC(JC: TJC);
@@ -93,10 +92,10 @@ begin
     begin
       var signal := Blocks.GetBlkSignalByID(JC.data.signalId);
       var track := Blocks.GetBlkTrackOrRTByID(signal.trackId);
+      var trackSettings := track.GetSettings();
 
-      if (track.occupied = TTrackState.occupied) then
+      if ((track.occupied = TTrackState.occupied) and (RCSs.IsSimulationAll(trackSettings.RCSAddrs))) then
       begin
-        var trackSettings := track.GetSettings();
         RCSs.SetInputs(trackSettings.RCSAddrs, 0);
         Exit();
       end;
@@ -111,7 +110,8 @@ begin
       // uvolnit RozpadRuseniBlok
       var track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.state.destroyEndBlock]);
       var trackSettings := track.GetSettings();
-      RCSs.SetInputs(trackSettings.RCSAddrs, 0);
+      if (RCSs.IsSimulationAll(trackSettings.RCSAddrs)) then
+        RCSs.SetInputs(trackSettings.RCSAddrs, 0);
     end else begin
       // obsadit RozpadBlok
       if (JC.state.destroyBlock >= JC.data.tracks.Count) then
@@ -119,7 +119,7 @@ begin
 
       var track := Blocks.GetBlkTrackOrRTByID(JC.data.tracks[JC.state.destroyBlock]);
       var trackSettings := track.GetSettings();
-      if (trackSettings.RCSAddrs.Count > 0) then
+      if ((trackSettings.RCSAddrs.Count > 0) and (RCSs.IsSimulationAll(trackSettings.RCSAddrs))) then
         RCSs.SetInput(trackSettings.RCSAddrs[0], 1);
     end; // else
   except
@@ -150,7 +150,7 @@ end;
 
 procedure TRailwaySimulator.OnTimer(Sender: TObject);
 begin
-  if ((not GetFunctions.GetSystemStart()) or (not RCSi.Simulation)) then
+  if ((not GetFunctions.GetSystemStart()) or (not RCSs.IsAnySimulation())) then
     Exit();
 
   for var blk: TBlk in Blocks do
@@ -175,7 +175,7 @@ begin
     begin
       var rt := TBlkRT(Blocks.GetBlkByID(railwaySettings.trackIds[i]));
       if ((rt.bpInBlk) and (rt.prevRT <> nil) and (rt.prevRT.occupied = TTrackState.occupied) and
-        (rt.prevRT.train = rt.train)) then
+          (rt.prevRT.train = rt.train) and (RCSs.IsSimulation(TBlkTrack(rt.prevRT).GetSettings().RCSAddrs[0]))) then
       begin
         RCSs.SetInput(TBlkTrack(rt.prevRT).GetSettings().RCSAddrs[0], 0);
         Exit();
@@ -187,8 +187,8 @@ begin
     begin
       var rt := TBlkRT(Blocks.GetBlkByID(railwaySettings.trackIds[i]));
       if ((rt.occupied = TTrackState.occupied) and (rt.bpInBlk) and (rt.nextRT <> nil) and
-        (rt.nextRT.occupied = TTrackState.free) and ((rt.nextRT.signalCover = nil) or
-        (TBlkSignal(rt.nextRT.signalCover).signal > ncStuj))) then
+          (rt.nextRT.occupied = TTrackState.free) and ((rt.nextRT.signalCover = nil) or
+          (TBlkSignal(rt.nextRT.signalCover).signal > ncStuj)) and (RCSs.IsSimulation(TBlkTrack(rt.nextRT).GetSettings().RCSAddrs[0]))) then
       begin
         RCSs.SetInput(TBlkTrack(rt.nextRT).GetSettings().RCSAddrs[0], 1);
         Exit();
@@ -225,7 +225,7 @@ var Blk: TBlk;
   turnout: TBlkTurnout;
 begin
   try
-    if ((not GetFunctions.GetSystemStart()) or (not RCSi.Simulation)) then
+    if ((not GetFunctions.GetSystemStart()) or (not RCSs.IsAnySimulation())) then
       Exit();
 
     for Blk in Blocks do
@@ -234,11 +234,11 @@ begin
         continue;
       turnout := TBlkTurnout(Blk);
 
-      if (((turnout.movingPlus) or (turnout.movingMinus)) and (turnout.posDetection)) then
+      if (((turnout.movingPlus) or (turnout.movingMinus)) and (turnout.posDetection) and
+          (RCSs.IsSimulation(turnout.rcsInPlus)) and (RCSs.IsSimulation(turnout.rcsInMinus))) then
       begin
         // po 1 sekunde nastavime vstup aktualni polohy na 0
-        if ((turnout.state.positionReal <> TTurnoutPosition.none) and (turnout.state.movingStart + EncodeTime(0, 0, 1,
-          0) < Now)) then
+        if ((turnout.state.positionReal <> TTurnoutPosition.none) and (turnout.state.movingStart + EncodeTime(0, 0, 1, 0) < Now)) then
         begin
           if (turnout.movingPlus) then
             RCSs.SetInput(turnout.rcsInMinus, 0)

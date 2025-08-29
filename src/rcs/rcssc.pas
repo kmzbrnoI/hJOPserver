@@ -16,6 +16,8 @@ type
     function ToString(): string;
   end;
 
+  TRCSsAddrs = TList<TRCSsAddr>;
+
   TRCSsSystemModule = record
     system: Cardinal;
     module: Cardinal;
@@ -111,7 +113,9 @@ type
 
     function IsSimulation(system: Cardinal): Boolean; overload;
     function IsSimulation(addr: TRCSsAddr): Boolean; overload;
+    function IsSimulationAll(addrs: TRCSsAddrs): Boolean;
     function IsSimulation(addr: TRCSsSystemModule): Boolean; overload;
+    function IsAnySimulation(): Boolean;
 
     procedure InputSim(); // nastavit simulovane vstupy (koncove polohy vyhybek atp.)
     procedure TrainOccupySim(); // nastavit RCS vstupy tak, aby useky, ve kterych je souprava, byly obsazene
@@ -583,6 +587,22 @@ end;
 function TRCSs.IsSimulation(addr: TRCSsSystemModule): Boolean;
 begin
   Result := Self.IsSimulation(addr.system);
+end;
+
+function TRCSs.IsSimulationAll(addrs: TRCSsAddrs): Boolean;
+begin
+  for var addr: TRCSsAddr in addrs do
+    if (not Self.IsSimulation(addr)) then
+      Exit(False);
+  Result := True;
+end;
+
+function TRCSs.IsAnySimulation(): Boolean;
+begin
+  for var i: Integer := 0 to _RCSS_MAX do
+    if (Self.m_rcss[i].simulation) then
+      Exit(True);
+  Result := False;
 end;
 
 procedure TRCSs.InputSim();
