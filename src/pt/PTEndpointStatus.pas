@@ -22,7 +22,7 @@ type
 
 implementation
 
-uses PTUtils, RCSc, TrakceC, TrakceIFace, TCPServerPanel;
+uses PTUtils, RCSc, RCSsc, TrakceC, TrakceIFace, TCPServerPanel;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -30,8 +30,20 @@ procedure TPTEndpointStatus.OnGET(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; var respJson: TJsonObject);
 begin
   var rcso: TJsonObject := respJSON.O['rcs'];
-  rcso.B['opened'] := RCSi.NoExOpened();
-  rcso.B['started'] := RCSi.NoExStarted();
+  rcso.B['opened'] := RCSs.AllOpened();
+  rcso.B['started'] := RCSs.AllStarted();
+
+  var rcssa: TJsonArray := respJSON.A['rcss'];
+  for var i: Integer := 0 to RCSs._RCSS_MAX do
+  begin
+    var rcsso: TJsonObject := TJsonObject.Create();
+    rcsso.S['lib'] := RCSs[i].lib;
+    rcsso.B['used'] := (RCSs[i].lib <> '');
+    rcsso.B['opened'] := RCSs[i].NoExOpened();
+    rcsso.B['started'] := RCSs[i].NoExStarted();
+    rcssa.Add(rcsso);
+  end;
+
 
   var trakceo: TJsonObject := respJSON.O['trakce'];
   trakceo.B['connected'] := trakce.Connected();
