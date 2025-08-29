@@ -176,6 +176,8 @@ type
     procedure PstCheckActive();
     function GetTimeJCReleaseZaver(): TTime;
 
+    function SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
+
   protected
     m_settings: TBlkTrackSettings;
 
@@ -1564,46 +1566,50 @@ begin
         Result := Result + 'VB,';
     end;
 
-    // pokud mame knihovnu simulator, muzeme ridit stav useku
-    // DEBUG nastroj
-    if (RCSi.simulation) then
+    // pokud mame simulacni knihovnu, pridame do menu simulacni volby
+    var menusim: string := Self.SimMenu(SenderPnl, SenderOR, rights);
+    if (menusim <> '') then
+      Result := Result + '-,' + menusim;
+  end;
+end;
+
+function TBlkTrack.SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
+begin
+  for var i: Integer := 0 to Self.m_settings.RCSAddrs.Count-1 do
+  begin
+    if ((Self.m_state.sectionsOccupied[i] = TTrackState.free) and (RCSs.IsSimulation(Self.m_settings.RCSAddrs[i]))) then
     begin
-      Result := Result + '-,';
+      Result := Result + '*OBSAZ,';
+      break;
+    end;
+  end;
 
-      for var m_state: TTrackState in Self.sectionsState do
-      begin
-        if (m_state = TTrackState.free) then
-        begin
-          Result := Result + '*OBSAZ,';
-          break;
-        end;
-      end;
+  for var i: Integer := 0 to Self.m_settings.RCSAddrs.Count-1 do
+  begin
+    if ((Self.m_state.sectionsOccupied[i] = TTrackState.occupied) and (RCSs.IsSimulation(Self.m_settings.RCSAddrs[i]))) then
+    begin
+      Result := Result + '*UVOL,';
+      break;
+    end;
+  end;
 
-      for var m_state: TTrackState in Self.sectionsState do
+  if (Self.sectionsState.Count > 1) then
+  begin
+    for var i: Integer := 0 to Self.m_settings.RCSAddrs.Count-1 do
+    begin
+      if (RCSs.IsSimulation(Self.m_settings.RCSAddrs[i])) then
       begin
-        if (m_state = TTrackState.occupied) then
-        begin
-          Result := Result + '*UVOL,';
-          break;
-        end;
-      end;
-
-      if (Self.sectionsState.Count > 1) then
-      begin
-        for var i: Integer := 0 to Self.sectionsState.Count - 1 do
-        begin
-          case (Self.sectionsState[i]) of
-            TTrackState.free:
-              Result := Result + '*DET' + IntToStr(i + 1) + '>,';
-            TTrackState.occupied:
-              Result := Result + '*DET' + IntToStr(i + 1) + '<,';
-          else
+        case (Self.sectionsState[i]) of
+          TTrackState.free:
             Result := Result + '*DET' + IntToStr(i + 1) + '>,';
+          TTrackState.occupied:
             Result := Result + '*DET' + IntToStr(i + 1) + '<,';
-          end;
+        else
+          Result := Result + '*DET' + IntToStr(i + 1) + '>,';
+          Result := Result + '*DET' + IntToStr(i + 1) + '<,';
         end;
       end;
-    end; // if RCSi.lib = 2
+    end;
   end;
 end;
 

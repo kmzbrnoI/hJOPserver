@@ -106,6 +106,10 @@ type
     function IsNonFailedModule(addr: TRCSsAddr): Boolean; overload;
     function IsNonFailedModule(addr: TRCSsSystemModule): Boolean; overload;
 
+    function IsSimulation(system: Cardinal): Boolean; overload;
+    function IsSimulation(addr: TRCSsAddr): Boolean; overload;
+    function IsSimulation(addr: TRCSsSystemModule): Boolean; overload;
+
     procedure InputSim(); // nastavit simulovane vstupy (koncove polohy vyhybek atp.)
     procedure TrainOccupySim(); // nastavit RCS vstupy tak, aby useky, ve kterych je souprava, byly obsazene
 
@@ -536,7 +540,26 @@ end;
 
 function TRCSs.IsNonFailedModule(addr: TRCSsSystemModule): Boolean;
 begin
+  if (addr.system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[addr.system].IsNonFailedModule(addr.module);
+end;
 
+function TRCSs.IsSimulation(system: Cardinal): Boolean;
+begin
+  if (system > _RCSS_MAX) then
+    Exit(False);
+  Result := Self.m_rcss[system].simulation;
+end;
+
+function TRCSs.IsSimulation(addr: TRCSsAddr): Boolean;
+begin
+  Result := Self.IsSimulation(addr.system);
+end;
+
+function TRCSs.IsSimulation(addr: TRCSsSystemModule): Boolean;
+begin
+  Result := Self.IsSimulation(addr.system);
 end;
 
 procedure TRCSs.InputSim();
