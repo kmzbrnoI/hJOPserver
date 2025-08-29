@@ -3,8 +3,8 @@ object F_BlkPst: TF_BlkPst
   Top = 0
   BorderStyle = bsToolWindow
   Caption = 'F_BlkPst'
-  ClientHeight = 513
-  ClientWidth = 990
+  ClientHeight = 486
+  ClientWidth = 1012
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -28,8 +28,8 @@ object F_BlkPst: TF_BlkPst
     Caption = 'ID:'
   end
   object Label1: TLabel
-    Left = 8
-    Top = 8
+    Left = 7
+    Top = 7
     Width = 34
     Height = 13
     Margins.Left = 2
@@ -39,7 +39,7 @@ object F_BlkPst: TF_BlkPst
     Caption = 'N'#225'zev:'
   end
   object E_Name: TEdit
-    Left = 120
+    Left = 153
     Top = 7
     Width = 193
     Height = 21
@@ -51,7 +51,7 @@ object F_BlkPst: TF_BlkPst
     TabOrder = 0
   end
   object SE_ID: TSpinEdit
-    Left = 120
+    Left = 153
     Top = 40
     Width = 193
     Height = 22
@@ -65,8 +65,8 @@ object F_BlkPst: TF_BlkPst
     Value = 1
   end
   object B_Storno: TButton
-    Left = 821
-    Top = 477
+    Left = 848
+    Top = 453
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -78,8 +78,8 @@ object F_BlkPst: TF_BlkPst
     OnClick = B_StornoClick
   end
   object B_Apply: TButton
-    Left = 909
-    Top = 477
+    Left = 936
+    Top = 453
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -94,13 +94,13 @@ object F_BlkPst: TF_BlkPst
   object GB_RCS: TGroupBox
     Left = 8
     Top = 67
-    Width = 303
-    Height = 206
+    Width = 337
+    Height = 165
     Caption = ' RCS '
     TabOrder = 2
     object Label4: TLabel
       Left = 7
-      Top = 104
+      Top = 84
       Width = 126
       Height = 13
       Margins.Left = 2
@@ -111,7 +111,7 @@ object F_BlkPst: TF_BlkPst
     end
     object Label5: TLabel
       Left = 7
-      Top = 40
+      Top = 32
       Width = 122
       Height = 13
       Margins.Left = 2
@@ -121,8 +121,8 @@ object F_BlkPst: TF_BlkPst
       Caption = 'Tla'#269#237'tko p'#345'evzet'#237' obsluhy:'
     end
     object Label6: TLabel
-      Left = 229
-      Top = 16
+      Left = 265
+      Top = 15
       Width = 43
       Height = 13
       Margins.Left = 2
@@ -132,8 +132,8 @@ object F_BlkPst: TF_BlkPst
       Caption = 'RCS port'
     end
     object Label7: TLabel
-      Left = 150
-      Top = 16
+      Left = 201
+      Top = 15
       Width = 51
       Height = 13
       Margins.Left = 2
@@ -144,7 +144,7 @@ object F_BlkPst: TF_BlkPst
     end
     object Label8: TLabel
       Left = 7
-      Top = 72
+      Top = 58
       Width = 125
       Height = 13
       Margins.Left = 2
@@ -155,7 +155,7 @@ object F_BlkPst: TF_BlkPst
     end
     object Label9: TLabel
       Left = 7
-      Top = 136
+      Top = 110
       Width = 50
       Height = 13
       Margins.Left = 2
@@ -166,7 +166,7 @@ object F_BlkPst: TF_BlkPst
     end
     object Label3: TLabel
       Left = 7
-      Top = 168
+      Top = 136
       Width = 54
       Height = 13
       Margins.Left = 2
@@ -175,54 +175,21 @@ object F_BlkPst: TF_BlkPst
       Margins.Bottom = 2
       Caption = 'PSt aktivn'#237':'
     end
+    object Label12: TLabel
+      Left = 137
+      Top = 15
+      Width = 57
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'RCS syst'#233'm'
+    end
     object SE_RCS_Take_Module: TSpinEdit
-      Left = 150
-      Top = 40
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 0
-      Value = 1
-      OnExit = SE_RCS_Take_ModuleExit
-    end
-    object SE_RCS_Indication_Module: TSpinEdit
-      Left = 150
-      Top = 104
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 4
-      Value = 1
-      OnExit = SE_RCS_Indication_ModuleExit
-    end
-    object SE_RCS_Indication_Port: TSpinEdit
-      Left = 226
-      Top = 104
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 5
-      Value = 0
-    end
-    object SE_RCS_Take_Port: TSpinEdit
-      Left = 226
-      Top = 40
-      Width = 67
+      Left = 201
+      Top = 32
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -233,39 +200,10 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 1
       Value = 0
     end
-    object SE_RCS_Release_Module: TSpinEdit
-      Left = 150
-      Top = 72
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 2
-      Value = 1
-      OnExit = SE_RCS_Release_ModuleExit
-    end
-    object SE_RCS_Release_Port: TSpinEdit
-      Left = 226
-      Top = 72
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 3
-      Value = 0
-    end
-    object SE_RCS_Horn_Port: TSpinEdit
-      Left = 226
-      Top = 136
-      Width = 67
+    object SE_RCS_Indication_Module: TSpinEdit
+      Left = 201
+      Top = 84
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -276,25 +214,10 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 7
       Value = 0
     end
-    object SE_RCS_Horn_Module: TSpinEdit
-      Left = 150
-      Top = 136
-      Width = 67
-      Height = 22
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      MaxValue = 0
-      MinValue = 0
-      TabOrder = 6
-      Value = 1
-      OnExit = SE_RCS_Horn_ModuleExit
-    end
-    object SE_RCS_Active_Module: TSpinEdit
-      Left = 150
-      Top = 168
-      Width = 67
+    object SE_RCS_Indication_Port: TSpinEdit
+      Left = 265
+      Top = 84
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -303,13 +226,124 @@ object F_BlkPst: TF_BlkPst
       MaxValue = 0
       MinValue = 0
       TabOrder = 8
-      Value = 1
-      OnExit = SE_RCS_Active_ModuleExit
+      Value = 0
+    end
+    object SE_RCS_Take_Port: TSpinEdit
+      Left = 265
+      Top = 32
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 2
+      Value = 0
+    end
+    object SE_RCS_Release_Module: TSpinEdit
+      Left = 201
+      Top = 58
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 4
+      Value = 0
+    end
+    object SE_RCS_Release_Port: TSpinEdit
+      Left = 265
+      Top = 58
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 5
+      Value = 0
+    end
+    object SE_RCS_Horn_Port: TSpinEdit
+      Left = 265
+      Top = 110
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 11
+      Value = 0
+    end
+    object SE_RCS_Horn_Module: TSpinEdit
+      Left = 201
+      Top = 110
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 10
+      Value = 0
+    end
+    object SE_RCS_Active_Module: TSpinEdit
+      Left = 201
+      Top = 136
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 13
+      Value = 0
     end
     object SE_RCS_Active_Port: TSpinEdit
-      Left = 226
-      Top = 168
-      Width = 67
+      Left = 265
+      Top = 136
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 14
+      Value = 0
+    end
+    object SE_RCS_Active_System: TSpinEdit
+      Left = 137
+      Top = 136
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 12
+      Value = 0
+    end
+    object SE_RCS_Horn_System: TSpinEdit
+      Left = 137
+      Top = 110
+      Width = 60
       Height = 22
       Margins.Left = 2
       Margins.Top = 2
@@ -320,9 +354,51 @@ object F_BlkPst: TF_BlkPst
       TabOrder = 9
       Value = 0
     end
+    object SE_RCS_Indication_System: TSpinEdit
+      Left = 137
+      Top = 84
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 6
+      Value = 0
+    end
+    object SE_RCS_Release_System: TSpinEdit
+      Left = 137
+      Top = 58
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 3
+      Value = 0
+    end
+    object SE_RCS_Take_System: TSpinEdit
+      Left = 137
+      Top = 32
+      Width = 60
+      Height = 22
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      MaxValue = 0
+      MinValue = 0
+      TabOrder = 0
+      Value = 0
+    end
   end
   object GB_Tracks: TGroupBox
-    Left = 319
+    Left = 350
     Top = 7
     Width = 329
     Height = 225
@@ -420,7 +496,7 @@ object F_BlkPst: TF_BlkPst
     end
   end
   object GB_Turnouts: TGroupBox
-    Left = 318
+    Left = 349
     Top = 236
     Width = 328
     Height = 205
@@ -515,7 +591,7 @@ object F_BlkPst: TF_BlkPst
     end
   end
   object GB_Refugees: TGroupBox
-    Left = 650
+    Left = 681
     Top = 7
     Width = 329
     Height = 225
@@ -651,7 +727,7 @@ object F_BlkPst: TF_BlkPst
     end
   end
   object GB_Signals: TGroupBox
-    Left = 650
+    Left = 681
     Top = 236
     Width = 329
     Height = 205
@@ -750,8 +826,8 @@ object F_BlkPst: TF_BlkPst
   end
   object GB_Disconnectors: TGroupBox
     Left = 7
-    Top = 278
-    Width = 307
+    Top = 237
+    Width = 338
     Height = 225
     Hint = 'Zadavejte useky od navestidla smerem k poslednimu bloku (vcetne)'
     Margins.Left = 2
@@ -765,7 +841,7 @@ object F_BlkPst: TF_BlkPst
     object GB_disc_edit: TGroupBox
       Left = 2
       Top = 174
-      Width = 303
+      Width = 334
       Height = 49
       Margins.Left = 2
       Margins.Top = 2
@@ -774,6 +850,7 @@ object F_BlkPst: TF_BlkPst
       Align = alBottom
       Caption = ' P'#345'idat/upravit rozpojova'#269' '
       TabOrder = 1
+      ExplicitWidth = 303
       object CB_Disconnector: TComboBox
         Left = 10
         Top = 16
@@ -817,7 +894,7 @@ object F_BlkPst: TF_BlkPst
     object LV_Disconnectors: TListView
       Left = 2
       Top = 15
-      Width = 303
+      Width = 334
       Height = 159
       Margins.Left = 2
       Margins.Top = 2
@@ -844,6 +921,7 @@ object F_BlkPst: TF_BlkPst
       ViewStyle = vsReport
       OnChange = LV_DisconnectorsChange
       OnKeyDown = LV_DisconnectorsKeyDown
+      ExplicitWidth = 303
     end
   end
 end

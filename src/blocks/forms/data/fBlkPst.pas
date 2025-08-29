@@ -66,6 +66,12 @@ type
     Label3: TLabel;
     SE_RCS_Active_Module: TSpinEdit;
     SE_RCS_Active_Port: TSpinEdit;
+    SE_RCS_Active_System: TSpinEdit;
+    SE_RCS_Horn_System: TSpinEdit;
+    SE_RCS_Indication_System: TSpinEdit;
+    SE_RCS_Release_System: TSpinEdit;
+    SE_RCS_Take_System: TSpinEdit;
+    Label12: TLabel;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_StornoClick(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
@@ -87,15 +93,10 @@ type
     procedure B_Ref_OkClick(Sender: TObject);
     procedure B_Ref_DelClick(Sender: TObject);
     procedure B_Signal_DelClick(Sender: TObject);
-    procedure SE_RCS_Take_ModuleExit(Sender: TObject);
-    procedure SE_RCS_Release_ModuleExit(Sender: TObject);
-    procedure SE_RCS_Indication_ModuleExit(Sender: TObject);
-    procedure SE_RCS_Horn_ModuleExit(Sender: TObject);
     procedure LV_DisconnectorsChange(Sender: TObject; Item: TListItem;
       Change: TItemChange);
     procedure B_Disc_DeleteClick(Sender: TObject);
     procedure B_Disc_OkClick(Sender: TObject);
-    procedure SE_RCS_Active_ModuleExit(Sender: TObject);
     procedure LV_DisconnectorsKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure LV_TracksKeyDown(Sender: TObject; var Key: Word;
@@ -136,7 +137,7 @@ var
 
 implementation
 
-uses BlockDb, Block, Area, DataBloky, IfThenElse, BlockTurnout, RCSc,
+uses BlockDb, Block, Area, DataBloky, IfThenElse, BlockTurnout, RCSc, RCSsc,
   ownGuiUtils;
 
 {$R *.dfm}
@@ -188,15 +189,24 @@ begin
   Blocks.FillCB(Self.CB_Disconnector, Self.CB_DiscItems, nil, nil, btDisconnector);
   Self.B_Disc_Ok.Enabled := Self.CB_Disconnector.Enabled;
 
-  Self.SE_RCS_Take_Module.Value := 1;
+  Self.SE_RCS_Take_System.Value := 0;
+  Self.SE_RCS_Take_Module.Value := 0;
   Self.SE_RCS_Take_Port.Value := 0;
-  Self.SE_RCS_Release_Module.Value := 1;
+
+  Self.SE_RCS_Release_System.Value := 0;
+  Self.SE_RCS_Release_Module.Value := 0;
   Self.SE_RCS_Release_Port.Value := 0;
-  Self.SE_RCS_Indication_Module.Value := 1;
+
+  Self.SE_RCS_Indication_System.Value := 0;
+  Self.SE_RCS_Indication_Module.Value := 0;
   Self.SE_RCS_Indication_Port.Value := 0;
-  Self.SE_RCS_Horn_Module.Value := 1;
+
+  Self.SE_RCS_Horn_System.Value := 0;
+  Self.SE_RCS_Horn_Module.Value := 0;
   Self.SE_RCS_Horn_Port.Value := 0;
-  Self.SE_RCS_Active_Module.Value := 1;
+
+  Self.SE_RCS_Active_System.Value := 0;
+  Self.SE_RCS_Active_Module.Value := 0;
   Self.SE_RCS_Active_Port.Value := 0;
 
   Self.Caption := 'Nový blok Pomocné stavědlo';
@@ -253,67 +263,27 @@ begin
   Blocks.FillCB(Self.CB_Disconnector, Self.CB_DiscItems, nil, Self.block.areas, btDisconnector);
   Self.B_Disc_Ok.Enabled := Self.CB_Disconnector.Enabled;
 
-  if (pstSettings.rcsInTake.module > Cardinal(Self.SE_RCS_Take_Module.MaxValue)) then
-    Self.SE_RCS_Take_Module.MaxValue := 0;
-  Self.SE_RCS_Take_Port.MaxValue := 0;
+  Self.SE_RCS_Take_System.Value := pstSettings.rcsInTake.system;
   Self.SE_RCS_Take_Module.Value := pstSettings.rcsInTake.module;
   Self.SE_RCS_Take_Port.Value := pstSettings.rcsInTake.port;
 
-  if (pstSettings.rcsInRelease.module > Cardinal(Self.SE_RCS_Release_Module.MaxValue)) then
-    Self.SE_RCS_Release_Module.MaxValue := 0;
-  Self.SE_RCS_Release_Port.MaxValue := 0;
+  Self.SE_RCS_Release_System.Value := pstSettings.rcsInRelease.system;
   Self.SE_RCS_Release_Module.Value := pstSettings.rcsInRelease.module;
   Self.SE_RCS_Release_Port.Value := pstSettings.rcsInRelease.port;
 
-  if (pstSettings.rcsOutTaken.module > Cardinal(Self.SE_RCS_Indication_Module.MaxValue)) then
-    Self.SE_RCS_Indication_Module.MaxValue := 0;
-  Self.SE_RCS_Indication_Port.MaxValue := 0;
+  Self.SE_RCS_Indication_System.Value := pstSettings.rcsOutTaken.system;
   Self.SE_RCS_Indication_Module.Value := pstSettings.rcsOutTaken.module;
   Self.SE_RCS_Indication_Port.Value := pstSettings.rcsOutTaken.port;
 
-  if (pstSettings.rcsOutHorn.module > Cardinal(Self.SE_RCS_Horn_Module.MaxValue)) then
-    Self.SE_RCS_Horn_Module.MaxValue := 0;
-  Self.SE_RCS_Horn_Port.MaxValue := 0;
+  Self.SE_RCS_Horn_System.Value := pstSettings.rcsOutHorn.system;
   Self.SE_RCS_Horn_Module.Value := pstSettings.rcsOutHorn.module;
   Self.SE_RCS_Horn_Port.Value := pstSettings.rcsOutHorn.port;
 
-  if (pstSettings.rcsOutActive.module > Cardinal(Self.SE_RCS_Active_Module.MaxValue)) then
-    Self.SE_RCS_Active_Module.MaxValue := 0;
-  Self.SE_RCS_Active_Port.MaxValue := 0;
+  Self.SE_RCS_Active_System.Value := pstSettings.rcsOutActive.system;
   Self.SE_RCS_Active_Module.Value := pstSettings.rcsOutActive.module;
   Self.SE_RCS_Active_Port.Value := pstSettings.rcsOutActive.port;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (pomocné stavědlo)';
-end;
-
-procedure TF_BlkPst.SE_RCS_Active_ModuleExit(Sender: TObject);
-begin
-  Self.SE_RCS_Active_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCS_Active_Module.Value,
-    Self.SE_RCS_Active_Port.Value);
-end;
-
-procedure TF_BlkPst.SE_RCS_Horn_ModuleExit(Sender: TObject);
-begin
-  Self.SE_RCS_Horn_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCS_Horn_Module.Value,
-    Self.SE_RCS_Horn_Port.Value);
-end;
-
-procedure TF_BlkPst.SE_RCS_Indication_ModuleExit(Sender: TObject);
-begin
-  Self.SE_RCS_Indication_Port.MaxValue := TBlocks.SEOutPortMaxValue(Self.SE_RCS_Indication_Module.Value,
-    Self.SE_RCS_Indication_Port.Value);
-end;
-
-procedure TF_BlkPst.SE_RCS_Release_ModuleExit(Sender: TObject);
-begin
-  Self.SE_RCS_Release_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_RCS_Release_Module.Value,
-    Self.SE_RCS_Release_Port.Value);
-end;
-
-procedure TF_BlkPst.SE_RCS_Take_ModuleExit(Sender: TObject);
-begin
-  Self.SE_RCS_Take_Port.MaxValue := TBlocks.SEInPortMaxValue(Self.SE_RCS_Take_Module.Value,
-    Self.SE_RCS_Take_Port.Value);
 end;
 
 procedure TF_BlkPst.CommonOpenForm();
@@ -330,10 +300,11 @@ begin
   Self.B_Signal_Del.Enabled := false;
   Self.B_Disc_Delete.Enabled := false;
 
-  Self.SE_RCS_Take_Module.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_RCS_Indication_Module.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_RCS_Release_Module.MaxValue := RCSi.maxModuleAddrSafe;
-  Self.SE_RCS_Horn_Module.MaxValue := RCSi.maxModuleAddrSafe;
+  Self.SE_RCS_Active_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_RCS_Horn_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_RCS_Indication_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_RCS_Release_System.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_RCS_Take_System.MaxValue := RCSs._RCSS_MAX;
 
   Self.ActiveControl := Self.E_Name;
 end;
@@ -415,20 +386,11 @@ begin
     for var LI: TListItem in Self.LV_Disconnectors.Items do
       pstSettings.disconnectors.Add(StrToInt(LI.SubItems[0]));
 
-    pstSettings.rcsInTake.module := Self.SE_RCS_Take_Module.Value;
-    pstSettings.rcsInTake.port := Self.SE_RCS_Take_Port.Value;
-
-    pstSettings.rcsInRelease.module := Self.SE_RCS_Release_Module.Value;
-    pstSettings.rcsInRelease.port := Self.SE_RCS_Release_Port.Value;
-
-    pstSettings.rcsOutTaken.module := Self.SE_RCS_Indication_Module.Value;
-    pstSettings.rcsOutTaken.port := Self.SE_RCS_Indication_Port.Value;
-
-    pstSettings.rcsOutHorn.module := Self.SE_RCS_Horn_Module.Value;
-    pstSettings.rcsOutHorn.port := Self.SE_RCS_Horn_Port.Value;
-
-    pstSettings.rcsOutActive.module := Self.SE_RCS_Active_Module.Value;
-    pstSettings.rcsOutActive.port := Self.SE_RCS_Active_Port.Value;
+    pstSettings.rcsInTake := TRCSs.RCSsAddr(Self.SE_RCS_Take_System.Value, Self.SE_RCS_Take_Module.Value, Self.SE_RCS_Take_Port.Value);
+    pstSettings.rcsInRelease := TRCSs.RCSsAddr(Self.SE_RCS_Release_System.Value, Self.SE_RCS_Release_Module.Value, Self.SE_RCS_Release_Port.Value);
+    pstSettings.rcsOutTaken := TRCSs.RCSsAddr(Self.SE_RCS_Indication_System.Value, Self.SE_RCS_Indication_Module.Value, Self.SE_RCS_Indication_Port.Value);
+    pstSettings.rcsOutHorn := TRCSs.RCSsAddr(Self.SE_RCS_Horn_System.Value, Self.SE_RCS_Horn_Module.Value, Self.SE_RCS_Horn_Port.Value);
+    pstSettings.rcsOutActive := TRCSs.RCSsAddr(Self.SE_RCS_Active_System.Value, Self.SE_RCS_Active_Module.Value, Self.SE_RCS_Active_Port.Value);
 
     Self.block.SetSettings(pstSettings);
     Self.block.Change();
