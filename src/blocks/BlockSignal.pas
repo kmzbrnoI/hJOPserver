@@ -200,6 +200,8 @@ type
     procedure ReadContollers();
     function DefaultChangeTime(): string; overload;
 
+    function SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
+
   protected
     m_settings: TBlkSignalSettings;
     m_state: TBlkSignalState;
@@ -1289,36 +1291,38 @@ begin
   if ((Self.signal <> ncPrivol) and (Self.CanIDoRNZ)) then
     Result := Result + '!RNZ,';
 
-  // DEBUG: jednoduche nastaveni IR pri knihovne simulator
-  if (RCSi.simulation) then
+  // pokud mame simulacni knihovnu, pridame do menu simulacni volby
+  var menusim: string := Self.SimMenu(SenderPnl, SenderOR, rights);
+  if (menusim <> '') then
+    Result := Result + '-,' + menusim;
+end;
+
+function TBlkSignal.SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
+begin
+  if ((Self.m_settings.events.Count > 0) and (Self.m_settings.events[0].stop.typ = TRREvType.rrtIR)) then
   begin
-    Result := Result + '-,';
-
-    if ((Self.m_settings.events.Count > 0) and (Self.m_settings.events[0].stop.typ = TRREvType.rrtIR)) then
+    var ir: TBlkIR := Blocks.GetBlkIrByID(Self.m_settings.events[0].stop.data.irId);
+    if ((ir <> nil) and (RCSs.IsSimulation(ir.GetSettings().RCSAddr))) then
     begin
-      var ir := Blocks.GetBlkIrByID(Self.m_settings.events[0].stop.data.irId);
-      if (ir <> nil) then
-      begin
-        case (ir.occupied) of
-          TIROccupationState.Free:
-            Result := Result + '*IR>,';
-          TIROccupationState.occupied:
-            Result := Result + '*IR<,';
-        end; // case
-      end;
+      case (ir.occupied) of
+        TIROccupationState.Free:
+          Result := Result + '*IR>,';
+        TIROccupationState.occupied:
+          Result := Result + '*IR<,';
+      end; // case
     end;
+  end;
 
-    if (Self.m_settings.PSt.enabled) then
-    begin
-      try
-        if (RCSs.GetInput(Self.m_settings.PSt.rcsControllerShunt) = isOn) then
-          Result := Result + '*RAD<,'
-        else
-          Result := Result + '*RAD>,';
-      except
-        on E: RCSException do begin end;
-        on E: Exception do raise;
-      end;
+  if ((Self.m_settings.PSt.enabled) and (RCSs.IsSimulation(Self.m_settings.PSt.rcsControllerShunt))) then
+  begin
+    try
+      if (RCSs.GetInput(Self.m_settings.PSt.rcsControllerShunt) = isOn) then
+        Result := Result + '*RAD<,'
+      else
+        Result := Result + '*RAD>,';
+    except
+      on E: RCSException do begin end;
+      on E: Exception do raise;
     end;
   end;
 end;
@@ -2358,7 +2362,7 @@ end;
 
 procedure TBlkSignal.ShowIndication();
 begin
-  if ((not Self.m_settings.PSt.enabled) or (not RCSi.NoExStarted())) then
+  if ((not Self.m_settings.PSt.enabled) or (not RCSs.Started(Self.m_settings.PSt.rcsIndicationShunt))) then
     Exit();
 
   try
@@ -2380,7 +2384,7 @@ end;
 
 procedure TBlkSignal.ReadContollers();
 begin
-  if ((not Self.m_settings.PSt.enabled) or (not RCSi.Started) or (not Self.PstIsActive()) or (Self.changing)) then
+  if ((not Self.m_settings.PSt.enabled) or (not RCSs.Started(Self.m_settings.PSt.rcsControllerShunt)) or (not Self.PstIsActive()) or (Self.changing)) then
     Exit();
 
   try

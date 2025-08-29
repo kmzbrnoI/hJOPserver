@@ -162,6 +162,8 @@ type
 
     procedure PanelShowState(pnl: TIdContext; area: TArea);
 
+    function SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
+
   public
     tracks: TObjectList<TBlkCrossingTrack>;
     positiveRules: TPositiveRules;
@@ -223,7 +225,7 @@ implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCSIFace, UPO,
   Graphics, PanelConnData, Diagnostics, appEv, ownConvert, Config, timeHelper,
-  BlockTrack, BlockTrackRef, colorHelper, RCSErrors, PTUtils;
+  BlockTrack, BlockTrackRef, colorHelper, RCSErrors, PTUtils, IfThenElse;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
@@ -906,18 +908,12 @@ begin
 
   Result := Result + 'STAV?,';
 
-  // pokud mame simulacni knihovnu, umoznime simulacni volby
-  // DEBUG nastroj
-  if ((IsWritable(rights)) and (RCSi.simulation)) then
+  // pokud mame simulacni knihovnu, pridame do menu simulacni volby
+  if (IsWritable(rights)) then
   begin
-    Result := Result + '-,*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
-    if (Self.m_settings.RCSInputs.annulation.enabled) then
-    begin
-      if (RCSs.GetInput(Self.m_settings.RCSInputs.annulation.addr) = TRCSInputState.isOn) then
-        Result := Result + '*ANULACE<'
-      else
-        Result := Result + '*ANULACE>';
-    end;
+    var menusim: string := Self.SimMenu(SenderPnl, SenderOR, rights);
+    if (menusim <> '') then
+      Result := Result + '-,' + menusim;
   end;
 
   if (rights = TAreaRights.superuser) then
@@ -926,6 +922,17 @@ begin
     if (Self.zaver) then
       Result := Result + '*NUZ>,';
   end;
+end;
+
+function TBlkCrossing.SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
+begin
+  if (((not Self.m_settings.RCSInputs.closed.enabled) or (RCSs.IsSimulation(Self.m_settings.RCSInputs.closed.addr))) and
+      ((not Self.m_settings.RCSInputs.open.enabled) or (RCSs.IsSimulation(Self.m_settings.RCSInputs.open.addr))) and
+      ((not Self.m_settings.RCSInputs.caution.enabled) or (RCSs.IsSimulation(Self.m_settings.RCSInputs.caution.addr)))) then
+    Result := Result + '-,*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
+
+  if ((Self.m_settings.RCSInputs.annulation.enabled) and (RCSs.IsSimulation(Self.m_settings.RCSInputs.annulation.addr))) then
+    Result := Result + ite(RCSs.GetInput(Self.m_settings.RCSInputs.annulation.addr) = TRCSInputState.isOn, '*ANULACE<', '*ANULACE>');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1255,7 +1262,7 @@ end;
 function TBlkCrossing.IsAnnulation(): Boolean;
 begin
   Result := false;
-  if (Self.m_settings.RCSInputs.annulation.enabled and RCSi.Started) then
+  if ((Self.m_settings.RCSInputs.annulation.enabled) and (RCSs.Started(Self.m_settings.RCSInputs.annulation.addr))) then
   begin
     try
       Result := (RCSs.GetInput(Self.m_settings.RCSInputs.annulation.addr) = isOn);

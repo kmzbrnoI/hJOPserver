@@ -504,7 +504,7 @@ begin
   if ((IsWritable(rights)) or (Self.note <> '')) then
     Result := Result + 'STIT,';
 
-  if ((IsWritable(rights)) and (RCSi.simulation) and (Self.isRCSinput)) then
+  if ((IsWritable(rights)) and (Self.isRCSinput) and (RCSs.IsSimulation(Self.m_settings.RCSinput))) then
   begin
     if (Self.IsActiveInput) then
       Result := Result + '-,*IN<,'

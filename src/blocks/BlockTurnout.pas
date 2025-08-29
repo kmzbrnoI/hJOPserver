@@ -210,6 +210,8 @@ type
     procedure AddNSItems(var items: TList<TConfSeqItem>);
     procedure RCSBothOutputsOff();
 
+    function SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
+
   public
     constructor Create(index: Integer);
     destructor Destroy(); override;
@@ -1046,10 +1048,10 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.RCSBothOutputsOff;
+procedure TBlkTurnout.RCSBothOutputsOff();
 begin
   try
-    if (RCSi.Started) then
+    if ((RCSs.Started(Self.rcsOutPlus)) and (RCSs.Started(Self.rcsOutMinus))) then
     begin
       RCSs.SetOutput(Self.rcsOutPlus, 0);
       RCSs.SetOutput(Self.rcsOutMinus, 0);
@@ -1342,36 +1344,39 @@ begin
         Result := Result + '*ZRUŠ REDUKCI,';
     end;
 
-    if (RCSi.simulation) then
-    begin
-      Result := Result + '-,';
+    // pokud mame simulacni knihovnu, pridame do menu simulacni volby
+    var menusim: string := Self.SimMenu(SenderPnl, SenderOR, rights);
+    if (menusim <> '') then
+      Result := Result + '-,' + menusim;
+  end;
+end;
 
-      if (Self.posDetection) then
-      begin
-        if (Self.position <> TTurnoutPosition.plus) then
-          Result := Result + '*POL+,';
-        if (Self.position <> TTurnoutPosition.minus) then
-          Result := Result + '*POL-,';
-        if (Self.position <> TTurnoutPosition.none) then
-          Result := Result + '*NEPOL,';
-      end;
+function TBlkTurnout.SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
+begin
+  if ((Self.posDetection) and (RCSs.IsSimulation(Self.m_settings.rcs.inp)) and (RCSs.IsSimulation(Self.m_settings.rcs.inm))) then
+  begin
+    if (Self.position <> TTurnoutPosition.plus) then
+      Result := Result + '*POL+,';
+    if (Self.position <> TTurnoutPosition.minus) then
+      Result := Result + '*POL-,';
+    if (Self.position <> TTurnoutPosition.none) then
+      Result := Result + '*NEPOL,';
+  end;
 
-      if (Self.m_settings.controllers.enabled) then
-      begin
-        try
-          var plus := (RCSs.GetInput(Self.m_settings.controllers.rcsPlus) = isOn);
-          var minus := (RCSs.GetInput(Self.m_settings.controllers.rcsMinus) = isOn);
+  if ((Self.m_settings.controllers.enabled) and (RCSs.IsSimulation(Self.m_settings.controllers.rcsPlus)) and (RCSs.IsSimulation(Self.m_settings.controllers.rcsMinus))) then
+  begin
+    try
+      var plus := (RCSs.GetInput(Self.m_settings.controllers.rcsPlus) = isOn);
+      var minus := (RCSs.GetInput(Self.m_settings.controllers.rcsMinus) = isOn);
 
-          if (not plus) then
-            Result := Result + '*RAD+,';
-          if (not minus) then
-            Result := Result + '*RAD-,';
-          if (plus or minus) then
-            Result := Result + '*RAD?,';
-        except
-          on E: RCSException do begin end;
-        end;
-      end;
+      if (not plus) then
+        Result := Result + '*RAD+,';
+      if (not minus) then
+        Result := Result + '*RAD-,';
+      if (plus or minus) then
+        Result := Result + '*RAD?,';
+    except
+      on E: RCSException do begin end;
     end;
   end;
 end;
@@ -2019,7 +2024,7 @@ end;
 
 procedure TBlkTurnout.ShowIndication();
 begin
-  if ((not Self.m_settings.indication.enabled) or (not RCSi.NoExStarted())) then
+  if ((not Self.m_settings.indication.enabled) or (not RCSs.Started(Self.m_settings.indication.rcsPlus) or (not RCSs.Started(Self.m_settings.indication.rcsMinus)))) then
     Exit();
 
   try
@@ -2046,7 +2051,7 @@ end;
 
 procedure TBlkTurnout.ReadContollers();
 begin
-  if ((not Self.m_settings.controllers.enabled) or (not RCSi.Started)) then
+  if ((not Self.m_settings.controllers.enabled) or (not RCSs.Started(Self.m_settings.controllers.rcsPlus) or (not RCSs.Started(Self.m_settings.controllers.rcsMinus)))) then
     Exit();
   if ((Self.m_settings.controllers.pstOnly) and (not Self.PstIsActive())) then
     Exit();

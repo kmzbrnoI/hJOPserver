@@ -337,7 +337,7 @@ begin
   if ((IsWritable(rights)) or (Self.note <> '')) then
     Result := Result + 'STIT,';
 
-  if ((IsWritable(rights)) and (RCSi.simulation) and (Self.m_settings.rcsController.enabled)) then
+  if ((IsWritable(rights)) and (Self.m_settings.rcsController.enabled) and (RCSs.Started(Self.m_settings.rcsController.addr))) then
   begin
     try
       if (RCSs.GetInput(Self.m_settings.rcsController.addr) = isOn) then
@@ -650,7 +650,7 @@ end;
 
 procedure TBlkDisconnector.ReadControllers();
 begin
-  if ((not Self.m_settings.rcsController.enabled) or (not RCSi.Started)) then
+  if ((not Self.m_settings.rcsController.enabled) or (not RCSs.Started(Self.m_settings.rcsController.addr))) then
     Exit();
   if ((Self.m_settings.rcsController.pstOnly) and (not Self.PstIsActive())) then
     Exit();

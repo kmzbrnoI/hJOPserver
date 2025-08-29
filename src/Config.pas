@@ -640,7 +640,6 @@ begin
   enabled.Checked := addr.enabled;
   if (Assigned(enabled.OnClick)) then
     enabled.OnClick(enabled);
-  board.MaxValue := RCSi.maxModuleAddrSafe;
   if (addr.addr.module > Cardinal(board.MaxValue)) then
     board.MaxValue := 0;
   if (addr.enabled) then
