@@ -748,6 +748,7 @@ begin
   Self.MI_RCSs[i].MI_Start.Enabled := (RCSs[i].state = TRCSState.rsOpenStopped);
   Self.MI_RCSs[i].MI_Stop.Enabled := ((RCSs[i].state = TRCSState.rsStartedScanned) or (RCSs[i].state = TRCSState.rsStartedNotScanned));
   Self.MI_RCSs[i].MI_Settings.Enabled := RCSs[i].libLoaded;
+  Self.MI_RCSs[i].MI_NoLib.Enabled := (RCSs[i].state = TRCSState.rsClosed);
 
   var anyLoaded: Boolean := False;
   for var libmi: TMenuItem in Self.MI_RCSs[i].MI_Libs do
@@ -955,14 +956,6 @@ procedure TF_Main.MI_RCS_Close_Click(Sender: TObject);
 begin
   const rcsi: Integer = TMenuItem(Sender).Tag;
   var rcs: TRCS := RCSs[rcsi];
-
-  if ((SystemData.Status = stopping) and (RCSs.AllRCSsState(rsClosed))) then
-  begin
-    Self.LogStatus('System: stop OK');
-    SystemData.Status := null;
-    Self.UpdateSystemButtons();
-    Exit();
-  end;
 
   try
     rcs.Close();
@@ -1492,7 +1485,7 @@ begin
   if ((SystemData.Status = stopping) and (not trakce.ConnectedSafe())) then
   begin
     for var i: Integer := 0 to RCSs._RCSS_MAX do
-      if (RCSs[i].libLoaded) then
+      if (RCSs[i].Opened()) then
         Self.MI_RCS_Stop_Click(Self.MI_RCSs[i].MI_Stop);
     Exit();
   end;
@@ -1744,7 +1737,7 @@ begin
 
   if (SystemData.Status = stopping) then
     for var i: Integer := 0 to RCSs._RCSS_MAX do
-      if (RCSs[i].Started()) then
+      if (RCSs[i].Opened()) then
         Self.MI_RCS_Stop_Click(Self.MI_RCSs[i].MI_Stop);
 end;
 
@@ -2416,7 +2409,7 @@ begin
   Self.A_System_Start.Enabled := false;
 
   for var i: Integer := 0 to RCSs._RCSS_MAX do
-    if ((RCSs[i].ready) and (SystemData.Status = TSystemStatus.starting)) then // otevreni prvniho RCS muze zpusobit az dokonceni inicalizace, v takovem pripade neotrvirat dalsi
+    if ((RCSs[i].ready) and (SystemData.Status = TSystemStatus.starting) and (not RCSs[i].Started())) then // otevreni prvniho RCS muze zpusobit az dokonceni inicalizace, v takovem pripade neotrvirat dalsi
       Self.MI_RCS_Open_Click(Self.MI_RCSs[i].MI_Open);
 end;
 

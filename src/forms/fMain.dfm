@@ -6304,7 +6304,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitTop = -4
         object Label3: TLabel
           Left = 11
           Top = 1

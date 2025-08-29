@@ -53,7 +53,7 @@ end;
 function TGetFunctions.GetSystemStart(): Boolean;
  begin
   try
-    Result := ((trakce.ConnectedSafe()) and (RCSs.AllRCSsState(rsStartedScanned)) and (PanelServer.openned));
+    Result := ((trakce.ConnectedSafe()) and (RCSs.AllActiveRCSsStateGTE(rsStartedNotScanned)) and (PanelServer.openned));
   except
     Result := false;
   end;
