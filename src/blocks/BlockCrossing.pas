@@ -482,7 +482,7 @@ begin
     begin
       // closing started by hJOP
       Self.m_state.warningTimeout := Now + EncodeTime(0, _UZ_UPOZ_MIN, 0, 0);
-      if ((RCSi.simulation) and (Self.m_settings.RCSInputs.caution.enabled)) then
+      if ((Self.m_settings.RCSInputs.caution.enabled) and (RCSs.IsSimulation(Self.m_settings.RCSInputs.caution.addr))) then
         RCSs.SetInput(Self.m_settings.RCSInputs.caution.addr, 1); // so error state is prevented
     end;
   end;
@@ -906,7 +906,7 @@ begin
 
   Result := Result + 'STAV?,';
 
-  // pokud mame knihovnu simulator, muzeme ridit stav useku
+  // pokud mame simulacni knihovnu, umoznime simulacni volby
   // DEBUG nastroj
   if ((IsWritable(rights)) and (RCSi.simulation)) then
   begin

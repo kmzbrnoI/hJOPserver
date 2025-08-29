@@ -86,7 +86,7 @@ procedure TBlkIR.Enable();
 var enable: Boolean;
 begin
   try
-    enable := RCSi.IsNonFailedModule(Self.m_settings.RCSAddr.module);
+    enable := RCSs.IsNonFailedModule(Self.m_settings.RCSAddr);
   except
     enable := false;
   end;

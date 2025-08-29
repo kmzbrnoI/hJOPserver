@@ -517,7 +517,7 @@ begin
 
   if (Self.m_settings.RCSAddrs.Count > 0) then
   begin
-    if (RCSi.IsNonFailedModule(Self.m_settings.RCSAddrs[0].module)) then
+    if (RCSs.IsNonFailedModule(Self.m_settings.RCSAddrs[0])) then
     begin
       if (Self.m_state.signal = ncDisabled) then
       begin
