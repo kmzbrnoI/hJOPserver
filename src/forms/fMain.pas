@@ -11,9 +11,9 @@ uses
 
 const
   _SB_LOG = 0;
-  _SB_TRAKCE_STAV = 2;
-  _SB_TRAKCE_LIB = 3;
-  _SB_PROC = 5;
+  _SB_TRAKCE_STAV = 1;
+  _SB_TRAKCE_LIB = 2;
+  _SB_PROC = 3;
 
   _INIDATA_FN = 'inidata.ini';
 
@@ -1680,7 +1680,7 @@ procedure TF_Main.OnTrkAfterOpen(Sender: TObject);
 begin
   Self.A_Trk_Connect.Enabled := false;
   Self.A_Trk_Disconnect.Enabled := true;
-  Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Centrála připojena';
+  Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Trakce připojena';
   Self.LogStatus('Centrála: připojeno');
   Self.S_Trakce_Connected.Brush.Color := clLime;
   Self.A_Locos_Acquire.Enabled := true;
@@ -1708,7 +1708,7 @@ procedure TF_Main.OnTrkAfterClose(Sender: TObject);
 begin
   Self.A_Trk_Connect.Enabled := true;
   Self.A_Trk_Disconnect.Enabled := false;
-  Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Centrála odpojena';
+  Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Trakce odpojena';
   Self.LogStatus('Centrála: odpojena');
   Self.S_Trakce_Connected.Brush.Color := clRed;
   Self.A_Locos_Acquire.Enabled := false;
@@ -2889,8 +2889,11 @@ end;
 
 procedure TF_Main.RepaintObjects();
 begin
-  Self.SB1.Panels.Items[0].Width := Self.ClientWidth - Self.SB1.Panels.Items[1].Width - Self.SB1.Panels.Items[2].Width -
-    Self.SB1.Panels.Items[3].Width - Self.SB1.Panels.Items[4].Width - Self.SB1.Panels.Items[5].Width;
+  var allButFirstWidth: Integer := 0;
+  for var i: Integer := 1 to Self.SB1.Panels.Count-1 do
+    allButFirstWidth := allButFirstWidth + Self.SB1.Panels[i].Width;
+
+  Self.SB1.Panels.Items[0].Width := Self.ClientWidth - allButFirstWidth;
   Self.P_Zrychleni.Left := Self.ClientWidth - Self.P_Zrychleni.Width - 5;
   Self.P_Time_modelovy.Left := Self.P_Zrychleni.Left - Self.P_Time_modelovy.Width - 5;
   Self.P_Time.Left := Self.P_Time_modelovy.Left - Self.P_Time.Width - 5;

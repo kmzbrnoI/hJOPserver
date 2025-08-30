@@ -3463,29 +3463,19 @@ object F_Main: TF_Main
         BiDiMode = bdLeftToRight
         ParentBiDiMode = False
         Text = 'log'
-        Width = 550
+        Width = 900
       end
       item
         Alignment = taCenter
         BiDiMode = bdLeftToRight
         ParentBiDiMode = False
-        Text = 'RCS uzav'#345'eno'
+        Text = 'Trakce odpojena'
         Width = 100
       end
       item
         Alignment = taCenter
-        Text = 'Centr'#225'la odpojena'
-        Width = 120
-      end
-      item
-        Alignment = taCenter
-        Text = '-'
-        Width = 200
-      end
-      item
-        Alignment = taCenter
-        Text = '-'
-        Width = 200
+        Text = 'trakce-lib.dll'
+        Width = 250
       end
       item
         Text = 'CPU'
@@ -3505,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_log
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
