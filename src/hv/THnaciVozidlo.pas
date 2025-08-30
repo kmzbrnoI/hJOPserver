@@ -624,7 +624,10 @@ begin
   end;
 
   Result := Result + '|' + IntToStr(Self.slot.step) + '|' + IntToStr(Self.realSpeed) + '|' +
-    ownConvert.BoolToStr10(Self.direction) + '|' + Self.state.area.id + '|';
+    ownConvert.BoolToStr10(Self.direction) + '|';
+  if (Self.state.area <> nil) then
+    Result := Result + Self.state.area.id;
+  Result := Result + '|';
 
   if (mode = TLokStringMode.full) then
   begin
@@ -669,7 +672,8 @@ end;
 function THV.MoveToArea(area: TArea): Integer;
 begin
   // zruseni RUC u stare stanice
-  Self.state.area.BroadcastData('RUC-RM;' + IntToStr(Self.addr));
+  if (Self.state.area <> nil) then
+    Self.state.area.BroadcastData('RUC-RM;' + IntToStr(Self.addr));
 
   // zmena stanice
   Self.state.area := area;
@@ -830,7 +834,7 @@ end;
 procedure THV.UpdatePanelRuc(send_remove: Boolean = true);
 var train: string;
 begin
-  if (Self.data.typ = THVType.car) then
+  if ((Self.data.typ = THVType.car) or (Self.state.area = nil)) then
     Exit(); // do not report cars
 
   if (Self.state.train > -1) then
