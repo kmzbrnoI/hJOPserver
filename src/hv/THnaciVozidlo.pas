@@ -1608,7 +1608,6 @@ begin
     Blocks.ChangeTrackWithTrain(Trains[Self.train]);
 
   Self.UpdatePanelRuc();
-  raise Exception.Create('Test exception');
 
   // odesleme do regulatoru info o uspesne autorizaci
   // to je dobre tehdy, kdyz je loko prebirano z centraly
