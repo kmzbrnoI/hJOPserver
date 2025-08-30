@@ -462,7 +462,7 @@ begin
   enable := true;
   try
     for var rcsaddr: TRCSsAddr in Self.m_settings.RCSAddrs do
-      if (not RCSs.IsNonFailedModule(rcsaddr)) then
+      if (not RCSs.IsOperationalModule(rcsaddr)) then
         enable := false;
   except
     enable := false;
@@ -519,7 +519,7 @@ begin
 
   if (Self.m_settings.RCSAddrs.Count > 0) then
   begin
-    if (RCSs.IsNonFailedModule(Self.m_settings.RCSAddrs[0])) then
+    if (RCSs.IsOperationalModule(Self.m_settings.RCSAddrs[0])) then
     begin
       if (Self.m_state.signal = ncDisabled) then
       begin

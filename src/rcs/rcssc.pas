@@ -112,6 +112,8 @@ type
     function IsModuleWarning(addr: TRCSsSystemModule): Boolean; overload;
     function IsNonFailedModule(addr: TRCSsAddr): Boolean; overload;
     function IsNonFailedModule(addr: TRCSsSystemModule): Boolean; overload;
+    function IsOperationalModule(addr: TRCSsAddr): Boolean; overload;
+    function IsOperationalModule(addr: TRCSsSystemModule): Boolean; overload;
 
     function IsSimulation(system: Cardinal): Boolean; overload;
     function IsSimulation(addr: TRCSsAddr): Boolean; overload;
@@ -629,6 +631,16 @@ begin
   if (addr.system > _RCSS_MAX) then
     Exit(False);
   Result := Self.m_rcss[addr.system].IsNonFailedModule(addr.module);
+end;
+
+function TRCSs.IsOperationalModule(addr: TRCSsAddr): Boolean;
+begin
+  Result := (Self.Started(addr)) and (Self.IsNonFailedModule(addr));
+end;
+
+function TRCSs.IsOperationalModule(addr: TRCSsSystemModule): Boolean;
+begin
+  Result := (Self.Started(addr.system)) and (Self.IsNonFailedModule(addr));
 end;
 
 function TRCSs.IsSimulation(system: Cardinal): Boolean;

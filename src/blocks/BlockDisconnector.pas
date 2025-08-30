@@ -204,7 +204,7 @@ begin
   enable := true;
   try
     for var rcsaddr in Self.m_settings.RCSAddrs do
-      if (not RCSs.IsNonFailedModule(rcsaddr)) then
+      if (not RCSs.IsOperationalModule(rcsaddr)) then
         enable := false;
   except
     enable := false;
@@ -238,7 +238,7 @@ end;
 
 procedure TBlkDisconnector.Update();
 begin
-  if ((Self.state <> TBlkDiscBasicState.disabled) and (not RCSs.IsNonFailedModule(Self.m_settings.RCSAddrs[0])))
+  if ((Self.state <> TBlkDiscBasicState.disabled) and (not RCSs.IsOperationalModule(Self.m_settings.RCSAddrs[0])))
   then
   begin
     Self.state := TBlkDiscBasicState.disabled;
@@ -248,7 +248,7 @@ begin
   case (Self.state) of
     TBlkDiscBasicState.disabled:
       begin
-        if ((Self.m_state.rcsFailed) and (RCSs.IsNonFailedModule(Self.m_settings.RCSAddrs[0]))) then
+        if ((Self.m_state.rcsFailed) and (RCSs.IsOperationalModule(Self.m_settings.RCSAddrs[0]))) then
         begin
           Self.m_state.rcsFailed := false;
           Self.state := TBlkDiscBasicState.inactive;

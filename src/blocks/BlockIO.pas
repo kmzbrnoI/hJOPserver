@@ -193,10 +193,10 @@ end;
 
 procedure TBlkIO.Enable();
 begin
-  if ((Self.isRCSOutput) and (Self.RCSoutputNeeded) and (not RCSs.IsNonFailedModule(Self.m_settings.RCSoutput)))
+  if ((Self.isRCSOutput) and (Self.RCSoutputNeeded) and (not RCSs.IsOperationalModule(Self.m_settings.RCSoutput)))
   then
     Exit();
-  if ((Self.isRCSinput) and (Self.RCSinputNeeded) and (not RCSs.IsNonFailedModule(Self.m_settings.RCSinput))) then
+  if ((Self.isRCSinput) and (Self.RCSinputNeeded) and (not RCSs.IsOperationalModule(Self.m_settings.RCSinput))) then
     Exit();
 
   if (Self.isRCSinput) then
@@ -241,15 +241,15 @@ var inputState: TRCSInputState;
 begin
   inherited;
 
-  if ((not Self.enabled) and (((not Self.isRCSOutput) or (RCSs.IsNonFailedModule(Self.m_settings.RCSoutput))) and
-    ((not Self.isRCSinput) or (RCSs.IsNonFailedModule(Self.m_settings.RCSinput))))) then
+  if ((not Self.enabled) and (((not Self.isRCSOutput) or (RCSs.IsOperationalModule(Self.m_settings.RCSoutput))) and
+    ((not Self.isRCSinput) or (RCSs.IsOperationalModule(Self.m_settings.RCSinput))))) then
   begin
     Self.Enable();
     Self.Change();
   end;
   if ((Self.enabled) and (((Self.isRCSOutput) and (Self.m_settings.RCSoutputNeeded) and
-    (not RCSs.IsNonFailedModule(Self.m_settings.RCSoutput))) or ((Self.isRCSinput) and
-    (Self.m_settings.RCSinputNeeded) and (not RCSs.IsNonFailedModule(Self.m_settings.RCSinput))))) then
+    (not RCSs.IsOperationalModule(Self.m_settings.RCSoutput))) or ((Self.isRCSinput) and
+    (Self.m_settings.RCSinputNeeded) and (not RCSs.IsOperationalModule(Self.m_settings.RCSinput))))) then
   begin
     Self.Disable();
     Self.Change(true);

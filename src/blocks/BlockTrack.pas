@@ -498,7 +498,7 @@ begin
   enable := true;
   try
     for var rcsaddr: TRCSsAddr in Self.m_settings.RCSAddrs do
-      if (not RCSs.IsNonFailedModule(rcsaddr)) then
+      if (not RCSs.IsOperationalModule(rcsaddr)) then
         enable := false;
   except
     enable := false;

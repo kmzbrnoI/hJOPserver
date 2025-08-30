@@ -383,7 +383,7 @@ procedure TBlkCrossing.Enable();
 begin
   try
     for var module: TRCSsSystemModule in Self.m_state.rcsModules do
-      if (not RCSs.IsNonFailedModule(module)) then
+      if (not RCSs.IsOperationalModule(module)) then
         Exit();
   except
     Exit();
@@ -1372,7 +1372,8 @@ begin
   Result := True;
   try
     for var module: TRCSsSystemModule in Self.m_state.rcsModules do
-      Result := Result and RCSs.IsNonFailedModule(module);
+      if (not RCSs.IsOperationalModule(module)) then
+        Exit(False);
   except
     Result := false;
   end;

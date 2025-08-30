@@ -486,15 +486,15 @@ begin
 
   if (Self.posDetection) then
   begin
-    if (not RCSs.IsNonFailedModule(Self.rcsInPlus)) then
+    if (not RCSs.IsOperationalModule(Self.rcsInPlus)) then
       enable := false;
-    if (not RCSs.IsNonFailedModule(Self.rcsInMinus)) then
+    if (not RCSs.IsOperationalModule(Self.rcsInMinus)) then
       enable := false;
   end;
 
-  if (not RCSs.IsNonFailedModule(Self.rcsOutPlus)) then
+  if (not RCSs.IsOperationalModule(Self.rcsOutPlus)) then
     enable := false;
-  if (not RCSs.IsNonFailedModule(Self.rcsOutMinus)) then
+  if (not RCSs.IsOperationalModule(Self.rcsOutMinus)) then
     enable := false;
 
   if (enable) then
