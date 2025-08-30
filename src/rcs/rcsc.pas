@@ -58,6 +58,7 @@ type
 
   private
     mSystemI: Cardinal;
+    mLibDir: string;
     modules: TObjectDictionary<Cardinal, TRCSModule>;
     mLoadedOk: Boolean; // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
     fGeneralError: Boolean; // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
@@ -129,6 +130,7 @@ type
     property maxModuleAddr: Cardinal read GetMaxModuleAddr;
     property maxModuleAddrSafe: Cardinal read GetMaxModuleAddrSafe;
     property systemI: Cardinal read mSystemI;
+    property libDir: string read mLibDir write mLibDir;
   end;
 
 function RCSAddrComparer(): IComparer<TRCSAddr>;
@@ -143,6 +145,7 @@ constructor TRCS.Create(systemI: Cardinal);
 begin
   inherited Create();
   Self.mSystemI := systemI;
+  Self.mLibDir := '';
 
   Self.modules := TObjectDictionary<Cardinal, TRCSModule>.Create();
 
@@ -186,11 +189,10 @@ begin
 end;
 
 procedure TRCS.LoadLib(libFn: string; configFn: string);
-var libName: string;
 begin
-  libName := ExtractFileName(libFn);
+  var fullPath := Self.mLibDir + '\' + libFn;
 
-  if (not FileExists(libFn)) then
+  if (not FileExists(fullPath)) then
     raise RCSException.Create('Library file not found, not loading');
 
   if (Self.ready) then
@@ -204,9 +206,9 @@ begin
   if (not DirectoryExists(configDir)) then
     CreateDir(configDir);
 
-  TRCSIFace(Self).LoadLib(libFn, configFn);
+  TRCSIFace(Self).LoadLib(fullPath, configFn);
 
-  Self.Log('Načtena knihovna ' + libName + ', RCS API v'+Self.apiVersionStr() + ', '+configFn, llInfo);
+  Self.Log('Načtena knihovna ' + fullPath + ', RCS API v'+Self.apiVersionStr() + ', '+configFn, llInfo);
 
   // kontrola bindnuti vsech eventu
 

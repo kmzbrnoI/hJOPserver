@@ -49,7 +49,6 @@ type
 
   private
     m_rcss: array[0.._RCSS_MAX] of TRCS;
-    mLibDir: string;
     mConfigDir: string;
 
     function IsGeneralError(): Boolean;
@@ -135,15 +134,7 @@ type
 
     property items[index: Integer]: TRCS read GetItem; default;
 
-    // events
-//    property AfterClose: TNotifyEvent read fAfterClose write fAfterClose;
-
-//    property OnReady: TRCSReadyEvent read fOnReady write fOnReady;
-//    property ready: Boolean read aReady;
-    property libDir: string read mLibDir;
     property configDir: string read mConfigDir;
-//    property maxModuleAddr: Cardinal read GetMaxModuleAddr;
-//    property maxModuleAddrSafe: Cardinal read GetMaxModuleAddrSafe;
   end;
 
 var
@@ -294,7 +285,7 @@ begin
   if (system > _RCSS_MAX) then
     raise EInvalidSystem.Create(system);
 
-  Self.m_rcss[system].LoadLib(Self.libDir + '\' + libFn, Self.configDir + '\rcs'+IntToStr(system) + '_' + ChangeFileExt(ExtractFileName(libFn), '.ini'));
+  Self.m_rcss[system].LoadLib(libFn, Self.configDir + '\rcs'+IntToStr(system) + '_' + ChangeFileExt(ExtractFileName(libFn), '.ini'));
 end;
 
 function TRCSs.IsGeneralError(): Boolean;
@@ -426,7 +417,7 @@ end;
 
 procedure TRCSs.LoadFromFile(ini: TMemIniFile);
 begin
-  Self.mLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
+  var libDirPrefix: string := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
   Self.mConfigDir := ini.ReadString(_INIFILE_SECTNAME, 'configDir', _DEFAULT_CONFIG_PATH);
 
   for var i: Integer := 0 to _RCSS_MAX do
@@ -435,6 +426,8 @@ begin
     if ((i = 0) and (dllFile = '')) then
       dllFile := ini.ReadString(_INIFILE_SECTNAME, 'lib', ''); // backward-compatibility
 
+    Self.m_rcss[i].libDir := libDirPrefix + IntToStr(i);
+
     if (dllFile <> '') then
     begin
       try
@@ -442,8 +435,9 @@ begin
       except
         on E: Exception do
         begin
-          Self.m_rcss[i].LogFMainStatusError('Nelze naèíst knihovnu ' + Self.mLibDir + '\' + dllFile + ': ' + E.Message);
-          Self.m_rcss[i].Log('Nelze naèíst knihovnu ' + Self.mLibDir + '\' + dllFile + ': ' + E.Message, llError);
+          var fullPath: string := Self.m_rcss[i].libDir + IntToStr(i) + '\' + dllFile;
+          Self.m_rcss[i].LogFMainStatusError('Nelze naèíst knihovnu ' + fullPath + ': ' + E.Message);
+          Self.m_rcss[i].Log('Nelze naèíst knihovnu ' + fullPath + ': ' + E.Message, llError);
         end;
       end;
     end;

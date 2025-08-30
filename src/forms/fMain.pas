@@ -775,10 +775,8 @@ begin
   except
     on E: Exception do
     begin
-      Screen.Cursor := crDefault;
-      StrMessageBox('Nelze načíst knihovnu ' + fn + ':' + #13#10 + E.Message, 'Nelze načíst knihovnu',
+      StrMessageBox('Nelze načíst knihovnu ' + rcs.libDir + '\' + fn + ':' + #13#10 + E.Message, 'Nelze načíst knihovnu',
         MB_OK OR MB_ICONWARNING);
-      Exit();
     end;
   end;
 
@@ -816,19 +814,15 @@ begin
 end;
 
 procedure TF_Main.UpdateRCSLibsList();
-var sr: TSearchRec;
-  procedure AddLib(name: string);
+  procedure AddLib(systemI: Integer; name: string);
   begin
-    for var i: Integer := 0 to RCSs._RCSS_MAX do
-    begin
-      var item := TMenuItem.Create(Self.MI_RCSs[i].MI_Root);
-      item.Caption := name;
-      item.RadioItem := True;
-      item.Tag := i;
-      item.OnClick := Self.MI_RCS_Lib_Click;
-      Self.MI_RCSs[i].MI_Root.Add(item);
-      Self.MI_RCSs[i].MI_Libs.Add(item)
-    end;
+    var item := TMenuItem.Create(Self.MI_RCSs[systemI].MI_Root);
+    item.Caption := name;
+    item.RadioItem := True;
+    item.Tag := systemI;
+    item.OnClick := Self.MI_RCS_Lib_Click;
+    Self.MI_RCSs[systemI].MI_Root.Add(item);
+    Self.MI_RCSs[systemI].MI_Libs.Add(item)
   end;
 
 begin
@@ -840,19 +834,21 @@ begin
       libmi.Free();
     end;
     Self.MI_RCSs[i].MI_Libs.Clear();
-  end;
 
-  if (FindFirst(RCSs.libDir + '\*.dll', faAnyFile, sr) = 0) then
-  begin
-    if ((sr.Attr AND faDirectory) = 0) then
-      AddLib(sr.name);
-
-    while (FindNext(sr) = 0) do
+    var sr: TSearchRec;
+    if (FindFirst(RCSs[i].libDir + '\*.dll', faAnyFile, sr) = 0) then
+    begin
       if ((sr.Attr AND faDirectory) = 0) then
-        AddLib(sr.name);
+        AddLib(i, sr.name);
 
-    SysUtils.FindClose(sr);
+      while (FindNext(sr) = 0) do
+        if ((sr.Attr AND faDirectory) = 0) then
+          AddLib(i, sr.name);
+
+      SysUtils.FindClose(sr);
+    end;
   end;
+
 
   Self.RCSGUIUpdateAll();
 end;
