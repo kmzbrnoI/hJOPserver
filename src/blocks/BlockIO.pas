@@ -257,12 +257,7 @@ begin
 
   if ((Self.enabled) and (Self.isRCSinput)) then
   begin
-    try
-      inputState := RCSs.GetInput(Self.m_settings.RCSinput);
-    except
-      on E: RCSException do
-        inputState := TRCSInputState.failure;
-    end;
+    inputState := RCSs.GetInputNoEx(Self.m_settings.RCSinput);
 
     if (inputState <> Self.m_state.inputState) then
     begin
@@ -273,12 +268,7 @@ begin
 
   if ((Self.enabled) and (Self.isRCSOutput)) then
   begin
-    try
-      outputState := RCSs.GetOutputState(Self.m_settings.RCSoutput);
-    except
-      on E: RCSException do
-        outputState := TRCSOutputState.osFailure;
-    end;
+    outputState := RCSs.GetOutputStateNoEx(Self.m_settings.RCSoutput);
 
     if (outputState <> Self.m_state.outputState) then
     begin

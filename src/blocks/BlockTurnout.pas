@@ -741,8 +741,8 @@ function TBlkTurnout.GetInputs(): TBlkTurnoutInputs;
 begin
   if (Self.posDetection) then
   begin
-    Result.plus := RCSs.GetInput(Self.rcsInPlus);
-    Result.minus := RCSs.GetInput(Self.rcsInMinus);
+    Result.plus := RCSs.GetInputNoEx(Self.rcsInPlus);
+    Result.minus := RCSs.GetInputNoEx(Self.rcsInMinus);
   end else begin
     Result := Self.MockInputs();
   end;
@@ -756,21 +756,11 @@ var inp, couplingInp: TBlkTurnoutInputs;
 begin
   coupling := Blocks.GetBlkTurnoutByID(Self.m_settings.coupling);
 
-  try
-    inp := Self.GetInputs();
-  except
-    inp.plus := TRCSInputState.failure;
-    inp.minus := TRCSInputState.failure;
-  end;
+  inp := Self.GetInputs();
 
   if ((coupling <> nil) and (inp.plus <> TRCSInputState.failure) and (inp.minus <> TRCSInputState.failure)) then
   begin
-    try
-      couplingInp := coupling.GetInputs();
-    except
-      couplingInp.plus := TRCSInputState.failure;
-      couplingInp.minus := TRCSInputState.failure;
-    end;
+    couplingInp := coupling.GetInputs();
 
     inp.plus := CombineCouplingInputs(inp.plus, couplingInp.plus);
     inp.minus := CombineCouplingInputs(inp.minus, couplingInp.minus);
@@ -1365,19 +1355,15 @@ begin
 
   if ((Self.m_settings.controllers.enabled) and (RCSs.IsSimulation(Self.m_settings.controllers.rcsPlus)) and (RCSs.IsSimulation(Self.m_settings.controllers.rcsMinus))) then
   begin
-    try
-      var plus := (RCSs.GetInput(Self.m_settings.controllers.rcsPlus) = isOn);
-      var minus := (RCSs.GetInput(Self.m_settings.controllers.rcsMinus) = isOn);
+    var plus: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.controllers.rcsPlus);
+    var minus: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.controllers.rcsMinus);
 
-      if (not plus) then
-        Result := Result + '*RAD+,';
-      if (not minus) then
-        Result := Result + '*RAD-,';
-      if (plus or minus) then
-        Result := Result + '*RAD?,';
-    except
-      on E: RCSException do begin end;
-    end;
+    if (plus = TRCSInputState.isOff) then
+      Result := Result + '*RAD+,';
+    if (minus = TRCSInputState.isOff) then
+      Result := Result + '*RAD-,';
+    if ((plus = TRCSInputState.isOn) or (minus = TRCSInputState.isOn)) then
+      Result := Result + '*RAD?,';
   end;
 end;
 
@@ -2056,23 +2042,19 @@ begin
   if ((Self.m_settings.controllers.pstOnly) and (not Self.PstIsActive())) then
     Exit();
 
-  try
-    if ((RCSs.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) and
-        (RCSs.GetInput(Self.m_settings.controllers.rcsMinus) = TRCSInputState.isOn)) then
-      Exit();
+  var inPlus: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.controllers.rcsPlus);
+  var inMinus: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.controllers.rcsMinus);
 
-    if (RCSs.GetInput(Self.m_settings.controllers.rcsPlus) = TRCSInputState.isOn) then
-      if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.plus) and (not Self.movingPlus)) then
-        Self.SetPosition(TTurnoutPosition.plus, false, true);
+  if ((inPlus = TRCSInputState.isOn) and (inMinus = TRCSInputState.isOn)) then
+    Exit();
 
-    if (RCSs.GetInput(Self.m_settings.controllers.rcsMinus) = TRCSInputState.isOn) then
-      if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.minus) and (not Self.movingMinus)) then
-        Self.SetPosition(TTurnoutPosition.minus, false, true);
+  if (inPlus = TRCSInputState.isOn) then
+    if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.plus) and (not Self.movingPlus)) then
+      Self.SetPosition(TTurnoutPosition.plus, false, true);
 
-  except
-    on E: RCSException do Exit();
-    on E: Exception do raise;
-  end;
+  if (inMinus = TRCSInputState.isOn) then
+    if ((not Self.outputLocked) and (Self.position <> TTurnoutPosition.minus) and (not Self.movingMinus)) then
+      Self.SetPosition(TTurnoutPosition.minus, false, true);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2122,12 +2104,8 @@ begin
   if (not Self.m_settings.controllers.enabled) then
     Exit(true);
 
-  try
-    Result := ((RCSs.GetInput(Self.m_settings.controllers.rcsPlus) <> isOn) and
-               (RCSs.GetInput(Self.m_settings.controllers.rcsMinus) <> isOn));
-  except
-    Result := false;
-  end;
+  Result := ((RCSs.GetInputNoEx(Self.m_settings.controllers.rcsPlus) = isOff) and
+             (RCSs.GetInputNoEx(Self.m_settings.controllers.rcsMinus) = isOff));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

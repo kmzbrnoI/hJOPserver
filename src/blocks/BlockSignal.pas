@@ -1315,15 +1315,11 @@ begin
 
   if ((Self.m_settings.PSt.enabled) and (RCSs.IsSimulation(Self.m_settings.PSt.rcsControllerShunt))) then
   begin
-    try
-      if (RCSs.GetInput(Self.m_settings.PSt.rcsControllerShunt) = isOn) then
-        Result := Result + '*RAD<,'
-      else
-        Result := Result + '*RAD>,';
-    except
-      on E: RCSException do begin end;
-      on E: Exception do raise;
-    end;
+    var cont: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.PSt.rcsControllerShunt);
+    if (cont = isOn) then
+      Result := Result + '*RAD<,'
+    else if (cont = isOff) then
+      Result := Result + '*RAD>,';
   end;
 end;
 
@@ -2350,12 +2346,7 @@ function TBlkSignal.ControllerInBasicPosition(): Boolean;
 begin
   if (not Self.m_settings.PSt.enabled) then
     Exit(true);
-
-  try
-    Result := (RCSs.GetInput(Self.m_settings.PSt.rcsControllerShunt) <> isOn);
-  except
-    Result := false;
-  end;
+  Result := (RCSs.GetInputNoEx(Self.m_settings.PSt.rcsControllerShunt) = isOff);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2387,16 +2378,11 @@ begin
   if ((not Self.m_settings.PSt.enabled) or (not RCSs.Started(Self.m_settings.PSt.rcsControllerShunt)) or (not Self.PstIsActive()) or (Self.changing)) then
     Exit();
 
-  try
-    var state := RCSs.GetInput(Self.m_settings.PSt.rcsControllerShunt);
-    if ((state = TRCSInputState.isOn) and (Self.signal <> ncPosunZaj)) then
-      Self.signal := ncPosunZaj;
-    if ((state = TRCSInputState.isOff) and (Self.signal <> ncStuj)) then
-      Self.signal := ncStuj;
-  except
-    on E: RCSException do Exit();
-    on E: Exception do raise;
-  end;
+  var state := RCSs.GetInputNoEx(Self.m_settings.PSt.rcsControllerShunt);
+  if ((state = TRCSInputState.isOn) and (Self.signal <> ncPosunZaj)) then
+    Self.signal := ncPosunZaj;
+  if ((state = TRCSInputState.isOff) and (Self.signal <> ncStuj)) then
+    Self.signal := ncStuj;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

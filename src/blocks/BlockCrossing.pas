@@ -932,7 +932,7 @@ begin
     Result := Result + '-,*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
 
   if ((Self.m_settings.RCSInputs.annulation.enabled) and (RCSs.IsSimulation(Self.m_settings.RCSInputs.annulation.addr))) then
-    Result := Result + ite(RCSs.GetInput(Self.m_settings.RCSInputs.annulation.addr) = TRCSInputState.isOn, '*ANULACE<', '*ANULACE>');
+    Result := Result + ite(RCSs.GetInputNoEx(Self.m_settings.RCSInputs.annulation.addr) = TRCSInputState.isOn, '*ANULACE<', '*ANULACE>');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1263,13 +1263,7 @@ function TBlkCrossing.IsAnnulation(): Boolean;
 begin
   Result := false;
   if ((Self.m_settings.RCSInputs.annulation.enabled) and (RCSs.Started(Self.m_settings.RCSInputs.annulation.addr))) then
-  begin
-    try
-      Result := (RCSs.GetInput(Self.m_settings.RCSInputs.annulation.addr) = isOn);
-    except
-
-    end;
-  end;
+    Result := (RCSs.GetInputNoEx(Self.m_settings.RCSInputs.annulation.addr) = isOn);
 
   if (not Result) then
     for var track: TBlkCrossingTrack in Self.tracks do
@@ -1285,11 +1279,7 @@ begin
 
   if (Self.m_settings.RCSInputs.closed.enabled) then
   begin
-    try
-      Result := Result and (RCSs.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOn);
-    except
-      Exit(False);
-    end;
+    Result := Result and (RCSs.GetInputNoEx(Self.m_settings.RCSInputs.closed.addr) = isOn);
   end else begin
     Result := Result and Self.WantClose();
   end;
@@ -1300,13 +1290,7 @@ begin
   Result := (Self.WantClose());
 
   if (Self.m_settings.RCSInputs.caution.enabled) then
-  begin
-    try
-      Result := Result or (RCSs.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOn);
-    except
-      Exit();
-    end;
-  end;
+    Result := Result or (RCSs.GetInputNoEx(Self.m_settings.RCSInputs.caution.addr) = isOn);
 end;
 
 function TBlkCrossing.IsSignalOpen(): Boolean;
@@ -1314,13 +1298,7 @@ begin
   Result := (not Self.WantClose());
 
   if ((Result) and (Self.m_settings.RCSInputs.open.enabled)) then
-  begin
-    try
-      Result := Result and (RCSs.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn);
-    except
-      Exit(False);
-    end;
-  end;
+    Result := Result and (RCSs.GetInputNoEx(Self.m_settings.RCSInputs.open.addr) = isOn);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1350,19 +1328,39 @@ end;
 
 function TBlkCrossing.IsInputValid(): Boolean;
 begin
-  try
-    if (((Self.m_settings.RCSInputs.open.enabled) and (RCSs.GetInput(Self.m_settings.RCSInputs.open.addr) = isOn)) and
-        ((Self.m_settings.RCSInputs.closed.enabled) and (RCSs.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOn))) then
+  var stOpen: TRCSInputState := TRCSInputState.failure;
+  if (Self.m_settings.RCSInputs.open.enabled) then
+  begin
+    stOpen := RCSs.GetInputNoEx(Self.m_settings.RCSInputs.open.addr);
+    if (not TRCS.RCSInputStateValid(stOpen)) then
       Exit(False);
-    if (((Self.m_settings.RCSInputs.open.enabled) and (RCSs.GetInput(Self.m_settings.RCSInputs.open.addr) = isOff)) and
-        ((Self.m_settings.RCSInputs.closed.enabled) and (RCSs.GetInput(Self.m_settings.RCSInputs.closed.addr) = isOff)) and
-        ((Self.m_settings.RCSInputs.caution.enabled) and (RCSs.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOff))) then
-      Exit(False);
-    if ((Self.m_settings.RCSInputs.caution.enabled) and (Self.WantClose()) and (RCSs.GetInput(Self.m_settings.RCSInputs.caution.addr) = isOff)) then
-      Exit(False);
-  except
-    Exit(False);
   end;
+
+  var stClosed: TRCSInputState := TRCSInputState.failure;
+  if (Self.m_settings.RCSInputs.closed.enabled) then
+  begin
+    stClosed := RCSs.GetInputNoEx(Self.m_settings.RCSInputs.closed.addr);
+    if (not TRCS.RCSInputStateValid(stClosed)) then
+      Exit(False);
+  end;
+
+  var stCaution: TRCSInputState := TRCSInputState.failure;
+  if (Self.m_settings.RCSInputs.caution.enabled) then
+  begin
+    stCaution := RCSs.GetInputNoEx(Self.m_settings.RCSInputs.caution.addr);
+    if (not TRCS.RCSInputStateValid(stCaution)) then
+      Exit(False);
+  end;
+
+  if (((Self.m_settings.RCSInputs.open.enabled) and (stOpen = isOn)) and
+      ((Self.m_settings.RCSInputs.closed.enabled) and (stClosed = isOn))) then
+    Exit(False);
+  if (((Self.m_settings.RCSInputs.open.enabled) and (stOpen = isOff)) and
+      ((Self.m_settings.RCSInputs.closed.enabled) and (stClosed = isOff)) and
+      ((Self.m_settings.RCSInputs.caution.enabled) and (stCaution = isOff))) then
+    Exit(False);
+  if ((Self.m_settings.RCSInputs.caution.enabled) and (Self.WantClose()) and (stCaution = isOff)) then
+    Exit(False);
 
   Result := True;
 end;

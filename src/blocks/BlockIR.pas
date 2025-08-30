@@ -111,13 +111,8 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkIR.Update();
-var state: TRCSInputState;
 begin
-  try
-    state := RCSs.GetInput(Self.m_settings.RCSAddr)
-  except
-    state := failure;
-  end;
+  var state: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.RCSAddr);
 
   case (state) of
     isOff:

@@ -339,15 +339,11 @@ begin
 
   if ((IsWritable(rights)) and (Self.m_settings.rcsController.enabled) and (RCSs.Started(Self.m_settings.rcsController.addr))) then
   begin
-    try
-      if (RCSs.GetInput(Self.m_settings.rcsController.addr) = isOn) then
-        Result := Result + '-,*RAD<,'
-      else
-        Result := Result + '-,*RAD>,';
-    except
-      on E: RCSException do begin end;
-      on E: Exception do raise;
-    end;
+    var state: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.rcsController.addr);
+    if (state = isOn) then
+      Result := Result + '-,*RAD<,'
+    else if (state = isOff) then
+      Result := Result + '-,*RAD>,';
   end;
 end;
 
@@ -577,13 +573,7 @@ begin
   if (not Self.PstIs()) or (not Self.PstIsActive()) then
     Exit(false);
 
-  var controller: TRCSInputState;
-  try
-    controller := RCSs.GetInput(Self.m_settings.rcsController.addr);
-  except
-    controller := TRCSInputState.isOff;
-  end;
-
+  var controller: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.rcsController.addr);
   Result := ((Self.active) and (controller = TRCSInputState.isOn));
 end;
 
@@ -638,12 +628,7 @@ function TBlkDisconnector.ControllerInBasicPosition(): Boolean;
 begin
   if (not Self.m_settings.rcsController.enabled) then
     Exit(true);
-
-  try
-    Result := (RCSs.GetInput(Self.m_settings.rcsController.addr) <> isOn);
-  except
-    Result := false;
-  end;
+  Result := (RCSs.GetInputNoEx(Self.m_settings.rcsController.addr) = isOff);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -655,16 +640,11 @@ begin
   if ((Self.m_settings.rcsController.pstOnly) and (not Self.PstIsActive())) then
     Exit();
 
-  try
-    var state := RCSs.GetInput(Self.m_settings.rcsController.addr);
-    if ((state = TRCSInputState.isOn) and (not Self.active)) then
-      Self.state := TBlkDiscBasicState.activeInfinite;
-    if ((state = TRCSInputState.isOff) and (Self.state = TBlkDiscBasicState.activeInfinite)) then
-      Self.state := TBlkDiscBasicState.inactive;
-  except
-    on E: RCSException do Exit();
-    on E: Exception do raise;
-  end;
+  var state := RCSs.GetInputNoEx(Self.m_settings.rcsController.addr);
+  if ((state = TRCSInputState.isOn) and (not Self.active)) then
+    Self.state := TBlkDiscBasicState.activeInfinite;
+  if ((state = TRCSInputState.isOff) and (Self.state = TBlkDiscBasicState.activeInfinite)) then
+    Self.state := TBlkDiscBasicState.inactive;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

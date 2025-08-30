@@ -190,7 +190,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBooster.GetOverload(): TBoosterSignal;
-var val: TRCSInputState;
 begin
   // if not a power, not a overload
   if (Self.power = TBoosterSignal.error) then
@@ -202,13 +201,9 @@ begin
   if ((not RCSs[Self.m_settings.rcs.overload.addr.addr.system].ready) or (not RCSs[Self.m_settings.rcs.overload.addr.addr.system].Started())) then
     Exit(TBoosterSignal.undef);
 
-  try
-    val := RCSs.GetInput(Self.m_settings.rcs.overload.addr.addr);
-  except
-    Exit(TBoosterSignal.undef);
-  end;
+  var val: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.rcs.overload.addr.addr);
 
-  if ((val = failure) or (val = notYetScanned) or (val = unavailableModule) or (val = unavailablePort)) then
+  if (not TRCS.RCSInputStateValid(val)) then
     Result := TBoosterSignal.undef
   else if ((val = isOn) xor (Self.m_settings.rcs.overload.reversed)) then
     Result := TBoosterSignal.error
@@ -217,7 +212,6 @@ begin
 end;
 
 function TBooster.GetPower(): TBoosterSignal;
-var val: TRCSInputState;
 begin
   if (not Self.isPowerDetection) then
     Exit(TBoosterSignal.ok);
@@ -225,13 +219,9 @@ begin
   if ((not RCSs[Self.m_settings.rcs.power.addr.addr.system].ready) or (not RCSs[Self.m_settings.rcs.power.addr.addr.system].Started())) then
     Exit(TBoosterSignal.undef);
 
-  try
-    val := RCSs.GetInput(Self.m_settings.rcs.power.addr.addr);
-  except
-    Exit(TBoosterSignal.undef);
-  end;
+  var val: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.rcs.power.addr.addr);
 
-  if ((val = failure) or (val = notYetScanned) or (val = unavailableModule) or (val = unavailablePort)) then
+  if (not TRCS.RCSInputStateValid(val)) then
     Result := TBoosterSignal.undef
   else if ((val = isOn) xor (Self.m_settings.rcs.power.reversed)) then
     Result := TBoosterSignal.error
@@ -240,7 +230,6 @@ begin
 end;
 
 function TBooster.GetDCC(): TBoosterSignal;
-var val: TRCSInputState;
 begin
   if (not Self.isDCCdetection) then
   begin
@@ -261,13 +250,9 @@ begin
   if ((not RCSs[Self.m_settings.rcs.DCC.addr.addr.system].ready) or (not RCSs[Self.m_settings.rcs.DCC.addr.addr.system].Started())) then
     Exit(TBoosterSignal.undef);
 
-  try
-    val := RCSs.GetInput(Self.m_settings.rcs.DCC.addr.addr);
-  except
-    Exit(TBoosterSignal.undef);
-  end;
+  var val: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.rcs.DCC.addr.addr);
 
-  if ((val = failure) or (val = notYetScanned) or (val = unavailableModule) or (val = unavailablePort)) then
+  if (not TRCS.RCSInputStateValid(val)) then
     Result := TBoosterSignal.undef
   else if ((val = isOn) xor (Self.m_settings.rcs.DCC.reversed)) then
     Result := TBoosterSignal.error

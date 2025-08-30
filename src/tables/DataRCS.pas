@@ -236,7 +236,7 @@ begin
       Exit(); // Cannot decrement cnt-1, because cnt is Cardinal
 
     var start: Integer;
-    if (rcs.GetInput(addr, 0) = unavailablePort) then
+    if (rcs.GetInputNoEx(addr, 0) = unavailablePort) then
       start := 1
     else
       start := 0;
@@ -246,7 +246,7 @@ begin
       if (j = ((Integer(cnt) + start) div 2)) then
         LI.SubItems[3] := LI.SubItems[3] + ' ';
 
-      case (rcs.GetInput(addr, j)) of
+      case (rcs.GetInputNoEx(addr, j)) of
         isOn:
           LI.SubItems[3] := LI.SubItems[3] + '1';
         isOff:

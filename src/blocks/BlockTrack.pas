@@ -598,12 +598,7 @@ begin
 
   for var i: Integer := 0 to Self.m_settings.RCSAddrs.Count - 1 do
   begin
-    var state: TRCSInputState;
-    try
-      state := RCSs.GetInput(Self.m_settings.RCSAddrs[i]);
-    except
-      state := failure;
-    end;
+    var state: TRCSInputState := RCSs.GetInputNoEx(Self.m_settings.RCSAddrs[i]);
 
     case (state) of
       isOn:

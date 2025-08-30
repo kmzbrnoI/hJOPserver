@@ -490,14 +490,8 @@ end;
 procedure TBlkPst.CheckInputs();
 var take, release: TRCSInputState;
 begin
-  take := TRCSInputState.failure;
-  release := TRCSInputState.failure;
-  try
-    take := RCSs.GetInput(Self.m_settings.rcsInTake);
-    release := RCSs.GetInput(Self.m_settings.rcsInRelease);
-  except
-    on E: RCSException do begin end;
-  end;
+  take := RCSs.GetInputNoEx(Self.m_settings.rcsInTake);
+  release := RCSs.GetInputNoEx(Self.m_settings.rcsInRelease);
 
   if ((take <> TRCSInputState.isOff) and (take <> TRCSInputState.isOn) and
       (take <> TRCSInputState.notYetScanned)) then

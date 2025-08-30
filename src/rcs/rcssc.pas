@@ -90,12 +90,14 @@ type
     procedure SetOutputs(addrs: TList<TRCSsAddr>; state: TRCSOutputState); overload;
 
     function GetInput(addr: TRCSsAddr): TRCSInputState; overload;
+    function GetInputNoEx(addr: TRCSsAddr): TRCSInputState;
 
     procedure SetInput(addr: TRCSsAddr; state: Integer); overload;
     procedure SetInputs(addrs: TList<TRCSsAddr>; state: Integer); overload;
 
     function GetOutput(addr: TRCSsAddr): Integer; overload;
     function GetOutputState(addr: TRCSsAddr): TRCSOutputState; overload;
+    function GetOutputStateNoEx(addr: TRCSsAddr): TRCSOutputState; overload;
 
     function GetModuleInputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
     function GetModuleOutputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
@@ -500,6 +502,13 @@ begin
   Result := Self.m_rcss[addr.system].GetInput(addr.module, addr.port);
 end;
 
+function TRCSs.GetInputNoEx(addr: TRCSsAddr): TRCSInputState;
+begin
+  if (addr.system > _RCSS_MAX) then
+    Exit(TRCSInputState.failure);
+  Result := Self.m_rcss[addr.system].GetInputNoEx(addr.module, addr.port);
+end;
+
 procedure TRCSs.SetInput(addr: TRCSsAddr; state: Integer);
 begin
   if (addr.system > _RCSS_MAX) then
@@ -529,6 +538,13 @@ begin
   if (addr.system > _RCSS_MAX) then
     raise EInvalidSystem.Create(addr.system);
   Result := Self.m_rcss[addr.system].GetOutputState(addr.module, addr.port);
+end;
+
+function TRCSs.GetOutputStateNoEx(addr: TRCSsAddr): TRCSOutputState;
+begin
+  if (addr.system > _RCSS_MAX) then
+    Exit(TRCSOutputState.osFailure);
+  Result := Self.m_rcss[addr.system].GetOutputStateNoEx(addr.module, addr.port);
 end;
 
 function TRCSs.GetModuleInputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;

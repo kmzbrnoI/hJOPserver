@@ -212,11 +212,7 @@ begin
   for var i := 0 to Self.inputs.Count-1 do
   begin
     var state: TRCSInputState;
-    try
-      state := Self.rcs.GetInput(Self.RCSModuleInputs, i);
-    except
-      state := failure;
-    end;
+    state := Self.rcs.GetInputNoEx(Self.RCSModuleInputs, i);
 
     if (state = TRCSInputState.isOn) then begin
       Self.inputs[i].panel.Color := ite(Self.inputs[i].shape.Brush.Color = clRed, clYellow, clBtnFace);
@@ -252,7 +248,7 @@ begin
     var state: TRCSOutputState := osFailure;
     var typ: TRCSOPortType := optPlain;
     try
-      state := Self.rcs.GetOutputState(Self.RCSModuleOutputs, i);
+      state := Self.rcs.GetOutputStateNoEx(Self.RCSModuleOutputs, i);
       typ := Self.rcs.GetOutputType(Self.RCSModuleOutputs, i);
     except
 
