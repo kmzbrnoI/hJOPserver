@@ -8,7 +8,7 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
   Generics.Collections, RegularExpressions;
 
 type
-  TPTEndpointLokStav = class(TPTEndpoint)
+  TPTEndpointLokState = class(TPTEndpoint)
     private const
       _ENDPOINT_MATCH_REGEX = '^/lokState/(\d+)/?$';
 
@@ -28,7 +28,7 @@ uses PTUtils, THVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TPTEndpointLokStav.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+procedure TPTEndpointLokState.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
 var lokoAddr: Word;
     params: TDictionary<string, string>;
@@ -65,7 +65,7 @@ begin
 end;
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TPTEndpointLokStav.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+procedure TPTEndpointLokState.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject);
 var lokoAddr: Word;
     params: TDictionary<string, string>;
@@ -95,13 +95,13 @@ begin
      Exit();
     end;
 
-   if (not reqJson.Contains('lokStav')) then
+   if (not reqJson.Contains('lokState')) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce lokStav');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce lokState');
      Exit();
     end;
 
-   HVDb[lokoAddr].PostPtState(reqJson['lokStav'], respJson);
+   HVDb[lokoAddr].PostPtState(reqJson['lokState'], respJson);
  finally
    params.Free();
  end;
@@ -109,7 +109,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPTEndpointLokStav.EndpointMatch(path:string):Boolean;
+function TPTEndpointLokState.EndpointMatch(path:string):Boolean;
 begin
  Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;

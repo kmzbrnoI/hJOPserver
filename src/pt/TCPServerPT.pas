@@ -176,7 +176,7 @@ begin
   Self.endpoints.Add(TPTEndpointBlokStav.Create());
   Self.endpoints.Add(TPTEndpointLok.Create());
   Self.endpoints.Add(TPTEndpointLoks.Create());
-  Self.endpoints.Add(TPTEndpointLokStav.Create());
+  Self.endpoints.Add(TPTEndpointLokState.Create());
   Self.endpoints.Add(TPTEndpointJCs.Create());
   Self.endpoints.Add(TPTEndpointJC.Create());
   Self.endpoints.Add(TPTEndpointJCStav.Create());
