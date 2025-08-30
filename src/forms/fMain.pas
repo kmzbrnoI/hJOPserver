@@ -1342,7 +1342,6 @@ begin
 end;
 
 procedure TF_Main.OnRCSReady(Sender: TObject; ready: Boolean);
-var started, opened: Boolean;
 begin
   var rcs: TRCS := TRCS(Sender);
 

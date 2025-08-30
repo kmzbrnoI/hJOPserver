@@ -240,7 +240,7 @@ begin
     ExtractStringsEx([','], [], blocks, strs);
     for var str in strs do
     begin
-      var id: Integer := -1;
+      var id: Integer;
       if (name) then
         id := BlockDb.Blocks.GetBlkIDExc(Trim(str))
       else

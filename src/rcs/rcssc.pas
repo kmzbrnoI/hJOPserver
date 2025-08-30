@@ -53,7 +53,6 @@ type
     mConfigDir: string;
 
     function IsGeneralError(): Boolean;
-    procedure Log(msg: string; level: TLogLevel);
     function GetItem(i: Integer): TRCS;
 
   public
@@ -178,11 +177,6 @@ begin
     Self.m_rcss[i].Free();
 
   inherited;
-end;
-
-procedure TRCSs.Log(msg: string; level: TLogLevel);
-begin
-  Logging.Log(msg, level, lsRCS);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

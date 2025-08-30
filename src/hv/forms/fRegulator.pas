@@ -412,7 +412,7 @@ begin
     end;
   end;
 
-  var i: Integer := 0;
+  var i: Integer;
   for i := 0 to Self._MAX_FORMS - 1 do
     if (not Self.Forms.data[i].Showing) then
       break;
