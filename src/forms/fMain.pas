@@ -72,8 +72,6 @@ type
     MI_Trk_Disconnect: TMenuItem;
     N4: TMenuItem;
     MI_Trk_connect: TMenuItem;
-    M_Zobrazeni: TMenuItem;
-    PM_SB1: TMenuItem;
     T_GUI_refresh: TTimer;
     MI_System: TMenuItem;
     PM_Central_Start: TMenuItem;
@@ -194,7 +192,6 @@ type
     Panel3: TPanel;
     Label2: TLabel;
     CB_centrala_loglevel_file: TComboBox;
-    N9: TMenuItem;
     PM_SaveLayout: TMenuItem;
     A_SaveStav: TAction;
     PM_Bloky: TPopupMenu;
@@ -335,7 +332,6 @@ type
     procedure AE_1Message(var Msg: tagMSG; var Handled: Boolean);
     procedure PM_TesterClick(Sender: TObject);
     procedure PM_Help_RPClick(Sender: TObject);
-    procedure PM_SB1Click(Sender: TObject);
     procedure T_GUI_refreshTimer(Sender: TObject);
     procedure T_clear_log_msgTimer(Sender: TObject);
     procedure FormResize(Sender: TObject);
@@ -2793,15 +2789,6 @@ begin
     for i := 0 to (Sender as TPopupMenu).Items.Count - 1 do
       (Sender as TPopupMenu).Items.Items[i].Enabled := true;
   end;
-end;
-
-procedure TF_Main.PM_SB1Click(Sender: TObject);
-begin
-  SB1.Visible := PM_SB1.Checked;
-  if (PM_SB1.Checked) then
-    Log('Zobrazeno SB1', llInfo)
-  else
-    Log('Skryto SB1', llInfo);
 end;
 
 procedure TF_Main.T_GUI_refreshTimer(Sender: TObject);

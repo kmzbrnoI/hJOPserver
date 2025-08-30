@@ -6613,23 +6613,11 @@ object F_Main: TF_Main
         ImageIndex = 21
         OnClick = MI_Save_configClick
       end
-      object N9: TMenuItem
-        Caption = '-'
-      end
       object PM_SaveLayout: TMenuItem
         Action = A_SaveStav
       end
-    end
-    object M_Zobrazeni: TMenuItem
-      Caption = 'Zobrazen'#237
-      object PM_SB1: TMenuItem
-        AutoCheck = True
-        Caption = 'Stavov'#225' li'#353'ta'
-        Checked = True
-        OnClick = PM_SB1Click
-      end
       object PM_SaveFormPos: TMenuItem
-        Caption = 'Ulo'#382'it pozice okna'
+        Caption = 'Ulo'#382'it pozice oken'
         OnClick = PM_SaveFormPosClick
       end
     end
