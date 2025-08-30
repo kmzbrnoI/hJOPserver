@@ -129,6 +129,8 @@ type
     procedure ProcessToggleFunc(hvFunc: THVToggleFunc);
     class function hvFunc(HV: THV; fIndex: Cardinal; time: TDateTime): THVToggleFunc;
 
+    procedure CallCb(cb: TCommandCallback);
+
   public
 
     DCCGoTime: TDateTime;
@@ -181,7 +183,7 @@ var
 implementation
 
 uses fMain, RCSc, fRegulator, TrainDb, GetSystems, THVDatabase, DataHV,
-  BlockDb, RegulatorTCP, TCPServerPanel;
+  BlockDb, RegulatorTCP, TCPServerPanel, appEv;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -409,8 +411,7 @@ begin
 
   if (addr = _MAX_ADDR) then
   begin
-    if (Assigned(cb^.callback_ok.callback)) then
-      cb^.callback_ok.callback(Self, cb^.callback_ok.Data);
+    Self.CallCb(cb^.callback_ok);
     FreeMem(cb);
     Exit();
   end;
@@ -428,8 +429,7 @@ procedure TTrakce.LoksSetFuncErr(Sender: TObject; Data: Pointer);
 var cb: ^TSetDescFuncsCallback;
 begin
   cb := Data;
-  if (Assigned(cb^.callback_err.callback)) then
-    cb^.callback_err.callback(Self, cb^.callback_err.Data);
+  Self.CallCb(cb^.callback_err);
   FreeMem(cb);
 end;
 
@@ -577,8 +577,7 @@ begin
 
   if (not Self.ConnectedSafe()) then
   begin
-    if (Assigned(cb^.callback_err.callback)) then
-      cb^.callback_err.callback(Self, cb^.callback_err.Data);
+    Self.CallCb(cb^.callback_err);
     FreeMem(Data);
     Exit();
   end;
@@ -590,8 +589,7 @@ begin
 
   if (cb^.addr = _MAX_ADDR) then
   begin
-    if (Assigned(cb^.callback_ok.callback)) then
-      cb^.callback_ok.callback(Self, cb^.callback_ok.Data);
+    Self.CallCb(cb^.callback_ok);
     FreeMem(Data);
     Exit();
   end;
@@ -601,8 +599,7 @@ begin
       TTrakce.callback(Self.TurnedOffSound, Data), TTrakce.callback(Self.TurnedOffSound, Data));
     HVDb[cb^.addr].state.functions[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] := true;
   except
-    if (Assigned(cb^.callback_err.callback)) then
-      cb^.callback_err.callback(Self, cb^.callback_err.Data);
+    Self.CallCb(cb^.callback_err);
     FreeMem(Data);
   end;
 end;
@@ -625,8 +622,7 @@ begin
 
   if (not Self.ConnectedSafe()) then
   begin
-    if (Assigned(cb^.callback_err.callback)) then
-      cb^.callback_err.callback(Self, cb^.callback_err.Data);
+    Self.CallCb(cb^.callback_err);
     FreeMem(Data);
     Exit();
   end;
@@ -639,8 +635,7 @@ begin
 
   if (cb^.addr = _MAX_ADDR) then
   begin
-    if (Assigned(cb^.callback_ok.callback)) then
-      cb^.callback_ok.callback(Self, cb^.callback_ok.Data);
+    Self.CallCb(cb^.callback_ok);
     FreeMem(Data);
     Exit();
   end;
@@ -649,8 +644,7 @@ begin
     HVDb[cb^.addr].SetSingleFunc(HVDb[cb^.addr].funcDict[_SOUND_FUNC], true, TTrakce.callback(Self.RestoredSound, Data),
       TTrakce.callback(Self.RestoredSound, Data));
   except
-    if (Assigned(cb^.callback_err.callback)) then
-      cb^.callback_err.callback(Self, cb^.callback_err.Data);
+    Self.CallCb(cb^.callback_err);
     FreeMem(Data);
   end;
 end;
@@ -663,8 +657,7 @@ var Data: ^TPOMCallback;
 begin
   if (toProgram.Count = 0) then
   begin
-    if (Assigned(ok.callback)) then
-      ok.callback(Self, ok.Data);
+    Self.CallCb(ok);
     Exit();
   end;
 
@@ -691,8 +684,7 @@ begin
   if (pomData.index >= (pomData.toProgram.Count - 1)) then
   begin
     // last POM
-    if (Assigned(pomData.callback_ok.callback)) then
-      pomData.callback_ok.callback(Self, pomData.callback_ok.Data);
+    Self.CallCb(pomData.callback_ok);
     FreeMem(Data);
   end else begin
     // send next data
@@ -707,8 +699,7 @@ procedure TTrakce.POMCvWroteErr(Sender: TObject; Data: Pointer);
 var pomData: ^TPOMCallback;
 begin
   pomData := Data;
-  if (Assigned(pomData.callback_err.callback)) then
-    pomData.callback_err.callback(Self, pomData.callback_err.Data);
+  Self.CallCb(pomData.callback_err);
   FreeMem(Data);
 end;
 
@@ -778,6 +769,19 @@ begin
     if (Self.SpeedTable[step] <= speed) then
       Exit(Self.SpeedTable[step]);
   Result := 0;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TTrakce.CallCb(cb: TCommandCallback);
+begin
+  try
+    if (Assigned(cb.callback)) then
+      cb.callback(Self, cb.Data);
+  except
+    on e: Exception do
+      AppEvents.LogException(e, 'TTrakce.CallCb');
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
