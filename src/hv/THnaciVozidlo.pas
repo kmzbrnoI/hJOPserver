@@ -180,6 +180,8 @@ type
     procedure LoadHVFuncs(str: string);
     class function PomToJson(pom: THVPomCV): TJsonObject;
 
+    procedure CallCb(cb: TCommandCallback);
+
   public
     index: Word; // index v seznamu vsech hnacich vozidel
     data: THVData;
@@ -1256,21 +1258,18 @@ var cbOk, cbErr: PTCb;
 begin
   if ((not Self.acquired) and (not Self.acquiring)) then
   begin
-    if (Assigned(err.Callback)) then
-      err.Callback(Self, err.data);
+    Self.CallCb(err);
     Exit();
   end;
   if ((Self.direction = direction) and (Self.speedStep = speedStep) and (not Self.acquiring)) then
   begin
-    if (Assigned(ok.Callback)) then
-      ok.Callback(Self, ok.data);
+    Self.CallCb(ok);
     Exit();
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
     Log('LOKO ' + Self.name + ' ukradena, nenastavuji rychlost', llInfo);
-    if (Assigned(err.Callback)) then
-      err.Callback(Self, err.data);
+    Self.CallCb(err);
     Exit();
   end;
 
@@ -1310,21 +1309,18 @@ var cbOk, cbErr: PTCb;
 begin
   if ((not Self.acquired) and (not Self.acquiring)) then
   begin
-    if (Assigned(err.Callback)) then
-      err.Callback(Self, err.data);
+    Self.CallCb(err);
     Exit();
   end;
   if (Self.slotFunctions[func] = state) then
   begin
-    if (Assigned(ok.Callback)) then
-      ok.Callback(Self, ok.data);
+    Self.CallCb(ok);
     Exit();
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
     Log('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', llInfo);
-    if (Assigned(err.Callback)) then
-      err.Callback(Self, err.data);
+    Self.CallCb(err);
     Exit();
   end;
 
@@ -1357,15 +1353,13 @@ procedure THV.StateFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject =
 begin
   if ((not Self.acquired) and (not Self.acquiring)) then
   begin
-    if (Assigned(err.Callback)) then
-      err.Callback(Self, err.data);
+    Self.CallCb(err);
     Exit();
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
     Log('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', llInfo);
-    if (Assigned(err.Callback)) then
-      err.Callback(Self, err.data);
+    Self.CallCb(err);
     Exit();
   end;
 
@@ -1381,8 +1375,7 @@ begin
 
   if (funcMask = 0) then
   begin
-    if (Assigned(ok.Callback)) then
-      ok.Callback(Self, ok.data);
+    Self.CallCb(ok);
     Exit();
   end;
 
@@ -1392,8 +1385,7 @@ begin
   try
     trakce.LocoSetFunc(Self.addr, funcMask, funcState, ok, err);
   except
-    if (Assigned(err.Callback)) then
-      err.Callback(Self, err.data);
+    Self.CallCb(err);
   end;
 
   TCPRegulator.LokUpdateFunc(Self, Sender);
@@ -1406,8 +1398,7 @@ var cbOk, cbErr: PTCb;
 begin
   if (not Self.acquired) then
   begin
-    if (Assigned(err.Callback)) then
-      err.Callback(Self, err.data);
+    Self.CallCb(err);
     Exit();
   end;
 
@@ -1487,8 +1478,7 @@ procedure THV.TrakceCallbackCallEv(cb: PTCb);
 begin
   if (cb <> nil) then
   begin
-    if (Assigned(cb.Callback)) then
-      cb.Callback(Self, cb.data);
+    Self.CallCb(cb^);
     if (Assigned(cb.other)) then
       FreeMem(cb.other);
     FreeMem(cb);
@@ -1618,14 +1608,14 @@ begin
     Blocks.ChangeTrackWithTrain(Trains[Self.train]);
 
   Self.UpdatePanelRuc();
+  raise Exception.Create('Test exception');
 
   // odesleme do regulatoru info o uspesne autorizaci
   // to je dobre tehdy, kdyz je loko prebirano z centraly
   var state: string := ite(Self.manual, 'total', 'ok');
   Self.BroadcastRegulators('AUTH;' + state + ';{' + Self.GetPanelLokString() + '}');
 
-  if (Assigned(Self.acquiredOk.Callback)) then
-    Self.acquiredOk.Callback(Self, Self.acquiredOk.data);
+  Self.CallCb(Self.acquiredOk);
 end;
 
 procedure THV.TrakceAcquiredErr(Sender: TObject; data: Pointer);
@@ -1634,8 +1624,7 @@ begin
   Self.state.acquiring := false;
   Self.changed := true;
   RegCollector.LocoChanged(Self, Self.addr);
-  if (Assigned(Self.acquiredErr.Callback)) then
-    Self.acquiredErr.Callback(Self, Self.acquiredErr.data);
+  Self.CallCb(Self.acquiredErr);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1673,8 +1662,7 @@ begin
   Self.state.pom := TPomStatus.unknown;
   Self.changed := true;
   RegCollector.LocoChanged(Self, Self.addr);
-  if (Assigned(Self.releasedOk.Callback)) then
-    Self.releasedOk.Callback(Self, Self.releasedOk.data);
+  Self.CallCb(Self.releasedOk);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1706,8 +1694,7 @@ begin
   Self.state.pom := Self.pomTarget;
   Self.changed := true;
   RegCollector.LocoChanged(Self, Self.addr);
-  if (Assigned(Self.pomOk.Callback)) then
-    Self.pomOk.Callback(Self, Self.pomOk.data);
+  Self.CallCb(Self.pomOk);
 end;
 
 procedure THV.TrakcePOMErr(Sender: TObject; data: Pointer);
@@ -1716,8 +1703,7 @@ begin
   Self.state.trakceError := true;
   Self.changed := true;
   RegCollector.LocoChanged(Self, Self.addr);
-  if (Assigned(Self.pomErr.Callback)) then
-    Self.pomOk.Callback(Self, Self.pomErr.data);
+  Self.CallCb(Self.pomErr);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1759,8 +1745,7 @@ begin
       slotOld.functions <> Self.slot.functions);
   end;
 
-  if (Assigned(Self.acquiredOk.Callback)) then
-    Self.acquiredOk.Callback(Self, Self.acquiredOk.data);
+  Self.CallCb(Self.acquiredOk);
 end;
 
 procedure THV.TrakceUpdatedErr(Sender: TObject; data: Pointer);
@@ -1771,8 +1756,7 @@ begin
   Self.state.lastUpdated := Now;
   Self.changed := true;
   RegCollector.LocoChanged(Self, Self.addr);
-  if (Assigned(Self.acquiredErr.Callback)) then
-    Self.acquiredErr.Callback(Self, Self.acquiredErr.data);
+  Self.CallCb(Self.acquiredErr);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1936,6 +1920,19 @@ begin
   Result := TJsonObject.Create();
   Result['cv'] := pom.cv;
   Result['value'] := pom.value;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure THV.CallCb(cb: TCommandCallback);
+begin
+  try
+    if (Assigned(cb.callback)) then
+      cb.callback(Self, cb.Data);
+  except
+    on e: Exception do
+      AppEvents.LogException(e, 'THV.CallCb');
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
