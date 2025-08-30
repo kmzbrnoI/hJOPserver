@@ -654,7 +654,10 @@ begin
 
       // zastavime soupravy na useku
       for var train: Integer in Self.trains do
+      begin
         TrainDb.trains[train].speed := 0;
+        TrainDb.trains[train].RemovePOdj(Self);
+      end;
 
       Self.Change(true);
     end;
