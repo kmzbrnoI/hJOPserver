@@ -502,6 +502,7 @@ type
     procedure RCSShapesInit();
     procedure RCSShapesUpdate();
     procedure RCSSLVStateInit();
+    procedure RCSStopSafeReaction();
 
     procedure WMPowerBroadcast(var Msg: TMessage); message WM_POWERBROADCAST;
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
@@ -1179,14 +1180,8 @@ begin
   Self.UpdateSystemButtons();
 
   // may happen when RCS USB disconnects
-  // TODO too strict -> disable just blocks related to specific RCS
-  if (Blocks.Enabled) then
-  begin
-    Blocks.Disable();
-    Trains.ClearPOdj();
-    Self.A_SaveStavExecute(Self);
-  end;
-  Trains.StopAllTrains();
+  if (not RCSs.AnyRCSStateGTE(TRCSState.rsOpenStopped)) then
+    Self.RCSStopSafeReaction();
 
   rcs.Log('Uzavřeno', llInfo);
   rcs.LogFMainStatus('Uzavřeno');
@@ -1201,6 +1196,17 @@ begin
   end;
 
   RCSTableData[rcs.systemI].UpdateTable();
+end;
+
+procedure TF_Main.RCSStopSafeReaction();
+begin
+  if (Blocks.Enabled) then
+  begin
+    Blocks.Disable();
+    Trains.ClearPOdj();
+    Self.A_SaveStavExecute(Self);
+  end;
+  Trains.StopAllTrains();
 end;
 
 procedure TF_Main.OnRCSErrOpen(Sender: TObject; errMsg: string);
@@ -1289,12 +1295,8 @@ procedure TF_Main.OnRCSStop(Sender: TObject);
 begin
   var rcs: TRCS := TRCS(Sender);
 
-  if (Blocks.Enabled) then // TODO maybe too strict?
-  begin
-    Blocks.Disable();
-    Trains.ClearPOdj();
-    Self.A_SaveStavExecute(Self);
-  end;
+  if (not RCSs.AnyRCSStateGTE(TRCSState.rsStartedNotScanned)) then
+    Self.RCSStopSafeReaction();
 
   modelTime.started := false;
 
@@ -1312,7 +1314,6 @@ begin
     BlocksTablePainter.UpdateTable();
 
   PanelServer.BroadcastBottomError('Výpadek systému RCS'+IntToStr(rcs.systemI)+'!', 'TECHNOLOGIE');
-  Trains.StopAllTrains(); // TODO maybe too strict?
 
   if (SystemData.Status = stopping) then
     Self.MI_RCS_Close_Click(Self.MI_RCSs[rcs.systemI].MI_Close);
