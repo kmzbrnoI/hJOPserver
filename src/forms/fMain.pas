@@ -1265,12 +1265,13 @@ begin
   rcs.Log('Moduly naskenovány', llInfo);
   rcs.LogFMainStatus('Moduly naskenovány');
 
-  Areas.InitOsv(); // TODO
-
   var allStaredScanned := True;
   for var i: Integer := 0 to RCSs._RCSS_MAX do
     if ((RCSs[i].state <> rsStartedScanned) and (RCSs[i].libLoaded)) then
       allStaredScanned := False;
+
+  if (allStaredScanned) then
+    Areas.InitLights();
 
   if ((SystemData.Status = starting) and (allStaredScanned)) then
     Self.A_Trk_ConnectExecute(nil);

@@ -36,7 +36,7 @@ type
     procedure SendORList(Context: TIdContext); // odesle seznam vsech OR na spojeni \Context
 
     procedure FillCB(CB: TComboBox; selected: TArea); // naplni ComboBox seznamem oblasti rizeni
-    procedure InitOsv();
+    procedure InitLights();
     // broadcast chybove hlasky, ktera ma jit jen panelum,
     // kde alespon jeden je minimalne opravneni min_rights
     procedure BroadcastBottomError(err: string; tech: string; min_rights: TAreaRights = read);
@@ -225,10 +225,10 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TAreas.InitOsv();
+procedure TAreas.InitLights();
 begin
   for var area: TArea in Self.db do
-    area.OsvInit();
+    area.InitLights();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

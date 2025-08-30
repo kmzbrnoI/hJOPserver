@@ -214,7 +214,7 @@ type
     function LokoPlease(Sender: TIDContext; user: TObject; comment: string): Integer;
     procedure LokoCancel(Sender: TIDContext);
 
-    procedure OsvInit();
+    procedure InitLights();
 
     // --- Communication with panels ---
     procedure PanelAuthorise(Sender: TIDContext; rights: TAreaRights; username: string; password: string);
@@ -1344,14 +1344,18 @@ begin
     end;
 end;
 
-procedure TArea.OsvInit();
+procedure TArea.InitLights();
 begin
-  try
-    for var light: TAreaLighting in Self.m_data.lights do
-      if (RCSs.IsModule(light.rcsAddr)) then
+  for var light: TAreaLighting in Self.m_data.lights do
+  begin
+    if (RCSs.IsModule(light.rcsAddr)) then
+    begin
+      try
         RCSs.SetOutput(light.rcsAddr, ownConvert.BoolToInt(light.default_state));
-  except
+      except
 
+      end;
+    end;
   end;
 end;
 
