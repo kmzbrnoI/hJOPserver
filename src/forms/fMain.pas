@@ -1182,7 +1182,7 @@ begin
   rcs.Log('Uzavřeno', llInfo);
   rcs.LogFMainStatus('Uzavřeno');
 
-  PanelServer.BroadcastBottomError('Výpadek RCS'+IntToStr(rcs.systemI)+'!', 'TECHNOLOGIE');
+  PanelServer.BroadcastBottomError('Odpojeno od RCS'+IntToStr(rcs.systemI)+'!', 'TECHNOLOGIE');
 
   if ((SystemData.Status = stopping) and (RCSs.AllRCSsState(rsClosed))) then
   begin
@@ -1310,7 +1310,7 @@ begin
   if ((Self.Showing) and (Self.PC_1.ActivePage = F_Main.TS_Bloky)) then
     BlocksTablePainter.UpdateTable();
 
-  PanelServer.BroadcastBottomError('Výpadek systému RCS'+IntToStr(rcs.systemI)+'!', 'TECHNOLOGIE');
+  PanelServer.BroadcastBottomError('Ztráta komunikace RCS'+IntToStr(rcs.systemI)+'!', 'TECHNOLOGIE');
 
   if (SystemData.Status = stopping) then
     Self.MI_RCS_Close_Click(Self.MI_RCSs[rcs.systemI].MI_Close);
@@ -1730,7 +1730,7 @@ begin
 
   // no clinets shoudl be connected
   // when disconnect called with clients connected, fatal error happened
-  PanelServer.BroadcastBottomError('Výpadek systému řízení trakce, ztráta kontroly nad jízdou!', 'TECHNOLOGIE');
+  PanelServer.BroadcastBottomError('Výpadek trakce, ztráta kontroly nad jízdou!', 'TECHNOLOGIE');
 
   if (SystemData.Status = stopping) then
     for var i: Integer := 0 to RCSs._RCSS_MAX do
