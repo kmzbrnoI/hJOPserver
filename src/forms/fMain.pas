@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, TrakceIFace,
   inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils, RCSsc,
-  ComObj, BoosterDb, System.Actions, System.ImageList,
+  ComObj, BoosterDb, System.Actions, System.ImageList, Logging,
   Vcl.Mask, Vcl.Samples.Spin, Generics.Collections, Vcl.NumberBox;
 
 const
@@ -179,7 +179,7 @@ type
     L_StavS_4: TLabel;
     L_StavS_6: TLabel;
     GB_Log: TGroupBox;
-    LB_Log: TListBox;
+    LB_BriefLog: TListBox;
     MI_File: TMenuItem;
     MI_Save_config: TMenuItem;
     S_locos_acquired: TShape;
@@ -378,7 +378,7 @@ type
     procedure LV_BoostersChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure LV_JCChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure MI_Save_configClick(Sender: TObject);
-    procedure LB_LogDblClick(Sender: TObject);
+    procedure LB_BriefLogDblClick(Sender: TObject);
     procedure LV_SoupravyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure B_train_deleteClick(Sender: TObject);
     procedure LV_log_lnetDblClick(Sender: TObject);
@@ -390,7 +390,7 @@ type
     procedure LV_JCCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure CB_centrala_loglevel_fileChange(Sender: TObject);
-    procedure LB_LogDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
+    procedure LB_BriefLogDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
     procedure B_User_AddClick(Sender: TObject);
     procedure LV_UsersChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure LV_UsersDblClick(Sender: TObject);
@@ -523,7 +523,7 @@ type
     procedure AutostartUpdate();
     procedure OnStart();
     procedure ShowDateTime();
-    procedure LogStatus(str: string);
+    procedure LogBrief(str: string; level: TLogLevel);
     procedure DisableRemoveButtons();
     procedure SetCallMethod(Method: TNotifyEvent);
     procedure UpdateSystemButtons();
@@ -594,7 +594,7 @@ uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
   RCSc, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils,
   Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area, RCSIFace,
-  BlockSummary, BlockCrossing, TJCDatabase, Logging, TrakceC,
+  BlockSummary, BlockCrossing, TJCDatabase, TrakceC,
   TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
   fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkCrossing,
   fBlkSignal, fBlkRailway, BlockLinker, TrainDb, DataTrains, DataUsers, fUserEdit, UserDb,
@@ -625,7 +625,7 @@ begin
       RCSs.InputSim();
   except
     on E: Exception do
-      Log('Nelze provést inputSim : ' + E.Message, llInfo, lsRCS);
+      logging.Log('Nelze provést inputSim : ' + E.Message, llError, lsRCS, True);
   end;
 end;
 
@@ -767,11 +767,11 @@ begin
   var rcs: TRCS := RCSs[rcsi];
 
   Screen.Cursor := crHourGlass;
-  rcs.Log('-> ' + fn, llInfo);
+  rcs.Log('-> ' + fn, TLogLevel.llInfo);
 
   try
     RCSs.LoadLib(rcsi, fn);
-    Self.LogStatus('RCS'+IntToStr(rcsi)+': načteno ' + fn);
+    rcs.Log('RCS'+IntToStr(rcsi)+': načteno ' + fn, TLogLevel.llInfo, True);
   except
     on E: Exception do
     begin
@@ -794,11 +794,10 @@ begin
     Exit(); // already not loaded
 
   Screen.Cursor := crHourGlass;
-  rcs.Log('-> žádná knihovna', llInfo);
 
   try
     rcs.UnloadLib();
-    Self.LogStatus('RCS'+IntToStr(rcsi)+': načtena žádná knihovna');
+    rcs.Log('načtena žádná knihovna', TLogLevel.llInfo, True);
   except
     on E: Exception do
     begin
@@ -882,7 +881,7 @@ begin
     end;
   end;
   Screen.Cursor := crDefault;
-  RCSs[rcsi].Log('Zobrazen ConfigDialog', llInfo);
+  RCSs[rcsi].Log('Zobrazen ConfigDialog', TLogLevel.llInfo);
 end;
 
 procedure TF_Main.A_RCSs_OpenExecute(Sender: TObject);
@@ -1109,8 +1108,7 @@ begin
   Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
-  rcs.LogFMainStatus('Otevírám zařízení, hledám moduly...');
-  rcs.Log('Otevírám zařízení, hledám moduly...', llInfo);
+  rcs.Log('Otevírám zařízení, hledám moduly...', TLogLevel.llInfo, True);
 end;
 
 procedure TF_Main.OnRCSOpen(Sender: TObject);
@@ -1121,12 +1119,11 @@ begin
   Self.UpdateSystemButtons();
 
   try
-    rcs.Log('Otevřeno, modulů: ' + IntToStr(rcs.GetModuleCount()), llInfo);
+    rcs.Log('Otevřeno, modulů: ' + IntToStr(rcs.GetModuleCount()), TLogLevel.llInfo, True);
   except
-    rcs.Log('Otevřeno, neznámý počet modulů!', llWarning);
+    rcs.Log('Otevřeno, neznámý počet modulů!', TLogLevel.llWarning, True);
   end;
 
-  rcs.LogFMainStatus('Otevřeno');
   F_Tester.AfterRCSOpen(rcs.systemI);
   RCSTableData[rcs.systemI].LoadToTable(not Self.CHB_RCSs_Show_Only_Active[rcs.systemI].Checked);
 
@@ -1144,10 +1141,7 @@ begin
       end;
     end;
     if (str <> '') then
-    begin
-      rcs.Log('Chybí moduly ' + str, llWarning);
-      rcs.LogFMainStatusWarning('Chybí moduly ' + str);
-    end;
+      rcs.Log('Chybí moduly ' + str, TLogLevel.llWarning, True);
 
     Self.MI_RCS_Start_Click(Self.MI_RCSs[rcs.systemI].MI_Start);
   end;
@@ -1160,8 +1154,7 @@ begin
   Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
-  rcs.LogFMainStatus('Uzavírám zařízení...');
-  rcs.Log('Uzavírám zařízení...', llInfo);
+  rcs.Log('Uzavírám zařízení...', TLogLevel.llInfo, True);
 end;
 
 procedure TF_Main.OnRCSClose(Sender: TObject);
@@ -1175,14 +1168,13 @@ begin
   if (not RCSs.AnyRCSStateGTE(TRCSState.rsOpenStopped)) then
     Self.RCSStopSafeReaction();
 
-  rcs.Log('Uzavřeno', llInfo);
-  rcs.LogFMainStatus('Uzavřeno');
+  rcs.Log('Uzavřeno', TLogLevel.llInfo, True);
 
   PanelServer.BroadcastBottomError('Odpojeno od RCS'+IntToStr(rcs.systemI)+'!', 'TECHNOLOGIE');
 
   if ((SystemData.Status = stopping) and (RCSs.AllRCSsState(rsClosed))) then
   begin
-    Self.LogStatus('System: stop OK');
+    logging.Log('System: stop OK', TLogLevel.llInfo, lsSystem, True);
     SystemData.Status := null;
     Self.UpdateSystemButtons();
   end;
@@ -1210,8 +1202,7 @@ begin
 
   SystemData.Status := TSystemStatus.null;
 
-  rcs.LogFMainStatusError('Chyba otevírání: ' + errMsg);
-  rcs.Log('Chyba otevírání: ' + errMsg, llError);
+  rcs.Log('Chyba otevírání: ' + errMsg, TLogLevel.llError, True);
 end;
 
 procedure TF_Main.OnRCSErrClose(Sender: TObject; errMsg: string);
@@ -1223,8 +1214,7 @@ begin
 
   SystemData.Status := null;
 
-  rcs.LogFMainStatusError('Chyba uzavírání: ' + errMsg);
-  rcs.Log('Chyba uzavírání: ' + errMsg, llError);
+  rcs.Log('Chyba uzavírání: ' + errMsg, TLogLevel.llError, True);
 end;
 
 procedure TF_Main.OnRCSBeforeStart(Sender: TObject);
@@ -1234,8 +1224,7 @@ begin
   Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
-  rcs.LogFMainStatus('Spouštím komunikaci...');
-  rcs.Log('Spouštím komunikaci...', llInfo);
+  rcs.Log('Spouštím komunikaci...', TLogLevel.llInfo, True);
 end;
 
 procedure TF_Main.OnRCSStart(Sender: TObject);
@@ -1245,8 +1234,7 @@ begin
   Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
-  rcs.Log('Komunikace spuštěna, čekám na první sken všech modulů...', llInfo);
-  rcs.LogFMainStatus('Komunikace spuštěna, čekám na první sken všech modulů...');
+  rcs.Log('Komunikace spuštěna, čekám na první sken všech modulů...', TLogLevel.llInfo, True);
 
   RCSTableData[rcs.systemI].UpdateTable();
 end;
@@ -1258,8 +1246,7 @@ begin
   Self.RCSGUIUpdateAll();
   RCSTableData[rcs.systemI].UpdateTable();
 
-  rcs.Log('Moduly naskenovány', llInfo);
-  rcs.LogFMainStatus('Moduly naskenovány');
+  rcs.Log('Moduly naskenovány', TLogLevel.llInfo, True);
 
   var allStaredScanned := True;
   for var i: Integer := 0 to RCSs._RCSS_MAX do
@@ -1280,8 +1267,7 @@ begin
   Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
-  rcs.LogFMainStatus('Zastavuji komunikaci...');
-  rcs.Log('Zastavovuji komunikaci...', llInfo);
+  rcs.Log('Zastavovuji komunikaci...', TLogLevel.llInfo, True);
 end;
 
 procedure TF_Main.OnRCSStop(Sender: TObject);
@@ -1299,8 +1285,7 @@ begin
   if ((F_Tester.Showing) and (not RCSs.AnyRCSState(rsStartedScanned)) and (not RCSs.AnyRCSState(rsStartedNotScanned))) then
     F_Tester.Close();
 
-  rcs.Log('Komunikace zastavena', llInfo);
-  rcs.LogFMainStatus('Komunikace zastavena');
+  rcs.Log('Komunikace zastavena', TLogLevel.llInfo, True);
   RCSTableData[rcs.systemI].UpdateTable();
 
   if ((Self.Showing) and (Self.PC_1.ActivePage = F_Main.TS_Bloky)) then
@@ -1321,8 +1306,7 @@ begin
 
   SystemData.Status := TSystemStatus.null;
 
-  rcs.LogFMainStatusError('Chyba spouštění komunikace: ' + errMsg);
-  rcs.Log('Chyba spouštění komunikace: ' + errMsg, llError);
+  rcs.Log('Chyba spouštění komunikace: ' + errMsg, TLogLevel.llError, True);
 end;
 
 procedure TF_Main.OnRCSErrStop(Sender: TObject; errMsg: string);
@@ -1333,8 +1317,7 @@ begin
 
   SystemData.Status := TSystemStatus.null;
 
-  rcs.LogFMainStatusError('Chyba zastavování komunikace: ' + errMsg);
-  rcs.Log('Chyba zastavování komunikace: ' + errMsg, llError);
+  rcs.Log('Chyba zastavování komunikace: ' + errMsg, TLogLevel.llError, True);
 end;
 
 procedure TF_Main.OnRCSReady(Sender: TObject; ready: Boolean);
@@ -1372,7 +1355,7 @@ begin
   Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-';
   try
     trakce.LoadLib(trakce.libDir + '\' + fn);
-    Self.LogStatus('Trakce: načteno ' + fn);
+    logging.Log('Trakce: načteno ' + fn, TLogLevel.llInfo, lsTrakce);
     Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(trakce.Lib);
   except
     on E: Exception do
@@ -1499,7 +1482,7 @@ end;
 
 procedure TF_Main.A_Locos_AcquireExecute(Sender: TObject);
 begin
-  Self.LogStatus('Loko: přebírám...');
+  logging.Log('Loko: přebírám...', TLogLevel.llInfo, lsTrakce, True);
   Self.S_locos_acquired.Brush.Color := clBlue;
   Self.G_locos_acquired.ForeColor := clBlue;
 
@@ -1515,7 +1498,7 @@ end;
 
 procedure TF_Main.A_Locos_ReleaseExecute(Sender: TObject);
 begin
-  Self.LogStatus('Loko: odhlašuji...');
+  logging.Log('Loko: odhlašuji...', TLogLevel.llInfo, lsTrakce, True);
   Self.S_locos_acquired.Brush.Color := clBlue;
   Self.G_locos_acquired.ForeColor := clBlue;
   HVDb.TrakceReleaseAllUsed(Self.OnTrkAllReleased, Self.OnTrkLocoReleased);
@@ -1523,7 +1506,7 @@ end;
 
 procedure TF_Main.OnTrkAllAcquired(Sender: TObject);
 begin
-  Self.LogStatus('Loko: všechna loko převzata');
+  logging.Log('Loko: všechna loko převzata', TLogLevel.llInfo, lsTrakce, True);
 
   Self.S_locos_acquired.Brush.Color := clLime;
   Self.A_Locos_Acquire.Enabled := false;
@@ -1555,7 +1538,7 @@ end;
 
 procedure TF_Main.OnTrkAllReleased(Sender: TObject);
 begin
-  Self.LogStatus('Loko: všechna loko odhlášena');
+  logging.Log('Loko: všechna loko odhlášena', TLogLevel.llInfo, lsTrakce, True);
 
   Self.S_locos_acquired.Brush.Color := clRed;
 
@@ -1587,7 +1570,7 @@ begin
     Exit();
   end;
 
-  Self.LogStatus('DCC: zapínám');
+  logging.Log('DCC: zapínám', TLogLevel.llInfo, lsTrakce, True);
 
   try
     trakce.SetTrackStatus(tsOn, TTrakce.Callback(Self.OnDCCGoOk), TTrakce.Callback(Self.OnDCCGoError));
@@ -1595,7 +1578,7 @@ begin
     on E: Exception do
     begin
       SystemData.Status := null;
-      Self.LogStatus('DCC: START: ERR ' + E.Message);
+      logging.Log('DCC: START: ERR ' + E.Message, TLogLevel.llError, lsTrakce, True);
       ExceptionMessageBox('Chyba při DCC GO:', E);
     end;
   end;
@@ -1603,14 +1586,14 @@ end;
 
 procedure TF_Main.A_DCC_StopExecute(Sender: TObject);
 begin
-  Self.LogStatus('DCC: vypínám');
+  logging.Log('DCC: vypínám', TLogLevel.llInfo, lsTrakce, True);
 
   try
     trakce.SetTrackStatus(tsOff, TTrakce.Callback(Self.OnDCCStopOk), TTrakce.Callback(Self.OnDCCStopError));
   except
     on E: Exception do
     begin
-      Self.LogStatus('DCC: STOP: ERR ' + E.Message);
+      logging.Log('DCC: STOP: ERR ' + E.Message, TLogLevel.llError, lsTrakce, True);
       ExceptionMessageBox('Chyba při DCC STOP:', E);
     end;
   end;
@@ -1633,7 +1616,7 @@ begin
   Self.A_DCC_Go.Enabled := true;
   Self.A_DCC_Stop.Enabled := true;
   Self.S_DCC.Brush.Color := clGray;
-  Self.LogStatus('DCC: START: ERR: cenrála neodpověděla na příkaz');
+  logging.Log('DCC: START: ERR: centrála neodpověděla na příkaz', TLogLevel.llError, lsTrakce);
   StrMessageBox('Centrála neodpověděla na příkaz DCC START', 'Varování', MB_OK OR MB_ICONWARNING);
 end;
 
@@ -1645,7 +1628,7 @@ end;
 procedure TF_Main.OnDCCStopError(Sender: TObject; Data: Pointer);
 begin
   trakce.emergency := True;
-  Self.LogStatus('DCC: STOP: ERR: centrála neodpověděla na příkaz');
+  logging.Log('DCC: STOP: ERR: centrála neodpověděla na příkaz', TLogLevel.llError, lsTrakce, True);
   Self.UpdateSystemButtons();
   Self.A_DCC_Go.Enabled := true;
   Self.A_DCC_Stop.Enabled := true;
@@ -1661,7 +1644,7 @@ begin
   Self.A_System_Stop.Enabled := false;
   Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Připojování...';
   Self.S_Trakce_Connected.Brush.Color := clBlue;
-  Self.LogStatus('Centrála: připojování...');
+  logging.Log('Centrála: připojování...', TLogLevel.llInfo, lsTrakce, True);
   Self.B_HV_Add.Enabled := false;
   Self.B_HV_Delete.Enabled := false;
   Self.MI_Trk_Libs.Enabled := false;
@@ -1673,7 +1656,7 @@ begin
   Self.A_Trk_Connect.Enabled := false;
   Self.A_Trk_Disconnect.Enabled := true;
   Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Trakce připojena';
-  Self.LogStatus('Centrála: připojeno');
+  logging.Log('Centrála: připojeno', TLogLevel.llInfo, lsTrakce, True);
   Self.S_Trakce_Connected.Brush.Color := clLime;
   Self.A_Locos_Acquire.Enabled := true;
   Self.UpdateSystemButtons();
@@ -1689,7 +1672,7 @@ begin
   Self.A_System_Start.Enabled := false;
   Self.A_System_Stop.Enabled := false;
   Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Odpojování...';
-  Self.LogStatus('Centrála: odpojování...');
+  logging.Log('Centrála: odpojování...', TLogLevel.llInfo, lsTrakce, True);
   Self.S_Trakce_Connected.Brush.Color := clBlue;
   Self.G_locos_acquired.Progress := 0;
   Self.S_locos_acquired.Brush.Color := clRed;
@@ -1701,7 +1684,7 @@ begin
   Self.A_Trk_Connect.Enabled := true;
   Self.A_Trk_Disconnect.Enabled := false;
   Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Trakce odpojena';
-  Self.LogStatus('Centrála: odpojena');
+  logging.Log('Centrála: odpojena', TLogLevel.llInfo, lsTrakce, True);
   Self.S_Trakce_Connected.Brush.Color := clRed;
   Self.A_Locos_Acquire.Enabled := false;
   Self.A_Locos_Release.Enabled := false;
@@ -1749,7 +1732,7 @@ begin
   end;
 
   trakce.opening := false;
-  Self.LogStatus('ERR: Trakce OPEN FAIL: ' + errMsg);
+  logging.Log('Trakce OPEN FAIL: ' + errMsg, TLogLevel.llError, lsTrakce, True);
   ErrorMessageBox('Při otevírání Trakce nastala chyba:', errMsg);
 end;
 
@@ -1770,7 +1753,7 @@ begin
     // je DCC
     trakce.DCCGoTime := Now;
     Self.S_DCC.Brush.Color := clLime;
-    Self.LogStatus('DCC: go');
+    logging.Log('DCC: go', TLogLevel.llInfo, lsTrakce, True);
 
     if (trakce.ConnectedSafe()) then
     begin
@@ -1788,7 +1771,7 @@ begin
 
     // neni DCC
     Self.S_DCC.Brush.Color := clRed;
-    Self.LogStatus('DCC: stop');
+    logging.Log('DCC: stop', TLogLevel.llInfo, lsTrakce, True);
 
     if (trakce.ConnectedSafe()) then
     begin
@@ -1804,7 +1787,7 @@ end;
 
 procedure TF_Main.A_Turnoff_FunctionsExecute(Sender: TObject);
 begin
-  Self.LogStatus('Vypínám zvuky hnacích vozidel...');
+  Logging.Log('Vypínám zvuky hnacích vozidel...', TLogLevel.llInfo, lsTrakce, True);
   Application.ProcessMessages();
   trakce.TurnOffSound(TTrakce.Callback(Self.OnTrkAllFunctionTurnedOff),
     TTrakce.Callback(Self.OnTrkAllFunctionTurnedOff));
@@ -1812,7 +1795,7 @@ end;
 
 procedure TF_Main.OnTrkAllFunctionTurnedOff(Sender: TObject; Data: Pointer);
 begin
-  Self.LogStatus('Zvuky všech hnacích vozidel vypnuty');
+  logging.Log('Zvuky všech hnacích vozidel vypnuty', TLogLevel.llInfo, lsTrakce, True);
   Application.ProcessMessages();
   Self.A_Locos_ReleaseExecute(Self);
 end;
@@ -1927,7 +1910,7 @@ begin
     MB_YESNO OR MB_ICONWARNING OR MB_DEFBUTTON2) = mrYes) then
   begin
     Blocks.MoveTurnoutBasicPosition();
-    Log('Vyhýbky přestaveny do základní polohy', llInfo);
+    logging.Log('Vyhýbky přestaveny do základní polohy', TLogLevel.llInfo, lsAny, True);
     StrMessageBox('Výhybky přestaveny do základních poloh.', 'Informace', MB_OK OR MB_ICONINFORMATION);
   end;
 end;
@@ -2211,7 +2194,7 @@ begin
   begin
     Self.A_PT_StartExecute(Self)
   end else begin
-    Self.LogStatus('System: start OK');
+    logging.Log('System: start OK', TLogLevel.llInfo, lsSystem, True);
     SystemData.status := null;
     Self.UpdateSystemButtons();
   end;
@@ -2231,7 +2214,7 @@ begin
   try
     PtServer.Start();
     if (SystemData.Status = TSystemStatus.starting) then
-      Self.LogStatus('System: start OK');
+      logging.Log('System: start OK', TLogLevel.llInfo, lsSystem, True);
   except
     on E: Exception do
       ExceptionMessageBox('Nelze nastartovat PT server:', E);
@@ -2364,13 +2347,13 @@ end;
 
 procedure TF_Main.A_System_StartExecute(Sender: TObject);
 begin
-  Self.LB_Log.Items.Insert(0, '--------------------------------------------------------------------------------');
+  Self.LB_BriefLog.Items.Insert(0, '--------------------------------------------------------------------------------');
 
   for var i: Integer := 0 to RCSs._RCSS_MAX do
   begin
     if ((RCSs[i].libLoaded) and (not RCSs[i].ready)) then
     begin
-      Self.LogStatus('ERR: Systém nelze spustit, RCS není připraveno k zapnutí systému');
+      logging.Log('Systém nelze spustit, RCS není připraveno k zapnutí systému', TLogLevel.llError, lsSystem, True);
       StrMessageBox('Systém nelze spustit, RCS'+IntToStr(i)+' není připraveno k zapnutí systému' + #13#10 +
         'Možné příčiny:' + #13#10 + ' - nenačtena platná knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
       Exit();
@@ -2378,26 +2361,26 @@ begin
   end;
   if (not RCSs.AnyLibLoaded()) then
   begin
-    Self.LogStatus('ERR: Systém nelze spustit, nanačtena žádná RCS knihovna');
+    logging.Log('Systém nelze spustit, nanačtena žádná RCS knihovna', TLogLevel.llError, lsSystem, True);
     StrMessageBox('Systém nelze spustit, nanačtena žádná RCS knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
   if (not trakce.ready) then
   begin
-    Self.LogStatus('ERR: Systém nelze spustit, Trakce není připravena k zapnutí systému');
+    logging.Log('Systém nelze spustit, Trakce není připravena k zapnutí systému', TLogLevel.llError, lsSystem, True);
     StrMessageBox('Systém nelze spustit, Trakce není připravena k zapnutí systému' + #13#10 +
       'Možné příčiny:' + #13#10 + ' - nenačtena platná knihovna', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (AppEvents.lastException <> nil) then
   begin
-    Self.LogStatus('ERR: Systém nelze spustit, AppEvents hlásí výjimku');
+    logging.Log('Systém nelze spustit, AppEvents hlásí výjimku', TLogLevel.llError, lsSystem, True);
     StrMessageBox('Systém nelze spustit, v minulosti nastala kritická výjimka!', 'Nelze spustit', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
 
-  Self.LogStatus('Zapínám systémy...');
+  logging.Log('Zapínám systémy...', TLogLevel.llInfo, lsSystem, True);
   SystemData.Status := starting;
   Self.A_System_Start.Enabled := false;
 
@@ -2410,11 +2393,11 @@ procedure TF_Main.A_System_StopExecute(Sender: TObject);
 begin
   Self.A_System_Stop.Enabled := false;
 
-  Self.LB_Log.Items.Insert(0, '--------------------------------------------------------------------------------');
-  Self.LogStatus('Vypínám systémy...');
+  Self.LB_BriefLog.Items.Insert(0, '--------------------------------------------------------------------------------');
+  logging.Log('Vypínám systémy...', TLogLevel.llInfo, lsSystem, True);
   SystemData.Status := stopping;
 
-  Self.LogStatus('Zastavuji všechny vlaky...');
+  logging.Log('Zastavuji všechny vlaky...', TLogLevel.llInfo, lsSystem, True);
   Trains.StopAllTrains();
 
   Application.ProcessMessages();
@@ -2422,7 +2405,7 @@ begin
   if (PtServer.openned) then
     Self.A_PT_StopExecute(nil);
 
-  Self.LogStatus('Odpojuji panely...');
+  logging.Log('Odpojuji panely...', TLogLevel.llInfo, lsSystem, True);
   Areas.DisconnectPanels();
   Self.A_PanelServer_StopExecute(nil);
 
@@ -2855,7 +2838,7 @@ end;
 
 procedure TF_Main.CloseForm();
 begin
-  Log('########## Probíhá ukončování hJOPserver ##########', llInfo);
+  logging.Log('########## Probíhá ukončování hJOPserver ##########', TLogLevel.llInfo);
 
   Self.T_Main.Enabled := false;
   Self.T_GUI_refresh.Enabled := false;
@@ -2867,7 +2850,7 @@ begin
   Self.A_SaveStavExecute(Self);
   trakce.LogObj := nil;
 
-  Log('###############################################', llInfo);
+  logging.Log('###############################################', TLogLevel.llInfo);
 end;
 
 procedure TF_Main.RepaintObjects();
@@ -3008,13 +2991,13 @@ begin
   end;
 end;
 
-procedure TF_Main.LB_LogDblClick(Sender: TObject);
+procedure TF_Main.LB_BriefLogDblClick(Sender: TObject);
 begin
-  if (StrMessageBox('Smazat obsah seznamu?', 'Smazat?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
-    Self.LB_Log.Clear();
+  if (StrMessageBox('Smazat obsah stručného logu?', 'Smazat?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
+    Self.LB_BriefLog.Clear();
 end;
 
-procedure TF_Main.LB_LogDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
+procedure TF_Main.LB_BriefLogDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
 begin
   with Control as TListBox do
   begin
@@ -3070,14 +3053,14 @@ begin
   F_AutoStartSystems.L_Cas.Caption := FormatDateTime('ss', Now - Self.autostart.goTime);
   if (Self.autostart.state = asEnabled) then
   begin
-    Log('Probiha automaticke pripojovani k systemum - t=6s', llInfo);
+    Log('Probiha automaticke pripojovani k systemum - t=6s', TLogLevel.llInfo);
     F_AutoStartSystems.Show();
     Self.autostart.goTime := Now + EncodeTime(0, 0, 6, 0);
     Self.autostart.state := asWaiting;
   end else if (Self.autostart.state = asWaiting) then begin           
     if (Round((Now - Self.autostart.goTime) * 24 * 3600) = 0) then
     begin
-      Log('Automaticke pripojovani k systemum - t=0 - zapinam systemy', llInfo);
+      Log('Automaticke pripojovani k systemum - t=0 - zapinam systemy', TLogLevel.llInfo);
       F_AutoStartSystems.Close();
       Self.autostart.state := asDisabled;
       F_Main.A_System_StartExecute(nil);
@@ -3095,8 +3078,8 @@ procedure TF_Main.OnStart();
 begin
   mCpuLoad.CreateCPUGauge();
 
-  Log('Spuštěn hJOPserver v' + VersionStr(), llInfo);
-  Log('----------------------------------------------------------------', llInfo);
+  Log('Spuštěn hJOPserver v' + VersionStr(), TLogLevel.llInfo);
+  Log('----------------------------------------------------------------', TLogLevel.llInfo);
 
   if (not Self.CloseMessage) then
   begin
@@ -3393,15 +3376,21 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TF_Main.LogStatus(str: string);
+procedure TF_Main.LogBrief(str: string; level: TLogLevel);
 begin
-  if (Assigned(Self.LB_Log)) then
-  begin
-    if (Self.LB_Log.Items.Count > 100) then
-      Self.LB_Log.Clear();
-    Self.LB_Log.Items.Insert(0, FormatDateTime('hh:nn:ss', Now) + ' : ' + str);
+  if (not Assigned(Self.LB_BriefLog)) then
+    Exit();
+
+  if (Self.LB_BriefLog.Items.Count > 100) then
+    Self.LB_BriefLog.Clear();
+
+  var prefix := '';
+  case (level) of
+    TLogLevel.llError: prefix := 'ERR: ';
+    TLogLevel.llWarning: prefix := 'WARN: ';
   end;
-  Log(str, llInfo, lsSystem);
+
+  Self.LB_BriefLog.Items.Insert(0, FormatDateTime('hh:nn:ss', Now) + ' : ' + prefix + str);
 end;
 
 procedure TF_Main.LV_ABChange(Sender: TObject; Item: TListItem; Change: TItemChange);

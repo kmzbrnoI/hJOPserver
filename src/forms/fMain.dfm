@@ -3830,9 +3830,9 @@ object F_Main: TF_Main
         Top = 14
         Width = 584
         Height = 186
-        Caption = ' Log '
+        Caption = ' Stru'#269'n'#253' log '
         TabOrder = 2
-        object LB_Log: TListBox
+        object LB_BriefLog: TListBox
           Left = 2
           Top = 15
           Width = 580
@@ -3843,8 +3843,8 @@ object F_Main: TF_Main
           ItemHeight = 13
           ParentDoubleBuffered = False
           TabOrder = 0
-          OnDblClick = LB_LogDblClick
-          OnDrawItem = LB_LogDrawItem
+          OnDblClick = LB_BriefLogDblClick
+          OnDrawItem = LB_BriefLogDrawItem
         end
       end
     end

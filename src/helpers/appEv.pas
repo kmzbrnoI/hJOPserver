@@ -65,7 +65,7 @@ begin
       Log(strs, llError);
 
       if (Assigned(F_Main)) then
-        F_Main.LogStatus('ERR: výjimka: '+E.Message + ' (' + prefix + ')');
+        F_Main.LogBrief('Výjimka: '+E.Message + ' (' + prefix + ')', llError);
     except
 
     end;

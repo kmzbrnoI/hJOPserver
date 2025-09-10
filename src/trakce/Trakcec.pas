@@ -183,7 +183,7 @@ var
 implementation
 
 uses fMain, RCSc, fRegulator, TrainDb, GetSystems, THVDatabase, DataHV,
-  BlockDb, RegulatorTCP, TCPServerPanel, appEv;
+  BlockDb, RegulatorTCP, TCPServerPanel, appEv, Logging;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -209,7 +209,7 @@ end;
 destructor TTrakce.Destroy();
 begin
   try
-    Self.Log(llInfo, 'END');
+    Self.Log(TTrkLogLevel.llInfo, 'END');
   except
 
   end;
@@ -242,7 +242,7 @@ begin
 
   TTrakceIFace(Self).LoadLib(filename, Self.configDir + '\' + ChangeFileExt(libName, '.ini'));
 
-  Log(llInfo, 'Načtena knihovna ' + libName + ', Trakce API v'+Self.apiVersionStr());
+  Self.Log(TTrkLogLevel.llInfo, 'Načtena knihovna ' + libName + ', Trakce API v'+Self.apiVersionStr());
 
   if (Self.unbound.Count = 0) then
   begin
@@ -254,7 +254,7 @@ begin
     for var tmp: string in Self.unbound do
       str := str + tmp + ', ';
     str := LeftStr(str, Length(str) - 2);
-    F_Main.LogStatus('ERR: Trakce: nepodařilo se svázat následující funkce : ' + str);
+    F_Main.LogBrief('Trakce: nepodařilo se svázat následující funkce : ' + str, TLogLevel.llError);
   end;
 end;
 
@@ -363,7 +363,7 @@ begin
     on E: Exception do
     begin
       Self.Log(llErrors, 'Nelze načíst knihovnu ' + fLibDir + '\' + lib + ', ' + E.Message);
-      F_Main.LogStatus('ERR: Trakce: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message);
+      F_Main.LogBrief('Trakce: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message, Logging.llError);
     end;
   end;
 end;

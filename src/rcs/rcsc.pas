@@ -117,10 +117,8 @@ type
     class function RCSOptionalAddr(module: Cardinal; port: Byte): TRCSAddrOptional; overload;
     class function RCSOptionalAddrDisabled(): TRCSAddrOptional; overload;
 
-    procedure Log(msg: string; level: TLogLevel);
-    procedure LogFMainStatusError(msg: string);
-    procedure LogFMainStatusWarning(msg: string);
-    procedure LogFMainStatus(msg: string);
+    procedure Log(msg: string; level: TLogLevel; brief: Boolean = False);
+    procedure LogFMainStatus(msg: string; level: TLogLevel);
 
     // events
     property AfterClose: TNotifyEvent read fAfterClose write fAfterClose;
@@ -168,24 +166,14 @@ begin
   inherited;
 end;
 
-procedure TRCS.Log(msg: string; level: TLogLevel);
+procedure TRCS.Log(msg: string; level: TLogLevel; brief: Boolean = False);
 begin
-  Logging.Log('RCS'+IntToStr(Self.mSystemI) + ': ' + msg, level, lsRCS);
+  Logging.Log('RCS'+IntToStr(Self.mSystemI) + ': ' + msg, level, lsRCS, brief);
 end;
 
-procedure TRCS.LogFMainStatus(msg: string);
+procedure TRCS.LogFMainStatus(msg: string; level: TLogLevel);
 begin
-  F_Main.LogStatus('RCS'+IntToStr(Self.mSystemI) + ': ' + msg);
-end;
-
-procedure TRCS.LogFMainStatusError(msg: string);
-begin
-  F_Main.LogStatus('ERR: RCS'+IntToStr(Self.mSystemI) + ': ' + msg);
-end;
-
-procedure TRCS.LogFMainStatusWarning(msg: string);
-begin
-  F_Main.LogStatus('WARN: RCS'+IntToStr(Self.mSystemI) + ': ' + msg);
+  F_Main.LogBrief('RCS'+IntToStr(Self.mSystemI) + ': ' + msg, level);
 end;
 
 procedure TRCS.LoadLib(libFn: string; configFn: string);
@@ -226,7 +214,7 @@ begin
     for var tmp in Self.unbound do
       str := str + tmp + ', ';
     str := LeftStr(str, Length(str) - 2);
-    Self.LogFMainStatusError('Nepodařilo se svázat následující funkce: ' + str);
+    Self.Log('Nepodařilo se svázat následující funkce: ' + str, llError, True);
   end;
 end;
 
@@ -253,7 +241,7 @@ begin
     SystemData.Status := TSystemStatus.null;
 
   if (Self.IsStateActionInProgress()) then
-    Self.LogFMainStatusError(errMsg);
+    Self.LogFMainStatus(errMsg, TLogLevel.llError);
 
   case (errValue) of
     RCS_MODULE_FAILED:

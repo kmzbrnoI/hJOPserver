@@ -289,7 +289,7 @@ begin
     Exit();
 
   F_Main.S_Server.Brush.Color := clGray;
-  F_Main.LogStatus('Panel server: spouštění '+Self.bindingsStr+' ...');
+  logging.Log('Panel server: spouštění '+Self.bindingsStr+' ...', TLogLevel.llInfo, TLogSource.lsPanelServer, True);
 
   try
     Self.tcpServer.Active := true;
@@ -297,7 +297,7 @@ begin
     on E: Exception do
     begin
       F_Main.S_Server.Brush.Color := clRed;
-      F_Main.LogStatus('ERR: Panel server: chyba při startování serveru : ' + E.Message);
+      logging.Log('Panel server: chyba při startování serveru : ' + E.Message, TLogLevel.llError, TLogSource.lsPanelServer, True);
       raise;
     end;
   end;
@@ -306,7 +306,7 @@ begin
   Self.pingTimer.Enabled := true;
 
   F_Main.S_Server.Brush.Color := clLime;
-  F_Main.LogStatus('Panel server: spuštěn');
+  logging.Log('Panel server: spuštěn', TLogLevel.llInfo, TLogSource.lsPanelServer, True);
 
   UDPdisc.SendDiscover();
 end;
@@ -326,7 +326,7 @@ begin
   if (not Self.tcpServer.Active) then
     Exit();
 
-  F_Main.LogStatus('Panel server: vypínám...');
+  logging.Log('Panel server: vypínám...', TLogLevel.llInfo, TLogSource.lsPanelServer, True);
   F_Main.S_Server.Brush.Color := clGray;
 
   Self.pingTimer.Enabled := false;

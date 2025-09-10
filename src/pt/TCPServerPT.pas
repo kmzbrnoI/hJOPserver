@@ -23,7 +23,7 @@ interface
 
 uses SysUtils, Classes, Graphics, PTEndpoint, Generics.Collections, SyncObjs,
      IdHttpServer, IdSocketHandle, IdContext, IdCustomHTTPServer, IdComponent,
-     JsonDataObjects, PTUtils, ExtCtrls, IniFiles;
+     JsonDataObjects, PTUtils, ExtCtrls, IniFiles, Logging;
 
 const
   _PT_DEFAULT_PORT = 5823;
@@ -85,6 +85,8 @@ type
      function GetEndpoint(path: string): TPTEndpoint;
      function GetBind(): string;
 
+     procedure Log(text: string; level: TLogLevel; brief: Boolean = False);
+
    public
      autoStart: Boolean;
 
@@ -111,7 +113,7 @@ var
 
 implementation
 
-uses Logging, appEv, fMain, OwnStrUtils, StrUtils,
+uses appEv, fMain, OwnStrUtils, StrUtils,
       PTEndpointBlock, PTEndpointBlocks, PTEndpointBlockState, PTEndpointJC,
       PTEndpointLok, PTEndpointLoks, PTEndpointLokState, PTEndpointJCs,
       PTEndpointJCStav, PTEndpointTrains, PTEndpointTrain, PTEndpointUsers,
@@ -211,6 +213,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+procedure TPtServer.Log(text: string; level: TLogLevel; brief: Boolean = False);
+begin
+  logging.Log(text, level, TLogSource.lsPTServer, brief);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TPtServer.LoadConfig(ini: TMemIniFile);
 begin
   var strBinds: string := '';
@@ -261,7 +270,7 @@ begin
           Self.AccessTokenAdd(key, str);
       except
         on e: Exception do
-          Log('PTserver: nepodařilo se přidat token ' + str + ' (' + e.Message + ')', TLogLevel.llError, lsPT);
+          Self.Log('PTserver: nepodařilo se přidat token ' + str + ' (' + e.Message + ')', TLogLevel.llError);
       end;
     end;
   finally
@@ -285,13 +294,10 @@ begin
   if (Self.openned) then
     Exit();
 
-  with (F_Main) do
-  begin
-    S_PTServer.Visible := true;
-    L_PTServer.Visible := true;
-    S_PTServer.Brush.Color := clBlue;
-    LogStatus('PT server: spouštění '+Self.bindingsStr+' ...');
-  end;
+  F_Main.S_PTServer.Visible := true;
+  F_Main.L_PTServer.Visible := true;
+  F_Main.S_PTServer.Brush.Color := clBlue;
+  Self.Log('PT server: spouštění '+Self.bindingsStr+' ...', llInfo, True);
 
   try
     Self.httpServer.Active := true;
@@ -299,7 +305,7 @@ begin
   except
     on E:Exception do
     begin
-      Log('ERR: Cannot start server : '+E.Message, llError, lsPT);
+      Self.Log('Cannot start server : '+E.Message, llError, True);
       F_Main.S_PTServer.Brush.Color := clRed;
       raise;
     end;
@@ -311,15 +317,11 @@ begin
   Self.httpServer.Active := false;
   Self.receiveTimer.Enabled := false;
 
-  Log('PT server zastaven', llInfo, lsPT);
-  F_Main.LogStatus('PT server: zastaven');
+  Self.Log('PT server: zastaven', llInfo, True);
 
-  with (F_Main) do
-  begin
-    A_PT_Start.Enabled := true;
-    A_PT_Stop.Enabled  := false;
-    S_PTServer.Brush.Color := clRed;
-  end;
+  F_Main.A_PT_Start.Enabled := true;
+  F_Main.A_PT_Stop.Enabled  := false;
+  F_Main.S_PTServer.Brush.Color := clRed;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -463,12 +465,12 @@ end;
 procedure TPtServer.httpError(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   AResponseInfo: TIdHTTPResponseInfo; AException: Exception);
 begin
-  Log('ERROR:'+ARequestInfo.Document, llError, lsPT);
+  Self.Log('ERROR:'+ARequestInfo.Document, llError);
 end;
 
 procedure TPtServer.httpException(AContext: TIdContext; AException: Exception);
 begin
-  log('PTServer :: httpException: ' + AException.Message, llError, lsPT);
+  Self.Log('PTServer :: httpException: ' + AException.Message, llError);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -482,8 +484,7 @@ end;
 
 procedure TPtServer.httpAfterBind(Sender: TObject);
 begin
-  Log('PT server spuštěn', llInfo, lsPT);
-  F_Main.LogStatus('PT server: spuštěn');
+  Self.Log('PT server: spuštěn', llInfo, True);
 
   with (F_Main) do
   begin
@@ -496,7 +497,7 @@ end;
 procedure TPtServer.httpStatus(ASender: TObject; const AStatus: TIdStatus;
   const AStatusText: string);
 begin
-  Log('PT status: '+AStatusText, llInfo, lsPT);
+  Self.Log('PT status: '+AStatusText, llInfo);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

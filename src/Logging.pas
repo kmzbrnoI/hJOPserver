@@ -27,17 +27,19 @@ type
     lsJC,
     lsData,
     lsRCS,
+    lsTrakce,
     lsConsole,
     lsTrainMove,
     lsUsers,
     lsStack,
-    lsPT
+    lsPanelServer,
+    lsPTServer
   );
 
 procedure logInit();
 
-procedure log(text: string; level: TLogLevel; source: TLogSource = lsAny); overload;
-procedure log(text: TStrings; level: TLogLevel; source: TLogSource = lsAny); overload;
+procedure log(text: string; level: TLogLevel; source: TLogSource = lsAny; brief: Boolean = False); overload;
+procedure log(text: TStrings; level: TLogLevel; source: TLogSource = lsAny; brief: Boolean = False); overload;
 
 procedure authLog(system, operation, user, Text: string);
 
@@ -48,7 +50,7 @@ var
 function logColor(level: TLogLevel; source: TLogSource): TColor;
 function logLevelStr(level: TLogLevel): string;
 function logSourceStr(source: TLogSource): string;
-procedure intLog(text: string; level: TLogLevel; source: TLogSource; multiline: Boolean = false);
+procedure intLog(text: string; level: TLogLevel; source: TLogSource; multiline: Boolean = false; brief: Boolean = False);
 
 implementation
 
@@ -97,6 +99,8 @@ begin
       Result := fMain._TABLE_COLOR_BLUE;
     lsRCS:
       Result := fMain._TABLE_COLOR_GREEN;
+    lsTrakce:
+      Result := fMain._TABLE_COLOR_PINKY;
     lsConsole:
       Result := RGB($C0, $C0, $FF);
     lsTrainMove:
@@ -105,7 +109,7 @@ begin
       Result := RGB($F0, $F0, $D0);
     lsStack:
       Result := clWhite;
-    lsPT:
+    lsPTServer, lsPanelServer:
       Result := RGB($F0, $FF, $F0);
   else
     Result := clWhite;
@@ -145,6 +149,8 @@ begin
       Result := 'Data';
     lsRCS:
       Result := 'RCS';
+    lsTrakce:
+      Result := 'Trakce';
     lsConsole:
       Result := 'Konzole';
     lsTrainMove:
@@ -153,8 +159,10 @@ begin
       Result := 'Uživatelé';
     lsStack:
       Result := 'Zásobník';
-    lsPT:
-      Result := 'PT';
+    lsPTServer:
+      Result := 'PTServer';
+    lsPanelServer:
+      Result := 'PanelServer';
   else
     Result := '?';
   end;
@@ -162,7 +170,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure intLog(text: string; level: TLogLevel; source: TLogSource; multiline: Boolean = false);
+procedure intLog(text: string; level: TLogLevel; source: TLogSource; multiline: Boolean = false; brief: Boolean = False);
 var f: TextFile;
   xTime, xDate: string;
 begin
@@ -215,23 +223,31 @@ begin
   except
 
   end;
+
+
+  try
+    if (brief) then
+      F_Main.LogBrief(text, level);
+  except
+
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure Log(text: string; level: TLogLevel; source: TLogSource); overload;
+procedure Log(text: string; level: TLogLevel; source: TLogSource; brief: Boolean); overload;
 begin
-  intLog(text, level, source, false);
+  intLog(text, level, source, false, brief);
 end;
 
-procedure Log(text: TStrings; level: TLogLevel; source: TLogSource); overload;
+procedure Log(text: TStrings; level: TLogLevel; source: TLogSource; brief: Boolean); overload;
 begin
   if (Text.Count = 0) then
     Exit();
 
   intLog(text[0], level, source, false);
   for var i := 1 to Text.Count - 1 do
-    intLog(' -> ' + text[i], level, source, true);
+    intLog(' -> ' + text[i], level, source, true, brief);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

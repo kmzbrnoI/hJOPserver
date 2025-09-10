@@ -107,7 +107,7 @@ var
 
 implementation
 
-uses fMain, DataHV, area, appEv, TrakceIFace, TrakceC;
+uses fMain, DataHV, area, appEv, TrakceIFace, TrakceC, Logging;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -575,7 +575,7 @@ procedure THVDb.AcquiredErr(Sender: TObject; Data: Pointer);
 begin
   Self.mAcquiring := false;
   trakce.Log(llErrors, 'ERR: LOKO ' + IntToStr(Word(Data)) + ' se nepodařilo převzít');
-  F_Main.LogStatus('LOKO: loko ' + IntToStr(Word(Data)) + ' se nepodařilo převzít');
+  F_Main.LogBrief('LOKO: loko ' + IntToStr(Word(Data)) + ' se nepodařilo převzít', llError);
   if (Assigned(Self.eAcquiredErr)) then
     Self.eAcquiredErr(Self);
 end;

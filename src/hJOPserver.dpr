@@ -258,7 +258,7 @@ uses
   F_Main.OnStart();
   F_splash.Close();
 
-  F_Main.LogStatus('Spuštěn hJOPserver v' + version.VersionStr());
+  logging.Log('Spuštěn hJOPserver v' + version.VersionStr(), TLogLevel.llInfo, lsSystem, True);
   SystemCritical.IsCritical := true;
 
   Application.Run();
