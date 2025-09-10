@@ -274,11 +274,15 @@ end;
 procedure TRCS.DllOnModuleChanged(Sender: TObject; module: Cardinal);
 begin
   if (Self.modules.ContainsKey(module)) then
+  begin
     for var i: Integer := Self.modules[module].outputChangedEv.Count - 1 downto 0 do
+    begin
       if (Assigned(Self.modules[module].outputChangedEv[i])) then
         Self.modules[module].outputChangedEv[i](Self, module)
       else
         Self.modules[module].outputChangedEv.Delete(i);
+    end;
+  end;
   RCSTableData[Self.mSystemI].UpdateBoard(module);
   F_Tester.RCSModuleChanged(Self.mSystemI, module);
 end;
@@ -286,11 +290,15 @@ end;
 procedure TRCS.DllOnInputChanged(Sender: TObject; module: Cardinal);
 begin
   if (Self.modules.ContainsKey(module)) then
+  begin
     for var i: Integer := Self.modules[module].inputChangedEv.Count - 1 downto 0 do
+    begin
       if (Assigned(Self.modules[module].inputChangedEv[i])) then
         Self.modules[module].inputChangedEv[i](Self, module)
       else
         Self.modules[module].inputChangedEv.Delete(i);
+    end;
+  end;
   RCSTableData[Self.mSystemI].UpdateBoardInputs(module);
   F_Tester.RCSModuleInputsChanged(Self.mSystemI, module);
 end;
@@ -298,11 +306,15 @@ end;
 procedure TRCS.DllOnOutputChanged(Sender: TObject; module: Cardinal);
 begin
   if (Self.modules.ContainsKey(module)) then
+  begin
     for var i: Integer := Self.modules[module].outputChangedEv.Count - 1 downto 0 do
+    begin
       if (Assigned(Self.modules[module].outputChangedEv[i])) then
         Self.modules[module].outputChangedEv[i](Self, module)
       else
         Self.modules[module].outputChangedEv.Delete(i);
+    end;
+  end;
   RCSTableData[Self.mSystemI].UpdateBoardOutputs(module);
   F_Tester.RCSModuleOutputsChanged(Self.mSystemI, module);
 end;
