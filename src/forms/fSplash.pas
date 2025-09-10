@@ -41,7 +41,7 @@ end;
 
 procedure TF_splash.FormShow(Sender: TObject);
 begin
-  Self.ST_Version.Caption := 'Verze ' + VersionStr(Application.ExeName);
+  Self.ST_Version.Caption := 'Verze ' + version.VersionStr();
   Self.L_BuildTime.Caption := FormatDateTime('dd.mm.yyyy hh:nn:ss', BuildDateTime());
 end;
 

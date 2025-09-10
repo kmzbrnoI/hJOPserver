@@ -3475,7 +3475,7 @@ object F_Main: TF_Main
       item
         Alignment = taCenter
         Text = 'trakce-lib.dll'
-        Width = 250
+        Width = 200
       end
       item
         Text = 'CPU'

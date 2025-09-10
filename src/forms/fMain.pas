@@ -2066,7 +2066,7 @@ begin
 
   Self.LoadIniLibData();
 
-  Self.Caption := 'hJOPserver – v' + VersionStr(Application.ExeName) +
+  Self.Caption := 'hJOPserver – v' + VersionStr() +
     ' (build ' + FormatDateTime('dd.mm.yyyy', BuildDateTime()) + ')';
 end;
 
@@ -3095,7 +3095,7 @@ procedure TF_Main.OnStart();
 begin
   mCpuLoad.CreateCPUGauge();
 
-  Log('Spuštěn hJOPserver v' + VersionStr(Application.ExeName), llInfo);
+  Log('Spuštěn hJOPserver v' + VersionStr(), llInfo);
   Log('----------------------------------------------------------------', llInfo);
 
   if (not Self.CloseMessage) then

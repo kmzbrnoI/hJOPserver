@@ -49,7 +49,7 @@ uses version, RCSc, RCSsc, Logging, appEv, Trakcec;
 
 procedure TF_About.FormShow(Sender: TObject);
 begin
-  Self.L_VApp.Caption := VersionStr(Application.ExeName);
+  Self.L_VApp.Caption := version.VersionStr();
   Self.L_BuildApp.Caption := FormatDateTime('dd.mm.yyyy hh:nn:ss', BuildDateTime());
 
   Self.L_Trakce_Lib.Caption := trakce.Lib;

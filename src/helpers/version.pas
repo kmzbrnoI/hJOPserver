@@ -4,16 +4,22 @@ interface
 
 uses Windows, SysUtils;
 
- function VersionStr(const FileName: string): string; //cteni verze z nastaveni
+ function VersionStr(const FileName: string): string; overload;
+ function VersionStr(): string; overload;
  function BuildDateTime(): TDateTime;
 
  const _RELEASE: Boolean = False;
 
 implementation
 
-uses DateUtils;
+uses DateUtils, Forms;
 
-function VersionStr(const FileName: string): string;//cteni verze z nastaveni
+function VersionStr(): string;
+begin
+  Result := VersionStr(Application.ExeName);
+end;
+
+function VersionStr(const FileName: string): string;
 var
   size, len: longword;
   handle: Cardinal;
