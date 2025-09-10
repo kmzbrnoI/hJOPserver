@@ -3195,7 +3195,9 @@ end;
 
 procedure TF_Main.LV_logDblClick(Sender: TObject);
 begin
-  Self.LV_log.Clear();
+  var response: Integer := StrMessageBox('Opravdu smazat tabulku logu?', '?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
+  if (response = mrYes) then
+    Self.LV_log.Clear();
 end;
 
 procedure TF_Main.LV_log_lnetCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
