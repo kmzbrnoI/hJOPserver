@@ -163,8 +163,6 @@ type
     LV_JC: TListView;
     TS_log: TTabSheet;
     LV_log: TListView;
-    TS_Intellibox: TTabSheet;
-    LV_log_lnet: TListView;
     GB_Connected_Panels: TGroupBox;
     LV_Clients: TListView;
     GB_stav_technologie: TGroupBox;
@@ -189,9 +187,6 @@ type
     PM_Loco_Reg: TMenuItem;
     N6: TMenuItem;
     P_log: TPanel;
-    Panel3: TPanel;
-    Label2: TLabel;
-    CB_centrala_loglevel_file: TComboBox;
     PM_SaveLayout: TMenuItem;
     A_SaveStav: TAction;
     PM_Bloky: TPopupMenu;
@@ -222,8 +217,6 @@ type
     CHB_LoadChanges: TCheckBox;
     AE_Main: TApplicationEvents;
     SD_HV_Stats: TSaveDialog;
-    CB_centrala_loglevel_table: TComboBox;
-    Label7: TLabel;
     S_PTServer: TShape;
     L_PTServer: TLabel;
     MI_PT: TMenuItem;
@@ -381,7 +374,6 @@ type
     procedure LB_BriefLogDblClick(Sender: TObject);
     procedure LV_SoupravyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure B_train_deleteClick(Sender: TObject);
-    procedure LV_log_lnetDblClick(Sender: TObject);
     procedure LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure PM_Loco_EditClick(Sender: TObject);
@@ -389,7 +381,6 @@ type
     procedure PM_HVPopup(Sender: TObject);
     procedure LV_JCCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
-    procedure CB_centrala_loglevel_fileChange(Sender: TObject);
     procedure LB_BriefLogDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
     procedure B_User_AddClick(Sender: TObject);
     procedure LV_UsersChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -422,7 +413,6 @@ type
     procedure LV_HVKeyPress(Sender: TObject; var Key: Char);
     procedure B_ClearStatsClick(Sender: TObject);
     procedure B_HVStats_ExportClick(Sender: TObject);
-    procedure CB_centrala_loglevel_tableChange(Sender: TObject);
     procedure A_PT_StartExecute(Sender: TObject);
     procedure A_PT_StopExecute(Sender: TObject);
     procedure LV_RCS0_StateCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -1736,16 +1726,6 @@ begin
   ErrorMessageBox('Při otevírání Trakce nastala chyba:', errMsg);
 end;
 
-procedure TF_Main.CB_centrala_loglevel_fileChange(Sender: TObject);
-begin
-  trakce.logLevelFile := TTrkLogLevel(Self.CB_centrala_loglevel_file.ItemIndex);
-end;
-
-procedure TF_Main.CB_centrala_loglevel_tableChange(Sender: TObject);
-begin
-  trakce.logLevelTable := TTrkLogLevel(Self.CB_centrala_loglevel_table.ItemIndex);
-end;
-
 procedure TF_Main.OnTrkStatusChange(Sender: TObject; trkStatus: TTrkStatus);
 begin
   if (trkStatus = TTrkStatus.tsOn) then
@@ -2042,8 +2022,6 @@ begin
   trakce.OnReady := Self.OnTrkReady;
   trakce.OnTrackStatusChanged := Self.OnTrkStatusChange;
   trakce.OnOpenError := Self.OnTrkErrOpen;
-
-  trakce.LogObj := Self.LV_log_lnet;
 
   FuncNames.OnChange := Self.OnFuncNameChange;
 
@@ -2848,7 +2826,6 @@ begin
   TurnoutSimulator.timer.Enabled := false;
 
   Self.A_SaveStavExecute(Self);
-  trakce.LogObj := nil;
 
   logging.Log('###############################################', TLogLevel.llInfo);
 end;
@@ -3109,9 +3086,6 @@ begin
   // Trakce
   Self.UpdateTrkLibsList();
 
-  Self.CB_centrala_loglevel_file.ItemIndex := Integer(trakce.logLevelFile);
-  Self.CB_centrala_loglevel_table.ItemIndex := Integer(trakce.logLevelTable);
-
   if (trakce.Lib = '') then
     Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-'
   else
@@ -3246,11 +3220,6 @@ begin
     3, 6:
       (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_WHITE;
 end; // case
-end;
-
-procedure TF_Main.LV_log_lnetDblClick(Sender: TObject);
-begin
-  Self.LV_log_lnet.Clear();
 end;
 
 procedure TF_Main.LV_MultiJCChange(Sender: TObject; Item: TListItem; Change: TItemChange);

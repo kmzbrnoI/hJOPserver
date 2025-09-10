@@ -89,26 +89,20 @@ begin
   end;
 
   case (source) of
-    lsAny:
-      Result := clWhite;
-    lsSystem:
-      Result := RGB($FF, $FF, $D0);
-    lsJC:
+    lsSystem, lsJC:
       Result := RGB($FF, $FF, $D0);
     lsData:
       Result := fMain._TABLE_COLOR_BLUE;
     lsRCS:
       Result := fMain._TABLE_COLOR_GREEN;
     lsTrakce:
-      Result := fMain._TABLE_COLOR_PINKY;
+      Result := RGB($FF, $F0, $FF);
     lsConsole:
       Result := RGB($C0, $C0, $FF);
     lsTrainMove:
       Result := RGB($CA, $FF, $CA);
     lsUsers:
       Result := RGB($F0, $F0, $D0);
-    lsStack:
-      Result := clWhite;
     lsPTServer, lsPanelServer:
       Result := RGB($F0, $FF, $F0);
   else

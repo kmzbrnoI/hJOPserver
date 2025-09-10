@@ -6324,7 +6324,6 @@ object F_Main: TF_Main
           Height = 21
           Style = csDropDownList
           TabOrder = 0
-          OnChange = CB_centrala_loglevel_fileChange
           Items.Strings = (
             '0 '#8211' '#382#225'dn'#233' zpr'#225'vy'
             '1 '#8211' chyby'
@@ -6340,7 +6339,6 @@ object F_Main: TF_Main
           Height = 21
           Style = csDropDownList
           TabOrder = 1
-          OnChange = CB_centrala_loglevel_tableChange
           Items.Strings = (
             '0 - '#382#225'dn'#233' zpr'#225'vy'
             '1 - chyby'
@@ -6348,115 +6346,6 @@ object F_Main: TF_Main
             '3 - zpr'#225'vy '
             '4 - detaily'
             '5 - debug')
-        end
-      end
-    end
-    object TS_Intellibox: TTabSheet
-      Margins.Left = 2
-      Margins.Top = 2
-      Margins.Right = 2
-      Margins.Bottom = 2
-      Caption = 'LOG trakce'
-      ImageIndex = 14
-      object LV_log_lnet: TListView
-        Left = 0
-        Top = 26
-        Width = 1363
-        Height = 588
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Align = alClient
-        Columns = <
-          item
-            Caption = #268'as'
-          end
-          item
-            Caption = #218'rove'#328
-            Width = 41
-          end
-          item
-            Caption = 'Zpr'#225'va'
-            Width = 813
-          end>
-        DoubleBuffered = True
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clBlack
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        GridLines = True
-        ReadOnly = True
-        RowSelect = True
-        ParentDoubleBuffered = False
-        ParentFont = False
-        TabOrder = 0
-        ViewStyle = vsReport
-        OnCustomDrawItem = LV_log_lnetCustomDrawItem
-        OnDblClick = LV_log_lnetDblClick
-      end
-      object Panel3: TPanel
-        Left = 0
-        Top = 0
-        Width = 1363
-        Height = 26
-        Margins.Left = 2
-        Margins.Top = 2
-        Margins.Right = 2
-        Margins.Bottom = 2
-        Align = alTop
-        BevelOuter = bvNone
-        Color = clWhite
-        ParentBackground = False
-        TabOrder = 1
-        object Label2: TLabel
-          Left = 11
-          Top = 1
-          Width = 78
-          Height = 13
-          Caption = 'Loglevel soubor:'
-        end
-        object Label7: TLabel
-          Left = 288
-          Top = 1
-          Width = 81
-          Height = 13
-          Caption = 'Loglevel tabulka:'
-        end
-        object CB_centrala_loglevel_file: TComboBox
-          Left = 103
-          Top = 1
-          Width = 145
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 0
-          OnChange = CB_centrala_loglevel_fileChange
-          Items.Strings = (
-            '0 '#8211' '#382#225'dn'#233' zpr'#225'vy'
-            '1 '#8211' chyby'
-            '2 '#8211' varov'#225'n'#237
-            '3 '#8211' informace '
-            '4 '#8211' p'#345#237'kazy'
-            '5 '#8211' data'
-            '6 '#8211' debug')
-        end
-        object CB_centrala_loglevel_table: TComboBox
-          Left = 380
-          Top = 1
-          Width = 145
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 1
-          OnChange = CB_centrala_loglevel_tableChange
-          Items.Strings = (
-            '0 '#8211' '#382#225'dn'#233' zpr'#225'vy'
-            '1 '#8211' chyby'
-            '2 '#8211' varov'#225'n'#237
-            '3 '#8211' informace'
-            '4 '#8211' p'#345#237'kazy'
-            '5 '#8211' data'
-            '6 '#8211' debug')
         end
       end
     end

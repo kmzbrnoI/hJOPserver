@@ -54,7 +54,6 @@ const
   );
 
   _MAX_LOGTABLE_ITEMS = 500;
-  _LOG_PATH = 'log\trakce';
 
 type
   TReadyEvent = procedure(Sender: TObject; ready: Boolean) of object;
@@ -90,7 +89,6 @@ type
 
   TTrakce = class(TTrakceIFace)
   private const
-    _DEF_LOGLEVEL = TTrkLogLevel.llInfo;
     _DEF_LIB = 'xpressnet.dll';
     _INIFILE_SECTNAME = 'Trakce';
     _DEF_CONFIG_PATH = 'lib-conf';
@@ -103,12 +101,7 @@ type
 
     eOnReady: TReadyEvent;
 
-    mLogLevelFile: TTrkLogLevel;
-    mLogLevelTable: TTrkLogLevel;
     mConfigDir: string;
-
-    procedure SetLoglevelFile(ll: TTrkLogLevel);
-    procedure SetLoglevelTable(ll: TTrkLogLevel);
 
     procedure TrkLog(Sender: TObject; lvl: TTrkLogLevel; msg: string);
     procedure TrkLocoStolen(Sender: TObject; addr: Word);
@@ -135,7 +128,6 @@ type
 
     DCCGoTime: TDateTime;
     toggleQueue: TQueue<THVToggleFunc>;
-    LogObj: TListView;
 
     constructor Create();
     destructor Destroy(); override;
@@ -167,9 +159,6 @@ type
     function NearestLowerSpeed(Speed: Cardinal): Cardinal;
 
     property OnReady: TReadyEvent read eOnReady write eOnReady;
-    
-    property logLevelFile: TTrkLogLevel read mLogLevelFile write SetLoglevelFile;
-    property logLevelTable: TTrkLogLevel read mLogLevelTable write SetLoglevelTable;
 
     property ready: Boolean read aReady;
     property libDir: string read fLibDir;
@@ -192,9 +181,6 @@ begin
   inherited;
 
   Self.mConfigDir := _DEF_CONFIG_PATH;
-  Self.mLogLevelFile := _DEF_LOGLEVEL;
-  Self.mLogLevelTable := _DEF_LOGLEVEL;
-  Self.LogObj := nil;
   Self.aReady := false;
 
   Self.turnoff_callback := nil;
@@ -263,65 +249,22 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakce.Log(loglevel: TTrkLogLevel; msg: string);
-var LV_Log: TListItem;
-  f: TextFile;
-  xDate, xTime: string;
 begin
-  if ((loglevel > Self.logLevelFile) and (loglevel > Self.logLevelTable)) then
-    Exit();
-
-  DateTimeToString(xDate, 'yyyy-mm-dd', Now);
-  DateTimeToString(xTime, 'hh:mm:ss,zzz', Now);
-
-  if ((loglevel <= Self.logLevelTable) and (Self.LogObj <> nil)) then
-  begin
-    if (Self.LogObj.Items.Count > _MAX_LOGTABLE_ITEMS) then
-      Self.LogObj.Clear();
-
-    try
-      LV_Log := Self.LogObj.Items.Insert(0);
-      LV_Log.Caption := xTime;
-      LV_Log.SubItems.Add(IntToStr(Integer(loglevel)));
-      LV_Log.SubItems.Add(msg);
-    except
-
-    end;
+  var systemLogLevel: TLogLevel;
+  case (logLevel) of
+    TTrkLogLevel.llErrors:
+      systemLogLevel := TLogLevel.llError;
+    TTrkLogLevel.llWarnings:
+      systemLogLevel := TLogLevel.llWarning;
+    TTrkLogLevel.llRawCommands:
+      systemLogLevel := TLogLevel.llDetail;
+    TTrkLogLevel.llDebug:
+      systemLogLevel := TLogLevel.llDebug;
+  else
+    systemLogLevel := TLogLevel.llInfo;
   end;
 
-  if (loglevel <= Self.logLevelFile) then
-  begin
-    try
-      AssignFile(f, _LOG_PATH + '\' + xDate + '.log');
-      if (FileExists(_LOG_PATH + '\' + xDate + '.log')) then
-        Append(f)
-      else
-        Rewrite(f);
-
-      var output: string := xTime + ' [' + IntToStr(Integer(loglevel)) + '] ' + msg + #13#10;
-      for var b: Byte in TEncoding.UTF8.GetBytes(output) do
-        Write(f, AnsiChar(b));
-
-      CloseFile(f);
-    except
-
-    end;
-  end;
-end;
-
-procedure TTrakce.SetLoglevelFile(ll: TTrkLogLevel);
-begin
-  Self.mLogLevelFile := ll;
-  Log(llCommands, 'NEW loglevel_file = ' + LogLevelToString(ll));
-
-  if ((ll > llNo) and (not DirectoryExists(_LOG_PATH))) then
-    if (not SysUtils.ForceDirectories(ExpandFileName(_LOG_PATH))) then
-      Log(llErrors, 'Nelze vytvořit složku ' + _LOG_PATH);
-end;
-
-procedure TTrakce.SetLoglevelTable(ll: TTrkLogLevel);
-begin
-  Self.mLogLevelTable := ll;
-  Log(llCommands, 'NEW loglevel_table = ' + LogLevelToString(ll));
+  logging.log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, systemLogLevel, lsTrakce);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -353,8 +296,6 @@ var lib: string;
 begin
   fLibDir := ini.ReadString(_INIFILE_SECTNAME, 'dir', '.');
   lib := ini.ReadString(_INIFILE_SECTNAME, 'lib', _DEF_LIB);
-  Self.mLogLevelFile := TTrkLogLevel(ini.ReadInteger(_INIFILE_SECTNAME, 'loglevelFile', Integer(_DEF_LOGLEVEL)));
-  Self.mLogLevelTable := TTrkLogLevel(ini.ReadInteger(_INIFILE_SECTNAME, 'loglevelTable', Integer(_DEF_LOGLEVEL)));
   Self.mConfigDir := ini.ReadString(_INIFILE_SECTNAME, 'configDir', _DEF_CONFIG_PATH);
 
   try
@@ -372,8 +313,8 @@ procedure TTrakce.SaveToFile(ini: TMemIniFile);
 begin
   if (Self.lib <> '') then
     ini.WriteString(_INIFILE_SECTNAME, 'lib', ExtractFileName(Self.lib));
-  ini.WriteInteger(_INIFILE_SECTNAME, 'loglevelFile', Integer(Self.logLevelFile));
-  ini.WriteInteger(_INIFILE_SECTNAME, 'loglevelTable', Integer(Self.logLevelTable));
+  ini.DeleteKey(_INIFILE_SECTNAME, 'loglevelFile'); // used in previous versions
+  ini.DeleteKey(_INIFILE_SECTNAME, 'loglevelTable'); // used in previous versions
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
