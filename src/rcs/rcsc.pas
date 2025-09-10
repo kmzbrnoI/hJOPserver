@@ -198,6 +198,12 @@ begin
 
   Self.Log('Načtena knihovna ' + fullPath + ', RCS API v'+Self.apiVersionStr() + ', '+configFn, llInfo);
 
+  try
+    Self.log('dllVersion: ' + Self.GetDllVersion(), llInfo);
+  except
+
+  end;
+
   // kontrola bindnuti vsech eventu
 
   // bind SetInput neni striktne vyzadovan

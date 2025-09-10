@@ -1114,6 +1114,12 @@ begin
     rcs.Log('Otevřeno, neznámý počet modulů!', TLogLevel.llWarning, True);
   end;
 
+  try
+    rcs.Log('Verze zařízení: ' + rcs.GetDeviceVersion(), TLogLevel.llInfo);
+  except
+
+  end;
+
   F_Tester.AfterRCSOpen(rcs.systemI);
   RCSTableData[rcs.systemI].LoadToTable(not Self.CHB_RCSs_Show_Only_Active[rcs.systemI].Checked);
 
