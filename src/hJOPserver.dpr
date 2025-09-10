@@ -257,9 +257,10 @@ uses
 
   F_Main.OnStart();
   F_splash.Close();
+  SystemCritical.IsCritical := true;
 
   logging.Log('Spuštěn hJOPserver v' + version.VersionStr(), TLogLevel.llInfo, lsSystem, True);
-  SystemCritical.IsCritical := true;
+  logging.Log('----------------------------------------------------------------', TLogLevel.llInfo);
 
   Application.Run();
 

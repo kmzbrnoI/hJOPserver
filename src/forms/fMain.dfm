@@ -6314,7 +6314,6 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnCustomDrawItem = LV_logCustomDrawItem
         OnDblClick = LV_logDblClick
-        ExplicitWidth = 1363
       end
       object P_log: TPanel
         Left = 0

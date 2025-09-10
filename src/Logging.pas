@@ -29,8 +29,6 @@ type
     lsRCS,
     lsTrakce,
     lsConsole,
-    lsTrainMove,
-    lsUsers,
     lsStack,
     lsPanelServer,
     lsPTServer
@@ -90,7 +88,7 @@ begin
 
   case (source) of
     lsSystem, lsJC:
-      Result := RGB($FF, $FF, $D0);
+      Result := RGB($C0, $FD, $C3);
     lsData:
       Result := fMain._TABLE_COLOR_BLUE;
     lsRCS:
@@ -99,10 +97,6 @@ begin
       Result := RGB($FF, $F0, $FF);
     lsConsole:
       Result := RGB($C0, $C0, $FF);
-    lsTrainMove:
-      Result := RGB($CA, $FF, $CA);
-    lsUsers:
-      Result := RGB($F0, $F0, $D0);
     lsPTServer, lsPanelServer:
       Result := RGB($F0, $FF, $F0);
   else
@@ -147,10 +141,6 @@ begin
       Result := 'Trakce';
     lsConsole:
       Result := 'Konzole';
-    lsTrainMove:
-      Result := 'Předávání souprav';
-    lsUsers:
-      Result := 'Uživatelé';
     lsStack:
       Result := 'Zásobník';
     lsPTServer:

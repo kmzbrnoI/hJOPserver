@@ -572,7 +572,7 @@ begin
   if (not Train.IsTimeDefined()) then
     Train.time := timeHelper.hJOPnow();
 
-  Log('Trať ' + Self.m_globSettings.name + ' : přidána souprava ' + Train.Train.name, llInfo, lsTrainMove);
+  Self.Log('Přidána souprava ' + Train.Train.name, llInfo);
 
   Self.Change();
 end;
@@ -591,7 +591,7 @@ begin
   if (Self.IsTrain(Train)) then
   begin
     Self.m_state.trains.Delete(Self.GetTrainIndex(Train));
-    Log('Trať ' + Self.m_globSettings.name + ' : smazána souprava ' + Train.name, llInfo, lsTrainMove);
+    Self.Log('Smazána souprava ' + Train.name, llInfo);
     toChange := true;
   end;
 
@@ -638,8 +638,7 @@ begin
       end; // BtoA
   end; // case
 
-  Log('Trať ' + Self.m_globSettings.name + ' : souprava ' + Train.name + ' : stanice změněna na ' +
-    (Train.station as TArea).name, llInfo, lsTrainMove);
+  Self.Log('Souprava ' + Train.name + ' : stanice změněna na ' + (Train.station as TArea).name, llInfo);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

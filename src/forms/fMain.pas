@@ -3055,9 +3055,6 @@ procedure TF_Main.OnStart();
 begin
   mCpuLoad.CreateCPUGauge();
 
-  Log('Spuštěn hJOPserver v' + VersionStr(), TLogLevel.llInfo);
-  Log('----------------------------------------------------------------', TLogLevel.llInfo);
-
   if (not Self.CloseMessage) then
   begin
     Self.Close();
