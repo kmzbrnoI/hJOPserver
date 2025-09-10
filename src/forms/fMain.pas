@@ -1461,7 +1461,7 @@ begin
   if ((SystemData.Status = stopping) and (not trakce.ConnectedSafe())) then
   begin
     for var i: Integer := 0 to RCSs._RCSS_MAX do
-      if (RCSs[i].Opened()) then
+      if (SystemData.Status = stopping) then // stopping could be stopped after 0nd RCS stop&close
         Self.MI_RCS_Stop_Click(Self.MI_RCSs[i].MI_Stop);
     Exit();
   end;
