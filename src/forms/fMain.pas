@@ -939,6 +939,17 @@ begin
   const rcsi: Integer = TMenuItem(Sender).Tag;
   var rcs: TRCS := RCSs[rcsi];
 
+  if ((SystemData.Status = stopping) and (RCSs.AllRCSsState(rsClosed))) then
+  begin
+    logging.Log('System: stop OK', TLogLevel.llInfo, lsSystem, True);
+    SystemData.Status := null;
+    Self.UpdateSystemButtons();
+    Exit();
+  end;
+
+  if (rcs.state = rsClosed) then
+    Exit();
+
   try
     rcs.Close();
   except
@@ -1709,7 +1720,7 @@ begin
 
   if (SystemData.Status = stopping) then
     for var i: Integer := 0 to RCSs._RCSS_MAX do
-      if (RCSs[i].Opened()) then
+      if ((RCSs[i].ready) and (SystemData.Status = stopping)) then // stopping could be stopped after 0nd RCS stop&close
         Self.MI_RCS_Stop_Click(Self.MI_RCSs[i].MI_Stop);
 end;
 
