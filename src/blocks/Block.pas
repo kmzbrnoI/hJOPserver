@@ -65,6 +65,7 @@ type
 
     procedure CallChangeEvents(var events: TChangeEvents);
     function LoadAreas(ini: TMemIniFile; section: string): TStrings; // user must free result!
+    function MenuTopItemsCount(): Integer; virtual;
 
   public
 
@@ -141,7 +142,7 @@ type
 
 implementation
 
-uses BlockDb, DataBloky, appEv, ownStrUtils, Diagnostics, Config;
+uses BlockDb, DataBloky, appEv, ownStrUtils, Diagnostics, Config, IfThenElse;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -371,7 +372,12 @@ begin
   Result := '$' + Self.name + ',';
   if (diag.showBlockId) then
     Result := Result + '$' + IntToStr(Self.id) + ',';
-  Result := Result + '-,'
+  Result := Result + '-,';
+end;
+
+function TBlk.MenuTopItemsCount(): Integer;
+begin
+  Result := ite(diag.showBlockId, 3, 2);
 end;
 
 procedure TBlk.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;

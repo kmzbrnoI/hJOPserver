@@ -238,7 +238,7 @@ begin
     end;
   end;
 
-  Self.E_Length.Text := FloatToStr(settings.lenght);
+  Self.E_Length.Text := IntToStr(settings.lengthCm);
   Self.CHB_Loop.Checked := settings.loop;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (úsek)';
@@ -317,7 +317,7 @@ begin
     if (Self.CHB_D3.Checked) then
       settings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_System3.Value, Self.SE_Module3.Value, Self.SE_Port3.Value));
 
-    settings.lenght := StrToFloatDef(Self.E_Length.Text, 0);
+    settings.lengthCm := StrToIntDef(Self.E_Length.Text, 0);
     settings.loop := Self.CHB_Loop.Checked;
     settings.boosterId := Boosters.sorted[Self.CB_Booster.ItemIndex].id;
     settings.jcReleaseZaver := ownConvert.SecTenthsToTime(Self.NB_TimeJCZav.Text);

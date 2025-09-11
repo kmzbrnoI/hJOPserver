@@ -192,9 +192,7 @@ begin
   if (not Self.enabled) then
     Exit();
 
-  var crosIndex: Integer := itemindex - 2;
-  if (diag.showBlockId) then
-    crosIndex := crosIndex - 1;
+  var crosIndex: Integer := itemindex - Self.MenuTopItemsCount();
 
   if ((crosIndex >= 0) and (crosIndex < Self.m_settings.crossings.Count)) then
   begin

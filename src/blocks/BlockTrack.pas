@@ -20,7 +20,7 @@ type
 
   TBlkTrackSettings = record
     RCSAddrs: TRCSsAddrs;
-    lenght: double; // in meters
+    lengthCm: Cardinal; // in centimeters
     loop: Boolean;
     boosterId: string;
     houkEvL: TObjectList<THoukEv>; // seznam houkacich udalosti pro lichy smer
@@ -177,6 +177,8 @@ type
     function GetTimeJCReleaseZaver(): TTime;
 
     function SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
+    function MenuShowLength(): Boolean;
+    function MenuTopItemsCount(): Integer; override;
 
   protected
     m_settings: TBlkTrackSettings;
@@ -364,7 +366,7 @@ begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
   Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
-  Self.m_settings.lenght := ini_tech.ReadFloat(section, 'delka', 0);
+  Self.m_settings.lengthCm := ini_tech.ReadInteger(section, 'delka', 0);
   Self.m_settings.boosterId := ini_tech.ReadString(section, 'zesil', '');
   Self.m_settings.loop := ini_tech.ReadBool(section, 'smc', false);
   Self.m_settings.maxTrains := ini_tech.ReadInteger(section, 'maxSpr', _DEFAULT_MAX_TRAINS);
@@ -434,7 +436,7 @@ begin
   inherited SaveData(ini_tech, section);
 
   Self.SaveRCS(ini_tech, section, Self.m_settings.RCSAddrs);
-  ini_tech.WriteFloat(section, 'delka', Self.m_settings.lenght);
+  ini_tech.WriteInteger(section, 'delka', Self.m_settings.lengthCm);
   ini_tech.WriteString(section, 'zesil', Self.m_settings.boosterId);
 
   if (Self.m_settings.maxTrains <> _DEFAULT_MAX_TRAINS) then
@@ -956,12 +958,12 @@ begin
   (SenderOR as TArea).PanelHVList(SenderPnl);
 
   // pak posleme pozadavek na editaci hnaciho vozidla
-  (SenderOR as TArea).BlkNewTrain(Self, SenderPnl, (itemindex - 2) div 2);
+  (SenderOR as TArea).BlkNewTrain(Self, SenderPnl, (itemindex - Self.MenuTopItemsCount()) div 2);
 end;
 
 procedure TBlkTrack.MenuVLOZTrainClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
 begin
-  Self.MoveTrain(SenderPnl, SenderOR, (itemindex - 2) div 2);
+  Self.MoveTrain(SenderPnl, SenderOR, (itemindex - Self.MenuTopItemsCount()) div 2);
 end;
 
 procedure TBlkTrack.MenuEditTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -1499,6 +1501,13 @@ var addStr: string;
 begin
   Result := inherited;
 
+  if (Self.MenuShowLength()) then
+  begin
+    Result := LeftStr(Result, Length(Result)-2); // remove '-,'
+    Result := Result + '$' + IntToStr(Self.m_settings.lengthCm) + ' cm,';
+    Result := Result + '-,'; // readd '-,'
+  end;
+
   if (Blocks.GetBlkTrackTrainMoving((SenderOR as TArea).id) <> nil) then
     addStr := 'VLOŽ vlak,'
   else
@@ -1810,7 +1819,7 @@ begin
 
   TBlk.RCSstoJSON(Self.m_settings.RCSAddrs, json.A['rcs']);
 
-  json['length'] := Self.m_settings.lenght;
+  json['lengthCm'] := Self.m_settings.lengthCm;
   if (Self.m_settings.loop) then
     json['loop'] := Self.m_settings.loop;
   json['booster'] := Self.m_settings.boosterId;
@@ -2807,6 +2816,20 @@ end;
 function TBlkTrack.PathTimerTargetZaver(): TZaver;
 begin
   Result := Self.m_state.pathCancelZaverTimer.zaver;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkTrack.MenuShowLength(): Boolean;
+begin
+  Result := (Self.m_spnl.stationTrack) and (Self.m_settings.lengthCm <> 0);
+end;
+
+function TBlkTrack.MenuTopItemsCount(): Integer;
+begin
+  Result := inherited;
+  if (Self.MenuShowLength()) then
+    Result := Result + 1;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -306,7 +306,7 @@ begin
     end;
   end;
 
-  Self.E_Length.Text := FloatToStr(Usettings.lenght);
+  Self.E_Length.Text := IntToStr(Usettings.lengthCm);
   Self.CHB_loop.Checked := Usettings.loop;
 
   Self.CHB_Stop_Odd.Checked := Assigned(TUsettings.stop) and Assigned(TUsettings.stop.evL);
@@ -456,7 +456,7 @@ begin
     if (Self.CHB_D3.Checked) then
       settings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_System3.Value, Self.SE_Module3.Value, Self.SE_Port3.Value));
 
-    settings.lenght := StrToFloatDef(Self.E_Length.Text, 0);
+    settings.lengthCm := StrToIntDef(Self.E_Length.Text, 0);
     settings.loop := Self.CHB_loop.Checked;
     settings.boosterId := Boosters.sorted[Self.CB_Booster.ItemIndex].id;
     settings.maxTrains := 1;
