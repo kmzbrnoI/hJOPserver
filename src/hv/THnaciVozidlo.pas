@@ -822,7 +822,7 @@ begin
   Self.changed := true;
 
   if (Self.state.train > -1) then
-    Blocks.ChangeTrainToRailway(Trains[Self.state.train]);
+    Blocks.ChangeTrainToAllRailways(Trains[Self.state.train]);
 
   strs.Free();
 
@@ -885,6 +885,11 @@ begin
       end;
 
       Self.UpdatePanelRuc(true);
+      if (Self.train > -1) then
+      begin
+        Blocks.ChangeAllTracksWithTrain(Trains[Self.train]);
+        Blocks.ChangeTrainToAllRailways(Trains[Self.train]);
+      end;
       Exit();
     end;
   end;
@@ -965,6 +970,11 @@ begin
 
   // aktualizace informaci do panelu
   Self.UpdatePanelRuc();
+  if (Self.train > -1) then
+  begin
+    Blocks.ChangeAllTracksWithTrain(Trains[Self.train]);
+    Blocks.ChangeTrainToAllRailways(Trains[Self.train]);
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1604,10 +1614,12 @@ begin
   Self.changed := true;
   RegCollector.LocoChanged(Self, Self.addr);
 
-  if (Self.train > -1) then
-    Blocks.ChangeTrackWithTrain(Trains[Self.train]);
-
   Self.UpdatePanelRuc();
+  if (Self.train > -1) then
+  begin
+    Blocks.ChangeAllTracksWithTrain(Trains[Self.train]);
+    Blocks.ChangeTrainToAllRailways(Trains[Self.train]);
+  end;
 
   // odesleme do regulatoru info o uspesne autorizaci
   // to je dobre tehdy, kdyz je loko prebirano z centraly
@@ -1771,9 +1783,12 @@ begin
   RegCollector.LocoChanged(Self, Self.addr);
 
   TCPRegulator.LokStolen(Self);
-  if (Self.train > -1) then
-    Blocks.ChangeTrackWithTrain(Trains[Self.train]);
   Self.UpdatePanelRuc();
+  if (Self.train > -1) then
+  begin
+    Blocks.ChangeAllTracksWithTrain(Trains[Self.train]);
+    Blocks.ChangeTrainToAllRailways(Trains[Self.train]);
+  end;
 
   if (Self.state.pom <> Self.data.POMrelease) then
     Self.SetPom(Self.data.POMrelease, TTrakce.Callback(), TTrakce.Callback());
@@ -1889,12 +1904,22 @@ procedure THV.RegulatorAdd(reg: THVRegulator);
 begin
   Self.state.regulators.Add(reg);
   Self.UpdatePanelRuc(false);
+  if (Self.train > -1) then
+  begin
+    Blocks.ChangeAllTracksWithTrain(Trains[Self.train]);
+    Blocks.ChangeTrainToAllRailways(Trains[Self.train]);
+  end;
 end;
 
 procedure THV.RegulatorRemove(reg: THVRegulator);
 begin
   Self.state.regulators.Remove(reg);
   Self.UpdatePanelRuc(true);
+  if (Self.train > -1) then
+  begin
+    Blocks.ChangeAllTracksWithTrain(Trains[Self.train]);
+    Blocks.ChangeTrainToAllRailways(Trains[Self.train]);
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

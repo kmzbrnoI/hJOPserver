@@ -2603,6 +2603,9 @@ begin
     if (train.areaTo = train.station) then
       sbg := TJopColor.gray;
 
+    if ((train.IsAnyHVManual()) or (train.stolen)) then
+      sbg := TJopColor.brown;
+
     // predvidany odjezd
     if (train.IsPOdj(Self)) then
       predvidanyOdjezd.GetPOdjColors(train.GetPOdj(Self), sfg, sbg);

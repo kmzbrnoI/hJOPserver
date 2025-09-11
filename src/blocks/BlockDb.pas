@@ -116,10 +116,10 @@ type
     function GetTurnoutsAtTrack(trackId: Integer): TList<TBlk>;
 
     // call 'Change' on all tracks with train 'Train'
-    procedure ChangeTrackWithTrain(Train: TTrain);
+    procedure ChangeAllTracksWithTrain(Train: TTrain);
 
     // call 'Change' on all railways with train 'Train'
-    procedure ChangeTrainToRailway(Train: TTrain);
+    procedure ChangeTrainToAllRailways(Train: TTrain);
 
     procedure BlkIDChanged(index: Integer);
     procedure BlkNameChanged(previous: string; index: Integer);
@@ -1048,13 +1048,15 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlocks.ChangeTrackWithTrain(Train: TTrain);
-var Blks: TBlksList;
+procedure TBlocks.ChangeAllTracksWithTrain(Train: TTrain);
 begin
-  Blks := Self.GetBlkWithTrain(Train);
-  for var i: Integer := 0 to Blks.count - 1 do
-    (Blks[i] as TBlk).Change();
-  Blks.Free();
+  var blks := Self.GetBlkWithTrain(Train);
+  try
+    for var blk: TBlk in blks do
+      blk.Change();
+  finally
+    blks.Free();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1066,10 +1068,10 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlocks.ChangeTrainToRailway(Train: TTrain);
+procedure TBlocks.ChangeTrainToAllRailways(train: TTrain);
 begin
   for var blk: TBlk in Self.data do
-    if ((Blk.typ = btRailway) and (Blk as TBlkRailway).IsTrain(Train, true)) then
+    if ((Blk.typ = btRailway) and (Blk as TBlkRailway).IsTrain(train, true)) then
       Blk.Change();
 end;
 

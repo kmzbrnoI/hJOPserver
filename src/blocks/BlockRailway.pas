@@ -353,9 +353,9 @@ begin
     Self.request := false;
 
   if (Self.linkerA <> nil) then
-    (Self.linkerA as TBlkLinker).ChangeFromTrat();
+    (Self.linkerA as TBlkLinker).ChangeFromRailway();
   if (Self.linkerB <> nil) then
-    (Self.linkerB as TBlkLinker).ChangeFromTrat();
+    (Self.linkerB as TBlkLinker).ChangeFromRailway();
 
   inherited Update();
 end;
@@ -363,9 +363,9 @@ end;
 procedure TBlkRailway.ChangeFromLinker(Sender: TBlk);
 begin
   if (Sender = Self.linkerA) then
-    (Self.linkerB as TBlkLinker).ChangeFromTrat();
+    (Self.linkerB as TBlkLinker).ChangeFromRailway();
   if (Sender = Self.linkerB) then
-    (Self.linkerA as TBlkLinker).ChangeFromTrat();
+    (Self.linkerA as TBlkLinker).ChangeFromRailway();
 
   if ((Self.request) and (Self.occupied)) then
     Self.request := false;
@@ -1183,6 +1183,8 @@ begin
 
   if ((Self.Train.HasAnyHVNote()) or (Self.Train.sdata.note <> '')) then
     bg := TJopColor.turqDark;
+  if ((train.IsAnyHVManual()) or (train.stolen)) then
+    bg := TJopColor.brown;
 
   Result := Self.Train.name + '|';
   Result := Result + ownConvert.ColorToStr(fg) + '|';

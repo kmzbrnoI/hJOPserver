@@ -72,7 +72,7 @@ type
     procedure AfterLoad(); override;
 
     procedure Change(now: Boolean = false); override;
-    procedure ChangeFromTrat();
+    procedure ChangeFromRailway();
 
     // ----- Linker specific functions -----
 
@@ -185,7 +185,7 @@ begin
     (Self.parent as TBlkRailway).ChangeFromLinker(Self);
 end;
 
-procedure TBlkLinker.ChangeFromTrat();
+procedure TBlkLinker.ChangeFromRailway();
 begin
   if (Self.parent = nil) then
     Exit();

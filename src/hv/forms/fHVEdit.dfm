@@ -276,7 +276,7 @@ object F_HVEdit: TF_HVEdit
   object Label5: TLabel
     Left = 8
     Top = 6
-    Width = 522
+    Width = 503
     Height = 13
     Alignment = taCenter
     Caption = 
