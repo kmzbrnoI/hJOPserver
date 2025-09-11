@@ -352,8 +352,10 @@ begin
   if ((Self.request) and (Self.occupied)) then
     Self.request := false;
 
-  (Self.linkerA as TBlkLinker).ChangeFromTrat();
-  (Self.linkerB as TBlkLinker).ChangeFromTrat();
+  if (Self.linkerA <> nil) then
+    (Self.linkerA as TBlkLinker).ChangeFromTrat();
+  if (Self.linkerB <> nil) then
+    (Self.linkerB as TBlkLinker).ChangeFromTrat();
 
   inherited Update();
 end;
@@ -430,9 +432,9 @@ begin
   // tady se resi prehravani zvuku
   try
     var linker: TBLkLinker := nil;
-    if ((Self.m_linkerA as TBlkLinker).request) then
+    if (((Self.m_linkerA <> nil) and (Self.m_linkerA as TBlkLinker).request)) then
       linker := (Self.m_linkerB as TBlkLinker)
-    else if ((Self.m_linkerB as TBlkLinker).request) then
+    else if (((Self.m_linkerB <> nil) and (Self.m_linkerB as TBlkLinker).request)) then
       linker := (Self.m_linkerA as TBlkLinker);
 
     if ((linker <> nil) and (request <> Self.m_state.request)) then
@@ -624,14 +626,14 @@ begin
   case (smer) of
     TRailwayDirection.AtoB:
       begin
-        if ((Self.linkerB as TBlkLinker).areas.Count > 0) then
+        if ((Self.linkerB <> nil) and ((Self.linkerB as TBlkLinker).areas.Count > 0)) then
           Train.station := (Self.linkerB as TBlkLinker).areas[0]
         else
           Train.station := nil;
       end; // AtoB
     TRailwayDirection.BtoA:
       begin
-        if ((Self.linkerA as TBlkLinker).areas.Count > 0) then
+        if ((Self.linkerA <> nil) and ((Self.linkerA as TBlkLinker).areas.Count > 0)) then
           Train.station := (Self.linkerA as TBlkLinker).areas[0]
         else
           Train.station := nil;
@@ -645,7 +647,8 @@ end;
 
 function TBlkRailway.GetEmergencyLock(): Boolean;
 begin
-  Result := (Self.linkerA as TBlkLinker).emLock or (Self.linkerB as TBlkLinker).emLock;
+  Result := (Self.linkerA <> nil) and (Self.linkerB <> nil) and
+    ((Self.linkerA as TBlkLinker).emLock or (Self.linkerB as TBlkLinker).emLock);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
