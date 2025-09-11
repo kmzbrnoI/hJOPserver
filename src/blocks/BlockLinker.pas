@@ -181,7 +181,8 @@ end;
 procedure TBlkLinker.Change(now: Boolean = false);
 begin
   inherited Change(now);
-  (Self.parent as TBlkRailway).ChangeFromLinker(Self);
+  if (Self.parent <> nil) then
+    (Self.parent as TBlkRailway).ChangeFromLinker(Self);
 end;
 
 procedure TBlkLinker.ChangeFromTrat();
@@ -209,7 +210,7 @@ begin
   Self.m_state.departureForbidden := ZAK;
   Self.Change();
 
-  if (old <> ZAK) then
+  if ((Self.parent <> nil) and (old <> ZAK)) then
     (Self.parent as TBlkRailway).ChangeTracks();
 end;
 
@@ -256,7 +257,7 @@ end;
 
 procedure TBlkLinker.ApproveRequest();
 begin
-  if (not(Self.parent as TBlkRailway).request) then
+  if ((Self.parent = nil) or (not(Self.parent as TBlkRailway).request)) then
     Exit();
 
   case ((Self.parent as TBlkRailway).direction) of
@@ -312,7 +313,7 @@ end;
 
 procedure TBlkLinker.MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
-  if ((Self.parent as TBlkRailway).request) then
+  if ((Self.parent <> nil) and ((Self.parent as TBlkRailway).request)) then
     (Self.parent as TBlkRailway).request := false;
   Self.emLock := true;
 end;
@@ -367,14 +368,14 @@ end;
 
 procedure TBlkLinker.UPOOTSClick(Sender: TObject);
 begin
-  if ((Self.parent as TBlkRailway).GetSettings.rType = TRailwayType.request) then
+  if ((Self.parent <> nil) and ((Self.parent as TBlkRailway).GetSettings.rType = TRailwayType.request)) then
     (Self.parent as TBlkRailway).direction := TRailwayDirection.no;
   Self.request := false;
 end;
 
 procedure TBlkLinker.UPOZAKOnClick(Sender: TObject);
 begin
-  if ((Self.parent as TBlkRailway).request) then
+  if ((Self.parent <> nil) and ((Self.parent as TBlkRailway).request)) then
     (Self.parent as TBlkRailway).request := false;
   Self.departureForbidden := true;
 end;
@@ -382,7 +383,7 @@ end;
 procedure TBlkLinker.MenuTrainInfoClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   var railway := TBlkRailway(Self.parent);
-  if (railway.trainPredict = nil) then
+  if ((railway = nil) or (railway.trainPredict = nil)) then
     Exit();
 
   var train: TTrain := TrainDb.trains[railway.trainPredict.traini];
@@ -482,7 +483,7 @@ end;
 procedure TBlkLinker.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
   params: string = '');
 begin
-  if (TBlkRailway(Self.parent).direction < TRailwayDirection.no) then
+  if ((Self.parent = nil) or (TBlkRailway(Self.parent).direction < TRailwayDirection.no)) then
     Exit();
   if (Button = TPanelButton.ESCAPE) then
     Exit();
@@ -536,7 +537,8 @@ begin
   // tohleto poradi nastvovani je dulezite
   if (zadost) then
     Self.m_request := zadost;
-  (Self.parent as TBlkRailway).request := zadost;
+  if (Self.parent <> nil) then
+    (Self.parent as TBlkRailway).request := zadost;
   if (not zadost) then
     Self.m_request := zadost;
 end;
@@ -637,6 +639,9 @@ begin
   Result := inherited;
 
   railway := TBlkRailway(Self.parent);
+  if (railway = nil) then
+    Exit(); // should never happen
+
   if (railway.direction = TRailwayDirection.disabled) then
   begin
     fg := TJopColor.black;
