@@ -108,6 +108,7 @@ type
     turn: Boolean; // jc od odbocky (navesteni 40 km/h)
     nzv: Boolean; // nedostatecna zabrzdna vzdalenost
     signalFallTrackI: Cardinal;
+    loopTrackI: Integer; // index of loop track; -1 if no loop
   end;
 
   // staveni jizdni cesty:
@@ -2766,6 +2767,7 @@ begin
 
   Self.m_data.nzv := ini.ReadBool(section, 'nzv', false);
   Self.m_data.signalFallTrackI := ini.ReadInteger(section, 'rusNavestUsek', 0);
+  Self.m_data.loopTrackI := ini.ReadInteger(section, 'smycUsek', -1);
 end;
 
 procedure TJC.SaveData(ini: TMemIniFile; section: string);
@@ -2799,6 +2801,9 @@ begin
 
   if (Self.m_data.signalFallTrackI > 0) then
     ini.WriteInteger(section, 'rusNavestUsek', Self.m_data.signalFallTrackI);
+
+  if (Self.m_data.loopTrackI > -1) then
+    ini.WriteInteger(section, 'smycUsek', Self.m_data.loopTrackI);
 
   if (Self.m_data.railwayId > -1) then
   begin

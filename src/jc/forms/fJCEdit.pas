@@ -90,6 +90,10 @@ type
     Label17: TLabel;
     B_Cros_Names_To_Ids: TButton;
     CHB_emOnly: TCheckBox;
+    GB_Loop: TGroupBox;
+    CHB_Loop: TCheckBox;
+    Label4: TLabel;
+    CB_Loop_Track: TComboBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
@@ -129,6 +133,7 @@ type
     procedure B_Crossing_OkClick(Sender: TObject);
     procedure B_Cros_Names_To_IdsClick(Sender: TObject);
     procedure CHB_emOnlyClick(Sender: TObject);
+    procedure CHB_LoopClick(Sender: TObject);
   private
     OpenIndex: Integer;
     mNewJC: Boolean;
@@ -270,6 +275,9 @@ begin
 
   Self.CHB_Railway.Checked := false;
   Self.CHB_RailwayClick(Self.CHB_Railway);
+
+  Self.CHB_Loop.Checked := False;
+  Self.CHB_LoopClick(Self.CHB_Loop);
 end;
 
 procedure TF_JCEdit.EditOpenForm();
@@ -338,6 +346,10 @@ begin
     LI.SubItems.Add(ids);
     LI.SubItems.Add(names);
   end;
+
+  Self.CHB_Loop.Checked := (JCData.loopTrackI > -1);
+  Self.CB_Loop_Track.ItemIndex := JCData.loopTrackI;
+  Self.CHB_LoopClick(Self.CHB_Loop);
 
   Self.CB_SignalChange(Self);
   if (Self.mNewJC) then
@@ -689,6 +701,11 @@ begin
       Exit();
     end;
   end;
+  if ((Self.CHB_Loop.Checked) and (Self.CB_Loop_Track.ItemIndex < 0)) then
+  begin
+    StrMessageBox('Vyberte smyčkový úsek!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
 
   var JCsaveData: TJCdata := TechnologieJC.NewJCData();
 
@@ -795,6 +812,11 @@ begin
 
       JCsaveData.crossings.Add(zav);
     end;
+
+    if (Self.CHB_Loop.Checked) then
+      JCsaveData.loopTrackI := Self.CB_Loop_Track.ItemIndex
+    else
+      JCsaveData.loopTrackI := -1;
 
     if (mNewJC) then
     begin
@@ -1114,6 +1136,13 @@ begin
   Self.CB_TypChange(Self);
 end;
 
+procedure TF_JCEdit.CHB_LoopClick(Sender: TObject);
+begin
+  Self.CB_Loop_Track.Enabled := Self.CHB_Loop.Checked;
+  if (not Self.CHB_Loop.Checked) then
+    Self.CB_Loop_Track.ItemIndex := -1;
+end;
+
 procedure TF_JCEdit.CHB_RailwayClick(Sender: TObject);
 begin
   Self.CB_Railway.Enabled := Self.CHB_Railway.Checked;
@@ -1334,9 +1363,17 @@ begin
   Self.FillRefTracks(Self.CB_Refugee_Ref);
   Self.FillRefTracks(Self.CB_Crossing_Ref);
 
-  var i: Integer := Self.CB_Signal_Fall.ItemIndex;
-  Self.FillRefTracks(Self.CB_Signal_Fall);
-  Self.CB_Signal_Fall.ItemIndex := i;
+  begin
+    var i: Integer := Self.CB_Signal_Fall.ItemIndex;
+    Self.FillRefTracks(Self.CB_Signal_Fall);
+    Self.CB_Signal_Fall.ItemIndex := i;
+  end;
+
+  begin
+    var i: Integer := Self.CB_Loop_Track.ItemIndex;
+    Self.FillRefTracks(Self.CB_Loop_Track);
+    Self.CB_Loop_Track.ItemIndex := i;
+  end;
 end;
 
 procedure TF_JCEdit.FillRefTracks(var cb: TComboBox);
