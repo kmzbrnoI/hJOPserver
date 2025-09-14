@@ -4,7 +4,7 @@ object F_BlkTrack: TF_BlkTrack
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'F_BlkTrack'
-  ClientHeight = 369
+  ClientHeight = 348
   ClientWidth = 409
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -49,17 +49,6 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Bottom = 2
     Caption = 'D'#233'lka '#250'seku [cm]:'
   end
-  object Label5: TLabel
-    Left = 8
-    Top = 108
-    Width = 75
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Smy'#269'kov'#253' blok:'
-  end
   object Label4: TLabel
     Left = 8
     Top = 83
@@ -73,7 +62,7 @@ object F_BlkTrack: TF_BlkTrack
   end
   object Label6: TLabel
     Left = 8
-    Top = 129
+    Top = 110
     Width = 97
     Height = 13
     Margins.Left = 2
@@ -86,7 +75,7 @@ object F_BlkTrack: TF_BlkTrack
   end
   object B_OK: TButton
     Left = 327
-    Top = 337
+    Top = 313
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -95,12 +84,12 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 9
+    TabOrder = 8
     OnClick = B_OKClick
   end
   object B_Storno: TButton
     Left = 248
-    Top = 337
+    Top = 313
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -108,7 +97,7 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 10
+    TabOrder = 9
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
@@ -139,7 +128,7 @@ object F_BlkTrack: TF_BlkTrack
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 182
+    Top = 163
     Width = 395
     Height = 139
     Margins.Left = 2
@@ -147,7 +136,7 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce obsazen'#237' - vstupy - RCS '
-    TabOrder = 8
+    TabOrder = 7
     object L_det1: TLabel
       Left = 12
       Top = 32
@@ -471,17 +460,6 @@ object F_BlkTrack: TF_BlkTrack
     TabOrder = 2
     Text = '0'
   end
-  object CHB_Loop: TCheckBox
-    Left = 176
-    Top = 108
-    Width = 17
-    Height = 17
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    TabOrder = 4
-  end
   object CB_Booster: TComboBox
     Left = 176
     Top = 83
@@ -496,7 +474,7 @@ object F_BlkTrack: TF_BlkTrack
   end
   object SE_Max_Trains: TSpinEdit
     Left = 176
-    Top = 129
+    Top = 110
     Width = 226
     Height = 22
     Margins.Left = 2
@@ -505,25 +483,25 @@ object F_BlkTrack: TF_BlkTrack
     Margins.Bottom = 2
     MaxValue = 4
     MinValue = 1
-    TabOrder = 5
+    TabOrder = 4
     Value = 1
   end
   object NB_TimeJCZav: TNumberBox
     Left = 296
-    Top = 156
+    Top = 137
     Width = 105
     Height = 21
     Decimal = 1
     Mode = nbmFloat
-    TabOrder = 7
+    TabOrder = 6
   end
   object CHB_TimeJCZav: TCheckBox
     Left = 8
-    Top = 156
+    Top = 137
     Width = 273
     Height = 17
     Caption = 'Prodlou'#382'en'#237' podr'#382'en'#237' z'#225'v'#283'ru p'#345'i rozpadu cest na [s]:'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = CHB_TimeJCZavClick
   end
 end

@@ -20,8 +20,6 @@ type
     SE_Port0: TSpinEdit;
     Label3: TLabel;
     E_Length: TEdit;
-    CHB_Loop: TCheckBox;
-    Label5: TLabel;
     Label4: TLabel;
     CB_Booster: TComboBox;
     SE_Module0: TSpinEdit;
@@ -106,7 +104,6 @@ begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
   Self.E_Length.Text := '0';
-  Self.CHB_Loop.Checked := false;
   Self.CB_Booster.ItemIndex := -1;
   Self.SE_Max_Trains.Enabled := true;
   Self.SE_Max_Trains.Value := 1;
@@ -239,7 +236,6 @@ begin
   end;
 
   Self.E_Length.Text := IntToStr(settings.lengthCm);
-  Self.CHB_Loop.Checked := settings.loop;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (úsek)';
 end;
@@ -318,7 +314,6 @@ begin
       settings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_System3.Value, Self.SE_Module3.Value, Self.SE_Port3.Value));
 
     settings.lengthCm := StrToIntDef(Self.E_Length.Text, 0);
-    settings.loop := Self.CHB_Loop.Checked;
     settings.boosterId := Boosters.sorted[Self.CB_Booster.ItemIndex].id;
     settings.jcReleaseZaver := ownConvert.SecTenthsToTime(Self.NB_TimeJCZav.Text);
 

@@ -21,7 +21,6 @@ type
   TBlkTrackSettings = record
     RCSAddrs: TRCSsAddrs;
     lengthCm: Cardinal; // in centimeters
-    loop: Boolean;
     boosterId: string;
     houkEvL: TObjectList<THoukEv>; // seznam houkacich udalosti pro lichy smer
     houkEvS: TObjectList<THoukEv>; // seznam houkacich udalosti pro sudy smer
@@ -368,7 +367,6 @@ begin
   Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
   Self.m_settings.lengthCm := ini_tech.ReadInteger(section, 'delka', 0);
   Self.m_settings.boosterId := ini_tech.ReadString(section, 'zesil', '');
-  Self.m_settings.loop := ini_tech.ReadBool(section, 'smc', false);
   Self.m_settings.maxTrains := ini_tech.ReadInteger(section, 'maxSpr', _DEFAULT_MAX_TRAINS);
   Self.m_settings.jcReleaseZaver := ownConvert.SecTenthsToTime(ini_tech.ReadString(section, 'jcReleaseZaver', '0.0'));
 
@@ -444,9 +442,6 @@ begin
 
   if (Self.m_settings.jcReleaseZaver <> 0) then
     ini_tech.WriteString(section, 'jcReleaseZaver', ownConvert.TimeToSecTenths(Self.m_settings.jcReleaseZaver));
-
-  if (Self.m_settings.loop) then
-    ini_tech.WriteBool(section, 'smc', Self.m_settings.loop);
 
   if (Assigned(Self.m_settings.houkEvL)) then
   begin
@@ -1820,8 +1815,6 @@ begin
   TBlk.RCSstoJSON(Self.m_settings.RCSAddrs, json.A['rcs']);
 
   json['lengthCm'] := Self.m_settings.lengthCm;
-  if (Self.m_settings.loop) then
-    json['loop'] := Self.m_settings.loop;
   json['booster'] := Self.m_settings.boosterId;
   json['maxTrains'] := Self.m_settings.maxTrains;
   json['stationTrack'] := Self.spnl.stationTrack;
