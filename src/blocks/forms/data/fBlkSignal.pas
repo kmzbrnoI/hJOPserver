@@ -53,6 +53,9 @@ type
     Label12: TLabel;
     SE_Ind_System: TSpinEdit;
     SE_Cont_System: TSpinEdit;
+    CHB_ForceDirection: TCheckBox;
+    CB_ForceDirection: TComboBox;
+    Label13: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -70,6 +73,7 @@ type
     procedure CHB_RCS_Second_OutputClick(Sender: TObject);
     procedure CHB_PStClick(Sender: TObject);
     procedure CHB_changeTimeClick(Sender: TObject);
+    procedure CHB_ForceDirectionClick(Sender: TObject);
 
   private
     openIndex: Integer;
@@ -100,7 +104,7 @@ var
 implementation
 
 uses GetSystems, RCSc, RCSsc, Block, Area, DataBloky, BlockTrack, ownGuiUtils,
-  ownConvert;
+  ownConvert, THnaciVozidlo;
 
 {$R *.dfm}
 
@@ -141,6 +145,9 @@ begin
 
   Self.CHB_PSt.Checked := false;
   Self.CHB_PStClick(Self.CHB_PSt);
+
+  Self.CHB_ForceDirection.Checked := False;
+  Self.CHB_ForceDirectionClick(Self.CHB_ForceDirection);
 
   // prvni udalost nepridavame, protoze muze byt navestidlo seradovaci,
   // ktere ji nepotrebuje
@@ -230,6 +237,10 @@ begin
     end;
   end;
 
+  Self.CHB_ForceDirection.Checked := (settings.forceDirection <> THVOptionalSite.osNo);
+  Self.CB_ForceDirection.ItemIndex := Integer(settings.forceDirection);
+  Self.CHB_ForceDirectionClick(Self.CHB_ForceDirection);
+
   Self.Caption := 'Upravit blok ' + glob.name + ' (návěstidlo)';
 end;
 
@@ -261,6 +272,13 @@ begin
   Self.NB_ChangeTime.Enabled := Self.CHB_changeTime.Checked;
   if (not Self.CHB_changeTime.Checked) then
     Self.NB_ChangeTime.Text := TBlkSignal.DefaultChangeTime(Self.CHB_RCS_Output.Checked);
+end;
+
+procedure TF_BlkSignal.CHB_ForceDirectionClick(Sender: TObject);
+begin
+  Self.CB_ForceDirection.Enabled := Self.CHB_ForceDirection.Checked;
+  if (not Self.CHB_ForceDirection.Checked) then
+    Self.CB_ForceDirection.ItemIndex := -1;
 end;
 
 procedure TF_BlkSignal.CHB_PStClick(Sender: TObject);
@@ -347,6 +365,11 @@ begin
     StrMessageBox('Vyplňte název bloku!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
+  if ((Self.CHB_ForceDirection.Checked) and (Self.CB_ForceDirection.ItemIndex < 0)) then
+  begin
+    StrMessageBox('Vyberte vnucený směr návěstidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
 
   var messages := '';
 
@@ -427,6 +450,8 @@ begin
     settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
     for var fBlkNavEvent in Self.eventForms do
       settings.events.Add(fBlkNavEvent.GetEvent());
+
+    settings.forceDirection := THVOptionalSite(Self.CB_ForceDirection.ItemIndex);
 
     settings.PSt.enabled := Self.CHB_PSt.Checked;
     if (Self.CHB_PSt.Checked) then

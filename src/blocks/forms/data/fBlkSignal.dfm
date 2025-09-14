@@ -4,7 +4,7 @@ object F_BlkSignal: TF_BlkSignal
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (n'#225'v'#283'stidlo)'
-  ClientHeight = 453
+  ClientHeight = 455
   ClientWidth = 681
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -72,6 +72,13 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Zpo'#382'd'#283'n'#237' p'#225'du n'#225'v'#283'stidla [s]:'
+  end
+  object Label13: TLabel
+    Left = 338
+    Top = 400
+    Width = 121
+    Height = 13
+    Caption = 'Pro n'#225'v'#283'stidla ve smy'#269'ce'
   end
   object E_Name: TEdit
     Left = 119
@@ -291,7 +298,7 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 9
+    TabOrder = 12
     OnClick = B_StornoClick
   end
   object B_Save: TButton
@@ -305,7 +312,7 @@ object F_BlkSignal: TF_BlkSignal
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 8
+    TabOrder = 11
     OnClick = B_SaveClick
   end
   object SE_Delay: TSpinEdit
@@ -333,7 +340,7 @@ object F_BlkSignal: TF_BlkSignal
     Height = 369
     MultiLine = True
     OwnerDraw = True
-    TabOrder = 10
+    TabOrder = 8
     OnDrawTab = PageControlCloseButtonDrawTab
     OnMouseDown = PageControlCloseButtonMouseDown
     OnMouseLeave = PageControlCloseButtonMouseLeave
@@ -372,7 +379,7 @@ object F_BlkSignal: TF_BlkSignal
       FFFFFFFFFFFFFFFFFFFFFFFF000000000000000000AAAAAAFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF09090900
       0000000000B3B3B3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF}
-    TabOrder = 11
+    TabOrder = 13
     OnClick = BB_Event_AddClick
   end
   object GB_PSt: TGroupBox
@@ -550,5 +557,25 @@ object F_BlkSignal: TF_BlkSignal
     Mode = nbmFloat
     MaxValue = 10.000000000000000000
     TabOrder = 4
+  end
+  object CHB_ForceDirection: TCheckBox
+    Left = 317
+    Top = 383
+    Width = 228
+    Height = 17
+    Caption = 'Vnutit sm'#283'r n'#225'v'#283'stidla (pouze pro experty!):'
+    TabOrder = 9
+    OnClick = CHB_ForceDirectionClick
+  end
+  object CB_ForceDirection: TComboBox
+    Left = 551
+    Top = 383
+    Width = 122
+    Height = 21
+    Style = csDropDownList
+    TabOrder = 10
+    Items.Strings = (
+      'lich'#253
+      'sud'#253)
   end
 end
