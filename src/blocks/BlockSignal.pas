@@ -84,6 +84,7 @@ type
       rcsIndicationShunt: TRCSsAddr;
       rcsControllerShunt: TRCSsAddr;
     end;
+    forceDirection: THVOptionalSite;
   end;
 
   TBlkSignalState = record
@@ -194,6 +195,7 @@ type
     procedure UnregisterAllEvents();
     function IsChanging(): Boolean;
     function GetTargetSignal(): TBlkSignalCode;
+    function GetDirection(): THVSite;
 
     procedure PstCheckActive();
     procedure ShowIndication();
@@ -244,6 +246,7 @@ type
     function GetTrain(track: TBlk = nil): TTrain;
     procedure PropagatePOdjToRailway();
     function IsSpecificChangeTime(): Boolean;
+    procedure SetSpnlDirection(dir: THVSite);
 
     class function SignalToString(code: TBlkSignalCode): string;
     class function DefaultChangeTime(hasRCSoutput: Boolean): string; overload;
@@ -256,7 +259,7 @@ type
 
     property symbolType: TBlkSignalSymbol read m_spnl.symbolType;
     property trackId: Integer read m_spnl.trackId write SetTrackId;
-    property direction: THVSite read m_spnl.direction write m_spnl.direction;
+    property direction: THVSite read GetDirection;
 
     property state: TBlkSignalState read m_state;
     property signal: TBlkSignalCode read m_state.signal write mSetSignal;
@@ -266,7 +269,6 @@ type
     property ab: Boolean read GetAB write SetAB;
     property ABJC: TJC read m_state.ABJC write SetABJC;
     property ZAM: Boolean read m_state.ZAM write SetZAM;
-    property lichy: THVSite read m_spnl.direction;
     property dnJC: TJC read m_state.dnJC write m_state.dnJC;
     property privol: TJC read m_state.privolJC write m_state.privolJC;
     property track: TBlk read GetTrackId;
@@ -344,6 +346,7 @@ begin
   Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
 
   Self.m_settings.locked := ini_tech.ReadBool(section, 'zamknuti', false);
+  Self.m_settings.forceDirection := THVOptionalSite(ini_tech.ReadInteger(section, 'vnucenySmer', Integer(THVOptionalSite.osNo)));
 
   Self.m_settings.outputType := TBlkSignalOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
   Self.m_settings.fallDelay := ini_tech.ReadInteger(section, 'zpoz', _SIG_DEFAULT_DELAY);
@@ -443,6 +446,9 @@ begin
 
   if (Self.m_settings.locked) then
     ini_tech.WriteBool(section, 'zamknuti', Self.m_settings.locked);
+
+  if (Self.m_settings.forceDirection <> THVOptionalSite.osNo) then
+    ini_tech.WriteInteger(section, 'vnucenySmer', Integer(Self.m_settings.forceDirection));
 
   if (Self.m_settings.PSt.enabled) then
    begin
@@ -1468,7 +1474,7 @@ begin
     var slowTrain := Self.GetTrain(slowTrack);
 
     if ((slowTrain <> nil) and (slowTrain.front = slowTrack) and (slowTrain.wantedSpeed > signalEv.slow.speed) and (slowTrack.slowingReady) and
-        ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(slowTrack))) and (slowTrain.direction = Self.m_spnl.direction)) then
+        ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(slowTrack))) and (slowTrain.direction = Self.direction)) then
     begin
       if (not signalEv.slow.ev.enabled) then
         signalEv.slow.ev.Register(slowTrain.index);
@@ -1519,7 +1525,7 @@ begin
   begin
     // event se odregistruje automaticky pri zmene
 
-    if ((Train.IsPOdj(track)) and (Train.direction = Self.m_spnl.direction)) then
+    if ((Train.IsPOdj(track)) and (Train.direction = Self.direction)) then
     begin
       // predvidany odjezd neuplynul -> zastavit soupravu
       if (Train.wantedSpeed <> 0) then
@@ -1542,7 +1548,7 @@ begin
       if ((Self.IsGoSignal()) and (not Self.m_state.falling)) then
       begin
         // je postaveno -> zkontrolujeme, jestli budeme na konci zastavovat
-        if ((Train.wantedSpeed > 0) and (Train.direction <> Self.m_spnl.direction)) then
+        if ((Train.wantedSpeed > 0) and (Train.direction <> Self.direction)) then
           Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
 
         // Aby se nezrychlilo napr. pri uvolneni predchoziho useku v trati
@@ -1562,14 +1568,14 @@ begin
                   success := TTrainSpeed.Pick(Train, Self.dnJC.data.speedsGo, speed)
                 else
                   success := TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed);
-                if ((success) and (Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.m_spnl.direction)) then
-                  Train.SetSpeedDirection(speed, Self.m_spnl.direction);
+                if ((success) and (Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.direction)) then
+                  Train.SetSpeedDirection(speed, Self.direction);
               end else begin
                 // na konci JC stojime
                 var speed: Cardinal;
                 if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed)) then // if success
-                  if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.m_spnl.direction)) then
-                    Train.SetSpeedDirection(speed, Self.m_spnl.direction);
+                  if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.direction)) then
+                    Train.SetSpeedDirection(speed, Self.direction);
               end;
             end;
 
@@ -1577,16 +1583,16 @@ begin
             begin
               var speed: Cardinal;
               if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsGo, speed)) then // if success
-                if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.m_spnl.direction)) then
-                  Train.SetSpeedDirection(speed, Self.m_spnl.direction);
+                if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.direction)) then
+                  Train.SetSpeedDirection(speed, Self.direction);
             end;
 
           TJCNextSignalType.no:
             begin
               var speed: Cardinal;
               if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed)) then // if success
-                if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.m_spnl.direction)) then
-                  Train.SetSpeedDirection(speed, Self.m_spnl.direction);
+                if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.direction)) then
+                  Train.SetSpeedDirection(speed, Self.direction);
             end;
         end;
 
@@ -1594,12 +1600,12 @@ begin
         Train.CheckAnnouncement(Self);
       end else begin
         // neni povolovaci navest -> zastavit LOKO
-        if ((Train.direction = Self.m_spnl.direction) and (Train.wantedSpeed <> 0)) then
-          Train.SetSpeedDirection(0, Self.m_spnl.direction);
+        if ((Train.direction = Self.direction) and (Train.wantedSpeed <> 0)) then
+          Train.SetSpeedDirection(0, Self.direction);
       end;
     end else begin
       // nenalezena jizdni cesta -> muze se jednat o navestidlo v autobloku
-      if (Train.direction = Self.m_spnl.direction) then
+      if (Train.direction = Self.direction) then
       begin
         if ((Self.IsGoSignal()) and (not Self.m_state.falling) and (Self.track.typ = btRT) and
           (TBlkRT(Self.track).inRailway > -1)) then
@@ -1607,11 +1613,11 @@ begin
           var speed: Cardinal;
           var success := Train.GetRailwaySpeed(speed);
           if ((success) and (Cardinal(Train.wantedSpeed) <> speed) and (not Train.IsSpeedOverride())) then
-            Train.SetSpeedDirection(speed, Self.m_spnl.direction)
+            Train.SetSpeedDirection(speed, Self.direction)
         end else begin
           // neni povolovaci navest -> zastavit
           if (Train.wantedSpeed <> 0) then
-            Train.SetSpeedDirection(0, Self.m_spnl.direction);
+            Train.SetSpeedDirection(0, Self.direction);
         end;
       end;
     end;
@@ -1904,7 +1910,7 @@ begin
 
   json['symbolType'] := Integer(Self.m_spnl.symbolType);
   json['track'] := Self.m_spnl.trackId;
-  json['direction'] := Integer(Self.m_spnl.direction);
+  json['direction'] := Integer(Self.direction);
 
   if (includeState) then
     Self.GetPtState(json['blockState']);
@@ -2400,6 +2406,21 @@ end;
 function TBlkSignal.IsSpecificChangeTime(): Boolean;
 begin
   Result := (ownConvert.TimeToSecTenths(Self.m_settings.changeTime) <> Self.DefaultChangeTime());
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkSignal.GetDirection(): THVSite;
+begin
+  if (Self.m_settings.forceDirection <> THVOptionalSite.osNo) then
+    Result := THVSite(Self.m_settings.forceDirection)
+  else
+    Result := Self.m_spnl.direction;
+end;
+
+procedure TBlkSignal.SetSpnlDirection(dir: THVSite);
+begin
+  Self.m_spnl.direction := dir;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

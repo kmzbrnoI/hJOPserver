@@ -62,6 +62,7 @@ const
 type
   // v jakem smeru se nachazi stanoviste A
   THVSite = (odd = 0, even = 1);
+  THVOptionalSite = (osNo = -1, osOdd = 0, osEven = 1);
   TFunctions = array [0 .. _HV_FUNC_MAX] of Boolean;
   TPomStatus = (unknown = -1, manual = 0, automat = 1, progr = 2, error = 3);
 

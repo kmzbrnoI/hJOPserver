@@ -1127,7 +1127,7 @@ begin
     if ((signal <> nil) and (Self.lRT <> nil)) then
     begin
       signal.trackId := Self.lRT.id;
-      signal.direction := THVSite.odd;
+      signal.SetSpnlDirection(THVSite.odd);
       if ((Self.railway <> nil) and (TBlkRailway(Self.railway).signals = TRailwaySignals.hradlo)) then
         signal.inRailway := rwHradlo
       else
@@ -1140,7 +1140,7 @@ begin
     if ((signal <> nil) and (Self.sRT <> nil)) then
     begin
       signal.trackId := Self.sRT.id;
-      signal.direction := THVSite.even;
+      signal.SetSpnlDirection(THVSite.even);
       if ((Self.railway <> nil) and (TBlkRailway(Self.railway).signals = TRailwaySignals.hradlo)) then
         signal.inRailway := rwHradlo
       else
