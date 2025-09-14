@@ -3603,6 +3603,7 @@ begin
         json['nextSignalId'] := Self.m_data.nextSignalId;
       end;
   end;
+  json['signalFallTrackI'] := Self.m_data.signalFallTrackI;
 
   for var turnoutZav in Self.m_data.turnouts do
   begin
@@ -3660,6 +3661,8 @@ begin
   TTrainSpeed.GetPtData(Self.m_data.speedsGo, json['speedsGo']);
   TTrainSpeed.GetPtData(Self.m_data.speedsStop, json['speedsStop']);
   json['turn'] := Self.m_data.turn;
+
+  json['loopTrackI'] := Self.m_data.loopTrackI;
 
   if (includeStaveni) then
     Self.GetPtState(json['state']);
