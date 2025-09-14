@@ -2538,20 +2538,23 @@ end;
 
 procedure TJC.CheckLoopBlock(blk: TBlk);
 begin
-  if (((blk as TBlkTrack).GetSettings().loop) and ((blk as TBlkTrack).IsTrain())) then
+  var track: TBlkTrack := (blk as TBlkTrack);
+
+  if ((Self.m_data.loopTrackI > -1) and (Self.m_data.loopTrackI < Self.m_data.tracks.Count) and
+      (track.id = Self.m_data.tracks[Self.m_data.loopTrackI]) and (track.IsTrain())) then
   begin
-    // kontrola zmeny vychozi a cilove stanice
+    // prohodit vychozi a cilovou stanici
     for var area: TArea in blk.areas do
     begin
-      if (area = (blk as TBlkTrack).Train.areaTo) then
+      if (area = track.Train.areaTo) then
       begin
-        (blk as TBlkTrack).Train.InterChangeArea(false);
+        track.Train.InterChangeArea(false);
         break;
       end;
     end;
 
-    (blk as TBlkTrack).Train.ChangeDirection();
-    Self.Log('Obsazen smyckovy usek ' + blk.name + ' - menim smer loko v souprave ' + (blk as TBlkTrack).Train.name, llInfo);
+    track.Train.ChangeDirection();
+    Self.Log('Obsazen smyckovy usek ' + blk.name + ' - menim smer loko v souprave ' + track.Train.name, llInfo);
   end;
 end;
 
