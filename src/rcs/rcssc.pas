@@ -435,7 +435,7 @@ begin
       except
         on E: Exception do
         begin
-          var fullPath: string := Self.m_rcss[i].libDir + IntToStr(i) + '\' + dllFile;
+          var fullPath: string := Self.m_rcss[i].libDir + '\' + dllFile;
           Self.m_rcss[i].Log('Nelze naèíst knihovnu ' + fullPath + ': ' + E.Message, llError, True);
         end;
       end;
