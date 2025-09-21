@@ -52,7 +52,7 @@ procedure intLog(text: string; level: TLogLevel; source: TLogSource; multiline: 
 
 implementation
 
-uses fMain, GetSystems, appEv;
+uses fMain, GetSystems, appEv, version;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -70,9 +70,8 @@ begin
       AppEvents.LogException(e);
   end;
 
-  Log('$$$$$$$$$$ Spouštím hJOPserver $$$$$$$$$$', llInfo);
-  Log('Datum ' + FormatDateTime('dd.mm.yyyy', Now), llInfo);
   Log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', llInfo);
+  Log('Spouštím hJOPserver '+version.StandardVersionBuildStr()+', datum: '+FormatDateTime('dd.mm.yyyy', Now), llInfo);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

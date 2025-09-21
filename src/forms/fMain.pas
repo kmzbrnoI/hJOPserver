@@ -2044,8 +2044,7 @@ begin
 
   Self.LoadIniLibData();
 
-  Self.Caption := 'hJOPserver – v' + VersionStr() +
-    ' (build ' + FormatDateTime('dd.mm.yyyy', BuildDateTime()) + ')';
+  Self.Caption := 'hJOPserver – ' + StandardVersionBuildStr();
 end;
 
 procedure TF_Main.FormDestroy(Sender: TObject);

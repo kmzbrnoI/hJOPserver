@@ -7,6 +7,7 @@ uses Windows, SysUtils;
  function VersionStr(const FileName: string): string; overload;
  function VersionStr(): string; overload;
  function BuildDateTime(): TDateTime;
+ function StandardVersionBuildStr(): string;
 
  const _RELEASE: Boolean = False;
 
@@ -49,6 +50,11 @@ end;
 function BuildDateTime(): TDateTime;
 begin
   Result := (TTimeZone.Local.ToLocalTime(PImageNtHeaders(HInstance + Cardinal(PImageDosHeader(HInstance)^._lfanew))^.FileHeader.TimeDateStamp / SecsPerDay) + UnixDateDelta);
+end;
+
+function StandardVersionBuildStr(): string;
+begin
+  Result := 'v' + VersionStr() + ' (build ' + FormatDateTime('dd.mm.yyyy', BuildDateTime()) + ')';
 end;
 
 end.//unit

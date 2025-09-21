@@ -6302,7 +6302,6 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
-        Items.ItemData = {050000000000000000}
         MultiSelect = True
         ReadOnly = True
         RowSelect = True
