@@ -83,7 +83,7 @@ object F_About: TF_About
     Font.Name = 'Arial'
     Font.Style = [fsBold]
     ParentFont = False
-    TabOrder = 0
+    TabOrder = 2
   end
   object ST_about2: TStaticText
     Left = 1
@@ -103,7 +103,7 @@ object F_About: TF_About
     Font.Name = 'Arial'
     Font.Style = []
     ParentFont = False
-    TabOrder = 1
+    TabOrder = 3
   end
   object ST_email: TStaticText
     Left = 192
@@ -124,7 +124,7 @@ object F_About: TF_About
     Font.Name = 'Arial'
     Font.Style = [fsUnderline]
     ParentFont = False
-    TabOrder = 2
+    TabOrder = 4
     OnClick = ST_emailClick
   end
   object ST_about4: TStaticText
@@ -145,7 +145,7 @@ object F_About: TF_About
     Font.Name = 'Arial'
     Font.Style = []
     ParentFont = False
-    TabOrder = 3
+    TabOrder = 5
   end
   object ST_kmz_web: TStaticText
     Left = 207
@@ -166,11 +166,11 @@ object F_About: TF_About
     Font.Name = 'Arial'
     Font.Style = [fsUnderline]
     ParentFont = False
-    TabOrder = 4
+    TabOrder = 6
     OnClick = ST_linkClick
   end
   object B_Close: TButton
-    Left = 248
+    Left = 295
     Top = 513
     Width = 74
     Height = 25
@@ -180,7 +180,7 @@ object F_About: TF_About
     Margins.Bottom = 2
     Caption = 'Zav'#345#237't'
     Default = True
-    TabOrder = 5
+    TabOrder = 0
     OnClick = B_CloseClick
   end
   object GB_Info: TGroupBox
@@ -193,7 +193,7 @@ object F_About: TF_About
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Verze '
-    TabOrder = 6
+    TabOrder = 7
     object Label1: TLabel
       Left = 15
       Top = 37
@@ -388,7 +388,16 @@ object F_About: TF_About
     Font.Name = 'Arial'
     Font.Style = [fsUnderline]
     ParentFont = False
-    TabOrder = 7
+    TabOrder = 8
     OnClick = ST_linkClick
+  end
+  object B_Update: TButton
+    Left = 200
+    Top = 513
+    Width = 75
+    Height = 25
+    Caption = 'Aktualizovat'
+    TabOrder = 1
+    OnClick = B_UpdateClick
   end
 end

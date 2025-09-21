@@ -31,12 +31,15 @@ type
     L_Trakce_Version: TLabel;
     Label6: TLabel;
     L_UpdatedDateTime: TLabel;
+    B_Update: TButton;
     procedure FormShow(Sender: TObject);
     procedure B_CloseClick(Sender: TObject);
     procedure ST_linkClick(Sender: TObject);
     procedure ST_emailClick(Sender: TObject);
+    procedure B_UpdateClick(Sender: TObject);
   private
     procedure RefreshRCSTable();
+    procedure Fill();
 
   public
     { Public declarations }
@@ -51,7 +54,17 @@ uses version, RCSc, RCSsc, Logging, appEv, Trakcec;
 
 {$R *.dfm}
 
+procedure TF_About.B_UpdateClick(Sender: TObject);
+begin
+  Self.Fill();
+end;
+
 procedure TF_About.FormShow(Sender: TObject);
+begin
+  Self.Fill();
+end;
+
+procedure TF_About.Fill();
 begin
   Self.L_VApp.Caption := version.VersionStr();
   Self.L_BuildApp.Caption := FormatDateTime('dd.mm.yyyy hh:nn:ss', BuildDateTime());
@@ -71,6 +84,7 @@ begin
   Self.RefreshRCSTable();
 
   Self.L_UpdatedDateTime.Caption := FormatDateTime('dd.mm.yyyy hh:nn:ss', Now);
+
 end;
 
 procedure TF_About.RefreshRCSTable();
