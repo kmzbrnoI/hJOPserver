@@ -109,7 +109,7 @@ begin
     Self.UDPserver.OnUDPRead := Self.OnUDPServerRead;
   except
     on E: Exception do
-      Log('Nelze vytvorit discover UDPserver : ' + E.Message, llError);
+      Log('Nelze vytvorit discover UDPserver : ' + E.Message, llError, lsUDPDiscover);
   end;
 end;
 
@@ -159,7 +159,7 @@ begin
     end;
   except
     on E: Exception do
-      Log('Vyjimka TUDPDiscover.OnUDPServerRead : ' + E.Message, llError);
+      Log('Vyjimka TUDPDiscover.OnUDPServerRead : ' + E.Message, llError, lsUDPDiscover);
   end;
 end;
 /// /////////////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ begin
     ABinding.Broadcast(data, port, Self.binds[ABinding.IP].broadcastAddr);
   except
     on E: Exception do
-      Log('Vyjimka TUDPDiscover.SendDisc : ' + E.Message, llError);
+      Log('Vyjimka TUDPDiscover.SendDisc : ' + E.Message, llError, lsUDPDiscover);
   end;
 end;
 
@@ -249,13 +249,13 @@ begin
     bindStr := LeftStr(bindStr, Length(bindStr)-2);
 
     if (not wasActive) then
-      Log('Zapínám UDP Discover server '+bindStr+' - '+Self.name+', '+Self.description+' ...', llInfo, lsAny);
+      Log('Zapínám UDP Discover server '+bindStr+' - '+Self.name+', '+Self.description+' ...', llInfo, lsUDPDiscover);
     Self.UDPserver.Active := true;
     if (not wasActive) then
-      log('UDP Discover server zapnut.', llInfo, lsAny);
+      log('UDP Discover server zapnut.', llInfo, lsUDPDiscover);
   except
     on E: Exception do
-      Log('Vyjimka TUDPDiscover.UpdateBindings : ' + E.Message, llError);
+      Log('Vyjimka TUDPDiscover.UpdateBindings : ' + E.Message, llError, lsUDPDiscover);
   end;
 end;
 

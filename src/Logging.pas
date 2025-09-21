@@ -31,7 +31,8 @@ type
     lsConsole,
     lsStack,
     lsPanelServer,
-    lsPTServer
+    lsPTServer,
+    lsUDPDiscover
   );
 
 procedure logInit();
@@ -146,6 +147,8 @@ begin
       Result := 'PTServer';
     lsPanelServer:
       Result := 'PanelServer';
+    lsUDPDiscover:
+      Result := 'UDP Discover';
   else
     Result := '?';
   end;
