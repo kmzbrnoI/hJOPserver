@@ -29,6 +29,8 @@ type
     L_BuildApp: TLabel;
     Label5: TLabel;
     L_Trakce_Version: TLabel;
+    Label6: TLabel;
+    L_UpdatedDateTime: TLabel;
     procedure FormShow(Sender: TObject);
     procedure B_CloseClick(Sender: TObject);
     procedure ST_linkClick(Sender: TObject);
@@ -67,6 +69,8 @@ begin
   end;
 
   Self.RefreshRCSTable();
+
+  Self.L_UpdatedDateTime.Caption := FormatDateTime('dd.mm.yyyy hh:nn:ss', Now);
 end;
 
 procedure TF_About.RefreshRCSTable();

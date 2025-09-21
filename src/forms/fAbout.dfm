@@ -4,7 +4,7 @@ object F_About: TF_About
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'O programu hJOPserver'
-  ClientHeight = 534
+  ClientHeight = 555
   ClientWidth = 563
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object F_About: TF_About
   TextHeight = 13
   object I_AppIcon: TImage
     Left = 255
-    Top = 413
+    Top = 429
     Width = 60
     Height = 60
     Picture.Data = {
@@ -171,7 +171,7 @@ object F_About: TF_About
   end
   object B_Close: TButton
     Left = 248
-    Top = 497
+    Top = 513
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -187,7 +187,7 @@ object F_About: TF_About
     Left = 7
     Top = 165
     Width = 549
-    Height = 227
+    Height = 244
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -195,8 +195,8 @@ object F_About: TF_About
     Caption = ' Verze '
     TabOrder = 6
     object Label1: TLabel
-      Left = 16
-      Top = 21
+      Left = 15
+      Top = 37
       Width = 94
       Height = 13
       Margins.Left = 2
@@ -206,8 +206,8 @@ object F_About: TF_About
       Caption = 'Verze hJOPserveru:'
     end
     object L_VApp: TLabel
-      Left = 270
-      Top = 21
+      Left = 269
+      Top = 37
       Width = 38
       Height = 13
       Margins.Left = 2
@@ -217,8 +217,8 @@ object F_About: TF_About
       Caption = 'L_VApp'
     end
     object Label2: TLabel
-      Left = 16
-      Top = 54
+      Left = 15
+      Top = 70
       Width = 37
       Height = 13
       Margins.Left = 2
@@ -228,8 +228,8 @@ object F_About: TF_About
       Caption = 'Trakce:'
     end
     object L_Trakce_Lib: TLabel
-      Left = 270
-      Top = 54
+      Left = 269
+      Top = 70
       Width = 66
       Height = 13
       Margins.Left = 2
@@ -239,8 +239,8 @@ object F_About: TF_About
       Caption = 'L_Trakce_Lib'
     end
     object Label3: TLabel
-      Left = 16
-      Top = 71
+      Left = 15
+      Top = 87
       Width = 57
       Height = 13
       Margins.Left = 2
@@ -250,8 +250,8 @@ object F_About: TF_About
       Caption = 'Trakce API:'
     end
     object L_Trakce_APIv: TLabel
-      Left = 270
-      Top = 71
+      Left = 269
+      Top = 87
       Width = 75
       Height = 13
       Margins.Left = 2
@@ -261,8 +261,8 @@ object F_About: TF_About
       Caption = 'L_Trakce_APIv'
     end
     object Label4: TLabel
-      Left = 16
-      Top = 38
+      Left = 15
+      Top = 54
       Width = 90
       Height = 13
       Margins.Left = 2
@@ -272,8 +272,8 @@ object F_About: TF_About
       Caption = 'Build hJOPserveru:'
     end
     object L_BuildApp: TLabel
-      Left = 270
-      Top = 38
+      Left = 269
+      Top = 54
       Width = 54
       Height = 13
       Margins.Left = 2
@@ -283,8 +283,8 @@ object F_About: TF_About
       Caption = 'L_BuildApp'
     end
     object Label5: TLabel
-      Left = 16
-      Top = 88
+      Left = 15
+      Top = 104
       Width = 112
       Height = 13
       Margins.Left = 2
@@ -294,8 +294,8 @@ object F_About: TF_About
       Caption = 'Trakce verze knihovny:'
     end
     object L_Trakce_Version: TLabel
-      Left = 270
-      Top = 88
+      Left = 269
+      Top = 104
       Width = 87
       Height = 13
       Margins.Left = 2
@@ -304,9 +304,31 @@ object F_About: TF_About
       Margins.Bottom = 2
       Caption = 'L_Trakce_Version'
     end
+    object Label6: TLabel
+      Left = 15
+      Top = 20
+      Width = 118
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Informace aktualizov'#225'ny:'
+    end
+    object L_UpdatedDateTime: TLabel
+      Left = 269
+      Top = 20
+      Width = 99
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'L_UpdatedDateTime'
+    end
     object GB_RCS: TGroupBox
       Left = 2
-      Top = 110
+      Top = 127
       Width = 545
       Height = 115
       Align = alBottom
