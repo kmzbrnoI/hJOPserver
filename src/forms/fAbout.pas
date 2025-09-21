@@ -27,6 +27,8 @@ type
     L_Trakce_APIv: TLabel;
     Label4: TLabel;
     L_BuildApp: TLabel;
+    Label5: TLabel;
+    L_Trakce_Version: TLabel;
     procedure FormShow(Sender: TObject);
     procedure B_CloseClick(Sender: TObject);
     procedure ST_linkClick(Sender: TObject);
@@ -57,6 +59,12 @@ begin
     Self.L_Trakce_APIv.Caption := trakce.apiVersionStr
   else
     Self.L_Trakce_APIv.Caption := '-';
+
+  try
+    Self.L_Trakce_Version.Caption := trakce.LibVersion();
+  except
+    Self.L_Trakce_Version.Caption := '?';
+  end;
 
   Self.RefreshRCSTable();
 end;

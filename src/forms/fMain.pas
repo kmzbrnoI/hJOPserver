@@ -1362,7 +1362,7 @@ begin
   Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-';
   try
     trakce.LoadLib(trakce.libDir + '\' + fn);
-    logging.Log('Trakce: načteno ' + fn, TLogLevel.llInfo, lsTrakce);
+    logging.Log('Trakce: načteno ' + fn, TLogLevel.llInfo, lsTrakce, True);
     Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := ExtractFileName(trakce.Lib);
   except
     on E: Exception do

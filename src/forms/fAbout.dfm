@@ -4,7 +4,7 @@ object F_About: TF_About
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'O programu hJOPserver'
-  ClientHeight = 516
+  ClientHeight = 534
   ClientWidth = 563
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -17,8 +17,8 @@ object F_About: TF_About
   OnShow = FormShow
   TextHeight = 13
   object I_AppIcon: TImage
-    Left = 248
-    Top = 397
+    Left = 255
+    Top = 413
     Width = 60
     Height = 60
     Picture.Data = {
@@ -170,8 +170,8 @@ object F_About: TF_About
     OnClick = ST_linkClick
   end
   object B_Close: TButton
-    Left = 241
-    Top = 481
+    Left = 248
+    Top = 497
     Width = 74
     Height = 25
     Margins.Left = 2
@@ -187,7 +187,7 @@ object F_About: TF_About
     Left = 7
     Top = 165
     Width = 549
-    Height = 212
+    Height = 227
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -282,15 +282,37 @@ object F_About: TF_About
       Margins.Bottom = 2
       Caption = 'L_BuildApp'
     end
+    object Label5: TLabel
+      Left = 16
+      Top = 88
+      Width = 112
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'Trakce verze knihovny:'
+    end
+    object L_Trakce_Version: TLabel
+      Left = 270
+      Top = 88
+      Width = 87
+      Height = 13
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Caption = 'L_Trakce_Version'
+    end
     object GB_RCS: TGroupBox
       Left = 2
-      Top = 95
+      Top = 110
       Width = 545
       Height = 115
       Align = alBottom
       Caption = ' RCS '
       TabOrder = 0
-      ExplicitTop = 39
+      ExplicitTop = 95
       object LV_RCS: TListView
         Left = 2
         Top = 15
@@ -307,7 +329,7 @@ object F_About: TF_About
             Width = 200
           end
           item
-            Caption = 'Verze RCS driveru'
+            Caption = 'Verze knihovny'
             Width = 100
           end
           item
@@ -322,10 +344,6 @@ object F_About: TF_About
         RowSelect = True
         TabOrder = 0
         ViewStyle = vsReport
-        ExplicitLeft = 8
-        ExplicitTop = -21
-        ExplicitWidth = 537
-        ExplicitHeight = 97
       end
     end
   end

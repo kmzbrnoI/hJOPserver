@@ -14,7 +14,7 @@ interface
 
 uses
   SysUtils, Classes, StrUtils, TrakceIFace, ComCtrls, THnaciVozidlo,
-  Generics.Collections, IniFiles;
+  Generics.Collections, IniFiles, TrakceErrors;
 
 const
   // max speed step for speed table
@@ -133,6 +133,7 @@ type
     destructor Destroy(); override;
 
     procedure LoadLib(filename: string);
+    function LibVersion(): string;
 
     procedure Log(loglevel: TTrkLogLevel; msg: string);
 
@@ -172,7 +173,7 @@ var
 implementation
 
 uses fMain, RCSc, fRegulator, TrainDb, GetSystems, THVDatabase, DataHV,
-  BlockDb, RegulatorTCP, TCPServerPanel, appEv, Logging;
+  BlockDb, RegulatorTCP, TCPServerPanel, appEv, Logging, version;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -242,6 +243,19 @@ begin
     str := LeftStr(str, Length(str) - 2);
     F_Main.LogBrief('Trakce: nepodařilo se svázat následující funkce : ' + str, TLogLevel.llError);
   end;
+
+  try
+    Self.Log(TTrkLogLevel.llInfo, 'Verze knihovny: '+Self.LibVersion());
+  except
+
+  end;
+end;
+
+function TTrakce.LibVersion(): string;
+begin
+  if (not Self.libLoaded) then
+    raise TrkException.Create('Trakce library not loaded!');
+  Result := version.VersionStr(Self.Lib, False);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
