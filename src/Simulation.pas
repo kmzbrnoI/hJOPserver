@@ -45,10 +45,15 @@ var
   RailwaySimulator: TRailwaySimulator;
   TurnoutSimulator: TTurnoutSimulator;
 
+  procedure InputSim();
+  procedure TrainOccupySim();
+  procedure DccChangedBoosterSim(dcc: Boolean);
+
 implementation
 
 uses GetSystems, RCSc, TJCDatabase, Block, BlockTrack, BlockDb, BlockSignal,
-  BlockRailwayTrack, BlockTurnout, RCSsc;
+  BlockRailwayTrack, BlockTurnout, RCSsc, Booster, BoosterDb, BlockCrossing,
+  Diagnostics, IfThenElse;
 
 /// /////////////////////////////////////////////////////////////////////////////
 // simulator obsazovani useku v jizdni ceste
@@ -259,6 +264,58 @@ begin
   except
 
   end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure InputSim();
+begin
+  // vychozi stav bloku
+  for var blk: TBlk in Blocks do
+  begin
+    try
+      if ((Blk.GetGlobalSettings.typ = btTurnout) and ((Blk as TBlkTurnout).posDetection)) then
+        RCSs.SetInput(TBlkTurnout(Blk).rcsInPlus, 1);
+      if ((Blk.typ = btCrossing) and (TBlkCrossing(Blk).GetSettings().RCSInputs.open.enabled)) then
+        RCSs.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open.addr, 1);
+      if ((diag.simSoupravaObsaz) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain()) and
+        ((Blk as TBlkTrack).occupAvailable)) then
+        RCSs.SetInput(TBlkTrack(Blk).GetSettings().RCSAddrs[0], 1);
+    except
+
+    end;
+  end;
+
+  // vychozi stav zesilovacu
+  for var booster: TBooster in Boosters do
+  begin
+    try
+      if ((booster.isPowerDetection) and (RCSs.IsSimulation(booster.settings.rcs.power.addr.addr.system))) then
+        RCSs.SetInput(Booster.settings.rcs.power.addr.addr, ite(booster.settings.rcs.power.reversed, 1, 0));
+      if ((booster.isOverloadDetection) and (RCSs.IsSimulation(booster.settings.rcs.overload.addr.addr.system))) then
+        RCSs.SetInput(Booster.settings.rcs.overload.addr.addr, ite(booster.settings.rcs.overload.reversed, 1, 0));
+      if ((booster.isDCCdetection) and (RCSs.IsSimulation(booster.settings.rcs.DCC.addr.addr.system))) then
+        RCSs.SetInput(Booster.settings.rcs.DCC.addr.addr, ite(booster.settings.rcs.DCC.reversed, 1, 0));
+    except
+
+    end;
+  end;
+end;
+
+procedure TrainOccupySim();
+begin
+  for var blk: TBlk in Blocks do
+  begin
+    if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then
+      continue;
+    if (((Blk as TBlkTrack).IsTrain()) and ((Blk as TBlkTrack).occupAvailable)) then
+      RCSs.SetInput((Blk as TBlkTrack).GetSettings().RCSAddrs[0], 1);
+  end;
+end;
+
+procedure DccChangedBoosterSim(dcc: Boolean);
+begin
+
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

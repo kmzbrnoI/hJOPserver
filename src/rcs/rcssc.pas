@@ -119,9 +119,6 @@ type
     function IsSimulation(addr: TRCSsSystemModule): Boolean; overload;
     function IsAnySimulation(): Boolean;
 
-    procedure InputSim(); // nastavit simulovane vstupy (koncove polohy vyhybek atp.)
-    procedure TrainOccupySim(); // nastavit RCS vstupy tak, aby useky, ve kterych je souprava, byly obsazene
-
     function IsStateActionInProgress(): Boolean;
 
     property generalError: Boolean read IsGeneralError;
@@ -661,51 +658,6 @@ begin
     if (Self.m_rcss[i].simulation) then
       Exit(True);
   Result := False;
-end;
-
-procedure TRCSs.InputSim();
-begin
-  // vychozi stav bloku
-  for var blk: TBlk in Blocks do
-  begin
-    try
-      if ((Blk.GetGlobalSettings.typ = btTurnout) and ((Blk as TBlkTurnout).posDetection)) then
-        Self.SetInput(TBlkTurnout(Blk).rcsInPlus, 1);
-      if ((Blk.typ = btCrossing) and (TBlkCrossing(Blk).GetSettings().RCSInputs.open.enabled)) then
-        Self.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open.addr, 1);
-      if ((diag.simSoupravaObsaz) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain()) and
-        ((Blk as TBlkTrack).occupAvailable)) then
-        Self.SetInput(TBlkTrack(Blk).GetSettings().RCSAddrs[0], 1);
-    except
-
-    end;
-  end;
-
-  // vychozi stav zesilovacu
-  for var booster: TBooster in Boosters.sorted do
-  begin
-    try
-      if ((Booster.isPowerDetection) and (Self.m_rcss[Booster.settings.rcs.power.addr.addr.system].simulation)) then
-        Self.SetInput(Booster.settings.rcs.power.addr.addr, ite(Booster.settings.rcs.power.reversed, 1, 0));
-      if ((Booster.isOverloadDetection) and (Self.m_rcss[Booster.settings.rcs.overload.addr.addr.system].simulation)) then
-        Self.SetInput(Booster.settings.rcs.overload.addr.addr, ite(Booster.settings.rcs.overload.reversed, 1, 0));
-      if ((Booster.isDCCdetection) and (Self.m_rcss[Booster.settings.rcs.DCC.addr.addr.system].simulation)) then
-        Self.SetInput(Booster.settings.rcs.DCC.addr.addr, ite(Booster.settings.rcs.DCC.reversed, 1, 0));
-    except
-
-    end;
-  end;
-end;
-
-procedure TRCSs.TrainOccupySim();
-begin
-  for var blk: TBlk in Blocks do
-  begin
-    if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then
-      continue;
-    if (((Blk as TBlkTrack).IsTrain()) and ((Blk as TBlkTrack).occupAvailable)) then
-      Self.SetInput((Blk as TBlkTrack).GetSettings().RCSAddrs[0], 1);
-  end;
 end;
 
 class function TRCSs.RCSsAddr(system: Cardinal; module: Cardinal; port: Byte): TRCSsAddr;

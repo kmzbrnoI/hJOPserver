@@ -584,7 +584,7 @@ uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fRegulator, fBlkSummary, fSystemAutoStart, fBlkTrackState, GetSystems,
   RCSc, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils,
   Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area, RCSIFace,
-  BlockSummary, BlockCrossing, TJCDatabase, TrakceC,
+  BlockSummary, BlockCrossing, TJCDatabase, TrakceC, IfThenElse,
   TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
   fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkCrossing,
   fBlkSignal, fBlkRailway, BlockLinker, TrainDb, DataTrains, DataUsers, fUserEdit, UserDb,
@@ -612,7 +612,7 @@ begin
 
   try
     if (diag.simInputs) then
-      RCSs.InputSim();
+      Simulation.InputSim();
   except
     on E: Exception do
       logging.Log('Nelze provést inputSim : ' + E.Message, llError, lsRCS, True);
@@ -1335,7 +1335,7 @@ begin
 
   try
     if ((ready) and (diag.simInputs) and (rcs.simulation)) then
-      RCSs.InputSim();
+      Simulation.InputSim();
   except
     on E: Exception do
       rcs.Log('Nelze provést inputSim: ' + E.Message, llError);

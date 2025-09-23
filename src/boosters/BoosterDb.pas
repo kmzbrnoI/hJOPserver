@@ -50,6 +50,7 @@ type
     function ContainsKey(key: string; ignore: TBooster = nil): Boolean;
 
     property Items[index: string]: TBooster read GetItem; default;
+    function GetEnumerator(): TDictionary<string, TBooster>.TValueEnumerator; overload;
     property Count: Integer read GetCount;
     property sorted: TList<TBooster> read sortedKeys;
 
@@ -310,6 +311,13 @@ begin
     Booster.Free();
   Self.db.Clear();
   Self.sortedKeys.Clear();
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBoosterDb.GetEnumerator(): TDictionary<string, TBooster>.TValueEnumerator;
+begin
+  Result := Self.db.Values.GetEnumerator();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

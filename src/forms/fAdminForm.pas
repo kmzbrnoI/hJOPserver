@@ -128,7 +128,7 @@ end;
 procedure TF_Admin.B_InputSimClick(Sender: TObject);
 begin
   try
-    RCSs.InputSim();
+    Simulation.InputSim();
     Log('Proveden InputSim', llInfo, lsRCS);
   except
     on E: Exception do
