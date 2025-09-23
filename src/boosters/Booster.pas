@@ -224,9 +224,9 @@ begin
   if (not TRCS.RCSInputStateValid(val)) then
     Result := TBoosterSignal.undef
   else if ((val = isOn) xor (Self.m_settings.rcs.power.reversed)) then
-    Result := TBoosterSignal.error
+    Result := TBoosterSignal.ok
   else
-    Result := TBoosterSignal.ok;
+    Result := TBoosterSignal.error;
 end;
 
 function TBooster.GetDCC(): TBoosterSignal;
@@ -255,9 +255,9 @@ begin
   if (not TRCS.RCSInputStateValid(val)) then
     Result := TBoosterSignal.undef
   else if ((val = isOn) xor (Self.m_settings.rcs.DCC.reversed)) then
-    Result := TBoosterSignal.error
+    Result := TBoosterSignal.ok
   else
-    Result := TBoosterSignal.ok;
+    Result := TBoosterSignal.error;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -177,7 +177,7 @@ object F_Booster_Edit: TF_Booster_Edit
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = ' Detekce v'#253'padku nap'#225'jen'#237' zesilova'#269'e '
+    Caption = ' Detekce nap'#225'jen'#237' zesilova'#269'e '
     TabOrder = 3
     object SE_Power_Port: TSpinEdit
       Left = 204
@@ -221,7 +221,7 @@ object F_Booster_Edit: TF_Booster_Edit
       Top = 65
       Width = 248
       Height = 17
-      Caption = 'Reverzn'#237' indikace (aktivn'#237' port = nap'#225'jen'#237' ok)'
+      Caption = 'Reverzn'#237' indikace (neaktivn'#237' port = nap'#225'jen'#237' ok)'
       TabOrder = 4
     end
     object SE_Power_System: TSpinEdit

@@ -291,11 +291,11 @@ begin
   begin
     try
       if ((booster.isPowerDetection) and (RCSs.IsSimulation(booster.settings.rcs.power.addr.addr.system))) then
-        RCSs.SetInput(Booster.settings.rcs.power.addr.addr, ite(booster.settings.rcs.power.reversed, 1, 0));
+        RCSs.SetInput(Booster.settings.rcs.power.addr.addr, ite(booster.settings.rcs.power.reversed, 0, 1));
       if ((booster.isOverloadDetection) and (RCSs.IsSimulation(booster.settings.rcs.overload.addr.addr.system))) then
         RCSs.SetInput(Booster.settings.rcs.overload.addr.addr, ite(booster.settings.rcs.overload.reversed, 1, 0));
       if ((booster.isDCCdetection) and (RCSs.IsSimulation(booster.settings.rcs.DCC.addr.addr.system))) then
-        RCSs.SetInput(Booster.settings.rcs.DCC.addr.addr, ite(booster.settings.rcs.DCC.reversed, 1, 0));
+        RCSs.SetInput(Booster.settings.rcs.DCC.addr.addr, ite(booster.settings.rcs.DCC.reversed, 0, 1));
     except
 
     end;
