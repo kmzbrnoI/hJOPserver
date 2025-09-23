@@ -603,7 +603,8 @@ begin
       for var area: TArea in Self.m_areas do
       begin
         Area.BroadcastGlobalData('INFO-TIMER-RM;' + IntToStr(Self.m_state.privolTimerId));
-        Area.TimerCnt := Area.TimerCnt - 1;
+        if (area.timerCnt > 0) then
+          area.TimerCnt := area.TimerCnt - 1;
       end;
     Self.m_state.privolTimerId := 0;
   end;
@@ -667,7 +668,8 @@ begin
     // STUJ po privolavacce -> vypnout zvukovou vyzvu
     Self.Log('Zhasnuta PN', TLogLevel.llInfo);
     for var area: TArea in Self.m_areas do
-      Area.pnBlkCnt := area.pnBlkCnt - 1;
+      if (area.pnBlkCnt > 0) then
+        area.pnBlkCnt := area.pnBlkCnt - 1;
   end;
 
   Self.m_state.changeEnd := now + Self.m_settings.changeTime;

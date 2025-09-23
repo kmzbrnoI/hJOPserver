@@ -522,7 +522,8 @@ begin
 
   if (Self.m_state.shortCircuit = TBoosterSignal.error) then
     for var area: TArea in Self.areas do
-      Area.shortCircBlkCnt := Area.shortCircBlkCnt - 1;
+      if (area.shortCircBlkCnt > 0) then
+        area.shortCircBlkCnt := area.shortCircBlkCnt - 1;
 
   Self.m_state.occupied := disabled;
   Self.m_state.occupiedOld := disabled;
@@ -713,7 +714,7 @@ begin
   if (Self.m_state.NUZ) and (not NUZ) then
   begin
     for var area: TArea in Self.m_areas do
-      if (Area.NUZblkCnt > 0) then
+      if (area.NUZblkCnt > 0) then
         Area.NUZblkCnt := Area.NUZblkCnt - 1;
   end else begin
     if ((not Self.m_state.NUZ) and (NUZ)) then

@@ -64,12 +64,12 @@ type
 
   TAreaState = record
     NUZing: Boolean;
-    NUZblkCnt: Integer;
+    NUZblkCnt: Cardinal;
     NUZtimerId: Integer;
-    shortCircBlkCnt: Integer;
-    railwayReqBlkCnt: Integer;
-    pnBlkCnt: Integer;
-    timerCnt: Integer;
+    shortCircBlkCnt: Cardinal;
+    railwayReqBlkCnt: Cardinal;
+    pnBlkCnt: Cardinal;
+    timerCnt: Cardinal;
     dkClickCallback: TBlkCallback;
     regPlease: TIDContext; // regulator requesting area for loco
   end;
@@ -111,11 +111,11 @@ type
 
     procedure ORAuthoriseResponse(Panel: TIDContext; rights: TAreaRights; msg: string; username: string);
 
-    procedure SetNUZBlkCnt(new: Integer);
-    procedure SetShortCircBlkCnt(new: Integer);
-    procedure SetRailwayReqBlkCnt(new: Integer);
-    procedure SetPnBlkCnt(new: Integer);
-    procedure SetTimerCnt(new: Integer);
+    procedure SetNUZBlkCnt(new: Cardinal);
+    procedure SetShortCircBlkCnt(new: Cardinal);
+    procedure SetRailwayReqBlkCnt(new: Cardinal);
+    procedure SetPnBlkCnt(new: Cardinal);
+    procedure SetTimerCnt(new: Cardinal);
 
     // Send sumary of faliled modules (module failed in <500 ms are reported at once)
     procedure RCSUpdate();
@@ -258,11 +258,11 @@ type
     class function IdComparer(): IComparer<TArea>;
 
     property NUZtimer: Boolean read m_state.NUZing write m_state.NUZing;
-    property NUZblkCnt: Integer read m_state.NUZblkCnt write SetNUZBlkCnt;
-    property shortCircBlkCnt: Integer read m_state.shortCircBlkCnt write SetShortCircBlkCnt;
-    property railwayReqBlkCnt: Integer read m_state.railwayReqBlkCnt write SetRailwayReqBlkCnt;
-    property pnBlkCnt: Integer read m_state.pnBlkCnt write SetPnBlkCnt;
-    property timerCnt: Integer read m_state.timerCnt write SetTimerCnt;
+    property NUZblkCnt: Cardinal read m_state.NUZblkCnt write SetNUZBlkCnt;
+    property shortCircBlkCnt: Cardinal read m_state.shortCircBlkCnt write SetShortCircBlkCnt;
+    property railwayReqBlkCnt: Cardinal read m_state.railwayReqBlkCnt write SetRailwayReqBlkCnt;
+    property pnBlkCnt: Cardinal read m_state.pnBlkCnt write SetPnBlkCnt;
+    property timerCnt: Cardinal read m_state.timerCnt write SetTimerCnt;
     property regPlease: TIDContext read m_state.regPlease;
 
     property name: string read m_data.name;
@@ -1085,7 +1085,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.SetNUZBlkCnt(new: Integer);
+procedure TArea.SetNUZBlkCnt(new: Cardinal);
 begin
   if ((Self.m_state.NUZblkCnt = 0) and (new > 0)) then
   begin
@@ -1109,11 +1109,8 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.SetShortCircBlkCnt(new: Integer);
+procedure TArea.SetShortCircBlkCnt(new: Cardinal);
 begin
-  if (new < 0) then
-    Exit();
-
   if ((new > 2) and (Self.m_state.shortCircBlkCnt = 2)) then
   begin
     // V OR nastal zkrat -> prehrat zvuk
@@ -1134,11 +1131,8 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.SetRailwayReqBlkCnt(new: Integer);
+procedure TArea.SetRailwayReqBlkCnt(new: Cardinal);
 begin
-  if (new < 0) then
-    Exit();
-
   if ((new > 0) and (Self.railwayReqBlkCnt = 0)) then
   begin
     // nastala zadost -> prehrat zvuk
@@ -1159,11 +1153,8 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.SetPnBlkCnt(new: Integer);
+procedure TArea.SetPnBlkCnt(new: Cardinal);
 begin
-  if (new < 0) then
-    Exit();
-
   if ((new > 0) and (Self.pnBlkCnt = 0)) then
   begin
     // aktivace prvni privolavaci navesti -> prehrat zvuk
@@ -1184,11 +1175,8 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.SetTimerCnt(new: Integer);
+procedure TArea.SetTimerCnt(new: Cardinal);
 begin
-  if (new < 0) then
-    Exit();
-
   if ((new > 0) and (Self.timerCnt = 0)) then
   begin
     // aktivace prvniho timeru -> prehrat zvuk

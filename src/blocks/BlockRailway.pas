@@ -442,10 +442,11 @@ begin
       if (request) then
       begin
         for var area: TArea in linker.areas do
-          Area.railwayReqBlkCnt := Area.railwayReqBlkCnt + 1;
+          area.railwayReqBlkCnt := area.railwayReqBlkCnt + 1;
       end else begin
         for var area: TArea in linker.areas do
-          Area.railwayReqBlkCnt := Area.railwayReqBlkCnt - 1;
+          if (area.railwayReqBlkCnt > 0) then
+            area.railwayReqBlkCnt := area.railwayReqBlkCnt - 1;
       end;
     end;
   except
