@@ -139,6 +139,9 @@ type
     procedure MenuObsazClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuUvolClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuDetClick(SenderPnl: TIdContext; SenderOR: TObject; id: Integer; state: Boolean);
+    procedure MenuZesZkratClick(SenderPnl: TIdContext; SenderOR: TObject; state: Boolean);
+    procedure MenuZesNapClick(SenderPnl: TIdContext; SenderOR: TObject; state: Boolean);
+    procedure MenuZesDCCClick(SenderPnl: TIdContext; SenderOR: TObject; state: Boolean);
 
     procedure ORVylukaNull(Sender: TIdContext; success: Boolean);
 
@@ -1380,6 +1383,42 @@ begin
   end;
 end;
 
+procedure TBlkTrack.MenuZesZkratClick(SenderPnl: TIdContext; SenderOR: TObject; state: Boolean);
+begin
+  try
+    var bst: TBooster := Boosters[Self.m_settings.boosterId];
+    if ((bst <> nil) and (bst.isOverloadDetection)) then
+      RCSs.SetInput(bst.settings.rcs.overload.addr.addr, ownConvert.BoolToInt(state xor bst.settings.rcs.overload.reversed));
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
+procedure TBlkTrack.MenuZesNapClick(SenderPnl: TIdContext; SenderOR: TObject; state: Boolean);
+begin
+  try
+    var bst: TBooster := Boosters[Self.m_settings.boosterId];
+    if ((bst <> nil) and (bst.isPowerDetection)) then
+      RCSs.SetInput(bst.settings.rcs.power.addr.addr, ownConvert.BoolToInt(state xor bst.settings.rcs.power.reversed));
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
+procedure TBlkTrack.MenuZesDCCClick(SenderPnl: TIdContext; SenderOR: TObject; state: Boolean);
+begin
+  try
+    var bst: TBooster := Boosters[Self.m_settings.boosterId];
+    if ((bst <> nil) and (bst.isDCCdetection)) then
+      RCSs.SetInput(bst.settings.rcs.DCC.addr.addr, ownConvert.BoolToInt(state xor bst.settings.rcs.DCC.reversed));
+  except
+    PanelServer.BottomError(SenderPnl, 'Simulace nepovolila nastavení RCS vstupů!', TArea(SenderOR).ShortName,
+      'SIMULACE');
+  end;
+end;
+
 procedure TBlkTrack.MenuHLASENIOdjezdClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if ((TPanelConnData(SenderPnl.Data).train_menu_index < 0) or (TPanelConnData(SenderPnl.Data).train_menu_index >=
@@ -1614,6 +1653,17 @@ begin
       end;
     end;
   end;
+
+  var bst: TBooster := Boosters[Self.m_settings.boosterId];
+  if (bst <> nil) then
+  begin
+    if (bst.isOverloadDetection) then
+      Result := Result + ite(bst.overload = TBoosterSignal.ok, '*ZES zkrat>,', '*ZES zkrat<,');
+    if (bst.isPowerDetection) then
+      Result := Result + ite(bst.power = TBoosterSignal.ok, '*ZES nap<,', '*ZES nap>,');
+    if (bst.isDCCdetection) then
+      Result := Result + ite(bst.DCC = TBoosterSignal.ok, '*ZES DCC<,', '*ZES DCC>,');
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1706,6 +1756,19 @@ begin
     Self.MenuHLASENIPrujezdClick(SenderPnl, SenderOR)
   else if (item = 'PODJ') then
     Self.MenuPOdjClick(SenderPnl, SenderOR)
+
+  else if (item = 'ZES zkrat>') then
+    Self.MenuZesZkratClick(SenderPnl, SenderOR, true)
+  else if (item = 'ZES zkrat<') then
+    Self.MenuZesZkratClick(SenderPnl, SenderOR, false)
+  else if (item = 'ZES nap>') then
+    Self.MenuZesNapClick(SenderPnl, SenderOR, true)
+  else if (item = 'ZES nap<') then
+    Self.MenuZesNapClick(SenderPnl, SenderOR, false)
+  else if (item = 'ZES DCC>') then
+    Self.MenuZesDCCClick(SenderPnl, SenderOR, true)
+  else if (item = 'ZES DCC<') then
+    Self.MenuZesDCCClick(SenderPnl, SenderOR, false)
   else if (LeftStr(item, 3) = 'DET') then
   begin
     Self.MenuDetClick(SenderPnl, SenderOR, StrToInt(item[4]) - 1, item[5] = '>');
