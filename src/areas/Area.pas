@@ -93,6 +93,7 @@ type
   TArea = class
   public const
     _COM_ACCESS_DENIED = 'Přístup odepřen';
+    _SHORT_BLOCKS_START_SOUND_THRESHOLD = 4;
 
   private
     m_index: Integer; // index in all areas
@@ -1111,7 +1112,7 @@ end;
 
 procedure TArea.SetShortCircBlkCnt(new: Cardinal);
 begin
-  if ((new > 2) and (Self.m_state.shortCircBlkCnt = 2)) then
+  if ((new >= _SHORT_BLOCKS_START_SOUND_THRESHOLD) and (Self.m_state.shortCircBlkCnt < _SHORT_BLOCKS_START_SOUND_THRESHOLD)) then
   begin
     // V OR nastal zkrat -> prehrat zvuk
     for var i: Integer := 0 to Self.connected.Count - 1 do
@@ -1119,7 +1120,7 @@ begin
         PanelServer.PlaySound(Self.connected[i].Panel, _SND_OVERLOAD, true);
   end;
 
-  if ((new <= 2) and (Self.m_state.shortCircBlkCnt = 2)) then
+  if ((new < _SHORT_BLOCKS_START_SOUND_THRESHOLD) and (Self.m_state.shortCircBlkCnt >= _SHORT_BLOCKS_START_SOUND_THRESHOLD)) then
   begin
     // zkrat skoncil -> vypnout zvuk
     for var i: Integer := 0 to Self.connected.Count - 1 do
@@ -1863,7 +1864,7 @@ end;
 
 procedure TArea.AuthReadToWrite(Panel: TIDContext);
 begin
-  if (Self.shortCircBlkCnt > 2) then
+  if (Self.shortCircBlkCnt >= _SHORT_BLOCKS_START_SOUND_THRESHOLD) then
     PanelServer.PlaySound(Panel, _SND_OVERLOAD, true);
   if (Self.railwayReqBlkCnt > 0) then
     PanelServer.PlaySound(Panel, _SND_RAILWAY_REQUEST, true);
@@ -1875,7 +1876,7 @@ end;
 
 procedure TArea.AuthWriteToRead(Panel: TIDContext);
 begin
-  if (Self.shortCircBlkCnt > 2) then
+  if (Self.shortCircBlkCnt >= _SHORT_BLOCKS_START_SOUND_THRESHOLD) then
     PanelServer.DeleteSound(Panel, _SND_OVERLOAD);
   if (Self.railwayReqBlkCnt > 0) then
     PanelServer.DeleteSound(Panel, _SND_RAILWAY_REQUEST);

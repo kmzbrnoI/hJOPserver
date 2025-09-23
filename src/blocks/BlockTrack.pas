@@ -850,11 +850,11 @@ begin
   begin
     // do OR oznamime, ze nastal zkrat, pak se prehraje zvuk v klientech...
     for var area: TArea in Self.m_areas do
-      Area.shortCircBlkCnt := Area.shortCircBlkCnt + 1;
+      area.shortCircBlkCnt := area.shortCircBlkCnt + 1;
   end else begin
     if (Self.m_state.shortCircuit = TBoosterSignal.error) then
       for var area: TArea in Self.m_areas do
-        Area.shortCircBlkCnt := Area.shortCircBlkCnt - 1;
+        area.shortCircBlkCnt := area.shortCircBlkCnt - 1;
   end;
 
   Self.m_state.shortCircuit := state;

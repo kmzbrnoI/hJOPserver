@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_log
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3926,7 +3926,6 @@ object F_Main: TF_Main
         OnDblClick = LV_BlocksDblClick
         OnKeyDown = LV_BlocksKeyDown
         OnKeyPress = LV_BlocksKeyPress
-        ExplicitWidth = 1363
       end
       object P_BlkPozadi: TPanel
         Left = 0
@@ -3942,7 +3941,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1363
         object P_Blk_Ostatni: TPanel
           Left = 1181
           Top = 0
@@ -3956,7 +3954,6 @@ object F_Main: TF_Main
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 1
-          ExplicitLeft = 1250
           object L_BlkPocet: TLabel
             Left = 30
             Top = 12
@@ -4174,7 +4171,6 @@ object F_Main: TF_Main
         OnDblClick = LV_HVDblClick
         OnKeyDown = LV_HVKeyDown
         OnKeyPress = LV_HVKeyPress
-        ExplicitWidth = 1363
       end
       object P_HV_Pozadi: TPanel
         Left = 0
@@ -4190,7 +4186,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1363
         object P_HV_Left: TPanel
           Left = 0
           Top = 0
@@ -4394,7 +4389,6 @@ object F_Main: TF_Main
         OnChange = LV_SoupravyChange
         OnCustomDrawItem = LV_SoupravyCustomDrawItem
         OnKeyDown = LV_SoupravyKeyDown
-        ExplicitWidth = 1363
       end
       object P_Soupravy_pozadi: TPanel
         Left = 0
@@ -4410,7 +4404,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1363
         object P_Spr_Left: TPanel
           Left = 0
           Top = 0
@@ -4528,7 +4521,6 @@ object F_Main: TF_Main
         TabOrder = 0
         ViewStyle = vsReport
         OnChange = LV_StaniceChange
-        ExplicitWidth = 1363
       end
       object P_Stanice_Pozadi: TPanel
         Left = 0
@@ -4544,7 +4536,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1363
         object P_St_Left: TPanel
           Left = 0
           Top = 0
@@ -4617,13 +4608,13 @@ object F_Main: TF_Main
             Width = 150
           end
           item
-            Caption = 'Detekce zkratu'
+            Caption = 'Zkrat RCS'
           end
           item
-            Caption = 'Detekce nap'#225'jen'#237
+            Caption = 'Nap'#225'jen'#237' RCS'
           end
           item
-            Caption = 'Detekce DCC vstup'
+            Caption = 'DCC RCS'
           end>
         DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
@@ -4643,7 +4634,6 @@ object F_Main: TF_Main
         OnDblClick = LV_BoostersDblClick
         OnKeyDown = LV_BoostersKeyDown
         OnKeyPress = LV_BoostersKeyPress
-        ExplicitWidth = 1363
       end
       object P_bst_bg: TPanel
         Left = 0
@@ -4659,7 +4649,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1363
         object P_Zes_Right: TPanel
           Left = 1069
           Top = 0
@@ -4673,7 +4662,6 @@ object F_Main: TF_Main
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 1
-          ExplicitLeft = 1138
           object L_Zes_Napajeni: TLabel
             Left = 12
             Top = 20
@@ -4898,7 +4886,6 @@ object F_Main: TF_Main
         OnDblClick = LV_UsersDblClick
         OnKeyDown = LV_UsersKeyDown
         OnKeyPress = LV_UsersKeyPress
-        ExplicitWidth = 1363
       end
       object P_Users_Bg: TPanel
         Left = 0
@@ -4914,7 +4901,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1363
         object P_Users_Left: TPanel
           Left = 0
           Top = 0
@@ -5082,7 +5068,6 @@ object F_Main: TF_Main
         TabOrder = 0
         ViewStyle = vsReport
         OnCustomDrawItem = LV_RCS0_StateCustomDrawItem
-        ExplicitWidth = 1363
       end
       object P_dataload_rcs: TPanel
         Left = 0
@@ -5097,7 +5082,6 @@ object F_Main: TF_Main
         BevelOuter = bvNone
         Color = clWhite
         TabOrder = 1
-        ExplicitWidth = 1363
         object CHB_RCS0_Show_Only_Active: TCheckBox
           Left = 9
           Top = 2
@@ -5187,7 +5171,6 @@ object F_Main: TF_Main
         TabOrder = 0
         ViewStyle = vsReport
         OnCustomDrawItem = LV_RCS0_StateCustomDrawItem
-        ExplicitWidth = 1363
       end
       object Panel1: TPanel
         Left = 0
@@ -5202,7 +5185,6 @@ object F_Main: TF_Main
         BevelOuter = bvNone
         Color = clWhite
         TabOrder = 1
-        ExplicitWidth = 1363
         object CHB_RCS1_Show_Only_Active: TCheckBox
           Tag = 1
           Left = 9
@@ -5240,7 +5222,6 @@ object F_Main: TF_Main
         BevelOuter = bvNone
         Color = clWhite
         TabOrder = 0
-        ExplicitWidth = 1363
         object CHB_RCS2_Show_Only_Active: TCheckBox
           Tag = 2
           Left = 9
@@ -5328,7 +5309,6 @@ object F_Main: TF_Main
         TabOrder = 1
         ViewStyle = vsReport
         OnCustomDrawItem = LV_RCS0_StateCustomDrawItem
-        ExplicitWidth = 1363
       end
     end
     object TS_RCS3: TTabSheet
@@ -5347,7 +5327,6 @@ object F_Main: TF_Main
         BevelOuter = bvNone
         Color = clWhite
         TabOrder = 0
-        ExplicitWidth = 1363
         object CHB_RCS3_Show_Only_Active: TCheckBox
           Tag = 3
           Left = 9
@@ -5435,7 +5414,6 @@ object F_Main: TF_Main
         TabOrder = 1
         ViewStyle = vsReport
         OnCustomDrawItem = LV_RCS0_StateCustomDrawItem
-        ExplicitWidth = 1363
       end
     end
     object TS_VC: TTabSheet
@@ -5459,7 +5437,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1363
         object P_JC_Left: TPanel
           Left = 0
           Top = 0
@@ -5648,7 +5625,6 @@ object F_Main: TF_Main
         OnDblClick = LV_JCDblClick
         OnKeyDown = LV_JCKeyDown
         OnKeyPress = LV_JCKeyPress
-        ExplicitWidth = 1363
       end
     end
     object TS_MultiJC: TTabSheet
@@ -5668,7 +5644,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 0
-        ExplicitWidth = 1363
         object P_MJC_Left: TPanel
           Left = 0
           Top = 0
@@ -5789,7 +5764,6 @@ object F_Main: TF_Main
         OnDblClick = LV_MultiJCDblClick
         OnKeyDown = LV_MultiJCKeyDown
         OnKeyPress = LV_MultiJCKeyPress
-        ExplicitWidth = 1363
       end
     end
     object TS_AB: TTabSheet
@@ -5809,7 +5783,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 0
-        ExplicitWidth = 1363
         object P_AB_Left: TPanel
           Left = 0
           Top = 0
@@ -5875,7 +5848,6 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnChange = LV_ABChange
         OnKeyDown = LV_ABKeyDown
-        ExplicitWidth = 1363
       end
     end
     object TS_Config: TTabSheet
@@ -5895,7 +5867,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 0
-        ExplicitWidth = 1363
         object E_configFilename: TEdit
           Left = 9
           Top = 9
@@ -6218,7 +6189,6 @@ object F_Main: TF_Main
         ParentDoubleBuffered = False
         ScrollBars = ssVertical
         TabOrder = 0
-        ExplicitWidth = 1363
       end
       object P_funcsVyznamBg: TPanel
         Left = 0
@@ -6230,7 +6200,6 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        ExplicitWidth = 1363
         object B_FuncChange: TButton
           Left = 9
           Top = 6
