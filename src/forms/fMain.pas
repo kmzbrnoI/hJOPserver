@@ -1775,11 +1775,14 @@ begin
       Self.A_DCC_Go.Enabled := true;
       Self.A_DCC_Stop.Enabled := false;
     end;
+
     if ((SystemData.Status = starting) and (trakce.ConnectedSafe())) then
       Self.A_DCC_GoExecute(Self);
 
     PanelServer.DCCStop();
   end; // else state
+
+  Simulation.DccChangedBoosterSim(trkStatus = TTrkStatus.tsOn);
 end;
 
 procedure TF_Main.A_Turnoff_FunctionsExecute(Sender: TObject);

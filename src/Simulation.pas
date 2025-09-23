@@ -315,7 +315,17 @@ end;
 
 procedure DccChangedBoosterSim(dcc: Boolean);
 begin
+  for var booster: TBooster in Boosters do
+  begin
+    if ((booster.settings.rcs.DCC.addr.enabled) and (RCSs.IsSimulation(booster.settings.rcs.DCC.addr.addr.system))) then
+    begin
+      try
+        RCSs.SetInput(booster.settings.rcs.DCC.addr.addr, ite(booster.settings.rcs.DCC.reversed xor dcc, 1, 0));
+      except
 
+      end;
+    end;
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
