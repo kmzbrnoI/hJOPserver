@@ -192,7 +192,10 @@ end;
 
 function TF_Tester.GetSystemI(): Cardinal;
 begin
-  Result := Self.SE_System.Value;
+  if ((Self.SE_System.Value >= 0) and (Self.SE_System.Value <= RCSs._RCSS_MAX)) then
+    Result := Self.SE_System.Value
+  else
+    Result := 0;
 end;
 
 function TF_Tester.GetRCS(): TRCS;
