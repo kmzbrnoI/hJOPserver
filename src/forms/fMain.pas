@@ -1276,7 +1276,7 @@ begin
   Self.RCSGUIUpdateAll();
   Self.UpdateSystemButtons();
 
-  rcs.Log('Zastavovuji komunikaci...', TLogLevel.llInfo, True);
+  rcs.Log('Zastavuji komunikaci...', TLogLevel.llInfo, True);
 end;
 
 procedure TF_Main.OnRCSStop(Sender: TObject);

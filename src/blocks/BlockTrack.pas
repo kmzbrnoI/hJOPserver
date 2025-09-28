@@ -657,7 +657,8 @@ begin
       for var train: Integer in Self.trains do
       begin
         TrainDb.trains[train].speed := 0;
-        TrainDb.trains[train].RemovePOdj(Self);
+        if (TrainDb.trains[train].IsPOdj(Self)) then
+          TrainDb.trains[train].RemovePOdj(Self);
       end;
 
       Self.Change(true);
