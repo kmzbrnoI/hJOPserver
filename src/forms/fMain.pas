@@ -918,12 +918,12 @@ begin
     rcs.Open();
   except
     on E: ERCSAlreadyOpened do
-      Self.OnRCSErrOpen(Self, 'RCS je již otevřeno!');
+      Self.OnRCSErrOpen(rcs, 'RCS je již otevřeno!');
     on E: ERCSCannotOpenPort do
-      Self.OnRCSErrOpen(Self,
+      Self.OnRCSErrOpen(rcs,
         'Nepodařilo se otevřít USB port, otevřete konfigurační okno RCS driveru a zkontrolujte, že je vybrán správný port!');
     on E: Exception do
-      Self.OnRCSErrOpen(Self, 'Nastala kritická chyba : ' + E.Message);
+      Self.OnRCSErrOpen(rcs, 'Nastala kritická chyba : ' + E.Message);
   end;
 end;
 
@@ -954,11 +954,11 @@ begin
     rcs.Close();
   except
     on E: ERCSNotOpened do
-      Self.OnRCSErrClose(Self, 'RCS není otevřeno, nelze jej proto zavřít!');
+      Self.OnRCSErrClose(rcs, 'RCS není otevřeno, nelze jej proto zavřít!');
     on E: ERCSScanningNotFinished do
-      Self.OnRCSErrClose(Self, 'RCS nelze uzavřít před sokončneíms kenování modulů!');
+      Self.OnRCSErrClose(rcs, 'RCS nelze uzavřít před sokončneíms kenování modulů!');
     on E: Exception do
-      Self.OnRCSErrClose(Self, 'Nastala kritická chyba : ' + E.Message);
+      Self.OnRCSErrClose(rcs, 'Nastala kritická chyba : ' + E.Message);
   end;
 end;
 
@@ -991,17 +991,17 @@ begin
     rcs.Start();
   except
     on E: ERCSAlreadyStarted do
-      Self.OnRCSErrStart(Self, 'Komunikace již probíhá!');
+      Self.OnRCSErrStart(rcs, 'Komunikace již probíhá!');
     on E: ERCSFirmwareTooLow do
-      Self.OnRCSErrStart(Self, 'Firmware RCS-USB modulu je starý, nelze se připojit k takto starému FW!');
+      Self.OnRCSErrStart(rcs, 'Firmware RCS-USB modulu je starý, nelze se připojit k takto starému FW!');
     on E: ERCSNoModules do
-      Self.OnRCSErrStart(Self, 'Na sběrnici nebyl nalezen žádný RCS modul, nelze spustit komunikaci!');
+      Self.OnRCSErrStart(rcs, 'Na sběrnici nebyl nalezen žádný RCS modul, nelze spustit komunikaci!');
     on E: ERCSNotOpened do
-      Self.OnRCSErrStart(Self, 'Nepřipojeno k RCS-USB, připojte se nejdříve k RCS-USB!');
+      Self.OnRCSErrStart(rcs, 'Nepřipojeno k RCS-USB, připojte se nejdříve k RCS-USB!');
     on E: ERCSScanningNotFinished do
-      Self.OnRCSErrStart(Self, 'Neproběhl sken modulů, vyčkejte na dokončení skenu modulů!');
+      Self.OnRCSErrStart(rcs, 'Neproběhl sken modulů, vyčkejte na dokončení skenu modulů!');
     on E: Exception do
-      Self.OnRCSErrStart(Self, 'Nastala kritická chyba : ' + E.Message);
+      Self.OnRCSErrStart(rcs, 'Nastala kritická chyba : ' + E.Message);
   end;
 end;
 
@@ -1020,9 +1020,9 @@ begin
     rcs.Stop();
   except
     on E: ERCSNotStarted do
-      Self.OnRCSErrStop(Self, 'RCS komunikace není spuštěna, nelze ji proto zastavit!');
+      Self.OnRCSErrStop(rcs, 'RCS komunikace není spuštěna, nelze ji proto zastavit!');
     on E: Exception do
-      Self.OnRCSErrStop(Self, 'Nastala kritická chyba : ' + E.Message);
+      Self.OnRCSErrStop(rcs, 'Nastala kritická chyba : ' + E.Message);
   end;
 end;
 
