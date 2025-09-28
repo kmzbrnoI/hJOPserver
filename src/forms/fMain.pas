@@ -984,6 +984,8 @@ begin
     Self.A_Trk_ConnectExecute(nil);
     Exit();
   end;
+  if ((SystemData.Status = starting) and (rcs.Started())) then
+    Exit();
 
   try
     rcs.Start();
@@ -2382,7 +2384,7 @@ begin
   Self.A_System_Start.Enabled := false;
 
   for var i: Integer := 0 to RCSs._RCSS_MAX do
-    if ((RCSs[i].ready) and (SystemData.Status = TSystemStatus.starting)) then // otevreni prvniho RCS muze zpusobit az dokonceni inicalizace, v takovem pripade neotrvirat dalsi
+    if ((RCSs[i].ready) and (SystemData.Status = TSystemStatus.starting)) then // otevreni prvniho RCS muze zpusobit dokonceni inicializace, v takovem pripade neotrvirat dalsi
       Self.MI_RCS_Open_Click(Self.MI_RCSs[i].MI_Open);
 end;
 
