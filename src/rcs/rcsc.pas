@@ -62,6 +62,7 @@ type
     modules: TObjectDictionary<Cardinal, TRCSModule>;
     mLoadedOk: Boolean; // jestli je nactena knihovna vporadku a tudiz jestli lze zapnout systemy
     fGeneralError: Boolean; // flag oznamujici nastani "RCS general IO error" -- te nejhorsi veci na svete
+    mConfigFn: string;
 
     // events to the main program
     fOnReady: TRCSReadyEvent;
@@ -86,6 +87,8 @@ type
 
     procedure LoadLib(libFn: string; configFn: string);
     procedure UnloadLib();
+
+    procedure SaveConfig(); overload;
 
     procedure SetNeeded(module: Cardinal; state: Boolean = true);
     function GetNeeded(module: Cardinal): Boolean;
@@ -129,6 +132,7 @@ type
     property maxModuleAddrSafe: Cardinal read GetMaxModuleAddrSafe;
     property systemI: Cardinal read mSystemI;
     property libDir: string read mLibDir write mLibDir;
+    property configFn: string read mConfigFn;
   end;
 
 function RCSAddrComparer(): IComparer<TRCSAddr>;
@@ -144,6 +148,7 @@ begin
   inherited Create();
   Self.mSystemI := systemI;
   Self.mLibDir := '';
+  Self.mConfigFn := '';
 
   Self.modules := TObjectDictionary<Cardinal, TRCSModule>.Create();
 
@@ -193,6 +198,7 @@ begin
   const configDir: string = ExtractFileDir(configFn);
   if (not DirectoryExists(configDir)) then
     CreateDir(configDir);
+  Self.mConfigFn := configFn;
 
   TRCSIFace(Self).LoadLib(fullPath, configFn);
 
@@ -230,6 +236,11 @@ begin
   Self.fGeneralError := False;
   TRCSIFace(Self).UnloadLib();
   Self.Log('Knihovna odnačtena', llInfo);
+end;
+
+procedure TRCS.SaveConfig();
+begin
+  Self.SaveConfig(Self.configFn);
 end;
 
 procedure TRCS.DllAfterClose(Sender: TObject);

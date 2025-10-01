@@ -243,6 +243,7 @@ begin
 
   try
     RCSs.SaveToFile(inidata);
+    RCSs.SaveAllConfigs();
   except
     on e: Exception do
       AppEvents.LogException(e);

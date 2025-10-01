@@ -59,6 +59,7 @@ type
     destructor Destroy(); override;
 
     procedure LoadLib(system: Cardinal; libFn: string);
+    procedure SaveAllConfigs();
 
     function AllOpened(): Boolean;
     function AllStarted(): Boolean;
@@ -283,6 +284,23 @@ begin
     raise EInvalidSystem.Create(system);
 
   Self.m_rcss[system].LoadLib(libFn, Self.configDir + '\rcs'+IntToStr(system) + '_' + ChangeFileExt(ExtractFileName(libFn), '.ini'));
+end;
+
+procedure TRCSs.SaveAllConfigs();
+begin
+  for var rcs: TRCS in Self.m_rcss do
+  begin
+    if (rcs.libLoaded) then
+    begin
+      try
+        rcs.SaveConfig();
+        rcs.log('Uloženo: '+rcs.configFn, TLogLevel.llInfo);
+      except
+        on e: RCSException do
+          rcs.Log('Nelze uložit konfiguraci RCS'+IntToStr(rcs.systemI)+' - '+rcs.configFn+': '+e.Message, TLogLevel.llError, True);
+      end;
+    end;
+  end;
 end;
 
 function TRCSs.IsGeneralError(): Boolean;
