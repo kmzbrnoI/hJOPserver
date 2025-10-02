@@ -207,7 +207,7 @@ type
 
     function CancelTimeSec(): Cardinal;
     procedure EmergencyStopTrainInPath();
-    procedure EmergencyStopTrainsInTrack(track: TBlkTrack);
+    procedure EmergencyStopFrontTrainsInTrack(track: TBlkTrack);
 
   public
 
@@ -3935,22 +3935,22 @@ begin
   begin
     var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackZav);
     if (track <> nil) then
-      Self.EmergencyStopTrainsInTrack(track);
+      Self.EmergencyStopFrontTrainsInTrack(track);
   end;
 
   if ((Self.signal <> nil) and (Self.signal.typ = TBlkType.btSignal)) then
   begin
     var signalTrack: TBlk := TBlkSignal(Self.signal).track;
     if ((signalTrack.typ = btTrack) or (signalTrack.typ = btRT)) then
-      Self.EmergencyStopTrainsInTrack(TBlkTrack(signalTrack));
+      Self.EmergencyStopFrontTrainsInTrack(TBlkTrack(signalTrack));
   end;
 end;
 
-procedure TJC.EmergencyStopTrainsInTrack(track: TBlkTrack);
+procedure TJC.EmergencyStopFrontTrainsInTrack(track: TBlkTrack);
 begin
   for var trainI: Integer in track.trains do
   begin
-    if (trains[trainI].speed > 0) then
+    if ((trains[trainI].speed > 0) and (trains[trainI].front = track)) then
     begin
       trains[trainI].EmergencyStop();
       Self.Log('Narušení JC - nouzově zastaven vlak ' + trains[trainI].name + '!', TLogLevel.llWarning);
