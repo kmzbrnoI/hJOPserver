@@ -1658,11 +1658,11 @@ begin
   var bst: TBooster := Boosters[Self.m_settings.boosterId];
   if (bst <> nil) then
   begin
-    if (bst.isOverloadDetection) then
+    if ((bst.isOverloadDetection) and (RCSs.IsSimulation(bst.settings.rcs.overload.addr.addr.system))) then
       Result := Result + ite(bst.overload = TBoosterSignal.ok, '*ZES zkrat>,', '*ZES zkrat<,');
-    if (bst.isPowerDetection) then
+    if ((bst.isPowerDetection) and (RCSs.IsSimulation(bst.settings.rcs.power.addr.addr.system))) then
       Result := Result + ite(bst.power = TBoosterSignal.ok, '*ZES nap<,', '*ZES nap>,');
-    if (bst.isDCCdetection) then
+    if ((bst.isDCCdetection) and (RCSs.IsSimulation(bst.settings.rcs.dcc.addr.addr.system))) then
       Result := Result + ite(bst.DCC = TBoosterSignal.ok, '*ZES DCC<,', '*ZES DCC>,');
   end;
 end;
