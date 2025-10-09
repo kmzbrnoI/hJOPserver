@@ -3667,13 +3667,13 @@ object F_Main: TF_Main
           Tag = 2
           Left = 40
           Top = 72
-          Width = 95
+          Width = 81
           Height = 13
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
-          Caption = 'P'#345'ipojeno k centr'#225'le'
+          Caption = 'Trakce p'#345'ipojeno'
         end
         object L_StavS_4: TLabel
           Tag = 3
@@ -3911,6 +3911,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         ReadOnly = True
         RowSelect = True
         ParentDoubleBuffered = False
@@ -4156,6 +4157,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         MultiSelect = True
         ReadOnly = True
         RowSelect = True
@@ -4377,6 +4379,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         MultiSelect = True
         ReadOnly = True
         RowSelect = True
@@ -4512,6 +4515,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         ReadOnly = True
         RowSelect = True
         ParentDoubleBuffered = False
@@ -4623,6 +4627,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         ReadOnly = True
         RowSelect = True
         ParentDoubleBuffered = False
@@ -4876,6 +4881,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         ReadOnly = True
         RowSelect = True
         ParentDoubleBuffered = False
@@ -5058,6 +5064,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         ReadOnly = True
         RowSelect = True
         ParentDoubleBuffered = False
@@ -5161,6 +5168,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         ReadOnly = True
         RowSelect = True
         ParentDoubleBuffered = False
@@ -5299,6 +5307,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         ReadOnly = True
         RowSelect = True
         ParentDoubleBuffered = False
@@ -5404,6 +5413,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         ReadOnly = True
         RowSelect = True
         ParentDoubleBuffered = False
@@ -5613,6 +5623,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         MultiSelect = True
         ReadOnly = True
         RowSelect = True
@@ -5752,6 +5763,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         MultiSelect = True
         ReadOnly = True
         RowSelect = True
@@ -5840,6 +5852,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         ReadOnly = True
         RowSelect = True
         ParentDoubleBuffered = False
@@ -6055,6 +6068,7 @@ object F_Main: TF_Main
                 Width = 100
               end>
             GridLines = True
+            Items.ItemData = {050000000000000000}
             ReadOnly = True
             RowSelect = True
             TabOrder = 0
@@ -6271,6 +6285,7 @@ object F_Main: TF_Main
         Font.Name = 'MS Sans Serif'
         Font.Style = []
         GridLines = True
+        Items.ItemData = {050000000000000000}
         MultiSelect = True
         ReadOnly = True
         RowSelect = True
