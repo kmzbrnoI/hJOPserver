@@ -394,7 +394,7 @@ begin
     end;
   except
     received.Free();
-    AResponseInfo.ContentText := '{"errors":[{"title":"Server general error"}]}';
+    AResponseInfo.ContentText := '{"errors":[{"code": 500, "title":"Server general error"}]}';
     Exit();
   end;
 
