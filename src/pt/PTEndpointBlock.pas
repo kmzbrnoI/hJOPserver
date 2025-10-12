@@ -44,14 +44,14 @@ begin
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id bloku');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Nevalidni id bloku');
        Exit();
       end;
    end;
 
    if (not Blocks.IsBlock(blokId)) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Blok neexistuje', 'Blok s id '+IntToStr(blokId)+' neexistuje');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Blok neexistuje', 'Blok s id '+IntToStr(blokId)+' neexistuje');
      Exit();
     end;
 

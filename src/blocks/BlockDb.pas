@@ -1153,7 +1153,7 @@ begin
       Blk.GetPtData(json.A['blocks'].AddObject, includeState);
     except
       on E: Exception do
-        PTUtils.PtErrorToJson(json.A['errors'].AddObject, '500', 'Chyba pri nacitani bloku ' + IntToStr(Blk.id) + ' : '
+        PTUtils.PtErrorToJson(json.A['errors'].AddObject, 500, 'Chyba pri nacitani bloku ' + IntToStr(Blk.id) + ' : '
           + Blk.name, E.Message);
     end;
   end;

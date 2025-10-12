@@ -298,7 +298,7 @@ begin
       user.GetPtData(json.A['users'].AddObject);
     except
       on E: Exception do
-        PTUtils.PtErrorToJson(json.A['errors'].AddObject, '500', 'Chyba pri nacitani uzivatele ' + User.username,
+        PTUtils.PtErrorToJson(json.A['errors'].AddObject, 500, 'Chyba pri nacitani uzivatele ' + User.username,
           E.Message);
     end;
   end;

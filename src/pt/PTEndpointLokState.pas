@@ -46,14 +46,14 @@ begin
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni adresa lokomotivy');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Nevalidni adresa lokomotivy');
        Exit();
       end;
    end;
 
    if ((lokoAddr > 9999) or (HVDb[lokoAddr] = nil)) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje',
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Lokomotiva neexistuje',
         'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
      Exit();
     end;
@@ -83,21 +83,21 @@ begin
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni adresa lokmotivy');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Nevalidni adresa lokmotivy');
        Exit();
       end;
    end;
 
    if ((lokoAddr > 9999) or (HVDb[lokoAddr] = nil)) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Lokomotiva neexistuje',
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Lokomotiva neexistuje',
         'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
      Exit();
     end;
 
    if (not reqJson.Contains('lokState')) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce lokState');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Chybi json sekce lokState');
      Exit();
     end;
 

@@ -182,7 +182,7 @@ begin
         RCSs.SetInput(Self.m_settings.RCSAddr, 1)
     except
       on e: RCSException do
-        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 500, 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
     end;
 
     Self.Update(); // to propagate new state into response

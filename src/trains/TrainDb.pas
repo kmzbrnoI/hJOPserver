@@ -309,7 +309,7 @@ begin
         train.GetPtData(json.A['trains'].AddObject);
     except
       on E: Exception do
-        PTUtils.PtErrorToJson(json.A['errors'].AddObject, '500',
+        PTUtils.PtErrorToJson(json.A['errors'].AddObject, 500,
           'Chyba pri nacitani soupravy ' + Train.name, E.Message);
     end;
   end;

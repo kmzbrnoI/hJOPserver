@@ -349,7 +349,7 @@ begin
           (Self.accessTokens[ARequestInfo.AuthUsername] <> ARequestInfo.AuthPassword))) then
       begin
         AResponseInfo.ResponseNo := 401;
-        PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '401', 'Unauthorized',
+        PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, 401, 'Unauthorized',
                               'Neexitující/neplatný autorizační token');
         received.processed := true;
       end;
@@ -360,7 +360,7 @@ begin
        begin
          if ((not received.processed) and (ARequestInfo.ContentType <> _PT_CONTENT_TYPE)) then
           begin
-           PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '406', 'Not acceptable',
+           PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, 406, 'Not acceptable',
                                  'S timto content-type si neumim poradit');
            received.processed := true;
           end;
@@ -370,14 +370,14 @@ begin
 
            if (received.reqJson = nil) then
             begin
-             PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '400', 'Bad request',
+             PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, 400, 'Bad request',
                                    'Navalidni JSON objekt v pozadavku');
              received.processed := true;
             end;
           end;
        end;
       else
-        PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '405', 'Method not allowed',
+        PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, 405, 'Method not allowed',
                               'S touto HTTP metodou si neumim poradit');
         received.processed := true;
       end;
@@ -452,7 +452,7 @@ begin
         end;
       except
         on Eorig:Exception do
-          PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, '500', 'Request exception', Eorig.Message);
+          PTUtils.PtErrorToJson(received.respJson.A['errors'].AddObject, 500, 'Request exception', Eorig.Message);
       end;
 
       received.processed := true;
@@ -506,7 +506,7 @@ end;
 procedure TPtServer.httpSinkEndpoint(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson: TJsonObject);
 begin
-  PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Neznamy endpoint');
+  PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Neznamy endpoint');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

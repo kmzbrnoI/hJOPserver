@@ -488,7 +488,7 @@ begin
   begin
     if (Self.state = TBlkDiscBasicState.disabled) then
     begin
-      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze nastavit neaktivni rozpojovac');
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 403, 'Forbidden', 'Nelze nastavit neaktivni rozpojovac');
       inherited;
       Exit();
     end;

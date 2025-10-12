@@ -65,7 +65,7 @@ begin
  Result.AddOrSetValue('type', _ET_NONE);
  if (trainIndex = -1) then
  begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Souprava neexistuje', 'Souprava s id '+trainName+' neexistuje');
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Souprava neexistuje', 'Souprava s id '+trainName+' neexistuje');
    Exit();
  end;
 
@@ -106,7 +106,7 @@ procedure TPTEndpointTrain.OnGETPodj(AContext: TIdContext; ARequestInfo: TIdHTTP
 begin
  if (not train.IsPOdj(podjId)) then
   begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'PODJ neexistuje', 'PODJ na blok '+IntToStr(podjId)+' neexistuje');
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'PODJ neexistuje', 'PODJ na blok '+IntToStr(podjId)+' neexistuje');
    Exit();
   end;
 
@@ -135,7 +135,7 @@ procedure TPTEndpointTrain.OnPUTTrain(AContext: TIdContext; ARequestInfo: TIdHTT
 begin
  if (not reqJson.Contains('train')) then
   begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce train');
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Chybi json sekce train');
    Exit();
   end;
 
@@ -147,7 +147,7 @@ procedure TPTEndpointTrain.OnPUTPodj(AContext: TIdContext; ARequestInfo: TIdHTTP
 begin
  if (not reqJson.Contains('podj')) then
   begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce podj');
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Chybi json sekce podj');
    Exit();
   end;
 
@@ -158,7 +158,7 @@ begin
      var blk: TBlkTrack := Blocks.GetBlkTrackOrRTByID(podjId);
      if ((blk = nil) or (blk.typ <> TBlkType.btTrack)) then
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Neplatny typ bloku', 'Blok neexistuje nebo neni usek');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Neplatny typ bloku', 'Blok neexistuje nebo neni usek');
        Exit();
       end;
 
@@ -169,7 +169,7 @@ begin
        respJson.O['podj']; // empty podj
    except
      on E:Exception do
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Vnitrni chyba serveru', E.Message);
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 500, 'Vnitrni chyba serveru', E.Message);
    end;
  finally
    if (podj <> nil) then
@@ -185,7 +185,7 @@ var train: TTrain;
 begin
  if (not reqJson.Contains('train')) then
   begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi json sekce train');
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Chybi json sekce train');
    Exit();
   end;
 
@@ -204,7 +204,7 @@ begin
    if (dict['type'] = _ET_TRAIN) then
      Trains.Remove(Trains[dict['train']].index)
    else
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '405', 'Method not allowed', 'S touto HTTP metodou si neumim poradit');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 405, 'Method not allowed', 'S touto HTTP metodou si neumim poradit');
  finally
    dict.Free();
  end;

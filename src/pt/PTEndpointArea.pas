@@ -38,7 +38,7 @@ begin
 
  if (area = nil) then
   begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404',
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404,
       'Oblasti rizeni neexistuje', 'Oblast rizeni '+id+' neexistuje');
    Exit();
   end;

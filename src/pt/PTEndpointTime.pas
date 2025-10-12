@@ -51,7 +51,7 @@ procedure TPTEndpointTime.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPReque
 begin
   if ((reqJson.Contains('used')) and (reqJson.Contains('used')) and (not reqJson.B['used']) and (reqJson.B['started'])) then
   begin
-    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nelze used=false a zaroven started=true');
+    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Nelze used=false a zaroven started=true');
     Exit();
   end;
 

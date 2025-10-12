@@ -39,7 +39,7 @@ begin
  except
    on EConvertError do
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Nevalidni id JC');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Nevalidni id JC');
      Exit();
     end;
  end;
@@ -47,7 +47,7 @@ begin
  var JC := JCDb.GetJCByID(jcId);
  if (JC = nil) then
   begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'JC neexistuje', 'JC s id '+IntToStr(jcId)+' neexistuje');
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'JC neexistuje', 'JC s id '+IntToStr(jcId)+' neexistuje');
    Exit();
   end;
 

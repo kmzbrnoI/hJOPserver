@@ -1608,19 +1608,19 @@ begin
   begin
     if (Self.position = TTurnoutPosition.disabled) then
     begin
-      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit neaktivni vyhybku');
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 403, 'Forbidden', 'Nelze prestavit neaktivni vyhybku');
       inherited;
       Exit();
     end;
     if (Self.outputLocked) then
     begin
-      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit zamcenou vyhybku');
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 403, 'Forbidden', 'Nelze prestavit zamcenou vyhybku');
       inherited;
       Exit();
     end;
     if (Self.occupied = TTrackState.occupied) then
     begin
-      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Nelze prestavit obsazenou vyhybku');
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 403, 'Forbidden', 'Nelze prestavit obsazenou vyhybku');
       inherited;
       Exit();
     end;
@@ -1657,10 +1657,10 @@ begin
         end;
       except
         on e: RCSException do
-          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 500, 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
       end;
     end else begin
-      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Tato vyhybka nema RCS vstupy!');
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Bad Request', 'Tato vyhybka nema RCS vstupy!');
     end;
 
     Self.Update(); // to propagate new state into response

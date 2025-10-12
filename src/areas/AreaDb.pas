@@ -310,7 +310,7 @@ begin
         Area.GetPtData(json.A['areas'].AddObject);
     except
       on E: Exception do
-        PTUtils.PtErrorToJson(json.A['errors'].AddObject, '500', 'Chyba pri nacitani oblasti rizeni ' + Area.id,
+        PTUtils.PtErrorToJson(json.A['errors'].AddObject, 500, 'Chyba pri nacitani oblasti rizeni ' + Area.id,
           E.Message);
     end;
   end;

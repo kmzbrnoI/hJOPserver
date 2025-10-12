@@ -44,7 +44,7 @@ begin
      stanice := Areas.Get(params['station']);
      if (stanice = nil) then
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404', 'Oblast rizeni neexistuje',
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Oblast rizeni neexistuje',
           'Oblast rizeni '+params['statino']+' neexistuje');
        Exit();
       end;

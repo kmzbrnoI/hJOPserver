@@ -3682,7 +3682,7 @@ procedure TJC.PostPtActivate(reqJson: TJsonObject; respJson: TJsonObject);
 begin
   if ((Self.signal = nil) or (TBlkSignal(Self.signal).areas.Count = 0)) then
   begin
-    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Návěstidlo není v OŘ');
+    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Návěstidlo není v OŘ');
     Exit();
   end;
 

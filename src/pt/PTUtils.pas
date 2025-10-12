@@ -9,7 +9,7 @@ interface
 
 uses JsonDataObjects, Generics.Collections, Classes, Character, SysUtils;
 
-procedure PtErrorToJson(json:TJsonObject; httpCode:string; title:string; detail:string = '');
+procedure PtErrorToJson(json:TJsonObject; httpCode:Cardinal; title:string; detail:string = '');
 procedure HttpParametersToDict(params:TStrings; var dict:TDictionary<string, string>);
 function HttpParamToBool(value:string):Boolean;
 
@@ -17,7 +17,7 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure PtErrorToJson(json:TJsonObject; httpCode:string; title:string; detail:string = '');
+procedure PtErrorToJson(json:TJsonObject; httpCode:Cardinal; title:string; detail:string = '');
 begin
  json['code']  := httpCode;
  json['title'] := title;

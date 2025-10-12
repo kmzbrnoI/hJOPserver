@@ -1088,7 +1088,7 @@ var speed: Integer;
 begin
   if (not Self.acquired) then
   begin
-    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Loko neprevzato');
+    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 403, 'Loko neprevzato');
     Exit();
   end;
 

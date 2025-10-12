@@ -50,7 +50,7 @@ begin
 
  if (user = nil) then
   begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404',
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404,
       'Uzivatel neexistuje', 'Uzivatel '+username+' neexistuje');
    Exit();
   end;
@@ -79,14 +79,14 @@ begin
 
  if (user = nil) then
   begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '404',
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404,
       'Uzivatel neexistuje', 'Uzivatel '+username+' neexistuje');
    Exit();
   end;
 
  if (not reqJson.Contains('passwordHash')) then
   begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Chybi polozka "passwordHash"');
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Chybi polozka "passwordHash"');
    Exit();
   end;
 

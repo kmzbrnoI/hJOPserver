@@ -1937,7 +1937,7 @@ begin
   begin
     if (not Self.enabled) then
     begin
-      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '403', 'Forbidden', 'Neaktivni blok');
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 403, 'Forbidden', 'Neaktivni blok');
       inherited;
       Exit();
     end;
@@ -1949,7 +1949,7 @@ begin
         if (Self.CanSTUJ()) then
           Self.signal := ncStuj
         else
-          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Nelze prestavit do STUJ');
+          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Bad Request', 'Nelze prestavit do STUJ');
       end;
     end else if (reqJson.I['signal'] = Integer(TBlkSignalCode.ncPrivol)) then
     begin
@@ -1960,10 +1960,10 @@ begin
         begin
           Self.signal := ncPrivol;
         end else
-          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Nelze rozsvitit PN');
+          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Bad Request', 'Nelze rozsvitit PN');
       end;
     end else
-      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Nepodorovana navest');
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Bad Request', 'Nepodorovana navest');
   end;
 
   if (reqJson.Contains('rcsControllerShunt')) then
@@ -1972,10 +1972,10 @@ begin
       if (Self.m_settings.PSt.enabled) then
         RCSs.SetInput(Self.m_settings.PSt.rcsControllerShunt, ownConvert.BoolToInt(reqJson.B['rcsControllerShunt']))
       else
-        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', 'Navestidlo nema kontrolery PSt');
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Bad Request', 'Navestidlo nema kontrolery PSt');
     except
       on e: RCSException do
-        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 500, 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
     end;
 
     Self.Update(); // to propagate new state into response

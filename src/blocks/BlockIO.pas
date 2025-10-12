@@ -443,7 +443,7 @@ begin
         RCSs.SetInput(Self.m_settings.RCSinput, ownConvert.BoolToInt(reqJson.B['activeInput']));
       except
         on e: RCSException do
-          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+          PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 500, 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
       end;
     end else begin
       if ((reqJson.B['activeInput']) and (not Self.activeInput)) then

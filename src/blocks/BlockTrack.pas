@@ -1944,7 +1944,7 @@ begin
   begin
     if (Cardinal(reqJson.A['trains'].Count) > Self.m_settings.maxTrains) then
     begin
-      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request',
+      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Bad Request',
         'Nelze pridat vice souprav, nez je limit useku');
       inherited;
       Exit();
@@ -1961,13 +1961,13 @@ begin
         except
           on E: Exception do
           begin
-            PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request', E.Message);
+            PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Bad Request', E.Message);
           end;
 
         end;
       end
       else
-        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '400', 'Bad Request',
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Bad Request',
           'Souprava ' + trainStr + ' neexistuje, ignoruji.');
     end;
   end;
@@ -2001,7 +2001,7 @@ begin
       end;
     except
       on e: RCSException do
-        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, '500', 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
+        PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 500, 'Simulace nepovolila nastaveni RCS vstupu', e.Message);
     end;
 
     Self.Update(); // to propagate new state into response
