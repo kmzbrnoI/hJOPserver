@@ -39,6 +39,7 @@ type
     procedure MenuZTSOffClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuUTSClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuOTSClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuRTSClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAKOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAKOffClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
@@ -87,6 +88,7 @@ type
 
     procedure ApproveRequest();
     function CanZTS(): Boolean;
+    function CanRTS(): Boolean;
     function CanUTS(): Boolean;
     function CanZAKOn(): Boolean;
     function CanZAKOff(): Boolean;
@@ -285,6 +287,13 @@ begin
     Self.UPOOTSClick(SenderPnl);
 end;
 
+procedure TBlkLinker.MenuRTSClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  if (Self.CanRTS()) then
+    if ((Self.parent <> nil) and ((Self.parent as TBlkRailway).GetSettings.rType = TRailwayType.request)) then
+      (Self.parent as TBlkRailway).direction := TRailwayDirection.no;
+end;
+
 procedure TBlkLinker.MenuZAKOnClick(SenderPnl: TIdContext; SenderOR: TObject);
 begin
   if (Self.note <> '') then
@@ -418,6 +427,9 @@ begin
     if ((Self.CanZTS()) or ((SenderOR as TArea).stack.mode = TORStackMode.VZ)) then
       Result := Result + 'ZTS>,';
 
+    if (Self.CanRTS()) then
+      Result := Result + 'RTS,';
+
     if ((not Self.CanUTS()) and ((SenderOR as TArea).stack.mode = TORStackMode.VZ)) then
       Result := Result + 'UTS,';
 
@@ -507,6 +519,8 @@ begin
     Self.MenuUTSClick(SenderPnl, SenderOR)
   else if (item = 'OTS') then
     Self.MenuOTSClick(SenderPnl, SenderOR)
+  else if (item = 'RTS') then
+    Self.MenuRTSClick(SenderPnl, SenderOR)
   else if (item = 'ZAK>') then
     Self.MenuZAKOnClick(SenderPnl, SenderOR)
   else if (item = 'ZAK<') then
@@ -534,7 +548,7 @@ end;
 
 procedure TBlkLinker.SetRequest(zadost: Boolean);
 begin
-  // tohleto poradi nastvovani je dulezite
+  // tohleto poradi nastavovani je dulezite
   if (zadost) then
     Self.m_request := zadost;
   if (Self.parent <> nil) then
@@ -567,6 +581,12 @@ begin
     Result := (railway.direction <> TRailwayDirection.AtoB)
   else
     Result := (railway.direction <> TRailwayDirection.BtoA);
+end;
+
+function TBlkLinker.CanRTS(): Boolean;
+begin
+  Result := ((Self.CanZTS()) and (Self.parent <> nil) and (TBlkRailway(Self.parent).GetSettings.rType = TRailwayType.request) and
+             (TBlkRailway(Self.parent).direction <> TRailwayDirection.no));
 end;
 
 function TBlkLinker.CanUTS(): Boolean;
