@@ -16,7 +16,7 @@ interface
 uses IniFiles, SysUtils, Classes, Graphics, Menus, announcement,
   IdContext, RCSc, StrUtils, ComCtrls, Forms, AreaLighting,
   Generics.Collections, AreaStack, Windows, Generics.Defaults,
-  JsonDataObjects, Logging, UPO, RCSsc;
+  JsonDataObjects, Logging, UPO, RCSsc, RCSErrors;
 
 const
   _MAX_CON_PNL = 16; // max number of panels connected to single area
@@ -1320,30 +1320,34 @@ end;
 procedure TArea.SetLights(id: string; state: Boolean);
 begin
   for var light: TAreaLighting in Self.m_data.lights do
+  begin
     if (light.name = id) then
     begin
       try
         RCSs.SetOutput(light.rcsAddr, ownConvert.BoolToInt(state));
         light.default_state := state;
       except
-
+        on E: RCSException do
+          Self.Log('Nelze nastavit osvětlení '+light.name+': '+E.Message, llError);
       end;
 
       Exit();
     end;
+  end;
 end;
 
 procedure TArea.InitLights();
 begin
   for var light: TAreaLighting in Self.m_data.lights do
   begin
-    if (RCSs.IsModule(light.rcsAddr)) then
-    begin
-      try
+    try
+      if (RCSs.IsModule(light.rcsAddr)) then
+      begin
         RCSs.SetOutput(light.rcsAddr, ownConvert.BoolToInt(light.default_state));
-      except
-
       end;
+    except
+      on E: RCSException do
+        Self.Log('Nelze inicializovat osvětlení '+light.name+': '+E.Message, llError);
     end;
   end;
 end;
