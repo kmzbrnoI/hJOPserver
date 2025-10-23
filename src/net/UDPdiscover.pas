@@ -172,17 +172,17 @@ begin
   if (not Self.binds.ContainsKey(ABinding.IP)) then
     Self.UpdateBindings();
 
-  msg :=
-    'hJOP;' +
-    _DISC_PROTOCOL_VERSION + ';'+
-    'server;' +
-    Self.name + ';' +
-    ABinding.IP + ';' +
-    IntToStr(Self.binds[ABinding.IP].panelServerPort) + ';' +
-    ite(PanelServer.openned, 'on', 'off') + ';' +
-    Self.description + ';';
-
   try
+    msg :=
+      'hJOP;' +
+      _DISC_PROTOCOL_VERSION + ';'+
+      'server;' +
+      Self.name + ';' +
+      ABinding.IP + ';' +
+      IntToStr(Self.binds[ABinding.IP].panelServerPort) + ';' +
+      ite(PanelServer.openned, 'on', 'off') + ';' +
+      Self.description + ';';
+
     var data: TIdBytes := TIdBytes(TEncoding.UTF8.GetBytes(Msg));
     ABinding.Broadcast(data, port, Self.binds[ABinding.IP].broadcastAddr);
   except
