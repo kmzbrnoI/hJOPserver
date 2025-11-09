@@ -569,6 +569,10 @@ begin
     end;
   end;
 
+  for var note: string in Self.m_data.permNotes do
+    Result.Add(JCBarrier(barGeneralNote, nil, 0, note));
+
+
   if (nc) then
     Self.BarriersNC(Result)
   else

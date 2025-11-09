@@ -35,6 +35,8 @@ type
   TJCBarType = (
     barOk,
     barProcessing,
+    barGeneralNote,
+
     barBlockDisabled,
     barBlockNotExists,
     barBlockWrongType,
@@ -97,6 +99,7 @@ type
     typ: TJCBarType;
     block: TBlk;
     param: Integer; // typically id of block when block not found (block = nil)
+    str: string;
     class operator Equal(a, b: TJCBarrier): Boolean;
   end;
 
@@ -108,7 +111,7 @@ type
   function CriticalBarrier(typ: TJCBarType): Boolean;
   function IsCSBarrier(typ: TJCBarType): Boolean;
   function BarrierGetCSNote(typ: TJCBarType): string;
-  function JCBarrier(typ: TJCBarType; block: TBlk = nil; param: Integer = 0): TJCBarrier;
+  function JCBarrier(typ: TJCBarType; block: TBlk = nil; param: Integer = 0; str: string = ''): TJCBarrier;
   function JCBarrierToMessage(barrier: TJCBarrier): TUPOItem;
   function JCWarningBarrier(typ: TJCBarType): Boolean;
   procedure BarrierToJson(const barrier: TJCBarrier; result: TJsonObject);
@@ -121,7 +124,7 @@ uses Graphics, Classes, SysUtils, BlockTurnout, BlockTrack, BlockPst, BlockLock,
 
 class operator TJCBarrier.Equal(a, b: TJCBarrier): Boolean;
 begin
-  Result := ((a.typ = b.typ) and (a.block = b.block) and (a.param = b.param));
+  Result := ((a.typ = b.typ) and (a.block = b.block) and (a.param = b.param) and (a.str = b.str));
 end;
 
 function TJCBarriers.Add(const Value: TJCBarrier): Integer;
@@ -237,11 +240,12 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function JCBarrier(typ: TJCBarType; block: TBlk = nil; param: Integer = 0): TJCBarrier;
+function JCBarrier(typ: TJCBarType; block: TBlk = nil; param: Integer = 0; str: string = ''): TJCBarrier;
 begin
   Result.typ := typ;
   Result.Block := Block;
   Result.param := param;
+  Result.str := str;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -370,6 +374,11 @@ begin
         Result := NoteUPO(barrier.Block.name, note);
       end;
 
+    barGeneralNote:
+      begin
+        Result := NoteUPO('', barrier.str);
+      end;
+
     barTrackLastOccupied:
       begin
         Result[0] := GetUPOLine('NEBUDE POVOLUJÍCÍ NÁVĚST', taCenter, TJopColor.black, TJopColor.yellow);
@@ -438,7 +447,7 @@ end;
 function JCWarningBarrier(typ: TJCBarType): Boolean;
 begin
   case (typ) of
-    barBlockNote, barBlockLockout, barPrivol, barHVManual, barHVNotAllManual,
+    barGeneralNote, barBlockNote, barBlockLockout, barPrivol, barHVManual, barHVNotAllManual,
     barTrainWrongDir, barTrainNotFront, barTrackLastOccupied, barRailwayOccupied, barRailwayZAKPC:
       Result := true;
   else

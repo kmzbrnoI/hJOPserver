@@ -8,7 +8,7 @@ unit UPO;
 
 interface
 
-uses Graphics, Generics.Collections, Classes, System.Math, colorHelper;
+uses Graphics, Generics.Collections, Classes, System.Math, colorHelper, IfThenElse;
 
 const
   _UPO_LINES = 3; // pocet radek upozorneni
@@ -66,7 +66,11 @@ end;
 
 function NoteUPO(blockName: string; note: string): TUPOItem;
 begin
-  Result[0] := GetUPOLine('ŠTÍTEK ' + blockName, taCenter, TJopColor.black, TJopColor.turqDark);
+  var name: string := 'ŠTÍTEK';
+  if (blockName <> '') then
+    name := name + ' ' + blockName;
+
+  Result[0] := GetUPOLine(name, taCenter, TJopColor.black, TJopColor.turqDark);
   var lines := GetLines(note, _UPO_LINE_LEN);
 
   try
