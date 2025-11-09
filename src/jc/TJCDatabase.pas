@@ -181,7 +181,7 @@ begin
     ini.Free();
   end;
 
-  Log('JC uloženy', llInfo, lsData);
+  Log('Uloženo JC: '+IntToStr(Self.Count), llInfo, lsData);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

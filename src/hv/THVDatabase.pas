@@ -235,20 +235,24 @@ end;
 
 procedure THVDb.SaveData(const dirname: string);
 begin
+  Log('Ukládám vozidla...', llInfo, lsData);
   Self.fLoksDir := dirname;
 
+  var count: Cardinal := 0;
   for var i: Integer := 0 to _MAX_ADDR - 1 do
   begin
     if (Self.HVs[i] <> nil) then
     begin
       try
         Self.HVs[i].SaveData(Self.FilenameForLok(Self.HVs[i]));
+        Inc(count);
       except
         on E: Exception do
           AppEvents.LogException(E, 'THVDb.SaveData ' + IntToStr(i));
       end;
     end; // if <> nil
   end; // for i
+  Log('Uloženo vozidel: '+IntToStr(count), llInfo, lsData);
 end;
 
 procedure THVDb.SaveState(const statefn: string);

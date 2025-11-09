@@ -153,7 +153,7 @@ begin
     ini.Free();
   end;
 
-  Log('Uživatelé uloženi', llInfo, lsData);
+  Log('Uloženo uživatelů: '+IntToStr(Self.count), llInfo, lsData);
 end;
 
 procedure TUsrDb.SaveStat(const filename: string);

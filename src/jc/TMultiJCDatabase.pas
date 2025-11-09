@@ -175,7 +175,7 @@ begin
  ini.UpdateFile();
  ini.Free();
 
- Log('Složené JC uloženy', llInfo, lsData);
+ Log('Uloženo složených JC: '+IntToStr(Self.Count), llInfo, lsData);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

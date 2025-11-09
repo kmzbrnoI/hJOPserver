@@ -135,7 +135,7 @@ begin
     FreeAndNil(ini);
   end;
 
-  Log('Uloženo ' + IntToStr(Self.count) + ' souprav', llInfo, lsData);
+  Log('Uloženo souprav: '+IntToStr(Self.count), llInfo, lsData);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

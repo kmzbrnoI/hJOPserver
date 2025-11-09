@@ -483,14 +483,13 @@ end;
 
 procedure THV.SaveData(const filename: string);
 var ini: TMemIniFile;
-  addr: string;
 begin
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
 
   try
     ini.WriteString('global', 'version', _LOK_VERSION_SAVE);
 
-    addr := IntToStr(Self.addr);
+    var addr: string := IntToStr(Self.addr);
     ini.EraseSection(addr);
     ini.WriteString(addr, 'nazev', Self.data.name);
     ini.WriteString(addr, 'majitel', Self.data.owner);
@@ -507,7 +506,7 @@ begin
       POMautomat := POMautomat + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.value) + ')';
     ini.WriteString(addr, 'pom_automat', POMautomat);
 
-    // POM to program for manually-controller engines
+    // POM to program for manually-controlled engines
     var POMmanual: string := '';
     for var pom: THVPomCV in Self.data.POMmanual do
       POMmanual := POMmanual + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.value) + ')';
