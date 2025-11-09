@@ -6362,15 +6362,45 @@ object F_Main: TF_Main
     Images = IL_Menu
     Left = 728
     Top = 456
-    object MI_System: TMenuItem
-      Caption = 'Syst'#233'm'
+    object MI_Application: TMenuItem
+      Caption = 'Aplikace'
       object PM_Central_Start: TMenuItem
         Action = A_System_Start
         Caption = 'Central start'
+        ShortCut = 116
       end
       object PM_Central_Stop: TMenuItem
         Action = A_System_Stop
         Caption = 'Central stop'
+        ShortCut = 117
+      end
+      object N2: TMenuItem
+        Caption = '-'
+      end
+      object MI_Save_config: TMenuItem
+        Caption = 'Ulo'#382'it konfigura'#269'n'#237' data'
+        ImageIndex = 21
+        ShortCut = 16467
+        OnClick = MI_Save_configClick
+      end
+      object PM_SaveLayout: TMenuItem
+        Action = A_SaveStav
+      end
+      object PM_SaveFormPos: TMenuItem
+        Caption = 'Ulo'#382'it pozice oken'
+        OnClick = PM_SaveFormPosClick
+      end
+      object MI_SaveHVs: TMenuItem
+        Caption = 'Ulo'#382'it hnac'#237' vozidla'
+        OnClick = MI_SaveHVsClick
+      end
+      object N3: TMenuItem
+        Caption = '-'
+      end
+      object MI_ExitApp: TMenuItem
+        Caption = 'Ukon'#269'it aplikaci'
+        ShortCut = 32883
+        OnClick = MI_ExitAppClick
       end
     end
     object MI_RCS: TMenuItem
@@ -6494,25 +6524,6 @@ object F_Main: TF_Main
         Caption = 'Simulace a diagnostika'
         ShortCut = 115
         OnClick = MI_SimulationDiagnosticsClick
-      end
-    end
-    object MI_File: TMenuItem
-      Caption = 'Soubor'
-      object MI_Save_config: TMenuItem
-        Caption = 'Ulo'#382'it konfigura'#269'n'#237' data'
-        ImageIndex = 21
-        OnClick = MI_Save_configClick
-      end
-      object PM_SaveLayout: TMenuItem
-        Action = A_SaveStav
-      end
-      object PM_SaveFormPos: TMenuItem
-        Caption = 'Ulo'#382'it pozice oken'
-        OnClick = PM_SaveFormPosClick
-      end
-      object MI_SaveHVs: TMenuItem
-        Caption = 'Ulo'#382'it hnac'#237' vozidla'
-        OnClick = MI_SaveHVsClick
       end
     end
     object M_Help: TMenuItem

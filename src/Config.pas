@@ -320,7 +320,7 @@ begin
       AppEvents.LogException(e);
   end;
 
-  Log('Kompletní ukládání dat dokončeno', TLogLevel.llInfo, lsData);
+  Log('Kompletní ukládání dat dokončeno', TLogLevel.llInfo, lsData, True);
 
   try
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Main.E_configFilename.Text);

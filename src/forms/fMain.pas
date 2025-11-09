@@ -73,7 +73,7 @@ type
     N4: TMenuItem;
     MI_Trk_connect: TMenuItem;
     T_GUI_refresh: TTimer;
-    MI_System: TMenuItem;
+    MI_Application: TMenuItem;
     PM_Central_Start: TMenuItem;
     PM_Central_Stop: TMenuItem;
     N5: TMenuItem;
@@ -178,7 +178,6 @@ type
     L_StavS_6: TLabel;
     GB_Log: TGroupBox;
     LB_BriefLog: TListBox;
-    MI_File: TMenuItem;
     MI_Save_config: TMenuItem;
     S_locos_acquired: TShape;
     Label1: TLabel;
@@ -319,6 +318,9 @@ type
     CHB_RCS2_Log: TCheckBox;
     CHB_RCS3_Log: TCheckBox;
     MI_SaveHVs: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    MI_ExitApp: TMenuItem;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -459,6 +461,7 @@ type
     procedure A_RCSs_StopExecute(Sender: TObject);
     procedure CHB_RCS0_LogClick(Sender: TObject);
     procedure MI_SaveHVsClick(Sender: TObject);
+    procedure MI_ExitAppClick(Sender: TObject);
 
   private
     call_method: TNotifyEvent;
@@ -2242,7 +2245,6 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TF_Main.A_SaveStavExecute(Sender: TObject);
-var ini: TMemIniFile;
 begin
   try
     // ukladani stavu bloku: ulozime do docasneho souboru a az pak prepiseme stavajici konfigurak
@@ -2296,7 +2298,7 @@ begin
   end;
 
   try
-    ini := TMemIniFile.Create(_INIDATA_FN, TEncoding.UTF8);
+    var ini := TMemIniFile.Create(_INIDATA_FN, TEncoding.UTF8);
     try
       try
         RCSs.SaveToFile(ini);
@@ -2329,7 +2331,7 @@ begin
   end;
 
   try
-    ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), Self.E_configFilename.Text),
+    var ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), Self.E_configFilename.Text),
       TEncoding.UTF8);
     try
       modelTime.SaveData(ini);
@@ -2344,6 +2346,9 @@ begin
     on E: Exception do
       AppEvents.LogException(E, 'Save cfg');
   end;
+
+  if (Sender <> nil) then
+    Logging.log('Uložen stav kolejiště', TLogLevel.llInfo, lsData, True);
 end;
 
 procedure TF_Main.A_System_StartExecute(Sender: TObject);
@@ -2392,6 +2397,10 @@ end;
 
 procedure TF_Main.A_System_StopExecute(Sender: TObject);
 begin
+  var response: Integer := StrMessageBox('Opravdu zastavit server a odpojit se od všech systémů?', 'Otázka', MB_YESNO OR MB_ICONQUESTION);
+  if (response <> mrYes) then
+    Exit();
+
   Self.A_System_Stop.Enabled := false;
 
   Self.LB_BriefLog.Items.Insert(0, '--------------------------------------------------------------------------------');
@@ -2908,6 +2917,11 @@ begin
   end;
 end;
 
+procedure TF_Main.MI_ExitAppClick(Sender: TObject);
+begin
+  Self.Close();
+end;
+
 procedure TF_Main.MI_Block_HoukClick(Sender: TObject);
 begin
   if (Self.LV_Blocks.Selected = nil) then
@@ -2953,6 +2967,7 @@ begin
     on e: Exception do
       AppEvents.LogException(e);
   end;
+  Logging.log('Uložena všechna hnací vozidla', TLogLevel.llInfo, lsData, True);
   Screen.Cursor := crDefault;
 end;
 
@@ -3158,6 +3173,7 @@ procedure TF_Main.PM_SaveFormPosClick(Sender: TObject);
 begin
   try
     FormData.SaveFormData(FormData.aFile);
+    Logging.log('Uloženy pozice oken', TLogLevel.llInfo, lsData, True);
   except
     on E: Exception do
       ExceptionMessageBox('Výjimka:', E);
