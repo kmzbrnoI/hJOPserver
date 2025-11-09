@@ -261,6 +261,7 @@ begin
 
     // update HV
     Self.OpenHV.data := data;
+    Self.OpenHV.SaveData();
 
     Area := Areas[Self.CB_Area.ItemIndex];
 

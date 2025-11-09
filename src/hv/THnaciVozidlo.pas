@@ -364,6 +364,9 @@ begin
     Self.state.regulators := TList<THVRegulator>.Create();
   if (not Assigned(Self.state.tokens)) then
     Self.state.tokens := TList<THVToken>.Create();
+
+  // Save file explicitly - in panel constructor saving is done in UpdateFromPanelString
+  Self.SaveData();
 end;
 
 constructor THV.Create(panel_str: string; Sender: TArea);
@@ -384,6 +387,7 @@ begin
 
   Self.m_funcDict := TDictionary<string, Integer>.Create();
 
+  // Also saves to file
   Self.UpdateFromPanelString(panel_str);
 end;
 

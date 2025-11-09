@@ -6510,6 +6510,10 @@ object F_Main: TF_Main
         Caption = 'Ulo'#382'it pozice oken'
         OnClick = PM_SaveFormPosClick
       end
+      object MI_SaveHVs: TMenuItem
+        Caption = 'Ulo'#382'it hnac'#237' vozidla'
+        OnClick = MI_SaveHVsClick
+      end
     end
     object M_Help: TMenuItem
       Caption = 'N'#225'pov'#283'da'

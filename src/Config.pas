@@ -307,14 +307,6 @@ begin
   end;
 
   try
-    HVDb.SaveData(F_Main.E_dataload_HV_dir.Text);
-    HVDb.SaveState(F_Main.E_dataload_HV_state.Text);
-  except
-    on e: Exception do
-      AppEvents.LogException(e);
-  end;
-
-  try
     trakce.SaveSpeedTable('data/rychlosti.csv');
   except
     on e: Exception do

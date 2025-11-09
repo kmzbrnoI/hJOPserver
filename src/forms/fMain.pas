@@ -318,6 +318,7 @@ type
     CHB_RCS1_Log: TCheckBox;
     CHB_RCS2_Log: TCheckBox;
     CHB_RCS3_Log: TCheckBox;
+    MI_SaveHVs: TMenuItem;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -457,6 +458,7 @@ type
     procedure A_RCSs_GoExecute(Sender: TObject);
     procedure A_RCSs_StopExecute(Sender: TObject);
     procedure CHB_RCS0_LogClick(Sender: TObject);
+    procedure MI_SaveHVsClick(Sender: TObject);
 
   private
     call_method: TNotifyEvent;
@@ -2934,6 +2936,24 @@ begin
     on E: Exception do
       ExceptionMessageBox('Seznam knihoven se nepodařilo aktualizovat:', E);
   end;
+end;
+
+procedure TF_Main.MI_SaveHVsClick(Sender: TObject);
+begin
+  var response := StrMessageBox('Ukládání hnacích vozidel probíhá automaticky, manuální ukládání je potřeba pouze ve výjimečných situacích. Pokračovat?',
+    'Otázka', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
+  if (response <> mrYes) then
+    Exit();
+
+  Screen.Cursor := crHourGlass;
+  try
+    HVDb.SaveData(Self.E_dataload_HV_dir.Text);
+    HVDb.SaveState(Self.E_dataload_HV_state.Text);
+  except
+    on e: Exception do
+      AppEvents.LogException(e);
+  end;
+  Screen.Cursor := crDefault;
 end;
 
 procedure TF_Main.MI_Save_configClick(Sender: TObject);
