@@ -94,6 +94,8 @@ type
     CHB_Loop: TCheckBox;
     Label4: TLabel;
     CB_Loop_Track: TComboBox;
+    GB_permNote: TGroupBox;
+    M_permNote: TMemo;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
@@ -186,7 +188,7 @@ var
 implementation
 
 uses GetSystems, Block, AreaDb, TrainSpeed, ownConvert, ownGuiUtils,
-  BlockSignal, TJCDatabase, DataJC, BlockRailway, BlockTurnout;
+  BlockSignal, TJCDatabase, DataJC, BlockRailway, BlockTurnout, UPO;
 
 {$R *.dfm}
 
@@ -356,6 +358,9 @@ begin
     Self.Caption := 'Nová jízdní cesta'
   else
     Self.Caption := 'Jízdní cesta ' + JCData.name;
+
+  for var item: string in JCData.permNotes do
+    Self.M_permNote.Lines.Add(item);
 end;
 
 procedure TF_JCEdit.CommonOpenForm();
@@ -366,6 +371,7 @@ begin
   Self.LV_Refugees.Clear();
   Self.LV_Crossings.Clear();
   Self.FillRefTracks(); // will clear ref tracks
+  Self.M_permNote.Clear();
 
   Self.CHB_Crossing_Closing.Checked := False;
   Self.CHB_Crossing_ClosingClick(Self.CHB_Crossing_Closing);
@@ -707,6 +713,17 @@ begin
     Exit();
   end;
 
+  for var line in Self.M_permNote.Lines do
+  begin
+    if (Length(line) > (2*UPO._UPO_LINE_LEN)) then
+    begin
+      StrMessageBox('Přesáhnuta maximální délka permanentního štítku ('+IntToStr(2*UPO._UPO_LINE_LEN)+' znaků)!',
+        'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+      Exit();
+    end;
+  end;
+
+
   var JCsaveData: TJCdata := TechnologieJC.NewJCData();
 
   try
@@ -817,6 +834,10 @@ begin
       JCsaveData.loopTrackI := Self.CB_Loop_Track.ItemIndex
     else
       JCsaveData.loopTrackI := -1;
+
+    for var line in Self.M_permNote.Lines do
+      if (line <> '') then
+        JCsaveData.permNotes.Add(line);
 
     if (mNewJC) then
     begin

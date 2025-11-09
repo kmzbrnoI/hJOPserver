@@ -101,6 +101,7 @@ type
     crossings: TList<TJCCrossingZav>;
     locks: TList<TJCRefZav>;
     vb: TList<Integer>; // seznam variantnich bodu JC - obashuje postupne ID bloku typu usek
+    permNotes: TList<string>;
 
     railwayId: Integer;
     railwayDir: TRailwayDirection;
@@ -365,6 +366,7 @@ begin
   Result.crossings := TList<TJCCrossingZav>.Create();
   Result.locks := TList<TJCRefZav>.Create();
   Result.vb := TList<Integer>.Create();
+  Result.permNotes := TList<string>.Create();
   Result.speedsGo := TList<TTrainSpeed>.Create();
   Result.speedsStop := TList<TTrainSpeed>.Create();
 end;
@@ -387,6 +389,8 @@ begin
     FreeAndNil(jcdata.locks);
   if (Assigned(jcdata.vb)) then
     jcdata.vb.Free();
+  if (Assigned(jcdata.permNotes)) then
+    FreeAndNil(jcdata.permNotes);
   if (Assigned(jcdata.speedsGo)) then
     jcdata.speedsGo.Free();
   if (Assigned(jcdata.speedsStop)) then
@@ -2771,6 +2775,18 @@ begin
   Self.m_data.nzv := ini.ReadBool(section, 'nzv', false);
   Self.m_data.signalFallTrackI := ini.ReadInteger(section, 'rusNavestUsek', 0);
   Self.m_data.loopTrackI := ini.ReadInteger(section, 'smycUsek', -1);
+
+  begin
+    Self.m_data.permNotes.Clear();
+    var str: string := ini.ReadString(section, 'stit0', '');
+    var i: Integer := 0;
+    while (str <> '') do
+    begin
+      Self.m_data.permNotes.Add(str);
+      Inc(i);
+      str := ini.ReadString(section, 'stit'+IntToStr(i), '');
+    end;
+  end;
 end;
 
 procedure TJC.SaveData(ini: TMemIniFile; section: string);
@@ -2865,6 +2881,9 @@ begin
   var vpsStr: string := SerializeIntList(Self.m_data.vb);
   if (vpsStr <> '') then
     ini.WriteString(section, 'vb', vpsStr);
+
+  for var i: Integer := 0 to Self.m_data.permNotes.Count-1 do
+    ini.WriteString(section, 'stit'+IntToStr(i), Self.m_data.permNotes[i]);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3466,6 +3485,8 @@ begin
     Self.m_data.locks.Free();
   if (Self.m_data.vb <> prop.vb) then
     Self.m_data.vb.Free();
+  if (Self.m_data.permNotes <> prop.permNotes) then
+    Self.m_data.permNotes.Free();
   if (Self.m_data.speedsGo <> prop.speedsGo) then
     Self.m_data.speedsGo.Free();
   if (Self.m_data.speedsStop <> prop.speedsStop) then

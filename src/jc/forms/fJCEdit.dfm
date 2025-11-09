@@ -329,7 +329,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 14
+    TabOrder = 15
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
@@ -342,7 +342,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 15
+    TabOrder = 16
     OnClick = B_StornoClick
   end
   object CB_Signal: TComboBox
@@ -382,7 +382,7 @@ object F_JCEdit: TF_JCEdit
     Caption = 'auto'
     Checked = True
     State = cbChecked
-    TabOrder = 16
+    TabOrder = 17
   end
   object GB_Railway: TGroupBox
     Left = 8
@@ -866,7 +866,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' P'#345'ejezdy '
-    TabOrder = 13
+    TabOrder = 14
     object LV_Crossings: TListView
       Left = 2
       Top = 15
@@ -1087,6 +1087,24 @@ object F_JCEdit: TF_JCEdit
       Height = 21
       Style = csDropDownList
       TabOrder = 1
+    end
+  end
+  object GB_permNote: TGroupBox
+    Left = 684
+    Top = 543
+    Width = 365
+    Height = 105
+    Caption = ' Permanentn'#237' '#353't'#237'tky (1 '#353't'#237'tek na 1 '#345#225'dek) '
+    TabOrder = 13
+    object M_permNote: TMemo
+      Left = 2
+      Top = 15
+      Width = 361
+      Height = 88
+      Align = alClient
+      Lines.Strings = (
+        'M_permNote')
+      TabOrder = 0
     end
   end
 end
