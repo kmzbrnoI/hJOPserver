@@ -6543,13 +6543,6 @@ object F_Main: TF_Main
     Left = 600
     Top = 456
   end
-  object T_clear_log_msg: TTimer
-    Enabled = False
-    Interval = 3000
-    OnTimer = T_clear_log_msgTimer
-    Left = 600
-    Top = 512
-  end
   object IL_Menu: TImageList
     Left = 1080
     Top = 456

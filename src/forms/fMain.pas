@@ -10,11 +10,6 @@ uses
   Vcl.Mask, Vcl.Samples.Spin, Generics.Collections, Vcl.NumberBox;
 
 const
-  _SB_LOG = 0;
-  _SB_TRAKCE_STAV = 1;
-  _SB_TRAKCE_LIB = 2;
-  _SB_PROC = 3;
-
   _INIDATA_FN = 'inidata.ini';
 
   _TABLE_COLOR_GREEN = $E0FFE0;
@@ -24,19 +19,6 @@ const
   _TABLE_COLOR_BLUE = $FFE0E0;
   _TABLE_COLOR_WHITE = $FFFFFF;
   _TABLE_COLOR_PINKY = $E2B6FF;
-
-  _LV_CLIENTS_COL_STATE = 0;
-  _LV_CLIENTS_COL_CLIENT = 1;
-  _LV_CLIENTS_COL_PROTOCOL = 2;
-  _LV_CLIENTS_COL_APP = 3;
-  _LV_CLIENTS_COL_PING = 4;
-  _LV_CLIENTS_COL_OR1 = 5;
-  _LV_CLIENTS_COL_OR2 = 6;
-  _LV_CLIENTS_COL_OR3 = 7;
-  _LV_CLIENTS_COL_OR_NEXT = 8;
-  _LV_CLIENTS_COL_REGULATOR = 9;
-  _LV_CLIENTS_COL_SH = 10;
-  _LV_CLIENTS_COL_DCC = 11;
 
 type
 
@@ -77,7 +59,6 @@ type
     PM_Central_Start: TMenuItem;
     PM_Central_Stop: TMenuItem;
     N5: TMenuItem;
-    T_clear_log_msg: TTimer;
     P_Pozadi: TPanel;
     P_Date: TPanel;
     P_Time: TPanel;
@@ -329,7 +310,6 @@ type
     procedure PM_TesterClick(Sender: TObject);
     procedure PM_Help_RPClick(Sender: TObject);
     procedure T_GUI_refreshTimer(Sender: TObject);
-    procedure T_clear_log_msgTimer(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure L_DateDblClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -463,6 +443,27 @@ type
     procedure MI_SaveHVsClick(Sender: TObject);
     procedure MI_ExitAppClick(Sender: TObject);
 
+  public const
+    _SB_LOG = 0;
+    _SB_TRAKCE_STAV = 1;
+    _SB_TRAKCE_LIB = 2;
+    _SB_PROC = 3;
+
+    _SB_LOG_SHOW_TIME_MS = 3000;
+
+    _LV_CLIENTS_COL_STATE = 0;
+    _LV_CLIENTS_COL_CLIENT = 1;
+    _LV_CLIENTS_COL_PROTOCOL = 2;
+    _LV_CLIENTS_COL_APP = 3;
+    _LV_CLIENTS_COL_PING = 4;
+    _LV_CLIENTS_COL_OR1 = 5;
+    _LV_CLIENTS_COL_OR2 = 6;
+    _LV_CLIENTS_COL_OR3 = 7;
+    _LV_CLIENTS_COL_OR_NEXT = 8;
+    _LV_CLIENTS_COL_REGULATOR = 9;
+    _LV_CLIENTS_COL_SH = 10;
+    _LV_CLIENTS_COL_DCC = 11;
+
   private
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
@@ -471,6 +472,8 @@ type
     S_RCS_Started: array [0..TRCSs._RCSS_MAX] of TShape;
     LV_RCSs_State: array [0..TRCSs._RCSS_MAX] of TListView;
     mRCSGUIInitialized: Boolean;
+    mSb1Log: Boolean;
+    mSb1LogHideTime: TDateTime;
 
     procedure UpdateCallMethod();
     procedure OnFuncNameChange(Sender: TObject);
@@ -499,6 +502,8 @@ type
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
     procedure WMEndSession(var Msg: TWMEndSession); message WM_ENDSESSION;
 
+    procedure SB1LogUpdate();
+
   public
     CHB_RCSs_Show_Only_Active: array [0..TRCSs._RCSS_MAX] of TCheckBox;
     CHB_RCSs_Log: array [0..TRCSs._RCSS_MAX] of TCheckBox;
@@ -510,7 +515,6 @@ type
 
     CloseMessage: Boolean; // jestli se ptat uzivatele na ukonceni SW
     NUZClose: Boolean; // flag hard ukonceni SW bez kontroly pripojeni k systemum a zobrazeni dialogu
-    sb1Log: Boolean;
 
     procedure CloseForm();
     procedure RepaintObjects();
@@ -526,6 +530,7 @@ type
     function SoupravySelectedCount(): Integer;
     function LVSelectedTexts(LV: TListView; single: string; multiple: string): string;
     procedure PanelServerStartingStarted();
+    procedure SB1Log(msg: string);
 
     // RCS
     procedure OnRCSBeforeStart(Sender: TObject);
@@ -2810,6 +2815,7 @@ begin
 
     HVDb.UpdateTokenTimeout();
     Config.UpdateAutosave();
+    Self.SB1LogUpdate();
   except
     on E: Exception do
     begin
@@ -2819,12 +2825,19 @@ begin
   end;
 end;
 
-procedure TF_Main.T_clear_log_msgTimer(Sender: TObject);
+procedure TF_Main.SB1Log(msg: string);
 begin
-  if (Self.sb1Log) then
+  Self.SB1.Panels.Items[_SB_LOG].Text := msg;
+  Self.mSb1LogHideTime := Now + EncodeTime(0, 0, _SB_LOG_SHOW_TIME_MS div 1000, _SB_LOG_SHOW_TIME_MS mod 1000);
+  Self.mSb1Log := True;
+end;
+
+procedure TF_Main.SB1LogUpdate();
+begin
+  if ((Self.mSb1Log) and (Now > Self.mSb1LogHideTime)) then
   begin
     Self.SB1.Panels.Items[_SB_LOG].Text := '';
-    Self.sb1Log := false;
+    Self.mSb1Log := False;
   end;
 end;
 
@@ -2852,7 +2865,6 @@ begin
 
   Self.T_Main.Enabled := false;
   Self.T_GUI_refresh.Enabled := false;
-  Self.T_clear_log_msg.Enabled := false;
   JCSimulator.timer.Enabled := false;
   RailwaySimulator.timer.Enabled := false;
   TurnoutSimulator.timer.Enabled := false;
@@ -3153,7 +3165,6 @@ begin
 
   Self.T_Main.Enabled := true;
   Self.T_GUI_refresh.Enabled := true;
-  Self.T_clear_log_msg.Enabled := true;
 
   if (not Self.CloseMessage) then
   begin

@@ -183,10 +183,7 @@ begin
       LI.SubItems.Add(text);
     end;
     if (not multiline) then
-    begin
-      F_Main.SB1.Panels.Items[_SB_LOG].Text := Text;
-      F_Main.sb1Log := true;
-    end;
+      F_main.SB1Log(text);
   except
 
   end;

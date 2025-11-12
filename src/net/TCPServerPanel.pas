@@ -610,14 +610,14 @@ begin
 
     // oznamime verzi komunikacniho protokolu
     connData.protocol_version := parsed[2];
-    F_Main.LV_Clients.items[connData.index].SubItems[_LV_CLIENTS_COL_PROTOCOL] := parsed[2];
+    F_Main.LV_Clients.items[connData.index].SubItems[F_Main._LV_CLIENTS_COL_PROTOCOL] := parsed[2];
 
     // jmeno klienta
     if (parsed.Count >= 4) then
       connData.client_name := parsed[3]
     else
       connData.client_name := '';
-    F_main.LV_Clients.Items[connData.index].SubItems[_LV_CLIENTS_COL_APP] := connData.client_name;
+    F_main.LV_Clients.Items[connData.index].SubItems[F_Main._LV_CLIENTS_COL_APP] := connData.client_name;
 
     PanelServer.GUIQueueLineToRefresh(connData.index);
     modelTime.SendTimeToPanel(AContext);
@@ -1326,7 +1326,7 @@ begin
   if (not Assigned(Self.clients[index])) then
   begin
     // klient neexistuje
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_STATE] := 'odpojen';
+    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'odpojen';
     for var i: Integer := 1 to F_Main.LV_Clients.Columns.Count - 1 do
       F_Main.LV_Clients.items[index].SubItems[i] := '';
 
@@ -1335,7 +1335,7 @@ begin
 
   if (not Assigned(Self.clients[index].connection)) then
   begin
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_STATE] := 'soket nenalezen';
+    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'soket nenalezen';
     for var i: Integer := 1 to F_Main.LV_Clients.Columns.Count - 1 do
       F_Main.LV_Clients.items[index].SubItems[i] := '';
   end;
@@ -1344,27 +1344,27 @@ begin
 
   case (Self.clients[index].state) of
     TPanelConnectionState.closed:
-      F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_STATE] := 'uzavřeno';
+      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'uzavřeno';
     TPanelConnectionState.opening:
-      F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_STATE] := 'otevírání';
+      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'otevírání';
     TPanelConnectionState.handshake:
-      F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_STATE] := 'handshake';
+      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'handshake';
     TPanelConnectionState.opened:
-      F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_STATE] := 'otevřeno';
+      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'otevřeno';
   end;
 
-  F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_CLIENT] :=
+  F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_CLIENT] :=
     Self.clients[index].connection.connection.Socket.Binding.PeerIP;
   if (connData.ping_unreachable) then
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_PING] := 'unreachable'
+    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_PING] := 'unreachable'
   else if (connData.PingComputed()) then
   begin
     var Hour, Min, Sec, MSec: Word;
     DecodeTime(connData.ping, Hour, Min, Sec, MSec);
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_PING] := IntToStr(MSec);
+    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_PING] := IntToStr(MSec);
   end
   else
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_PING] := '?';
+    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_PING] := '?';
 
   for var i: Integer := 0 to 2 do
   begin
@@ -1373,11 +1373,11 @@ begin
       // klient existuje
       var ORpanel: TAreaPanel;
       connData.areas[i].GetORPanel(Self.clients[index].connection, ORPanel);
-      F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_OR1 + i] := connData.areas[i].ShortName + ' (' + ORPanel.User
+      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_OR1 + i] := connData.areas[i].ShortName + ' (' + ORPanel.User
         + ' :: ' + TArea.GetRightsString(ORPanel.Rights) + ')';
     end else begin
       // klient neexistuje
-      F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_OR1 + i] := '';
+      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_OR1 + i] := '';
     end;
   end;
 
@@ -1391,7 +1391,7 @@ begin
       str := str + connData.areas[i].ShortName + ' (' + ORPanel.User + ' :: ' + TArea.GetRightsString(ORPanel.Rights) +
         ')' + ', ';
     end;
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_OR_NEXT] := LeftStr(str, Length(str) - 2);
+    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_OR_NEXT] := LeftStr(str, Length(str) - 2);
   end;
 
   if (connData.regulator) then
@@ -1410,17 +1410,17 @@ begin
       str := LeftStr(str, Length(str) - 2);
     end;
 
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_REGULATOR] := str;
+    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_REGULATOR] := str;
   end
   else
-    F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_REGULATOR] := '';
+    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_REGULATOR] := '';
 
   var announcement: string := '';
   for var area: TArea in TPanelConnData(Self.clients[index].connection.data).st_hlaseni do
     announcement := announcement + area.ShortName + ', ';
-  F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_SH] := LeftStr(announcement, Length(announcement) - 2);
+  F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_SH] := LeftStr(announcement, Length(announcement) - 2);
 
-  F_Main.LV_Clients.items[index].SubItems[_LV_CLIENTS_COL_DCC] := IfThen(Self.DCCStopped = Self.clients[index].connection, 'ano', '');
+  F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_DCC] := IfThen(Self.DCCStopped = Self.clients[index].connection, 'ano', '');
 
   F_Main.LV_Clients.UpdateItems(index, index);
 end;
@@ -1654,12 +1654,12 @@ begin
   if (Self.m_DCCStopped <> nil) then
   begin
     const i = TPanelConnData(Self.m_DCCStopped.data).index;
-    F_Main.LV_Clients.items[i].SubItems[_LV_CLIENTS_COL_DCC] := '';
+    F_Main.LV_Clients.items[i].SubItems[TF_Main._LV_CLIENTS_COL_DCC] := '';
   end;
   if (who <> nil) then
   begin
     const i = TPanelConnData(who.data).index;
-    F_Main.LV_Clients.items[i].SubItems[_LV_CLIENTS_COL_DCC] := 'ano';
+    F_Main.LV_Clients.items[i].SubItems[TF_Main._LV_CLIENTS_COL_DCC] := 'ano';
   end;
 
   Self.m_DCCStopped := who;

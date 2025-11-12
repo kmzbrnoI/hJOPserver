@@ -425,12 +425,12 @@ begin
     else
       str := 'ano';
 
-    F_Main.LV_Clients.Items[(conn.Data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_REGULATOR] := str;
+    F_Main.LV_Clients.Items[(conn.Data as TPanelConnData).index].SubItems[F_Main._LV_CLIENTS_COL_REGULATOR] := str;
     authLog('reg', 'login', str, 'Login to regulator');
     PanelServer.SendLn(conn, '-;LOK;G;AUTH;ok;' + comment);
   end else begin
     (conn.Data as TPanelConnData).regulator_user := nil;
-    F_Main.LV_Clients.Items[(conn.Data as TPanelConnData).index].SubItems[_LV_CLIENTS_COL_REGULATOR] := '';
+    F_Main.LV_Clients.Items[(conn.Data as TPanelConnData).index].SubItems[F_Main._LV_CLIENTS_COL_REGULATOR] := '';
     authLog('reg', 'deny', str, comment);
     PanelServer.SendLn(conn, '-;LOK;G;AUTH;not;' + comment);
 

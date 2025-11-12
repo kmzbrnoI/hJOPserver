@@ -30,12 +30,12 @@ begin
   gauge.Parent := F_Main.SB1;
   gauge.Visible := true;
   gauge.Left := 0;
-  for var i: Integer := 0 to _SB_PROC - 1 do
+  for var i: Integer := 0 to F_Main._SB_PROC - 1 do
     gauge.Left := gauge.Left + F_Main.SB1.Panels.Items[i].Width;
   gauge.Left := gauge.Left + 30;
   gauge.Top := 3;
   gauge.Height := 16;
-  gauge.Width := F_Main.SB1.Panels.Items[_SB_PROC].Width - 30;
+  gauge.Width := F_Main.SB1.Panels.Items[F_Main._SB_PROC].Width - 30;
   gauge.Color := clWhite;
   gauge.ForeColor := clLime;
 end;
@@ -44,7 +44,7 @@ procedure TCpuLoad.ResizeCPUGauge();
 begin
   gauge.Parent := F_Main.SB1;
   var Left: Integer := 0;
-    for var i: Integer := 0 to _SB_PROC - 1 do Left := Left + F_Main.SB1.Panels.Items[i].Width;
+    for var i: Integer := 0 to F_Main._SB_PROC - 1 do Left := Left + F_Main.SB1.Panels.Items[i].Width;
   Left := Left + 30;
   gauge.Left := Left;
 end;
