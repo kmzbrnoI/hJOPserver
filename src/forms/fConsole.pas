@@ -77,12 +77,13 @@ begin
       if (strings[0] = 'help') then
       begin
         Self.Print('Help:');
-        Self.Print('trakce [open/close]          Trakce control');
-        Self.Print('rcs i [start/stop/open/close] RCS control');
-        Self.Print('clear                         Clear console window');
-        Self.Print('app-exit                      Emergency exit of hJOPserver');
-        Self.Print('nuz [blockid]                 Emergency zaver release');
-        Self.Print('supress-exception             Supress critical system exception blocking system start');
+        Self.Print('trakce [open/close]');
+        Self.Print('rcs i [start/stop/open/close]');
+        Self.Print('clear - Clear console window');
+        Self.Print('app-exit - Emergency exit of hJOPserver');
+        Self.Print('nuz [blockid] - Emergency zaver release');
+        Self.Print('supress-exception - Supress critical system exception blocking system start');
+        Self.Print('test-appex - Test debug information are present for stacktrace printing');
       end
 
       else if (strings[0] = 'clear') then
@@ -160,6 +161,21 @@ begin
       begin
         AppEvents.lastException := nil;
         Self.Print('Exception successfully supressed.');
+      end
+
+      else if (strings[0] = 'test-appex') then
+      begin
+        try
+          raise Exception.Create('Test exception');
+        except
+          on e: Exception do
+          begin
+            var wasLastExc: Boolean := (AppEvents.lastException <> nil);
+            AppEvents.LogException(e, 'Console');
+            if (not wasLastExc) then
+              AppEvents.lastException := nil;
+          end;
+        end;
       end
 
       else begin

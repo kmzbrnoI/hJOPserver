@@ -4,8 +4,8 @@ object F_Console: TF_Console
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSizeToolWin
   Caption = 'Konzole'
-  ClientHeight = 443
-  ClientWidth = 570
+  ClientHeight = 441
+  ClientWidth = 737
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,7 +19,7 @@ object F_Console: TF_Console
   object M_console: TMemo
     Left = 0
     Top = 0
-    Width = 570
+    Width = 737
     Height = 401
     Margins.Left = 2
     Margins.Top = 2
@@ -38,12 +38,13 @@ object F_Console: TF_Console
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 2
-    ExplicitWidth = 562
+    ExplicitLeft = -24
+    ExplicitTop = 4
   end
   object E_console: TEdit
     Left = 7
     Top = 409
-    Width = 490
+    Width = 669
     Height = 23
     Margins.Left = 2
     Margins.Top = 2
@@ -59,7 +60,7 @@ object F_Console: TF_Console
     TabOrder = 0
   end
   object B_ok: TButton
-    Left = 507
+    Left = 680
     Top = 409
     Width = 57
     Height = 23
@@ -73,8 +74,8 @@ object F_Console: TF_Console
     OnClick = B_okClick
   end
   object PM_Console: TPopupMenu
-    Left = 8
-    Top = 8
+    Left = 24
+    Top = 24
     object PM_DeleteConsole: TMenuItem
       Caption = 'Smazat konzoli'
       OnClick = PM_DeleteConsoleClick
