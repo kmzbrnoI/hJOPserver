@@ -1213,7 +1213,11 @@ begin
 
   // pokud je navestidlo trvale zamkle, neumoznime zadne volby
   if ((Self.m_settings.locked) or (not IsWritable(rights))) then
+  begin
+    if (RightStr(Result, 2) = '-,') then
+      Result := LeftStr(Result, Length(Result)-2);
     Exit();
+  end;
 
   if (((((Self.dnJC = nil) or (Self.dnJC.destroyEndBlock >= 1)) and (JCDb.FindJCActivating(Self.id) = nil) and
         (Self.signal <> ncPrivol) and (not Self.ab)) or ((SenderOR as TArea).stack.mode = VZ)) and (Self.inRailway <> rwAutoblok)) then
