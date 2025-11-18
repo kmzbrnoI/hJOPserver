@@ -259,10 +259,10 @@ begin
     var critical: Boolean := false;
     for var barrier: TJCBarrier in barriers do
     begin
-      if ((JCBarriers.CriticalBarrier(barrier.typ)) or (not JCBarriers.JCWarningBarrier(barrier.typ))) then
+      if (not barrier.CanContinueByConfirm()) then
       begin
         critical := true;
-        UPO.Add(JCBarrierToMessage(barrier));
+        UPO.Add(barrier.ToUPO());
       end;
     end;
 
@@ -282,7 +282,7 @@ begin
       begin
         Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...');
         for var i: Integer := 0 to barriers.Count - 1 do
-          UPO.Add(JCBarrierToMessage(barriers[i]));
+          UPO.Add(barriers[i].ToUPO());
 
         PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
         Self.step := stepConfBarriers;
@@ -446,15 +446,20 @@ begin
     begin
       var jc: TJC := JCDb.GetJCByID(jcId);
       var jcbarriers: TJCBarriers := jc.Barriers();
+      jcbarriers.OwnsObjects := False; // objects will be moved!
       try
         if (jcId <> Self.m_data.JCs[Self.m_data.JCs.Count-1]) then
         begin
           for var barrier: TJCBarrier in jcbarriers do
           begin
             var newBar: TJCBarrier := barrier;
-            if ((newBar.typ = TJCBarType.barTrackLastOccupied) or (newBar.typ = TJCBarType.barRailwayOccupied)) then
-              newBar.typ := TJCBarType.barTrackOccupied;
-            Result.Add(newBar);
+            if ((barrier.ClassType = TJCBarTrackLastOccupied) or (barrier.ClassType = TJCBarRailwayOccupied)) then
+            begin
+              Result.Add(TJCBarTrackOccupied.Create((barrier as TJCBlockBarrier).block));
+              barrier.Free();
+            end else begin
+              Result.Add(barrier);
+            end;
           end;
         end else begin
           Result.AddRange(jcbarriers);
@@ -530,17 +535,7 @@ begin
   // (radsi nejdriv zkontrolujeme, jestli se neobjevily kriticke bariery)
   var barriers: TJCBarriers := Self.BarriersActivatingJCs();
   try
-    // existuji kriticke bariery?
-    var critical: Boolean := false;
-    for var barrier in barriers do
-      if ((barrier.typ <> barProcessing) and ((JCBarriers.CriticalBarrier(barrier.typ)) or
-        (not JCBarriers.JCWarningBarrier(barrier.typ)))) then
-      begin
-        critical := true;
-        break;
-      end;
-
-    if (critical) then
+    if (not JCBarriers.CanContinueByConfirmButProcessing(barriers)) then
     begin
       Self.CancelActivating('Nelze postavit - kritické bariéry');
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
@@ -553,8 +548,8 @@ begin
     var csItems: TList<TConfSeqItem> := TList<TConfSeqItem>.Create();
     try
       for var barrier in barriers do
-        if (JCBarriers.IsCSBarrier(barrier.typ)) then
-          csItems.Add(CSItem(barrier.block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+        if ((barrier.IsRisky()) and (barrier.InheritsFrom(TJCBlockBarrier))) then
+          csItems.Add(CSItem((barrier as TJCBlockBarrier).block, barrier.RiskyNote()));
 
       if (csItems.Count > 0) then
       begin

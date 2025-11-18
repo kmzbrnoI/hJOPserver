@@ -904,8 +904,8 @@ begin
   var csItems: TList<TConfSeqItem> := TList<TConfSeqItem>.Create();
   try
     for var barrier in barriers do
-      if (JCBarriers.IsCSBarrier(barrier.typ)) then
-        csItems.Add(CSItem(barrier.Block, JCBarriers.BarrierGetCSNote(barrier.typ)));
+      if ((barrier.IsRisky()) and (barrier.InheritsFrom(TJCBlockBarrier))) then
+        csItems.Add(CSItem((barrier as TJCBlockBarrier).block, barrier.RiskyNote()));
 
     if (csItems.Count > 0) then
       PanelServer.ConfirmationSequence(SenderPnl, Self.DNCSCallback, TArea(SenderOR),
@@ -1274,7 +1274,7 @@ begin
     // plati jen pro postavenou JC
     if ((not Self.ZAM) and (Self.signal = ncStuj) and (Self.dnJC.CanDN())) then
     begin
-      if (JCBarriers.IsAnyCSBarrier(Self.dnJC.barriers())) then
+      if (JCBarriers.IsAnyRiskyBarrier(Self.dnJC.barriers())) then
         Result := Result + '!DN,'
       else
         Result := Result + 'DN,';

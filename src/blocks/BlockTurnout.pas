@@ -1788,15 +1788,15 @@ begin
   upos := TList<TUPOItem>.Create();
   try
     if (Self.note <> '') then
-      upos.Add(JCBarrierToMessage(JCBarrier(barBlockNote, Self)));
+      upos.Add(UPO.NoteUPO(Self.name, Self.note));
     if (Self.lockout <> '') then
-      upos.Add(JCBarrierToMessage(JCBarrier(barBlockLockout, Self)));
+      upos.Add(UPO.LockoutUPO(Self.name, Self.lockout));
     if (Self.coupling <> nil) then
     begin
       if (Self.coupling.note <> '') then
-        upos.Add(JCBarrierToMessage(JCBarrier(barBlockNote, Self.coupling)));
+        upos.Add(UPO.NoteUPO(Self.coupling.name, Self.coupling.note));
       if (Self.coupling.lockout <> '') then
-        upos.Add(JCBarrierToMessage(JCBarrier(barBlockLockout, Self.coupling)));
+        upos.Add(UPO.LockoutUPO(Self.coupling.name, Self.coupling.lockout));
     end;
 
     PanelServer.UPO(SenderPnl, upos, false, UPO_OKCallback, UPO_EscCallback, SenderOR);

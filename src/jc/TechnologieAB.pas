@@ -106,11 +106,8 @@ begin
   try
     // v jizdni ceste jsou urcite bariery (musi tam byt minimalne zavery AB cesty)
     for var barrier: TJCBarrier in barriers do
-    begin
-      if ((barrier.typ <> barTrackAB) and ((JCBarriers.CriticalBarrier(barrier.typ)) or
-        (not JCBarriers.JCWarningBarrier(barrier.typ)))) then
+      if ((barrier.ClassType <> TJCBarTrackAB) and ((not barrier.CanContinueByConfirm()))) then
         Exit();
-    end;
 
     // Tady mame zajisteno, ze v jizdni ceste nejsou kriticke ani nevarovne bariery
     // (KontrolaPodminek() zarucuje, ze tyto typy barier jsou na zacatku seznamu).

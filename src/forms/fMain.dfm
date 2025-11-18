@@ -6399,7 +6399,6 @@ object F_Main: TF_Main
       end
       object MI_ExitApp: TMenuItem
         Caption = 'Ukon'#269'it aplikaci'
-        ShortCut = 32883
         OnClick = MI_ExitAppClick
       end
     end

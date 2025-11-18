@@ -1598,7 +1598,7 @@ begin
   Result := TList<TUPOItem>.Create();
   for var addr: Integer in Self.HVs do
     if ((Assigned(HVDb[addr])) and (HVDb[addr].manual)) then
-      Result.Add(JCBarriers.JCBarrierToMessage(JCBarrier(barHVManual, nil, addr)));
+      Result.Add(TJCBarHVManual.ToUPO(addr));
 end;
 
 procedure TTrain.RucUPO(AContext: TIdContext; ref: TObject = nil; callbackOk: TNotifyEvent = nil; callbackEsc: TNotifyEvent = nil);

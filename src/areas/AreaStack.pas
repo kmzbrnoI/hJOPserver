@@ -446,7 +446,7 @@ begin
   if ((barriers.count > 0) or (cmd.nouz)) then
   begin
     // v jizdni ceste jsou bariery
-    if ((barriers.count > 0) and (JCBarriers.CriticalBarrier(barriers[0].typ))) then
+    if ((barriers.count > 0) and (barriers[0].IsCritical())) then
     begin
       // kriticka bariera -> hint := CRIT, kritickou barieru na pozadani zobrazim dispecerovi (pres klik na UPO zasobniku)
       Self.hint := 'CRIT';
@@ -458,12 +458,15 @@ begin
     // (KontrolaPodminek() zarucuje, ze kriticke bariery jsou na zacatku seznamu)
 
     // nyni oznamime nekriticke bariery ktere nemaji upozorneni
-    for var i: Integer := 0 to barriers.count - 1 do
+    for var barrier in barriers do
     begin
-      if (not JCBarriers.JCWarningBarrier(barriers[i].typ)) then
+      if (not barrier.IsWarning()) then
       begin
         // tyto bariery nelze rozkliknout pomoci UPO
-        Self.hint := barriers[i].Block.name;
+        if (barrier.InheritsFrom(TJCBlockBarrier)) then
+          Self.hint := (barrier as TJCBlockBarrier).block.name
+        else
+          Self.hint := '';
         Self.UPOenabled := false;
         Exit();
       end;
@@ -471,8 +474,8 @@ begin
 
     // neupozornovaci bariery nejsou -> podivam se na zbytek barier (ty by mely byt upozornovaci a melo byt se u nich dat kliknout na UPO)
     Self.UPOenabled := true;
-    if ((barriers.count > 0) and (barriers[0].Block <> nil)) then
-      Self.hint := barriers[0].Block.name
+    if ((barriers.count > 0) and (barriers[0].InheritsFrom(TJCBlockBarrier))) then
+      Self.hint := (barriers[0] as TJCBlockBarrier).block.name
       // tohleto si muzeme dovolit, protoze mame zajiteno, ze v JC je alespon jedna bariera (viz podminka vyse)
     else
       Self.hint := '';

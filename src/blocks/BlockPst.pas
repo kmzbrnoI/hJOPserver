@@ -93,8 +93,6 @@ type
     procedure DeactivationBarriers(var barriers: TJCBarriers);
     procedure Activate(senderPnl: TIdContext; senderOR: TObject);
     procedure Deactivate(senderPnl: TIdContext; senderOR: TObject);
-    class function WarningBarrier(typ: TJCBarType): Boolean;
-    class function BarrierToMessage(barrier: TJCBarrier): TUPOItem;
     procedure BarriersUPOOKCallback(Sender: TObject);
     procedure BarriersCSCallback(Sender: TIdContext; success: Boolean);
 
@@ -1005,7 +1003,7 @@ end;
 procedure TBlkPst.ActivationBarriers(var barriers: TJCBarriers);
 begin
   if (Self.note <> '') then
-    barriers.Add(JCBarrier(barBlockNote, Self));
+    barriers.Add(TJCBarBlockNote.Create(Self));
 
   // tracks
   for var trackId in Self.m_settings.tracks do
@@ -1014,29 +1012,29 @@ begin
 
     if (track = nil) then
     begin
-      barriers.Add(JCBarrier(barBlockNotExists, nil, trackId));
+      barriers.Add(TJCBarBlockNotExists.Create(trackId));
       Exit();
     end;
 
     if (track.occupied = TTrackState.disabled) then
-      barriers.Add(JCBarrier(barBlockDisabled, track));
+      barriers.Add(TJCBarBlockDisabled.Create(track));
 
     if (track.occupied <> TTrackState.Free) then
-      barriers.Add(JCBarrier(barTrackOccupied, track));
+      barriers.Add(TPStBarTrackOccupied.Create(track));
 
     if (track.Zaver <> TZaver.no) then
     begin
       if (track.Zaver = TZaver.ab) then
-        barriers.Add(JCBarrier(barTrackAB, track))
+        barriers.Add(TJCBarTrackAB.Create(track))
       else
-        barriers.Add(JCBarrier(barTrackZaver, track));
+        barriers.Add(TJCBarTrackZaver.Create(track));
     end;
 
     if (track.lockout <> '') then
-      barriers.Add(JCBarrier(barBlockLockout, track));
+      barriers.Add(TJCBarBlockLockout.Create(track));
 
     if (track.note <> '') then
-      barriers.Add(JCBarrier(barBlockNote, track));
+      barriers.Add(TJCBarBlockNote.Create(track));
   end;
 
   // turnouts
@@ -1046,53 +1044,53 @@ begin
 
     if (turnout = nil) then
     begin
-      barriers.Add(JCBarrier(barBlockNotExists, nil, turnoutId));
+      barriers.Add(TJCBarBlockNotExists.Create(turnoutId));
       Exit();
     end;
 
     if (turnout.position = TTurnoutPosition.disabled) then
-      barriers.Add(JCBarrier(barBlockDisabled, turnout));
+      barriers.Add(TJCBarBlockDisabled.Create(turnout));
 
     if ((turnout.position = TTurnoutPosition.none) or (turnout.position = TTurnoutPosition.both)) then
-      barriers.Add(JCBarrier(barTurnoutNoPos, turnout));
+      barriers.Add(TJCBarTurnoutNoPos.Create(turnout));
 
     if (turnout.zaver <> TZaver.no) then
-      barriers.Add(JCBarrier(barTrackZaver, turnout));
+      barriers.Add(TJCBarTrackZaver.Create(turnout));
 
     if (turnout.lockout <> '') then
-      barriers.Add(JCBarrier(barBlockLockout, turnout));
+      barriers.Add(TJCBarBlockLockout.Create(turnout));
 
     if (turnout.note <> '') then
-      barriers.Add(JCBarrier(barBlockNote, turnout));
+      barriers.Add(TJCBarBlockNote.Create(turnout));
 
     if (turnout.PstIs()) then
-      barriers.Add(JCBarrier(barTurnoutPst, turnout));
+      barriers.Add(TJCBarBlockPst.Create(turnout));
 
     if (not turnout.ControllerInBasicPosition()) then
-      barriers.Add(JCBarrier(barControllerNotInBasicPos, turnout));
+      barriers.Add(TPStBarControllerNotInBasicPos.Create(turnout));
 
     if (turnout.emLock) then
-      barriers.Add(JCBarrier(barTurnoutEmLock, turnout))
+      barriers.Add(TJCBarTurnoutEmLock.Create(turnout))
     else if (turnout.outputLocked) then
-      barriers.Add(JCBarrier(barTurnoutLocked, turnout));
+      barriers.Add(TJCBarTurnoutLocked.Create(turnout));
 
     // coupling
     var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(turnout.GetSettings.coupling));
     if (coupling <> nil) then
     begin
       if (coupling.emLock) then
-        barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
+        barriers.Add(TJCBarTurnoutEmLock.Create(coupling))
       else if (coupling.outputLocked) then
-        barriers.Add(JCBarrier(barTurnoutLocked, coupling));
+        barriers.Add(TJCBarTurnoutLocked.Create(coupling));
       if (coupling.lockout <> '') then
-        barriers.Add(JCBarrier(barBlockLockout, coupling));
+        barriers.Add(TJCBarBlockLockout.Create(coupling));
       if (coupling.note <> '') then
-        barriers.Add(JCBarrier(barBlockNote, coupling));
+        barriers.Add(TJCBarBlockNote.Create(coupling));
       if (coupling.PstIs()) then
-        barriers.Add(JCBarrier(barTurnoutPst, coupling));
+        barriers.Add(TJCBarBlockPst.Create(coupling));
 
       if (coupling.occupied = TTrackState.occupied) then
-        barriers.Add(JCBarrier(barTrackOccupied, coupling));
+        barriers.Add(TPStBarTrackOccupied.Create(coupling));
     end;
   end;
 
@@ -1103,66 +1101,66 @@ begin
 
     if (refugee = nil) then
     begin
-      barriers.Add(JCBarrier(barBlockNotExists, nil, refugeeZav.block));
+      barriers.Add(TJCBarBlockNotExists.Create(refugeeZav.block));
       Exit();
     end;
 
     if (refugee.position = TTurnoutPosition.disabled) then
-      barriers.Add(JCBarrier(barBlockDisabled, refugee));
+      barriers.Add(TJCBarBlockDisabled.Create(refugee));
 
     if ((refugee.position = TTurnoutPosition.none) or (refugee.position = TTurnoutPosition.both)) then
-      barriers.Add(JCBarrier(barTurnoutNoPos, refugee));
+      barriers.Add(TJCBarTurnoutNoPos.Create(refugee));
 
     if (refugee.lockout <> '') then
-      barriers.Add(JCBarrier(barBlockLockout, refugee));
+      barriers.Add(TJCBarBlockLockout.Create(refugee));
 
     if (refugee.note <> '') then
-      barriers.Add(JCBarrier(barBlockNote, refugee));
+      barriers.Add(TJCBarBlockNote.Create(refugee));
 
     if (refugee.position <> refugeeZav.position) then
     begin
       if (refugee.emLock) then
-        barriers.Add(JCBarrier(barTurnoutEmLock, refugee))
+        barriers.Add(TJCBarTurnoutEmLock.Create(refugee))
 
       else if (refugee.outputLocked) then
-        barriers.Add(JCBarrier(barRefugeeLocked, refugee));
+        barriers.Add(TJCBarTurnoutLocked.Create(refugee));
 
       if (refugee.occupied = TTrackState.occupied) then
-        barriers.Add(JCBarrier(barRefugeeOccupied, refugee));
+        barriers.Add(TJCBarTurnoutOccupied.Create(refugee));
     end;
 
     if (refugee.PstIs()) then
-      barriers.Add(JCBarrier(barRefugeePst, refugee));
+      barriers.Add(TJCBarBlockPst.Create(refugee));
 
     var coupling: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugee.GetSettings.coupling));
     if (coupling <> nil) then
     begin
       if (coupling.lockout <> '') then
-        barriers.Add(JCBarrier(barBlockLockout, coupling));
+        barriers.Add(TJCBarBlockLockout.Create(coupling));
 
       if (coupling.note <> '') then
-        barriers.Add(JCBarrier(barBlockNote, coupling));
+        barriers.Add(TJCBarBlockNote.Create(coupling));
 
       if (coupling.PstIs()) then
-        barriers.Add(JCBarrier(barRefugeePst, coupling));
+        barriers.Add(TJCBarBlockPst.Create(coupling));
 
       if (refugee.position <> refugeeZav.position) then
       begin
         if (TBlkTurnout(coupling).Zaver > TZaver.no) then
         begin
           if (TBlkTurnout(coupling).Zaver = TZaver.ab) then
-            barriers.Add(JCBarrier(barTrackAB, coupling))
+            barriers.Add(TJCBarTrackAB.Create(coupling))
           else
-            barriers.Add(JCBarrier(barTrackZaver, coupling));
+            barriers.Add(TJCBarTrackZaver.Create(coupling));
         end;
 
         if (TBlkTurnout(coupling).emLock) then
-          barriers.Add(JCBarrier(barTurnoutEmLock, coupling))
+          barriers.Add(TJCBarTurnoutEmLock.Create(coupling))
         else if (TBlkTurnout(coupling).outputLocked) then
-          barriers.Add(JCBarrier(barTurnoutLocked, coupling));
+          barriers.Add(TJCBarTurnoutLocked.Create(coupling));
 
         if (TBlkTurnout(coupling).occupied = TTrackState.occupied) then
-          barriers.Add(JCBarrier(barTrackOccupied, coupling));
+          barriers.Add(TJCBarTrackOccupied.Create(coupling));
       end;
     end;
   end;
@@ -1174,20 +1172,20 @@ begin
 
     if (signal = nil) then
     begin
-      barriers.Add(JCBarrier(barBlockNotExists, nil, signalId));
+      barriers.Add(TJCBarBlockNotExists.Create(signalId));
       Exit();
     end;
 
     if (signal.signal <> ncStuj) then
-      barriers.Add(JCBarrier(barSignalActive, signal));
+      barriers.Add(TJCBarSignalActive.Create(signal));
 
     if (not signal.ControllerInBasicPosition()) then
-      barriers.Add(JCBarrier(barControllerNotInBasicPos, signal));
+      barriers.Add(TPStBarControllerNotInBasicPos.Create(signal));
   end;
 
   var privol: TBlksList := Blocks.PNSignals(Self.m_state.senderOR as TArea);
   for var i: Integer := 0 to privol.Count - 1 do
-    barriers.Add(JCBarrier(barPrivol, privol[i] as TBlk, (privol[i] as TBlk).id));
+    barriers.Add(TJCBarPrivol.Create(privol[i] as TBlk));
 
   // disconnectors
   for var discId in Self.m_settings.disconnectors do
@@ -1196,32 +1194,32 @@ begin
 
     if (disc = nil) then
     begin
-      barriers.Add(JCBarrier(barBlockNotExists, nil, discId));
+      barriers.Add(TJCBarBlockNotExists.Create(discId));
       Exit();
     end;
 
     if (disc.active) then
-      barriers.Add(JCBarrier(barDiscActive, disc));
+      barriers.Add(TPStBarDisconnectorActive.Create(disc));
 
     if (disc.note <> '') then
-      barriers.Add(JCBarrier(barBlockNote, disc));
+      barriers.Add(TJCBarBlockNote.Create(disc));
 
     if (not disc.ControllerInBasicPosition()) then
-      barriers.Add(JCBarrier(barControllerNotInBasicPos, disc));
+      barriers.Add(TPStBarControllerNotInBasicPos.Create(disc));
   end;
 end;
 
 procedure TBlkPst.DeactivationBarriers(var barriers: TJCBarriers);
 begin
   if (Self.note <> '') then
-    barriers.Add(JCBarrier(barBlockNote, Self));
+    barriers.Add(TJCBarBlockNote.Create(Self));
 
   // turnouts
   for var turnoutId in Self.m_settings.turnouts do
   begin
     var turnout: TBlkTurnout := Blocks.GetBlkTurnoutByID(turnoutId);
     if ((turnout <> nil) and (not turnout.ControllerInBasicPosition())) then
-      barriers.Add(JCBarrier(barControllerNotInBasicPosWarn, turnout));
+      barriers.Add(TPStBarControllerNotInBasicPosWarn.Create(turnout));
   end;
 
   // signals
@@ -1229,7 +1227,7 @@ begin
   begin
     var signal: TBlkSignal := Blocks.GetBlkSignalByID(signalId);
     if ((signal <> nil) and (not signal.ControllerInBasicPosition())) then
-      barriers.Add(JCBarrier(barControllerNotInBasicPosWarn, signal));
+      barriers.Add(TPStBarControllerNotInBasicPosWarn.Create(signal));
   end;
 
   // disconnectors
@@ -1237,7 +1235,7 @@ begin
   begin
     var disc: TBlkDisconnector := Blocks.GetBlkDisconnectorByID(discId);
     if ((disc <> nil) and (not disc.ControllerInBasicPosition())) then
-      barriers.Add(JCBarrier(barControllerNotInBasicPosWarn, disc));
+      barriers.Add(TPStBarControllerNotInBasicPosWarn.Create(disc));
   end;
 end;
 
@@ -1258,10 +1256,10 @@ begin
     var critical: Boolean := false;
     for var barrier: TJCBarrier in barriers do
     begin
-      if ((JCBarriers.CriticalBarrier(barrier.typ)) or (not Self.WarningBarrier(barrier.typ))) then
+      if (not barrier.CanContinueByConfirm()) then
       begin
         critical := true;
-        UPO.Add(Self.BarrierToMessage(barrier));
+        UPO.Add(barrier.ToUPO());
       end;
     end;
 
@@ -1277,8 +1275,8 @@ begin
       if ((barriers.Count > 0) and (senderPnl <> nil)) then
       begin
         Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...', llInfo);
-        for var i: Integer := 0 to barriers.Count - 1 do
-          UPO.Add(Self.BarrierToMessage(barriers[i]));
+        for var barrier in barriers do
+          UPO.Add(barrier.ToUPO());
 
         PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.BarriersUPOOKCallback, nil, Self);
         Exit();
@@ -1303,8 +1301,8 @@ begin
     Self.DeactivationBarriers(barriers);
     if ((barriers.Count > 0) and (senderPnl <> nil)) then
     begin
-      for var i: Integer := 0 to barriers.Count - 1 do
-        UPO.Add(Self.BarrierToMessage(barriers[i]));
+      for var barrier in barriers do
+        UPO.Add(barrier.ToUPO());
       PanelServer.UPO(Self.m_state.senderPnl, UPO, False, Self.UPOPstDisDone, nil, Self);
     end else begin
       Self.UPOPstDisDone(senderPnl);
@@ -1315,40 +1313,15 @@ begin
   end;
 end;
 
-class function TBlkPst.WarningBarrier(typ: TJCBarType): Boolean;
-begin
-  if (typ = barTrackOccupied) then
-    Exit(true);
-  Result := JCBarriers.JCWarningBarrier(typ);
-end;
-
-class function TBlkPst.BarrierToMessage(barrier: TJCBarrier): TUPOItem;
-begin
-  if (barrier.typ = barTrackOccupied) then
-    barrier.typ := barTrackLastOccupied;
-  Result := JCBarriers.JCBarrierToMessage(barrier);
-  if (barrier.typ = barTrackLastOccupied) then
-    Result[0] := GetUPOLine('POZOR !', taCenter, clBlack, clYellow);
-end;
-
 procedure TBlkPst.BarriersUPOOKCallback(Sender: TObject);
 begin
   Self.Log('Upozornění schválena, kontroluji znovu bariéry...', llInfo);
 
-  var critical: Boolean := false;
   var barriers: TJCBarriers := TJCBarriers.Create();
 
   try
     Self.ActivationBarriers(barriers);
-
-    for var barrier in barriers do
-      if ((barrier.typ <> barProcessing) and (JCBarriers.CriticalBarrier(barrier.typ))) then
-      begin
-        critical := true;
-        break;
-      end;
-
-    if (critical) then
+    if (JCBarriers.IsAnyCriticalButProcessing(barriers)) then
     begin
       Self.Log('Nelze převít PSt - objevily se kritické bariéry', llInfo);
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
@@ -1360,10 +1333,8 @@ begin
     // Confirmation sequence barriers?
     var csItems: TList<TConfSeqItem> := TList<TConfSeqItem>.Create();
     for var barrier in barriers do
-    begin
-      if (JCBarriers.IsCSBarrier(barrier.typ)) then
-        csItems.Add(CSItem(barrier.block, JCBarriers.BarrierGetCSNote(barrier.typ)));
-    end;
+      if ((barrier.IsRisky()) and (barrier.InheritsFrom(TJCBlockBarrier))) then
+        csItems.Add(CSItem((barrier as TJCBlockBarrier).block, barrier.RiskyNote()));
 
     if (csItems.Count > 0) then
     begin
@@ -1395,16 +1366,8 @@ begin
     Self.ActivationBarriers(barriers);
 
     // existuji kriticke bariery?
-    var critical: Boolean := false;
-    for var barrier in barriers do
-      if ((barrier.typ <> barProcessing) and (JCBarriers.CriticalBarrier(barrier.typ))) then
-      begin
-        critical := true;
-        break;
-      end;
-
     // behem potvrzovani se mohly vyskytnout
-    if (critical) then
+    if (JCBarriers.IsAnyCriticalButProcessing(barriers)) then
     begin
       Self.Log('Nelze predat rizeni - kritické bariéry', llInfo);
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
