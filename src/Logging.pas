@@ -181,9 +181,9 @@ begin
       LI.SubItems.Add(logLevelStr(level));
       LI.SubItems.Add(logSourceStr(source));
       LI.SubItems.Add(text);
+      if (not multiline) then
+        F_main.SB1Log(text);
     end;
-    if (not multiline) then
-      F_main.SB1Log(text);
   except
 
   end;
