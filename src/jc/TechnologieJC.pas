@@ -1235,7 +1235,10 @@ begin
   end;
 
   if (bariery_out <> nil) then
+  begin
     bariery_out.AddRange(barriers);
+    barriers.OwnsObjects := False; // data moved to bariery_out
+  end;
   barriers.Free();
   UPO.Free();
 end;
