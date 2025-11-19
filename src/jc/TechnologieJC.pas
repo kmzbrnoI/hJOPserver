@@ -1055,9 +1055,6 @@ begin
 
       else if ((refugee.Zaver <> TZaver.no) or (refugee.outputLocked)) then
         barriers.Add(TJCBarTurnoutLocked.Create(refugee));
-
-      if (refugee.occupied = TTrackState.occupied) then
-        barriers.Add(TJCBarturnoutOccupied.Create(refugee));
     end;
 
     if (refugee.PstIs()) then
@@ -1090,9 +1087,6 @@ begin
           barriers.Add(TJCBarTurnoutEmLock.Create(coupling))
         else if (coupling.outputLocked) then
           barriers.Add(TJCBarTurnoutLocked.Create(coupling));
-
-        if (refugee.occupied = TTrackState.occupied) then
-          barriers.Add(TJCBarTurnoutOccupied.Create(refugee));
       end;
     end;
   end;
