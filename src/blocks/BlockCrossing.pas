@@ -929,7 +929,7 @@ begin
   if (((not Self.m_settings.RCSInputs.closed.enabled) or (RCSs.IsSimulation(Self.m_settings.RCSInputs.closed.addr))) and
       ((not Self.m_settings.RCSInputs.open.enabled) or (RCSs.IsSimulation(Self.m_settings.RCSInputs.open.addr))) and
       ((not Self.m_settings.RCSInputs.caution.enabled) or (RCSs.IsSimulation(Self.m_settings.RCSInputs.caution.addr)))) then
-    Result := Result + '-,*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
+    Result := Result + '*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
 
   if ((Self.m_settings.RCSInputs.annulation.enabled) and (RCSs.IsSimulation(Self.m_settings.RCSInputs.annulation.addr))) then
     Result := Result + ite(RCSs.GetInputNoEx(Self.m_settings.RCSInputs.annulation.addr) = TRCSInputState.isOn, '*ANULACE<', '*ANULACE>');
