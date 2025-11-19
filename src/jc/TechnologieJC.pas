@@ -2051,8 +2051,8 @@ begin
   // staveci zavery jsou zruseny, ostatni zavery zustavaji (lze je vyNUZovat)
   for var trackZaver: Integer in Self.data.tracks do
   begin
-    var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(trackZaver));
-    if (track.Zaver = TZaver.staveni) then
+    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackZaver);
+    if ((track <> nil) and (track.Zaver = TZaver.staveni)) then // opravdu muze byt nil - kdyz usek v ceste neexistuje
       track.Zaver := TZaver.no;
   end;
 
