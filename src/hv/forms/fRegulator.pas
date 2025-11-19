@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ComCtrls, ExtCtrls, THnaciVozidlo;
+  StdCtrls, ComCtrls, ExtCtrls, TRailVehicle;
 
 type
   TF_DigiReg = class(TForm)
@@ -62,9 +62,9 @@ type
     procedure AcquireFailed(Sender: TObject; data: Pointer);
 
   public
-    OpenHV: THV;
+    vehicle: TRV;
 
-    procedure OpenForm(HV: THV);
+    procedure OpenForm(vehicle: TRV);
     procedure LocoChanged(Sender: TObject);
     procedure MyKeyPress(key: Integer; var handled: Boolean);
   end;
@@ -88,10 +88,10 @@ type
     constructor Create();
     destructor Destroy(); override;
 
-    procedure Open(HV: THV);
+    procedure Open(vehicle: TRV);
 
     procedure LocoChanged(Sender: TObject; addr: Word);
-    function IsLoko(HV: THV): Boolean;
+    function IsLoko(vehicle: TRV): Boolean;
 
     procedure KeyPress(key: Integer; var handled: Boolean);
 
@@ -113,8 +113,8 @@ uses fMain, TrakceC, ownConvert, ownGuiUtils;
 procedure TF_DigiReg.CHB_ManualClick(Sender: TObject);
 begin
   try
-    if (Self.OpenHV <> nil) then
-      Self.OpenHV.manual := Self.CHB_Manual.Checked;
+    if (Self.vehicle <> nil) then
+      Self.vehicle.manual := Self.CHB_Manual.Checked;
   except
     on E: Exception do
       ExceptionMessageBox('Nepodařilo se nastavit RUČ:', E);
@@ -123,13 +123,13 @@ end;
 
 procedure TF_DigiReg.CHB_LightsClick(Sender: TObject);
 begin
-  OpenHV.SetSingleFunc(TCheckBox(Sender).Tag, TCheckBox(Sender).Checked, TTrakce.Callback(), TTrakce.Callback(), Self);
+  Self.vehicle.SetSingleFunc(TCheckBox(Sender).Tag, TCheckBox(Sender).Checked, TTrakce.Callback(), TTrakce.Callback(), Self);
 end;
 
-procedure TF_DigiReg.OpenForm(HV: THV);
+procedure TF_DigiReg.OpenForm(vehicle: TRV);
 begin
-  Self.CHB_Manual.Checked := HV.manual;
-  Self.OpenHV := HV;
+  Self.CHB_Manual.Checked := vehicle.manual;
+  Self.vehicle := vehicle;
   Self.LocoChanged(nil);
   Self.T_Speed.Enabled := true;
 
@@ -141,7 +141,7 @@ end;
 procedure TF_DigiReg.B_AcquireClick(Sender: TObject);
 begin
   Self.B_Acquire.Enabled := false;
-  Self.OpenHV.TrakceAcquire(TTrakce.Callback(Self.Acquired), TTrakce.Callback(Self.AcquireFailed));
+  Self.vehicle.TrakceAcquire(TTrakce.Callback(Self.Acquired), TTrakce.Callback(Self.AcquireFailed));
 end;
 
 procedure TF_DigiReg.B_IdleClick(Sender: TObject);
@@ -153,21 +153,21 @@ end;
 procedure TF_DigiReg.B_ReleaseClick(Sender: TObject);
 begin
   Self.B_Release.Enabled := false;
-  Self.OpenHV.TrakceRelease(TTrakce.Callback());
+  Self.vehicle.TrakceRelease(TTrakce.Callback());
 end;
 
 procedure TF_DigiReg.FormCreate(Sender: TObject);
 begin
-  Self.OpenHV := nil;
+  Self.vehicle := nil;
 end;
 
 procedure TF_DigiReg.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
-var tmp: THV;
+var tmp: TRV;
 begin
-  if (Self.OpenHV <> nil) then
+  if (Self.vehicle <> nil) then
   begin
-    tmp := Self.OpenHV;
-    Self.OpenHV := nil;
+    tmp := Self.vehicle;
+    Self.vehicle := nil;
 
     try
       if ((tmp.Acquired) and (tmp.state.regulators.Count = 0)) then
@@ -178,7 +178,7 @@ begin
     except
       on E: Exception do
       begin
-        Self.OpenHV := tmp;
+        Self.vehicle := tmp;
         ExceptionMessageBox('Lokomotivu se nepodařilo odhlásit:', E);
       end;
     end;
@@ -200,7 +200,7 @@ end;
 
 procedure TF_DigiReg.B_STOPClick(Sender: TObject);
 begin
-  Self.OpenHV.EmergencyStop(TTrakce.Callback(), TTrakce.Callback(), Self);
+  Self.vehicle.EmergencyStop(TTrakce.Callback(), TTrakce.Callback(), Self);
 end;
 
 procedure TF_DigiReg.RG_SmerClick(Sender: TObject);
@@ -211,11 +211,11 @@ end;
 
 procedure TF_DigiReg.LocoChanged(Sender: TObject);
 begin
-  Self.SetElemntsState(((Self.OpenHV.Acquired) and ((Self.OpenHV.pom = TPomStatus.automat) or (Self.OpenHV.pom = TPomStatus.manual))));
+  Self.SetElemntsState(((Self.vehicle.Acquired) and ((Self.vehicle.pom = TPomStatus.automat) or (Self.vehicle.pom = TPomStatus.manual))));
 
-  if (Self.OpenHV.Acquired) then
+  if (Self.vehicle.Acquired) then
   begin
-    if (Self.OpenHV.trakceError) then
+    if (Self.vehicle.trakceError) then
     begin
       Self.L_ComStatus.Font.Color := clRed;
       Self.L_ComStatus.Caption := 'loko NEKOMUNIKUJE';
@@ -229,24 +229,24 @@ begin
   end;
 
   if (Sender <> Self) then
-    TB_reg.Position := OpenHV.speedStep;
+    TB_reg.Position := Self.vehicle.speedStep;
 
-  Self.L_stupen.Caption := IntToStr(OpenHV.speedStep) + ' / ' + IntToStr(OpenHV.slot.maxSpeed);
-  Self.L_speed.Caption := IntToStr(OpenHV.realSpeed);
+  Self.L_stupen.Caption := IntToStr(Self.vehicle.speedStep) + ' / ' + IntToStr(Self.vehicle.slot.maxSpeed);
+  Self.L_speed.Caption := IntToStr(Self.vehicle.realSpeed);
 
-  RG_Smer.ItemIndex := Integer(OpenHV.direction);
-  Self.L_address.Caption := IntToStr(OpenHV.addr);
-  Self.Caption := OpenHV.name + ' (' + OpenHV.data.designation + ') : ' + IntToStr(OpenHV.addr);
-  Self.B_Acquire.Enabled := not OpenHV.Acquired or OpenHV.state.trakceError;
-  Self.B_Release.Enabled := OpenHV.Acquired;
-  Self.CHB_Manual.Checked := OpenHV.manual;
-  Self.L_mine.Caption := ownConvert.BoolToYesNo(OpenHV.Acquired);
+  RG_Smer.ItemIndex := Integer(Self.vehicle.direction);
+  Self.L_address.Caption := IntToStr(Self.vehicle.addr);
+  Self.Caption := Self.vehicle.name + ' (' + Self.vehicle.data.designation + ') : ' + IntToStr(Self.vehicle.addr);
+  Self.B_Acquire.Enabled := not Self.vehicle.Acquired or Self.vehicle.state.trakceError;
+  Self.B_Release.Enabled := Self.vehicle.Acquired;
+  Self.CHB_Manual.Checked := Self.vehicle.manual;
+  Self.L_mine.Caption := ownConvert.BoolToYesNo(Self.vehicle.Acquired);
 
-  if ((OpenHV.Acquired) and ((OpenHV.pom = TPomStatus.automat) or (OpenHV.pom = TPomStatus.manual))) then
+  if ((Self.vehicle.Acquired) and ((Self.vehicle.pom = TPomStatus.automat) or (Self.vehicle.pom = TPomStatus.manual))) then
   begin
     Self.S_Status.Brush.Color := clGreen;
   end else begin
-    if ((OpenHV.stolen) or (OpenHV.pom = progr) or (OpenHV.acquiring)) then
+    if ((Self.vehicle.stolen) or (Self.vehicle.pom = progr) or (Self.vehicle.acquiring)) then
     begin
       Self.S_Status.Brush.Color := clYellow;
     end else begin
@@ -254,7 +254,7 @@ begin
     end;
   end;
 
-  case (OpenHV.pom) of
+  case (Self.vehicle.pom) of
     TPomStatus.unknown:
       Self.L_POM.Caption := '?';
     TPomStatus.progr:
@@ -269,7 +269,7 @@ begin
 
   if (Sender <> Self) then
   begin
-    var functions: TFunctions := OpenHV.slotFunctions;
+    var functions: TFunctions := Self.vehicle.slotFunctions;
     Self.CHB_Lights.Checked := functions[0];
     Self.CHB_f1.Checked := functions[1];
     Self.CHB_f2.Checked := functions[2];
@@ -316,22 +316,22 @@ end;
 
 procedure TF_DigiReg.T_SpeedTimer(Sender: TObject);
 begin
-  if (Self.OpenHV = nil) then
+  if (Self.vehicle = nil) then
     Exit();
   if (Self.speed = Self.TB_reg.Position) then
     Exit();
 
-  OpenHV.SetSpeedStepDir(TB_reg.Position, RG_Smer.ItemIndex = 1, TTrakce.Callback(), TTrakce.Callback(), Self);
+  Self.vehicle.SetSpeedStepDir(TB_reg.Position, RG_Smer.ItemIndex = 1, TTrakce.Callback(), TTrakce.Callback(), Self);
 
-  Self.L_stupen.Caption := IntToStr(TB_reg.Position) + ' / ' + IntToStr(OpenHV.slot.maxSpeed);
-  Self.L_speed.Caption := IntToStr(OpenHV.realSpeed);
+  Self.L_stupen.Caption := IntToStr(TB_reg.Position) + ' / ' + IntToStr(Self.vehicle.slot.maxSpeed);
+  Self.L_speed.Caption := IntToStr(Self.vehicle.realSpeed);
   Self.speed := Self.TB_reg.Position;
 end;
 
 // vyvola se, pokud je me okynko aktivni a je nad nim stiskla klavesa
 procedure TF_DigiReg.MyKeyPress(key: Integer; var handled: Boolean);
 begin
-  if (not Self.OpenHV.Acquired) then
+  if (not Self.vehicle.Acquired) then
   begin
     if (key = VK_RETURN) then
       if (Self.ActiveControl <> Self.B_Acquire) then
@@ -401,11 +401,11 @@ begin
   frm.LocoChanged(Sender);
 end;
 
-procedure TRegulatorCollector.Open(HV: THV);
+procedure TRegulatorCollector.Open(vehicle: TRV);
 begin
   for var i := 0 to Self._MAX_FORMS - 1 do
   begin
-    if ((Self.Forms.data[i].Showing) and (Self.Forms.data[i].OpenHV = HV)) then
+    if ((Self.Forms.data[i].Showing) and (Self.Forms.data[i].vehicle = vehicle)) then
     begin
       Self.Forms.data[i].SetFocus;
       Exit();
@@ -420,7 +420,7 @@ begin
   if (i = Self._MAX_FORMS) then
     raise ERCMaxWindows.Create('Otevřen maximální počet oken regulátorů!');
 
-  Self.Forms.data[i].OpenForm(HV);
+  Self.Forms.data[i].OpenForm(vehicle);
 end;
 
 function TRegulatorCollector.GetForm(addr: Word): TF_DigiReg;
@@ -428,9 +428,9 @@ begin
   Result := nil;
   for var i := 0 to Self._MAX_FORMS - 1 do
   begin
-    if (Self.Forms.data[i].OpenHV = nil) then
+    if (Self.Forms.data[i].vehicle = nil) then
       continue;
-    if (Self.Forms.data[i].OpenHV.addr = addr) then
+    if (Self.Forms.data[i].vehicle.addr = addr) then
       Exit(Self.Forms.data[i]);
   end; // for
 end;
@@ -458,13 +458,13 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TRegulatorCollector.IsLoko(HV: THV): Boolean;
+function TRegulatorCollector.IsLoko(vehicle: TRV): Boolean;
 begin
   if (Self = nil) then
     Exit(false);
 
   for var i := 0 to _MAX_FORMS - 1 do
-    if ((Self.Forms.data[i] <> nil) and (Self.Forms.data[i].OpenHV = HV)) then
+    if ((Self.Forms.data[i] <> nil) and (Self.Forms.data[i].vehicle = vehicle)) then
       Exit(true);
   Result := false;
 end;

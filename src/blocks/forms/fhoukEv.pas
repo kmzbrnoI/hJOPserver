@@ -36,7 +36,7 @@ type
 
 implementation
 
-uses FunkceVyznam, THnaciVozidlo;
+uses FunkceVyznam, TRailVehicle;
 
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ end;
 procedure TF_HoukEv.FillFuncs();
 begin
   Self.CB_Func.Clear();
-  var all: TList<TPair<string, THVFuncType>> := FuncNames.All();
+  var all: TList<TPair<string, TRVFuncType>> := FuncNames.All();
   try
     for var entry in all do
       Self.CB_Func.Items.Add(entry.Key);

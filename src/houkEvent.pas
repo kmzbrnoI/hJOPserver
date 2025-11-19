@@ -51,7 +51,7 @@ type
 implementation
 
 uses ownStrUtils, TrakceC, train, BlockTrack, TrainDb, fMain,
-  THVDatabase;
+  TRVDatabase;
 
 /// /////////////////////////////////////////////////////////////////////////////
 

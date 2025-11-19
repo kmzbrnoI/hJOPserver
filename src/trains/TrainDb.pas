@@ -58,7 +58,7 @@ var
 
 implementation
 
-uses Logging, DataTrains, BlockDb, BlockTrack, DataHV, appEv, Block,
+uses Logging, DataTrains, BlockDb, BlockTrack, DataRV, appEv, Block,
   TCPServerPanel, PTUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -114,7 +114,7 @@ begin
   end;
 
   TrainTableData.LoadToTable();
-  HVTableData.LoadToTable();
+  RVTableData.LoadToTable();
 end;
 
 procedure TTrainDb.SaveData(const filename: string);

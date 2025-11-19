@@ -3,7 +3,7 @@
 interface
 
 uses Generics.Collections, Area, Block, Classes, Train, User,
-  THnaciVozidlo, IdContext, SysUtils, TechnologieJC;
+  TRailVehicle, IdContext, SysUtils, TechnologieJC;
 
 type
   TCSCallback = procedure(Sender: TIdContext; success: Boolean) of object;
@@ -63,7 +63,7 @@ type
     regulator: Boolean; // true pokud klient autorizoval rizeni pres regulator
     regulator_user: TUser; // uzivatel, ktery autorizoval regulator
     regulator_zadost: TArea; // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
-    regulator_loks: TList<THV>; // seznam lokomotiv v regulatoru
+    regulator_loks: TList<TRV>; // seznam lokomotiv v regulatoru
 
     st_hlaseni: TList<TArea>; // stanice, do kterych je autorizovano stanicni hlaseni
     train_menu_index: Integer; // index sopuravy, ktere se aktualne zorbazuje menu (viz blok usek)
@@ -135,7 +135,7 @@ begin
   Self.regulator := False;
   Self.regulator_user := nil;
   Self.regulator_zadost := nil;
-  Self.regulator_loks := TList<THV>.Create();
+  Self.regulator_loks := TList<TRV>.Create();
   Self.st_hlaseni := TList<TArea>.Create();
   Self.train_menu_index := -1;
   Self.soundDict := TDictionary<Integer, Cardinal>.Create();

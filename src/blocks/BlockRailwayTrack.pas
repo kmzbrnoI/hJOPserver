@@ -42,7 +42,7 @@
 interface
 
 uses BlockTrack, Classes, Block, IniFiles, SysUtils, IdContext, rrEvent,
-  Generics.Collections, Area, THnaciVozidlo, Train, RegularExpressions,
+  Generics.Collections, Area, TRailVehicle, Train, RegularExpressions,
   TrainSpeed;
 
 type
@@ -244,7 +244,7 @@ type
 implementation
 
 uses TrainDb, BlockDb, TCPServerPanel, BlockRailway, BlockSignal, TJCDatabase,
-  logging, TechnologieJC, ownStrUtils, THVDatabase, IfThenElse, ConfSeq, ownConvert;
+  logging, TechnologieJC, ownStrUtils, TRVDatabase, IfThenElse, ConfSeq, ownConvert;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -474,7 +474,7 @@ begin
       Exit();
 
     // kontrola spravneho smeru
-    if (((Self.train.direction = THVSite.odd) and (not Self.stopL)) or ((Self.train.direction = THVSite.even) and
+    if (((Self.train.direction = TRVSite.odd) and (not Self.stopL)) or ((Self.train.direction = TRVSite.even) and
       (not Self.stopS))) then
       Exit();
 
@@ -486,7 +486,7 @@ begin
     if (Self.m_rtState.stopSlowReady) then
     begin
       case (Self.train.direction) of
-        THVSite.odd:
+        TRVSite.odd:
           begin
             if (Self.m_rtSettings.stop.evL.slow.enabled) then
             begin
@@ -505,7 +505,7 @@ begin
             end;
           end;
 
-        THVSite.even:
+        TRVSite.even:
           begin
             if (Self.m_rtSettings.stop.evS.slow.enabled) then
             begin
@@ -530,7 +530,7 @@ begin
 
     // zastavovani v zastavce
     case (Self.train.direction) of
-      THVSite.odd:
+      TRVSite.odd:
         begin
           if (not Self.m_rtSettings.stop.evL.stop.enabled) then
             Self.m_rtSettings.stop.evL.stop.Register(Self.train.index);
@@ -543,7 +543,7 @@ begin
           end;
         end;
 
-      THVSite.even:
+      TRVSite.even:
         begin
           if (not Self.m_rtSettings.stop.evS.stop.enabled) then
             Self.m_rtSettings.stop.evS.stop.Register(Self.train.index);
@@ -718,7 +718,7 @@ begin
     begin
       if (TBlkRailway(Self.railway).direction = TRailwayDirection.AtoB) then
       begin // vjizdim do trati
-        if (Self.train.direction <> THVSite.odd) then
+        if (Self.train.direction <> TRVSite.odd) then
           Self.train.ChangeDirection();
       end else if (TBlkRailway(Self.railway).direction = TRailwayDirection.BtoA) then
       begin // vjizdim do posledniho useku ve smeru trati
@@ -731,7 +731,7 @@ begin
     begin
       if (TBlkRailway(Self.railway).direction = TRailwayDirection.BtoA) then
       begin // vjizdim do trati
-        if ((Self.train.direction <> THVSite.even) and (TBlkRailway(Self.railway).GetSettings().trackIds.Count > 0))
+        if ((Self.train.direction <> TRVSite.even) and (TBlkRailway(Self.railway).GetSettings().trackIds.Count > 0))
         then
           Self.train.ChangeDirection();
       end else if (TBlkRailway(Self.railway).direction = TRailwayDirection.AtoB) then
@@ -1127,7 +1127,7 @@ begin
     if ((signal <> nil) and (Self.lRT <> nil)) then
     begin
       signal.trackId := Self.lRT.id;
-      signal.SetSpnlDirection(THVSite.odd);
+      signal.SetSpnlDirection(TRVSite.odd);
       if ((Self.railway <> nil) and (TBlkRailway(Self.railway).signals = TRailwaySignals.hradlo)) then
         signal.inRailway := rwHradlo
       else
@@ -1140,7 +1140,7 @@ begin
     if ((signal <> nil) and (Self.sRT <> nil)) then
     begin
       signal.trackId := Self.sRT.id;
-      signal.SetSpnlDirection(THVSite.even);
+      signal.SetSpnlDirection(TRVSite.even);
       if ((Self.railway <> nil) and (TBlkRailway(Self.railway).signals = TRailwaySignals.hradlo)) then
         signal.inRailway := rwHradlo
       else

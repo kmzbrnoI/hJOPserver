@@ -57,7 +57,7 @@ var
 
 implementation
 
-uses Logging, TCPServerPanel, THVDatabase, appEv, PTUtils, ownStrUtils, Config;
+uses Logging, TCPServerPanel, TRVDatabase, appEv, PTUtils, ownStrUtils, Config;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -181,8 +181,8 @@ begin
 
   // vymazeme vsechny otevrene regulatory u klientu
   for var i: Integer := 0 to _MAX_ADDR - 1 do
-    if (Assigned(HVDb[i])) then
-      HVDb[i].state.regulators.Clear();
+    if (Assigned(RVDb[i])) then
+      RVDb[i].state.regulators.Clear();
 end;
 
 procedure TAreas.SendORList(Context: TIdContext);

@@ -3,9 +3,9 @@
 {
   TTrakce class (and its singleton instance TrakceI) accesses Trakce function
   to the rest of the appliaction. This class is designed to be minimal. It works
-  with loco addresses, not with instances of THV. This class is supposed to
+  with loco addresses, not with instances of TRV. This class is supposed to
   be used as accessor and helper. All important functions (like set speed or
-  functions) should be called on instance of THV directly.
+  functions) should be called on instance of TRV directly.
 
   This class is very simillar to TRCS.
 }
@@ -13,7 +13,7 @@
 interface
 
 uses
-  SysUtils, Classes, StrUtils, TrakceIFace, ComCtrls, THnaciVozidlo,
+  SysUtils, Classes, StrUtils, TrakceIFace, ComCtrls, TRailVehicle,
   Generics.Collections, IniFiles, TrakceErrors;
 
 const
@@ -62,7 +62,7 @@ type
   // passed as a parameter to callback when programming POM
   TPOMCallback = record
     locoAddr: Word;
-    toProgram: TList<THVPomCV>;
+    toProgram: TList<TRVPomCV>;
     index: Integer; // index of currently programmed CV in list 'toProgram'
     callback_ok, callback_err: TCommandCallback;
   end;
@@ -76,8 +76,8 @@ type
   end;
 
   // toggleQueue record
-  THVToggleFunc = record
-    HV: THV;
+  TRVToggleFunc = record
+    vehicle: TRV;
     fIndex: Cardinal;
     time: TDateTime;
   end;
@@ -119,15 +119,15 @@ type
 
     procedure CheckToggleQueue();
     procedure FlushToggleQueue();
-    procedure ProcessToggleFunc(hvFunc: THVToggleFunc);
-    class function hvFunc(HV: THV; fIndex: Cardinal; time: TDateTime): THVToggleFunc;
+    procedure ProcessToggleFunc(vehFunc: TRVToggleFunc);
+    class function rvFunc(vehicle: TRV; fIndex: Cardinal; time: TDateTime): TRVToggleFunc;
 
     procedure CallCb(cb: TCommandCallback);
 
   public
 
     DCCGoTime: TDateTime;
-    toggleQueue: TQueue<THVToggleFunc>;
+    toggleQueue: TQueue<TRVToggleFunc>;
 
     constructor Create();
     destructor Destroy(); override;
@@ -140,7 +140,7 @@ type
     procedure LoadFromFile(ini: TMemIniFile);
     procedure SaveToFile(ini: TMemIniFile);
 
-    procedure LokFuncToggle(Sender: TObject; HV: THV; fIndex: Cardinal);
+    procedure LokFuncToggle(Sender: TObject; vehicle: TRV; fIndex: Cardinal);
 
     procedure LoadSpeedTable(filename: string; var LVRych: TListView);
     procedure SaveSpeedTable(filename: string);
@@ -151,7 +151,7 @@ type
     procedure SetStepSpeed(Step: byte; Speed: Integer);
 
     procedure LoksSetFunc(description: string; state: Boolean; ok: TCb; err: TCb);
-    procedure POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
+    procedure POMWriteCVs(addr: Word; toProgram: TList<TRVPomCV>; ok: TCb; err: TCb);
 
     procedure TurnOffSound(ok: TCb; err: TCb);
     procedure RestoreSound(ok: TCb; err: TCb);
@@ -172,7 +172,7 @@ var
 
 implementation
 
-uses fMain, RCSc, fRegulator, TrainDb, GetSystems, THVDatabase, DataHV,
+uses fMain, RCSc, fRegulator, TrainDb, GetSystems, TRVDatabase, DataRV,
   BlockDb, RegulatorTCP, TCPServerPanel, appEv, Logging, version;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ begin
   Self.turnoff_callback := nil;
   Self.DCCGoTime := Now;
 
-  Self.toggleQueue := TQueue<THVToggleFunc>.Create();
+  Self.toggleQueue := TQueue<TRVToggleFunc>.Create();
 
   TTrakceIFace(Self).OnLog := Self.TrkLog;
   TTrakceIFace(Self).OnLocoStolen := Self.TrkLocoStolen;
@@ -297,8 +297,8 @@ end;
 
 procedure TTrakce.TrkLocoStolen(Sender: TObject; addr: Word);
 begin
-  if (HVDb[addr] <> nil) then
-    HVDb[addr].TrakceStolen();
+  if (RVDb[addr] <> nil) then
+    RVDb[addr].TrakceStolen();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -359,9 +359,9 @@ begin
   if (not Self.ConnectedSafe()) then
     Exit();
 
-  while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].acquired) or
-    (not HVDb[addr].funcDict.ContainsKey(cb^.description)) or
-    (HVDb[addr].slotFunctions[HVDb[addr].funcDict[cb^.description]] = cb^.state))) do
+  while ((addr < _MAX_ADDR) and ((RVDb[addr] = nil) or (not RVDb[addr].acquired) or
+    (not RVDb[addr].funcDict.ContainsKey(cb^.description)) or
+    (RVDb[addr].slotFunctions[RVDb[addr].funcDict[cb^.description]] = cb^.state))) do
     Inc(addr);
 
   if (addr = _MAX_ADDR) then
@@ -373,7 +373,7 @@ begin
 
   cb^.addr := addr + 1;
   try
-    HVDb[addr].SetSingleFunc(HVDb[addr].funcDict[cb^.description], cb^.state, TTrakce.callback(Self.LoksSetFuncOK, cb),
+    RVDb[addr].SetSingleFunc(RVDb[addr].funcDict[cb^.description], cb^.state, TTrakce.callback(Self.LoksSetFuncOK, cb),
       TTrakce.callback(Self.LoksSetFuncErr, cb));
   except
     Self.LoksSetFuncErr(Self, cb);
@@ -537,9 +537,9 @@ begin
     Exit();
   end;
 
-  while ((cb^.addr < _MAX_ADDR) and ((HVDb[cb^.addr] = nil) or (not HVDb[cb^.addr].acquired) or
-    (not HVDb[cb^.addr].funcDict.ContainsKey(_SOUND_FUNC)) or
-    (HVDb[cb^.addr].slotFunctions[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = false))) do
+  while ((cb^.addr < _MAX_ADDR) and ((RVDb[cb^.addr] = nil) or (not RVDb[cb^.addr].acquired) or
+    (not RVDb[cb^.addr].funcDict.ContainsKey(_SOUND_FUNC)) or
+    (RVDb[cb^.addr].slotFunctions[RVDb[cb^.addr].funcDict[_SOUND_FUNC]] = false))) do
     Inc(cb^.addr);
 
   if (cb^.addr = _MAX_ADDR) then
@@ -550,9 +550,9 @@ begin
   end;
 
   try
-    HVDb[cb^.addr].SetSingleFunc(HVDb[cb^.addr].funcDict[_SOUND_FUNC], false,
+    RVDb[cb^.addr].SetSingleFunc(RVDb[cb^.addr].funcDict[_SOUND_FUNC], false,
       TTrakce.callback(Self.TurnedOffSound, Data), TTrakce.callback(Self.TurnedOffSound, Data));
-    HVDb[cb^.addr].state.functions[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] := true;
+    RVDb[cb^.addr].state.functions[RVDb[cb^.addr].funcDict[_SOUND_FUNC]] := true;
   except
     Self.CallCb(cb^.callback_err);
     FreeMem(Data);
@@ -582,10 +582,10 @@ begin
     Exit();
   end;
 
-  while ((cb^.addr < _MAX_ADDR) and ((HVDb[cb^.addr] = nil) or (not HVDb[cb^.addr].acquired) or
-    (not HVDb[cb^.addr].funcDict.ContainsKey(_SOUND_FUNC)) or
-    (HVDb[cb^.addr].slotFunctions[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = true) or
-    (HVDb[cb^.addr].stateFunctions[HVDb[cb^.addr].funcDict[_SOUND_FUNC]] = false))) do
+  while ((cb^.addr < _MAX_ADDR) and ((RVDb[cb^.addr] = nil) or (not RVDb[cb^.addr].acquired) or
+    (not RVDb[cb^.addr].funcDict.ContainsKey(_SOUND_FUNC)) or
+    (RVDb[cb^.addr].slotFunctions[RVDb[cb^.addr].funcDict[_SOUND_FUNC]] = true) or
+    (RVDb[cb^.addr].stateFunctions[RVDb[cb^.addr].funcDict[_SOUND_FUNC]] = false))) do
     Inc(cb^.addr);
 
   if (cb^.addr = _MAX_ADDR) then
@@ -596,7 +596,7 @@ begin
   end;
 
   try
-    HVDb[cb^.addr].SetSingleFunc(HVDb[cb^.addr].funcDict[_SOUND_FUNC], true, TTrakce.callback(Self.RestoredSound, Data),
+    RVDb[cb^.addr].SetSingleFunc(RVDb[cb^.addr].funcDict[_SOUND_FUNC], true, TTrakce.callback(Self.RestoredSound, Data),
       TTrakce.callback(Self.RestoredSound, Data));
   except
     Self.CallCb(cb^.callback_err);
@@ -607,7 +607,7 @@ end;
 // POM
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.POMWriteCVs(addr: Word; toProgram: TList<THVPomCV>; ok: TCb; err: TCb);
+procedure TTrakce.POMWriteCVs(addr: Word; toProgram: TList<TRVPomCV>; ok: TCb; err: TCb);
 var Data: ^TPOMCallback;
 begin
   if (toProgram.Count = 0) then
@@ -662,10 +662,10 @@ end;
 // Function toggling
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.LokFuncToggle(Sender: TObject; HV: THV; fIndex: Cardinal);
+procedure TTrakce.LokFuncToggle(Sender: TObject; vehicle: TRV; fIndex: Cardinal);
 begin
-  HV.SetSingleFunc(fIndex, true, trakce.callback(), trakce.callback(), Sender);
-  Self.toggleQueue.Enqueue(hvFunc(HV, fIndex, Now + EncodeTime(0, 0, 0, 500)));
+  vehicle.SetSingleFunc(fIndex, true, trakce.callback(), trakce.callback(), Sender);
+  Self.toggleQueue.Enqueue(rvFunc(vehicle, fIndex, Now + EncodeTime(0, 0, 0, 500)));
 end;
 
 procedure TTrakce.CheckToggleQueue();
@@ -695,16 +695,16 @@ begin
   end;
 end;
 
-procedure TTrakce.ProcessToggleFunc(hvFunc: THVToggleFunc);
+procedure TTrakce.ProcessToggleFunc(vehFunc: TRVToggleFunc);
 begin
-  if (hvFunc.HV = nil) then
+  if (vehFunc.vehicle = nil) then
     Exit();
-  hvFunc.HV.SetSingleFunc(hvFunc.fIndex, false, TTrakce.callback(), TTrakce.callback());
+  vehFunc.vehicle.SetSingleFunc(vehFunc.fIndex, false, TTrakce.callback(), TTrakce.callback());
 end;
 
-class function TTrakce.hvFunc(HV: THV; fIndex: Cardinal; time: TDateTime): THVToggleFunc;
+class function TTrakce.rvFunc(vehicle: TRV; fIndex: Cardinal; time: TDateTime): TRVToggleFunc;
 begin
-  Result.HV := HV;
+  Result.vehicle := vehicle;
   Result.fIndex := fIndex;
   Result.time := time;
 end;

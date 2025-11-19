@@ -22,7 +22,7 @@ type
 
 implementation
 
-uses PTUtils, THVDatabase;
+uses PTUtils, TRVDatabase;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -49,13 +49,13 @@ begin
       end;
    end;
 
-   if ((lokoAddr > 9999) or (HVDb[lokoAddr] = nil)) then
+   if ((lokoAddr > 9999) or (RVDb[lokoAddr] = nil)) then
     begin
      PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Lokomotiva neexistuje', 'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
      Exit();
     end;
 
-   HVDb[lokoAddr].GetPtData(respJson.O['lok'], params.ContainsKey('state') and (PTUtils.HttpParamToBool(params['state'])));
+   RVDb[lokoAddr].GetPtData(respJson.O['lok'], params.ContainsKey('state') and (PTUtils.HttpParamToBool(params['state'])));
  finally
    params.Free();
  end;

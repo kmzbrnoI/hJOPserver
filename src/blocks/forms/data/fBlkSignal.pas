@@ -104,7 +104,7 @@ var
 implementation
 
 uses GetSystems, RCSc, RCSsc, Block, Area, DataBloky, BlockTrack, ownGuiUtils,
-  ownConvert, THnaciVozidlo;
+  ownConvert, TRailVehicle;
 
 {$R *.dfm}
 
@@ -237,7 +237,7 @@ begin
     end;
   end;
 
-  Self.CHB_ForceDirection.Checked := (settings.forceDirection <> THVOptionalSite.osNo);
+  Self.CHB_ForceDirection.Checked := (settings.forceDirection <> TRVOptionalSite.osNo);
   Self.CB_ForceDirection.ItemIndex := Integer(settings.forceDirection);
   Self.CHB_ForceDirectionClick(Self.CHB_ForceDirection);
 
@@ -451,7 +451,7 @@ begin
     for var fBlkNavEvent in Self.eventForms do
       settings.events.Add(fBlkNavEvent.GetEvent());
 
-    settings.forceDirection := THVOptionalSite(Self.CB_ForceDirection.ItemIndex);
+    settings.forceDirection := TRVOptionalSite(Self.CB_ForceDirection.ItemIndex);
 
     settings.PSt.enabled := Self.CHB_PSt.Checked;
     if (Self.CHB_PSt.Checked) then

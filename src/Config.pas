@@ -72,7 +72,7 @@ var
 implementation
 
 uses fSplash, fAdminForm, GetSystems, Diagnostics, fMain, ownConvert,
-  AreaDb, BlockDb, BoosterDb, THVDatabase,
+  AreaDb, BlockDb, BoosterDb, TRVDatabase,
   TCPServerPT, Logging, TCPServerPanel, TrainDb, UserDb, TimeModel, TMultiJCDatabase,
   DataBloky, FunkceVyznam, UDPDiscover, appEv, fTester, TrakceC, TJCDatabase;
 
@@ -131,16 +131,16 @@ begin
   F_Main.E_dataload_spnl.Text := read;
 
   F_Splash.AddStav('Načítám hnací vozidla...');
-  F_Main.E_dataload_HV_dir.Text := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'lok', 'lok');
-  F_Main.E_dataload_HV_state.Text := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'lok', 'stav\lok.ini');
-  Log('Načítám hnací vozidla - ' + F_Main.E_dataload_HV_dir.Text + '\*', TLogLevel.llInfo, lsData);
+  F_Main.E_dataload_RV_dir.Text := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'lok', 'lok');
+  F_Main.E_dataload_RV_state.Text := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'lok', 'stav\lok.ini');
+  Log('Načítám hnací vozidla - ' + F_Main.E_dataload_RV_dir.Text + '\*', TLogLevel.llInfo, lsData);
   try
-    HVDb.LoadFromDir(F_Main.E_dataload_HV_dir.Text, F_Main.E_dataload_HV_state.Text);
+    RVDb.LoadFromDir(F_Main.E_dataload_RV_dir.Text, F_Main.E_dataload_RV_state.Text);
   except
     on e: Exception do
       AppEvents.LogException(e);
   end;
-  Log('Načteno ' + IntToStr(HVDb.cnt) + ' hnacích vozidel', TLogLevel.llInfo, lsData);
+  Log('Načteno ' + IntToStr(RVDb.cnt) + ' hnacích vozidel', TLogLevel.llInfo, lsData);
 
   F_Splash.AddStav('Načítám RCS...');
   Log('Načítám RCS...', TLogLevel.llInfo, lsData);
@@ -333,8 +333,8 @@ begin
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', F_Main.E_dataload_soupr.Text);
     inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'users', UsrDB.filenameData);
     inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'users', UsrDB.filenameStat);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'lok', F_Main.E_dataload_HV_dir.Text);
-    inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_HV_state.Text);
+    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'lok', F_Main.E_dataload_RV_dir.Text);
+    inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_RV_state.Text);
     inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'console', GlobalConfig.consoleLog);
 
     var tmpStr: string;

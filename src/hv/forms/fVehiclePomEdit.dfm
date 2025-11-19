@@ -1,4 +1,4 @@
-object F_HV_Pom: TF_HV_Pom
+object F_RV_Pom: TF_RV_Pom
   Left = 0
   Top = 0
   BorderStyle = bsToolWindow
@@ -11,9 +11,7 @@ object F_HV_Pom: TF_HV_Pom
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 8

@@ -1,4 +1,4 @@
-object F_HVEdit: TF_HVEdit
+object F_RVEdit: TF_RVEdit
   Left = 761
   Top = 191
   ActiveControl = B_Save
@@ -16,7 +16,7 @@ object F_HVEdit: TF_HVEdit
   Position = poScreenCenter
   OnCloseQuery = FormCloseQuery
   TextHeight = 13
-  object L_HV1: TLabel
+  object Label6: TLabel
     Left = 8
     Top = 32
     Width = 34
@@ -27,7 +27,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Bottom = 2
     Caption = 'N'#225'zev:'
   end
-  object L_HV2: TLabel
+  object Label8: TLabel
     Left = 8
     Top = 64
     Width = 49
@@ -38,7 +38,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Bottom = 2
     Caption = 'Ozna'#269'en'#237':'
   end
-  object L_HV3: TLabel
+  object Label9: TLabel
     Left = 8
     Top = 96
     Width = 33
@@ -49,7 +49,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Bottom = 2
     Caption = 'Majitel:'
   end
-  object L_HV4: TLabel
+  object Label10: TLabel
     Left = 8
     Top = 128
     Width = 53
@@ -60,7 +60,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Bottom = 2
     Caption = 'Pozn'#225'mka:'
   end
-  object L_HV5: TLabel
+  object Label11: TLabel
     Left = 8
     Top = 184
     Width = 60
@@ -71,7 +71,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Bottom = 2
     Caption = 'DCC adresa:'
   end
-  object L_HV7: TLabel
+  object Label12: TLabel
     Left = 8
     Top = 216
     Width = 63
@@ -82,7 +82,7 @@ object F_HVEdit: TF_HVEdit
     Margins.Bottom = 2
     Caption = 'Stanovi'#353't'#283' A:'
   end
-  object L_HV10: TLabel
+  object Label7: TLabel
     Left = 8
     Top = 248
     Width = 21

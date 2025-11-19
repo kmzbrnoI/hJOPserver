@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Bloky
+    ActivePage = TS_RV
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -4049,16 +4049,16 @@ object F_Main: TF_Main
         end
       end
     end
-    object TS_HV: TTabSheet
+    object TS_RV: TTabSheet
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Hnac'#237' vozidla'
+      Caption = 'Vozidla'
       ImageIndex = 18
       ParentShowHint = False
       ShowHint = True
-      object LV_HV: TListView
+      object LV_Vehicles: TListView
         Left = 0
         Top = 40
         Width = 1294
@@ -4162,17 +4162,17 @@ object F_Main: TF_Main
         ParentDoubleBuffered = False
         ParentFont = False
         ParentShowHint = False
-        PopupMenu = PM_HV
+        PopupMenu = PM_RV
         ShowHint = False
         TabOrder = 0
         ViewStyle = vsReport
-        OnChange = LV_HVChange
-        OnCustomDrawItem = LV_HVCustomDrawItem
-        OnDblClick = LV_HVDblClick
-        OnKeyDown = LV_HVKeyDown
-        OnKeyPress = LV_HVKeyPress
+        OnChange = LV_VehiclesChange
+        OnCustomDrawItem = LV_VehiclesCustomDrawItem
+        OnDblClick = LV_VehiclesDblClick
+        OnKeyDown = LV_VehiclesKeyDown
+        OnKeyPress = LV_VehiclesKeyPress
       end
-      object P_HV_Pozadi: TPanel
+      object P_RV_Pozadi: TPanel
         Left = 0
         Top = 0
         Width = 1294
@@ -4186,7 +4186,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        object P_HV_Left: TPanel
+        object P_RV_Left: TPanel
           Left = 0
           Top = 0
           Width = 769
@@ -4199,7 +4199,7 @@ object F_Main: TF_Main
           BevelOuter = bvNone
           Color = clWhite
           TabOrder = 0
-          object E_dataload_HV_dir: TEdit
+          object E_dataload_RV_dir: TEdit
             Left = 9
             Top = 9
             Width = 152
@@ -4218,9 +4218,9 @@ object F_Main: TF_Main
             ParentFont = False
             ReadOnly = True
             TabOrder = 0
-            Text = 'E_dataload_HV_dir'
+            Text = 'E_dataload_RV_dir'
           end
-          object B_HV_Add: TButton
+          object B_RV_Add: TButton
             Left = 322
             Top = 6
             Width = 97
@@ -4229,7 +4229,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'P'#345'idat HV'
+            Caption = 'P'#345'idat vozidlo'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
             Font.Height = -11
@@ -4237,9 +4237,9 @@ object F_Main: TF_Main
             Font.Style = []
             ParentFont = False
             TabOrder = 1
-            OnClick = B_HV_AddClick
+            OnClick = B_RV_AddClick
           end
-          object B_HV_Delete: TButton
+          object B_RV_Delete: TButton
             Left = 423
             Top = 6
             Width = 97
@@ -4248,7 +4248,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Smazat HV'
+            Caption = 'Smazat vozidlo'
             Enabled = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack
@@ -4257,18 +4257,18 @@ object F_Main: TF_Main
             Font.Style = []
             ParentFont = False
             TabOrder = 2
-            OnClick = B_HV_DeleteClick
+            OnClick = B_RV_DeleteClick
           end
-          object B_HVStats_Export: TButton
+          object B_RVStats_Export: TButton
             Left = 524
             Top = 6
             Width = 116
             Height = 25
             Caption = 'Exportovat statistiky'
             TabOrder = 3
-            OnClick = B_HVStats_ExportClick
+            OnClick = B_RVStats_ExportClick
           end
-          object B_HVStats_Clear: TButton
+          object B_RVStats_Clear: TButton
             Left = 644
             Top = 6
             Width = 116
@@ -4277,14 +4277,14 @@ object F_Main: TF_Main
             TabOrder = 4
             OnClick = B_ClearStatsClick
           end
-          object E_dataload_HV_state: TEdit
+          object E_dataload_RV_state: TEdit
             Left = 166
             Top = 9
             Width = 152
             Height = 21
             ReadOnly = True
             TabOrder = 5
-            Text = 'E_dataload_HV_state'
+            Text = 'E_dataload_RV_state'
           end
         end
       end
@@ -6390,9 +6390,9 @@ object F_Main: TF_Main
         Caption = 'Ulo'#382'it pozice oken'
         OnClick = PM_SaveFormPosClick
       end
-      object MI_SaveHVs: TMenuItem
-        Caption = 'Ulo'#382'it hnac'#237' vozidla'
-        OnClick = MI_SaveHVsClick
+      object MI_SaveVehicles: TMenuItem
+        Caption = 'Ulo'#382'it vozidla'
+        OnClick = MI_SaveVehiclesClick
       end
       object N3: TMenuItem
         Caption = '-'
@@ -9305,8 +9305,8 @@ object F_Main: TF_Main
       OnExecute = A_Turnoff_FunctionsExecute
     end
   end
-  object PM_HV: TPopupMenu
-    OnPopup = PM_HVPopup
+  object PM_RV: TPopupMenu
+    OnPopup = PM_RVPopup
     Left = 336
     Top = 536
     object PM_Loco_Edit: TMenuItem
@@ -9367,7 +9367,7 @@ object F_Main: TF_Main
     Left = 872
     Top = 456
   end
-  object SD_HV_Stats: TSaveDialog
+  object SD_RV_Stats: TSaveDialog
     Filter = 'Hodnoty odd'#283'len'#233' st'#345'edn'#237'kem (*.csv)|*.csv'
     Title = 'Vyberte um'#237'st'#283'n'#237' souboru pro export statistik'
     Left = 168

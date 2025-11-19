@@ -1,13 +1,13 @@
-﻿unit DataHV;
+﻿unit DataRV;
 
-// THVTableData - trida starajici se o vyplnovani tabulky hnacich vozidel
+// TRVTableData - trida starajici se o vyplnovani tabulky hnacich vozidel
 
 interface
 
-uses THnaciVozidlo, ComCtrls, SysUtils, Classes;
+uses TRailVehicle, ComCtrls, SysUtils, Classes;
 
 type
-  THVTableData = class
+  TRVTableData = class
   private
     LV: TListView;
 
@@ -16,25 +16,25 @@ type
     reload: Boolean;
 
     procedure LoadToTable();
-    procedure UpdateLine(HV: THV);
+    procedure UpdateLine(vehicle: TRV);
     procedure UpdateTable();
 
-    procedure AddHV(line: Integer; HV: THV);
-    procedure RemoveHV(line: Integer);
+    procedure AddRV(line: Integer; vehicle: TRV);
+    procedure RemoveRV(line: Integer);
 
     constructor Create(LV: TListView);
   end;
 
 var
-  HVTableData: THVTableData;
+  RVTableData: TRVTableData;
 
 implementation
 
-uses THvDatabase, ownConvert, fMain, TrakceC, TrainDb;
+uses TRvDatabase, ownConvert, fMain, TrakceC, TrainDb;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-constructor THVTableData.Create(LV: TListView);
+constructor TRVTableData.Create(LV: TListView);
 begin
   inherited Create;
   Self.LV := LV;
@@ -42,13 +42,13 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVTableData.LoadToTable();
+procedure TRVTableData.LoadToTable();
 begin
   Self.LV.Clear();
 
   for var i := 0 to _MAX_ADDR - 1 do
   begin
-    if (HVDb[i] = nil) then
+    if (RVDb[i] = nil) then
       continue;
 
     var LI: TListItem := Self.LV.Items.Add;
@@ -57,22 +57,22 @@ begin
     for var j := 0 to Self.LV.Columns.Count - 2 do
       LI.SubItems.Add('');
 
-    Self.UpdateLine(HVDb[i]);
+    Self.UpdateLine(RVDb[i]);
   end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVTableData.UpdateTable();
+procedure TRVTableData.UpdateTable();
 begin
   for var i := 0 to _MAX_ADDR - 1 do
   begin
-    if (not Assigned(HVDb[i])) then
+    if (not Assigned(RVDb[i])) then
       continue;
-    if ((HVDb[i].changed) or (Self.reload)) then
+    if ((RVDb[i].changed) or (Self.reload)) then
     begin
-      Self.UpdateLine(HVDb[i]);
-      Self.LV.UpdateItems(HVDb[i].index, HVDb[i].index);
+      Self.UpdateLine(RVDb[i]);
+      Self.LV.UpdateItems(RVDb[i].index, RVDb[i].index);
     end;
   end;
 
@@ -81,37 +81,37 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVTableData.UpdateLine(HV: THV);
+procedure TRVTableData.UpdateLine(vehicle: TRV);
 var str: string;
 begin
-  if (HV = nil) then
+  if (vehicle = nil) then
     Exit();
 
-  HV.changed := false;
+  vehicle.changed := false;
 
-  var line := HV.index;
-  var data := HV.Data;
-  var state := HV.state;
-  var slot := HV.slot;
+  var line := vehicle.index;
+  var data := vehicle.Data;
+  var state := vehicle.state;
+  var slot := vehicle.slot;
 
-  Self.LV.Items[line].Caption := IntToStr(HV.addr);
+  Self.LV.Items[line].Caption := IntToStr(vehicle.addr);
   Self.LV.Items[line].SubItems[0] := data.name;
   Self.LV.Items[line].SubItems[1] := data.designation;
   Self.LV.Items[line].SubItems[2] := data.owner;
   Self.LV.Items[line].SubItems[3] := data.note;
 
   case (data.typ) of
-    THVType.other:
+    TRVType.other:
       Self.LV.Items[line].SubItems[4] := 'jiný';
-    THVType.steam:
+    TRVType.steam:
       Self.LV.Items[line].SubItems[4] := 'parní';
-    THVType.diesel:
+    TRVType.diesel:
       Self.LV.Items[line].SubItems[4] := 'diesel';
-    THVType.motor:
+    TRVType.motor:
       Self.LV.Items[line].SubItems[4] := 'motor';
-    THVType.electro:
+    TRVType.electro:
       Self.LV.Items[line].SubItems[4] := 'elektro';
-    THVType.car:
+    TRVType.car:
       Self.LV.Items[line].SubItems[4] := 'vůz';
   end; // case
 
@@ -167,29 +167,29 @@ begin
   end else begin
     // prevzato
 
-    Self.LV.Items[line].SubItems[9] := IntToStr(HV.realSpeed) + 'km/h / ' + IntToStr(slot.step) + ' st';
+    Self.LV.Items[line].SubItems[9] := IntToStr(vehicle.realSpeed) + 'km/h / ' + IntToStr(slot.step) + ' st';
     Self.LV.Items[line].SubItems[10] := ownConvert.BoolToStr10(slot.direction);
-    Self.LV.Items[line].SubItems[11] := ownConvert.BoolToStr10(HV.slotFunctions[0]);
+    Self.LV.Items[line].SubItems[11] := ownConvert.BoolToStr10(vehicle.slotFunctions[0]);
 
     str := '';
     for var i := 1 to 4 do
-      str := str + ownConvert.BoolToStr10(HV.slotFunctions[i]);
+      str := str + ownConvert.BoolToStr10(vehicle.slotFunctions[i]);
     Self.LV.Items[line].SubItems[12] := str;
 
     str := '';
     for var i := 5 to 8 do
-      str := str + ownConvert.BoolToStr10(HV.slotFunctions[i]);
+      str := str + ownConvert.BoolToStr10(vehicle.slotFunctions[i]);
     Self.LV.Items[line].SubItems[13] := str;
 
     str := '';
     for var i := 9 to 12 do
-      str := str + ownConvert.BoolToStr10(HV.slotFunctions[i]);
+      str := str + ownConvert.BoolToStr10(vehicle.slotFunctions[i]);
     Self.LV.Items[line].SubItems[14] := str;
 
     str := '';
     for var i := 13 to 20 do
     begin
-      str := str + ownConvert.BoolToStr10(HV.slotFunctions[i]);
+      str := str + ownConvert.BoolToStr10(vehicle.slotFunctions[i]);
       if (i = 16) then
         str := str + ' ';
     end;
@@ -198,7 +198,7 @@ begin
     str := '';
     for var i := 21 to 28 do
     begin
-      str := str + ownConvert.BoolToStr10(HV.slotFunctions[i]);
+      str := str + ownConvert.BoolToStr10(vehicle.slotFunctions[i]);
       if (i = 24) then
         str := str + ' ';
     end;
@@ -222,23 +222,23 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVTableData.AddHV(line: Integer; HV: THV);
+procedure TRVTableData.AddRV(line: Integer; vehicle: TRV);
 var LI: TListItem;
   addr: Pointer;
 begin
   LI := Self.LV.Items.Insert(line);
 
   GetMem(addr, 3);
-  Integer(addr^) := HV.addr;
-  LI.Caption := IntToStr(HV.addr);
+  Integer(addr^) := vehicle.addr;
+  LI.Caption := IntToStr(vehicle.addr);
 
   for var i := 0 to Self.LV.Columns.Count - 1 do
     LI.SubItems.Add('');
 
-  Self.UpdateLine(HV);
+  Self.UpdateLine(vehicle);
 end;
 
-procedure THVTableData.RemoveHV(line: Integer);
+procedure TRVTableData.RemoveRV(line: Integer);
 begin
   Self.LV.Items.Delete(line);
 end;
@@ -249,6 +249,6 @@ initialization
 
 finalization
 
-HVTableData.Free();
+RVTableData.Free();
 
 end.// unit

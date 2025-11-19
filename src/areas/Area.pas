@@ -145,8 +145,8 @@ type
     procedure DkNUZStart(Sender: TIDContext);
     procedure DkNUZStop(Sender: TIDContext);
 
-    procedure DkHvFuncsSetOk(Sender: TObject; data: Pointer);
-    procedure DkHvFuncsSetErr(Sender: TObject; data: Pointer);
+    procedure DkRvFuncsSetOk(Sender: TObject; data: Pointer);
+    procedure DkRvFuncsSetErr(Sender: TObject; data: Pointer);
 
     procedure DkMenuShowOsv(Sender: TIDContext);
     procedure DkMenuShowLok(Sender: TIDContext);
@@ -223,18 +223,18 @@ type
     procedure PanelClick(Sender: TIDContext; blokid: Integer; Button: TPanelButton; params: string = '');
     procedure PanelEscape(Sender: TIDContext);
     procedure PanelMessage(Sender: TIDContext; recepient: string; msg: string);
-    procedure PanelHVList(Sender: TIDContext);
+    procedure PanelRVList(Sender: TIDContext);
     procedure PanelTrainChange(Sender: TIDContext; trainstr: TStrings);
-    procedure PanelMoveLok(Sender: TIDContext; lok_addr: word; new_or: string);
+    procedure PanelRVMove(Sender: TIDContext; lok_addr: word; new_or: string);
     procedure PanelZAS(Sender: TIDContext; str: TStrings);
     procedure PanelDKClick(SenderPnl: TIDContext; Button: TPanelButton);
     procedure PanelLokoReq(Sender: TIDContext; str: TStrings);
     procedure PanelHlaseni(Sender: TIDContext; str: TStrings);
     procedure PanelDkMenuClick(Sender: TIDContext; rootItem, subItem: string);
 
-    procedure PanelHVAdd(Sender: TIDContext; str: string);
-    procedure PanelHVRemove(Sender: TIDContext; addr: Integer);
-    procedure PanelHVEdit(Sender: TIDContext; str: string);
+    procedure PanelRVAdd(Sender: TIDContext; str: string);
+    procedure PanelRVRemove(Sender: TIDContext; addr: Integer);
+    procedure PanelRVEdit(Sender: TIDContext; str: string);
 
     function PanelGetTrains(Sender: TIDContext): string;
     procedure PanelRemoveTrain(Sender: TIDContext; train_index: Integer);
@@ -282,8 +282,8 @@ implementation
 /// /////////////////////////////////////////////////////////////////////////////
 
 uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, TechnologieJC,
-  TJCDatabase, ownConvert, TCPServerPanel, AreaDb, block, THVDatabase, TrainDb,
-  UserDb, THnaciVozidlo, TrakceIFace, user, PanelConnData, fRegulator, RegulatorTCP,
+  TJCDatabase, ownConvert, TCPServerPanel, AreaDb, block, TRVDatabase, TrainDb,
+  UserDb, TRailVehicle, TrakceIFace, user, PanelConnData, fRegulator, RegulatorTCP,
   ownStrUtils, train, changeEvent, TrakceC, ConfSeq, Config, timeHelper,
   BlockCrossing;
 
@@ -733,8 +733,8 @@ begin
 
   // zjistime RUC u vsech hnacich vozidel
   for var addr: Integer := 0 to _MAX_ADDR - 1 do
-    if ((HVDb[addr] <> nil) and (HVDb[addr].state.Area = Self)) then
-      HVDb[addr].UpdatePanelRuc(false);
+    if ((RVDb[addr] <> nil) and (RVDb[addr].state.Area = Self)) then
+      RVDb[addr].UpdatePanelRuc(false);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -843,7 +843,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // pozadavek na ziskani sezmu hnacich vozidel
-procedure TArea.PanelHVList(Sender: TIDContext);
+procedure TArea.PanelRVList(Sender: TIDContext);
 begin
   // kontrola opravneni klienta
   if (not IsReadable(Sender)) then
@@ -854,8 +854,8 @@ begin
 
   var str: string := 'HV;LIST;{';
   for var addr: Integer := 0 to _MAX_ADDR - 1 do
-    if ((Assigned(HVDb[addr])) and (HVDb[addr].state.Area = Self)) then
-      str := str + '[{' + HVDb[addr].GetPanelLokString(full) + '}]';
+    if ((Assigned(RVDb[addr])) and (RVDb[addr].state.Area = Self)) then
+      str := str + '[{' + RVDb[addr].GetPanelLokString(full) + '}]';
   str := str + '}';
   Self.SendLn(Sender, str);
 end;
@@ -937,7 +937,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.PanelMoveLok(Sender: TIDContext; lok_addr: word; new_or: string);
+procedure TArea.PanelRVMove(Sender: TIDContext; lok_addr: word; new_or: string);
 begin
   if (not IsWritable(Sender)) then
   begin
@@ -951,24 +951,24 @@ begin
     Self.SendLn(Sender, 'HV;MOVE;' + IntToStr(lok_addr) + ';ERR;Tato OR neexistuje!');
     Exit();
   end;
-  if (not Assigned(HVDb[lok_addr])) then
+  if (not Assigned(RVDb[lok_addr])) then
   begin
     Self.SendLn(Sender, 'HV;MOVE;' + IntToStr(lok_addr) + ';ERR;HV neexistuje!');
     Exit();
   end;
-  if (HVDb[lok_addr].state.train > -1) then
+  if (RVDb[lok_addr].state.train > -1) then
   begin
     Self.SendLn(Sender, 'HV;MOVE;' + IntToStr(lok_addr) + ';ERR;HV přiřazeno vlaku ' +
-      Trains.GetTrainNameByIndex(HVDb[lok_addr].state.train) + '!');
+      Trains.GetTrainNameByIndex(RVDb[lok_addr].state.train) + '!');
     Exit();
   end;
-  if (HVDb[lok_addr].state.Area <> Self) then
+  if (RVDb[lok_addr].state.Area <> Self) then
   begin
     Self.SendLn(Sender, 'HV;MOVE;' + IntToStr(lok_addr) + ';ERR;HV nepatří této stanici!');
     Exit();
   end;
 
-  HVDb[lok_addr].MoveToArea(new);
+  RVDb[lok_addr].MoveToArea(new);
   Self.SendLn(Sender, 'HV;MOVE;' + IntToStr(lok_addr) + ';OK');
 end;
 
@@ -1389,9 +1389,9 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.PanelHVAdd(Sender: TIDContext; str: string);
+procedure TArea.PanelRVAdd(Sender: TIDContext; str: string);
 var
-  HV: THV;
+  vehicle: TRV;
 begin
   if (Self.PanelDbRights(Sender) < write) then
   begin
@@ -1400,7 +1400,7 @@ begin
   end;
 
   try
-    HV := HVDb.Add(str, Self);
+    vehicle := RVDb.Add(str, Self);
   except
     on E: Exception do
     begin
@@ -1409,29 +1409,29 @@ begin
     end;
   end;
 
-  Self.SendLn(Sender, 'HV;ADD;' + HV.addrStr + ';OK');
+  Self.SendLn(Sender, 'HV;ADD;' + vehicle.addrStr + ';OK');
 end;
 
-procedure TArea.PanelHVRemove(Sender: TIDContext; addr: Integer);
+procedure TArea.PanelRVRemove(Sender: TIDContext; addr: Integer);
 begin
   if (Self.PanelDbRights(Sender) < write) then
   begin
     Self.SendLn(Sender, 'HV;REMOVE;' + IntToStr(addr) + ';ERR;Přístup odepřen');
     Exit();
   end;
-  if (HVDb[addr] = nil) then
+  if (RVDb[addr] = nil) then
   begin
     Self.SendLn(Sender, 'HV;REMOVE;' + IntToStr(addr) + ';ERR;Loko neexsituje');
     Exit();
   end;
-  if (HVDb[addr].state.Area <> Self) then
+  if (RVDb[addr].state.Area <> Self) then
   begin
     Self.SendLn(Sender, 'HV;REMOVE;' + IntToStr(addr) + ';ERR;Loko se nenachází ve stanici ' + Self.name);
     Exit();
   end;
 
   try
-    HVDb.Remove(addr);
+    RVDb.Remove(addr);
   except
     on E: Exception do
       Self.SendLn(Sender, 'HV;REMOVE;' + IntToStr(addr) + ';ERR;' + E.Message);
@@ -1440,7 +1440,7 @@ begin
   Self.SendLn(Sender, 'HV;REMOVE;' + IntToStr(addr) + ';OK');
 end;
 
-procedure TArea.PanelHVEdit(Sender: TIDContext; str: string);
+procedure TArea.PanelRVEdit(Sender: TIDContext; str: string);
 var addr: Integer;
 begin
   if (Self.PanelDbRights(Sender) < write) then
@@ -1455,21 +1455,21 @@ begin
     ExtractStringsEx(['|'], [], str, data);
     addr := StrToInt(data[4]);
     data.Free();
-    if (HVDb[addr] = nil) then
+    if (RVDb[addr] = nil) then
     begin
       Self.SendLn(Sender, 'HV;EDIT;' + IntToStr(addr) + ';ERR;Loko neexistuje');
       Exit();
     end;
-    if (HVDb[addr].state.Area <> Self) then
+    if (RVDb[addr].state.Area <> Self) then
     begin
       Self.SendLn(Sender, 'HV;EDIT;' + IntToStr(addr) + ';ERR;Loko se nenachází ve stanici ' + Self.name);
       Exit();
     end;
 
-    HVDb[addr].UpdateFromPanelString(str);
+    RVDb[addr].UpdateFromPanelString(str);
 
-    if (HVDb[addr].acquired) then
-      HVDb[addr].StateFunctionsToSlotFunctions(TTrakce.callback(), TTrakce.callback());
+    if (RVDb[addr].acquired) then
+      RVDb[addr].StateFunctionsToSlotFunctions(TTrakce.callback(), TTrakce.callback());
 
     Self.SendLn(Sender, 'HV;EDIT;' + IntToStr(addr) + ';OK');
   except
@@ -1560,22 +1560,22 @@ begin
       // zkontrolujeme vsechna LOKO
       for var i: Integer := 0 to data.Count - 1 do
       begin
-        var HV: THV := HVDb[StrToInt(data[i])];
-        if (HV = nil) then
+        var vehicle: TRV := RVDb[StrToInt(data[i])];
+        if (vehicle = nil) then
         begin
           Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Loko ' + data[i] + ' neexistuje');
           Exit();
         end;
 
         // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
-        if ((HV.state.Area <> Self) and (rights <> TAreaRights.superuser)) then
+        if ((vehicle.state.Area <> Self) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Loko ' + data[i] + ' se nenachází ve stanici');
           Exit();
         end;
 
         // nelze vygenerovat token pro loko, ktere je uz v regulatoru
-        if ((HV.state.regulators.Count > 0) and (rights <> TAreaRights.superuser)) then
+        if ((vehicle.state.regulators.Count > 0) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Loko ' + data[i] + ' již otevřeno v regulátoru');
           Exit();
@@ -1586,8 +1586,8 @@ begin
       var line: string := 'LOK-TOKEN;OK;';
       for var i: Integer := 0 to data.Count - 1 do
       begin
-        var HV: THV := HVDb[StrToInt(data[i])];
-        line := line + '[' + IntToStr(HV.addr) + '|' + HV.GetToken() + ']';
+        var vehicle: TRV := RVDb[StrToInt(data[i])];
+        line := line + '[' + IntToStr(vehicle.addr) + '|' + vehicle.GetToken() + ']';
       end;
       Self.SendLn(Sender, line);
 
@@ -1617,22 +1617,22 @@ begin
       // zkontrolujeme vsechna LOKO
       for var i: Integer := 0 to data.Count - 1 do
       begin
-        var HV: THV := HVDb[StrToInt(data[i])];
-        if (HV = nil) then
+        var vehicle: TRV := RVDb[StrToInt(data[i])];
+        if (vehicle = nil) then
         begin
           Self.SendLn(Sender, 'LOK-REQ;ERR;Loko ' + data[i] + ' neexistuje');
           Exit();
         end;
 
         // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
-        if ((HV.state.Area <> Self) and (rights <> TAreaRights.superuser)) then
+        if ((vehicle.state.Area <> Self) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-REQ;ERR;Loko ' + data[i] + ' se nenachází ve stanici');
           Exit();
         end;
 
         // nelze vygenerovat token pro loko, ktere je uz v regulatoru
-        if ((HV.state.regulators.Count > 0) and (rights <> TAreaRights.superuser)) then
+        if ((vehicle.state.regulators.Count > 0) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-REQ;ERR;Loko ' + data[i] + ' již otevřeno v regulátoru');
           Exit();
@@ -1650,8 +1650,8 @@ begin
       // lokomotivy priradime regulatoru
       for var i: Integer := 0 to data.Count - 1 do
       begin
-        var HV: THV := HVDb[StrToInt(data[i])];
-        TCPRegulator.LokToRegulator(Self.m_state.regPlease, HV);
+        var vehicle: TRV := RVDb[StrToInt(data[i])];
+        TCPRegulator.LokToRegulator(Self.m_state.regPlease, vehicle);
       end;
 
       // zrusit zadost regulatoru
@@ -1711,12 +1711,12 @@ begin
       begin
         // vsechny vlaky na useku
         for var j: Integer := 0 to track.Trains.Count - 1 do
-          for var addr: Integer in Trains[track.Trains[j]].HVs do
-            line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
+          for var addr: Integer in Trains[track.Trains[j]].vehicles do
+            line := line + '[{' + RVDb[addr].GetPanelLokString() + '}]';
       end else begin
         // konkretni vlak
-        for var addr: Integer in Trains[track.Trains[traini]].HVs do
-          line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
+        for var addr: Integer in Trains[track.Trains[traini]].vehicles do
+          line := line + '[{' + RVDb[addr].GetPanelLokString() + '}]';
       end;
 
       line := line + '}';
@@ -2065,18 +2065,18 @@ begin
       if ((subItem = 'ZVUK>') or (subItem = 'ZVUK<')) then
       begin
         PanelServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
-        trakce.LoksSetFunc(_SOUND_FUNC, (subItem = 'ZVUK>'), TTrakce.callback(Self.DkHvFuncsSetOk, Sender),
-          TTrakce.callback(Self.DkHvFuncsSetErr, Sender));
+        trakce.LoksSetFunc(_SOUND_FUNC, (subItem = 'ZVUK>'), TTrakce.callback(Self.DkRvFuncsSetOk, Sender),
+          TTrakce.callback(Self.DkRvFuncsSetErr, Sender));
       end else if (subItem = 'ZVUK ztlum') then
       begin
         PanelServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
-        trakce.TurnOffSound(TTrakce.callback(Self.DkHvFuncsSetOk, Sender),
-          TTrakce.callback(Self.DkHvFuncsSetErr, Sender))
+        trakce.TurnOffSound(TTrakce.callback(Self.DkRvFuncsSetOk, Sender),
+          TTrakce.callback(Self.DkRvFuncsSetErr, Sender))
       end else if (subItem = 'ZVUK obnov') then
       begin
         PanelServer.SendInfoMsg(Sender, 'Nastavuji funkce...');
-        trakce.RestoreSound(TTrakce.callback(Self.DkHvFuncsSetOk, Sender),
-          TTrakce.callback(Self.DkHvFuncsSetErr, Sender));
+        trakce.RestoreSound(TTrakce.callback(Self.DkRvFuncsSetOk, Sender),
+          TTrakce.callback(Self.DkRvFuncsSetErr, Sender));
       end;
     end;
   end;
@@ -2104,11 +2104,11 @@ var
 begin
   menustr := '-,';
 
-  if (not HVDb.AllAcquiredHVsHaveActiveFunc(_SOUND_FUNC)) then
+  if (not RVDb.AllAcquiredRVsHaveActiveFunc(_SOUND_FUNC)) then
     menustr := menustr + 'ZVUK>,';
-  if (HVDb.AnyAcquiredHVHasActiveFunc(_SOUND_FUNC)) then
+  if (RVDb.AnyAcquiredRVHasActiveFunc(_SOUND_FUNC)) then
     menustr := menustr + 'ZVUK<,ZVUK ztlum,';
-  if (HVDb.AnyHvToRestoreFunc(_SOUND_FUNC)) then
+  if (RVDb.AnyRvToRestoreFunc(_SOUND_FUNC)) then
     menustr := menustr + 'ZVUK obnov,';
 
   if (menustr = '-,') then
@@ -2123,7 +2123,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TArea.DkHvFuncsSetOk(Sender: TObject; data: Pointer);
+procedure TArea.DkRVFuncsSetOk(Sender: TObject; data: Pointer);
 var
   Panel: TIDContext;
 begin
@@ -2131,7 +2131,7 @@ begin
   PanelServer.SendInfoMsg(Panel, 'Funkce nastaveny.');
 end;
 
-procedure TArea.DkHvFuncsSetErr(Sender: TObject; data: Pointer);
+procedure TArea.DkRVFuncsSetErr(Sender: TObject; data: Pointer);
 var
   Panel: TIDContext;
 begin

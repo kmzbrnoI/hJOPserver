@@ -201,7 +201,7 @@ type
 implementation
 
 uses GetSystems, RCSc, BlockDb, Area, BlockSignal, Logging,
-  TJCDatabase, fMain, TCPServerPanel, BlockTrack, BlockLinker, TrainDb, THVDatabase,
+  TJCDatabase, fMain, TCPServerPanel, BlockTrack, BlockLinker, TrainDb, TRVDatabase,
   appEv, timeHelper, ownConvert, Graphics, colorHelper, TechnologieJC;
 
 constructor TBlkRailway.Create(index: Integer);
@@ -1182,9 +1182,9 @@ begin
   else if (Self.Train.wantedSpeed = 0) then
     fg := TJopColor.red;
 
-  if ((Self.Train.HasAnyHVNote()) or (Self.Train.sdata.note <> '')) then
+  if ((Self.Train.HasAnyRVNote()) or (Self.Train.sdata.note <> '')) then
     bg := TJopColor.turqDark;
-  if ((train.IsAnyHVManual()) or (train.stolen)) then
+  if ((train.IsAnyRVManual()) or (train.stolen)) then
     bg := TJopColor.brown;
 
   Result := Self.Train.name + '|';
@@ -1200,8 +1200,8 @@ begin
     Result := Result + ownConvert.ColorToStr(TJopColor.turq) + '|';
 
   Result := Result + '{';
-  for var addr: Integer in Self.Train.HVs do
-    Result := Result + HVDb[addr].name + '|';
+  for var addr: Integer in Self.Train.vehicles do
+    Result := Result + RVDb[addr].name + '|';
   Result := Result + '}|';
 
   if (not trainPredict) then

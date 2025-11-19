@@ -105,11 +105,11 @@ type
     L_BlkPocet: TLabel;
     P_Blk_Left: TPanel;
     E_dataload_block: TEdit;
-    TS_HV: TTabSheet;
-    LV_HV: TListView;
-    P_HV_Pozadi: TPanel;
-    P_HV_Left: TPanel;
-    E_dataload_HV_dir: TEdit;
+    TS_RV: TTabSheet;
+    LV_Vehicles: TListView;
+    P_RV_Pozadi: TPanel;
+    P_RV_Left: TPanel;
+    E_dataload_RV_dir: TEdit;
     TS_Trains: TTabSheet;
     LV_Trains: TListView;
     P_Trains_Bg: TPanel;
@@ -162,7 +162,7 @@ type
     MI_Save_config: TMenuItem;
     S_locos_acquired: TShape;
     Label1: TLabel;
-    PM_HV: TPopupMenu;
+    PM_RV: TPopupMenu;
     PM_Loco_Edit: TMenuItem;
     PM_Loco_Reg: TMenuItem;
     N6: TMenuItem;
@@ -196,7 +196,7 @@ type
     B_FuncChange: TButton;
     CHB_LoadChanges: TCheckBox;
     AE_Main: TApplicationEvents;
-    SD_HV_Stats: TSaveDialog;
+    SD_RV_Stats: TSaveDialog;
     S_PTServer: TShape;
     L_PTServer: TLabel;
     MI_PT: TMenuItem;
@@ -213,16 +213,16 @@ type
     B_AB_Delete: TButton;
     B_BlkAdd: TButton;
     B_BlkDelete: TButton;
-    B_HV_Add: TButton;
-    B_HV_Delete: TButton;
+    B_RV_Add: TButton;
+    B_RV_Delete: TButton;
     B_train_delete: TButton;
-    B_HVStats_Export: TButton;
-    B_HVStats_Clear: TButton;
+    B_RVStats_Export: TButton;
+    B_RVStats_Clear: TButton;
     B_zes_add: TButton;
     B_zes_delete: TButton;
     B_User_Add: TButton;
     B_User_Delete: TButton;
-    E_dataload_HV_state: TEdit;
+    E_dataload_RV_state: TEdit;
     E_dataload_users_stat: TEdit;
     P_dataload_rcs: TPanel;
     CHB_RCS0_Show_Only_Active: TCheckBox;
@@ -298,7 +298,7 @@ type
     CHB_RCS1_Log: TCheckBox;
     CHB_RCS2_Log: TCheckBox;
     CHB_RCS3_Log: TCheckBox;
-    MI_SaveHVs: TMenuItem;
+    MI_SaveVehicles: TMenuItem;
     N2: TMenuItem;
     N3: TMenuItem;
     MI_ExitApp: TMenuItem;
@@ -334,10 +334,10 @@ type
     procedure B_zes_deleteClick(Sender: TObject);
     procedure LV_BoostersCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
-    procedure LV_HVChange(Sender: TObject; Item: TListItem; Change: TItemChange);
-    procedure LV_HVDblClick(Sender: TObject);
-    procedure B_HV_AddClick(Sender: TObject);
-    procedure B_HV_DeleteClick(Sender: TObject);
+    procedure LV_VehiclesChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+    procedure LV_VehiclesDblClick(Sender: TObject);
+    procedure B_RV_AddClick(Sender: TObject);
+    procedure B_RV_DeleteClick(Sender: TObject);
     procedure LV_BlocksCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure LV_BlocksDblClick(Sender: TObject);
@@ -357,11 +357,11 @@ type
     procedure LB_BriefLogDblClick(Sender: TObject);
     procedure LV_TrainsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure B_train_deleteClick(Sender: TObject);
-    procedure LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+    procedure LV_VehiclesCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure PM_Loco_EditClick(Sender: TObject);
     procedure PM_Loco_RegClick(Sender: TObject);
-    procedure PM_HVPopup(Sender: TObject);
+    procedure PM_RVPopup(Sender: TObject);
     procedure LV_JCCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure LB_BriefLogDrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
@@ -393,9 +393,9 @@ type
     procedure LV_MultiJCKeyPress(Sender: TObject; var Key: Char);
     procedure LV_UsersKeyPress(Sender: TObject; var Key: Char);
     procedure LV_BoostersKeyPress(Sender: TObject; var Key: Char);
-    procedure LV_HVKeyPress(Sender: TObject; var Key: Char);
+    procedure LV_VehiclesKeyPress(Sender: TObject; var Key: Char);
     procedure B_ClearStatsClick(Sender: TObject);
-    procedure B_HVStats_ExportClick(Sender: TObject);
+    procedure B_RVStats_ExportClick(Sender: TObject);
     procedure A_PT_StartExecute(Sender: TObject);
     procedure A_PT_StopExecute(Sender: TObject);
     procedure LV_RCS0_StateCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -421,7 +421,7 @@ type
     procedure B_FuncUpdateClick(Sender: TObject);
     procedure LV_BlocksKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-    procedure LV_HVKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure LV_VehiclesKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure LV_TrainsKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure LV_BoostersKeyDown(Sender: TObject; var Key: Word;
@@ -440,7 +440,7 @@ type
     procedure A_RCSs_GoExecute(Sender: TObject);
     procedure A_RCSs_StopExecute(Sender: TObject);
     procedure CHB_RCS0_LogClick(Sender: TObject);
-    procedure MI_SaveHVsClick(Sender: TObject);
+    procedure MI_SaveVehiclesClick(Sender: TObject);
     procedure MI_ExitAppClick(Sender: TObject);
 
   public const
@@ -595,15 +595,15 @@ uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   RCSc, TechnologieJC, Config, fConsole, AreaDb, BlockDb, ownGuiUtils,
   Block, BlockTrack, BlockTurnout, BlockSignal, BlockIR, Area, RCSIFace,
   BlockSummary, BlockCrossing, TJCDatabase, TrakceC, IfThenElse,
-  TCPServerPanel, DataBloky, DataHV, DataRCS, DataORs, DataZesilovac,
-  fBlkNew, fHVEdit, fJCEdit, fZesilovacEdit, THVDatabase, fBlkIR, fBlkCrossing,
+  TCPServerPanel, DataBloky, DataRV, DataRCS, DataORs, DataZesilovac,
+  fBlkNew, fVehicleEdit, fJCEdit, fZesilovacEdit, TRVDatabase, fBlkIR, fBlkCrossing,
   fBlkSignal, fBlkRailway, BlockLinker, TrainDb, DataTrains, DataUsers, fUserEdit, UserDb,
   fBlkTurnoutState, fBlkRailwayState, BlockRailway, TimeModel, fBlkLock,
   BlockLock, DataMultiJC, TMultiJCDatabase, fMJCEdit, BlockDisconnector,
   fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
   AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB, fBlkCrossingState,
   Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal, fBlkPst, BlockPst, fBlkSignalState,
-  fRychlostiEdit, THnaciVozidlo;
+  fRychlostiEdit, TRailVehicle;
 
 {$R *.dfm}
 
@@ -1506,13 +1506,13 @@ begin
   Self.G_locos_acquired.ForeColor := clBlue;
 
   Self.G_locos_acquired.MaxValue := 0;
-  for var addr := 0 to THVDatabase._MAX_ADDR - 1 do
-    if (HVDb[addr] <> nil) and (HVDb[addr].ShouldAcquire()) then
+  for var addr := 0 to TRVDatabase._MAX_ADDR - 1 do
+    if (RVDb[addr] <> nil) and (RVDb[addr].ShouldAcquire()) then
       Self.G_locos_acquired.MaxValue := Self.G_locos_acquired.MaxValue + 1;
   if (Self.G_locos_acquired.MaxValue = 0) then
     Self.G_locos_acquired.MaxValue := 1;
 
-  HVDb.TrakceAcquireAllUsed(Self.OnTrkAllAcquired, Self.OnTrkAcquireError, Self.OnTrkLocoAcquired);
+  RVDb.TrakceAcquireAllUsed(Self.OnTrkAllAcquired, Self.OnTrkAcquireError, Self.OnTrkLocoAcquired);
 end;
 
 procedure TF_Main.A_Locos_ReleaseExecute(Sender: TObject);
@@ -1520,7 +1520,7 @@ begin
   logging.Log('Loko: odhlašuji...', TLogLevel.llInfo, lsTrakce, True);
   Self.S_locos_acquired.Brush.Color := clBlue;
   Self.G_locos_acquired.ForeColor := clBlue;
-  HVDb.TrakceReleaseAllUsed(Self.OnTrkAllReleased, Self.OnTrkLocoReleased);
+  RVDb.TrakceReleaseAllUsed(Self.OnTrkAllReleased, Self.OnTrkLocoReleased);
 end;
 
 procedure TF_Main.OnTrkAllAcquired(Sender: TObject);
@@ -1664,8 +1664,8 @@ begin
   Self.SB1.Panels.Items[_SB_TRAKCE_STAV].Text := 'Připojování...';
   Self.S_Trakce_Connected.Brush.Color := clBlue;
   logging.Log('Centrála: připojování...', TLogLevel.llInfo, lsTrakce, True);
-  Self.B_HV_Add.Enabled := false;
-  Self.B_HV_Delete.Enabled := false;
+  Self.B_RV_Add.Enabled := false;
+  Self.B_RV_Delete.Enabled := false;
   Self.MI_Trk_Libs.Enabled := false;
   Application.ProcessMessages();
 end;
@@ -1707,14 +1707,14 @@ begin
   Self.S_Trakce_Connected.Brush.Color := clRed;
   Self.A_Locos_Acquire.Enabled := false;
   Self.A_Locos_Release.Enabled := false;
-  Self.B_HV_Add.Enabled := true;
+  Self.B_RV_Add.Enabled := true;
   Self.S_locos_acquired.Brush.Color := clRed;
   Self.G_locos_acquired.Progress := 0;
   Self.MI_Trk_Libs.Enabled := true;
   Self.UpdateSystemButtons();
 
   RegCollector.CloseAll();
-  HVTableData.LoadToTable();
+  RVTableData.LoadToTable();
 
   Self.S_DCC.Brush.Color := clGray;
   Self.A_DCC_Go.Enabled := false;
@@ -1723,7 +1723,7 @@ begin
   if (F_FuncsSet.Showing) then
     F_FuncsSet.Close();
 
-  HVDb.CSReset();
+  RVDb.CSReset();
   Application.ProcessMessages();
 
   // no clinets shoudl be connected
@@ -1858,26 +1858,26 @@ end;
 
 procedure TF_Main.PM_Loco_DeleteClick(Sender: TObject);
 begin
-  if (Self.B_HV_Delete.Enabled) then
-    Self.B_HV_DeleteClick(Self)
+  if (Self.B_RV_Delete.Enabled) then
+    Self.B_RV_DeleteClick(Self)
 end;
 
 procedure TF_Main.PM_Loco_EditClick(Sender: TObject);
 begin
-  if (Self.LV_HV.Selected <> nil) then
-    F_HVEdit.EditHV(HVDb[StrToInt(LV_HV.Selected.Caption)]);
+  if (Self.LV_Vehicles.Selected <> nil) then
+    F_RVEdit.EditVehicle(RVDb[StrToInt(LV_Vehicles.Selected.Caption)]);
 end;
 
 procedure TF_Main.MI_Loco_Tacho_ResetClick(Sender: TObject);
 begin
-  if (Self.LV_HV.Selected = nil) then
+  if (Self.LV_Vehicles.Selected = nil) then
     Exit();
-  var hv: THV := HVDb[StrToInt(LV_HV.Selected.Caption)];
+  var vehicle: TRV := RVDb[StrToInt(LV_Vehicles.Selected.Caption)];
 
-  if (StrMessageBox('Opravdu vyresetovat ujetou dráhu vozidla '+IntToStr(hv.addr)+'?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  if (StrMessageBox('Opravdu vyresetovat ujetou dráhu vozidla '+IntToStr(vehicle.addr)+'?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrYes) then
   begin
-    hv.ResetStats();
-    HVTableData.UpdateLine(hv);
+    vehicle.ResetStats();
+    RVTableData.UpdateLine(vehicle);
   end;
 end;
 
@@ -1897,8 +1897,8 @@ begin
     ZesTableData.UpdateTable();
   if (PC_1.ActivePage = TS_Trains) then
     TrainTableData.UpdateTable();
-  if (PC_1.ActivePage = Self.TS_HV) then
-    HVTableData.UpdateTable();
+  if (PC_1.ActivePage = Self.TS_RV) then
+    RVTableData.UpdateTable();
   if (PC_1.ActivePage = TS_Stanice) then
     ORsTableData.UpdateTable(true);
   if (PC_1.ActivePage = TS_Technologie) then
@@ -1929,13 +1929,13 @@ end;
 
 procedure TF_Main.PM_Loco_RegClick(Sender: TObject);
 begin
-  if (Self.LV_HV.Selected = nil) then
+  if (Self.LV_Vehicles.Selected = nil) then
     Exit();
 
   if (trakce.ConnectedSafe()) then
   begin
     try
-      RegCollector.Open(HVDb[StrToInt(Self.LV_HV.Selected.Caption)]);
+      RegCollector.Open(RVDb[StrToInt(Self.LV_Vehicles.Selected.Caption)]);
     except
       on E: Exception do
         StrMessageBox(E.Message, 'Varování', MB_OK OR MB_ICONWARNING);
@@ -2026,7 +2026,7 @@ begin
   for var rcsi := 0 to RCSs._RCSS_MAX do
     RCSTableData[rcsi] := TRCSTableData.Create(Self.LV_RCSs_State[rcsi], RCSs[rcsi]);
   TrainTableData := TTrainTableData.Create(Self.LV_Trains);
-  HVTableData := THVTableData.Create(Self.LV_HV);
+  RVTableData := TRVTableData.Create(Self.LV_Vehicles);
   ZesTableData := TZesTableData.Create(Self.LV_Boosters);
   ORsTableData := TORsTableData.Create(Self.LV_Stanice);
   MultiJCTableData := TMultiJCTableData.Create(Self.LV_MultiJC);
@@ -2265,15 +2265,15 @@ begin
   end;
 
   try
-    HVDb.SaveState(Self.E_dataload_HV_state.Text + '_');
+    RVDb.SaveState(Self.E_dataload_RV_state.Text + '_');
 
-    if (FileExists(Self.E_dataload_HV_state.Text)) then
-      DeleteFile(Self.E_dataload_HV_state.Text);
-    MoveFile(PChar(Self.E_dataload_HV_state.Text + '_'), PChar(Self.E_dataload_HV_state.Text));
-    DeleteFile(Self.E_dataload_HV_state.Text + '_');
+    if (FileExists(Self.E_dataload_RV_state.Text)) then
+      DeleteFile(Self.E_dataload_RV_state.Text);
+    MoveFile(PChar(Self.E_dataload_RV_state.Text + '_'), PChar(Self.E_dataload_RV_state.Text));
+    DeleteFile(Self.E_dataload_RV_state.Text + '_');
   except
     on E: Exception do
-      AppEvents.LogException(E, 'HvDb.SaveToDir');
+      AppEvents.LogException(E, 'RVDb.SaveToDir');
   end;
 
   try
@@ -2533,11 +2533,11 @@ end;
 
 procedure TF_Main.UpdateFuncMemo();
 begin
-  var all: TList<TPair<string, THVFuncType>> := FuncNames.All();
+  var all: TList<TPair<string, TRVFuncType>> := FuncNames.All();
   try
     Self.M_funcsVyznam.Clear();
     for var entry in all do
-      Self.M_funcsVyznam.Lines.Add(entry.Key + ':' + THV.HVFuncTypeToChar(entry.Value));
+      Self.M_funcsVyznam.Lines.Add(entry.Key + ':' + TRV.RVFuncTypeToChar(entry.Value));
   finally
     all.Free();
   end;
@@ -2547,12 +2547,12 @@ procedure TF_Main.B_ClearStatsClick(Sender: TObject);
 begin
   if (StrMessageBox('Opravdu smazat najeté bloky a kilometry všech hnacích vozidel?', 'Opravdu?',
     MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
-    HVDb.ClearAllStatistics();
+    RVDb.ClearAllStatistics();
 end;
 
 procedure TF_Main.OnFuncNameChange(Sender: TObject);
 begin
-  var all: TList<TPair<string, THVFuncType>> := FuncNames.All();
+  var all: TList<TPair<string, TRVFuncType>> := FuncNames.All();
   var strs := TStringList.Create();
   try
     for var entry in all do
@@ -2567,17 +2567,17 @@ begin
     Self.UpdateFuncMemo();
 end;
 
-procedure TF_Main.B_HVStats_ExportClick(Sender: TObject);
+procedure TF_Main.B_RVStats_ExportClick(Sender: TObject);
 var fn: string;
 begin
-  if (Self.SD_HV_Stats.Execute(Self.Handle)) then
+  if (Self.SD_RV_Stats.Execute(Self.Handle)) then
   begin
     try
-      if (RightStr(Self.SD_HV_Stats.FileName, 4) <> '.csv') then
-        fn := Self.SD_HV_Stats.FileName + '.csv'
+      if (RightStr(Self.SD_RV_Stats.FileName, 4) <> '.csv') then
+        fn := Self.SD_RV_Stats.FileName + '.csv'
       else
-        fn := Self.SD_HV_Stats.FileName;
-      HVDb.ExportStatistics(fn);
+        fn := Self.SD_RV_Stats.FileName;
+      RVDb.ExportStatistics(fn);
     except
       on E: Exception do
         ExceptionMessageBox('Nelze exportovat', E);
@@ -2585,32 +2585,32 @@ begin
   end;
 end;
 
-procedure TF_Main.B_HV_AddClick(Sender: TObject);
+procedure TF_Main.B_RV_AddClick(Sender: TObject);
 begin
-  F_HVEdit.NewHV();
+  F_RVEdit.NewVehicle();
 end;
 
-procedure TF_Main.B_HV_DeleteClick(Sender: TObject);
+procedure TF_Main.B_RV_DeleteClick(Sender: TObject);
 begin
-  if (Self.LV_HV.Selected = nil) then
+  if (Self.LV_Vehicles.Selected = nil) then
     Exit();
 
-  var hvs := Self.LVSelectedTexts(Self.LV_HV, 'HV', 'HV');
-  var response: Integer := StrMessageBox('Opravdu smazat ' + hvs + '?', '?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
+  var vehicles := Self.LVSelectedTexts(Self.LV_Vehicles, 'vozidlo', 'vozidla');
+  var response: Integer := StrMessageBox('Opravdu smazat ' + vehicles + '?', '?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
   if (response = mrYes) then
   begin
-    for var i := Self.LV_HV.Items.Count - 1 downto 0 do
+    for var i := Self.LV_Vehicles.Items.Count - 1 downto 0 do
     begin
-      var LI: TListItem := Self.LV_HV.Items[i];
+      var LI: TListItem := Self.LV_Vehicles.Items[i];
       if (LI.Selected) then
       begin
         var addr := StrToInt(LI.Caption);
         try
-          HVDb.Remove(addr);
+          RVDb.Remove(addr);
         except
           on E: Exception do
           begin
-            ExceptionMessageBox('Mazání HV ' + IntToStr(addr) + ' se nezdařilo:', E);
+            ExceptionMessageBox('Mazání vozidla ' + IntToStr(addr) + ' se nezdařilo:', E);
             Exit();
           end;
         end;
@@ -2772,10 +2772,10 @@ begin
   F_About.ShowModal;
 end;
 
-procedure TF_Main.PM_HVPopup(Sender: TObject);
+procedure TF_Main.PM_RVPopup(Sender: TObject);
 var i: Integer;
 begin
-  if (Self.LV_HV.Selected = nil) then
+  if (Self.LV_Vehicles.Selected = nil) then
   begin
     for i := 0 to (Sender as TPopupMenu).Items.Count - 1 do
       (Sender as TPopupMenu).Items.Items[i].Enabled := false;
@@ -2799,8 +2799,8 @@ begin
         TrainTableData.UpdateTable();
       if (Self.PC_1.ActivePage = Self.TS_Zesilovace) then
         ZesTableData.UpdateTable();
-      if (Self.PC_1.ActivePage = Self.TS_HV) then
-        HVTableData.UpdateTable();
+      if (Self.PC_1.ActivePage = Self.TS_RV) then
+        RVTableData.UpdateTable();
       if (Self.PC_1.ActivePage = Self.TS_VC) then
         JCTableData.UpdateTable();
       if (Self.PC_1.ActivePage = Self.TS_MultiJC) then
@@ -2813,7 +2813,7 @@ begin
       ABTableData.Update();
     end;
 
-    HVDb.UpdateTokenTimeout();
+    RVDb.UpdateTokenTimeout();
     Config.UpdateAutosave();
     Self.SB1LogUpdate();
   except
@@ -2964,7 +2964,7 @@ begin
   end;
 end;
 
-procedure TF_Main.MI_SaveHVsClick(Sender: TObject);
+procedure TF_Main.MI_SaveVehiclesClick(Sender: TObject);
 begin
   var response := StrMessageBox('Ukládání hnacích vozidel probíhá automaticky, manuální ukládání je potřeba pouze ve výjimečných situacích. Pokračovat?',
     'Otázka', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
@@ -2973,8 +2973,8 @@ begin
 
   Screen.Cursor := crHourGlass;
   try
-    HVDb.SaveData(Self.E_dataload_HV_dir.Text);
-    HVDb.SaveState(Self.E_dataload_HV_state.Text);
+    RVDb.SaveData(Self.E_dataload_RV_dir.Text);
+    RVDb.SaveState(Self.E_dataload_RV_state.Text);
   except
     on e: Exception do
       AppEvents.LogException(e);
@@ -3711,12 +3711,12 @@ begin
     Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
 end;
 
-procedure TF_Main.LV_HVChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_Main.LV_VehiclesChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  B_HV_Delete.Enabled := (LV_HV.Selected <> nil) and (not trakce.ConnectedSafe());
+  Self.B_RV_Delete.Enabled := (LV_Vehicles.Selected <> nil) and (not trakce.ConnectedSafe());
 end;
 
-procedure TF_Main.LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+procedure TF_Main.LV_VehiclesCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
   if (Item.SubItems.Count > 18) then
@@ -3730,35 +3730,35 @@ begin
   end;
 end;
 
-procedure TF_Main.LV_HVDblClick(Sender: TObject);
+procedure TF_Main.LV_VehiclesDblClick(Sender: TObject);
 begin
-  if (LV_HV.Selected = nil) then
+  if (LV_Vehicles.Selected = nil) then
     Exit();
 
   if (trakce.ConnectedSafe()) then
   begin
     try
-      RegCollector.Open(HVDb[StrToInt(Self.LV_HV.Selected.Caption)]);
+      RegCollector.Open(RVDb[StrToInt(Self.LV_Vehicles.Selected.Caption)]);
     except
       on E: Exception do
         ExceptionMessageBox(E);
     end;
   end else begin
-    F_HVEdit.EditHV(HVDb[StrToInt(LV_HV.Selected.Caption)]);
+    F_RVEdit.EditVehicle(RVDb[StrToInt(LV_Vehicles.Selected.Caption)]);
   end;
 end;
 
-procedure TF_Main.LV_HVKeyDown(Sender: TObject; var Key: Word;
+procedure TF_Main.LV_VehiclesKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if ((Key = VK_DELETE) and (Self.B_HV_Delete.Enabled)) then
-    Self.B_HV_DeleteClick(Self);
+  if ((Key = VK_DELETE) and (Self.B_RV_Delete.Enabled)) then
+    Self.B_RV_DeleteClick(Self);
 end;
 
-procedure TF_Main.LV_HVKeyPress(Sender: TObject; var Key: Char);
+procedure TF_Main.LV_VehiclesKeyPress(Sender: TObject; var Key: Char);
 begin
   if (Key = #13) then
-    Self.LV_HVDblClick(LV_Blocks);
+    Self.LV_VehiclesDblClick(LV_Blocks);
 end;
 
 procedure TF_Main.LV_BoostersCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
@@ -3806,7 +3806,7 @@ end;
 procedure TF_Main.DisableRemoveButtons();
 begin
   Self.B_BlkDelete.Enabled := false;
-  Self.B_HV_Delete.Enabled := false;
+  Self.B_RV_Delete.Enabled := false;
   Self.B_train_delete.Enabled := false;
   Self.B_zes_delete.Enabled := false;
   Self.B_User_Delete.Enabled := false;

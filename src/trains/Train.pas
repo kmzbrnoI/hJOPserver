@@ -4,12 +4,12 @@
 
 interface
 
-uses IniFiles, SysUtils, Classes, Forms, THnaciVozidlo, JsonDataObjects,
+uses IniFiles, SysUtils, Classes, Forms, TRailVehicle, JsonDataObjects,
      Generics.Collections, predvidanyOdjezd, Block, TrakceIFace, Math, IdContext,
      Logging, Area, ConfSeq, UPO;
 
 const
-  _MAX_TRAIN_HV = 4;
+  _MAX_TRAIN_VEHICLES = 4;
   _TRAVELED_REFRESH_PERIOD_MS = 980;
 
 type
@@ -18,7 +18,7 @@ type
   ENotOverriden = class(Exception);
   ENotStoppped = class(Exception);
 
-  TTrainHVs = TList<Integer>; // seznam adres hnacich vozidel na vlaku
+  TTrainRVs = TList<Integer>; // seznam adres hnacich vozidel na vlaku
 
   TTrainAcquire = record
     ok, err: TCb;
@@ -38,13 +38,13 @@ type
     length: Integer; // length of a train in centimeters
     typ: string; // MOs, Os, Mn, Pn, ...
     dir_L, dir_S: Boolean; // allowed directions
-    HVs: TTrainHVs; // locomotives (engines)
+    vehicles: TTrainRVs; // locomotives (engines)
     area: TObject; // Instance of TArea
 
     speed: Integer; // real speed passed to locomotives after all limitations
     wantedSpeed: Integer; // speed wanted by caller, before limitations
     maxSpeed: Cardinal; // max speed in km/h entered by user; maxSpeed = 0 <=> no limitation
-    direction: THVSite;
+    direction: TRVSite;
 
     front: TObject; // most forward block train is/was on (always instance of TBlkUsek)
     areaFrom: TObject; // instance of TArea or Nil
@@ -90,9 +90,9 @@ type
 
      procedure SetArea(area: TObject);
 
-     procedure HVComErr(Sender: TObject; Data: Pointer);
+     procedure RVComErr(Sender: TObject; Data: Pointer);
      procedure SetSpeed(speed: Integer);
-     procedure SetDirection(direction: THVSite);
+     procedure SetDirection(direction: TRVSite);
      procedure SetFront(front: TObject);
 
      function IsStolen(): Boolean;
@@ -101,7 +101,7 @@ type
      function IsOnlyInRailway(): Boolean;
 
      procedure UpdateTrainFromJson(train: TJsonObject; ok: TCb; err: TCb);
-     class procedure PtHVsListToDict(train: TJsonObject);
+     class procedure PtRVsListToDict(train: TJsonObject);
 
      procedure Log(msg: string; level: TLogLevel; source: TLogSource = lsAny);
 
@@ -118,7 +118,7 @@ type
 
      function GetPanelString(): string;   // vraci string, kterym je definovany vlak, do panelu
      procedure UpdateTrainFromPanel(train: TStrings; usek: TObject; area: TObject; ok: TCb; err: TCb);
-     procedure SetSpeedDirection(speed: Cardinal; dir: THVSite);
+     procedure SetSpeedDirection(speed: Cardinal; dir: TRVSite);
      procedure Acquire(ok: TCb; err: TCb);
      procedure UpdateFront();
      procedure ChangeDirection();
@@ -146,7 +146,7 @@ type
      procedure ForceRemoveAllRegulators();
      procedure EmergencyStop();
      procedure EmergencyStopRelease();
-     function HasAnyHVNote(): Boolean;
+     function HasAnyRVNote(): Boolean;
 
      procedure UpdateRailwaySpeed();
      function GetRailwaySpeed(var speed: Cardinal): Boolean;
@@ -167,7 +167,7 @@ type
      procedure CallChangeToTracks();
      function RucBarriers(): TList<TUPOItem>;
      procedure RucUPO(AContext: TIdContext; ref: TObject = nil; callbackOk: TNotifyEvent = nil; callbackEsc: TNotifyEvent = nil);
-     function IsAnyHVManual(): Boolean;
+     function IsAnyRVManual(): Boolean;
 
      procedure UpdateTraveled(msSinceLastUpdate: Cardinal);
 
@@ -178,7 +178,7 @@ type
      property station: TObject read data.area write SetArea;
      property speed: Integer read data.speed write SetSpeed;
      property wantedSpeed: Integer read data.wantedSpeed;
-     property direction: THVSite read data.direction write SetDirection;
+     property direction: TRVSite read data.direction write SetDirection;
      property stolen: Boolean read IsStolen;
      property front: TObject read data.front write SetFront;
      property length: Integer read data.length;
@@ -190,22 +190,22 @@ type
      property announcement: Boolean read data.announcement;
      property announcementPlayed: Boolean read data.announcementPlayed;
 
-     property HVs: TTrainHVs read data.HVs;
+     property vehicles: TTrainRVs read data.vehicles;
      property maxSpeed: Cardinal read GetMaxSpeed; // warning: this could be speed with no speed step
      property maxSpeedStep: Cardinal read GetMaxSpeedStep;
      property acquiring: Boolean read fAcquiring;
      property emergencyStopped: Boolean read _emergencyStopped;
      property traveled: Real read _traveled;
 
-     // uvolni stara hnaci vozidla z vlaku (pri zmene HV na vlaku)
-     class procedure UvolV(old: TTrainHVs; new: TTrainHVs);
+     // uvolni stara hnaci vozidla z vlaku (pri zmene RV na vlaku)
+     class procedure UvolV(old: TTrainRVs; new: TTrainRVs);
 
   end;
 
 implementation
 
-uses THVDatabase, ownStrUtils, TrainDb, BlockTrack, appEv,
-      DataHV, AreaDb, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
+uses TRVDatabase, ownStrUtils, TrainDb, BlockTrack, appEv,
+      DataRV, AreaDb, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
       fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
       TrakceC, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
       PanelConnData, JCBarriers, Config;
@@ -236,7 +236,7 @@ begin
   if (not train.Contains('front')) then
     raise Exception.Create('Vlak musí obsahovat pole "front"!');
 
-  TTrain.PtHVsListToDict(train);
+  TTrain.PtRVsListToDict(train);
   Self.UpdateTrainFromJson(train, ok, err);
 end;
 
@@ -246,7 +246,7 @@ begin
   Self.changed := false;
   Self.findex := index;
   Self.data.podj := TDictionary<Integer, TPOdj>.Create();
-  Self.data.HVs := TList<Integer>.Create();
+  Self.data.vehicles := TList<Integer>.Create();
   Self.data.announcementPlayed := false;
   Self.fAcquiring := false;
   Self._emergencyStopped := false;
@@ -259,7 +259,7 @@ begin
   Self.ReleaseAllLoko();
   Self.ClearPOdj();
   Self.data.podj.Free();
-  Self.data.HVs.Free();
+  Self.data.vehicles.Free();
 
   inherited;
 end;
@@ -276,7 +276,7 @@ begin
   Self.data.length := ini.ReadInteger(section, 'delka', 0);
   Self.data.typ := ini.ReadString(section, 'typ', '');
   Self.filefront := ini.ReadInteger(section, 'front', -1);
-  Self.data.direction := THVSite(ini.ReadInteger(section, 'smer', Integer(THVSite.odd)));
+  Self.data.direction := TRVSite(ini.ReadInteger(section, 'smer', Integer(TRVSite.odd)));
   Self.data.maxSpeed := ini.ReadInteger(section, 'maxRychlost', 0);
 
   Self.data.areaFrom := Areas.Get(ini.ReadString(section, 'z', ''));
@@ -287,19 +287,19 @@ begin
   var strings: TStrings := TStringList.Create();
   ExtractStrings([';', ','], [], PChar(ini.ReadString(section, 'HV', '')), strings);
 
-  while (strings.Count > _MAX_TRAIN_HV) do
-    strings.Delete(_MAX_TRAIN_HV);
+  while (strings.Count > _MAX_TRAIN_VEHICLES) do
+    strings.Delete(_MAX_TRAIN_VEHICLES);
 
-  // HV se nacitaji takto prapodivne pro osetreni pripadu, kdy u vlaku je uvedene HV, ktere neexistuje
-  Self.data.HVs.Clear();
+  // RV se nacitaji takto prapodivne pro osetreni pripadu, kdy u vlaku je uvedene RV, ktere neexistuje
+  Self.data.vehicles.Clear();
   try
     for var s in strings do
     begin
      var addr := StrToInt(s);
-     if (Assigned(HVDb[addr])) then
+     if (Assigned(RVDb[addr])) then
       begin
-       HVDb[addr].train := Self.index;
-       Self.data.HVs.Add(addr);
+       RVDb[addr].train := Self.index;
+       Self.data.vehicles.Add(addr);
       end;
     end;
   except
@@ -351,7 +351,7 @@ begin
   ini.WriteBool(section, 'hlaseni', Self.data.announcement);
 
   begin
-    var str := ownConvert.SerializeIntList(Self.HVs);
+    var str := ownConvert.SerializeIntList(Self.vehicles);
     ini.WriteString(section, 'HV', str);
   end;
 end;
@@ -367,8 +367,8 @@ begin
   Result := Result + ownConvert.BoolToStr10(Self.data.dir_S);
   Result := Result + ';' + IntToStr(Self.data.length) + ';' + Self.data.typ + ';{';
 
-  for var addr in Self.HVs do
-    Result := Result + '[{' + HVDb[addr].GetPanelLokString() + '}]';
+  for var addr in Self.vehicles do
+    Result := Result + '[{' + RVDb[addr].GetPanelLokString() + '}]';
   Result := Result + '};';
 
   if (Self.areaFrom <> nil) then
@@ -391,7 +391,6 @@ end;
 
 procedure TTrain.UpdateTrainFromPanel(train: TStrings; Usek: TObject; area: TObject; ok: TCb; err: TCb);
 var json: TJsonObject;
-    hvs, hv: TStrings;
 begin
   json := TJsonObject.Create();
   try
@@ -420,24 +419,24 @@ begin
     else
       json['maxSpeed'] := 0;
 
-    hvs := TStringList.Create();
-    hv := TStringList.Create();
+    var vehicles: TStrings := TStringList.Create();
+    var vehicle: TStrings := TStringList.Create();
     try
-      ExtractStringsEx([']'], ['['], train[6], hvs);
+      ExtractStringsEx([']'], ['['], train[6], vehicles);
 
-      for var s in hvs do
+      for var s in vehicles do
       begin
-        hv.Clear();
-        ExtractStringsEx(['|'], [], s, hv);
-        var straddr := hv[4];
-        var hvobj := json['hvs'].O[straddr];
-        hvobj['note'] := hv[3];
-        hvobj['sta'] := StrToInt(hv[7]);
-        hvobj['func'] := hv[8];
+        vehicle.Clear();
+        ExtractStringsEx(['|'], [], s, vehicle);
+        var straddr := vehicle[4];
+        var rvobj := json['vehicles'].O[straddr];
+        rvobj['note'] := vehicle[3];
+        rvobj['sta'] := StrToInt(vehicle[7]);
+        rvobj['func'] := vehicle[8];
       end;
     finally
-      hvs.Free();
-      hv.Free();
+      vehicles.Free();
+      vehicle.Free();
     end;
 
     Self.UpdateTrainFromJson(json, ok, err);
@@ -507,45 +506,45 @@ begin
   begin
     // vypocet smeru ze sipky
     if (Self.data.dir_L) then
-      Self.data.direction := THVSite.odd
+      Self.data.direction := TRVSite.odd
     else
-      Self.data.direction := THVSite.even;
+      Self.data.direction := TRVSite.even;
 
-    for var addr in Self.HVs do
-      HVDb[addr].OnPredictedSignalChange();
+    for var addr in Self.vehicles do
+      RVDb[addr].OnPredictedSignalChange();
   end;
 
-  if (train.O['hvs'].Count > _MAX_TRAIN_HV) then
+  if (train.O['vehicles'].Count > _MAX_TRAIN_VEHICLES) then
     raise Exception.Create('Překročen maximální počet hnacích vozidel na vlaku');
 
   var new := TList<Integer>.Create();
   try
-    for var addrhv in train.O['hvs'] do
+    for var addrrv in train.O['vehicles'] do
     begin
-      var hv : TJsonObject := addrhv.Value;
-      var addr := StrToInt(addrhv.Name);
+      var vehicle : TJsonObject := addrrv.Value;
+      var addr := StrToInt(addrrv.Name);
 
-      if (not Assigned(HVDb[addr])) then
+      if (not Assigned(RVDb[addr])) then
         raise Exception.Create('Loko '+IntToStr(addr)+' neexistuje na serveru!');
 
-      if ((HVDb[addr].train > -1) and (HVDb[addr].train <> Self.index)) then
-        raise Exception.Create('Loko '+IntToStr(addr)+' již přiřazena vlaku '+Trains.GetTrainNameByIndex(HVDb[addr].train));
+      if ((RVDb[addr].train > -1) and (RVDb[addr].train <> Self.index)) then
+        raise Exception.Create('Loko '+IntToStr(addr)+' již přiřazena vlaku '+Trains.GetTrainNameByIndex(RVDb[addr].train));
 
       if (new.Contains(addr)) then
         raise Exception.Create('Duplicitní loko!');
 
-      if (hv.Contains('note')) then
-        HVDb[addr].Data.note := hv['note'];
-      if (hv.Contains('sta')) then
-        HVDb[addr].state.siteA := THVSite(hv.I['sta']);
+      if (vehicle.Contains('note')) then
+        RVDb[addr].Data.note := vehicle['note'];
+      if (vehicle.Contains('sta')) then
+        RVDb[addr].state.siteA := TRVSite(vehicle.I['sta']);
 
-      HVDb[addr].train := Self.index;
+      RVDb[addr].train := Self.index;
 
-      if (hv.Contains('func')) then
+      if (vehicle.Contains('func')) then
       begin
-        var max_func := Min(System.Length(hv.S['func']), _HV_FUNC_MAX);
+        var max_func := Min(System.Length(vehicle.S['func']), _RV_FUNC_MAX);
         for var i := 0 to max_func do
-          HVDb[addr].state.functions[i] := (hv.S['func'][i+1] = '1');
+          RVDb[addr].state.functions[i] := (vehicle.S['func'][i+1] = '1');
       end;
 
       new.Add(addr);
@@ -591,12 +590,12 @@ begin
   addr := acq^.toAcquire[acq^.nextAcquire];
   acq^.nextAcquire := acq^.nextAcquire + 1;
 
-  if (not HVDb[addr].acquired) then
+  if (not RVDb[addr].acquired) then
   begin
-    HVDb[addr].TrakceAcquire(TTrakce.Callback(Self.LocoAcquiredOk, acq),
+    RVDb[addr].TrakceAcquire(TTrakce.Callback(Self.LocoAcquiredOk, acq),
                              TTrakce.Callback(Self.LocoAcquiredErr, acq));
   end else begin
-    HVDb[addr].StateFunctionsToSlotFunctions(TTrakce.Callback(Self.LocoAcquiredOk, acq),
+    RVDb[addr].StateFunctionsToSlotFunctions(TTrakce.Callback(Self.LocoAcquiredOk, acq),
                                              TTrakce.Callback(Self.LocoAcquiredErr, acq));
   end;
 end;
@@ -616,9 +615,9 @@ end;
 procedure TTrain.AllLocoAcquiredOk(newLoks: TList<Integer>);
 begin
   Self.fAcquiring := false;
-  Self.UvolV(Self.HVs, newLoks);
-  Self.data.HVs.Free();
-  Self.data.HVs := newLoks;
+  Self.UvolV(Self.vehicles, newLoks);
+  Self.data.vehicles.Free();
+  Self.data.vehicles := newLoks;
 
   Self.SetSpeedDirection(Self.speed, Self.direction);
   Blocks.ChangeTrainToAllRailways(Self);
@@ -639,7 +638,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class procedure TTrain.UvolV(old: TTrainHVs; new: TTrainHVs);
+class procedure TTrain.UvolV(old: TTrainRVs; new: TTrainRVs);
 var keep: TList<Integer>;
 begin
   keep := TList<Integer>.Create();
@@ -655,7 +654,7 @@ begin
       if (not keep.Contains(old_addr)) then
       begin
         // vozidlo, ktere neni v novem seznamu -> uvolnit
-        HVDb[old_addr].train := -1;
+        RVDb[old_addr].train := -1;
       end;
     end;
   finally
@@ -669,14 +668,14 @@ end;
 // pred uvolnenim loko take zastavime
 procedure TTrain.ReleaseAllLoko();
 begin
-  if ((not Assigned(HVDb)) or (not Assigned(trakce))) then Exit();
+  if ((not Assigned(RVDb)) or (not Assigned(trakce))) then Exit();
 
-  for var addr in Self.HVs do
+  for var addr in Self.vehicles do
   begin
-    if (not Assigned(HVDb[addr])) then
+    if (not Assigned(RVDb[addr])) then
       continue;
 
-    HVDb[addr].train := -1;
+    RVDb[addr].train := -1;
   end;
 end;
 
@@ -685,15 +684,15 @@ end;
 procedure TTrain.SetArea(area: TObject);
 begin
   Self.data.area := area;
-  for var addr in Self.HVs do
-    HVDb[addr].MoveToArea(area as TArea);
+  for var addr in Self.vehicles do
+    RVDb[addr].MoveToArea(area as TArea);
   Self.Data.announcementPlayed := false;
   Self.changed := true;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.SetSpeedDirection(speed: Cardinal; dir: THVSite);
+procedure TTrain.SetSpeedDirection(speed: Cardinal; dir: TRVSite);
 var dir_changed: Boolean;
 begin
   if ((Self.front <> nil) and (TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).speedUpdate)) then
@@ -714,28 +713,28 @@ begin
   if ((Self.front <> nil) and (TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).railway <> nil)) then
     TBlkRT(Self.front).railway.Change();
 
-  for var addr in Self.HVs do
+  for var addr in Self.vehicles do
   begin
-    HVDb[addr].OnExpectedSpeedChange();
+    RVDb[addr].OnExpectedSpeedChange();
     if (dir_changed) then
-      HVDb[addr].OnPredictedSignalChange();
+      RVDb[addr].OnPredictedSignalChange();
 
-    if (HVDb[addr].manual) then
+    if (RVDb[addr].manual) then
     begin
       Self.Log('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', llInfo);
       continue;
     end;
-    if (HVDb[addr].stolen) then
+    if (RVDb[addr].stolen) then
     begin
       Self.Log('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', llInfo);
       continue;
     end;
 
-    var direction := ownConvert.IntToBool(Integer(dir) xor Integer(HVDb[addr].state.siteA));
+    var direction := ownConvert.IntToBool(Integer(dir) xor Integer(RVDb[addr].state.siteA));
 
     try
-      HVDb[addr].SetSpeedDir(Self.data.speed, direction,
-                             TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
+      RVDb[addr].SetSpeedDir(Self.data.speed, direction,
+                             TTrakce.Callback(), TTrakce.Callback(Self.RVComErr), Self);
     except
       on E: Exception do
         AppEvents.LogException(E, 'TTrain.SetSpeedDirection');
@@ -758,7 +757,7 @@ begin
   Self.SetSpeedDirection(speed, Self.data.direction);
 end;
 
-procedure TTrain.SetDirection(direction: THVSite);
+procedure TTrain.SetDirection(direction: TRVSite);
 begin
   Self.SetSpeedDirection(Self.data.speed, direction);
 end;
@@ -767,8 +766,8 @@ procedure TTrain.EmergencyStop();
 begin
   Self._emergencyStopped := true;
 
-  for var addr in Self.HVs do
-    HVDb[addr].EmergencyStop(TTrakce.Callback(), TTrakce.Callback(Self.HVComErr), Self);
+  for var addr in Self.vehicles do
+    RVDb[addr].EmergencyStop(TTrakce.Callback(), TTrakce.Callback(Self.RVComErr), Self);
 
   Self.Log('Nouzové zastavení', llInfo);
   Self.SetSpeedDirection(Self.wantedSpeed, Self.direction);
@@ -787,7 +786,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrain.HVComErr(Sender: TObject; Data: Pointer);
+procedure TTrain.RVComErr(Sender: TObject; Data: Pointer);
 begin
   trakce.emergency := True;
   if (Self.data.area <> nil) then
@@ -798,8 +797,8 @@ end;
 
 function TTrain.IsStolen(): Boolean;
 begin
-  for var addr in Self.HVs do
-    if (HVDb[addr].stolen) then
+  for var addr in Self.vehicles do
+    if (RVDb[addr].stolen) then
       Exit(true);
   Result := false;
 end;
@@ -814,7 +813,7 @@ begin
   vezmi^.err := err;
 
   vezmi^.nextVezmi := 0;
-  while ((vezmi^.nextVezmi < Self.HVs.Count) and (not HVDb[Self.HVs[vezmi^.nextVezmi]].stolen)) do
+  while ((vezmi^.nextVezmi < Self.vehicles.Count) and (not RVDb[Self.vehicles[vezmi^.nextVezmi]].stolen)) do
     Inc(vezmi^.nextVezmi);
 
   Self.AcquireOk(Self, vezmi);
@@ -825,7 +824,7 @@ var vezmi: ^TVezmi;
 begin
   vezmi := Data;
 
-  if (vezmi^.nextVezmi >= Self.HVs.Count) then
+  if (vezmi^.nextVezmi >= Self.vehicles.Count) then
   begin
     Self.changed := true;
     Self.SetSpeedDirection(Self.speed, Self.direction);
@@ -835,14 +834,14 @@ begin
     Exit();
    end;
 
-  var addr: Integer := Self.HVs[vezmi^.nextVezmi];
+  var addr: Integer := Self.vehicles[vezmi^.nextVezmi];
 
   vezmi^.nextVezmi := vezmi^.nextVezmi + 1;
-  while ((vezmi^.nextVezmi < Self.HVs.Count) and (not HVDb[Self.HVs[vezmi^.nextVezmi]].stolen)) do
+  while ((vezmi^.nextVezmi < Self.vehicles.Count) and (not RVDb[Self.vehicles[vezmi^.nextVezmi]].stolen)) do
     Inc(vezmi^.nextVezmi);
 
   try
-    HVDb[addr].TrakceAcquire(TTrakce.Callback(Self.AcquireOk, vezmi),
+    RVDb[addr].TrakceAcquire(TTrakce.Callback(Self.AcquireOk, vezmi),
                              TTrakce.Callback(Self.AcquireErr, vezmi));
   except
     Self.AcquireErr(Sender, vezmi);
@@ -870,8 +869,8 @@ begin
     (Self.data.front as TBlkTrack).slowingReady := false;
   Self.data.front := front;
 
-  for var addr in Self.HVs do
-    HVDb[addr].OnPredictedSignalChange();
+  for var addr in Self.vehicles do
+    RVDb[addr].OnPredictedSignalChange();
 
   Self.changed := true;
 end;
@@ -889,11 +888,11 @@ begin
   Self.Log('Změna směru', llInfo);
 
   // zmenit orintaci stanoviste A hnacich vozidel
-  for var addr in Self.HVs do
+  for var addr in Self.vehicles do
   begin
-    case (HVDb[addr].state.siteA) of
-     THVSite.odd : HVDb[addr].state.siteA := THVSite.even;
-     THVSite.even : HVDb[addr].state.siteA := THVSite.odd;
+    case (RVDb[addr].state.siteA) of
+     TRVSite.odd : RVDb[addr].state.siteA := TRVSite.even;
+     TRVSite.even : RVDb[addr].state.siteA := TRVSite.odd;
     end;
   end;
 
@@ -904,8 +903,8 @@ begin
 
   // zmenit smer suupravy - dulezite pro zastaveni pred navestidlem
   case (Self.data.direction) of
-   THVSite.odd : Self.direction := THVSite.even;
-   THVSite.even : Self.direction := THVSite.odd;
+   TRVSite.odd : Self.direction := TRVSite.even;
+   TRVSite.even : Self.direction := TRVSite.odd;
   end;
 
   if (Self.front <> nil) then
@@ -963,18 +962,18 @@ end;
 procedure TTrain.LokDirChanged();
 begin
   if ((Self.wantedSpeed <> 0) or (Self.data.dir_L xor Self.data.dir_S) or
-      (Self.HVs.Count = 0) or ((Self.front <> nil) and (not TBlkTrack(Self.front).spnl.stationTrack))) then
+      (Self.vehicles.Count = 0) or ((Self.front <> nil) and (not TBlkTrack(Self.front).spnl.stationTrack))) then
     Exit();
 
-  var dir: Boolean := HVDb[Self.HVs[0]].stACurrentDirection;
+  var dir: Boolean := RVDb[Self.vehicles[0]].stACurrentDirection;
 
   if (dir = ownConvert.IntToBool(Integer(Self.direction))) then Exit();
-  for var i := 1 to Self.HVs.Count-1 do
-    if (dir <> HVDb[Self.HVs[i]].stACurrentDirection) then
+  for var i := 1 to Self.vehicles.Count-1 do
+    if (dir <> RVDb[Self.vehicles[i]].stACurrentDirection) then
       Exit();
 
-  // vsechna hv nastavena do opacneho smeru -> zmenit smer vlaku
-  Self.direction := THVSite(dir);
+  // vsechna vozidla nastavena do opacneho smeru -> zmenit smer vlaku
+  Self.direction := TRVSite(dir);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -983,11 +982,11 @@ procedure TTrain.ToggleHouk(desc: string);
 begin
   Self.Log('Aktivuji houkání ' + desc, llInfo);
 
-  for var addr: Integer in Self.HVs do
+  for var addr: Integer in Self.vehicles do
   begin
-    var HV := HVDb[addr];
-    if (HV.CanPlayHouk(desc)) then
-      trakce.LokFuncToggle(Self, HV, HV.funcDict[desc]);
+    var vehicle := RVDb[addr];
+    if (vehicle.CanPlayHouk(desc)) then
+      trakce.LokFuncToggle(Self, vehicle, vehicle.funcDict[desc]);
   end;
 end;
 
@@ -998,11 +997,11 @@ begin
   else
     Self.Log('Deaktivuji funkci ' + desc, llInfo);
 
-  for var addr: Integer in Self.HVs do
+  for var addr: Integer in Self.vehicles do
   begin
-    var HV := HVDb[addr];
-    if (HV.CanPlayHouk(desc)) then
-      HV.SetSingleFunc(HV.funcDict[desc], state, TTrakce.Callback(), TTrakce.Callback(), Self);
+    var vehicle := RVDb[addr];
+    if (vehicle.CanPlayHouk(desc)) then
+      vehicle.SetSingleFunc(vehicle.funcDict[desc], state, TTrakce.Callback(), TTrakce.Callback(), Self);
   end;
 end;
 
@@ -1132,8 +1131,8 @@ end;
 
 function TTrain.IsAnyLokoInRegulator(): Boolean;
 begin
-  for var hvaddr in Self.HVs do
-    if (HVDb[hvaddr].state.regulators.Count > 0) then
+  for var vehicleAddr in Self.vehicles do
+    if (RVDb[vehicleAddr].state.regulators.Count > 0) then
       Exit(true);
   Result := false;
 end;
@@ -1142,31 +1141,31 @@ end;
 
 procedure TTrain.ForceRemoveAllRegulators();
 begin
-  for var hvaddr: Integer in Self.HVs do
-    if (HVDb[hvaddr].state.regulators.Count > 0) then
-      HVDb[hvaddr].ForceRemoveAllRegulators();
+  for var vehicleAddr: Integer in Self.vehicles do
+    if (RVDb[vehicleAddr].state.regulators.Count > 0) then
+      RVDb[vehicleAddr].ForceRemoveAllRegulators();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrain.GetMaxSpeed(): Cardinal;
 begin
-  if (Self.HVs.Count = 0) then
+  if (Self.vehicles.Count = 0) then
   begin
     if (Self.data.maxSpeed > 0) then
-      Result := Min(Self.data.maxSpeed, THnaciVozidlo._DEFAUT_MAX_SPEED)
+      Result := Min(Self.data.maxSpeed, TRailVehicle._DEFAUT_MAX_SPEED)
     else
-      Result := THnaciVozidlo._DEFAUT_MAX_SPEED;
+      Result := TRailVehicle._DEFAUT_MAX_SPEED;
   end else begin
     var minimum: Cardinal;
     if (Self.data.maxSpeed > 0) then
-      minimum := Min(Self.data.maxSpeed, HVDb[Self.HVs[0]].Data.maxSpeed)
+      minimum := Min(Self.data.maxSpeed, RVDb[Self.vehicles[0]].Data.maxSpeed)
     else
-      minimum := HVDb[Self.HVs[0]].Data.maxSpeed;
+      minimum := RVDb[Self.vehicles[0]].Data.maxSpeed;
 
-    for var addr in Self.HVs do
-      if (HVDb[addr].Data.maxSpeed < minimum) then
-        minimum := HVDb[addr].Data.maxSpeed;
+    for var addr in Self.vehicles do
+      if (RVDb[addr].Data.maxSpeed < minimum) then
+        minimum := RVDb[addr].Data.maxSpeed;
 
     Result := minimum;
   end;
@@ -1193,8 +1192,8 @@ begin
 
   var signal: TBlkSignal := nil;
   case (Self.direction) of
-    THVSite.odd: signal := frontblk.signalL as TBlkSignal;
-    THVSite.even: signal := frontblk.signalS as TBlkSignal;
+    TRVSite.odd: signal := frontblk.signalL as TBlkSignal;
+    TRVSite.even: signal := frontblk.signalS as TBlkSignal;
   end;
 
   if ((signal <> nil) and (signal.SymbolType = TBlkSignalSymbol.main)) then
@@ -1223,14 +1222,14 @@ end;
 
 procedure TTrain.OnPredictedSignalChange();
 begin
-  for var addr in Self.HVs do
-    HVDb[addr].OnPredictedSignalChange();
+  for var addr in Self.vehicles do
+    RVDb[addr].OnPredictedSignalChange();
 end;
 
 procedure TTrain.OnExpectedSpeedChange();
 begin
-  for var addr in Self.HVs do
-    HVDb[addr].OnExpectedSpeedChange();
+  for var addr in Self.vehicles do
+    RVDb[addr].OnExpectedSpeedChange();
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1246,9 +1245,9 @@ begin
   json['dirS'] := Self.data.dir_S;
   json['dirL'] := Self.data.dir_L;
 
-  json.A['hvs'];
-  for var addr: Integer  in Self.data.HVs do
-    json.A['hvs'].Add(addr);
+  json.A['vehicles'];
+  for var addr: Integer  in Self.data.vehicles do
+    json.A['vehicles'].Add(addr);
 
   if (Self.data.area <> nil) then
     json['station'] := TArea(Self.data.area).id;
@@ -1274,27 +1273,27 @@ procedure TTrain.PutPtData(reqJson: TJsonObject; respJson: TJsonObject);
 begin
   if (not reqJson.Contains('name')) then
     reqJson['name'] := Self.name;
-  if (not reqJson.Contains('hvs')) then
-    for var hvaddr in Self.HVs do
-      reqJson.A['hvs'].Add(hvaddr);
+  if (not reqJson.Contains('vehicles')) then
+    for var vehicleAddr in Self.vehicles do
+      reqJson.A['vehicles'].Add(vehicleAddr);
 
-  TTrain.PtHVsListToDict(reqJson);
+  TTrain.PtRVsListToDict(reqJson);
   Self.UpdateTrainFromJson(reqJson, TTrakce.Callback(), TTrakce.Callback());
   Self.GetPtData(respJson['train']);
 end;
 
-class procedure TTrain.PtHVsListToDict(train: TJsonObject);
-var hvs: TList<Integer>;
+class procedure TTrain.PtRVsListToDict(train: TJsonObject);
+var rvs: TList<Integer>;
 begin
-  hvs := TList<Integer>.Create();
+  rvs := TList<Integer>.Create();
   try
-    for var hvaddr: Integer in train.A['hvs'] do
-      hvs.Add(hvaddr);
-    train.Remove('hvs');
-    for var hvaddr: Integer in hvs do
-      train.O['hvs'].O[IntToStr(hvaddr)];
+    for var vehicleAddr: Integer in train.A['vehicles'] do
+      rvs.Add(vehicleAddr);
+    train.Remove('vehicles');
+    for var vehicleAddr: Integer in rvs do
+      train.O['vehicles'].O[IntToStr(vehicleAddr)];
   finally
-    hvs.Free();
+    rvs.Free();
   end;
 end;
 
@@ -1411,11 +1410,11 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrain.HasAnyHVNote(): Boolean;
+function TTrain.HasAnyRVNote(): Boolean;
 begin
   Result := false;
-  for var addr in Self.HVs do
-    if (HVDb[addr].data.note <> '') then
+  for var addr in Self.vehicles do
+    if (RVDb[addr].data.note <> '') then
       Exit(true);
 end;
 
@@ -1450,7 +1449,7 @@ begin
     if (train_count > 1) then
       Result := Result + '!UVOL vlak,';
 
-    if (Self.HVs.Count > 0) then
+    if (Self.vehicles.Count > 0) then
     begin
       Result := Result + 'RUČ vlak,';
       if (TPanelConnData(SenderPnl.Data).maus) then
@@ -1547,26 +1546,26 @@ begin
     if (Self.data.note <> '') then
       Result.Add(CSItem('Poznámka: '+ Self.data.note));
 
-    for var i: Integer := 0 to Self.HVs.Count-1 do
+    for var i: Integer := 0 to Self.vehicles.Count-1 do
     begin
-      if (HVDb[Self.HVs[i]] <> nil) then
+      if (RVDb[Self.vehicles[i]] <> nil) then
       begin
-        var hv := HVDb[Self.HVs[i]];
+        var vehicle := RVDb[Self.vehicles[i]];
 
         var comment: string := '';
-        if (hv.manual) then
+        if (vehicle.manual) then
           comment := 'Ruční řízení jízdy i funkcí'
-        else if (hv.state.regulators.Count > 0) then
+        else if (vehicle.state.regulators.Count > 0) then
           comment := 'Ruční ovládání funkcí, jízdu řídí hJOP'
         else
           comment := 'Jízdu i funkce řídí hJOP';
 
-        Result.Add(CSItem('HV '+IntToStr(i+1)+': '+ hv.NiceName() + '  # ' + comment));
+        Result.Add(CSItem('Vozidlo '+IntToStr(i+1)+': '+ vehicle.NiceName() + '  # ' + comment));
 
-        for var regulator in hv.state.regulators do
+        for var regulator in vehicle.state.regulators do
         begin
           var user := TPanelConnData(regulator.conn.Data).regulator_user;
-          if (hv.manual) then
+          if (vehicle.manual) then
             Result.Add(CSItem('  Ruční řízení jízdy - '+user.fullName))
           else
             Result.Add(CSItem('  Ovládání funkcí - '+user.fullName));
@@ -1596,9 +1595,9 @@ end;
 function TTrain.RucBarriers(): TList<TUPOItem>;
 begin
   Result := TList<TUPOItem>.Create();
-  for var addr: Integer in Self.HVs do
-    if ((Assigned(HVDb[addr])) and (HVDb[addr].manual)) then
-      Result.Add(TJCBarHVManual.ToUPO(addr));
+  for var addr: Integer in Self.vehicles do
+    if ((Assigned(RVDb[addr])) and (RVDb[addr].manual)) then
+      Result.Add(TJCBarRVManual.ToUPO(addr));
 end;
 
 procedure TTrain.RucUPO(AContext: TIdContext; ref: TObject = nil; callbackOk: TNotifyEvent = nil; callbackEsc: TNotifyEvent = nil);
@@ -1611,10 +1610,10 @@ begin
   end;
 end;
 
-function TTrain.IsAnyHVManual(): Boolean;
+function TTrain.IsAnyRVManual(): Boolean;
 begin
-  for var addr: Integer in Self.HVs do
-    if ((Assigned(HVDb[addr])) and (HVDb[addr].manual)) then
+  for var addr: Integer in Self.vehicles do
+    if ((Assigned(RVDb[addr])) and (RVDb[addr].manual)) then
       Exit(true);
   Result := false;
 end;

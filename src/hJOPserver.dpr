@@ -21,7 +21,7 @@ uses
   version in 'helpers\version.pas',
   fZesilovacEdit in 'forms\fZesilovacEdit.pas' {F_Booster_Edit},
   fBlkRailway in 'blocks\forms\data\fBlkRailway.pas' {F_BlkRailway},
-  fHVEdit in 'hv\forms\fHVEdit.pas' {F_HVEdit},
+  fVehicleEdit in 'hv\forms\fVehicleEdit.pas' {F_RVEdit},
   fSystemInfo in 'forms\fSystemInfo.pas' {F_SystemInfo},
   fBlkTrack in 'blocks\forms\data\fBlkTrack.pas' {F_BlkTrack},
   fBlkTurnout in 'blocks\forms\data\fBlkTurnout.pas' {F_BlkTurnout},
@@ -50,12 +50,12 @@ uses
   BoosterDb in 'boosters\BoosterDb.pas',
   fBlkTurnoutState in 'blocks\forms\state\fBlkTurnoutState.pas' {F_BlkTurnoutState},
   TJCDatabase in 'jc\TJCDatabase.pas',
-  THVDatabase in 'hv\THVDatabase.pas',
-  THnaciVozidlo in 'hv\THnaciVozidlo.pas',
+  TRVDatabase in 'hv\TRVDatabase.pas',
+  TRailVehicle in 'hv\TRailVehicle.pas',
   Logging in 'Logging.pas',
   TCPServerPanel in 'net\TCPServerPanel.pas',
   DataRCS in 'tables\DataRCS.pas',
-  DataHV in 'tables\DataHV.pas',
+  DataRV in 'tables\DataRV.pas',
   DataJC in 'tables\DataJC.pas',
   DataBloky in 'tables\DataBloky.pas',
   DataZesilovac in 'tables\DataZesilovac.pas',
@@ -80,7 +80,7 @@ uses
   TMultiJCDatabase in 'jc\TMultiJCDatabase.pas',
   TechnologieMultiJC in 'jc\TechnologieMultiJC.pas',
   DataMultiJC in 'tables\DataMultiJC.pas',
-  fHVPomEdit in 'hv\forms\fHVPomEdit.pas' {F_HV_Pom},
+  fVehiclePomEdit in 'hv\forms\fVehiclePomEdit.pas' {F_RV_Pom},
   fMJCEdit in 'jc\forms\fMJCEdit.pas' {F_MJCEdit},
   ownStrUtils in 'helpers\ownStrUtils.pas',
   BlockDisconnector in 'blocks\BlockDisconnector.pas',
@@ -168,7 +168,7 @@ uses
   BlockProxy in 'blocks\BlockProxy.pas',
   ownGuiUtils in 'helpers\ownGuiUtils.pas',
   PTEndpointStatus in 'pt\PTEndpointStatus.pas',
-  RCSsc in 'rcs\rcssc.pas';
+  rcssc in 'rcs\rcssc.pas';
 
 {$R *.res}
 
@@ -198,7 +198,7 @@ uses
   Application.CreateForm(TF_UserEdit, F_UserEdit);
   Application.CreateForm(TF_BlkRailwayState, F_BlkRailwayState);
   Application.CreateForm(TF_BlkSignalEvent, F_BlkSignalEvent);
-  Application.CreateForm(TF_HV_Pom, F_HV_Pom);
+  Application.CreateForm(TF_RV_Pom, F_RV_Pom);
   Application.CreateForm(TF_MJCEdit, F_MJCEdit);
   Application.CreateForm(TF_FuncsSet, F_FuncsSet);
   Application.CreateForm(TF_BlkRTStopEvent, F_BlkRTStopEvent);
@@ -223,7 +223,7 @@ uses
   Application.CreateForm(TF_BlkRailway, F_BlkRailway);
   Application.CreateForm(TF_BlkLock, F_BlkLock);
   Application.CreateForm(TF_BlkDisconnector, F_BlkDisconnector);
-  Application.CreateForm(TF_HVEdit, F_HVEdit);
+  Application.CreateForm(TF_RVEdit, F_RVEdit);
   Application.CreateForm(TF_ModelTimeSet, F_ModelTimeSet);
   Application.CreateForm(TF_About, F_About);
 

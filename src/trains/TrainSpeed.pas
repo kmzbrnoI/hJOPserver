@@ -11,7 +11,7 @@ type
   public
    speed: Cardinal;
    trainTypeRe: string;
-   hvTransienceRe: string;
+   rvTransienceRe: string;
 
     constructor Create(speed: Cardinal; trainTypeRe: string; hvTransienceRe: string); overload;
     constructor Create(fileEntry: string); overload;
@@ -34,14 +34,14 @@ type
 
 implementation
 
-uses RegularExpressions, THVDatabase, ownStrUtils;
+uses RegularExpressions, TRVDatabase, ownStrUtils;
 
 constructor TTrainSpeed.Create(speed: Cardinal; trainTypeRe: string; hvTransienceRe: string);
 begin
   inherited Create();
   Self.speed := speed;
   Self.trainTypeRe := trainTypeRe;
-  Self.hvTransienceRe := hvTransienceRe;
+  Self.rvTransienceRe := hvTransienceRe;
 end;
 
 constructor TTrainSpeed.Create(fileEntry: string);
@@ -60,7 +60,7 @@ begin
 
     Self.speed := StrToInt(strs[0]);
     Self.trainTypeRe := strs[1];
-    Self.hvTransienceRe := strs[2];
+    Self.rvTransienceRe := strs[2];
   finally
     strs.Free();
   end;
@@ -68,7 +68,7 @@ end;
 
 function TTrainSpeed.FileStr(): string;
 begin
-  Result := IntToStr(Self.speed) + ',{' + Self.trainTypeRe + '},{' + Self.hvTransienceRe + '}';
+  Result := IntToStr(Self.speed) + ',{' + Self.trainTypeRe + '},{' + Self.rvTransienceRe + '}';
 end;
 
 function TTrainSpeed.Match(train: TTrain): Boolean;
@@ -78,11 +78,11 @@ begin
       ((train.typ <> '') or (not TRegEx.IsMatch(' ', '^('+Self.trainTypeRe+')$')))) then
     Exit(false);
 
-  if (train.HVs.Count = 0) then
+  if (train.vehicles.Count = 0) then
     Exit(false);
 
-  for var hvAddr in train.HVs do
-    if ((HVDb[hvAddr] <> nil) and (not TRegEx.IsMatch(IntToStr(HVDb[hvAddr].data.transience), Self.hvTransienceRe))) then
+  for var rvAddr in train.vehicles do
+    if ((RVDb[rvAddr] <> nil) and (not TRegEx.IsMatch(IntToStr(RVDb[rvAddr].data.transience), Self.rvTransienceRe))) then
       Exit(false);
 
   Result := true;
@@ -90,14 +90,14 @@ end;
 
 function TTrainSpeed.IsDefault(): Boolean;
 begin
-  Result := ((Self.trainTypeRe = '.*') and (Self.hvTransienceRe = '.*'));
+  Result := ((Self.trainTypeRe = '.*') and (Self.rvTransienceRe = '.*'));
 end;
 
 procedure TTrainSpeed.GetPtData(json: TJsonObject);
 begin
   json['speed'] := Self.speed;
   json['trainTypeRe'] := Self.trainTypeRe;
-  json['hvTransienceRe'] := Self.hvTransienceRe;
+  json['rvTransienceRe'] := Self.rvTransienceRe;
 end;
 
 class function TTrainSpeed.DefaultSpeed(speeds: TList<TTrainSpeed>; var speed: Cardinal): boolean;

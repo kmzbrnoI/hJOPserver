@@ -1,11 +1,13 @@
-﻿unit THnaciVozidlo;
+﻿unit TRailVehicle;
 
 {
   -------------------------- implementace ----------------------------------
-  ------------------------- HNACIHO VOZIDLA --------------------------------
+  ----------------------------  VOZIDLA ------------------------------------
+  Vozidlo = Zeleznicni vozidlo = Rail Vehicle.
+
   Digitalni adresa je jen jen pro cteni a lze ji nastavit jen v ctoru !
-  toto je schvalne kvuli zpusobu, kterym jsou HV ulozena v databazi
-  pri zmene adresy je potreba HV smazat a znovu vytvorit
+  toto je schvalne kvuli zpusobu, kterym jsou RV ulozena v databazi
+  pri zmene adresy je potreba RV smazat a znovu vytvorit
 
   Jak to funguje:
   Loko muze byt ve dvou rezimech:
@@ -29,10 +31,10 @@
   loko a ma omezenou casovou platnost na nekolik minut.
 
   Pozn.
-  Vsechny funkce spojene s nastavovanim dat HV maji parametr Sender
+  Vsechny funkce spojene s nastavovanim dat RV maji parametr Sender
   kam je vhodne dat bud konkretni regulator, nebo OR v pripade
   regulatoru klienta.
-  Informace o zmene dat HV je pak volana do vsech systemu mimo Senderu.
+  Informace o zmene dat RV je pak volana do vsech systemu mimo Senderu.
   Tedy napriklad, pokud je loko otevrene v 5 regulatorech a jeste na serveru
   a dojde ke zmene rychlosti v OR1, je informace o zmene rychlosti
   odeslana do OR2, OR3, OR4, OR5 a regulatoru na serveru, nikoliv
@@ -52,7 +54,7 @@ uses TrakceIFace, Classes, SysUtils, Area, Generics.Collections, IdContext,
   IniFiles, JsonDataObjects, Math;
 
 const
-  _HV_FUNC_MAX = 28; // maximalni funkcni cislo; funkce zacinaji na cisle 0
+  _RV_FUNC_MAX = 28; // maximalni funkcni cislo; funkce zacinaji na cisle 0
   _TOKEN_TIMEOUT_MIN = 3; // delka platnosti tokenu pro autorizaci hnaciho vozidla v minutach
   _TOKEN_LEN = 24; // delka autorizacniho tokenu pro prevzeti hnaciho vozidla
   _DEFAUT_MAX_SPEED = 120; // [km/h]
@@ -61,62 +63,62 @@ const
 
 type
   // v jakem smeru se nachazi stanoviste A
-  THVSite = (odd = 0, even = 1);
-  THVOptionalSite = (osNo = -1, osOdd = 0, osEven = 1);
-  TFunctions = array [0 .. _HV_FUNC_MAX] of Boolean;
+  TRVSite = (odd = 0, even = 1);
+  TRVOptionalSite = (osNo = -1, osOdd = 0, osEven = 1);
+  TFunctions = array [0 .. _RV_FUNC_MAX] of Boolean;
   TPomStatus = (unknown = -1, manual = 0, automat = 1, progr = 2, error = 3);
 
   // typ hnaciho vozidla
-  THVType = (other = -1, steam = 0, diesel = 1, motor = 2, electro = 3, car = 4);
+  TRVType = (other = -1, steam = 0, diesel = 1, motor = 2, electro = 3, car = 4);
 
   // mod posilani dat hnaciho vozidla klientovi
   // full: s POM
   TLokStringMode = (normal = 0, full = 1);
 
-  THVPomCV = record // jeden zaznam POM se sklada z
+  TRVPomCV = record // jeden zaznam POM se sklada z
     cv: Word; // oznaceni CV a
     value: Byte; // dat, ktera se maji do CV zapsat.
   end;
 
-  THVFuncType = (permanent = 0, momentary = 1);
+  TRVFuncType = (permanent = 0, momentary = 1);
 
-  THVData = record
+  TRVData = record
     name: string;
     owner: string;
     designation: string;
     note: string;
-    typ: THVType;
+    typ: TRVType;
     maxSpeed: Cardinal;
     transience: Cardinal;
     multitrackCapable: Boolean;
 
-    POMautomat: TList<THVPomCV>; // seznam POM pri prevzeti do automatu
-    POMmanual: TList<THVPomCV>; // seznam POM pri uvolneni do rucniho rizeni
+    POMautomat: TList<TRVPomCV>; // seznam POM pri prevzeti do automatu
+    POMmanual: TList<TRVPomCV>; // seznam POM pri uvolneni do rucniho rizeni
     POMrelease: TPomStatus; // [automat, manual] (other values are invalid) - POM to set when releasing engine
 
-    funcDescription: array [0 .. _HV_FUNC_MAX] of string; // seznam popisu funkci hnaciho vozidla
-    funcType: array [0 .. _HV_FUNC_MAX] of THVFuncType; // typy funkci hnaciho vozidla
+    funcDescription: array [0 .. _RV_FUNC_MAX] of string; // seznam popisu funkci hnaciho vozidla
+    funcType: array [0 .. _RV_FUNC_MAX] of TRVFuncType; // typy funkci hnaciho vozidla
   end;
 
-  THVRegulator = record // jeden regulator -- klient -- je z pohledu hnaciho vozidla reprezentovan
+  TRVRegulator = record // jeden regulator -- klient -- je z pohledu hnaciho vozidla reprezentovan
     conn: TIdContext; // fyzickym spojenim k tomu regulatoru -- klientu a
     root: Boolean; // tages, jestli je uzivatel za timto regulatorem root
   end;
 
-  THVToken = record // jeden token opravnujici prevzeti rizeni hnaciho vozidla
+  TRVToken = record // jeden token opravnujici prevzeti rizeni hnaciho vozidla
     timeout: TDateTime; // cas expirace tokenu (obvykle 3 minuty od zadosti)
     token: string; // samotny token
   end;
 
-  THVState = record
-    siteA: THVSite;
+  TRVState = record
+    siteA: TRVSite;
     traveled_forward: Real; // in meters
     traveled_backward: Real; // in meters
     functions: TFunctions; // stav funkci tak, jak je chceme; uklada se do souboru
     train: Integer; // index vlaku; -1 pokud neni na vlaku
     area: TArea;
-    regulators: TList<THVRegulator>; // seznam regulatoru -- klientu
-    tokens: TList<THVToken>;
+    regulators: TList<TRVRegulator>; // seznam regulatoru -- klientu
+    tokens: TList<TRVToken>;
     manual: Boolean;
     last_used: TDateTime;
     acquired: Boolean;
@@ -129,7 +131,7 @@ type
     speedPendingCmds: Cardinal; // number of pending set speed commands
   end;
 
-  THV = class
+  TRV = class
   private
     faddr: Word; // read-only!
     m_funcDict: TDictionary<string, Integer>; // function description to function number map
@@ -177,21 +179,21 @@ type
 
     function GetAddrStr(): String;
 
-    function Poms(str: string): TList<THVPomCV>;
-    procedure LoadHVFuncs(str: string);
-    class function PomToJson(pom: THVPomCV): TJsonObject;
+    function Poms(str: string): TList<TRVPomCV>;
+    procedure LoadRVFuncs(str: string);
+    class function PomToJson(pom: TRVPomCV): TJsonObject;
 
     procedure CallCb(cb: TCommandCallback);
 
   public
     index: Word; // index v seznamu vsech hnacich vozidel
-    data: THVData;
-    state: THVState;
+    data: TRVData;
+    state: TRVState;
     slot: TTrkLocoInfo;
-    changed: Boolean; // jestli se zmenil stav HV tak, ze je potraba aktualizaovat tabulku ve F_Main
+    changed: Boolean; // jestli se zmenil stav RV tak, ze je potraba aktualizaovat tabulku ve F_Main
 
     constructor Create(data_ini: TMemIniFile; state_ini: TMemIniFile; section: string); overload;
-    constructor Create(adresa: Word; data: THVData; stav: THVState); overload;
+    constructor Create(adresa: Word; data: TRVData; stav: TRVState); overload;
     constructor Create(panel_str: string; Sender: TArea); overload;
     destructor Destroy(); override;
 
@@ -199,18 +201,18 @@ type
     procedure SaveData(const filename: string); overload;
     procedure SaveState(ini: TMemIniFile);
 
-    procedure UpdateFromPanelString(data: string); // nacteni informaci o HV z klienta
+    procedure UpdateFromPanelString(data: string); // nacteni informaci o RV z klienta
 
     procedure ResetStats();
     function ExportStats(): string;
 
     function MoveToArea(area: TArea): Integer;
-    function GetPanelLokString(mode: TLokStringMode = normal): string; // vrati HV ve standardnim formatu pro klienta
+    function GetPanelLokString(mode: TLokStringMode = normal): string; // vrati RV ve standardnim formatu pro klienta
     procedure UpdatePanelRuc(send_remove: Boolean = true);
     // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
 
     procedure RemoveRegulator(conn: TIdContext); // smaze regulator -- klienta; je volano jen jako callback regulatoru!
-    function IsReg(conn: TIdContext): Boolean; // je na tomto HV tento regulator ?
+    function IsReg(conn: TIdContext): Boolean; // je na tomto RV tento regulator ?
     procedure UpdateAllRegulators();
     procedure ForceRemoveAllRegulators();
 
@@ -255,12 +257,12 @@ type
     procedure OnPredictedSignalChange();
     function PredictedSignalStr(): string;
 
-    procedure RegulatorAdd(reg: THVRegulator);
-    procedure RegulatorRemove(reg: THVRegulator);
+    procedure RegulatorAdd(reg: TRVRegulator);
+    procedure RegulatorRemove(reg: TRVRegulator);
     function DriverFullNames(): string;
 
-    class function CharToHVFuncType(c: char): THVFuncType;
-    class function HVFuncTypeToChar(t: THVFuncType): char;
+    class function CharToRVFuncType(c: char): TRVFuncType;
+    class function RVFuncTypeToChar(t: TRVFuncType): char;
 
     // PT:
     procedure GetPtData(json: TJsonObject; includeState: Boolean);
@@ -290,18 +292,18 @@ type
 
 implementation
 
-uses ownStrUtils, AreaDb, THVDatabase, TrainDb, DataHV, fRegulator, BlockDb,
+uses ownStrUtils, AreaDb, TRVDatabase, TrainDb, DataRV, fRegulator, BlockDb,
   RegulatorTCP, fMain, PTUtils, TCPServerPanel, appEv, Logging, TrakceC,
   ownConvert, BlockSignal, IfThenElse, PanelConnData, Config;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-constructor THV.Create(data_ini: TMemIniFile; state_ini: TMemIniFile; section: string);
+constructor TRV.Create(data_ini: TMemIniFile; state_ini: TMemIniFile; section: string);
 begin
   inherited Create();
 
-  Self.state.regulators := TList<THVRegulator>.Create();
-  Self.state.tokens := TList<THVToken>.Create();
+  Self.state.regulators := TList<TRVRegulator>.Create();
+  Self.state.tokens := TList<TRVToken>.Create();
 
   Self.state.train := -1;
   Self.state.area := nil;
@@ -311,18 +313,18 @@ begin
   Self.data.owner := '';
   Self.data.designation := '';
   Self.data.note := '';
-  Self.data.typ := THVType.other;
+  Self.data.typ := TRVType.other;
   Self.data.maxSpeed := _DEFAUT_MAX_SPEED;
   Self.data.transience := 0;
   Self.data.multitrackCapable := True;
-  Self.data.POMautomat := TList<THVPomCV>.Create();
-  Self.data.POMmanual := TList<THVPomCV>.Create();
+  Self.data.POMautomat := TList<TRVPomCV>.Create();
+  Self.data.POMmanual := TList<TRVPomCV>.Create();
   Self.data.POMrelease := TPomStatus.manual;
 
-  for var i := 0 to _HV_FUNC_MAX do
+  for var i := 0 to _RV_FUNC_MAX do
   begin
     Self.data.funcDescription[i] := '';
-    Self.data.funcType[i] := THVFuncType.permanent;
+    Self.data.funcType[i] := TRVFuncType.permanent;
   end;
 
   Self.acquiredOk := TTrakce.Callback();
@@ -342,7 +344,7 @@ begin
   end;
 end;
 
-constructor THV.Create(adresa: Word; data: THVData; stav: THVState);
+constructor TRV.Create(adresa: Word; data: TRVData; stav: TRVState);
 begin
   inherited Create();
 
@@ -357,33 +359,33 @@ begin
   Self.UpdateFuncDict();
 
   if (not Assigned(Self.data.POMautomat)) then
-    Self.data.POMautomat := TList<THVPomCV>.Create();
+    Self.data.POMautomat := TList<TRVPomCV>.Create();
   if (not Assigned(Self.data.POMmanual)) then
-    Self.data.POMmanual := TList<THVPomCV>.Create();
+    Self.data.POMmanual := TList<TRVPomCV>.Create();
   if (not Assigned(Self.state.regulators)) then
-    Self.state.regulators := TList<THVRegulator>.Create();
+    Self.state.regulators := TList<TRVRegulator>.Create();
   if (not Assigned(Self.state.tokens)) then
-    Self.state.tokens := TList<THVToken>.Create();
+    Self.state.tokens := TList<TRVToken>.Create();
 
   // Save file explicitly - in panel constructor saving is done in UpdateFromPanelString
   Self.SaveData();
 end;
 
-constructor THV.Create(panel_str: string; Sender: TArea);
+constructor TRV.Create(panel_str: string; Sender: TArea);
 begin
   inherited Create();
 
   Self.ResetStats();
 
-  Self.state.regulators := TList<THVRegulator>.Create();
-  Self.state.tokens := TList<THVToken>.Create();
+  Self.state.regulators := TList<TRVRegulator>.Create();
+  Self.state.tokens := TList<TRVToken>.Create();
 
   Self.state.train := -1;
   Self.state.area := Sender;
   Self.state.last_used := Now;
 
-  Self.data.POMautomat := TList<THVPomCV>.Create();
-  Self.data.POMmanual := TList<THVPomCV>.Create();
+  Self.data.POMautomat := TList<TRVPomCV>.Create();
+  Self.data.POMmanual := TList<TRVPomCV>.Create();
 
   Self.m_funcDict := TDictionary<string, Integer>.Create();
 
@@ -391,7 +393,7 @@ begin
   Self.UpdateFromPanelString(panel_str);
 end;
 
-destructor THV.Destroy();
+destructor TRV.Destroy();
 begin
   Self.state.regulators.Free();
   Self.state.tokens.Free();
@@ -403,7 +405,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.LoadData(ini: TMemIniFile; section: string);
+procedure TRV.LoadData(ini: TMemIniFile; section: string);
 var addr: Integer;
 begin
   addr := StrToInt(section);
@@ -415,7 +417,7 @@ begin
   Self.data.owner := ini.ReadString(section, 'majitel', '');
   Self.data.designation := ini.ReadString(section, 'oznaceni', section);
   Self.data.note := ini.ReadString(section, 'poznamka', '');
-  Self.data.typ := THVType(ini.ReadInteger(section, 'trida', 0));
+  Self.data.typ := TRVType(ini.ReadInteger(section, 'trida', 0));
   Self.data.maxSpeed := ini.ReadInteger(section, 'max_rychlost', _DEFAUT_MAX_SPEED);
   Self.data.transience := ini.ReadInteger(section, 'prechodnost', 0);
   Self.data.multitrackCapable := ini.ReadBool(section, 'multitrakce', True);
@@ -425,7 +427,7 @@ begin
     var sectAut: string := ite(ini.ValueExists(section, 'pom_automat'), 'pom_automat', 'pom_take'); // backward compatibility
     Self.data.POMautomat := Poms(ini.ReadString(section, sectAut, ''));
   except
-    Self.data.POMautomat := TList<THVPomCV>.Create();
+    Self.data.POMautomat := TList<TRVPomCV>.Create();
     raise;
   end;
 
@@ -434,7 +436,7 @@ begin
     var sectMan: string := ite(ini.ValueExists(section, 'pom_manual'), 'pom_manual', 'pom_release'); // backward compatibility
     Self.data.POMmanual := Poms(ini.ReadString(section, sectMan, ''));
   except
-    Self.data.POMmanual := TList<THVPomCV>.Create();
+    Self.data.POMmanual := TList<TRVPomCV>.Create();
     raise;
   end;
 
@@ -445,30 +447,30 @@ begin
     Self.data.POMrelease := TPomStatus.manual;
 
 
-  Self.LoadHVFuncs(ini.ReadString(section, 'func_vyznam', ''));
+  Self.LoadRVFuncs(ini.ReadString(section, 'func_vyznam', ''));
   Self.UpdateFuncDict();
 
   // typy funkci:
   var funcTypes: string := ini.ReadString(section, 'func_type', '');
-  for var i: Integer := 0 to _HV_FUNC_MAX do
+  for var i: Integer := 0 to _RV_FUNC_MAX do
   begin
     if (i < Length(funcTypes)) then
-      Self.data.funcType[i] := CharToHVFuncType(funcTypes[i + 1])
+      Self.data.funcType[i] := CharToRVFuncType(funcTypes[i + 1])
     else
-      Self.data.funcType[i] := THVFuncType.permanent;
+      Self.data.funcType[i] := TRVFuncType.permanent;
   end;
 end;
 
-procedure THV.LoadState(ini: TMemIniFile; section: string);
+procedure TRV.LoadState(ini: TMemIniFile; section: string);
 begin
   Self.state.area := Areas.Get(ini.ReadString(section, 'stanice', ''));
   if ((Self.state.area = nil) and (Areas.Count > 0)) then
-    Self.state.area := Areas[HVDb.default_or];
+    Self.state.area := Areas[RVDb.default_or];
 
   Self.state.traveled_forward := ini.ReadFloat(section, 'najeto_vpred_metru', 0);
   Self.state.traveled_backward := ini.ReadFloat(section, 'najeto_vzad_metru', 0);
 
-  Self.state.siteA := THVSite(ini.ReadInteger(section, 'stanoviste_a', 0));
+  Self.state.siteA := TRVSite(ini.ReadInteger(section, 'stanoviste_a', 0));
 
   try
     var lastUsed: string := ini.ReadString(section, 'last_used', '');
@@ -481,11 +483,11 @@ begin
   end;
 
   var funcState: string := ini.ReadString(section, 'stav_funkci', '');
-  for var i: Integer := 0 to _HV_FUNC_MAX do
+  for var i: Integer := 0 to _RV_FUNC_MAX do
     Self.state.functions[i] := ((i < Length(funcState)) and ownConvert.StrToBool(funcState[i + 1]));
 end;
 
-procedure THV.SaveData(const filename: string);
+procedure TRV.SaveData(const filename: string);
 var ini: TMemIniFile;
 begin
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -506,13 +508,13 @@ begin
 
     // POM to program for automatic-controlled engines
     var POMautomat: string := '';
-    for var pom: THVPomCV in Self.data.POMautomat do
+    for var pom: TRVPomCV in Self.data.POMautomat do
       POMautomat := POMautomat + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.value) + ')';
     ini.WriteString(addr, 'pom_automat', POMautomat);
 
     // POM to program for manually-controlled engines
     var POMmanual: string := '';
-    for var pom: THVPomCV in Self.data.POMmanual do
+    for var pom: TRVPomCV in Self.data.POMmanual do
       POMmanual := POMmanual + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.value) + ')';
     ini.WriteString(addr, 'pom_manual', POMmanual);
 
@@ -520,7 +522,7 @@ begin
 
     // vyznam funkci
     var funcDesc: string := '';
-    for var i: Integer := 0 to _HV_FUNC_MAX do
+    for var i: Integer := 0 to _RV_FUNC_MAX do
     begin
       if (Self.data.funcDescription[i] <> '') then
         funcDesc := funcDesc + '{' + Self.data.funcDescription[i] + '};'
@@ -531,8 +533,8 @@ begin
 
     // typ funkci
     var funcType: string := '';
-    for var i: Integer := 0 to _HV_FUNC_MAX do
-      funcType := funcType + HVFuncTypeToChar(Self.data.funcType[i]);
+    for var i: Integer := 0 to _RV_FUNC_MAX do
+      funcType := funcType + RVFuncTypeToChar(Self.data.funcType[i]);
     ini.WriteString(addr, 'func_type', funcType);
 
   except
@@ -545,12 +547,12 @@ begin
   ini.Free();
 end;
 
-procedure THV.SaveData();
+procedure TRV.SaveData();
 begin
-  Self.SaveData(HVDb.FilenameForLok(Self));
+  Self.SaveData(RVDb.FilenameForLok(Self));
 end;
 
-procedure THV.SaveState(ini: TMemIniFile);
+procedure TRV.SaveState(ini: TMemIniFile);
 var addr: string;
 begin
   if (Self.state.train > -1) then
@@ -575,9 +577,9 @@ begin
 
   // stav funkci
   var funcState: string := '';
-  for var i: Integer := 0 to _HV_FUNC_MAX do
+  for var i: Integer := 0 to _RV_FUNC_MAX do
   begin
-    if ((Self.state.functions[i]) and (Self.data.funcType[i] <> THVFuncType.momentary)) then
+    if ((Self.state.functions[i]) and (Self.data.funcType[i] <> TRVFuncType.momentary)) then
       funcState := funcState + '1'
     else
       funcState := funcState + '0';
@@ -587,14 +589,14 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.ResetStats();
+procedure TRV.ResetStats();
 begin
   Self.state.traveled_forward := 0;
   Self.state.traveled_backward := 0;
 end;
 
 // format vystupnich dat: adresa,nazev,majitel,najeto_metru_vpred,najeto_metru_vzad
-function THV.ExportStats(): string;
+function TRV.ExportStats(): string;
 begin
   Result := IntToStr(Self.addr) + ',' + Self.data.name + ',' + Self.data.owner + ',' +
     Format('%5.2f', [Self.state.traveled_forward]) + ',' + Format('%5.2f', [Self.state.traveled_backward]) + ',';
@@ -602,7 +604,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.GetPanelLokString(mode: TLokStringMode = normal): string;
+function TRV.GetPanelLokString(mode: TLokStringMode = normal): string;
 var
   func: TFunctions;
 begin
@@ -621,7 +623,7 @@ begin
   else
     func := Self.state.functions;
 
-  for var i: Integer := 0 to _HV_FUNC_MAX do
+  for var i: Integer := 0 to _RV_FUNC_MAX do
   begin
     if (func[i]) then
       Result := Result + '1'
@@ -639,12 +641,12 @@ begin
   begin
     // cv-automat
     Result := Result + '{';
-    for var pomCV: THVPomCV in Self.data.POMautomat do
+    for var pomCV: TRVPomCV in Self.data.POMautomat do
       Result := Result + '[{' + IntToStr(pomCV.cv) + '|' + IntToStr(pomCV.value) + '}]';
     Result := Result + '}|{';
 
     // cv-manual
-    for var pomCV: THVPomCV in Self.data.POMmanual do
+    for var pomCV: TRVPomCV in Self.data.POMmanual do
       Result := Result + '[{' + IntToStr(pomCV.cv) + '|' + IntToStr(pomCV.value) + '}]';
     Result := Result + '}';
   end else begin
@@ -653,7 +655,7 @@ begin
 
   // vyznamy funkci
   Result := Result + '|{';
-  for var i: Integer := 0 to _HV_FUNC_MAX do
+  for var i: Integer := 0 to _RV_FUNC_MAX do
   begin
     if (Self.data.funcDescription[i] <> '') then
       Result := Result + '{' + Self.data.funcDescription[i] + '};'
@@ -663,8 +665,8 @@ begin
   Result := Result + '}|';
 
   // typy funkci
-  for var i: Integer := 0 to _HV_FUNC_MAX do
-    Result := Result + HVFuncTypeToChar(Self.data.funcType[i]);
+  for var i: Integer := 0 to _RV_FUNC_MAX do
+    Result := Result + RVFuncTypeToChar(Self.data.funcType[i]);
   Result := Result + '|';
 
   Result := Result + IntToStr(Self.data.maxSpeed) + '|';
@@ -675,7 +677,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.MoveToArea(area: TArea): Integer;
+function TRV.MoveToArea(area: TArea): Integer;
 begin
   // zruseni RUC u stare stanice
   if (Self.state.area <> nil) then
@@ -693,9 +695,9 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.Poms(str: string): TList<THVPomCV>;
+function TRV.Poms(str: string): TList<TRVPomCV>;
 begin
-  Result := TList<THVPomCV>.Create();
+  Result := TList<TRVPomCV>.Create();
   var pomsStrs: TStrings := TStringList.Create();
   var pomStrs: TStrings := TStringList.Create();
 
@@ -705,7 +707,7 @@ begin
     begin
       pomStrs.Clear();
       ExtractStringsEx(['|', ','], [], pomStr, pomStrs);
-      var pomCV: THVPomCV;
+      var pomCV: TRVPomCV;
       pomCV.cv := StrToInt(pomStrs[0]);
       if ((pomCV.cv < 1) or (pomCV.cv > 1023)) then
         continue;
@@ -720,12 +722,12 @@ begin
   pomStrs.Free();
 end;
 
-procedure THV.LoadHVFuncs(str: string);
+procedure TRV.LoadRVFuncs(str: string);
 begin
   var funcDescStrs: TStrings := TStringList.Create();
   try
     ExtractStringsEx([';'], [], str, funcDescStrs);
-    for var i: Integer := 0 to _HV_FUNC_MAX do
+    for var i: Integer := 0 to _RV_FUNC_MAX do
       if (i < funcDescStrs.Count) then
         Self.data.funcDescription[i] := funcDescStrs[i]
       else
@@ -735,7 +737,7 @@ begin
   end;
 end;
 
-procedure THV.UpdateFromPanelString(data: string);
+procedure TRV.UpdateFromPanelString(data: string);
 var strs: TStrings;
 begin
   strs := TStringList.Create();
@@ -747,10 +749,10 @@ begin
     Self.data.designation := strs[2];
     Self.data.note := strs[3];
     Self.faddr := StrToInt(strs[4]);
-    Self.data.typ := THVType(StrToInt(strs[5]));
-    Self.state.siteA := THVSite(StrToInt(strs[7]));
+    Self.data.typ := TRVType(StrToInt(strs[5]));
+    Self.state.siteA := TRVSite(StrToInt(strs[7]));
 
-    var maxFunc: Integer := Min(Length(strs[8]) - 1, _HV_FUNC_MAX);
+    var maxFunc: Integer := Min(Length(strs[8]) - 1, _RV_FUNC_MAX);
     if (maxFunc >= 0) then
       for var i: Integer := 0 to maxFunc do
         Self.state.functions[i] := (strs[8][i + 1] = '1');
@@ -761,7 +763,7 @@ begin
       try
         Self.data.POMautomat := Poms(strs[13]);
       except
-        Self.data.POMautomat := TList<THVPomCV>.Create();
+        Self.data.POMautomat := TList<TRVPomCV>.Create();
         raise;
       end;
     end;
@@ -772,15 +774,15 @@ begin
       try
         Self.data.POMmanual := Poms(strs[14]);
       except
-        Self.data.POMmanual := TList<THVPomCV>.Create();
+        Self.data.POMmanual := TList<TRVPomCV>.Create();
         raise;
       end;
     end;
 
     if (strs.Count > 15) then
-      Self.LoadHVFuncs(strs[15])
+      Self.LoadRVFuncs(strs[15])
     else begin
-      for var i: Integer := 0 to _HV_FUNC_MAX do
+      for var i: Integer := 0 to _RV_FUNC_MAX do
         Self.data.funcDescription[i] := '';
     end;
     Self.UpdateFuncDict();
@@ -788,14 +790,14 @@ begin
     if (strs.Count > 16) then
     begin
       // typy funkci
-      for var i: Integer := 0 to _HV_FUNC_MAX do
+      for var i: Integer := 0 to _RV_FUNC_MAX do
         if (i < Length(strs[16])) then
-          Self.data.funcType[i] := CharToHVFuncType(strs[16][i + 1])
+          Self.data.funcType[i] := CharToRVFuncType(strs[16][i + 1])
         else
-          Self.data.funcType[i] := THVFuncType.permanent;
+          Self.data.funcType[i] := TRVFuncType.permanent;
     end else begin
-      for var i: Integer := 0 to _HV_FUNC_MAX do
-        Self.data.funcType[i] := THVFuncType.permanent;
+      for var i: Integer := 0 to _RV_FUNC_MAX do
+        Self.data.funcType[i] := TRVFuncType.permanent;
     end;
 
     if (strs.Count > 17) then
@@ -837,10 +839,10 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.UpdatePanelRuc(send_remove: Boolean = true);
+procedure TRV.UpdatePanelRuc(send_remove: Boolean = true);
 var train: string;
 begin
-  if ((Self.data.typ = THVType.car) or (Self.state.area = nil)) then
+  if ((Self.data.typ = TRVType.car) or (Self.state.area = nil)) then
     Exit(); // do not report cars
 
   if (Self.state.train > -1) then
@@ -873,7 +875,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // smazani regulatoru
-procedure THV.RemoveRegulator(conn: TIdContext);
+procedure TRV.RemoveRegulator(conn: TIdContext);
 begin
   for var i: Integer := 0 to Self.state.regulators.Count - 1 do
   begin
@@ -901,8 +903,8 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.GetToken(): string;
-var token: THVToken;
+function TRV.GetToken(): string;
+var token: TRVToken;
 begin
   token.token := RandomToken(_TOKEN_LEN);
   token.timeout := Now + EncodeTime(0, _TOKEN_TIMEOUT_MIN, 0, 0);
@@ -910,15 +912,15 @@ begin
   Self.state.tokens.Add(token);
 end;
 
-function THV.IsToken(str: string): Boolean;
+function TRV.IsToken(str: string): Boolean;
 begin
-  for var token: THVToken in Self.state.tokens do
+  for var token: TRVToken in Self.state.tokens do
     if (token.token = str) then
       Exit(true);
   Result := false;
 end;
 
-procedure THV.RemoveToken(token: string);
+procedure TRV.RemoveToken(token: string);
 begin
   for var i: Integer := 0 to Self.state.tokens.Count - 1 do
     if (Self.state.tokens[i].token = token) then
@@ -928,7 +930,7 @@ begin
     end;
 end;
 
-procedure THV.UpdateTokenTimeout();
+procedure TRV.UpdateTokenTimeout();
 begin
   for var i: Integer := Self.state.tokens.Count - 1 downto 0 do
     if (Now > Self.state.tokens[i].timeout) then
@@ -938,7 +940,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // timto prikazem je lokomotive zapinano / vypinano rucni rizeni
-procedure THV.SetManual(state: Boolean);
+procedure TRV.SetManual(state: Boolean);
 begin
   if (Self.state.manual = state) then
     Exit();
@@ -949,7 +951,7 @@ begin
     // loko je uvedeno do rucniho rizeni
 
     // nastavit POM rucniho rizeni
-    // neprevzatym HV je POM nastaven pri prebirani; prebirani vozidel ale neni nase starost, to si resi volajici fuknce
+    // neprevzatym RV je POM nastaven pri prebirani; prebirani vozidel ale neni nase starost, to si resi volajici fuknce
     if ((Self.acquired) and (Self.pom <> TPomStatus.manual)) then
       Self.SetPom(TPomStatus.manual, TTrakce.Callback(), TTrakce.Callback());
   end else begin
@@ -983,9 +985,9 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.IsReg(conn: TIdContext): Boolean;
+function TRV.IsReg(conn: TIdContext): Boolean;
 begin
-  for var reg: THVRegulator in Self.state.regulators do
+  for var reg: TRVRegulator in Self.state.regulators do
     if (reg.conn = conn) then
       Exit(true);
   Result := false;
@@ -993,15 +995,15 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.UpdateAllRegulators();
+procedure TRV.UpdateAllRegulators();
 begin
-  for var regulator: THVRegulator in Self.state.regulators do
+  for var regulator: TRVRegulator in Self.state.regulators do
     TCPRegulator.LokToRegulator(regulator.conn, Self);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.GetPtData(json: TJsonObject; includeState: Boolean);
+procedure TRV.GetPtData(json: TJsonObject; includeState: Boolean);
 begin
   json['addr'] := Self.addr;
   json['name'] := Self.data.name;
@@ -1013,21 +1015,21 @@ begin
   json['multitrackCapable'] := Self.data.multitrackCapable;
 
   case (Self.data.typ) of
-    THVType.other:
+    TRVType.other:
       json['type'] := 'other';
-    THVType.steam:
+    TRVType.steam:
       json['type'] := 'steam';
-    THVType.diesel:
+    TRVType.diesel:
       json['type'] := 'diesel';
-    THVType.motor:
+    TRVType.motor:
       json['type'] := 'motor';
-    THVType.electro:
+    TRVType.electro:
       json['type'] := 'electro';
-    THVType.car:
+    TRVType.car:
       json['type'] := 'car';
   end;
 
-  var lastFunction: Integer := _HV_FUNC_MAX;
+  var lastFunction: Integer := _RV_FUNC_MAX;
   while ((lastFunction >= 0) and (Self.data.funcDescription[lastFunction] = '')) do
     Dec(lastFunction);
 
@@ -1035,13 +1037,13 @@ begin
   for var i: Integer := 0 to lastFunction do
   begin
     json.A['funcDescription'].Add(Self.data.funcDescription[i]);
-    types := types + HVFuncTypeToChar(Self.data.funcType[i]);
+    types := types + RVFuncTypeToChar(Self.data.funcType[i]);
   end;
   json['funcTypes'] := types;
 
-  for var pom: THVPomCV in Self.data.POMautomat do
+  for var pom: TRVPomCV in Self.data.POMautomat do
     json.A['POMautomat'].Add(Self.PomToJson(pom));
-  for var pom: THVPomCV in Self.data.POMmanual do
+  for var pom: TRVPomCV in Self.data.POMmanual do
     json.A['POMmanual'].Add(Self.PomToJson(pom));
   if ((Self.data.POMautomat.Count > 0) or (Self.data.POMmanual.Count > 0)) then
     json['POMrelease'] := ite(Self.data.POMrelease = TPomStatus.automat, 'automat', 'manual');
@@ -1050,21 +1052,21 @@ begin
     Self.GetPtState(json['lokState']);
 end;
 
-procedure THV.GetPtState(json: TJsonObject);
+procedure TRV.GetPtState(json: TJsonObject);
 begin
   json['speedStep'] := Self.speedStep;
   json['realSpeed'] := Self.realSpeed;
   json['direction'] := ite(Self.direction, 'backward', 'forward');
 
   var funcState: string := '';
-  for var i: Integer := 0 to _HV_FUNC_MAX do
+  for var i: Integer := 0 to _RV_FUNC_MAX do
     funcState := funcState + ownConvert.BoolToStr10(Self.slotFunctions[i]);
   json['funcState'] := funcState;
 
   case (Self.state.siteA) of
-    THVSite.odd:
+    TRVSite.odd:
       json['siteA'] := 'L';
-    THVSite.even:
+    TRVSite.even:
       json['siteA'] := 'S';
   end;
 
@@ -1084,7 +1086,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.PostPtState(reqJson: TJsonObject; respJson: TJsonObject);
+procedure TRV.PostPtState(reqJson: TJsonObject; respJson: TJsonObject);
 var speed: Integer;
   newFunctions: TFunctions;
   dir: Boolean;
@@ -1117,7 +1119,7 @@ begin
 
   if (reqJson.Contains('funcState')) then
   begin
-    for var i: Integer := 0 to _HV_FUNC_MAX do
+    for var i: Integer := 0 to _RV_FUNC_MAX do
     begin
       if (i < Length(reqJson.s['funcState'])) then
         newFunctions[i] := ownConvert.StrToBool(reqJson.s['funcState'][i + 1])
@@ -1133,17 +1135,17 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.UpdateFuncDict();
+procedure TRV.UpdateFuncDict();
 begin
   Self.funcDict.Clear();
-  for var i: Integer := 0 to _HV_FUNC_MAX do
+  for var i: Integer := 0 to _RV_FUNC_MAX do
     if (Self.data.funcDescription[i] <> '') then
       Self.funcDict.AddOrSetValue(Self.data.funcDescription[i], i);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.CanPlayHouk(sound: string): Boolean;
+function TRV.CanPlayHouk(sound: string): Boolean;
 begin
   Result := ((Self.state.regulators.Count = 0) and (not Self.stolen) and
     ((not Self.funcDict.ContainsKey(_SOUND_FUNC)) or (Self.state.functions[Self.funcDict[_SOUND_FUNC]])) and
@@ -1152,7 +1154,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.CheckRelease();
+procedure TRV.CheckRelease();
 begin
   if ((Self.state.train = -1) and (not Self.manual) and (Self.state.regulators.Count = 0) and
     (not RegCollector.IsLoko(Self)) and (Self.acquired)) then
@@ -1164,13 +1166,13 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.RecordUseNow();
+procedure TRV.RecordUseNow();
 begin
   Self.state.last_used := Now;
   Self.changed := true;
 end;
 
-procedure THV.SetTrain(new: Integer);
+procedure TRV.SetTrain(new: Integer);
 begin
   if (new = Self.train) then
     Exit();
@@ -1190,21 +1192,21 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.NiceName(): string;
+function TRV.NiceName(): string;
 begin
   Result := IntToStr(Self.addr) + ' : ' + Self.data.name + ' (' + Self.data.designation + ')';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.ShouldAcquire(): Boolean;
+function TRV.ShouldAcquire(): Boolean;
 begin
   Result := ((Self.train > -1) and ((not Self.acquired) or (Self.pom = TPomStatus.error)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.ForceRemoveAllRegulators();
+procedure TRV.ForceRemoveAllRegulators();
 begin
   for var i: Integer := Self.state.regulators.Count - 1 downto 0 do
   begin
@@ -1212,24 +1214,24 @@ begin
       TCPRegulator.RemoveLok(Self.state.regulators[i].conn, Self, 'Násilné odhlášení dispečerem');
     except
       on E: Exception do
-        AppEvents.LogException(E, 'THV.ForceRemoveAllRegulators');
+        AppEvents.LogException(E, 'TRV.ForceRemoveAllRegulators');
     end;
   end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class function THV.CharToHVFuncType(c: char): THVFuncType;
+class function TRV.CharToRVFuncType(c: char): TRVFuncType;
 begin
   if (UpperCase(c) = 'M') then
-    Result := THVFuncType.momentary
+    Result := TRVFuncType.momentary
   else
-    Result := THVFuncType.permanent;
+    Result := TRVFuncType.permanent;
 end;
 
-class function THV.HVFuncTypeToChar(t: THVFuncType): char;
+class function TRV.RVFuncTypeToChar(t: TRVFuncType): char;
 begin
-  if (t = THVFuncType.momentary) then
+  if (t = TRVFuncType.momentary) then
     Result := 'M'
   else
     Result := 'P';
@@ -1237,37 +1239,37 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.SetSpeed(speed: Integer; ok: TCb; err: TCb; Sender: TObject = nil);
+procedure TRV.SetSpeed(speed: Integer; ok: TCb; err: TCb; Sender: TObject = nil);
 begin
   Self.SetSpeedDir(speed, Self.slot.direction, ok, err, Sender);
 end;
 
-procedure THV.SetSpeed(speed: Integer; Sender: TObject = nil);
+procedure TRV.SetSpeed(speed: Integer; Sender: TObject = nil);
 begin
   Self.SetSpeed(speed, trakce.Callback(), trakce.Callback(), Sender);
 end;
 
-procedure THV.SetDirection(dir: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
+procedure TRV.SetDirection(dir: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 begin
   Self.SetSpeedStepDir(Self.slot.step, dir, ok, err, Sender);
 end;
 
-procedure THV.SetDirection(dir: Boolean; Sender: TObject = nil);
+procedure TRV.SetDirection(dir: Boolean; Sender: TObject = nil);
 begin
   Self.SetDirection(dir, trakce.Callback(), trakce.Callback(), Sender);
 end;
 
-procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
+procedure TRV.SetSpeedDir(speed: Integer; direction: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 begin
   Self.SetSpeedStepDir(trakce.step(speed), direction, ok, err, Sender);
 end;
 
-procedure THV.SetSpeedDir(speed: Integer; direction: Boolean; Sender: TObject = nil);
+procedure TRV.SetSpeedDir(speed: Integer; direction: Boolean; Sender: TObject = nil);
 begin
   Self.SetSpeedDir(speed, direction, trakce.Callback(), trakce.Callback(), Sender);
 end;
 
-procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
+procedure TRV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 var cbOk, cbErr: PTCb;
 begin
   if ((not Self.acquired) and (not Self.acquiring)) then
@@ -1306,19 +1308,19 @@ begin
     on E: Exception do
     begin
       Self.TrakceCallbackErr(Self, cbErr);
-      AppEvents.LogException(E, 'THV.SetSpeedDir');
+      AppEvents.LogException(E, 'TRV.SetSpeedDir');
     end;
   end;
 
   Self.SlotChanged(Sender, stepsOld <> speedStep, dirOld <> direction, false);
 end;
 
-procedure THV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender: TObject = nil);
+procedure TRV.SetSpeedStepDir(speedStep: Integer; direction: Boolean; Sender: TObject = nil);
 begin
   Self.SetSpeedStepDir(speedStep, direction, trakce.Callback(), trakce.Callback(), Sender);
 end;
 
-procedure THV.SetSingleFunc(func: Integer; state: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
+procedure TRV.SetSingleFunc(func: Integer; state: Boolean; ok: TCb; err: TCb; Sender: TObject = nil);
 var cbOk, cbErr: PTCb;
 begin
   if ((not Self.acquired) and (not Self.acquiring)) then
@@ -1354,7 +1356,7 @@ begin
     on E: Exception do
     begin
       Self.TrakceCallbackErr(Self, cbErr);
-      AppEvents.LogException(E, 'THV.SetSingleFunc');
+      AppEvents.LogException(E, 'TRV.SetSingleFunc');
     end;
   end;
 
@@ -1363,7 +1365,7 @@ begin
   Self.changed := true;
 end;
 
-procedure THV.StateFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject = nil);
+procedure TRV.StateFunctionsToSlotFunctions(ok: TCb; err: TCb; Sender: TObject = nil);
 begin
   if ((not Self.acquired) and (not Self.acquiring)) then
   begin
@@ -1379,7 +1381,7 @@ begin
 
   var funcMask: Cardinal := 0;
   var funcState: Cardinal := 0;
-  for var i: Integer := 0 to _HV_FUNC_MAX do
+  for var i: Integer := 0 to _RV_FUNC_MAX do
   begin
     if (Self.state.functions[i]) then
       funcState := funcState or (1 shl i);
@@ -1407,7 +1409,7 @@ begin
   Self.changed := true;
 end;
 
-procedure THV.EmergencyStop(ok: TCb; err: TCb; Sender: TObject = nil);
+procedure TRV.EmergencyStop(ok: TCb; err: TCb; Sender: TObject = nil);
 var cbOk, cbErr: PTCb;
 begin
   if (not Self.acquired) then
@@ -1426,7 +1428,7 @@ begin
     on E: Exception do
     begin
       Self.TrakceCallbackEmergencyErr(Self, cbErr);
-      AppEvents.LogException(E, 'THV.EmergencyStop');
+      AppEvents.LogException(E, 'TRV.EmergencyStop');
     end;
   end;
 
@@ -1435,7 +1437,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.CSReset();
+procedure TRV.CSReset();
 begin
   Self.state.acquiring := false;
   Self.state.updating := false;
@@ -1449,7 +1451,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.TrakceCallbackOk(Sender: TObject; data: Pointer);
+procedure TRV.TrakceCallbackOk(Sender: TObject; data: Pointer);
 begin
   if (Self.state.speedPendingCmds > 0) then
     Dec(Self.state.speedPendingCmds);
@@ -1463,7 +1465,7 @@ begin
   RegCollector.LocoChanged(Self, Self.addr);
 end;
 
-procedure THV.TrakceCallbackErr(Sender: TObject; data: Pointer);
+procedure TRV.TrakceCallbackErr(Sender: TObject; data: Pointer);
 begin
   if (Self.state.speedPendingCmds > 0) then
     Dec(Self.state.speedPendingCmds);
@@ -1482,13 +1484,13 @@ begin
   end;
 end;
 
-procedure THV.TrakceCallbackEmergencyErr(Sender: TObject; data: Pointer);
+procedure TRV.TrakceCallbackEmergencyErr(Sender: TObject; data: Pointer);
 begin
   trakce.emergency := True;
   Self.TrakceCallbackErr(Sender, data);
 end;
 
-procedure THV.TrakceCallbackCallEv(cb: PTCb);
+procedure TRV.TrakceCallbackCallEv(cb: PTCb);
 begin
   if (cb <> nil) then
   begin
@@ -1501,18 +1503,18 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.GetSlotFunctions(): TFunctions;
+function TRV.GetSlotFunctions(): TFunctions;
 var functions: Cardinal;
 begin
   functions := Self.slot.functions;
-  for var i: Integer := 0 to _HV_FUNC_MAX do
+  for var i: Integer := 0 to _RV_FUNC_MAX do
   begin
     Result[i] := (functions AND $1 > 0);
     functions := (functions shr 1);
   end;
 end;
 
-function THV.GetRealSpeed(): Cardinal;
+function TRV.GetRealSpeed(): Cardinal;
 begin
   Result := trakce.speed(Self.slot.step);
   if (Result > Self.data.maxSpeed) then
@@ -1521,7 +1523,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.SlotChanged(Sender: TObject; speedChanged: Boolean; dirChanged: Boolean; funcChanged: Boolean);
+procedure TRV.SlotChanged(Sender: TObject; speedChanged: Boolean; dirChanged: Boolean; funcChanged: Boolean);
 begin
   if (speedChanged or dirChanged) then
     TCPRegulator.LokUpdateSpeed(Self, Sender);
@@ -1534,7 +1536,7 @@ begin
   if ((dirChanged) and (Self.train > -1)) then
     if ((Sender <> Trains[Self.train]) and (Trains[Self.train] <> nil)) then
       Trains[Self.train].LokDirChanged();
-  // Trains[HV.Stav.train] <> nil muze nastat pri aktualizaci HV na vlaku
+  // Trains[RV.Stav.train] <> nil muze nastat pri aktualizaci RV na vlaku
   // coz se dede prave tady
 end;
 
@@ -1542,7 +1544,7 @@ end;
 // ACQUIRING
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.TrakceAcquire(ok: TCb; err: TCb);
+procedure TRV.TrakceAcquire(ok: TCb; err: TCb);
 begin
   trakce.Log(llCommands, 'PUT: Loco Acquire: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.RecordUseNow();
@@ -1558,7 +1560,7 @@ begin
   end;
 end;
 
-procedure THV.TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
+procedure TRV.TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
 var direction: Boolean;
   speedStep: Integer;
 begin
@@ -1570,7 +1572,7 @@ begin
   if ((Self.train > -1) and (not Self.manual) and (Trains[Self.train].sdata.dir_L xor Trains[Self.train].sdata.dir_S)) then
   begin
     // vlak ma zadany prave jeden smer
-    direction := ((Trains[Self.train].direction = THVSite.even) xor (Self.state.siteA = THVSite.even));
+    direction := ((Trains[Self.train].direction = TRVSite.even) xor (Self.state.siteA = TRVSite.even));
     speedStep := trakce.step(Trains[Self.train].speed);
   end else begin
     direction := Self.slot.direction;
@@ -1585,7 +1587,7 @@ begin
     TTrakce.Callback(Self.TrakceAcquiredErr));
 end;
 
-procedure THV.TrakceAcquiredDirection(Sender: TObject; data: Pointer);
+procedure TRV.TrakceAcquiredDirection(Sender: TObject; data: Pointer);
 begin
   // Set functions as we wish
   Self.state.stolen := false;
@@ -1593,7 +1595,7 @@ begin
     TTrakce.Callback(Self.TrakceAcquiredErr));
 end;
 
-procedure THV.TrakceAcquiredFunctionsSet(Sender: TObject; data: Pointer);
+procedure TRV.TrakceAcquiredFunctionsSet(Sender: TObject; data: Pointer);
 begin
   Self.state.manual := (RegCollector.IsLoko(Self)) or (Self.manual);
   Self.changed := true;
@@ -1609,7 +1611,7 @@ begin
   end;
 end;
 
-procedure THV.TrakceAcquiredPOMSet(Sender: TObject; data: Pointer);
+procedure TRV.TrakceAcquiredPOMSet(Sender: TObject; data: Pointer);
 begin
   // Everything done
   trakce.Log(llCommands, 'Loco Fully Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
@@ -1633,7 +1635,7 @@ begin
   Self.CallCb(Self.acquiredOk);
 end;
 
-procedure THV.TrakceAcquiredErr(Sender: TObject; data: Pointer);
+procedure TRV.TrakceAcquiredErr(Sender: TObject; data: Pointer);
 begin
   trakce.Log(llCommands, 'ERR: Loco Not Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.state.acquiring := false;
@@ -1646,7 +1648,7 @@ end;
 // RELEASING
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.TrakceRelease(ok: TCb);
+procedure TRV.TrakceRelease(ok: TCb);
 begin
   trakce.Log(llCommands, 'PUT: Loco Release: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.releasedOk := ok;
@@ -1660,7 +1662,7 @@ begin
     Self.TrakceReleasedPOM(Self, nil);
 end;
 
-procedure THV.TrakceReleasedPOM(Sender: TObject; data: Pointer);
+procedure TRV.TrakceReleasedPOM(Sender: TObject; data: Pointer);
 begin
   // POM done (we do not care is successfully or unsuccessfully)
   try
@@ -1670,7 +1672,7 @@ begin
   end;
 end;
 
-procedure THV.TrakceReleased(Sender: TObject; data: Pointer);
+procedure TRV.TrakceReleased(Sender: TObject; data: Pointer);
 begin
   trakce.Log(llCommands, 'Loco Successfully Released: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.state.acquired := false;
@@ -1683,8 +1685,8 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 // POM
 
-procedure THV.SetPom(pom: TPomStatus; ok: TCb; err: TCb);
-var toProgram: TList<THVPomCV>;
+procedure TRV.SetPom(pom: TPomStatus; ok: TCb; err: TCb);
+var toProgram: TList<TRVPomCV>;
 begin
   Self.pomOk := ok;
   Self.pomErr := err;
@@ -1702,7 +1704,7 @@ begin
   trakce.POMWriteCVs(Self.addr, toProgram, TTrakce.Callback(Self.TrakcePOMOK), TTrakce.Callback(Self.TrakcePOMErr));
 end;
 
-procedure THV.TrakcePOMOK(Sender: TObject; data: Pointer);
+procedure TRV.TrakcePOMOK(Sender: TObject; data: Pointer);
 begin
   if (Self.state.trakceError) then
     Self.state.trakceError := false;
@@ -1712,7 +1714,7 @@ begin
   Self.CallCb(Self.pomOk);
 end;
 
-procedure THV.TrakcePOMErr(Sender: TObject; data: Pointer);
+procedure TRV.TrakcePOMErr(Sender: TObject; data: Pointer);
 begin
   Self.state.pom := TPomStatus.error;
   Self.state.trakceError := true;
@@ -1724,7 +1726,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 // UPDATE STATE
 
-procedure THV.TrakceUpdateState(ok: TCb; err: TCb);
+procedure TRV.TrakceUpdateState(ok: TCb; err: TCb);
 begin
   if (Self.acquiring) then
     raise Exception.Create('Cannot update locoinfo when acquiring!');
@@ -1743,7 +1745,7 @@ begin
   end;
 end;
 
-procedure THV.TrakceUpdated(Sender: TObject; LocoInfo: TTrkLocoInfo);
+procedure TRV.TrakceUpdated(Sender: TObject; LocoInfo: TTrkLocoInfo);
 var slotOld: TTrkLocoInfo;
 begin
   trakce.Log(llCommands, 'Loco Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
@@ -1763,7 +1765,7 @@ begin
   Self.CallCb(Self.acquiredOk);
 end;
 
-procedure THV.TrakceUpdatedErr(Sender: TObject; data: Pointer);
+procedure TRV.TrakceUpdatedErr(Sender: TObject; data: Pointer);
 begin
   trakce.Log(llCommands, 'ERR: Loco Not Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.state.updating := false;
@@ -1776,9 +1778,9 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.TrakceStolen();
+procedure TRV.TrakceStolen();
 begin
-  // tato situace muze nastat, kdyz odhlasime HV a pak si ho vezme Rocomouse
+  // tato situace muze nastat, kdyz odhlasime RV a pak si ho vezme Rocomouse
   if (not Self.acquired) then
     Exit();
 
@@ -1801,14 +1803,14 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.GetStACurrentDirection(): Boolean;
+function TRV.GetStACurrentDirection(): Boolean;
 begin
   Result := Self.direction xor ownConvert.IntToBool(Integer(Self.state.siteA));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.UpdateTraveled(period: Cardinal);
+procedure TRV.UpdateTraveled(period: Cardinal);
 begin
   if (Self.speedStep = 0) then
     Exit();
@@ -1824,15 +1826,15 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.IsTrain(): Boolean;
+function TRV.IsTrain(): Boolean;
 begin
   Result := (Self.train > -1) and (Trains[Self.train] <> nil);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.BroadcastRegulators(msg: string);
-var reg: THVRegulator;
+procedure TRV.BroadcastRegulators(msg: string);
+var reg: TRVRegulator;
 begin
   for reg in Self.state.regulators do
     PanelServer.SendLn(reg.conn, '-;LOK;' + IntToStr(Self.addr) + ';' + msg);
@@ -1840,13 +1842,13 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.OnExpectedSpeedChange();
+procedure TRV.OnExpectedSpeedChange();
 begin
   if (Self.state.regulators.Count > 0) then
     Self.SendExpectedSpeed();
 end;
 
-function THV.ExpectedSpeedStr(): string;
+function TRV.ExpectedSpeedStr(): string;
 begin
   if (Self.IsTrain()) then
   begin
@@ -1857,20 +1859,20 @@ begin
   end;
 end;
 
-procedure THV.SendExpectedSpeed();
+procedure TRV.SendExpectedSpeed();
 begin
   Self.BroadcastRegulators('EXPECTED-SPEED;' + Self.ExpectedSpeedStr());
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.OnPredictedSignalChange();
+procedure TRV.OnPredictedSignalChange();
 begin
   if (Self.state.regulators.Count > 0) then
     Self.SendPredictedSignal();
 end;
 
-function THV.PredictedSignalStr(): string;
+function TRV.PredictedSignalStr(): string;
 var signal: TBlkSignal;
 begin
   if (Self.IsTrain()) then
@@ -1890,21 +1892,21 @@ begin
     Result := '-;-';
 end;
 
-procedure THV.SendPredictedSignal();
+procedure TRV.SendPredictedSignal();
 begin
   Self.BroadcastRegulators('NAV;' + Self.PredictedSignalStr());
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.GetAddrStr(): String;
+function TRV.GetAddrStr(): String;
 begin
   Result := IntToStr(Self.addr);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.RegulatorAdd(reg: THVRegulator);
+procedure TRV.RegulatorAdd(reg: TRVRegulator);
 begin
   Self.state.regulators.Add(reg);
   Self.UpdatePanelRuc(false);
@@ -1915,7 +1917,7 @@ begin
   end;
 end;
 
-procedure THV.RegulatorRemove(reg: THVRegulator);
+procedure TRV.RegulatorRemove(reg: TRVRegulator);
 begin
   Self.state.regulators.Remove(reg);
   Self.UpdatePanelRuc(true);
@@ -1928,7 +1930,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THV.DriverFullNames(): string;
+function TRV.DriverFullNames(): string;
 begin
   var userfullnames := TList<string>.Create();
   try
@@ -1943,7 +1945,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-class function THV.PomToJson(pom: THVPomCV): TJsonObject;
+class function TRV.PomToJson(pom: TRVPomCV): TJsonObject;
 begin
   Result := TJsonObject.Create();
   Result['cv'] := pom.cv;
@@ -1952,14 +1954,14 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THV.CallCb(cb: TCommandCallback);
+procedure TRV.CallCb(cb: TCommandCallback);
 begin
   try
     if (Assigned(cb.callback)) then
       cb.callback(Self, cb.Data);
   except
     on e: Exception do
-      AppEvents.LogException(e, 'THV.CallCb');
+      AppEvents.LogException(e, 'TRV.CallCb');
   end;
 end;
 

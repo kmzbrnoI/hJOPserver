@@ -5,7 +5,7 @@
 interface
 
 uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, rrEvent, System.Math,
-  TechnologieJC, IdContext, Generics.Collections, THnaciVozidlo, JCBarriers,
+  TechnologieJC, IdContext, Generics.Collections, TRailVehicle, JCBarriers,
   Area, StrUtils, JsonDataObjects, RCSc, RCSsc, Train, RegularExpressions;
 
 type
@@ -84,7 +84,7 @@ type
       rcsIndicationShunt: TRCSsAddr;
       rcsControllerShunt: TRCSsAddr;
     end;
-    forceDirection: THVOptionalSite;
+    forceDirection: TRVOptionalSite;
   end;
 
   TBlkSignalState = record
@@ -113,7 +113,7 @@ type
   TBlkSignalSpnl = record
     symbolType: TBlkSignalSymbol;
     trackId: Integer; // ID useku pred navestidlem
-    direction: THVSite;
+    direction: TRVSite;
   end;
 
   TBlkSignal = class(TBlk)
@@ -195,7 +195,7 @@ type
     procedure UnregisterAllEvents();
     function IsChanging(): Boolean;
     function GetTargetSignal(): TBlkSignalCode;
-    function GetDirection(): THVSite;
+    function GetDirection(): TRVSite;
 
     procedure PstCheckActive();
     procedure ShowIndication();
@@ -246,7 +246,7 @@ type
     function GetTrain(track: TBlk = nil): TTrain;
     procedure PropagatePOdjToRailway();
     function IsSpecificChangeTime(): Boolean;
-    procedure SetSpnlDirection(dir: THVSite);
+    procedure SetSpnlDirection(dir: TRVSite);
 
     class function SignalToString(code: TBlkSignalCode): string;
     class function DefaultChangeTime(hasRCSoutput: Boolean): string; overload;
@@ -259,7 +259,7 @@ type
 
     property symbolType: TBlkSignalSymbol read m_spnl.symbolType;
     property trackId: Integer read m_spnl.trackId write SetTrackId;
-    property direction: THVSite read GetDirection;
+    property direction: TRVSite read GetDirection;
 
     property state: TBlkSignalState read m_state;
     property signal: TBlkSignalCode read m_state.signal write mSetSignal;
@@ -346,7 +346,7 @@ begin
   Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
 
   Self.m_settings.locked := ini_tech.ReadBool(section, 'zamknuti', false);
-  Self.m_settings.forceDirection := THVOptionalSite(ini_tech.ReadInteger(section, 'vnucenySmer', Integer(THVOptionalSite.osNo)));
+  Self.m_settings.forceDirection := TRVOptionalSite(ini_tech.ReadInteger(section, 'vnucenySmer', Integer(TRVOptionalSite.osNo)));
 
   Self.m_settings.outputType := TBlkSignalOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
   Self.m_settings.fallDelay := ini_tech.ReadInteger(section, 'zpoz', _SIG_DEFAULT_DELAY);
@@ -360,13 +360,13 @@ begin
 
       // 0 = navestidlo v lichem smeru. 1 = navestidlo v sudem smeru
       if (strs[2] = '0') then
-        Self.m_spnl.direction := THVSite.odd
+        Self.m_spnl.direction := TRVSite.odd
       else
-        Self.m_spnl.direction := THVSite.even;
+        Self.m_spnl.direction := TRVSite.even;
       Self.m_spnl.trackId := StrToInt(strs[3]);
     end else begin
       Self.m_spnl.symbolType := TBlkSignalSymbol.unknown;
-      Self.m_spnl.direction := THVSite.odd;
+      Self.m_spnl.direction := TRVSite.odd;
       Self.m_spnl.trackId := -1;
     end;
   finally
@@ -447,7 +447,7 @@ begin
   if (Self.m_settings.locked) then
     ini_tech.WriteBool(section, 'zamknuti', Self.m_settings.locked);
 
-  if (Self.m_settings.forceDirection <> THVOptionalSite.osNo) then
+  if (Self.m_settings.forceDirection <> TRVOptionalSite.osNo) then
     ini_tech.WriteInteger(section, 'vnucenySmer', Integer(Self.m_settings.forceDirection));
 
   if (Self.m_settings.PSt.enabled) then
@@ -1441,10 +1441,10 @@ begin
 
     // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontextu zmeny smeru vlaku)
     if ((Self.inRailway <> rwNone) and (TBlkRailway(TBlkRT(track).railway).direction = TRailwayDirection.AtoB) and
-      (Self.direction = THVSite.even)) then
+      (Self.direction = TRVSite.even)) then
       Exit();
     if ((Self.inRailway <> rwNone) and (TBlkRailway(TBlkRT(track).railway).direction = TRailwayDirection.BtoA) and
-      (Self.direction = THVSite.odd)) then
+      (Self.direction = TRVSite.odd)) then
       Exit();
   end;
 
@@ -1996,7 +1996,7 @@ begin
   if (track = nil) then
     track := Blocks.GetBlkTrackOrRTByID(Self.trackId);
 
-  if (Self.direction = THVSite.odd) then
+  if (Self.direction = TRVSite.odd) then
     Result := TBlkTrack(track).trainSudy
   else
     Result := TBlkTrack(track).trainL;
@@ -2416,15 +2416,15 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkSignal.GetDirection(): THVSite;
+function TBlkSignal.GetDirection(): TRVSite;
 begin
-  if (Self.m_settings.forceDirection <> THVOptionalSite.osNo) then
-    Result := THVSite(Self.m_settings.forceDirection)
+  if (Self.m_settings.forceDirection <> TRVOptionalSite.osNo) then
+    Result := TRVSite(Self.m_settings.forceDirection)
   else
     Result := Self.m_spnl.direction;
 end;
 
-procedure TBlkSignal.SetSpnlDirection(dir: THVSite);
+procedure TBlkSignal.SetSpnlDirection(dir: TRVSite);
 begin
   Self.m_spnl.direction := dir;
 end;

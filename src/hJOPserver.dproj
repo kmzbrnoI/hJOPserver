@@ -178,8 +178,8 @@
         <DCCReference Include="blocks\forms\data\fBlkRailway.pas">
             <Form>F_BlkRailway</Form>
         </DCCReference>
-        <DCCReference Include="hv\forms\fHVEdit.pas">
-            <Form>F_HVEdit</Form>
+        <DCCReference Include="hv\forms\fVehicleEdit.pas">
+            <Form>F_RVEdit</Form>
         </DCCReference>
         <DCCReference Include="forms\fSystemInfo.pas">
             <Form>F_SystemInfo</Form>
@@ -233,12 +233,12 @@
             <Form>F_BlkTurnoutState</Form>
         </DCCReference>
         <DCCReference Include="jc\TJCDatabase.pas"/>
-        <DCCReference Include="hv\THVDatabase.pas"/>
-        <DCCReference Include="hv\THnaciVozidlo.pas"/>
+        <DCCReference Include="hv\TRVDatabase.pas"/>
+        <DCCReference Include="hv\TRailVehicle.pas"/>
         <DCCReference Include="Logging.pas"/>
         <DCCReference Include="net\TCPServerPanel.pas"/>
         <DCCReference Include="tables\DataRCS.pas"/>
-        <DCCReference Include="tables\DataHV.pas"/>
+        <DCCReference Include="tables\DataRV.pas"/>
         <DCCReference Include="tables\DataJC.pas"/>
         <DCCReference Include="tables\DataBloky.pas"/>
         <DCCReference Include="tables\DataZesilovac.pas"/>
@@ -271,8 +271,8 @@
         <DCCReference Include="jc\TMultiJCDatabase.pas"/>
         <DCCReference Include="jc\TechnologieMultiJC.pas"/>
         <DCCReference Include="tables\DataMultiJC.pas"/>
-        <DCCReference Include="hv\forms\fHVPomEdit.pas">
-            <Form>F_HV_Pom</Form>
+        <DCCReference Include="hv\forms\fVehiclePomEdit.pas">
+            <Form>F_RV_Pom</Form>
         </DCCReference>
         <DCCReference Include="jc\forms\fMJCEdit.pas">
             <Form>F_MJCEdit</Form>

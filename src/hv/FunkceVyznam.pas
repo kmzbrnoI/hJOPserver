@@ -10,7 +10,7 @@
 
 interface
 
-uses Generics.Collections, Classes, THnaciVozidlo, Generics.Defaults, SysUtils;
+uses Generics.Collections, Classes, TRailVehicle, Generics.Defaults, SysUtils;
 
 type
   TGeneralEvent = procedure(Sender: TObject) of object;
@@ -20,10 +20,10 @@ type
       _MAX = 50;
 
     private
-      data: TDictionary<string, THVFuncType>;
+      data: TDictionary<string, TRVFuncType>;
       fOnChange: TGeneralEvent;
 
-       class function Entry(data: string): TPair<string, THVFuncType>;
+       class function Entry(data: string): TPair<string, TRVFuncType>;
 
     public
        constructor Create();
@@ -32,10 +32,10 @@ type
        procedure Add(data: string);
        function IsName(name: string): Boolean;
        procedure Clear();
-       function All(): TList<TPair<string, THVFuncType>>;
+       function All(): TList<TPair<string, TRVFuncType>>;
        function PanelStr(separator: string = ','): string;
 
-       property dict: TDictionary<string, THVFuncType> read data;
+       property dict: TDictionary<string, TRVFuncType> read data;
        property OnChange: TGeneralEvent read fOnChange write fOnChange;
   end;
 
@@ -51,7 +51,7 @@ uses ownStrUtils;
 constructor TFuncNames.Create();
 begin
  inherited;
- Self.data := TDictionary<string, THVFuncType>.Create();
+ Self.data := TDictionary<string, TRVFuncType>.Create();
 end;
 
 destructor TFuncNames.Destroy();
@@ -93,11 +93,11 @@ begin
  Result := Self.data.ContainsKey(name);
 end;
 
-function TFuncNames.All(): TList<TPair<string, THVFuncType>>;
+function TFuncNames.All(): TList<TPair<string, TRVFuncType>>;
 begin
-  Result := TList<TPair<string, THVFuncType>>.Create(Self.data.ToArray());
-  Result.Sort(TComparer<TPair<string, THVFuncType>>.Construct(
-    function(const Left, Right: TPair<string, THVFuncType>): Integer
+  Result := TList<TPair<string, TRVFuncType>>.Create(Self.data.ToArray());
+  Result.Sort(TComparer<TPair<string, TRVFuncType>>.Construct(
+    function(const Left, Right: TPair<string, TRVFuncType>): Integer
     begin
       Result := CompareStr(Left.Key, Right.Key, loUserLocale);
     end
@@ -108,11 +108,11 @@ end;
 
 function TFuncNames.PanelStr(separator: string = ','): string;
 begin
-  var _all: TList<TPair<string, THVFuncType>> := Self.All();
+  var _all: TList<TPair<string, TRVFuncType>> := Self.All();
   try
     Result := '';
     for var entry in _all do
-      Result := Result + '{' + entry.Key + ':' + THV.HVFuncTypeToChar(entry.Value) + '}' + separator;
+      Result := Result + '{' + entry.Key + ':' + TRV.RVFuncTypeToChar(entry.Value) + '}' + separator;
   finally
     _all.Free();
   end;
@@ -120,7 +120,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TFuncNames.Entry(data: string): TPair<string, THVFuncType>;
+class function TFuncNames.Entry(data: string): TPair<string, TRVFuncType>;
 var strings: TStrings;
 begin
  strings := TStringList.Create();
@@ -132,9 +132,9 @@ begin
      Result.Key := '';
 
    if (strings.Count > 1) and (Length(strings[1]) > 0) then
-     Result.Value := THV.CharToHVFuncType(strings[1][1])
+     Result.Value := TRV.CharToRVFuncType(strings[1][1])
    else
-     Result.Value := THVFuncType.permanent;
+     Result.Value := TRVFuncType.permanent;
  finally
    strings.Free();
  end;

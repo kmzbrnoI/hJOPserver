@@ -1,29 +1,29 @@
-﻿unit fHVEdit;
+﻿unit fVehicleEdit;
 
 interface
 
 uses
   Windows, SysUtils, Variants, Classes, Graphics, Controls, Forms, Dialogs,
-  ExtCtrls, StdCtrls, Spin, THnaciVozidlo, ComCtrls, Generics.Collections,
+  ExtCtrls, StdCtrls, Spin, TRailVehicle, ComCtrls, Generics.Collections,
   Buttons;
 
 type
-  TF_HVEdit = class(TForm)
+  TF_RVEdit = class(TForm)
     E_Name: TEdit;
     E_Designation: TEdit;
     E_Owner: TEdit;
-    L_HV1: TLabel;
-    L_HV2: TLabel;
-    L_HV3: TLabel;
-    L_HV4: TLabel;
-    L_HV5: TLabel;
+    Label6: TLabel;
+    Label8: TLabel;
+    Label9: TLabel;
+    Label10: TLabel;
+    Label11: TLabel;
     M_Note: TMemo;
     B_Save: TButton;
     B_Cancel: TButton;
-    L_HV7: TLabel;
+    Label12: TLabel;
     CB_CabA: TComboBox;
     CB_Class: TComboBox;
-    L_HV10: TLabel;
+    Label7: TLabel;
     E_Addr: TEdit;
     CB_Area: TComboBox;
     Label1: TLabel;
@@ -55,35 +55,35 @@ type
     procedure LV_Pom_ManualKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
   private
-    OpenHV: THV;
+    vehicle: TRV;
 
     procedure EditOpenForm();
     procedure NewOpenForm();
     procedure CommonOpenForm();
 
   public
-    procedure EditHV(HV: THV);
-    procedure NewHV();
+    procedure EditVehicle(vehicle: TRV);
+    procedure NewVehicle();
 
   end;
 
 var
-  F_HVEdit: TF_HVEdit;
+  F_RVEdit: TF_RVEdit;
 
 implementation
 
-uses fMain, THVDatabase, DataHV, AreaDb, Area, fHVPomEdit, BlockDb, TrainDb,
+uses fMain, TRVDatabase, DataRV, AreaDb, Area, fVehiclePomEdit, BlockDb, TrainDb,
   ownGuiUtils;
 
 {$R *.dfm}
 
-procedure TF_HVEdit.EditHV(HV: THV);
+procedure TF_RVEdit.EditVehicle(vehicle: TRV);
 begin
-  Self.OpenHV := HV;
+  Self.vehicle := vehicle;
   Self.ActiveControl := Self.E_Name;
   Self.CommonOpenForm();
 
-  if (HV = nil) then
+  if (vehicle = nil) then
     Self.NewOpenForm()
   else
     Self.EditOpenForm();
@@ -91,64 +91,64 @@ begin
   Self.ShowModal();
 end;
 
-procedure TF_HVEdit.SB_Rel_AddClick(Sender: TObject);
+procedure TF_RVEdit.SB_Rel_AddClick(Sender: TObject);
 begin
-  F_HV_Pom.OpenForm(-1, 0);
-  if (F_HV_Pom.saved) then
+  F_RV_Pom.OpenForm(-1, 0);
+  if (F_RV_Pom.saved) then
   begin
     var i: Integer := 0;
     while ((i < Self.LV_Pom_Manual.Items.Count) and (StrToInt(Self.LV_Pom_Manual.Items.Item[i].Caption) <
-      F_HV_Pom.SE_CV.Value)) do
+      F_RV_Pom.SE_CV.Value)) do
       Inc(i);
 
     if ((Assigned(Self.LV_Pom_Manual.Items.Item[i])) and (StrToInt(Self.LV_Pom_Manual.Items.Item[i].Caption)
-      = F_HV_Pom.SE_CV.Value)) then
+      = F_RV_Pom.SE_CV.Value)) then
     begin
-      Self.LV_Pom_Manual.Items.Item[i].SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
+      Self.LV_Pom_Manual.Items.Item[i].SubItems.Strings[0] := IntToStr(F_RV_Pom.SE_Value.Value);
     end else begin
       var LI: TListItem := Self.LV_Pom_Manual.Items.Insert(i);
-      LI.Caption := IntToStr(F_HV_Pom.SE_CV.Value);
-      LI.SubItems.Add(IntToStr(F_HV_Pom.SE_Value.Value));
+      LI.Caption := IntToStr(F_RV_Pom.SE_CV.Value);
+      LI.SubItems.Add(IntToStr(F_RV_Pom.SE_Value.Value));
     end;
   end;
 end;
 
-procedure TF_HVEdit.SB_Rel_RemoveClick(Sender: TObject);
+procedure TF_RVEdit.SB_Rel_RemoveClick(Sender: TObject);
 begin
   if (Self.LV_Pom_Manual.Selected <> nil) then
     Self.LV_Pom_Manual.Items.Delete(Self.LV_Pom_Manual.ItemIndex);
 end;
 
-procedure TF_HVEdit.SB_Take_AddClick(Sender: TObject);
+procedure TF_RVEdit.SB_Take_AddClick(Sender: TObject);
 begin
-  F_HV_Pom.OpenForm(-1, 0);
-  if (F_HV_Pom.saved) then
+  F_RV_Pom.OpenForm(-1, 0);
+  if (F_RV_Pom.saved) then
   begin
     var i: Integer := 0;
     while ((i < Self.LV_Pom_Automat.Items.Count) and (StrToInt(Self.LV_Pom_Automat.Items.Item[i].Caption) <
-      F_HV_Pom.SE_CV.Value)) do
+      F_RV_Pom.SE_CV.Value)) do
       Inc(i);
 
     if ((Assigned(Self.LV_Pom_Automat.Items.Item[i])) and (StrToInt(Self.LV_Pom_Automat.Items.Item[i].Caption)
-      = F_HV_Pom.SE_CV.Value)) then
+      = F_RV_Pom.SE_CV.Value)) then
     begin
-      Self.LV_Pom_Automat.Items.Item[i].SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
+      Self.LV_Pom_Automat.Items.Item[i].SubItems.Strings[0] := IntToStr(F_RV_Pom.SE_Value.Value);
     end else begin
       var LI: TListItem := Self.LV_Pom_Automat.Items.Insert(i);
-      LI.Caption := IntToStr(F_HV_Pom.SE_CV.Value);
-      LI.SubItems.Add(IntToStr(F_HV_Pom.SE_Value.Value));
+      LI.Caption := IntToStr(F_RV_Pom.SE_CV.Value);
+      LI.SubItems.Add(IntToStr(F_RV_Pom.SE_Value.Value));
     end;
   end;
 end;
 
-procedure TF_HVEdit.SB_Take_RemoveClick(Sender: TObject);
+procedure TF_RVEdit.SB_Take_RemoveClick(Sender: TObject);
 begin
   if (Self.LV_Pom_Automat.Selected <> nil) then
     Self.LV_Pom_Automat.Items.Delete(Self.LV_Pom_Automat.ItemIndex);
 end;
 
-procedure TF_HVEdit.B_SaveClick(Sender: TObject);
-var data: THVData;
+procedure TF_RVEdit.B_SaveClick(Sender: TObject);
+var data: TRVData;
 begin
   if (Self.E_Name.Text = '') then
   begin
@@ -182,8 +182,8 @@ begin
   end;
 
   var area: TArea := Areas[Self.CB_Area.ItemIndex];
-  if ((Self.OpenHV <> nil) and (Self.OpenHV.state.train > -1) and (Self.OpenHV.state.Area <> Area)) then
-    if (StrMessageBox('Měníte stanici HV, které je na vlaku, opravdu pokračovat?', 'Opravdu?',
+  if ((Self.vehicle <> nil) and (Self.vehicle.state.train > -1) and (Self.vehicle.state.Area <> Area)) then
+    if (StrMessageBox('Měníte stanici vozidla, které je na vlaku, opravdu pokračovat?', 'Opravdu?',
       MB_YESNO OR MB_ICONWARNING) = mrNo) then
       Exit();
 
@@ -192,20 +192,20 @@ begin
   data.designation := Self.E_Designation.Text;
   data.note := Self.M_Note.Text;
   if (Self.CB_Class.ItemIndex = Self.CB_Class.Items.Count - 1) then
-    data.typ := THVType.other
+    data.typ := TRVType.other
   else
-    data.typ := THVType(Self.CB_Class.ItemIndex);
+    data.typ := TRVType(Self.CB_Class.ItemIndex);
 
   data.POMrelease := TPomStatus(Self.CB_POM_Release.ItemIndex);
   data.multitrackCapable := Self.CHB_Multitrack.Checked;
 
-  if (Self.OpenHV = nil) then
+  if (Self.vehicle = nil) then
   begin
-    data.POMautomat := TList<THVPomCV>.Create();
-    data.POMmanual := TList<THVPomCV>.Create();
+    data.POMautomat := TList<TRVPomCV>.Create();
+    data.POMmanual := TList<TRVPomCV>.Create();
   end else begin
-    data.POMautomat := Self.OpenHV.data.POMautomat;
-    data.POMmanual := Self.OpenHV.data.POMmanual;
+    data.POMautomat := Self.vehicle.data.POMautomat;
+    data.POMmanual := Self.vehicle.data.POMmanual;
   end;
 
   data.POMautomat.Clear();
@@ -215,7 +215,7 @@ begin
   for var i: Integer := 0 to Self.LV_Pom_Automat.Items.Count - 1 do
   begin
     try
-      var pomCV: THVPomCV;
+      var pomCV: TRVPomCV;
       pomCV.cv := StrToInt(Self.LV_Pom_Automat.Items.Item[i].Caption);
       pomCV.value := StrToInt(Self.LV_Pom_Automat.Items.Item[i].SubItems.Strings[0]);
       data.POMautomat.Add(pomCV);
@@ -228,7 +228,7 @@ begin
   for var i: Integer := 0 to Self.LV_Pom_Manual.Items.Count - 1 do
   begin
     try
-      var pomCV: THVPomCV;
+      var pomCV: TRVPomCV;
       pomCV.cv := StrToInt(Self.LV_Pom_Manual.Items.Item[i].Caption);
       pomCV.value := StrToInt(Self.LV_Pom_Manual.Items.Item[i].SubItems.Strings[0]);
       data.POMmanual.Add(pomCV);
@@ -237,14 +237,14 @@ begin
     end;
   end;
 
-  if (Self.OpenHV = nil) then
+  if (Self.vehicle = nil) then
   begin
-    // vytvoreni noveho HV
+    // vytvoreni noveho vozidla
     data.maxSpeed := _DEFAUT_MAX_SPEED;
     data.transience := 0;
     Area := Areas[Self.CB_Area.ItemIndex];
     try
-      HVDb.Add(data, StrToInt(Self.E_Addr.Text), THVSite(Self.CB_CabA.ItemIndex), Area);
+      RVDb.Add(data, StrToInt(Self.E_Addr.Text), TRVSite(Self.CB_CabA.ItemIndex), Area);
     except
       on E: Exception do
       begin
@@ -254,24 +254,24 @@ begin
     end;
   end else begin
     // neupravovane veci jednoduse zkopirujeme
-    data.funcDescription := Self.OpenHV.data.funcDescription;
-    data.maxSpeed := Self.OpenHV.data.maxSpeed;
-    data.funcType := Self.OpenHV.data.funcType;
-    data.transience := Self.OpenHV.data.transience;
+    data.funcDescription := Self.vehicle.data.funcDescription;
+    data.maxSpeed := Self.vehicle.data.maxSpeed;
+    data.funcType := Self.vehicle.data.funcType;
+    data.transience := Self.vehicle.data.transience;
 
-    // update HV
-    Self.OpenHV.data := data;
-    Self.OpenHV.SaveData();
+    // update vehicle
+    Self.vehicle.data := data;
+    Self.vehicle.SaveData();
 
     Area := Areas[Self.CB_Area.ItemIndex];
 
-    var stav: THVState := Self.OpenHV.state;
-    stav.siteA := THVSite(Self.CB_CabA.ItemIndex);
-    Self.OpenHV.state := stav;
-    Self.OpenHV.MoveToArea(Area);
-    Self.OpenHV.UpdateAllRegulators();
+    var stav: TRVState := Self.vehicle.state;
+    stav.siteA := TRVSite(Self.CB_CabA.ItemIndex);
+    Self.vehicle.state := stav;
+    Self.vehicle.MoveToArea(Area);
+    Self.vehicle.UpdateAllRegulators();
 
-    HVTableData.UpdateLine(OpenHV);
+    RVTableData.UpdateLine(vehicle);
 
     if (stav.train > -1) then
       Blocks.ChangeTrainToAllRailways(Trains[stav.train]);
@@ -280,92 +280,92 @@ begin
   Self.Close();
 end;
 
-procedure TF_HVEdit.NewHV();
+procedure TF_RVEdit.NewVehicle();
 begin
-  Self.EditHV(nil);
+  Self.EditVehicle(nil);
 end;
 
-procedure TF_HVEdit.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+procedure TF_RVEdit.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  Self.OpenHV := nil;
+  Self.vehicle := nil;
 end;
 
-procedure TF_HVEdit.B_CancelClick(Sender: TObject);
+procedure TF_RVEdit.B_CancelClick(Sender: TObject);
 begin
   Self.Close();
 end;
 
-procedure TF_HVEdit.CommonOpenForm();
+procedure TF_RVEdit.CommonOpenForm();
 begin
   Self.SB_Rel_Remove.Enabled := false;
   Self.SB_Take_Remove.Enabled := false;
 end;
 
-procedure TF_HVEdit.LV_Pom_AutomatChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_RVEdit.LV_Pom_AutomatChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   Self.SB_Take_Remove.Enabled := (Self.LV_Pom_Automat.Selected <> nil);
 end;
 
-procedure TF_HVEdit.LV_Pom_AutomatDblClick(Sender: TObject);
+procedure TF_RVEdit.LV_Pom_AutomatDblClick(Sender: TObject);
 begin
   if (Self.LV_Pom_Automat.Selected <> nil) then
   begin
-    F_HV_Pom.OpenForm(StrToInt(Self.LV_Pom_Automat.Selected.Caption),
+    F_RV_Pom.OpenForm(StrToInt(Self.LV_Pom_Automat.Selected.Caption),
       StrToInt(Self.LV_Pom_Automat.Selected.SubItems.Strings[0]));
-    if (F_HV_Pom.saved) then
-      Self.LV_Pom_Automat.Selected.SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
+    if (F_RV_Pom.saved) then
+      Self.LV_Pom_Automat.Selected.SubItems.Strings[0] := IntToStr(F_RV_Pom.SE_Value.Value);
   end else begin
     Self.SB_Take_AddClick(Self);
   end;
 end;
 
-procedure TF_HVEdit.LV_Pom_AutomatKeyDown(Sender: TObject; var Key: Word;
+procedure TF_RVEdit.LV_Pom_AutomatKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if ((Key = VK_DELETE) and (Self.SB_Take_Remove.Enabled)) then
     Self.SB_Take_RemoveClick(Self);
 end;
 
-procedure TF_HVEdit.LV_Pom_ManualChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_RVEdit.LV_Pom_ManualChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   Self.SB_Rel_Remove.Enabled := (Self.LV_Pom_Manual.Selected <> nil);
 end;
 
-procedure TF_HVEdit.LV_Pom_ManualDblClick(Sender: TObject);
+procedure TF_RVEdit.LV_Pom_ManualDblClick(Sender: TObject);
 begin
   if (Self.LV_Pom_Manual.Selected <> nil) then
   begin
-    F_HV_Pom.OpenForm(StrToInt(Self.LV_Pom_Manual.Selected.Caption),
+    F_RV_Pom.OpenForm(StrToInt(Self.LV_Pom_Manual.Selected.Caption),
       StrToInt(Self.LV_Pom_Manual.Selected.SubItems.Strings[0]));
-    if (F_HV_Pom.saved) then
-      Self.LV_Pom_Manual.Selected.SubItems.Strings[0] := IntToStr(F_HV_Pom.SE_Value.Value);
+    if (F_RV_Pom.saved) then
+      Self.LV_Pom_Manual.Selected.SubItems.Strings[0] := IntToStr(F_RV_Pom.SE_Value.Value);
   end else begin
     Self.SB_Rel_AddClick(Self);
   end;
 end;
 
-procedure TF_HVEdit.LV_Pom_ManualKeyDown(Sender: TObject; var Key: Word;
+procedure TF_RVEdit.LV_Pom_ManualKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if ((Key = VK_DELETE) and (Self.SB_Rel_Remove.Enabled)) then
     Self.SB_Rel_RemoveClick(Self);
 end;
 
-procedure TF_HVEdit.EditOpenForm();
-var data: THVData;
-  stav: THVState;
+procedure TF_RVEdit.EditOpenForm();
+var data: TRVData;
+  stav: TRVState;
 begin
   Self.E_Addr.ReadOnly := true;
 
-  data := Self.OpenHV.data;
-  stav := Self.OpenHV.state;
+  data := Self.vehicle.data;
+  stav := Self.vehicle.state;
 
   Self.E_Name.Text := data.name;
   Self.E_Designation.Text := data.designation;
   Self.E_Owner.Text := data.owner;
-  Self.E_Addr.Text := IntToStr(Self.OpenHV.addr);
+  Self.E_Addr.Text := IntToStr(Self.vehicle.addr);
   Self.M_Note.Text := data.note;
-  if (data.typ = THVType.other) then
+  if (data.typ = TRVType.other) then
     Self.CB_Class.ItemIndex := Self.CB_Class.Items.Count - 1
   else
     Self.CB_Class.ItemIndex := Integer(data.typ);
@@ -391,10 +391,10 @@ begin
 
   Areas.FillCB(Self.CB_Area, stav.Area);
 
-  F_HVEdit.Caption := 'Vozidlo ' + IntToStr(Self.OpenHV.addr);
+  Self.Caption := 'Vozidlo ' + IntToStr(Self.vehicle.addr);
 end;
 
-procedure TF_HVEdit.NewOpenForm();
+procedure TF_RVEdit.NewOpenForm();
 begin
   Self.E_Addr.ReadOnly := false;
 
@@ -413,7 +413,7 @@ begin
 
   Areas.FillCB(Self.CB_Area, nil);
 
-  F_HVEdit.Caption := 'Nové vozidlo';
+  Self.Caption := 'Nové vozidlo';
 end;
 
 end.// unit

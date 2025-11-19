@@ -1,18 +1,18 @@
-﻿unit THVDatabase;
+﻿unit TRVDatabase;
 
 {
-  Trida THVDb je databaze hnacich vozidel.
+  Trida TRVDb je databaze hnacich vozidel.
 
   K principu indexovaci tabulky:
-  kazde HV ulozene vpoli adres ma svuj index
-  index se pocita pro existujici HV od nejnizsi adresy po nejvyssi
+  kazde RV ulozene vpoli adres ma svuj index
+  index se pocita pro existujici RV od nejnizsi adresy po nejvyssi
   slouzi ke snadmenu pristupu v tabulkach
   umoznuje jednoduse pripradit index (radek), pokud znamen adresu
 }
 
 interface
 
-uses SysUtils, THnaciVozidlo, Classes, IdContext, IniFiles, Windows, ExtCtrls;
+uses SysUtils, TRailVehicle, Classes, IdContext, IniFiles, Windows, ExtCtrls;
 
 const
   _MAX_ADDR = 10000;
@@ -22,7 +22,7 @@ const
 
 type
 
-  THVArray = array [0 .. _MAX_ADDR - 1] of THV;
+  TRVArray = array [0 .. _MAX_ADDR - 1] of TRV;
 
   ENoLoco = class(Exception);
   ELocoOnTrain = class(Exception);
@@ -30,12 +30,12 @@ type
   EInvalidAddress = class(Exception);
   ELocoExists = class(Exception);
 
-  THVDb = class
+  TRVDb = class
 
   private
     // index odpovida adrese
     // jednu adresu muze mit pouze jedno vozidlo v Db
-    HVs: THVArray;
+    mVehicles: TRVArray;
 
     fdefault_or: Integer;
     fLoksDir: string;
@@ -53,7 +53,7 @@ type
     function GetCnt(): Word;
 
     procedure CreateIndex();
-    function GetItem(index: Integer): THV;
+    function GetItem(index: Integer): TRV;
 
     procedure AcquiredOk(Sender: TObject; Data: Pointer);
     procedure AcquiredErr(Sender: TObject; Data: Pointer);
@@ -70,8 +70,8 @@ type
     procedure SaveData(const dirname: string);
     procedure SaveState(const statefn: string);
 
-    function Add(Data: THVData; addr: Word; siteA: THVSite; area: TObject): THV; overload;
-    function Add(panel_str: string; SenderOR: TObject): THV; overload;
+    function Add(Data: TRVData; addr: Word; siteA: TRVSite; area: TObject): TRV; overload;
+    function Add(panel_str: string; SenderOR: TObject): TRV; overload;
     procedure Remove(addr: Word);
 
     procedure RemoveRegulator(conn: TIDContext);
@@ -81,37 +81,37 @@ type
 
     procedure UpdateTokenTimeout();
     function FilenameForLok(addr: Word): string; overload;
-    function FilenameForLok(hv: THV): string; overload;
+    function FilenameForLok(vehicle: TRV): string; overload;
 
-    function AnyAcquiredHVHasActiveFunc(func: string): Boolean;
-    function AllAcquiredHVsHaveActiveFunc(func: string): Boolean;
-    function AnyHvToRestoreFunc(func: string): Boolean;
+    function AnyAcquiredRVHasActiveFunc(func: string): Boolean;
+    function AllAcquiredRVsHaveActiveFunc(func: string): Boolean;
+    function AnyRVToRestoreFunc(func: string): Boolean;
 
     procedure CSReset();
     procedure TrakceAcquireAllUsed(ok: TNotifyEvent = nil; err: TNotifyEvent = nil; locoAcquired: TNotifyEvent = nil);
     procedure TrakceReleaseAllUsed(ok: TNotifyEvent = nil; locoReleased: TNotifyEvent = nil);
 
     property cnt: Word read GetCnt; // vypocet tady tohoto trva celkem dlouho, pouzivat obezretne !
-    property HVozidla: THVArray read HVs;
+    property vehicles: TRVArray read mVehicles;
     property default_or: Integer read fdefault_or write fdefault_or;
     property loksDir: string read fLoksDir;
     property acquiring: Boolean read mAcquiring;
     property releasing: Boolean read mReleasing;
 
-    property Items[index: Integer]: THV read GetItem; default;
+    property Items[index: Integer]: TRV read GetItem; default;
 
-  end; // THVDb
+  end; // TRVDb
 
 var
-  HVDb: THVDb;
+  RVDb: TRVDb;
 
 implementation
 
-uses fMain, DataHV, area, appEv, TrakceIFace, TrakceC, Logging;
+uses fMain, DataRV, area, appEv, TrakceIFace, TrakceC, Logging;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-constructor THVDb.Create();
+constructor TRVDb.Create();
 begin
   inherited Create();
 
@@ -125,10 +125,10 @@ begin
   Self.mReleasing := false;
 
   for var i := 0 to _MAX_ADDR - 1 do
-    Self.HVs[i] := nil;
+    Self.mVehicles[i] := nil;
 end;
 
-destructor THVDb.Destroy();
+destructor TRVDb.Destroy();
 begin
   Self.tLocoUpdate.Free();
   Self.Clear();
@@ -137,19 +137,18 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.Clear();
+procedure TRVDb.Clear();
 begin
   for var i: Integer := 0 to _MAX_ADDR - 1 do
-    if (Self.HVs[i] <> nil) then
-      FreeAndNil(Self.HVs[i]);
+    if (Self.mVehicles[i] <> nil) then
+      FreeAndNil(Self.mVehicles[i]);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.LoadFile(filename: string; stateini: TMemIniFile);
-var aHV: THV;
-  ini: TMemIniFile;
-  sections: TStrings;
+procedure TRVDb.LoadFile(filename: string; stateini: TMemIniFile);
+var ini: TMemIniFile;
+    sections: TStrings;
 begin
   ini := nil;
   sections := nil;
@@ -167,21 +166,22 @@ begin
         continue;
 
       // nacteni jedne loko
+      var vehicle: TRV;
       try
-        aHV := THV.Create(ini, stateini, sect);
+        vehicle := TRV.Create(ini, stateini, sect);
       except
         on E: Exception do
           AppEvents.LogException(E, 'Chyba pri nacitani souboru loko : ' + filename + ', sekce ' + sect);
       end;
 
-      if (aHV = nil) then
+      if (vehicle = nil) then
         continue;
 
-      if (Self.HVs[aHV.addr] <> nil) then
+      if (Self.mVehicles[vehicle.addr] <> nil) then
       begin
-        FreeAndNil(aHV);
+        FreeAndNil(vehicle);
       end else begin
-        Self.HVs[aHV.addr] := aHV;
+        Self.mVehicles[vehicle.addr] := vehicle;
       end;
     end; // for sect in sections
   except
@@ -201,7 +201,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.LoadFromDir(const dirname: string; const statefn: string);
+procedure TRVDb.LoadFromDir(const dirname: string; const statefn: string);
 var SR: TSearchRec;
   stateini: TMemIniFile;
 begin
@@ -227,13 +227,13 @@ begin
     end;
 
     Self.CreateIndex();
-    HVTableData.LoadToTable();
+    RVTableData.LoadToTable();
   finally
     stateini.Free();
   end;
 end;
 
-procedure THVDb.SaveData(const dirname: string);
+procedure TRVDb.SaveData(const dirname: string);
 begin
   Log('Ukládám vozidla...', llInfo, lsData);
   Self.fLoksDir := dirname;
@@ -241,21 +241,21 @@ begin
   var count: Cardinal := 0;
   for var i: Integer := 0 to _MAX_ADDR - 1 do
   begin
-    if (Self.HVs[i] <> nil) then
+    if (Self.mVehicles[i] <> nil) then
     begin
       try
-        Self.HVs[i].SaveData(Self.FilenameForLok(Self.HVs[i]));
+        Self.mVehicles[i].SaveData(Self.FilenameForLok(Self.mVehicles[i]));
         Inc(count);
       except
         on E: Exception do
-          AppEvents.LogException(E, 'THVDb.SaveData ' + IntToStr(i));
+          AppEvents.LogException(E, 'TRVDb.SaveData ' + IntToStr(i));
       end;
     end; // if <> nil
   end; // for i
   Log('Uloženo vozidel: '+IntToStr(count), llInfo, lsData);
 end;
 
-procedure THVDb.SaveState(const statefn: string);
+procedure TRVDb.SaveState(const statefn: string);
 var stateini: TMemIniFile;
 begin
   stateini := TMemIniFile.Create(statefn);
@@ -263,13 +263,13 @@ begin
   try
     for var i: Integer := 0 to _MAX_ADDR - 1 do
     begin
-      if (Self.HVs[i] <> nil) then
+      if (Self.mVehicles[i] <> nil) then
       begin
         try
-          Self.HVs[i].SaveState(stateini);
+          Self.mVehicles[i].SaveState(stateini);
         except
           on E: Exception do
-            AppEvents.LogException(E, 'THVDb.SaveState ' + IntToStr(i));
+            AppEvents.LogException(E, 'TRVDb.SaveState ' + IntToStr(i));
         end;
       end; // if <> nil
     end; // for i
@@ -281,12 +281,12 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THVDb.Add(Data: THVData; addr: Word; siteA: THVSite; area: TObject): THV;
-var state: THVState;
+function TRVDb.Add(Data: TRVData; addr: Word; siteA: TRVSite; area: TObject): TRV;
+var state: TRVState;
 begin
   if (addr > 9999) then
     raise EInvalidAddress.Create('Neplatná adresa lokomotivy ' + IntToStr(addr));
-  if (Self.HVs[addr] <> nil) then
+  if (Self.mVehicles[addr] <> nil) then
     raise ELocoExists.Create('Lokomotiva s adresou ' + IntToStr(addr) + ' již existuje');
 
   // pokud neexistuje, pridame ji
@@ -302,7 +302,7 @@ begin
   state.regulators := nil;
   state.tokens := nil;
 
-  Self.HVs[addr] := THV.Create(addr, Data, state);
+  Self.mVehicles[addr] := TRV.Create(addr, Data, state);
 
   // ------- update indexu: ------
 
@@ -312,99 +312,99 @@ begin
   begin
     for var i: Integer := addr - 1 downto 0 do
     begin
-      if (Self.HVs[i] <> nil) then
+      if (Self.mVehicles[i] <> nil) then
       begin
-        index := Self.HVs[i].index;
+        index := Self.mVehicles[i].index;
         break;
       end;
     end;
   end; // if addr > 0
 
-  // nasemu HV priradime tento index + 1
-  Self.HVs[addr].index := index + 1;
+  // nasemu RV priradime tento index + 1
+  Self.mVehicles[addr].index := index + 1;
 
-  // vsem HV nad nasim hv zvysime index o 1
+  // vsem RV nad nasim rv zvysime index o 1
   if (addr < _MAX_ADDR - 1) then
   begin
     for var i: Integer := addr + 1 to _MAX_ADDR - 1 do
-      if (Self.HVs[i] <> nil) then
-        Self.HVs[i].index := Self.HVs[i].index + 1;
+      if (Self.mVehicles[i] <> nil) then
+        Self.mVehicles[i].index := Self.mVehicles[i].index + 1;
   end;
 
   // aktualizujeme tabulky:
-  HVTableData.AddHV(Self.HVs[addr].index, Self.HVs[addr]);
+  RVTableData.AddRV(Self.mVehicles[addr].index, Self.mVehicles[addr]);
 
-  Result := Self.HVs[addr];
+  Result := Self.mVehicles[addr];
 end;
 
-function THVDb.Add(panel_str: string; SenderOR: TObject): THV;
-var hv: THV;
+function TRVDb.Add(panel_str: string; SenderOR: TObject): TRV;
+var vehicle: TRV;
 begin
   try
-    hv := THV.Create(panel_str, (SenderOR as TArea));
+    vehicle := TRV.Create(panel_str, (SenderOR as TArea));
   except
     on E: Exception do
     begin
       raise Exception.Create(E.Message);
-      hv.Free();
+      vehicle.Free();
       Exit();
     end; // on e: Exception
   end;
 
-  if (Self[hv.addr] <> nil) then
+  if (Self[vehicle.addr] <> nil) then
   begin
-    raise Exception.Create('HV ' + IntToStr(hv.addr) + ' již existuje');
-    hv.Free();
+    raise Exception.Create('RV ' + IntToStr(vehicle.addr) + ' již existuje');
+    vehicle.Free();
     Exit();
   end;
 
-  Self.HVs[hv.addr] := hv;
+  Self.mVehicles[vehicle.addr] := vehicle;
 
   // ------- update indexu: ------
 
   // najdeme nejblizsi spodni index
   var index: Integer := -1;
-  if (hv.addr > 0) then
+  if (vehicle.addr > 0) then
   begin
-    for var i: Integer := hv.addr - 1 downto 0 do
+    for var i: Integer := vehicle.addr - 1 downto 0 do
     begin
-      if (Self.HVs[i] <> nil) then
+      if (Self.mVehicles[i] <> nil) then
       begin
-        index := Self.HVs[i].index;
+        index := Self.mVehicles[i].index;
         break;
       end;
     end;
   end; // if addr > 0
 
-  // nasemu HV priradime tento index + 1
-  hv.index := index + 1;
+  // nasemu RV priradime tento index + 1
+  vehicle.index := index + 1;
 
-  // vsem HV nad nasim hv zvysime index o 1
-  if (hv.addr < _MAX_ADDR - 1) then
+  // vsem RV nad nasim rv zvysime index o 1
+  if (vehicle.addr < _MAX_ADDR - 1) then
   begin
-    for var i: Integer := hv.addr + 1 to _MAX_ADDR - 1 do
-      if (Self.HVs[i] <> nil) then
-        Self.HVs[i].index := Self.HVs[i].index + 1;
+    for var i: Integer := vehicle.addr + 1 to _MAX_ADDR - 1 do
+      if (Self.mVehicles[i] <> nil) then
+        Self.mVehicles[i].index := Self.mVehicles[i].index + 1;
   end;
 
   // aktualizujeme tabulky:
-  HVTableData.AddHV(hv.index, hv);
+  RVTableData.AddRV(vehicle.index, vehicle);
 
-  Result := hv;
+  Result := vehicle;
 end;
 
-procedure THVDb.Remove(addr: Word);
+procedure TRVDb.Remove(addr: Word);
 begin
-  // hv neexistuje
-  if (Self.HVs[addr] = nil) then
+  // rv neexistuje
+  if (Self.mVehicles[addr] = nil) then
     raise ENoLoco.Create('Lokomotiva s touto adresou neexistuje!');
-  if (Self.HVs[addr].state.train > -1) then
+  if (Self.mVehicles[addr].state.train > -1) then
     raise ELocoOnTrain.Create('Lokomotiva je na vlaku!');
-  if ((Self.HVs[addr].acquired) or (Self.HVs[addr].stolen)) then
+  if ((Self.mVehicles[addr].acquired) or (Self.mVehicles[addr].stolen)) then
     raise ELocoPrevzato.Create('Lokomotiva převzata do řízení počítače');
 
-  var index: Integer := Self.HVs[addr].index;
-  FreeAndNil(Self.HVs[addr]);
+  var index: Integer := Self.mVehicles[addr].index;
+  FreeAndNil(Self.mVehicles[addr]);
 
   // smazat soubor
   SysUtils.DeleteFile(Self.FilenameForLok(addr));
@@ -413,21 +413,21 @@ begin
 
   // vsechny indexy od addr zmensime o 1:
   for var i: Integer := addr to _MAX_ADDR - 1 do
-    if (Self.HVs[i] <> nil) then
-      Self.HVs[i].index := Self.HVs[i].index - 1;
+    if (Self.mVehicles[i] <> nil) then
+      Self.mVehicles[i].index := Self.mVehicles[i].index - 1;
 
   // aktualizujeme tabulky:
-  HVTableData.RemoveHV(index);
+  RVTableData.RemoveRV(index);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 // spocita pocet hnacich vozidel
-function THVDb.GetCnt(): Word;
+function TRVDb.GetCnt(): Word;
 begin
   Result := 0;
   for var i: Integer := 0 to _MAX_ADDR - 1 do
-    if (Self.HVs[i] <> nil) then
+    if (Self.mVehicles[i] <> nil) then
       Result := Result + 1;
 end;
 
@@ -437,15 +437,15 @@ end;
 // vola se jen pri nacteni souboru
 // update indxu si zajistuji metody Add a remove trosku jinym algoritmem
 // (neni zapotrebi kontrolovat cele pole)
-procedure THVDb.CreateIndex();
+procedure TRVDb.CreateIndex();
 var index: Integer;
 begin
   index := 0;
   for var i: Integer := 0 to _MAX_ADDR - 1 do
   begin
-    if (Self.HVs[i] <> nil) then
+    if (Self.mVehicles[i] <> nil) then
     begin
-      Self.HVs[i].index := index;
+      Self.mVehicles[i].index := index;
       index := index + 1;
     end;
   end;
@@ -453,36 +453,36 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.RemoveRegulator(conn: TIDContext);
+procedure TRVDb.RemoveRegulator(conn: TIDContext);
 begin
   for var i: Integer := 0 to _MAX_ADDR - 1 do
-    if (Assigned(Self.HVs[i])) then
-      Self.HVs[i].RemoveRegulator(conn);
+    if (Assigned(Self.mVehicles[i])) then
+      Self.mVehicles[i].RemoveRegulator(conn);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.UpdateTokenTimeout();
+procedure TRVDb.UpdateTokenTimeout();
 begin
   for var i: Integer := 0 to _MAX_ADDR - 1 do
-    if (Assigned(Self.HVs[i])) then
-      Self.HVs[i].UpdateTokenTimeout();
+    if (Assigned(Self.mVehicles[i])) then
+      Self.mVehicles[i].UpdateTokenTimeout();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.ClearAllStatistics();
+procedure TRVDb.ClearAllStatistics();
 begin
   for var i: Integer := 0 to _MAX_ADDR - 1 do
-    if (Assigned(Self.HVs[i])) then
-      Self.HVs[i].ResetStats();
-  HVTableData.reload := true;
-  HVTableData.UpdateTable();
+    if (Assigned(Self.mVehicles[i])) then
+      Self.mVehicles[i].ResetStats();
+  RVTableData.reload := true;
+  RVTableData.UpdateTable();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.ExportStatistics(filename: string);
+procedure TRVDb.ExportStatistics(filename: string);
 begin
   var sw := TStreamWriter.Create(filename, False, TEncoding.UTF8);
 
@@ -490,8 +490,8 @@ begin
     sw.WriteLine('adresa,nazev,majitel,najeto_metru_vpred,najeto_metru_vzad');
 
     for var i: Integer := 0 to _MAX_ADDR - 1 do
-      if (Assigned(Self.HVs[i])) then
-        sw.WriteLine(Self.HVs[i].ExportStats());
+      if (Assigned(Self.mVehicles[i])) then
+        sw.WriteLine(Self.mVehicles[i].ExportStats());
   finally
     sw.Free();
   end;
@@ -499,37 +499,37 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THVDb.FilenameForLok(addr: Word): string;
+function TRVDb.FilenameForLok(addr: Word): string;
 begin
   Result := Self.loksDir + '\L_' + IntToStr(addr) + _FILE_SUFFIX;
 end;
 
-function THVDb.FilenameForLok(hv: THV): string;
+function TRVDb.FilenameForLok(vehicle: TRV): string;
 begin
-  Result := Self.FilenameForLok(hv.addr);
+  Result := Self.FilenameForLok(vehicle.addr);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THVDb.GetItem(index: Integer): THV;
+function TRVDb.GetItem(index: Integer): TRV;
 begin
-  Result := Self.HVs[index];
+  Result := Self.mVehicles[index];
 end;
 
-procedure THVDb.CSReset();
+procedure TRVDb.CSReset();
 begin
   Self.mAcquiring := false;
   Self.mReleasing := false;
   for var addr: Word := 0 to _MAX_ADDR - 1 do
-    if (HVDb[addr] <> nil) then
-      HVDb[addr].CSReset();
+    if (RVDb[addr] <> nil) then
+      RVDb[addr].CSReset();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 // Trakce
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.TrakceAcquireAllUsed(ok: TNotifyEvent = nil; err: TNotifyEvent = nil; locoAcquired: TNotifyEvent = nil);
+procedure TRVDb.TrakceAcquireAllUsed(ok: TNotifyEvent = nil; err: TNotifyEvent = nil; locoAcquired: TNotifyEvent = nil);
 begin
   Self.mAcquiring := true;
   Self.mReleasing := false;
@@ -540,7 +540,7 @@ begin
   Self.AcquiredOk(Self, Pointer(0));
 end;
 
-procedure THVDb.AcquiredOk(Sender: TObject; Data: Pointer);
+procedure TRVDb.AcquiredOk(Sender: TObject; Data: Pointer);
 var addr: Word;
 begin
   addr := Word(Data);
@@ -556,7 +556,7 @@ begin
     Exit();
   end;
 
-  while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].ShouldAcquire()))) do
+  while ((addr < _MAX_ADDR) and ((RVDb[addr] = nil) or (not RVDb[addr].ShouldAcquire()))) do
     Inc(addr);
 
   if (addr = _MAX_ADDR) then
@@ -569,13 +569,13 @@ begin
 
   Data := Pointer(addr + 1);
   try
-    HVDb[addr].TrakceAcquire(TTrakce.Callback(Self.AcquiredOk, Data), TTrakce.Callback(Self.AcquiredErr, Data));
+    RVDb[addr].TrakceAcquire(TTrakce.Callback(Self.AcquiredOk, Data), TTrakce.Callback(Self.AcquiredErr, Data));
   except
     Self.AcquiredErr(Self, Data);
   end;
 end;
 
-procedure THVDb.AcquiredErr(Sender: TObject; Data: Pointer);
+procedure TRVDb.AcquiredErr(Sender: TObject; Data: Pointer);
 begin
   Self.mAcquiring := false;
   trakce.Log(llErrors, 'ERR: LOKO ' + IntToStr(Word(Data)) + ' se nepodařilo převzít');
@@ -584,7 +584,7 @@ begin
     Self.eAcquiredErr(Self);
 end;
 
-procedure THVDb.TrakceReleaseAllUsed(ok: TNotifyEvent = nil; locoReleased: TNotifyEvent = nil);
+procedure TRVDb.TrakceReleaseAllUsed(ok: TNotifyEvent = nil; locoReleased: TNotifyEvent = nil);
 begin
   Self.mAcquiring := false;
   Self.mReleasing := true;
@@ -594,7 +594,7 @@ begin
   Self.ReleasedOk(Self, Pointer(0));
 end;
 
-procedure THVDb.ReleasedOk(Sender: TObject; Data: Pointer);
+procedure TRVDb.ReleasedOk(Sender: TObject; Data: Pointer);
 var addr: Word;
 begin
   addr := Word(Data);
@@ -610,7 +610,7 @@ begin
     Exit();
   end;
 
-  while ((addr < _MAX_ADDR) and ((HVDb[addr] = nil) or (not HVDb[addr].acquired))) do
+  while ((addr < _MAX_ADDR) and ((RVDb[addr] = nil) or (not RVDb[addr].acquired))) do
     Inc(addr);
 
   if (addr = _MAX_ADDR) then
@@ -623,7 +623,7 @@ begin
 
   Data := Pointer(addr + 1);
   try
-    HVDb[addr].TrakceRelease(TTrakce.Callback(Self.ReleasedOk, Data));
+    RVDb[addr].TrakceRelease(TTrakce.Callback(Self.ReleasedOk, Data));
   except
     Self.ReleasedOk(Self, Data);
   end;
@@ -631,24 +631,24 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure THVDb.OnTLocoUpdate(Sender: TObject);
+procedure TRVDb.OnTLocoUpdate(Sender: TObject);
 var addr: Word;
 begin
   for addr := 0 to _MAX_ADDR - 1 do
   begin
-    if (Self.HVs[addr] = nil) then
+    if (Self.mVehicles[addr] = nil) then
       continue;
 
     try
-      if ((Self.HVs[addr].stolen) and (not Self.HVs[addr].acquiring) and (not Self.HVs[addr].updating) and
-        (Now > Self.HVs[addr].lastUpdated + EncodeTime(0, 0, _LOCO_UPDATE_TIME_MS div 1000,
+      if ((Self.mVehicles[addr].stolen) and (not Self.mVehicles[addr].acquiring) and (not Self.mVehicles[addr].updating) and
+        (Now > Self.mVehicles[addr].lastUpdated + EncodeTime(0, 0, _LOCO_UPDATE_TIME_MS div 1000,
         _LOCO_UPDATE_TIME_MS mod 1000))) then
-        Self.HVs[addr].TrakceUpdateState(TTrakce.Callback(), TTrakce.Callback());
+        Self.mVehicles[addr].TrakceUpdateState(TTrakce.Callback(), TTrakce.Callback());
 
-      Self.HVs[addr].UpdateTraveled(_LOCO_UPDATE_TIME_MS div 1000);
+      Self.mVehicles[addr].UpdateTraveled(_LOCO_UPDATE_TIME_MS div 1000);
     except
       on E: Exception do
-        AppEvents.LogException(E, 'HVDb.OnTLocoUpdate');
+        AppEvents.LogException(E, 'RVDb.OnTLocoUpdate');
     end;
   end;
 
@@ -656,34 +656,34 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function THVDb.AnyAcquiredHVHasActiveFunc(func: string): Boolean;
+function TRVDb.AnyAcquiredRVHasActiveFunc(func: string): Boolean;
 begin
-  for var hv: THV in Self.HVs do
+  for var vehicle: TRV in Self.mVehicles do
   begin
-    if ((hv <> nil) and (hv.acquired) and (hv.funcDict.ContainsKey(func)) and (hv.slotFunctions[hv.funcDict[func]]))
+    if ((vehicle <> nil) and (vehicle.acquired) and (vehicle.funcDict.ContainsKey(func)) and (vehicle.slotFunctions[vehicle.funcDict[func]]))
     then
       Exit(true);
   end;
   Result := false;
 end;
 
-function THVDb.AllAcquiredHVsHaveActiveFunc(func: string): Boolean;
+function TRVDb.AllAcquiredRVsHaveActiveFunc(func: string): Boolean;
 begin
-  for var hv: THV in Self.HVs do
+  for var vehicle: TRV in Self.mVehicles do
   begin
-    if ((hv <> nil) and (hv.acquired) and (hv.funcDict.ContainsKey(func)) and (not hv.slotFunctions[hv.funcDict[func]]))
+    if ((vehicle <> nil) and (vehicle.acquired) and (vehicle.funcDict.ContainsKey(func)) and (not vehicle.slotFunctions[vehicle.funcDict[func]]))
     then
       Exit(false);
   end;
   Result := true;
 end;
 
-function THVDb.AnyHvToRestoreFunc(func: string): Boolean;
+function TRVDb.AnyRVToRestoreFunc(func: string): Boolean;
 begin
-  for var hv: THV in Self.HVs do
+  for var vehicle: TRV in Self.mVehicles do
   begin
-    if ((hv <> nil) and (hv.acquired) and (hv.funcDict.ContainsKey(func)) and (not hv.slotFunctions[hv.funcDict[func]])
-      and (hv.stateFunctions[hv.funcDict[func]])) then
+    if ((vehicle <> nil) and (vehicle.acquired) and (vehicle.funcDict.ContainsKey(func)) and (not vehicle.slotFunctions[vehicle.funcDict[func]])
+      and (vehicle.stateFunctions[vehicle.funcDict[func]])) then
       Exit(true);
   end;
   Result := false;
@@ -693,10 +693,10 @@ end;
 
 initialization
 
-HVDb := THVDb.Create();
+RVDb := TRVDb.Create();
 
 finalization
 
-FreeAndNil(HVDb);
+FreeAndNil(RVDb);
 
 end.

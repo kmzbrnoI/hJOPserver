@@ -311,8 +311,8 @@ type
 implementation
 
 uses GetSystems, BlockDb, BlockSignal, Logging, RCSIFace, ownStrUtils, Diagnostics,
-  TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, THVDatabase, Math,
-  THnaciVozidlo, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO, TrakceIFace,
+  TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, TRVDatabase, Math,
+  TRailVehicle, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO, TrakceIFace,
   announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, PanelConnData, ConfSeq,
   Graphics, ownConvert, TrakceC, TMultiJCDatabase, BlockPst, IfThenElse,
   colorHelper, Config, RCSErrors;
@@ -955,7 +955,7 @@ end;
 procedure TBlkTrack.MenuNewTrainClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
 begin
   // nejdrive posleme aktualni seznam hnacich vozidel
-  (SenderOR as TArea).PanelHVList(SenderPnl);
+  (SenderOR as TArea).PanelRVList(SenderPnl);
 
   // pak posleme pozadavek na editaci hnaciho vozidla
   (SenderOR as TArea).BlkNewTrain(Self, SenderPnl, (itemindex - Self.MenuTopItemsCount()) div 2);
@@ -973,7 +973,7 @@ begin
     Exit();
 
   // nejdrive posleme aktualni senam hnacich vozidel
-  (SenderOR as TArea).PanelHVList(SenderPnl);
+  (SenderOR as TArea).PanelRVList(SenderPnl);
 
   // pak posleme pozadavek na editaci hnaciho vozidla
   (SenderOR as TArea).BlkEditTrain(Self, SenderPnl,
@@ -1110,9 +1110,9 @@ begin
 
   var csItems: TConfSeqItems := TConfSeqItems.Create();
   try
-    for var hvaddr: Integer in Train.HVs do
-      if (HVDb[hvaddr] <> nil) then
-        csItems.Add(CSItem(HVDb[hvaddr].NiceName(), 'Násilné převzetí řízení'));
+    for var addr: Integer in Train.vehicles do
+      if (RVDb[addr] <> nil) then
+        csItems.Add(CSItem(RVDb[addr].NiceName(), 'Násilné převzetí řízení'));
 
     PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrRegVezmiTrain, SenderOR as TArea,
       'Nouzové převzetí hnacích vozidel do automatického řízení', GetObjsList(Self), csItems, True, False);
@@ -1257,10 +1257,10 @@ begin
     Exit();
 
   var str: string := (SenderOR as TArea).id + ';LOK-TOKEN;OK;';
-  for var addr: Integer in TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].HVs do
+  for var addr: Integer in TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].vehicles do
   begin
-    var HV: THV := HVDb[addr];
-    str := str + '[' + IntToStr(HV.addr) + '|' + HV.GetToken() + ']';
+    var vehicle: TRV := RVDb[addr];
+    str := str + '[' + IntToStr(vehicle.addr) + '|' + vehicle.GetToken() + ']';
   end;
 
   PanelServer.SendLn(SenderPnl, str);
@@ -1273,10 +1273,10 @@ begin
     Exit();
 
   var str: string := (SenderOR as TArea).id + ';MAUS;{';
-  for var addr: Integer in TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].HVs do
+  for var addr: Integer in TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].vehicles do
   begin
-    var HV: THV := HVDb[addr];
-    str := str + IntToStr(HV.addr) + '|';
+    var vehicle: TRV := RVDb[addr];
+    str := str + IntToStr(vehicle.addr) + '|';
   end; // for i
   str := str + '}';
 
@@ -1292,7 +1292,7 @@ begin
   var train: TTrain := TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]];
   train.EmergencyStop();
 
-  if (train.IsAnyHVManual()) then
+  if (train.IsAnyRVManual()) then
     train.RucUPO(SenderPnl);
 end;
 
@@ -2110,7 +2110,7 @@ begin
   if (not Self.IsTrain()) then
     Exit(nil);
 
-  if (Self.trainL.direction = THVSite.odd) then
+  if (Self.trainL.direction = TRVSite.odd) then
     Result := Self.m_settings.houkEvL
   else
     Result := Self.m_settings.houkEvS;
@@ -2387,9 +2387,9 @@ end;
 function TBlkTrack.CanTrainSpeedInsert(index: Integer): Boolean;
 begin
   Result := not ((Self.trains.Count > 0) and (((index = 0) and (TrainDb.trains[Self.trains[index]].wantedSpeed > 0) and
-    (TrainDb.trains[Self.trains[index]].direction = THVSite.even)) or ((index = Self.trains.Count) and
+    (TrainDb.trains[Self.trains[index]].direction = TRVSite.even)) or ((index = Self.trains.Count) and
     (TrainDb.trains[Self.trains[index - 1]].wantedSpeed > 0) and
-    (TrainDb.trains[Self.trains[index - 1]].direction = THVSite.odd))));
+    (TrainDb.trains[Self.trains[index - 1]].direction = TRVSite.odd))));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2462,8 +2462,8 @@ begin
         if ((Train = Self.trainL) or (Train = Self.trainSudy)) then
         begin
           for var signal: TBlk in Self.signalJCRef do
-            if (((TBlkSignal(signal).direction = THVSite.even) and (Train = Self.trainL)) or
-              ((TBlkSignal(signal).direction = THVSite.odd) and (Train = Self.trainSudy))) then
+            if (((TBlkSignal(signal).direction = TRVSite.even) and (Train = Self.trainL)) or
+              ((TBlkSignal(signal).direction = TRVSite.odd) and (Train = Self.trainSudy))) then
               TBlkSignal(signal).UpdateTrainSpeed(true);
         end;
       end
@@ -2540,7 +2540,7 @@ begin
   begin
     if (not TBlkSignal(Self.signalJCRef[0]).IsGoSignal()) then
       Exit(true);
-    if (TBlkSignal(Self.signalJCRef[0]).direction = THVSite.odd) then
+    if (TBlkSignal(Self.signalJCRef[0]).direction = TRVSite.odd) then
       Exit(Train <> Self.trainSudy)
     else
       Exit(Train <> Self.trainL);
@@ -2664,13 +2664,13 @@ begin
       ownConvert.BoolToStr10(train.sdata.dir_L) +
       ownConvert.BoolToStr10(train.sdata.dir_S) + ';';
 
-    if ((train.sdata.note <> '') or (train.HasAnyHVNote())) then
+    if ((train.sdata.note <> '') or (train.HasAnyRVNote())) then
       sbg := TJopColor.turqDark;
 
     if (train.areaTo = train.station) then
       sbg := TJopColor.gray;
 
-    if ((train.IsAnyHVManual()) or (train.stolen)) then
+    if ((train.IsAnyRVManual()) or (train.stolen)) then
       sbg := TJopColor.brown;
 
     // predvidany odjezd
@@ -2695,7 +2695,7 @@ begin
     sfg := fg;
     sbg := bg;
 
-    if ((Self.trainPredict.sdata.note <> '') or (Self.trainPredict.HasAnyHVNote())) then
+    if ((Self.trainPredict.sdata.note <> '') or (Self.trainPredict.HasAnyRVNote())) then
       sbg := TJopColor.turqDark;
 
     // Do not show end station as train text is not contrast compared to background
@@ -2782,7 +2782,7 @@ end;
 function TBlkTrack.GetSignalL(): TBlk;
 begin
   for var blk: TBlk in Blocks do
-    if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = THVSite.odd)) then
+    if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = TRVSite.odd)) then
       Exit(blk);
   Result := nil;
 end;
@@ -2790,7 +2790,7 @@ end;
 function TBlkTrack.GetSignalS(): TBlk;
 begin
   for var blk: TBlk in Blocks do
-    if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = THVSite.even))
+    if ((blk.typ = btSignal) and (TBlkSignal(blk).trackId = Self.id) and (TBlkSignal(blk).direction = TRVSite.even))
     then
       Exit(blk);
   Result := nil;

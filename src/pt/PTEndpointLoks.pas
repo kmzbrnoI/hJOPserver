@@ -22,7 +22,7 @@ type
 
 implementation
 
-uses PTUtils, THvDatabase, THnaciVozidlo, ownConvert;
+uses PTUtils, TRVDatabase, TRailVehicle, ownConvert;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -43,12 +43,12 @@ begin
 
    for addr := 0 to _MAX_ADDR-1 do
     begin
-     if (HVDb[addr] <> nil) then
+     if (RVDb[addr] <> nil) then
       begin
        if ((aktivni = 0) or
-          ((aktivni = 1) and (not HVdb[addr].acquired)) or
-          ((aktivni = 2) and (HVdb[addr].acquired))) then
-         HVDb[addr].GetPtData(respJson.A['loks'].AddObject, params.ContainsKey('state') and PTUtils.HttpParamToBool(params['state']));
+          ((aktivni = 1) and (not RVDb[addr].acquired)) or
+          ((aktivni = 2) and (RVDb[addr].acquired))) then
+         RVDb[addr].GetPtData(respJson.A['loks'].AddObject, params.ContainsKey('state') and PTUtils.HttpParamToBool(params['state']));
       end;
     end;
  finally

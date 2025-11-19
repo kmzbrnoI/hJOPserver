@@ -98,7 +98,7 @@ type
 implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ConfSeq, TechnologieJC,
-  TJCDatabase, fMain, TCPServerPanel, TrainDb, THVDatabase, BlockTurnout, colorHelper,
+  TJCDatabase, fMain, TCPServerPanel, TrainDb, TRVDatabase, BlockTurnout, colorHelper,
   IfThenElse;
 
 constructor TBlkLock.Create(index: Integer);

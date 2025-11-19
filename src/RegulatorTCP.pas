@@ -5,7 +5,7 @@
 
 interface
 
-uses Classes, IdContext, AnsiStrings, SysUtils, Forms, THnaciVozidlo;
+uses Classes, IdContext, AnsiStrings, SysUtils, Forms, TRailVehicle;
 
 type
 
@@ -29,17 +29,17 @@ type
 
     procedure Parse(Sender: TIDContext; parsed: TStrings);
 
-    procedure LokUpdateFunc(HV: THV; exclude: TObject = nil);
-    procedure LokUpdateSpeed(HV: THV; exclude: TObject = nil);
-    procedure LokStolen(HV: THV; exclude: TObject = nil);
-    procedure LokUpdateRuc(HV: THV);
+    procedure LokUpdateFunc(vehicle: TRV; exclude: TObject = nil);
+    procedure LokUpdateSpeed(vehicle: TRV; exclude: TObject = nil);
+    procedure LokStolen(vehicle: TRV; exclude: TObject = nil);
+    procedure LokUpdateRuc(vehicle: TRV);
 
-    procedure LokToRegulator(Regulator: TIDContext; HV: THV);
+    procedure LokToRegulator(Regulator: TIDContext; vehicle: TRV);
     procedure RegDisconnect(reg: TIDContext; contextDestroyed: Boolean = false);
-    procedure RemoveLok(Regulator: TIDContext; HV: THV; info: string);
+    procedure RemoveLok(Regulator: TIDContext; vehicle: TRV; info: string);
 
-    procedure SendExpectedSpeed(reg: TIDContext; HV: THV);
-    procedure SendPredictedSignal(reg: TIDContext; HV: THV);
+    procedure SendExpectedSpeed(reg: TIDContext; vehicle: TRV);
+    procedure SendPredictedSignal(reg: TIDContext; vehicle: TRV);
 
   end;
 
@@ -48,7 +48,7 @@ var
 
 implementation
 
-uses UserDb, user, TCPServerPanel, TrakceC, THVDatabase, TrainDb, PanelConnData, Logging,
+uses UserDb, user, TCPServerPanel, TrakceC, TRVDatabase, TrainDb, PanelConnData, Logging,
   fRegulator, fMain, Area, AreaDb, ownConvert, IfThenElse;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -182,20 +182,20 @@ end;
 // parsing dat s prefixem "-;LOK;addr;"
 
 procedure TTCPRegulator.ParseLoko(Sender: TIDContext; parsed: TStrings);
-var HV: THV;
+var vehicle: TRV;
 begin
   parsed[3] := UpperCase(parsed[3]);
 
   try
-    HV := HVDb[StrToInt(parsed[2])];
+    vehicle := RVDb[StrToInt(parsed[2])];
   except
-    Self.ClientError(Sender, 'Nesprávný formát adresy loko');
+    Self.ClientError(Sender, 'Nesprávný formát adresy vozidla');
     Exit();
   end;
 
-  if (not Assigned(HV)) then
+  if (not Assigned(vehicle)) then
   begin
-    Self.ClientError(Sender, 'Loko neexistuje');
+    Self.ClientError(Sender, 'Vozidlo neexistuje');
     Exit();
   end;
 
@@ -206,7 +206,7 @@ begin
   if (parsed[3] = 'RELEASE') then
   begin
     // regulator ukoncuje rizeni LOKO
-    Self.RemoveLok(Sender, HV, 'Loko odhlášeno');
+    Self.RemoveLok(Sender, vehicle, 'Vozidlo odhlášeno');
     Exit();
   end;
 
@@ -216,12 +216,12 @@ begin
 
     try
       // autorizovany regulator, ci regulator uzivatele root se nemusi prokazovat tokenem
-      if ((not(Sender.Data as TPanelConnData).regulator_user.root) and (not HV.IsReg(Sender))) then
+      if ((not(Sender.Data as TPanelConnData).regulator_user.root) and (not vehicle.IsReg(Sender))) then
       begin
         // je loko uz na nejakem nerootovskem (!) ovladaci -> odmitnout
-        for var i := 0 to HV.state.regulators.Count - 1 do
+        for var i := 0 to vehicle.state.regulators.Count - 1 do
         begin
-          if (not HV.state.regulators[i].root) then
+          if (not vehicle.state.regulators[i].root) then
           begin
             PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';AUTH;not;Loko je otevřené v jiném regulátoru');
             Exit();
@@ -230,7 +230,7 @@ begin
 
         if (parsed.Count < 5) then
         begin
-          if (not HV.IsReg(Sender)) then
+          if (not vehicle.IsReg(Sender)) then
           begin
             // Uzivatel nema na hnaci vozidlo narok
             PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';AUTH;not;Na toto hnací vozidlo nemáte nárok');
@@ -238,7 +238,7 @@ begin
           end;
         end else begin
           // kontrola tokenu
-          if ((not HV.IsToken(parsed[4]))) then
+          if ((not vehicle.IsToken(parsed[4]))) then
           begin
             PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';AUTH;not;Špatný token');
             Exit();
@@ -247,9 +247,9 @@ begin
       end; // if regulator_user_root
 
       if (parsed.Count > 4) then
-        HV.RemoveToken(parsed[4]);
+        vehicle.RemoveToken(parsed[4]);
 
-      Self.LokToRegulator(Sender, HV);
+      Self.LokToRegulator(Sender, vehicle);
 
       Exit();
 
@@ -261,7 +261,7 @@ begin
   // ---- Authorized loco is required for commands below ----
 
   // je tento regulator uz v seznamu regulatoru?
-  if (not HV.IsReg(Sender)) then
+  if (not vehicle.IsReg(Sender)) then
   begin
     PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';RESP;err;Loko ' + parsed[2] + ' neautorizováno');
     Exit();
@@ -269,17 +269,17 @@ begin
 
   if (parsed[3] = 'EXPECTED-SPEED') then
   begin
-    Self.SendExpectedSpeed(Sender, HV);
+    Self.SendExpectedSpeed(Sender, vehicle);
     Exit();
   end;
 
   if (parsed[3] = 'NAV') then
   begin
-    Self.SendPredictedSignal(Sender, HV);
+    Self.SendPredictedSignal(Sender, vehicle);
     Exit();
   end;
 
-  if (HV.stolen) then
+  if (vehicle.stolen) then
   begin
     PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';RESP;err;Loko ' + parsed[2] + ' ukradeno, nenastavuji');
     Exit();
@@ -307,17 +307,17 @@ begin
     end;
 
     begin
-      var func: TFunctions := HV.slotFunctions;
+      var func: TFunctions := vehicle.slotFunctions;
       for var i := left to right do
         func[i] := ownConvert.StrToBool(parsed[5][i - left + 1]);
-      HV.state.functions := func;
+      vehicle.state.functions := func;
     end;
 
     var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
-    TLokResponseData(LokResponseData^).addr := HV.addr;
+    TLokResponseData(LokResponseData^).addr := vehicle.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
-    HV.StateFunctionsToSlotFunctions(TTrakce.Callback(PanelLOKResponseOK, LokResponseData),
+    vehicle.StateFunctionsToSlotFunctions(TTrakce.Callback(PanelLOKResponseOK, LokResponseData),
       TTrakce.Callback(PanelLOKResponseErr, LokResponseData), Sender);
     Exit();
   end;
@@ -326,23 +326,23 @@ begin
   begin
     var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
-    TLokResponseData(LokResponseData^).addr := HV.addr;
+    TLokResponseData(LokResponseData^).addr := vehicle.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
 
-    HV.EmergencyStop(TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+    vehicle.EmergencyStop(TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
       TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData), Sender);
     Exit();
   end;
 
   if (parsed[3] = 'TOTAL') then
   begin
-    HV.manual := (parsed[4] = '1');
+    vehicle.manual := (parsed[4] = '1');
     Exit();
   end;
 
   // ---- Total control is required for commands below ----
 
-  if (not HV.manual) then
+  if (not vehicle.manual) then
   begin
     PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';RESP;err;Loko ' + parsed[2] + ' není v ručním řízení');
     Exit();
@@ -352,10 +352,10 @@ begin
   begin
     var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
-    TLokResponseData(LokResponseData^).addr := HV.addr;
+    TLokResponseData(LokResponseData^).addr := vehicle.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
 
-    HV.SetSpeed(StrToInt(parsed[4]), TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+    vehicle.SetSpeed(StrToInt(parsed[4]), TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
       TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData), Sender);
     Exit();
   end;
@@ -364,10 +364,10 @@ begin
   begin
     var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
-    TLokResponseData(LokResponseData^).addr := HV.addr;
+    TLokResponseData(LokResponseData^).addr := vehicle.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
 
-    HV.SetSpeedDir(StrToInt(parsed[4]), parsed[5] = '1', TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+    vehicle.SetSpeedDir(StrToInt(parsed[4]), parsed[5] = '1', TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
       TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData), Sender);
     Exit();
   end;
@@ -376,10 +376,10 @@ begin
   begin
     var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
-    TLokResponseData(LokResponseData^).addr := HV.addr;
+    TLokResponseData(LokResponseData^).addr := vehicle.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
 
-    HV.SetSpeedStepDir(StrToInt(parsed[4]), HV.direction, TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+    vehicle.SetSpeedStepDir(StrToInt(parsed[4]), vehicle.direction, TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
       TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData), Sender);
     Exit();
   end;
@@ -388,10 +388,10 @@ begin
   begin
     var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
-    TLokResponseData(LokResponseData^).addr := HV.addr;
+    TLokResponseData(LokResponseData^).addr := vehicle.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
 
-    HV.SetSpeedStepDir(StrToInt(parsed[4]), parsed[5] = '1', TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+    vehicle.SetSpeedStepDir(StrToInt(parsed[4]), parsed[5] = '1', TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
       TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData), Sender);
     Exit();
   end;
@@ -400,10 +400,10 @@ begin
   begin
     var LokResponseData: Pointer;
     GetMem(LokResponseData, SizeOf(TLokResponseData));
-    TLokResponseData(LokResponseData^).addr := HV.addr;
+    TLokResponseData(LokResponseData^).addr := vehicle.addr;
     TLokResponseData(LokResponseData^).conn := Sender;
 
-    HV.SetDirection(parsed[4] = '1', TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
+    vehicle.SetDirection(parsed[4] = '1', TTrakce.Callback(Self.PanelLOKResponseOK, LokResponseData),
       TTrakce.Callback(Self.PanelLOKResponseErr, LokResponseData), Sender);
     Exit();
   end;
@@ -436,7 +436,7 @@ begin
 
     // odhlasime vsechny prihlasene regulatory
     TPanelConnData(conn.Data).regulator_loks.Clear();
-    HVDb.RemoveRegulator(conn);
+    RVDb.RemoveRegulator(conn);
   end;
 end;
 
@@ -455,13 +455,13 @@ end;
 
 procedure TTCPRegulator.PanelLOKResponseOK(Sender: TObject; Data: Pointer);
 var speed: Cardinal;
-  HV: THV;
+  vehicle: TRV;
 begin
   try
-    HV := HVDb[TLokResponseData(Data^).addr];
-    speed := HV.realSpeed;
-    if (speed > HV.Data.maxSpeed) then
-      speed := HV.Data.maxSpeed;
+    vehicle := RVDb[TLokResponseData(Data^).addr];
+    speed := vehicle.realSpeed;
+    if (speed > vehicle.Data.maxSpeed) then
+      speed := vehicle.Data.maxSpeed;
 
     PanelServer.SendLn(TLokResponseData(Data^).conn, '-;LOK;' + IntToStr(TLokResponseData(Data^).addr) + ';RESP;ok;;' +
       IntToStr(speed));
@@ -486,69 +486,68 @@ end;
 
 // or;LOK;ADDR;F;F_left-F_right;states          - informace o stavu funkci lokomotivy
 // napr.; or;LOK;ADDR;0-4;00010 informuje, ze je zaple F3 a F0, F1, F2 a F4 jsou vyple
-procedure TTCPRegulator.LokUpdateFunc(HV: THV; exclude: TObject = nil);
-var i: Integer;
-  Func: string;
+procedure TTCPRegulator.LokUpdateFunc(vehicle: TRV; exclude: TObject = nil);
+var func: string;
 begin
-  Func := '';
-  for i := 0 to _HV_FUNC_MAX do
-    case (HV.slotFunctions[i]) of
+  func := '';
+  for var i: Integer := 0 to _RV_FUNC_MAX do
+  begin
+    case (vehicle.slotFunctions[i]) of
       false:
-        Func := Func + '0';
+        func := Func + '0';
       true:
-        Func := Func + '1';
+        func := Func + '1';
     end; // case
+  end;
 
-  for i := 0 to HV.state.regulators.Count - 1 do
-    if (HV.state.regulators[i].conn <> exclude) then
-      PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;' + IntToStr(HV.addr) + ';F;0-' + IntToStr(_HV_FUNC_MAX) +
+  for var i: Integer := 0 to vehicle.state.regulators.Count - 1 do
+    if (vehicle.state.regulators[i].conn <> exclude) then
+      PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) + ';F;0-' + IntToStr(_RV_FUNC_MAX) +
         ';' + Func + ';');
 end;
 
 // or;LOK;ADDR;SPD;sp_km/h;sp_stupne;dir
-procedure TTCPRegulator.LokUpdateSpeed(HV: THV; exclude: TObject = nil);
-var i: Integer;
+procedure TTCPRegulator.LokUpdateSpeed(vehicle: TRV; exclude: TObject = nil);
 begin
-  for i := 0 to HV.state.regulators.Count - 1 do
-    if (HV.state.regulators[i].conn <> exclude) then
-      PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;' + IntToStr(HV.addr) + ';SPD;' + IntToStr(HV.realSpeed) +
-        ';' + IntToStr(HV.speedStep) + ';' + ownConvert.BoolToStr10(HV.direction) + ';');
+  for var i: Integer := 0 to vehicle.state.regulators.Count - 1 do
+    if (vehicle.state.regulators[i].conn <> exclude) then
+      PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) + ';SPD;' + IntToStr(vehicle.realSpeed) +
+        ';' + IntToStr(vehicle.speedStep) + ';' + ownConvert.BoolToStr10(vehicle.direction) + ';');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.LokStolen(HV: THV; exclude: TObject = nil);
-var i: Integer;
+procedure TTCPRegulator.LokStolen(vehicle: TRV; exclude: TObject = nil);
 begin
-  for i := 0 to HV.state.regulators.Count - 1 do
-    if (HV.state.regulators[i].conn <> exclude) then
-      PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;' + IntToStr(HV.addr) +
+  for var i: Integer := 0 to vehicle.state.regulators.Count - 1 do
+    if (vehicle.state.regulators[i].conn <> exclude) then
+      PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) +
         ';AUTH;stolen;Loko ukradeno ovladačem');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.LokUpdateRuc(HV: THV);
+procedure TTCPRegulator.LokUpdateRuc(vehicle: TRV);
 begin
-  for var i := 0 to HV.state.regulators.Count - 1 do
-    PanelServer.SendLn(HV.state.regulators[i].conn, '-;LOK;' + IntToStr(HV.addr) + ';TOTAL;' + ite(HV.manual, '1', '0'));
+  for var i := 0 to vehicle.state.regulators.Count - 1 do
+    PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) + ';TOTAL;' + ite(vehicle.manual, '1', '0'));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
 // prirazeni lokomotivy regulatoru
-procedure TTCPRegulator.LokToRegulator(Regulator: TIDContext; HV: THV);
+procedure TTCPRegulator.LokToRegulator(Regulator: TIDContext; vehicle: TRV);
 var found: Boolean;
-    reg: THVRegulator;
+    reg: TRVRegulator;
 begin
   // je tento regulator uz v seznamu regulatoru?
   found := false;
-  for var i := 0 to HV.state.regulators.Count - 1 do
+  for var i := 0 to vehicle.state.regulators.Count - 1 do
   begin
-    if (HV.state.regulators[i].conn = Regulator) then
+    if (vehicle.state.regulators[i].conn = Regulator) then
     begin
       found := true;
-      reg := HV.state.regulators[i];
+      reg := vehicle.state.regulators[i];
       break;
     end;
   end;
@@ -557,29 +556,29 @@ begin
   if (not found) then
   begin
     reg.conn := Regulator;
-    HV.manual := HV.manual or (HV.state.train = -1);
+    vehicle.manual := vehicle.manual or (vehicle.state.train = -1);
     reg.root := (Regulator.Data as TPanelConnData).regulator_user.root;
-    HV.RegulatorAdd(reg);
+    vehicle.RegulatorAdd(reg);
   end;
 
   // Je loko prevzato?
-  if (not HV.acquired) then
+  if (not vehicle.acquired) then
   begin
     // ne -> prevzit loko
     try
-      HV.TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
+      vehicle.TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
     except
       on E: Exception do
       begin
-        PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(HV.addr) + ';AUTH;not;Převzetí z centrály se nezdařilo :' +
+        PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(vehicle.addr) + ';AUTH;not;Převzetí z centrály se nezdařilo :' +
           E.Message);
-        HV.RegulatorRemove(reg);
+        vehicle.RegulatorRemove(reg);
       end;
     end;
 
     // timeout 3000ms = 3s
     var timeout: Integer := 0;
-    while ((not HV.acquired) or (HV.pom = TPomStatus.progr) or (HV.pom = TPomStatus.error)) do
+    while ((not vehicle.acquired) or (vehicle.pom = TPomStatus.progr) or (vehicle.pom = TPomStatus.error)) do
     begin
       Sleep(1);
       timeout := timeout + 1;
@@ -587,24 +586,24 @@ begin
 
       if (timeout > 3000) then
       begin
-        PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(HV.addr) + ';AUTH;not;Převzetí z centrály se nezdařilo');
-        HV.RegulatorRemove(reg);
+        PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(vehicle.addr) + ';AUTH;not;Převzetí z centrály se nezdařilo');
+        vehicle.RegulatorRemove(reg);
         Exit();
       end;
     end; // while
   end else begin
     // odpoved na pozadavek o autorizaci rizeni hnaciho vozidla
     // kdyz loko prebirame, je odesilana automaticky
-    var typ: string := ite(HV.manual, 'total', 'ok');
-    PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(HV.addr) + ';AUTH;' + typ + ';{' + HV.GetPanelLokString() + '}')
+    var typ: string := ite(vehicle.manual, 'total', 'ok');
+    PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(vehicle.addr) + ';AUTH;' + typ + ';{' + vehicle.GetPanelLokString() + '}')
   end;
 
   // pridani loko do seznamu autorizovanych loko klientem
 
   found := false;
-  for var tmpHV in TPanelConnData(Regulator.Data).regulator_loks do
+  for var tmpRV in TPanelConnData(Regulator.Data).regulator_loks do
   begin
-    if (tmpHV = HV) then
+    if (tmpRV = vehicle) then
     begin
       found := true;
       break;
@@ -614,14 +613,14 @@ begin
   if (not found) then
   begin
     // pridani nove loko do seznamu
-    TPanelConnData(Regulator.Data).regulator_loks.Add(HV);
+    TPanelConnData(Regulator.Data).regulator_loks.Add(vehicle);
     PanelServer.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
   end;
 
   authLog('reg', 'loco-acquire', TPanelConnData(Regulator.Data).regulator_user.username,
-    'Acquire loco ' + IntToStr(HV.addr));
-  Self.SendExpectedSpeed(Regulator, HV);
-  Self.SendPredictedSignal(Regulator, HV);
+    'Acquire loco ' + IntToStr(vehicle.addr));
+  Self.SendExpectedSpeed(Regulator, vehicle);
+  Self.SendPredictedSignal(Regulator, vehicle);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -632,10 +631,10 @@ var addr: Integer;
 begin
   for addr := 0 to _MAX_ADDR - 1 do
   begin
-    if ((HVDb[addr] <> nil) and (HVDb[addr].state.regulators.Count > 0)) then
+    if ((RVDb[addr] <> nil) and (RVDb[addr].state.regulators.Count > 0)) then
     begin
-      authLog('reg', 'loco-release', '', 'Release loco ' + IntToStr(HVDb[addr].addr));
-      HVDb[addr].RemoveRegulator(reg);
+      authLog('reg', 'loco-release', '', 'Release loco ' + IntToStr(RVDb[addr].addr));
+      RVDb[addr].RemoveRegulator(reg);
     end;
   end;
 
@@ -650,26 +649,26 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.RemoveLok(Regulator: TIDContext; HV: THV; info: string);
+procedure TTCPRegulator.RemoveLok(Regulator: TIDContext; vehicle: TRV; info: string);
 begin
-  HV.RemoveRegulator(Regulator);
-  TPanelConnData(Regulator.Data).regulator_loks.Remove(HV);
-  PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(HV.addr) + ';AUTH;release;' + info);
+  vehicle.RemoveRegulator(Regulator);
+  TPanelConnData(Regulator.Data).regulator_loks.Remove(vehicle);
+  PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(vehicle.addr) + ';AUTH;release;' + info);
   PanelServer.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
   authLog('reg', 'loco-release', TPanelConnData(Regulator.Data).regulator_user.username,
-    'Release loco ' + IntToStr(HV.addr));
+    'Release loco ' + IntToStr(vehicle.addr));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.SendExpectedSpeed(reg: TIDContext; HV: THV);
+procedure TTCPRegulator.SendExpectedSpeed(reg: TIDContext; vehicle: TRV);
 begin
-  PanelServer.SendLn(reg, '-;LOK;' + IntToStr(HV.addr) + ';EXPECTED-SPEED;' + HV.ExpectedSpeedStr());
+  PanelServer.SendLn(reg, '-;LOK;' + IntToStr(vehicle.addr) + ';EXPECTED-SPEED;' + vehicle.ExpectedSpeedStr());
 end;
 
-procedure TTCPRegulator.SendPredictedSignal(reg: TIDContext; HV: THV);
+procedure TTCPRegulator.SendPredictedSignal(reg: TIDContext; vehicle: TRV);
 begin
-  PanelServer.SendLn(reg, '-;LOK;' + IntToStr(HV.addr) + ';NAV;' + HV.PredictedSignalStr());
+  PanelServer.SendLn(reg, '-;LOK;' + IntToStr(vehicle.addr) + ';NAV;' + vehicle.PredictedSignalStr());
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

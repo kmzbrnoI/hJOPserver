@@ -307,9 +307,9 @@ type
 
 implementation
 
-uses GetSystems, RCSc, THnaciVozidlo, BlockSignal, AreaDb, PanelConnData,
+uses GetSystems, RCSc, TRailVehicle, BlockSignal, AreaDb, PanelConnData,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
-  THVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
+  TRVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
   BlockPSt, appEv, ConfSeq, BlockDb, Config, colorHelper;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -909,11 +909,11 @@ begin
     // manual-controlled engline
     if (Self.typ = TJCType.Train) then
     begin
-      for var addr: Integer in train.HVs do
+      for var addr: Integer in train.vehicles do
       begin
-        if ((HVDb[addr].data.typ <> THVType.car) and ((HVDb[addr].stolen) or (HVDb[addr].manual))) then
+        if ((RVDb[addr].data.typ <> TRVType.car) and ((RVDb[addr].stolen) or (RVDb[addr].manual))) then
         begin
-          barriers.Add(TJCBarHVManual.Create(addr));
+          barriers.Add(TJCBarRVManual.Create(addr));
           anyEngineManual := true;
         end;
       end;
@@ -922,11 +922,11 @@ begin
     // only some manual-controlled englines
     if (anyEngineManual) then
     begin
-      for var addr: Integer in train.HVs do
+      for var addr: Integer in train.vehicles do
       begin
-        if ((HVDb[addr].data.typ <> THVType.car) and (not HVDb[addr].stolen) and (not HVDb[addr].manual)) then
+        if ((RVDb[addr].data.typ <> TRVType.car) and (not RVDb[addr].stolen) and (not RVDb[addr].manual)) then
         begin
-          barriers.Add(TJCBarHVNotAllManual.Create(train.index));
+          barriers.Add(TJCBarRVNotAllManual.Create(train.index));
           break;
         end;
       end;
@@ -936,19 +936,19 @@ begin
     if (Self.typ = TJCType.Train) then
     begin
       if (train.sdata.dir_L or train.sdata.dir_S) then
-        if (((signal.direction = THVSite.odd) and (not train.sdata.dir_L)) or
-          ((signal.direction = THVSite.even) and (not train.sdata.dir_S))) then
+        if (((signal.direction = TRVSite.odd) and (not train.sdata.dir_L)) or
+          ((signal.direction = TRVSite.even) and (not train.sdata.dir_S))) then
           barriers.Add(TJCBarTrainWrongDir.Create(train.index));
 
       if (train.front <> signalTrack) then
         barriers.Add(TJCBarTrainNotFront.Create(train.index))
     end;
 
-    for var addr: Integer in train.HVs do
-      for var i: Integer := 0 to _HV_FUNC_MAX do
-        if (((HVDb[addr].data.funcDescription[i].Contains('posun')) or (HVDb[addr].data.funcDescription[i].Contains('Posun'))) and
-            (HVDb[addr].stateFunctions[i])) then
-          barriers.Add(TJCBarHVFuncActive.Create(addr, i));
+    for var addr: Integer in train.vehicles do
+      for var i: Integer := 0 to _RV_FUNC_MAX do
+        if (((RVDb[addr].data.funcDescription[i].Contains('posun')) or (RVDb[addr].data.funcDescription[i].Contains('Posun'))) and
+            (RVDb[addr].stateFunctions[i])) then
+          barriers.Add(TJCBarRVFuncActive.Create(addr, i));
   end;
 end;
 
@@ -1963,7 +1963,7 @@ begin
               end;
 
               // na dopravni kolej vlozime vlak blize vjezdovemu navestidlu
-              if (signal.direction = THVSite.odd) then
+              if (signal.direction = TRVSite.odd) then
                 Self.lastTrack.AddTrainL(Train)
               else
                 Self.lastTrack.AddTrainS(Train);

@@ -27,8 +27,8 @@ var
 
 implementation
 
-uses TrainDb, Train, THVDatabase, AreaDb, Area, fMain,
-  BlockDb, Block, THnaciVozidlo, ownConvert;
+uses TrainDb, Train, TRVDatabase, AreaDb, Area, fMain,
+  BlockDb, Block, TRailVehicle, ownConvert;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -99,16 +99,16 @@ begin
   Self.LV.Items[line].Caption := IntToStr(line);
   Self.LV.Items[line].SubItems[0] := train.name;
 
-  if (train.HVs.Count > 0) then
-    Self.LV.Items[line].SubItems[1] := IntToStr(HVDb[train.HVs[0]].addr) + ' : ' + HVDb[train.HVs[0]].name + ' (' +
-      HVDb[train.HVs[0]].data.designation + ')'
+  if (train.vehicles.Count > 0) then
+    Self.LV.Items[line].SubItems[1] := IntToStr(RVDb[train.vehicles[0]].addr) + ' : ' + RVDb[train.vehicles[0]].name + ' (' +
+      RVDb[train.vehicles[0]].data.designation + ')'
   else
     Self.LV.Items[line].SubItems[1] := '-';
 
   begin
     var str: string := '';
-    for var i := 1 to train.HVs.Count - 1 do
-      str := str + IntToStr(train.HVs[i]) + ', ';
+    for var i := 1 to train.vehicles.Count - 1 do
+      str := str + IntToStr(train.vehicles[i]) + ', ';
 
     if (str <> '') then
       Self.LV.Items[line].SubItems[2] := LeftStr(str, Length(str) - 2)
@@ -137,9 +137,9 @@ begin
     Self.LV.Items[line].SubItems[7] := Self.LV.Items[line].SubItems[7] + ' (' + IntToStr(train.wantedSpeed) + ' km/h)';
 
   case (train.direction) of
-    THVSite.odd:
+    TRVSite.odd:
       Self.LV.Items[line].SubItems[8] := 'lichý';
-    THVSite.even:
+    TRVSite.even:
       Self.LV.Items[line].SubItems[8] := 'sudý';
   end;
 

@@ -413,7 +413,7 @@ type
     function Equal(other: TJCBarrier): Boolean; override;
   end;
 
-  TJCBarHVManual = class(TJCBarrier)
+  TJCBarRVManual = class(TJCBarrier)
   private
     mAddr: Integer;
   public
@@ -434,7 +434,7 @@ type
     function Equal(other: TJCBarrier): Boolean; override;
   end;
 
-  TJCBarHVNotAllManual = class(TJCBarrier)
+  TJCBarRVNotAllManual = class(TJCBarrier)
   private
     mTrainI: Integer;
   public
@@ -443,7 +443,7 @@ type
     function IsWarning(): Boolean; override;
   end;
 
-  TJCBarHVFuncActive = class(TJCBarrier)
+  TJCBarRVFuncActive = class(TJCBarrier)
   private
     mAddr: Integer;
     mFunc: Cardinal;
@@ -468,8 +468,8 @@ type
 implementation
 
 uses Graphics, Classes, BlockTurnout, BlockTrack, BlockPst, BlockLock,
-  BlockCrossing, BlockLinker, BlockDisconnector, THVDatabase, TrainDb, colorHelper,
-  THnaciVozidlo;
+  BlockCrossing, BlockLinker, BlockDisconnector, TRVDatabase, TrainDb, colorHelper,
+  TRailVehicle;
 
 function TJCBarrier.Equal(other: TJCBarrier): Boolean;
 begin
@@ -1062,37 +1062,37 @@ begin
   Result := True;
 end;
 
-constructor TJCBarHVManual.Create(addr: Integer);
+constructor TJCBarRVManual.Create(addr: Integer);
 begin
   inherited Create();
   Self.mAddr := addr;
 end;
 
-class function TJCBarHVManual.ToUPO(addr: Integer): TUPOItem;
+class function TJCBarRVManual.ToUPO(addr: Integer): TUPOItem;
 begin
-  if (HVDb[addr] = nil) then
+  if (RVDb[addr] = nil) then
     raise EJCBarrier.Create('Engine does not exist');
 
   Result[0] := GetUPOLine('Hnací vozidlo v ručním řízení', taCenter, TJopColor.black, TJopColor.yellow);
-  Result[1] := GetUPOLine(IntToStr(addr) + ' : ' + HVDb[addr].name);
-  Result[2] := GetUPOLine('Řídí: '+HVDb[addr].DriverFullNames());
+  Result[1] := GetUPOLine(IntToStr(addr) + ' : ' + RVDb[addr].name);
+  Result[2] := GetUPOLine('Řídí: '+RVDb[addr].DriverFullNames());
 end;
 
-function TJCBarHVManual.ToUPO(): TUPOItem;
+function TJCBarRVManual.ToUPO(): TUPOItem;
 begin
-  Result := TJCBarHVManual.ToUPO(Self.mAddr);
+  Result := TJCBarRVManual.ToUPO(Self.mAddr);
 end;
 
-function TJCBarHVManual.IsWarning(): Boolean;
+function TJCBarRVManual.IsWarning(): Boolean;
 begin
   Result := True;
 end;
 
-function TJCBarHVManual.Equal(other: TJCBarrier): Boolean;
+function TJCBarRVManual.Equal(other: TJCBarrier): Boolean;
 begin
   Result := inherited;
-  if ((Result) and (other.InheritsFrom(TJCBarHVManual))) then
-    Result := (Result) and (Self.mAddr = (other as TJCBarHVManual).mAddr);
+  if ((Result) and (other.InheritsFrom(TJCBarRVManual))) then
+    Result := (Result) and (Self.mAddr = (other as TJCBarRVManual).mAddr);
 end;
 
 constructor TJCBarTrainNotFront.Create(traini: Integer);
@@ -1123,23 +1123,23 @@ begin
     Result := (Result) and (Self.mTrainI = (other as TJCBarTrainNotFront).mTrainI);
 end;
 
-constructor TJCBarHVNotAllManual.Create(traini: Integer);
+constructor TJCBarRVNotAllManual.Create(traini: Integer);
 begin
   inherited Create();
   Self.mTrainI := traini;
 end;
 
-function TJCBarHVNotAllManual.ToUPO(): TUPOItem;
+function TJCBarRVNotAllManual.ToUPO(): TUPOItem;
 begin
   if (trains[Self.mTrainI] = nil) then
     raise EJCBarrier.Create('Train does not exist');
 
   Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
-  Result[1] := GetUPOLine('Ne všechna HV v ručním řízení');
+  Result[1] := GetUPOLine('Ne všechna vozidla v ručním řízení');
   Result[2] := GetUPOLine('Vlak ' + trains[Self.mTrainI].name);
 end;
 
-function TJCBarHVNotAllManual.IsWarning(): Boolean;
+function TJCBarRVNotAllManual.IsWarning(): Boolean;
 begin
   Result := True;
 end;
@@ -1172,39 +1172,39 @@ begin
     Result := (Result) and (Self.mTrainI = (other as TJCBarTrainWrongDir).mTrainI);
 end;
 
-constructor TJCBarHVFuncActive.Create(addr: Integer; func: Cardinal);
+constructor TJCBarRVFuncActive.Create(addr: Integer; func: Cardinal);
 begin
   Self.mAddr := addr;
   Self.mFunc := func;
 end;
 
-function TJCBarHVFuncActive.ToUPO(): TUPOItem;
+function TJCBarRVFuncActive.ToUPO(): TUPOItem;
 begin
-  if (HVDb[Self.mAddr] = nil) then
+  if (RVDb[Self.mAddr] = nil) then
     raise EJCBarrier.Create('Engine does not exist');
-  if (Self.mFunc > _HV_FUNC_MAX) then
+  if (Self.mFunc > _RV_FUNC_MAX) then
     raise EJCBarrier.Create('mFunc out of range');
 
-  var description: string := HVDb[Self.mAddr].data.funcDescription[Self.mFunc];
+  var description: string := RVDb[Self.mAddr].data.funcDescription[Self.mFunc];
   var line1: string := 'Aktivní funkce F'+IntToStr(Self.mFunc);
   if (description <> '') then
     line1 := line1 + ' : ' + description;
 
   Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine(line1);
-  Result[2] := GetUPOLine(IntToStr(Self.mAddr) + ' : ' + HVDb[Self.mAddr].name);
+  Result[2] := GetUPOLine(IntToStr(Self.mAddr) + ' : ' + RVDb[Self.mAddr].name);
 end;
 
-function TJCBarHVFuncActive.IsWarning(): Boolean;
+function TJCBarRVFuncActive.IsWarning(): Boolean;
 begin
   Result := True;
 end;
 
-function TJCBarHVFuncActive.Equal(other: TJCBarrier): Boolean;
+function TJCBarRVFuncActive.Equal(other: TJCBarrier): Boolean;
 begin
   Result := inherited;
-  if ((Result) and (other.InheritsFrom(TJCBarHVFuncActive))) then
-    Result := (Result) and (Self.mAddr = (other as TJCBarHVFuncActive).mAddr) and (Self.mFunc = (other as TJCBarHVFuncActive).mFunc);
+  if ((Result) and (other.InheritsFrom(TJCBarRVFuncActive))) then
+    Result := (Result) and (Self.mAddr = (other as TJCBarRVFuncActive).mAddr) and (Self.mFunc = (other as TJCBarRVFuncActive).mFunc);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

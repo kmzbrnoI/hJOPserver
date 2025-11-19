@@ -110,7 +110,7 @@ begin
       var LI: TListItem := Self.LV_Speeds.Items.Add();
       LI.Caption := IntToStr(ts.speed);
       LI.SubItems.Add(ts.trainTypeRe);
-      LI.SubItems.Add(ts.hvTransienceRe);
+      LI.SubItems.Add(ts.rvTransienceRe);
     end;
   end;
 end;

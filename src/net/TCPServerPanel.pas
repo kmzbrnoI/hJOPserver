@@ -11,7 +11,7 @@ interface
 uses SysUtils, IdTCPServer, IdTCPConnection, IdGlobal, SyncObjs, IniFiles,
   Classes, StrUtils, Graphics, Windows, Area, ExtCtrls, ConfSeq,
   IdContext, Block, ComCtrls, IdSync, UPO, PanelConnData, IdSocketHandle,
-  User, Train, Generics.Collections, THnaciVozidlo, predvidanyOdjezd;
+  User, Train, Generics.Collections, TRailVehicle, predvidanyOdjezd;
 
 const
   _DEFAULT_PORT = 5896;
@@ -170,7 +170,7 @@ uses fMain, BlockTrack, BlockTurnout, BlockSignal, AreaDb, BlockLinker,
   BlockCrossing, Logging, TimeModel, TrainDb, Config, TrakceC, TrakceIFace,
   BlockLock, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
   UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks, BlockDb,
-  BlockDisconnector, BlockIO, ownConvert, THVDatabase, BlockPst, TCPServerPT;
+  BlockDisconnector, BlockIO, ownConvert, TRVDatabase, BlockPst, TCPServerPT;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -861,8 +861,8 @@ begin
   end else if (parsed[1] = 'HV') and (parsed[2] = 'ASK') then
   begin
     var i: Integer := StrToInt(parsed[3]);
-    if (HVDb[i] <> nil) then
-      PanelServer.SendLn(AContext, '-;HV;ASK;' + IntToStr(i) + ';FOUND;{' + HVDb[i].GetPanelLokString() + '}')
+    if (RVDb[i] <> nil) then
+      PanelServer.SendLn(AContext, '-;HV;ASK;' + IntToStr(i) + ';FOUND;{' + RVDb[i].GetPanelLokString() + '}')
     else
       PanelServer.SendLn(AContext, '-;HV;ASK;' + IntToStr(i) + ';NOT-FOUND');
 
@@ -962,15 +962,15 @@ begin
   else if (parsed[1] = 'HV') then
   begin
     if (parsed[2] = 'ADD') then
-      area.PanelHVAdd(AContext, parsed[3])
+      area.PanelRVAdd(AContext, parsed[3])
     else if (parsed[2] = 'REMOVE') then
-      area.PanelHVRemove(AContext, StrToInt(parsed[3]))
+      area.PanelRVRemove(AContext, StrToInt(parsed[3]))
     else if (parsed[2] = 'EDIT') then
-      area.PanelHVEdit(AContext, parsed[3])
+      area.PanelRVEdit(AContext, parsed[3])
     else if (parsed[2] = 'MOVE') then
-      area.PanelMoveLok(AContext, StrToInt(parsed[3]), parsed[4])
+      area.PanelRVMove(AContext, StrToInt(parsed[3]), parsed[4])
     else if (parsed[2] = 'LIST') then
-      area.PanelHVList(AContext)
+      area.PanelRVList(AContext)
   end
 
   else if (parsed[1] = 'ZAS') then
@@ -1405,8 +1405,8 @@ begin
     if (connData.regulator_loks.Count > 0) then
     begin
       str := str + ': ';
-      for var HV: THV in connData.regulator_loks do
-        str := str + IntToStr(HV.addr) + ', ';
+      for var vehicle: TRV in connData.regulator_loks do
+        str := str + IntToStr(vehicle.addr) + ', ';
       str := LeftStr(str, Length(str) - 2);
     end;
 
