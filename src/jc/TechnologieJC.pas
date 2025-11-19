@@ -910,11 +910,13 @@ begin
     if (Self.typ = TJCType.Train) then
     begin
       for var addr: Integer in train.HVs do
+      begin
         if ((HVDb[addr].data.typ <> THVType.car) and ((HVDb[addr].stolen) or (HVDb[addr].manual))) then
         begin
           barriers.Add(TJCBarHVManual.Create(addr));
           anyEngineManual := true;
         end;
+      end;
     end;
 
     // only some manual-controlled englines
@@ -942,6 +944,11 @@ begin
         barriers.Add(TJCBarTrainNotFront.Create(train.index))
     end;
 
+    for var addr: Integer in train.HVs do
+      for var i: Integer := 0 to _HV_FUNC_MAX do
+        if (((HVDb[addr].data.funcDescription[i].Contains('posun')) or (HVDb[addr].data.funcDescription[i].Contains('Posun'))) and
+            (HVDb[addr].stateFunctions[i])) then
+          barriers.Add(TJCBarHVFuncActive.Create(addr, i));
   end;
 end;
 

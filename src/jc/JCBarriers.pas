@@ -443,6 +443,17 @@ type
     function IsWarning(): Boolean; override;
   end;
 
+  TJCBarHVFuncActive = class(TJCBarrier)
+  private
+    mAddr: Integer;
+    mFunc: Cardinal;
+  public
+    constructor Create(addr: Integer; func: Cardinal);
+    function ToUPO(): TUPOItem; override;
+    function IsWarning(): Boolean; override;
+    function Equal(other: TJCBarrier): Boolean; override;
+  end;
+
   // -----------------------------------------------------------------------
 
   TJCBarriers = class(TObjectList<TJCBarrier>)
@@ -457,7 +468,8 @@ type
 implementation
 
 uses Graphics, Classes, BlockTurnout, BlockTrack, BlockPst, BlockLock,
-  BlockCrossing, BlockLinker, BlockDisconnector, THVDatabase, TrainDb, colorHelper;
+  BlockCrossing, BlockLinker, BlockDisconnector, THVDatabase, TrainDb, colorHelper,
+  THnaciVozidlo;
 
 function TJCBarrier.Equal(other: TJCBarrier): Boolean;
 begin
@@ -1146,6 +1158,41 @@ begin
   Result := inherited;
   if ((Result) and (other.InheritsFrom(TJCBarTrainWrongDir))) then
     Result := (Result) and (Self.mTrainI = (other as TJCBarTrainWrongDir).mTrainI);
+end;
+
+constructor TJCBarHVFuncActive.Create(addr: Integer; func: Cardinal);
+begin
+  Self.mAddr := addr;
+  Self.mFunc := func;
+end;
+
+function TJCBarHVFuncActive.ToUPO(): TUPOItem;
+begin
+  if (HVDb[Self.mAddr] = nil) then
+    raise EJCBarrier.Create('Engine does not exist');
+  if (Self.mFunc > _HV_FUNC_MAX) then
+    raise EJCBarrier.Create('mFunc out of range');
+
+  var description: string := HVDb[Self.mAddr].data.funcDescription[Self.mFunc];
+  var line1: string := 'Aktivní funkce F'+IntToStr(Self.mFunc);
+  if (description <> '') then
+    line1 := line1 + ' : ' + description;
+
+  Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
+  Result[1] := GetUPOLine(line1);
+  Result[2] := GetUPOLine(IntToStr(Self.mAddr) + ' : ' + HVDb[Self.mAddr].name);
+end;
+
+function TJCBarHVFuncActive.IsWarning(): Boolean;
+begin
+  Result := True;
+end;
+
+function TJCBarHVFuncActive.Equal(other: TJCBarrier): Boolean;
+begin
+  Result := inherited;
+  if ((Result) and (other.InheritsFrom(TJCBarHVFuncActive))) then
+    Result := (Result) and (Self.mAddr = (other as TJCBarHVFuncActive).mAddr) and (Self.mFunc = (other as TJCBarHVFuncActive).mFunc);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
