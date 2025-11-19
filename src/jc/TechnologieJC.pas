@@ -1275,8 +1275,7 @@ begin
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
         PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze postavit ' + Self.name + ' - kritické bariéry',
           (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
-      barriers.Free();
-      Exit();
+      Exit(); // will call barriers.Free() in finally block
     end;
 
     Self.Log('Krok 2 : povrzovaci sekvence OK');

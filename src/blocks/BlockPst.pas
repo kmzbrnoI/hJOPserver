@@ -1373,7 +1373,6 @@ begin
       if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
         PanelServer.BottomError(Self.m_state.senderPnl, 'Nelze předat řízení ' + Self.name + ' - kritické bariéry',
           (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
-      barriers.Free();
       Exit();
     end;
 

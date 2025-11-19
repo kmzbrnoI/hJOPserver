@@ -442,56 +442,58 @@ begin
   end;
 
   barriers := JC.barriers(cmd.nouz);
-
-  if ((barriers.count > 0) or (cmd.nouz)) then
-  begin
-    // v jizdni ceste jsou bariery
-    if ((barriers.count > 0) and (barriers[0].IsCritical())) then
+  try
+    if ((barriers.count > 0) or (cmd.nouz)) then
     begin
-      // kriticka bariera -> hint := CRIT, kritickou barieru na pozadani zobrazim dispecerovi (pres klik na UPO zasobniku)
-      Self.hint := 'CRIT';
-      Self.UPOenabled := true;
-      Exit();
-    end;
-
-    // tady mame zajisteno, ze v jizdni ceste nejsou kriticke bariery
-    // (KontrolaPodminek() zarucuje, ze kriticke bariery jsou na zacatku seznamu)
-
-    // nyni oznamime nekriticke bariery ktere nemaji upozorneni
-    for var barrier in barriers do
-    begin
-      if (not barrier.IsWarning()) then
+      // v jizdni ceste jsou bariery
+      if ((barriers.count > 0) and (barriers[0].IsCritical())) then
       begin
-        // tyto bariery nelze rozkliknout pomoci UPO
-        if (barrier.InheritsFrom(TJCBlockBarrier)) then
-          Self.hint := (barrier as TJCBlockBarrier).block.name
-        else
-          Self.hint := '';
-        Self.UPOenabled := false;
+        // kriticka bariera -> hint := CRIT, kritickou barieru na pozadani zobrazim dispecerovi (pres klik na UPO zasobniku)
+        Self.hint := 'CRIT';
+        Self.UPOenabled := true;
         Exit();
       end;
-    end; // for i
 
-    // neupozornovaci bariery nejsou -> podivam se na zbytek barier (ty by mely byt upozornovaci a melo byt se u nich dat kliknout na UPO)
-    Self.UPOenabled := true;
-    if ((barriers.count > 0) and (barriers[0].InheritsFrom(TJCBlockBarrier))) then
-      Self.hint := (barriers[0] as TJCBlockBarrier).block.name
-      // tohleto si muzeme dovolit, protoze mame zajiteno, ze v JC je alespon jedna bariera (viz podminka vyse)
-    else
-      Self.hint := '';
+      // tady mame zajisteno, ze v jizdni ceste nejsou kriticke bariery
+      // (KontrolaPodminek() zarucuje, ze kriticke bariery jsou na zacatku seznamu)
 
-    Exit();
-  end; // if bariery.Count > 0
+      // nyni oznamime nekriticke bariery ktere nemaji upozorneni
+      for var barrier in barriers do
+      begin
+        if (not barrier.IsWarning()) then
+        begin
+          // tyto bariery nelze rozkliknout pomoci UPO
+          if (barrier.InheritsFrom(TJCBlockBarrier)) then
+            Self.hint := (barrier as TJCBlockBarrier).block.name
+          else
+            Self.hint := '';
+          Self.UPOenabled := false;
+          Exit();
+        end;
+      end; // for i
 
-  // zadne bariery -> stavim jizdni cestu
+      // neupozornovaci bariery nejsou -> podivam se na zbytek barier (ty by mely byt upozornovaci a melo byt se u nich dat kliknout na UPO)
+      Self.UPOenabled := true;
+      if ((barriers.count > 0) and (barriers[0].InheritsFrom(TJCBlockBarrier))) then
+        Self.hint := (barriers[0] as TJCBlockBarrier).block.name
+        // tohleto si muzeme dovolit, protoze mame zajiteno, ze v JC je alespon jedna bariera (viz podminka vyse)
+      else
+        Self.hint := '';
 
-  Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + JC.name + ' : podmínky splněny, stavím', llInfo, lsStack);
+      Exit();
+    end; // if bariery.Count > 0
 
-  // pokud nejsou zadne bariery, stavime jizdni cestu
-  (Self.m_area as TArea).BroadcastData('ZAS;FIRST;0');
-  JC.Activate(cmd.Pnl, Self.m_area, Self, false, false, cmd.ab);
-  Self.UPOenabled := false;
-  barriers.Free();
+    // zadne bariery -> stavim jizdni cestu
+
+    Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + JC.name + ' : podmínky splněny, stavím', llInfo, lsStack);
+
+    // pokud nejsou zadne bariery, stavime jizdni cestu
+    (Self.m_area as TArea).BroadcastData('ZAS;FIRST;0');
+    JC.Activate(cmd.Pnl, Self.m_area, Self, false, false, cmd.ab);
+    Self.UPOenabled := false;
+  finally
+    barriers.Free();
+  end;
 end;
 
 procedure TORStack.ProcessZTS(cmd: TORStackCmdZTS);

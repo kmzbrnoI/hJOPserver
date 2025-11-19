@@ -255,53 +255,55 @@ begin
   var barriers: TJCBarriers := Self.BarriersActivatingJCs();
   var UPO: TUPOItems := TList<TUPOItem>.Create();
   try
-    // Are critical barriers present?
-    var critical: Boolean := false;
-    for var barrier: TJCBarrier in barriers do
-    begin
-      if (not barrier.CanContinueByConfirm()) then
+    try
+      // Are critical barriers present?
+      var critical: Boolean := false;
+      for var barrier: TJCBarrier in barriers do
       begin
-        critical := true;
-        UPO.Add(barrier.ToUPO());
+        if (not barrier.CanContinueByConfirm()) then
+        begin
+          critical := true;
+          UPO.Add(barrier.ToUPO());
+        end;
       end;
-    end;
 
-    if (critical) then
-    begin
-      // yes -> report
-      Self.Log('Celkem ' + IntToStr(barriers.Count) + ' bariér, ukončuji stavění');
-      if (senderPnl <> nil) then
+      if (critical) then
       begin
-        Self.step := stepCritBarriers;
-        PanelServer.UPO(Self.m_state.senderPnl, UPO, true, nil, Self.CritBarieraEsc, Self);
-      end;
-    end else begin
-      // non-critical barriers -> confirmation request
-      // when there is no one to ask, just activate the path right now
-      if ((barriers.Count > 0) and (senderPnl <> nil)) then
-      begin
-        Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...');
-        for var i: Integer := 0 to barriers.Count - 1 do
-          UPO.Add(barriers[i].ToUPO());
-
-        PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
-        Self.step := stepConfBarriers;
+        // yes -> report
+        Self.Log('Celkem ' + IntToStr(barriers.Count) + ' bariér, ukončuji stavění');
+        if (senderPnl <> nil) then
+        begin
+          Self.step := stepCritBarriers;
+          PanelServer.UPO(Self.m_state.senderPnl, UPO, true, nil, Self.CritBarieraEsc, Self);
+        end;
       end else begin
-        // no barriers -> activate child paths
-        Self.Log('Žádné bariéry, stavím');
-        Self.ActivatePaths();
+        // non-critical barriers -> confirmation request
+        // when there is no one to ask, just activate the path right now
+        if ((barriers.Count > 0) and (senderPnl <> nil)) then
+        begin
+          Self.Log('Celkem ' + IntToStr(barriers.Count) + ' warning bariér, žádám potvrzení...');
+          for var i: Integer := 0 to barriers.Count - 1 do
+            UPO.Add(barriers[i].ToUPO());
+
+          PanelServer.UPO(Self.m_state.senderPnl, UPO, false, Self.UPO_OKCallback, Self.UPO_EscCallback, Self);
+          Self.step := stepConfBarriers;
+        end else begin
+          // no barriers -> activate child paths
+          Self.Log('Žádné bariéry, stavím');
+          Self.ActivatePaths();
+        end;
+      end;
+    except
+      on E:Exception do
+      begin
+        Self.CancelActivating('Výjimka při stavění');
+        AppEvents.LogException(E, 'TMultiJC.Activate');
       end;
     end;
-  except
-    on E:Exception do
-    begin
-      Self.CancelActivating('Výjimka při stavění');
-      AppEvents.LogException(E, 'TMultiJC.Activate');
-    end;
+  finally
+    barriers.Free();
+    UPO.Free();
   end;
-
-  barriers.Free();
-  UPO.Free();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
