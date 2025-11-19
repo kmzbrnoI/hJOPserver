@@ -924,7 +924,7 @@ begin
       begin
         if ((HVDb[addr].data.typ <> THVType.car) and (not HVDb[addr].stolen) and (not HVDb[addr].manual)) then
         begin
-          barriers.Add(TJCBarHVNotAllManual.Create());
+          barriers.Add(TJCBarHVNotAllManual.Create(train.index));
           break;
         end;
       end;

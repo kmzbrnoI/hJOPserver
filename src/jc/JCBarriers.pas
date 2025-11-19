@@ -435,7 +435,10 @@ type
   end;
 
   TJCBarHVNotAllManual = class(TJCBarrier)
+  private
+    mTrainI: Integer;
   public
+    constructor Create(traini: Integer);
     function ToUPO(): TUPOItem; override;
     function IsWarning(): Boolean; override;
   end;
@@ -1102,11 +1105,17 @@ begin
     Result := (Result) and (Self.mTrainI = (other as TJCBarTrainNotFront).mTrainI);
 end;
 
+constructor TJCBarHVNotAllManual.Create(traini: Integer);
+begin
+  inherited Create();
+  Self.mTrainI := traini;
+end;
+
 function TJCBarHVNotAllManual.ToUPO(): TUPOItem;
 begin
   Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine('Ne všechna HV v ručním řízení');
-  Result[2] := GetUPOLine('');
+  Result[2] := GetUPOLine('Souprava ' + trains[Self.mTrainI].name);
 end;
 
 function TJCBarHVNotAllManual.IsWarning(): Boolean;
