@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Technologie
+    ActivePage = TS_Bloky
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3880,7 +3880,7 @@ object F_Main: TF_Main
             Width = 30
           end
           item
-            Caption = 'Souprava'
+            Caption = 'Vlak'
             Width = 75
           end
           item
@@ -3901,7 +3901,7 @@ object F_Main: TF_Main
             Width = 80
           end
           item
-            Caption = 'P'#345'edpov'#237'dan'#225' souprava'
+            Caption = 'P'#345'edpov'#237'dan'#253' vlak'
             Width = 150
           end>
         DoubleBuffered = True
@@ -4136,7 +4136,7 @@ object F_Main: TF_Main
             Caption = 'POM'
           end
           item
-            Caption = 'Souprava'
+            Caption = 'Vlak'
           end
           item
             Alignment = taRightJustify
@@ -4289,14 +4289,14 @@ object F_Main: TF_Main
         end
       end
     end
-    object TS_Soupravy: TTabSheet
+    object TS_Trains: TTabSheet
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Soupravy'
+      Caption = 'Vlaky'
       ImageIndex = 1
-      object LV_Soupravy: TListView
+      object LV_Trains: TListView
         Left = 0
         Top = 40
         Width = 1294
@@ -4386,11 +4386,11 @@ object F_Main: TF_Main
         ShowHint = False
         TabOrder = 0
         ViewStyle = vsReport
-        OnChange = LV_SoupravyChange
-        OnCustomDrawItem = LV_SoupravyCustomDrawItem
-        OnKeyDown = LV_SoupravyKeyDown
+        OnChange = LV_TrainsChange
+        OnCustomDrawItem = LV_TrainsCustomDrawItem
+        OnKeyDown = LV_TrainsKeyDown
       end
-      object P_Soupravy_pozadi: TPanel
+      object P_Trains_Bg: TPanel
         Left = 0
         Top = 0
         Width = 1294
@@ -4404,7 +4404,7 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        object P_Spr_Left: TPanel
+        object P_Trains_Left: TPanel
           Left = 0
           Top = 0
           Width = 321
@@ -4446,7 +4446,7 @@ object F_Main: TF_Main
             Margins.Top = 2
             Margins.Right = 2
             Margins.Bottom = 2
-            Caption = 'Smazat soupravu'
+            Caption = 'Smazat vlak'
             Enabled = False
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clBlack

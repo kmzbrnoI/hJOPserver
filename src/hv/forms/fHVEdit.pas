@@ -183,7 +183,7 @@ begin
 
   var area: TArea := Areas[Self.CB_Area.ItemIndex];
   if ((Self.OpenHV <> nil) and (Self.OpenHV.state.train > -1) and (Self.OpenHV.state.Area <> Area)) then
-    if (StrMessageBox('Měníte stanici HV, které je na soupravě, opravdu pokračovat?', 'Opravdu?',
+    if (StrMessageBox('Měníte stanici HV, které je na vlaku, opravdu pokračovat?', 'Opravdu?',
       MB_YESNO OR MB_ICONWARNING) = mrNo) then
       Exit();
 

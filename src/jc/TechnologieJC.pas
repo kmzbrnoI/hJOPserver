@@ -120,8 +120,8 @@ type
     // oblast rizeni, ktera vyvolala staveni JC, do teto OR jsou typicky odesilany notifikacni a chybove hlasky (napr. upozorneni vlevo dole panelu, potvrzovaci sekvence)
     senderOR: TObject;
     senderPnl: TIdContext; // konkretni panel, kery vyvolal staveni JC
-    destroyBlock, // index useku, na ktery ma vkrocit souprava
-    destroyEndBlock: Integer; // index useku, ze ktereho ma vystoupit souprava
+    destroyBlock, // index useku, na ktery ma vkrocit vlak
+    destroyEndBlock: Integer; // index useku, ze ktereho ma vystoupit vlak
     // index je index v seznamu useku, tedy napr. 0 =  0. usek v jizdni ceste; + specialni hodnoty _JC_DESTROY*
     from_stack: TObject; // odkaz na zasobnik, ze ktereho proehlo staveni JC
     nc: Boolean; // flag staveni nouzove cesty (vlakovou i posunovou)
@@ -159,7 +159,7 @@ type
 
     procedure CancelVBs();
     procedure MoveTrainToNextTrack();
-    // kontroluje zmenu smeru soupravy a hnacich vozidel pri vkroceni do smyckove bloku,
+    // kontroluje zmenu smeru vlaku a vozidel pri vkroceni do smyckove bloku,
     // tato kontrola probiha pouze pri vkroceni do posledniho bloku JC
     procedure CheckLoopBlock(blk: TBlk);
     function IsActivating(): Boolean;
@@ -191,7 +191,7 @@ type
     procedure BarriersNC(var barriers: TJCBarriers);
     procedure BarriersNCToAccept(var bariery: TJCBarriers);
 
-    function GetTrain(signal: TBlk = nil; track: TBlk = nil): TTrain; // vraci cislo soupravy na useku pred navestidlem
+    function GetTrain(signal: TBlk = nil; track: TBlk = nil): TTrain; // vraci vlak na useku pred navestidlem
 
     function GetAB(): Boolean;
     function IsCriticalBarrier(): Boolean;
@@ -225,8 +225,8 @@ type
     procedure CancelWithoutTrackRelease(showError: Boolean = False);
     procedure EmergencyCancelActivePath();
     procedure CancelOrStop();
-    procedure DynamicCancelling(); // kontroluje projizdeni soupravy useky a rusi jejich zavery
-    procedure DynamicCancellingNC(); // rusi poruchu BP trati, ze ktere odjizdi souprava v ramci nouzove jizdni cesty
+    procedure DynamicCancelling(); // kontroluje projizdeni vlaku useky a rusi jejich zavery
+    procedure DynamicCancellingNC(); // rusi poruchu BP trati, ze ktere odjizdi vlak v ramci nouzove jizdni cesty
     procedure NonProfileOccupied(); // volano pri obsazeni kontrolvoaneho neprofiloveho useku
 
     procedure StartCancelling(senderArea: TArea);
@@ -1659,7 +1659,7 @@ begin
         Self.CancelVBs();
         Self.CancelTrackEnd();
 
-        // nastavit front blok soupravy
+        // nastavit front blok vlaku
         var signalTrack: TBlkTrack := signal.track as TBlkTrack;
         if (signalTrack.IsTrain()) then
           Self.GetTrain(signal, signalTrack).front := signalTrack;
@@ -1937,7 +1937,7 @@ begin
           Self.m_state.from_stack := nil;
         end;
 
-        // presun soupravy z useku pred navestidlem do posledniho useku JC
+        // presun vlaku z useku pred navestidlem do posledniho useku JC
 
         // Presun probehne za techto podminek:
         // a) Bud privolavame do stanice = na dopravni kolej
@@ -1962,7 +1962,7 @@ begin
                 railway.RemoveTrain(train);
               end;
 
-              // na dopravni kolej vlozime soupravu blize vjezdovemu navestidlu
+              // na dopravni kolej vlozime vlak blize vjezdovemu navestidlu
               if (signal.direction = THVSite.odd) then
                 Self.lastTrack.AddTrainL(Train)
               else
@@ -1987,7 +1987,7 @@ begin
 
             if (railway.lockout) then
             begin
-              // Pridat soupravu do posledniho bloku trati
+              // Pridat vlak do posledniho bloku trati
               if ((railway.state.trains.Count = 0) and ((railway.GetLastTrack(Self.data.railwayDir) as TBlkRT)
                 .Zaver = TZaver.no)) then
               begin
@@ -2000,7 +2000,7 @@ begin
               if ((not Self.lastTrack.IsTrain()) and (railway.BP) and
                 (railway.direction = Self.data.railwayDir)) then
               begin
-                // Pridat soupravu do prvniho bloku trati
+                // Pridat vlak do prvniho bloku trati
                 rtAdd := (lastTrack as TBlkRT);
                 rtAdd.bpError := true;
               end;
@@ -2010,7 +2010,7 @@ begin
             begin
               railway.AddTrain(TBlkRailwayTrain.Create(Train.index));
               rtAdd.AddTrainL(Train); // tady je jedno jestli zavolat L nebo S
-              // v trati muze byt na jednom useku vzdy jen jedna souprava
+              // v trati muze byt na jednom useku vzdy jen jeden vlak
               // kontrolovano vyse
               railway.Change();
               signalTrack.RemoveTrain(train);
@@ -2216,8 +2216,8 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// RozpadBlok = blok index, kam by mela souprava vjet
-// RozpadRuseniBlok = blok index, kde je posledni detekovany vagon soupravy
+// RozpadBlok = blok index, kam by mel vlak vjet
+// RozpadRuseniBlok = blok index, kde je posledni detekovany vagon vlaku
 procedure TJC.DynamicCancelling();
 begin
   var signal: TBlkSignal := TBlkSignal(Self.signal);
@@ -2306,7 +2306,7 @@ begin
           end;
           railway.Zaver := false;
 
-          // nastavime rychlost souprave
+          // nastavime rychlost vlaku
           if (Self.typ = TJCType.Train) then
             TBlkRT(track).speedUpdate := true;
         end;
@@ -2339,7 +2339,7 @@ begin
   // jizdni cesta konci uvolnenim predposledniho useku
 
   // mensitko je dulezite a ma smysl !
-  // kdyby tam bylo <=, mohl by se rozpadnout jediny usek, na kterem je souprava tim, ze se odobsadi
+  // kdyby tam bylo <=, mohl by se rozpadnout jediny usek, na kterem je vlak tim, ze se odobsadi
   if ((Self.destroyEndBlock >= 0) and (Self.destroyEndBlock < Self.destroyBlock - 1)) then
   begin
     // ziskani dotazovaneho useku
@@ -2363,7 +2363,7 @@ begin
       begin
         var train := track.Train;
         track.RemoveTrains();
-        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + track.name, llInfo);
+        Self.Log('Smazan vlak ' + train.name + ' z bloku ' + track.name, llInfo);
         if (Self.lastTrack.typ = TBlkType.btRT) then
           train.UpdateRailwaySpeed();
       end;
@@ -2371,7 +2371,7 @@ begin
   end; // if (cyklus2 = Self.rozpadRuseniBlok)
 
   // tady se resi pripad, kdy stanicni kolej zustane obsazena (protoze tam stoji vagony),
-  // ale souprava se z ni musi odstranit uvolnenim prvniho useku JC
+  // ale vlak se z ni musi odstranit uvolnenim prvniho useku JC
   if ((Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK) and (Self.destroyBlock > 0)) then
   begin
     var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(Self.m_data.tracks[0]));
@@ -2398,21 +2398,21 @@ begin
 
       if ((Self.typ = TJCType.Train) and (track.IsTrain())) then
       begin
-        // mazani soupravy z useku pred navestidlem
+        // mazani vlaku z useku pred navestidlem
         var train: TTrain := Self.GetTrain(signal, signalTrack);
         if (train = TBlkTrack(track).Train) then
         begin
-          Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
+          Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
           (signalTrack as TBlkTrack).RemoveTrain(train);
         end;
 
-        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
+        Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
         track.RemoveTrains();
       end;
     end;
   end;
 
-  // mazani soupravy z useku pred navestidlem
+  // mazani vlaku z useku pred navestidlem
   if ((Self.destroyBlock > 0) and (Self.destroyEndBlock = _JC_DESTROY_SIGNAL_TRACK)) then
   begin
     if ((signalTrack.occupied = TTrackState.Free) and (signalTrack.occupAvailable)) then
@@ -2421,7 +2421,7 @@ begin
       begin
         var train: TTrain := Self.GetTrain(signal, signalTrack);
         signalTrack.RemoveTrain(train);
-        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
+        Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
       end;
 
       Self.destroyEndBlock := 0;
@@ -2448,14 +2448,14 @@ begin
     // Toto je z toho duvodu, aby i na poslednim useku JC doslo k pocitani casu uvolneni zaveru a to od momentu, kdy se rozpadne jizdni cesta.
     Self.TrackCancelZaver(Self.lastTrack);
 
-    // pokud ma cesta jen jeden usek, odstranime soupravu z useku pred navestidlem:
+    // pokud ma cesta jen jeden usek, odstranime vlak z useku pred navestidlem:
     if (Self.m_data.tracks.Count = 1) then
     begin
       var train: TTrain := Self.GetTrain(signal, signalTrack);
       if ((Self.typ = TJCType.Train) and (train <> nil)) then
       begin
         signalTrack.RemoveTrain(train);
-        Self.Log('Smazana souprava ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
+        Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
       end;
 
       if ((signalTrack.typ = btRT) and (TBlkRT(signalTrack).railway <> nil) and (TBlkRT(signalTrack).bpInBlk)) then
@@ -2505,7 +2505,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// preda soupravu v jizdni ceste dalsimu bloku v poradi
+// preda vlak v jizdni ceste dalsimu bloku v poradi
 procedure TJC.MoveTrainToNextTrack();
 var trackActual, trackNext: TBlkTrack;
   train: TTrain;
@@ -2530,7 +2530,7 @@ begin
   trackNext.AddTrainL(Train);
   trackNext.Train.front := trackNext;
   trackNext.houkEvEnabled := true;
-  Self.Log('Predana souprava ' + trackNext.Train.name + ' z bloku ' + trackActual.name + ' do bloku ' + trackNext.name, llInfo);
+  Self.Log('Predan vlak ' + trackNext.Train.name + ' z bloku ' + trackActual.name + ' do bloku ' + trackNext.name, llInfo);
 
   Self.CheckLoopBlock(trackNext);
 end;
@@ -2553,7 +2553,7 @@ begin
     end;
 
     track.Train.ChangeDirection();
-    Self.Log('Obsazen smyckovy usek ' + blk.name + ' - menim smer loko v souprave ' + track.Train.name, llInfo);
+    Self.Log('Obsazen smyckovy usek ' + blk.name + ' - menim smer loko ve vlaku ' + track.Train.name, llInfo);
   end;
 end;
 
@@ -2951,7 +2951,7 @@ end;
 function TJC.CanDN(): Boolean;
 var train: TTrain;
 begin
-  // index soupravy na useku pred navestidlem
+  // index vlaku na useku pred navestidlem
   train := Self.GetTrain();
 
   // zkontrolujeme zavery bloku
@@ -2966,18 +2966,18 @@ begin
     then
       Exit(false);
 
-    // na usecich v ceste je dovoleno mit soupravu pred navestidlem, v takovem
+    // na usecich v ceste je dovoleno mit vlak pred navestidlem, v takovem
     // pripade ji DN z useku v ceste smaze
 
     if (Self.typ = TJCType.Train) then
     begin
       if (Train = nil) then
       begin
-        // pred navestidlem neni souprava -> na usecich nesmi byt zadna souprava
+        // pred navestidlem neni vlak -> na usecich nesmi byt zadny vlak
         if (track.IsTrain()) then
           Exit(false);
       end else begin
-        // pred navestidlem je souprava -> na usecich smi byt jen stejna souprava
+        // pred navestidlem je vlak -> na usecich smi byt jen stejny vlak
         // jako pred navestidlem
         if ((track.IsTrain()) and ((track.trains.Count > 1) or (track.Train <> Train))) then
           Exit(false);

@@ -999,9 +999,9 @@ begin
     on E: Exception do
     begin
       if (track <> nil) then
-        AppEvents.LogException(E, 'Vyjímka při předpovídání soupravy - úsek ' + track.name)
+        AppEvents.LogException(E, 'Vyjímka při předpovídání vlaku - úsek ' + track.name)
       else
-        AppEvents.LogException(E, 'Vyjímka při předpovídání soupravy');
+        AppEvents.LogException(E, 'Vyjímka při předpovídání vlaku');
     end;
   end;
 end;

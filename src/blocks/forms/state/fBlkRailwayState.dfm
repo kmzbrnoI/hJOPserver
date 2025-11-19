@@ -28,27 +28,27 @@ object F_BlkRailwayState: TF_BlkRailwayState
   object L_Usek20: TLabel
     Left = 7
     Top = 84
-    Width = 118
+    Width = 92
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'P'#345'edpov'#237'dan'#225' souprava:'
+    Caption = 'P'#345'edpov'#237'dan'#253' vlak:'
   end
   object Label1: TLabel
     Left = 8
     Top = 107
-    Width = 50
+    Width = 29
     Height = 13
-    Caption = 'Soupravy:'
+    Caption = 'Vlaky:'
   end
   object Label2: TLabel
     Left = 296
     Top = 59
-    Width = 50
+    Width = 23
     Height = 13
-    Caption = 'Souprava:'
+    Caption = 'Vlak:'
   end
   object Label3: TLabel
     Left = 296
@@ -109,7 +109,7 @@ object F_BlkRailwayState: TF_BlkRailwayState
     TabOrder = 11
     OnClick = B_RefreshClick
   end
-  object SE_Souprava: TSpinEdit
+  object SE_Train: TSpinEdit
     Left = 176
     Top = 82
     Width = 107
@@ -161,7 +161,7 @@ object F_BlkRailwayState: TF_BlkRailwayState
     Top = 104
     Width = 108
     Height = 21
-    Caption = 'Smazat soupravu'
+    Caption = 'Smazat vlak'
     TabOrder = 8
     OnClick = B_Train_DeleteClick
   end
@@ -170,7 +170,7 @@ object F_BlkRailwayState: TF_BlkRailwayState
     Top = 104
     Width = 96
     Height = 21
-    Caption = 'P'#345'idat soupravu'
+    Caption = 'P'#345'idat vlak'
     TabOrder = 9
     OnClick = B_Train_AddClick
   end

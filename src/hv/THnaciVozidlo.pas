@@ -40,7 +40,7 @@
 
   Prebirani lokomotivy:
   1) Zavolat locoAcquire do Trakce (zjisti vsechny informace o lokomotive)
-  2) Nastavit spravny smer loko a rychlost loko (vzhledem k souprave nebo aktualni)
+  2) Nastavit spravny smer loko a rychlost loko (vzhledem k vlaku nebo aktualni)
   3) Nastavit funkce na pozadovane hodnoty
   4) Naprogramovat POM
   Pokud v libovolne casti procesu nastane chyba, je vyvolan Error callback.
@@ -113,7 +113,7 @@ type
     traveled_forward: Real; // in meters
     traveled_backward: Real; // in meters
     functions: TFunctions; // stav funkci tak, jak je chceme; uklada se do souboru
-    train: Integer; // index soupravy; -1 pokud neni na souprave
+    train: Integer; // index vlaku; -1 pokud neni na vlaku
     area: TArea;
     regulators: TList<THVRegulator>; // seznam regulatoru -- klientu
     tokens: TList<THVToken>;
@@ -963,7 +963,7 @@ begin
 
       Trains[Self.train].speed := Trains[Self.train].speed; // tento prikaz nastavi rychlost
     end else begin
-      // loko neni na souprave -> zkusit odhlasit
+      // loko neni na vlaku -> zkusit odhlasit
       Self.CheckRelease();
     end;
   end;
@@ -1534,7 +1534,7 @@ begin
   if ((dirChanged) and (Self.train > -1)) then
     if ((Sender <> Trains[Self.train]) and (Trains[Self.train] <> nil)) then
       Trains[Self.train].LokDirChanged();
-  // Trains[HV.Stav.train] <> nil muze nastat pri aktualizaci HV na souprave,
+  // Trains[HV.Stav.train] <> nil muze nastat pri aktualizaci HV na vlaku
   // coz se dede prave tady
 end;
 
@@ -1565,11 +1565,11 @@ begin
   Self.slot := LocoInfo;
   Self.changed := true;
 
-  // pokud ma souprava jasne dany smer, nastavime ho
+  // pokud ma vlak jasne dany smer, nastavime ho
   // podminka na sipky je tu kvuli prebirani z RUCniho rizeni z XpressNETu
   if ((Self.train > -1) and (not Self.manual) and (Trains[Self.train].sdata.dir_L xor Trains[Self.train].sdata.dir_S)) then
   begin
-    // souprava ma zadany prave jeden smer
+    // vlak ma zadany prave jeden smer
     direction := ((Trains[Self.train].direction = THVSite.even) xor (Self.state.siteA = THVSite.even));
     speedStep := trakce.step(Trains[Self.train].speed);
   end else begin

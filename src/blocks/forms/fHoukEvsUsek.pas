@@ -5,7 +5,7 @@
   bloku usek.
 
   Okno vyuziva 2 okna TF_HoukEvs, jedno na houkaci udalosti v lichem smeru
-  jizdy soupravy a druhe na udalosti v sudem smeru jizdy soupravy.
+  jizdy vlaku a druhe na udalosti v sudem smeru jizdy vlaku.
 }
 
 interface

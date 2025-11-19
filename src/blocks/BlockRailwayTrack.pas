@@ -28,9 +28,9 @@
   zmene trati. Behem provozu neni doporuceno menit trate.
   - navKryci je odkaz na kryci navestidlo tratoveho useku podle aktualniho
   smeru trati.
-  - Rychlost soupravy v trati se meni az za 2 iterace Update od vkroceni
-  soupravy do TU. To z toho duvodu, ze souprava mohla zastavit pred navestidlem
-  (takovou soupravu nechceme rozjizdet).
+  - Rychlost vlaku v trati se meni az za 2 iterace Update od vkroceni
+  vlaku do TU. To z toho duvodu, ze vlak mohla zastavit pred navestidlem
+  (takovy vlak nechceme rozjizdet).
   sprRychUpdateIter
   - Pozor na rozdil mezi sectObsazeno a sectReady, sectReady zahrnuje i poruchu
   blokove podminky a tak je pro vetsinu pripadu vhodnejsi.
@@ -89,19 +89,19 @@ type
   TBlkRTState = record
     inRailway: Integer; // tady je ulozeno id bloku trati, v jake se blok nachazi; pokud se nenachazi v trati -> -1
 
-    stopStopped: Boolean; // jakmile zastavim soupravu v zastavce, nastavim sem true; pokud souprava jede, je zde false
-    stopRunTime: TDateTime; // tady je ulozen cas, kdy se ma souprava ze zastavky rozjet
-    // tady si pamatuji, jakou rychlost mela souprava puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
+    stopStopped: Boolean; // jakmile zastavim vlak v zastavce, nastavim sem true; pokud vlak jede, je zde false
+    stopRunTime: TDateTime; // tady je ulozen cas, kdy se ma vlak ze zastavky rozjet
+    // tady si pamatuji, jakou rychlost mel vlak puvodne (mela by to byt tratova, toto je tu pro rozsireni zastavek nejen do trati)
     stopEnabled: Boolean; // zastavku lze z panelu zapnout a vypnout (v zakladnim stavu je zapla)
-    stopPassed: Boolean; // tady je ulozeno true, pokud souprava zastavku jiz projela
-    stopSlowReady: Boolean; // jestli je TU pripraveny ke zpomalovani soupravy v zastavce
+    stopPassed: Boolean; // tady je ulozeno true, pokud vlak zastavku jiz projel
+    stopSlowReady: Boolean; // jestli je TU pripraveny ke zpomalovani vlaku v zastavce
     stopSoundStep: Cardinal; // krok prehravani zvuku
     // 0 = pripraveno, 1 = prehrana pistalka vypravciho, 2 = prehrano zavreni dveri, 3 = prehrana houkacka
 
     // bpInBlk = kontroluji obsazeni bloku, pri uvolneni useku bez predani dale vyhlasit poruchu BP
     bpInBlk: Boolean; // jestli je v useku zavedena blokova podminka
     bpError: Boolean; // jestli nastala porucha blokove podminky
-    trainSpeedUpdateIter: Integer; // pocet zbyvajicich iteraci do nastaveni rychlost soupravy
+    trainSpeedUpdateIter: Integer; // pocet zbyvajicich iteraci do nastaveni rychlosti vlaku
     updateSignals: Boolean; // whether to update signals (used for init update)
   end;
 
@@ -125,7 +125,7 @@ type
     procedure MenuJEDTrainClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuRBPClick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    procedure UpdateBP(); // technologie blokove podminky, resi veskere predavani souprav mezi TU a sekcemi TU
+    procedure UpdateBP(); // technologie blokove podminky, resi veskere predavani vlaku mezi TU a sekcemi TU
 
     function GetRailway(): TBlk;
     function GetSignalCover(): TBlk;
@@ -150,12 +150,12 @@ type
     procedure PanelPotvrSekvRBP(Sender: TIdContext; success: Boolean); // callback potvrzovaci sekvence RBP
 
     procedure UpdateSignals(); // aktualizuje navest krycich navestidel
-    procedure UpdateTrainSpeed(); // aktualizuje rychlost soupravy v TU (pocita s \sprRychUpdateIter)
+    procedure UpdateTrainSpeed(); // aktualizuje rychlost vlaku v TU (pocita s \sprRychUpdateIter)
 
     procedure SetSpeedUpdate(state: Boolean); // nastavi \sprRychUpdateIter
     function GetSpeedUpdate(): Boolean; // vrati, jestli bezi odpocet \sprRychUpdateIter
 
-    function GetReady(): Boolean; // jestli je usek pripraveny na vjeti soupravy
+    function GetReady(): Boolean; // jestli je usek pripraveny na vjeti vlaku
     function IsStopSlowedDown(): Boolean;
 
     function mIsStop(): Boolean;
@@ -205,7 +205,7 @@ type
     procedure RemoveTURefs(); // zrusi UsekPred navetidlum autobloku
 
     // tato metoda ma smysl pouze pro krajni TU trati a resi radne odstraneni obsahu useku z trati
-    procedure ReleasedFromJC(); // obsah useku (ne nutne souprava!) byl prevzat z krajniho useku trati jizdni cestou
+    procedure ReleasedFromJC(); // obsah useku (ne nutne vlak!) byl prevzat z krajniho useku trati jizdni cestou
 
     procedure AddTrainL(index: Integer); override;
     procedure AddTrainS(index: Integer); override;
@@ -478,7 +478,7 @@ begin
       (not Self.stopS))) then
       Exit();
 
-    // kontrola typu soupravy
+    // kontrola typu vlaku
     if (not TRegEx.IsMatch(Self.train.typ, Self.m_rtSettings.stop.trainType)) then
       Exit();
 
@@ -559,7 +559,7 @@ begin
   end else begin
 
     // osetreni rozjeti vlaku z nejakeho pochybneho duvodu
-    // pokud se souprava rozjede, koncim zastavku
+    // pokud se vlak rozjede, koncim zastavku
     if ((Self.train.speed <> 0) or (not Self.train.IsSpeedOverride())) then
     begin
       Self.m_rtState.stopStopped := false;
@@ -649,7 +649,7 @@ begin
   if ((Self.inRailway > -1) and (Self.isStop)) then
   begin
     Result := Result + '-,';
-    // pokud neni v zastavce zastavena souprava, lze zastavku vypinat a zapinat
+    // pokud neni v zastavce zastaven vlak, lze zastavku vypinat a zapinat
     if (not Self.rtState.stopStopped) then
       Result := Result + ite(Self.rtState.stopEnabled, 'ZAST<,', 'ZAST>,');
   end;
@@ -708,9 +708,9 @@ begin
   if ((Self.isStop) and (not Self.m_rtState.stopSlowReady)) then
     Self.m_rtState.stopSlowReady := true;
 
-  // Zmena smeru soupravy muze nastat na zacatku i konci trati
-  // tak, aby souprava byla vzdy rizeni spravnymi nasvestidly.
-  // Souprava ve smeru A-->B vzdy jeden v lichem smeru
+  // Zmena smeru vlaku muze nastat na zacatku i konci trati
+  // tak, aby vlak byl vzdy rizeni spravnymi nasvestidly.
+  // Vlak ve smeru A-->B vzdy jeden v lichem smeru
 
   if ((Self.railway <> nil) and (TBlkRailway(Self.railway).GetSettings().trackIds.Count > 0)) then
   begin
@@ -789,12 +789,12 @@ begin
 
   oldTrain.UpdateRailwaySpeed();
 
-  // souprava uvolnena z useku, mozna bude nutne ji uvolnit z cele trati
+  // vlak uvolnen z useku, mozna bude nutne ji uvolnit z cele trati
   if (Self.railway <> nil) then
   begin
     var railway: TBlkRailway := TBlkRailway(Self.railway);
 
-    // souprava vyjela z trate -> odstranit z trate
+    // vlak vyjel z trate -> odstranit z trate
     if (not railway.IsTrainInAnyTU(oldTrain)) then
       railway.RemoveTrain(oldTrain);
 
@@ -824,11 +824,11 @@ begin
   try
     if (Self.IsTrain()) then
     begin
-      csItems.Add(CSItem(Self, 'Smazání soupravy ' + Self.train.name + ' z úseku'));
+      csItems.Add(CSItem(Self, 'Smazání vlaku ' + Self.train.name + ' z úseku'));
       if ((Self.railway <> nil) and (not TBlkRailway(Self.railway).IsTrainInMoreTUs(Self.train))) then
-        csItems.Add(CSItem(Self.railway, 'Smazání soupravy ' + Self.train.name + ' z tratě'));
+        csItems.Add(CSItem(Self.railway, 'Smazání vlaku ' + Self.train.name + ' z tratě'));
       if (Blocks.GetBlkWithTrain(Self.train).Count = 1) then
-        csItems.Add(CSItem(Self, 'Smazání soupravy ' + Self.train.name + ' z kolejiště'));
+        csItems.Add(CSItem(Self, 'Smazání vlaku ' + Self.train.name + ' z kolejiště'));
     end;
 
     PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvRBP, SenderOR as TArea,
@@ -977,7 +977,7 @@ begin
     Self.bpInBlk := true;
   end;
 
-  // predavani soupravy z predchoziho TU do meho TU
+  // predavani vlaku z predchoziho TU do meho TU
   if ((Self.prevRT <> nil) and (Self.occupied = TTrackState.occupied) and (Self.prevRT.occupied = TTrackState.occupied)
     and ((Self.signalCover = nil) or (TBlkSignal(Self.signalCover).IsGoSignal()))) then
   begin
@@ -996,8 +996,8 @@ begin
 
         if (Self.nextRT = nil) then
         begin
-          // souprava vstoupila do posledniho bloku trati
-          // zmena stanic soupravy a hnacich vozidel v ni
+          // vlak vstoupil do posledniho bloku trati
+          // zmena stanic vlaku a hnacich vozidel v ni
           TBlkRailway(Self.railway).TrainChangeOR(Self.train);
         end;
       end else begin
@@ -1009,7 +1009,7 @@ begin
     end;
   end;
 
-  // uvolnovani soupravy z TU (pokud je jiz predana do dalsiho TU)
+  // uvolnovani vlaku z TU (pokud je jiz predana do dalsiho TU)
   if ((Self.bpInBlk) and (Self.nextRT <> nil) and (Self.nextRT.Train = Self.train) and
     (Self.occupied = TTrackState.Free) and (Self.nextRT.occupied = TTrackState.occupied)) then
   begin
@@ -1317,9 +1317,9 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-// komtrola volnosti sekce pro prijezd soupravy: musi byt splneno
+// komtrola volnosti sekce pro prijezd vlaku: musi byt splneno
 // 1) zadny usek sekce neni obsazen
-// 2) vsechny useky sekce jsou bez soupravy
+// 2) vsechny useky sekce jsou bez vlaku
 
 function TBlkRT.GetSectReady(): Boolean;
 var blk: TBlkRT;

@@ -56,9 +56,9 @@ type
 
     lastActivatedPath: TJC;
 
-    train_new_usek_index: Integer; // index nove vytvarene soupravy na useku (-1 pokud neni vytvarena)
-    train_edit: TTrain; // souprava, kterou panel edituje
-    train_usek: TObject; // usek, na kterem panel edituje soupravu (TBlkUsek)
+    train_new_usek_index: Integer; // index nove vytvareneho vlaku na useku (-1 pokud neni vytvarena)
+    train_edit: TTrain; // vlak, ktery panel edituje
+    train_usek: TObject; // usek, na kterem panel edituje vlak (TBlkUsek)
 
     regulator: Boolean; // true pokud klient autorizoval rizeni pres regulator
     regulator_user: TUser; // uzivatel, ktery autorizoval regulator

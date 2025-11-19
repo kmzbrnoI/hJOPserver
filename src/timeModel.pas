@@ -291,7 +291,7 @@ begin
       if (Self.fused <> (parsed[5] = '1')) then
       begin
         // Nejdriv smazeme pres bloky, pripadne pochybne stavy resime natvrdo
-        // smazanim u soupravy. Mazani pres bloky zajisti volani Change().
+        // smazanim u vlaku. Mazani pres bloky zajisti volani Change().
         Blocks.ClearPOdj();
         Trains.ClearPOdj();
       end;

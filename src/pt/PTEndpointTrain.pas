@@ -65,7 +65,7 @@ begin
  Result.AddOrSetValue('type', _ET_NONE);
  if (trainIndex = -1) then
  begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Souprava neexistuje', 'Souprava s id '+trainName+' neexistuje');
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Vlak neexistuje', 'Vlak s id '+trainName+' neexistuje');
    Exit();
  end;
 

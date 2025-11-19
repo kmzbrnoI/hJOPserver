@@ -110,10 +110,10 @@ type
     P_HV_Pozadi: TPanel;
     P_HV_Left: TPanel;
     E_dataload_HV_dir: TEdit;
-    TS_Soupravy: TTabSheet;
-    LV_Soupravy: TListView;
-    P_Soupravy_pozadi: TPanel;
-    P_Spr_Left: TPanel;
+    TS_Trains: TTabSheet;
+    LV_Trains: TListView;
+    P_Trains_Bg: TPanel;
+    P_Trains_Left: TPanel;
     E_dataload_soupr: TEdit;
     TS_Stanice: TTabSheet;
     LV_Stanice: TListView;
@@ -355,7 +355,7 @@ type
     procedure LV_JCChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure MI_Save_configClick(Sender: TObject);
     procedure LB_BriefLogDblClick(Sender: TObject);
-    procedure LV_SoupravyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+    procedure LV_TrainsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure B_train_deleteClick(Sender: TObject);
     procedure LV_HVCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
@@ -413,7 +413,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure CHB_log_authClick(Sender: TObject);
     procedure LV_logDblClick(Sender: TObject);
-    procedure LV_SoupravyCustomDrawItem(Sender: TCustomListView;
+    procedure LV_TrainsCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure MI_SimulationDiagnosticsClick(Sender: TObject);
     procedure B_ConfigApplyClick(Sender: TObject);
@@ -422,7 +422,7 @@ type
     procedure LV_BlocksKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure LV_HVKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure LV_SoupravyKeyDown(Sender: TObject; var Key: Word;
+    procedure LV_TrainsKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure LV_BoostersKeyDown(Sender: TObject; var Key: Word;
       Shift: TShiftState);
@@ -527,7 +527,7 @@ type
     procedure SetCallMethod(Method: TNotifyEvent);
     procedure UpdateSystemButtons();
     procedure CheckNasobicWidth();
-    function SoupravySelectedCount(): Integer;
+    function TrainsSelectedCount(): Integer;
     function LVSelectedTexts(LV: TListView; single: string; multiple: string): string;
     procedure PanelServerStartingStarted();
     procedure SB1Log(msg: string);
@@ -1895,7 +1895,7 @@ begin
     BlocksTablePainter.UpdateTable();
   if (PC_1.ActivePage = TS_Zesilovace) then
     ZesTableData.UpdateTable();
-  if (PC_1.ActivePage = TS_Soupravy) then
+  if (PC_1.ActivePage = TS_Trains) then
     TrainTableData.UpdateTable();
   if (PC_1.ActivePage = Self.TS_HV) then
     HVTableData.UpdateTable();
@@ -2025,7 +2025,7 @@ begin
   UsersTableData := TUsersTableData.Create(Self.LV_Users);
   for var rcsi := 0 to RCSs._RCSS_MAX do
     RCSTableData[rcsi] := TRCSTableData.Create(Self.LV_RCSs_State[rcsi], RCSs[rcsi]);
-  TrainTableData := TTrainTableData.Create(Self.LV_Soupravy);
+  TrainTableData := TTrainTableData.Create(Self.LV_Trains);
   HVTableData := THVTableData.Create(Self.LV_HV);
   ZesTableData := TZesTableData.Create(Self.LV_Boosters);
   ORsTableData := TORsTableData.Create(Self.LV_Stanice);
@@ -2632,18 +2632,18 @@ end;
 
 procedure TF_Main.B_train_deleteClick(Sender: TObject);
 begin
-  if (Self.LV_Soupravy.Selected = nil) then
+  if (Self.LV_Trains.Selected = nil) then
     Exit();
-  if (not Assigned(Trains[Self.LV_Soupravy.ItemIndex])) then
+  if (not Assigned(Trains[Self.LV_Trains.ItemIndex])) then
     Exit();
 
-  var sprs: string := Self.LVSelectedTexts(Self.LV_Soupravy, 'soupravu', 'soupravy');
+  var sprs: string := Self.LVSelectedTexts(Self.LV_Trains, 'vlak', 'vlaky');
   var response: Integer := StrMessageBox('Opravdu smazat ' + sprs + '?', '?', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
   if (response = mrYes) then
   begin
-    for var i: Integer := Self.LV_Soupravy.Items.Count - 1 downto 0 do
+    for var i: Integer := Self.LV_Trains.Items.Count - 1 downto 0 do
     begin
-      var LI: TListItem := Self.LV_Soupravy.Items[i];
+      var LI: TListItem := Self.LV_Trains.Items[i];
       if ((LI.Selected) and (LI.Caption <> '')) then
         Trains.Remove(LI.Index);
     end;
@@ -2795,7 +2795,7 @@ begin
     begin
       if (Self.PC_1.ActivePage = Self.TS_Bloky) then
         BlocksTablePainter.UpdateTable();
-      if (Self.PC_1.ActivePage = Self.TS_Soupravy) then
+      if (Self.PC_1.ActivePage = Self.TS_Trains) then
         TrainTableData.UpdateTable();
       if (Self.PC_1.ActivePage = Self.TS_Zesilovace) then
         ZesTableData.UpdateTable();
@@ -3330,17 +3330,17 @@ begin
     Self.LV_MultiJCDblClick(LV_Blocks);
 end;
 
-procedure TF_Main.LV_SoupravyChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_Main.LV_TrainsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  Self.B_train_delete.Enabled := (Self.SoupravySelectedCount() > 0);
+  Self.B_train_delete.Enabled := (Self.TrainsSelectedCount() > 0);
 
-  if (Self.SoupravySelectedCount() > 1) then
-    Self.B_train_delete.Caption := 'Smazat soupravy'
+  if (Self.TrainsSelectedCount() > 1) then
+    Self.B_train_delete.Caption := 'Smazat vlaky'
   else
-    Self.B_train_delete.Caption := 'Smazat soupravu';
+    Self.B_train_delete.Caption := 'Smazat vlak';
 end;
 
-procedure TF_Main.LV_SoupravyCustomDrawItem(Sender: TCustomListView;
+procedure TF_Main.LV_TrainsCustomDrawItem(Sender: TCustomListView;
   Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
 begin
   if ((Item.Index >= Trains.count) or (Trains[Item.Index] = nil)) then
@@ -3352,7 +3352,7 @@ begin
     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
 end;
 
-procedure TF_Main.LV_SoupravyKeyDown(Sender: TObject; var Key: Word;
+procedure TF_Main.LV_TrainsKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if ((Key = VK_DELETE) and (Self.B_train_delete.Enabled)) then
@@ -3860,11 +3860,10 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TF_Main.SoupravySelectedCount(): Integer;
-var LI: TListItem;
+function TF_Main.TrainsSelectedCount(): Integer;
 begin
   Result := 0;
-  for LI in Self.LV_Soupravy.Items do
+  for var LI: TListItem in Self.LV_Trains.Items do
     if ((LI.Selected) and (LI.Caption <> '')) then
       Inc(Result);
 end;

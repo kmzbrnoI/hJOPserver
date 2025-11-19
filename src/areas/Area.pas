@@ -872,32 +872,32 @@ begin
 
   if ((TPanelConnData(Sender.data).train_new_usek_index = -1) and (TPanelConnData(Sender.data).train_edit = nil)) then
   begin
-    Self.SendLn(Sender, 'SPR-EDIT-ERR;Žádná souprava k editaci / neplatný úsek pro vytvoření soupravy');
+    Self.SendLn(Sender, 'SPR-EDIT-ERR;Žádný vlak k editaci / neplatný úsek pro vytvoření vlaku');
     Exit();
   end;
 
   try
     if (TPanelConnData(Sender.data).train_new_usek_index > -1) then
     begin
-      // nova souprava
+      // novy vlak
       Trains.Add(trainstr, TPanelConnData(Sender.data).train_usek, Self,
         (TPanelConnData(Sender.data).train_new_usek_index), TTrakce.callback(Self.PanelTrainChangeOk, Sender),
         TTrakce.callback(Self.PanelTrainCreateErr, Sender));
     end else begin
 
-      // uprava soupravy
+      // uprava vlaku
       var track: TBlkTrack := (TPanelConnData(Sender.data).train_usek as TBlkTrack);
       var train: TTrain := TPanelConnData(Sender.data).train_edit;
 
       if (not track.IsTrain(TPanelConnData(Sender.data).train_edit.index)) then
       begin
-        Self.SendLn(Sender, 'SPR-EDIT-ERR;Souprava již není na úseku');
+        Self.SendLn(Sender, 'SPR-EDIT-ERR;Vlak již není na úseku');
         Exit();
       end;
 
       if ((train.front <> track) and (train.wantedSpeed > 0)) then
       begin
-        Self.SendLn(Sender, 'SPR-EDIT-ERR;Nelze upravit soupravu, která odjela a je v pohybu');
+        Self.SendLn(Sender, 'SPR-EDIT-ERR;Nelze upravit vlak, který odjel a je v pohybu');
         Exit();
       end;
 
@@ -932,7 +932,7 @@ var
   tcpSender: TIDContext;
 begin
   tcpSender := data;
-  Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Souprava založena, ale nepodařilo se převízt lokomotivy z centrály!');
+  Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Vlak založen, ale nepodařilo se převízt lokomotivy z centrály!');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -958,7 +958,7 @@ begin
   end;
   if (HVDb[lok_addr].state.train > -1) then
   begin
-    Self.SendLn(Sender, 'HV;MOVE;' + IntToStr(lok_addr) + ';ERR;HV přiřazeno soupravě ' +
+    Self.SendLn(Sender, 'HV;MOVE;' + IntToStr(lok_addr) + ';ERR;HV přiřazeno vlaku ' +
       Trains.GetTrainNameByIndex(HVDb[lok_addr].state.train) + '!');
     Exit();
   end;
@@ -1382,7 +1382,7 @@ begin
   if ((Trains[train_index] <> nil) and (Trains[train_index].station = Self)) then
   begin
     Trains.Remove(train_index);
-    PanelServer.SendInfoMsg(Sender, 'Souprava smazána');
+    PanelServer.SendInfoMsg(Sender, 'Vlak smazán');
     Exit();
   end;
 end;
@@ -1690,7 +1690,7 @@ begin
 
       if (not track.IsTrain()) then
       begin
-        Self.SendLn(Sender, 'LOK-REQ;U-ERR;Žádná souprava na bloku');
+        Self.SendLn(Sender, 'LOK-REQ;U-ERR;Žádný vlak na bloku');
         Exit();
       end;
 
@@ -1700,7 +1700,7 @@ begin
         traini := StrToIntDef(str[4], -1);
         if ((traini < -1) or (traini >= track.Trains.Count)) then
         begin
-          Self.SendLn(Sender, 'LOK-REQ;U-ERR;Tato souprava na úseku neexistuje');
+          Self.SendLn(Sender, 'LOK-REQ;U-ERR;Tento vlak na úseku neexistuje');
           Exit();
         end;
       end;
@@ -1709,12 +1709,12 @@ begin
       var line: string := 'LOK-REQ;U-OK;{';
       if (traini = -1) then
       begin
-        // vsechny soupravy na useku
+        // vsechny vlaky na useku
         for var j: Integer := 0 to track.Trains.Count - 1 do
           for var addr: Integer in Trains[track.Trains[j]].HVs do
             line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end else begin
-        // konkretni souprava
+        // konkretni vlak
         for var addr: Integer in Trains[track.Trains[traini]].HVs do
           line := line + '[{' + HVDb[addr].GetPanelLokString() + '}]';
       end;

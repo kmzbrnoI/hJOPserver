@@ -11,7 +11,7 @@ type
     B_InputSim: TButton;
     B_Save: TButton;
     CHB_SimInput: TCheckBox;
-    CHB_SimSoupravaUsek: TCheckBox;
+    CHB_SimTrainOccupy: TCheckBox;
     CHB_JC_Simulator: TCheckBox;
     CHB_Trat_Sim: TCheckBox;
     CHB_SimVyhybky: TCheckBox;
@@ -25,7 +25,7 @@ type
     procedure CHB_JC_SimulatorClick(Sender: TObject);
     procedure CHB_Trat_SimClick(Sender: TObject);
     procedure CHB_SimVyhybkyClick(Sender: TObject);
-    procedure CHB_SimSoupravaUsekClick(Sender: TObject);
+    procedure CHB_SimTrainOccupyClick(Sender: TObject);
     procedure CHB_SimInputClick(Sender: TObject);
     procedure CHB_ZaverClick(Sender: TObject);
     procedure CHB_Show_Block_IdClick(Sender: TObject);
@@ -48,7 +48,7 @@ uses Diagnostics, Simulation, fMain, RCSsc, Logging, ownGuiUtils;
 
 procedure TF_Admin.LoadData(ini: TMemIniFile);
 begin
-  Self.CHB_SimSoupravaUsek.Checked := diag.simSoupravaObsaz;
+  Self.CHB_SimTrainOccupy.Checked := diag.simTrainOccupy;
   Self.CHB_JC_Simulator.Checked := JCSimulator.timer.Enabled;
   Self.CHB_Trat_Sim.Checked := RailwaySimulator.timer.Enabled;
   Self.CHB_SimVyhybky.Checked := TurnoutSimulator.timer.Enabled;
@@ -96,9 +96,9 @@ begin
   diag.simInputs := Self.CHB_SimInput.Checked;
 end;
 
-procedure TF_Admin.CHB_SimSoupravaUsekClick(Sender: TObject);
+procedure TF_Admin.CHB_SimTrainOccupyClick(Sender: TObject);
 begin
-  diag.simSoupravaObsaz := Self.CHB_SimSoupravaUsek.Checked;
+  diag.simTrainOccupy := Self.CHB_SimTrainOccupy.Checked;
 end;
 
 procedure TF_Admin.CHB_SimVyhybkyClick(Sender: TObject);

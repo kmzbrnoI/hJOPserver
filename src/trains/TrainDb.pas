@@ -93,7 +93,7 @@ var
   ini: TMemIniFile;
   sections: TStrings;
 begin
-  Log('Načítám soupravy: ' + filename, llInfo, lsData);
+  Log('Načítám vlaky: ' + filename, llInfo, lsData);
   Self.ffilename := filename;
 
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);
@@ -107,7 +107,7 @@ begin
     for var i := 0 to sections.count - 1 do
       Self.trains[i] := TTrain.Create(ini, sections[i], i);
 
-    Log('Načteno ' + IntToStr(sections.count) + ' souprav', llInfo, lsData);
+    Log('Načteno ' + IntToStr(sections.count) + ' vlaků', llInfo, lsData);
   finally
     FreeAndNil(ini);
     FreeAndNil(sections);
@@ -121,7 +121,7 @@ procedure TTrainDb.SaveData(const filename: string);
 var
   ini: TMemIniFile;
 begin
-  Log('Ukládám soupravy: ' + filename, llInfo, lsData);
+  Log('Ukládám vlaky: ' + filename, llInfo, lsData);
 
   if (FileExists(filename)) then
     DeleteFile(PChar(filename));
@@ -135,7 +135,7 @@ begin
     FreeAndNil(ini);
   end;
 
-  Log('Uloženo souprav: '+IntToStr(Self.count), llInfo, lsData);
+  Log('Uloženo vlaků: '+IntToStr(Self.count), llInfo, lsData);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -295,7 +295,7 @@ begin
   for var i := 0 to _MAX_TRAIN do
     if (Self.trains[i] = nil) then
       Exit(i);
-  raise Exception.Create('Založen maximální počet souprav!');
+  raise Exception.Create('Založen maximální počet vlaků!');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -310,7 +310,7 @@ begin
     except
       on E: Exception do
         PTUtils.PtErrorToJson(json.A['errors'].AddObject, 500,
-          'Chyba pri nacitani soupravy ' + Train.name, E.Message);
+          'Chyba pri nacitani vlaku ' + Train.name, E.Message);
     end;
   end;
 end;

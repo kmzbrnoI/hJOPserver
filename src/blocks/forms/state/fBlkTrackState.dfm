@@ -42,13 +42,13 @@ object F_BlkTrackState: TF_BlkTrackState
   object L_Usek27: TLabel
     Left = 7
     Top = 91
-    Width = 121
+    Width = 93
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'P'#345'edpov'#237'dan'#225' souprava :'
+    Caption = 'P'#345'edpov'#237'dan'#253' vlak:'
   end
   object Label1: TLabel
     Left = 305
@@ -177,7 +177,7 @@ object F_BlkTrackState: TF_BlkTrackState
       'M_Lockout')
     TabOrder = 8
   end
-  object SE_Souprava_Predict: TSpinEdit
+  object SE_Train_Predict: TSpinEdit
     Left = 176
     Top = 88
     Width = 107
@@ -234,7 +234,7 @@ object F_BlkTrackState: TF_BlkTrackState
     Top = 153
     Width = 275
     Height = 142
-    Caption = ' Soupravy '
+    Caption = ' Vlaky '
     TabOrder = 11
     object LB_Trains: TListBox
       Left = 2
@@ -250,7 +250,7 @@ object F_BlkTrackState: TF_BlkTrackState
       Top = 13
       Width = 161
       Height = 25
-      Caption = 'Odstranit soupravu z '#250'seku'
+      Caption = 'Odstranit vlak z '#250'seku'
       TabOrder = 1
       OnClick = B_Train_DeleteClick
     end
@@ -260,14 +260,14 @@ object F_BlkTrackState: TF_BlkTrackState
       Width = 271
       Height = 52
       Align = alBottom
-      Caption = ' P'#345'idat soupravu '
+      Caption = ' P'#345'idat vlak '
       TabOrder = 2
       object Label5: TLabel
         Left = 9
         Top = 17
-        Width = 75
+        Width = 58
         Height = 13
-        Caption = 'Index soupravy:'
+        Caption = 'Index vlaku:'
       end
       object SE_Train_Add_Index: TSpinEdit
         Left = 94

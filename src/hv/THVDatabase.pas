@@ -399,7 +399,7 @@ begin
   if (Self.HVs[addr] = nil) then
     raise ENoLoco.Create('Lokomotiva s touto adresou neexistuje!');
   if (Self.HVs[addr].state.train > -1) then
-    raise ELocoOnTrain.Create('Lokomotiva je na soupravě!');
+    raise ELocoOnTrain.Create('Lokomotiva je na vlaku!');
   if ((Self.HVs[addr].acquired) or (Self.HVs[addr].stolen)) then
     raise ELocoPrevzato.Create('Lokomotiva převzata do řízení počítače');
 

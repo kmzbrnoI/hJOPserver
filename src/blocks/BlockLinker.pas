@@ -470,7 +470,7 @@ begin
     var blk: TBlk := railway.GetTrainTrack(train);
     if (blk = nil) then
       Exit();
-    TBlkTrack(blk).MenuSOUPRAVA(SenderPnl, SenderOR, 0, rights); // it must be 0th train in the track, because it's railway track
+    TBlkTrack(blk).MenuVLAK(SenderPnl, SenderOR, 0, rights); // it must be 0th train in the track, because it's railway track
   end else if (railway.trainPredict <> nil) then begin
     Self.MenuTrainPredicted(SenderPnl, SenderOR);
   end;
@@ -484,7 +484,7 @@ begin
 
   var train: TTrain := TrainDb.Trains[railway.trainPredict.traini];
   var menu := '$' + Self.name + ',';
-  menu := menu + '$Souprava ' + train.name + ',-,';
+  menu := menu + '$Vlak ' + train.name + ',-,';
   menu := menu + train.MenuRailwayPredicted();
 
   PanelServer.menu(SenderPnl, Self, (SenderOR as TArea), menu);

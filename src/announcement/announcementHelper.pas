@@ -22,7 +22,7 @@ type
 
 function CanPlayArrival(Train: TTrain; Area: TArea): TAnnToPlay;
 //vraci jaka prijezdova stanicni hlaseni lze prehrat
-//tato funkce predpoklada, ze jsou spravne vypocitany predpovidani souprav
+//tato funkce predpoklada, ze jsou spravne vypocitany predpovidane vlaky
 //funkce overuje jen pritomnost na usecich, overeni dostupnosti fyzickeho
 //modulu SH ve stanici je potreba provest zvlast
 
@@ -47,8 +47,8 @@ begin
   try
     inRailway := nil;
 
-    //ziskame seznam bloku na kterych je souprava predpovidana v dane stanici
-    //ziskame trat, ve ktere se aktualne souprava nachazi
+    //ziskame seznam bloku na kterych je vlak predpovidany v dane stanici
+    //ziskame trat, ve ktere se aktualne vlak nachazi
     for blk in Blocks do
     begin
       inStation := blk.areas.Contains(Area);
@@ -70,15 +70,15 @@ begin
           inRailway := TBlkRailway(TBlkRT(blk).railway);
     end;
 
-    //zjistime, na ktere stanicni a na ktere tratove koleje je souprava predpovidana
+    //zjistime, na ktere stanicni a na ktere tratove koleje je vlak predpovidany
     Result.railway := nil;
     for blkTrack in blksWithTrain do
     begin
-      //souprava je predpovidana do jine trati nez ve ktere je -> prujezd
+      // vlak je predpovidany do jine trati nez ve ktere je -> prujezd
       if ((blkTrack.typ = btRT) and (TBlkRT(blkTrack).railway <> inRailway) and (TBlkRT(blkTrack).railway <> nil)) then
         Result.railway := TBlkRailway(TBlkRT(blkTrack).railway);
 
-      //souprava je predpovidana na stanicni kolej -> vybrat tu s nejkratsim nazvem
+      // vlak je predpovidan na stanicni kolej -> vybrat tu s nejkratsim nazvem
       if ((blkTrack.spnl.trackName <> '') and ((Result.stationTrack = nil) or
         (Length(blkTrack.spnl.trackName) < Length(Result.stationTrack.spnl.trackName)))) then
         Result.stationTrack := blkTrack;

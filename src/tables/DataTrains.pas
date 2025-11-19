@@ -1,6 +1,6 @@
 ﻿unit DataTrains;
 
-// TTrainTableData - trida starajici se o vyplnovani tabulky souprav
+// TTrainTableData - trida starajici se o vyplnovani tabulky vlaku
 
 interface
 

@@ -172,7 +172,7 @@ begin
   end;
   F_Main.E_dataload_zes.Text := ExtractRelativePath(ExtractFilePath(Application.ExeName), read);
 
-  F_Splash.AddStav('Načítám soupravy...');
+  F_Splash.AddStav('Načítám vlaky...');
   read := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', 'stav\soupravy.ini');
   try
     Trains.LoadData(read);

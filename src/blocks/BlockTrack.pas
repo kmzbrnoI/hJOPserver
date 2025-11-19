@@ -38,29 +38,29 @@ type
     jcEnd: TZaver;
     note, lockout: string;
     signalJCRef: TList<TBlk>; // navestidla, ze kterych je z tohoto bloku postavena JC
-    trainPredict: Integer; // souprava, ktera je na tomto bloku predpovidana
+    trainPredict: Integer; // vlak, ktera je na tomto bloku predpovidany
 
     shortCircuit: TBoosterSignal;
     power: TBoosterSignal;
     DCC: Boolean; // stav DCC na useku: kdyz je kontrola na SPAXu, beru SPAX, jinak se bere stav z centraly
 
     trainMoving: Integer;
-    // index soupravy, ktera se presouva, v ramci lokalniho seznamu souprav na useku; zadny presun = -1
+    // index vlaku, ktery se presouva, v ramci lokalniho seznamu vlaku na useku; zadny presun = -1
 
     slowingReady: Boolean;
-    // pri predani soupravy do tohoto useku z trati, ci z jizdni cesty, je tento flag nastaven na true
-    // to znamena, ze je souprava pripravena ke zpomalovani; navetidlo umozni zpomaleni jen, pokud je tento flag na true
+    // pri predani vlaku do tohoto useku z trati, ci z jizdni cesty, je tento flag nastaven na true
+    // to znamena, ze je vlak pripraven ke zpomalovani; navetidlo umozni zpomaleni jen, pokud je tento flag na true
     // po zpomaleni si navestidlo flag zrusi
 
-    // ztrata soupravy na useku se pozna tak, ze blok po urcity cas obsahuje soupravu, ale neni obsazen
+    // ztrata vlaku na useku se pozna tak, ze blok po urcity cas obsahuje vlak, ale neni obsazen
     trainLost: Boolean;
-    // to je nutne pro predavani souprav mezi bloky v ramci JC (usek se uvolni, ale souprava se jeste nestihne predat
+    // to je nutne pro predavani vlaku mezi bloky v ramci JC (usek se uvolni, ale vlak se jeste nestihne predat
     // pro reseni timeoutu jsou tyto 2 promenne
     trainLostTime: Integer;
     shortCircSenseTime: TDateTime; // cas, kdy ma dojit k detekci zkratu
     currentHoukEv: Integer; // index aktualni houkaci udalosti
     neprofilJCcheck: TList<Integer>; // seznam id jizdnich cest, ktere na usek uvalily podminku neprofiloveho styku
-    trains: TList<Integer>; // seznam souprav na useku ve smeru L --> S
+    trains: TList<Integer>; // seznam vlaku na useku ve smeru L --> S
     psts: TList<TBlk>;
 
     pathCancelZaverTimer: record
@@ -243,7 +243,7 @@ type
     procedure ClearPOdj();
     procedure PropagatePOdjToRailway();
 
-    procedure MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer; rights: TAreaRights);
+    procedure MenuVLAK(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer; rights: TAreaRights);
     procedure SetZaverWithPathTimer(zaver: TZaver);
     procedure PathTimerUpdateZaver(zaver: TZaver);
     function IsPathTimerRunning(): Boolean;
@@ -390,7 +390,7 @@ begin
       if (trainIndex > -1) then
         Self.m_state.trains.Add(trainIndex)
       else
-        Log('Souprava ' + s + ' na bloku ' + Self.name + ' neexistuje, mažu soupravu', llWarning, lsData);
+        Log('Vlak ' + s + ' na bloku ' + Self.name + ' neexistuje, mažu vlak', llWarning, lsData);
     end;
 
     // houkaci udalosti
@@ -621,8 +621,8 @@ begin
       if (trackState = TTrackState.occupied) then
         Self.m_state.occupied := TTrackState.occupied;
 
-  // reseni vypadku soupravy
-  // pad soupravy z bloku az po urcitem case - aby se jizdni ceste nechal cas na zpracovani pohybu soupravy
+  // reseni vypadku vlaku
+  // pad vlaku z bloku az po urcitem case - aby se jizdni ceste nechal cas na zpracovani pohybu vlaku
   if (Self.m_state.trainLost) then
   begin
     if (not Self.IsTrain()) then
@@ -636,9 +636,9 @@ begin
     begin
       Self.m_state.trainLost := false;
 
-      // informace o vypadku soupravy probiha jen ve stanicnich kolejich a v trati
+      // informace o vypadku vlaku probiha jen ve stanicnich kolejich a v trati
       if ((Self.typ = btRT) or (Self.spnl.stationTrack)) then
-        Self.BottomErrorBroadcast('Ztráta soupravy v úseku ' + Self.name, 'TECHNOLOGIE');
+        Self.BottomErrorBroadcast('Ztráta vlaku v úseku ' + Self.name, 'TECHNOLOGIE');
       if (Self.m_state.zaver <> TZaver.no) then
         Self.m_state.zaver := TZaver.nouz;
     end; // if train_vypadek_time > 3
@@ -653,7 +653,7 @@ begin
       Self.m_state.occupiedOld := Self.m_state.occupied;
       JCDb.Cancel(Self);
 
-      // zastavime soupravy na useku
+      // zastavime vlaky na useku
       for var train: Integer in Self.trains do
       begin
         TrainDb.trains[train].speed := 0;
@@ -680,7 +680,7 @@ begin
 
     if (Self.IsTrain()) then
     begin
-      // souprava
+      // vlak
       if ((Self.m_state.occupied = TTrackState.free) and (Self.m_state.occupiedOld = TTrackState.occupied)) then
       begin
         Self.m_state.trainLost := true;
@@ -692,7 +692,7 @@ begin
     Self.Change();
   end;
 
-  // reseni zruseni PRESUN soupravy, ktera jede
+  // reseni zruseni PRESUN vlak, ktera jede
   if ((Self.IsTrainMoving()) and ((not Self.IsTrain(Self.trains[Self.trainMoving])) or
     ((TrainDb.trains[Self.trains[Self.trainMoving]].wantedSpeed > 0) and (not TrainDb.trains[Self.trains[Self.trainMoving]].emergencyStopped)))) then
     Self.trainMoving := -1;
@@ -802,7 +802,7 @@ begin
 
   if ((Train = nil) and (old > -1)) then
   begin
-    // odstranit predvidany odjezd mazane predpovidane soupravy
+    // odstranit predvidany odjezd mazane predpovidane vlaky
     if (TrainDb.trains[old].IsPOdj(Self)) then
       TrainDb.trains[old].RemovePOdj(Self);
   end;
@@ -1008,9 +1008,9 @@ begin
   var csItems := TList<TConfSeqItem>.Create();
   try
     for var blk in Blocks.GetBlkWithTrain(TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]) do
-      csItems.Add(CSItem(blk, 'Smazání soupravy z úseku'));
+      csItems.Add(CSItem(blk, 'Smazání vlaku z úseku'));
     PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrDeleteTrain, SenderOR as TArea,
-      'Smazání soupravy ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name,
+      'Smazání vlaku ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name,
       GetObjsList(Self), csItems, true, false);
   finally
     csItems.Free();
@@ -1043,7 +1043,7 @@ begin
   if (Blocks.GetBlkWithTrain(TrainDb.trains[Self.trains[TPanelConnData(Sender.Data).train_menu_index]]).Count = 1) then
   begin
     TrainDb.trains.Remove(Self.trains[TPanelConnData(Sender.Data).train_menu_index]);
-    PanelServer.SendInfoMsg(Sender, 'Souprava odstraněna');
+    PanelServer.SendInfoMsg(Sender, 'Vlak odstraněn');
   end else begin
     Self.RemoveTrain(Self.trains[TPanelConnData(Sender.Data).train_menu_index]);
   end;
@@ -1056,7 +1056,7 @@ begin
     Exit();
 
   PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrUvolTrain, SenderOR as TArea,
-    'Uvolnění soupravy ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name +
+    'Uvolnění vlaku ' + TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]].name +
     ' z bloku', GetObjsList(Self), nil);
 end;
 
@@ -1070,7 +1070,7 @@ begin
 
   if (train.stolen) then
   begin
-    // Prevzit soupravu, ktera byla ukradena.
+    // Prevzit vlak, ktery byl ukraden.
     Self.MenuXVEZMITrainClick(SenderPnl, SenderOR);
   end else begin
     if (train.IsAnyLokoInRegulator()) then
@@ -1309,7 +1309,7 @@ begin
     begin
       var item: TUPOItem;
       item[0] := GetUPOLine('Pozor !', taCenter, clBlack, clYellow);
-      item[1] := GetUPOLine('Souprava bude uvedena do pohybu!');
+      item[1] := GetUPOLine('Vlak bude uveden do pohybu!');
       item[2] := GetUPOLine(train.name);
       UPO.Add(item);
     end;
@@ -1516,14 +1516,14 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTrack.MenuSOUPRAVA(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer; rights: TAreaRights);
+procedure TBlkTrack.MenuVLAK(SenderPnl: TIdContext; SenderOR: TObject; trainLocalI: Integer; rights: TAreaRights);
 var menu: string;
 begin
   TPanelConnData(SenderPnl.Data).train_menu_index := trainLocalI;
 
   var train: TTrain := TrainDb.trains[Self.trains[trainLocalI]];
   menu := '$' + Self.m_globSettings.name + ',';
-  menu := menu + '$Souprava ' + train.name + ',-,';
+  menu := menu + '$Vlak ' + train.name + ',-,';
   menu := menu + train.Menu(SenderPnl, SenderOR, Self, trainLocalI, rights);
 
   PanelServer.menu(SenderPnl, Self, (SenderOR as TArea), menu);
@@ -1774,11 +1774,11 @@ begin
   begin
     Self.MenuDetClick(SenderPnl, SenderOR, StrToInt(item[4]) - 1, item[5] = '>');
   end else begin
-    // cislo soupravy
+    // cislo vlaku
     for var i: Integer := 0 to Self.trains.Count - 1 do
       if (item = TrainDb.trains[Self.trains[i]].name) then
       begin
-        Self.MenuSOUPRAVA(SenderPnl, SenderOR, i, rights);
+        Self.MenuVLAK(SenderPnl, SenderOR, i, rights);
         break;
       end;
   end;
@@ -1802,7 +1802,7 @@ begin
 
   if ((Self.TrainsFull()) and (blk <> Self)) then
   begin
-    PanelServer.SendInfoMsg(SenderPnl, 'Do úseku se již nevejde další souprava!');
+    PanelServer.SendInfoMsg(SenderPnl, 'Do úseku se již nevejde další vlak!');
     Exit(true);
   end;
 
@@ -1814,7 +1814,7 @@ begin
 
   if (not Self.CanTrainSpeedInsert(trainLocalIndex)) then
   begin
-    PanelServer.SendInfoMsg(SenderPnl, 'Nelze vložit soupravu před jedoucí soupravu!');
+    PanelServer.SendInfoMsg(SenderPnl, 'Nelze vložit vlak před jedoucí vlak!');
     Exit(true);
   end;
 
@@ -1848,7 +1848,7 @@ begin
   if (train.station <> TArea(SenderOR)) then
     train.station := TArea(SenderOR);
 
-  PanelServer.SendInfoMsg(SenderPnl, 'Souprava ' + Train.name + ' přesunuta na ' + Self.m_globSettings.name + '.');
+  PanelServer.SendInfoMsg(SenderPnl, 'Vlak ' + Train.name + ' přesunut na ' + Self.m_globSettings.name + '.');
 
   if (Blocks.GetBlkWithTrain(Train).Count = 1) then
   begin
@@ -1945,7 +1945,7 @@ begin
     if (Cardinal(reqJson.A['trains'].Count) > Self.m_settings.maxTrains) then
     begin
       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Bad Request',
-        'Nelze pridat vice souprav, nez je limit useku');
+        'Nelze pridat vice vlaků, nez je limit useku');
       inherited;
       Exit();
     end;
@@ -1968,7 +1968,7 @@ begin
       end
       else
         PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Bad Request',
-          'Souprava ' + trainStr + ' neexistuje, ignoruji.');
+          'Vlak ' + trainStr + ' neexistuje, ignoruji.');
     end;
   end;
 
@@ -2231,9 +2231,9 @@ end;
 procedure TBlkTrack.AddTrainL(index: Integer);
 begin
   if (Self.TrainsFull()) then
-    raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
+    raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi vlak!');
   if (Self.trains.Contains(index)) then
-    raise EDuplicitTrains.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
+    raise EDuplicitTrains.Create('Nelze pridat jeden vlak na jeden blok vicekrat!');
 
   Self.m_state.trains.Insert(0, index);
   Self.m_state.trainPredict := -1;
@@ -2243,9 +2243,9 @@ end;
 procedure TBlkTrack.AddTrainS(index: Integer);
 begin
   if (Self.TrainsFull()) then
-    raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
+    raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi vlak!');
   if (Self.trains.Contains(index)) then
-    raise EDuplicitTrains.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
+    raise EDuplicitTrains.Create('Nelze pridat jeden vlak na jeden blok vicekrat!');
 
   Self.m_state.trains.Add(index);
   Self.m_state.trainPredict := -1;
@@ -2265,11 +2265,11 @@ end;
 procedure TBlkTrack.AddTrain(localTrainIndex: Integer; Train: Integer);
 begin
   if (Self.TrainsFull()) then
-    raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi souprava!');
+    raise ETrainFull.Create('Do bloku ' + Self.name + ' se uz nevejde dalsi vlak!');
   if (Self.trains.Contains(Train)) then
-    raise EDuplicitTrains.Create('Nelze pridat jednu soupravu na jeden blok vicekrat!');
+    raise EDuplicitTrains.Create('Nelze pridat jeden vlak na jeden blok vicekrat!');
   if (not Self.CanTrainSpeedInsert(localTrainIndex)) then
-    raise ERunningTrain.Create('Nelze vložit soupravu před jedoucí soupravu!');
+    raise ERunningTrain.Create('Nelze vložit vlak před jedoucí vlak!');
 
   Self.m_state.trains.Insert(localTrainIndex, Train);
   Self.m_state.trainPredict := -1;
@@ -2314,7 +2314,7 @@ begin
 
     Self.Change();
   end else begin
-    raise ETrainNotExists.Create('Souprava ' + IntToStr(index) + ' neexistuje na useku ' + Self.name);
+    raise ETrainNotExists.Create('Vlak ' + IntToStr(index) + ' neexistuje na useku ' + Self.name);
   end;
 
   if (not Self.IsTrain()) then
@@ -2353,7 +2353,7 @@ begin
     Exit(Self.trains[0])
   else
     raise EMultipleTrains.Create('Usek ' + Self.name +
-      ' obsahuje vice souprav, nelze se proto ptat jen na jednu soupravu!');
+      ' obsahuje vice vlaku, nelze se proto ptat jen na jeden vlak!');
 end;
 
 function TBlkTrack.GetTrain(): TTrain;
@@ -2372,7 +2372,7 @@ begin
   begin
     var i: Integer := StrToIntDef(params, -1);
     if ((i <> -1) and (i >= 0) and (i < Self.trains.Count)) then
-      Self.MenuSOUPRAVA(SenderPnl, (SenderOR as TArea), i, rights)
+      Self.MenuVLAK(SenderPnl, (SenderOR as TArea), i, rights)
     else
       PanelServer.Menu(SenderPnl, Self, (SenderOR as TArea), Self.ShowPanelMenu(SenderPnl, SenderOR, rights));
   end
@@ -2382,8 +2382,8 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// vraci true prave tehdy, kdyz lze vlozit soupravu na pozici index
-// kontroluje, zda-li se nenazime vlozit pred soupravu v pohybu
+// vraci true prave tehdy, kdyz lze vlozit vlak na pozici index
+// kontroluje, zda-li se nenazime vlozit pred vlak v pohybu
 function TBlkTrack.CanTrainSpeedInsert(index: Integer): Boolean;
 begin
   Result := not ((Self.trains.Count > 0) and (((index = 0) and (TrainDb.trains[Self.trains[index]].wantedSpeed > 0) and
@@ -2399,7 +2399,7 @@ var Train: Integer;
   was: Boolean;
 begin
   if ((not Self.trains.Contains(trainId)) and (trainId <> Self.m_state.trainPredict)) then
-    raise Exception.Create('Souprava již není na úseku!');
+    raise Exception.Create('Vlak již není na úseku!');
 
   was := TrainDb.trains[trainId].IsPOdj(Self);
 
@@ -2411,7 +2411,7 @@ begin
 
   if ((was) and (not TrainDb.trains[trainId].IsPOdj(Self))) then
   begin
-    // PODJ bylo odstraneno -> rozjet soupravu pred navestidlem i kdyz neni na zastavovaci udalosti
+    // PODJ bylo odstraneno -> rozjet vlak pred navestidlem i kdyz neni na zastavovaci udalosti
     // aktualizaci rychlosti pro vsechny signalJCRef bychom nemeli nic pokazit
     for var signal: TBlk in Self.signalJCRef do
       TBlkSignal(signal).UpdateTrainSpeed(true);
@@ -2458,7 +2458,7 @@ begin
       begin
         train.RemovePOdj(Self);
 
-        // tvrda aktualizace rychlosti soupravy
+        // tvrda aktualizace rychlosti vlaku
         if ((Train = Self.trainL) or (Train = Self.trainSudy)) then
         begin
           for var signal: TBlk in Self.signalJCRef do
@@ -2647,7 +2647,7 @@ begin
   Result := Result + ownConvert.BoolToStr10(Self.NUZ) + ';' + IntToStr(Integer(Self.jcEnd)) + ';' +
     ownConvert.ColorToStr(nebarVetve) + ';';
 
-  // seznam souprav
+  // seznam vlaku
   Result := Result + '{';
   for var i: Integer := 0 to Self.trains.Count - 1 do
   begin
@@ -2688,7 +2688,7 @@ begin
     Result := Result + ')';
   end;
 
-  // predpovidana souprava
+  // predpovidany vlak
   if (Self.trainPredict <> nil) then
   begin
     // predvidany odjezd

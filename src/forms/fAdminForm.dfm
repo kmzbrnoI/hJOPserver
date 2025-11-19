@@ -54,7 +54,7 @@ object F_Admin: TF_Admin
     TabOrder = 3
     OnClick = CHB_SimInputClick
   end
-  object CHB_SimSoupravaUsek: TCheckBox
+  object CHB_SimTrainOccupy: TCheckBox
     Left = 8
     Top = 56
     Width = 201
@@ -63,9 +63,9 @@ object F_Admin: TF_Admin
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Simulovat obsazen'#237' '#250'seku soupravou'
+    Caption = 'Simulovat obsazen'#237' '#250'seku vlakem'
     TabOrder = 4
-    OnClick = CHB_SimSoupravaUsekClick
+    OnClick = CHB_SimTrainOccupyClick
   end
   object CHB_JC_Simulator: TCheckBox
     Left = 8

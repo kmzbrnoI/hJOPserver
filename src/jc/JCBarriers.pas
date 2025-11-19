@@ -171,7 +171,7 @@ type
 
   TJCBarTrackTrain = class(TJCBlockBarrier)
   private
-    const MSG: string = 'Úsek obsahuje soupravu';
+    const MSG: string = 'Úsek obsahuje vlak';
   public
     function ToUPO(): TUPOItem; override;
     function ToConfSeq(): TConfSeqItem; override;
@@ -1108,7 +1108,7 @@ begin
 
   Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine('Čelo vlaku je na jiném úseku');
-  Result[2] := GetUPOLine('Souprava ' + trains[Self.mTrainI].name);
+  Result[2] := GetUPOLine('Vlak ' + trains[Self.mTrainI].name);
 end;
 
 function TJCBarTrainNotFront.IsWarning(): Boolean;
@@ -1136,7 +1136,7 @@ begin
 
   Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine('Ne všechna HV v ručním řízení');
-  Result[2] := GetUPOLine('Souprava ' + trains[Self.mTrainI].name);
+  Result[2] := GetUPOLine('Vlak ' + trains[Self.mTrainI].name);
 end;
 
 function TJCBarHVNotAllManual.IsWarning(): Boolean;
@@ -1156,8 +1156,8 @@ begin
     raise EJCBarrier.Create('Train does not exist');
 
   Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
-  Result[1] := GetUPOLine('Jízda proti směru soupravy');
-  Result[2] := GetUPOLine('Souprava ' + trains[Self.mTrainI].name);
+  Result[1] := GetUPOLine('Jízda proti směru vlaku');
+  Result[2] := GetUPOLine('Vlak ' + trains[Self.mTrainI].name);
 end;
 
 function TJCBarTrainWrongDir.IsWarning(): Boolean;

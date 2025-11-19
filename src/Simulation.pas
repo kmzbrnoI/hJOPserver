@@ -175,7 +175,7 @@ begin
   try
     railwaySettings := railway.GetSettings();
 
-    // mazani soupravy vzadu
+    // mazani vlaku vzadu
     for var i := 0 to railwaySettings.trackIds.Count - 1 do
     begin
       var rt := TBlkRT(Blocks.GetBlkByID(railwaySettings.trackIds[i]));
@@ -187,7 +187,7 @@ begin
       end;
     end;
 
-    // predavani soupravy dopredu
+    // predavani vlaku dopredu
     for var i := 0 to railwaySettings.trackIds.Count - 1 do
     begin
       var rt := TBlkRT(Blocks.GetBlkByID(railwaySettings.trackIds[i]));
@@ -278,7 +278,7 @@ begin
         RCSs.SetInput(TBlkTurnout(Blk).rcsInPlus, 1);
       if ((Blk.typ = btCrossing) and (TBlkCrossing(Blk).GetSettings().RCSInputs.open.enabled)) then
         RCSs.SetInput(TBlkCrossing(Blk).GetSettings().RCSInputs.open.addr, 1);
-      if ((diag.simSoupravaObsaz) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain()) and
+      if ((diag.simTrainOccupy) and ((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain()) and
         ((Blk as TBlkTrack).occupAvailable)) then
         RCSs.SetInput(TBlkTrack(Blk).GetSettings().RCSAddrs[0], 1);
     except

@@ -20,7 +20,7 @@ type
     M_Note: TMemo;
     Label6: TLabel;
     M_Lockout: TMemo;
-    SE_Souprava_Predict: TSpinEdit;
+    SE_Train_Predict: TSpinEdit;
     SE_NavJCRef: TSpinEdit;
     Label2: TLabel;
     Label7: TLabel;
@@ -76,9 +76,9 @@ begin
     Self.LB_Trains.Items.Add(IntToStr(train));
 
   if (track.trainPredict = nil) then
-    Self.SE_Souprava_Predict.Value := -1
+    Self.SE_Train_Predict.Value := -1
   else
-    Self.SE_Souprava_Predict.Value := Self.track.trainPredict.index;
+    Self.SE_Train_Predict.Value := Self.track.trainPredict.index;
   Self.SE_NavJCRef.Value := Self.track.signalJCRef.Count;
   Self.CB_KonecVC.ItemIndex := Integer(Self.track.jcEnd);
 
@@ -98,8 +98,8 @@ begin
   Self.track.Zaver := TZaver(Self.CB_Zaver.ItemIndex);
   Self.track.NUZ := Self.CHB_NUZ.Checked;
   Self.track.jcEnd := TZaver(Self.CB_KonecVC.ItemIndex);
-  if (SE_Souprava_Predict.Value > -1) then
-    Self.track.trainPredict := trains[Self.SE_Souprava_Predict.Value]
+  if (Self.SE_Train_Predict.Value > -1) then
+    Self.track.trainPredict := trains[Self.SE_Train_Predict.Value]
   else
     Self.track.trainPredict := nil;
   if (Self.track.signalJCRef.Count = 0) then

@@ -105,7 +105,7 @@ type
     // resetuje stav tratoveho useku; tratovy usek zapomene, ze je v nejake trati a stane se neutralnim tratovym usekem, ktery nic nevi
     procedure ResetTUs();
 
-    // vrati, jestli jsou vsechny tratove useky pripraveny pro vjezd soupravy, pouziva se pri zjistovani toho, jestli je mozne obratit smer trati
+    // vrati, jestli jsou vsechny tratove useky pripraveny pro vjezd vlaku, pouziva se pri zjistovani toho, jestli je mozne obratit smer trati
     function GetReady(): Boolean;
     function GetTrainIndex(Train: TTrain): Integer;
     function TrainTUsCount(Train: TTrain): Integer;
@@ -156,7 +156,7 @@ type
     function SameUserBothLinkers(): Boolean; // vraci true prave tehdy, kdyz obe uvazky kontrlu stejny uzivatel
     // kdyz je true, do trati neni potreba zadat
 
-    function ChangesTrainDir(): Boolean; // vraci true prave tehdy, kdyz se v trati meni smer soupravy
+    function ChangesTrainDir(): Boolean; // vraci true prave tehdy, kdyz se v trati meni smer vlaku
     function GetTrainTrack(Train: TTrain): TBlk;
     function GetLastTrack(smer: TRailwayDirection): TBlk; overload;
     function HasAutoblokSignal(blk: TBlk): Boolean;
@@ -575,7 +575,7 @@ begin
   if (not Train.IsTimeDefined()) then
     Train.time := timeHelper.hJOPnow();
 
-  Self.Log('Přidána souprava ' + Train.Train.name, llInfo);
+  Self.Log('Přidán vlak ' + Train.Train.name, llInfo);
 
   Self.Change();
 end;
@@ -594,7 +594,7 @@ begin
   if (Self.IsTrain(Train)) then
   begin
     Self.m_state.trains.Delete(Self.GetTrainIndex(Train));
-    Self.Log('Smazána souprava ' + Train.name, llInfo);
+    Self.Log('Smazán vlak ' + Train.name, llInfo);
     toChange := true;
   end;
 
@@ -641,7 +641,7 @@ begin
       end; // BtoA
   end; // case
 
-  Self.Log('Souprava ' + Train.name + ' : stanice změněna na ' + (Train.station as TArea).name, llInfo);
+  Self.Log('Vlak ' + Train.name + ' : stanice změněna na ' + (Train.station as TArea).name, llInfo);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -877,7 +877,7 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-// aktualizace predpovidane soupravy na posledni usek trati
+// aktualizace predpovidanych vlaku na posledni usek trati
 // volano pri uvolneni posledniho useku trati, nebo RBP
 
 procedure TBlkRailway.UpdateTrainPredict(call_prediction: Boolean = true);
@@ -1169,7 +1169,7 @@ begin
   fg := TJopColor.white;
   bg := TJopColor.black;
 
-  // Pozor, souprava muze byt ve vice usecich a mit poruchu BP jen v jednom z nich
+  // Pozor, vlak muze byt ve vice usecich a mit poruchu BP jen v jednom z nich
   var bpError := false;
   for var blkRT: TBlkRT in TBlkRailway(railway).tracks do
     if (blkRT.Train = Self.Train) and (blkRT.bpError) then

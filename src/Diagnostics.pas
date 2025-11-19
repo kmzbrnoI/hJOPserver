@@ -8,7 +8,7 @@ type
   TDiagnostics = class
   public
     showZaver: Boolean;
-    simSoupravaObsaz: Boolean;
+    simTrainOccupy: Boolean;
     simInputs: Boolean;
     showBlockId: Boolean;
 
@@ -30,7 +30,7 @@ constructor TDiagnostics.Create();
 begin
   inherited;
   Self.showZaver := false;
-  Self.simSoupravaObsaz := false;
+  Self.simTrainOccupy := false;
   Self.simInputs := false;
   Self.showBlockId := false;
 end;
@@ -38,7 +38,7 @@ end;
 procedure TDiagnostics.LoadData(ini: TMemIniFile; section: string);
 begin
   Self.showZaver := ini.ReadBool(section, 'showZaver', false);
-  Self.simSoupravaObsaz := ini.ReadBool(section, 'SoupravaUsekSim', false);
+  Self.simTrainOccupy := ini.ReadBool(section, 'SoupravaUsekSim', false);
   Self.simInputs := ini.ReadBool(section, 'InputSim', false);
   Self.showBlockId := ini.ReadBool(section, 'showBlockId', false);
 
@@ -51,8 +51,8 @@ procedure TDiagnostics.SaveData(ini: TMemIniFile; section: string);
 begin
   if (Self.showZaver) then
     ini.WriteBool(section, 'showZaver', Self.showZaver);
-  if (Self.simSoupravaObsaz) then
-    ini.WriteBool('AdminData', 'SoupravaUsekSim', Self.simSoupravaObsaz);
+  if (Self.simTrainOccupy) then
+    ini.WriteBool('AdminData', 'SoupravaUsekSim', Self.simTrainOccupy);
   if (JCSimulator.timer.Enabled) then
     ini.WriteBool(section, 'JCsim', JCSimulator.timer.Enabled);
   if (RailwaySimulator.timer.Enabled) then

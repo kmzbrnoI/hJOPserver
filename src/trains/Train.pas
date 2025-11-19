@@ -18,7 +18,7 @@ type
   ENotOverriden = class(Exception);
   ENotStoppped = class(Exception);
 
-  TTrainHVs = TList<Integer>; // seznam adres hnacich vozidel na souprave
+  TTrainHVs = TList<Integer>; // seznam adres hnacich vozidel na vlaku
 
   TTrainAcquire = record
     ok, err: TCb;
@@ -116,7 +116,7 @@ type
 
      procedure SaveToFile(ini: TMemIniFile; const section: string);
 
-     function GetPanelString(): string;   // vraci string, kterym je definovana souprava, do panelu
+     function GetPanelString(): string;   // vraci string, kterym je definovany vlak, do panelu
      procedure UpdateTrainFromPanel(train: TStrings; usek: TObject; area: TObject; ok: TCb; err: TCb);
      procedure SetSpeedDirection(speed: Cardinal; dir: THVSite);
      procedure Acquire(ok: TCb; err: TCb);
@@ -197,7 +197,7 @@ type
      property emergencyStopped: Boolean read _emergencyStopped;
      property traveled: Real read _traveled;
 
-     // uvolni stara hnaci vozidla ze soupravy (pri zmene HV na souprave)
+     // uvolni stara hnaci vozidla z vlaku (pri zmene HV na vlaku)
      class procedure UvolV(old: TTrainHVs; new: TTrainHVs);
 
   end;
@@ -290,7 +290,7 @@ begin
   while (strings.Count > _MAX_TRAIN_HV) do
     strings.Delete(_MAX_TRAIN_HV);
 
-  // HV se nacitaji takto prapodivne pro osetreni pripadu, kdy u soupravy je uvedene HV, ktere neexistuje
+  // HV se nacitaji takto prapodivne pro osetreni pripadu, kdy u vlaku je uvedene HV, ktere neexistuje
   Self.data.HVs.Clear();
   try
     for var s in strings do
@@ -358,7 +358,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// vraci string, kterym je definovana souprava, do panelu
+// vraci string, kterym je definovany vlak, do panelu
 function TTrain.GetPanelString(): string;
 begin
   Result := Self.data.name + ';' + IntToStr(Self.data.carsCount) + ';{' + Self.data.note + '};';
@@ -450,9 +450,9 @@ procedure TTrain.UpdateTrainFromJson(train: TJsonObject; ok: TCb; err: TCb);
 var acq: ^TTrainAcquire;
 begin
   if (Self.acquiring) then
-    raise Exception.Create('Přebírání lokomotiv soupravy již probíhá!');
+    raise Exception.Create('Přebírání lokomotiv vlaku již probíhá!');
 
-  // zkontrolujeme, jestli nejaka souprava s timto cislem uz nahodou neexistuje
+  // zkontrolujeme, jestli nejaky vlak s timto cislem uz nahodou neexistuje
   for var i := 0 to _MAX_TRAIN-1 do
   begin
     if (Trains[i] = nil) then continue;
@@ -460,8 +460,8 @@ begin
     if ((Trains[i].name = train['name']) and (Trains[i] <> Self)) then
     begin
       if (Trains[i].station <> nil) then
-        raise Exception.Create('Souprava '+Trains[i].name+' již existuje v OŘ '+(Trains[i].station as TArea).name);
-      raise Exception.Create('Souprava '+Trains[i].name+' již existuje');
+        raise Exception.Create('Vlak '+Trains[i].name+' již existuje v OŘ '+(Trains[i].station as TArea).name);
+      raise Exception.Create('Vlak '+Trains[i].name+' již existuje');
     end;
   end;
 
@@ -469,7 +469,7 @@ begin
    StrToInt(train['name']);
   except
     on E: EConvertError do
-      raise Exception.Create('Číslo soupravy není validní číslo!');
+      raise Exception.Create('Číslo vlaku není validní číslo!');
   end;
 
   Self.changed := true;
@@ -516,7 +516,7 @@ begin
   end;
 
   if (train.O['hvs'].Count > _MAX_TRAIN_HV) then
-    raise Exception.Create('Překročen maximální počet hnacích vozidel na soupravě');
+    raise Exception.Create('Překročen maximální počet hnacích vozidel na vlaku');
 
   var new := TList<Integer>.Create();
   try
@@ -529,7 +529,7 @@ begin
         raise Exception.Create('Loko '+IntToStr(addr)+' neexistuje na serveru!');
 
       if ((HVDb[addr].train > -1) and (HVDb[addr].train <> Self.index)) then
-        raise Exception.Create('Loko '+IntToStr(addr)+' již přiřazena soupravě '+Trains.GetTrainNameByIndex(HVDb[addr].train));
+        raise Exception.Create('Loko '+IntToStr(addr)+' již přiřazena vlaku '+Trains.GetTrainNameByIndex(HVDb[addr].train));
 
       if (new.Contains(addr)) then
         raise Exception.Create('Duplicitní loko!');
@@ -791,7 +791,7 @@ procedure TTrain.HVComErr(Sender: TObject; Data: Pointer);
 begin
   trakce.emergency := True;
   if (Self.data.area <> nil) then
-   (Self.data.area as TArea).BlkWriteError(nil, 'Souprava '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
+   (Self.data.area as TArea).BlkWriteError(nil, 'Vlak '+Self.name+' nekomunikuje s centrálou', 'CENTRÁLA');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -897,7 +897,7 @@ begin
     end;
   end;
 
-  // zmenit orientaci sipky soupravy
+  // zmenit orientaci sipky vlaku
   var tmp := Self.data.dir_L;
   Self.data.dir_L := Self.data.dir_S;
   Self.data.dir_S := tmp;
@@ -954,11 +954,11 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-// V pripade, ze vsechna hnaci vozidla soupravy otocim do opacneho smeru,
-// nez je smer soupravy, otoci se i smer soupravy. To umoznuje otoceni smeru
-// soupravy z Rocomaus.
+// V pripade, ze vsechna hnaci vozidla vlaku otocim do opacneho smeru,
+// nez je smer vlaku, otoci se i smer vlaku. To umoznuje otoceni smeru
+// vlaku z Rocomaus.
 // Tato zmena je umoznena jen tehdy pokud nema sipka jednoznacne urceny smer
-// a pokud souprava stoji.
+// a pokud vlak stoji.
 
 procedure TTrain.LokDirChanged();
 begin
@@ -973,7 +973,7 @@ begin
     if (dir <> HVDb[Self.HVs[i]].stACurrentDirection) then
       Exit();
 
-  // vsechna hv nastavena do opacneho smeru -> zmenit smer soupravy
+  // vsechna hv nastavena do opacneho smeru -> zmenit smer vlaku
   Self.direction := THVSite(dir);
 end;
 
@@ -1506,7 +1506,7 @@ end;
 
 procedure TTrain.Log(msg: string; level: TLogLevel; source: TLogSource);
 begin
-  Logging.log('Souprava ' + Self.name + ': ' + msg, level, source);
+  Logging.log('Vlk ' + Self.name + ': ' + msg, level, source);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1528,7 +1528,7 @@ function TTrain.InfoWindowItems(): TList<TConfSeqItem>;
 begin
   Result := TList<TConfSeqItem>.Create();
   try
-    Result.Add(CSItem('Souprava '+Self.name));
+    Result.Add(CSItem('Vlak '+Self.name));
     Result.Add(CSItem('Typ: '+Self.data.typ));
     Result.Add(CSItem('Délka: '+IntToStr(Self.data.length)+' cm'));
     Result.Add(CSItem('Počet vozů: '+IntToStr(Self.data.carsCount)));

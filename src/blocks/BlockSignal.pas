@@ -41,11 +41,11 @@ type
 
   ENoEvents = class(Exception);
 
-  // zastavovaci a zpomalovaci udalost pro jeden typ soupravy a jeden rozsah delek soupravy
+  // zastavovaci a zpomalovaci udalost pro jeden typ vlaku a jeden rozsah delek vlaku
   TBlkSignalTrainEvent = class
     train_type_re: string;
 
-    length: record // tato udalost je brana v potaz, pokud ma souprava delku > min && < max
+    length: record // tato udalost je brana v potaz, pokud ma vlak delku > min && < max
       min: Integer;
       max: Integer;
     end;
@@ -75,7 +75,7 @@ type
     outputType: TBlkSignalOutputType;
     events: TObjectList<TBlkSignalTrainEvent>;
     // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
-    // program si pamatuje vice zastavovacich a zpomalovaich udalosti pro ruzne typy a delky soupravy
+    // program si pamatuje vice zastavovacich a zpomalovaich udalosti pro ruzne typy a delky vlaku
     fallDelay: Integer; // zpozdeni padu navestidla v sekundach (standartne 0)
     changeTime: TTime; // cas zmeny navesti
     locked: Boolean; // jestli je navestidlo trvale zamknuto na STUJ (hodi se napr. u navestidel a konci kusych koleji)
@@ -1415,7 +1415,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// aktualizace rychlosti souprav před návěstidlem
+// aktualizace rychlosti vlaku před návěstidlem
 // pozor na padání !
 // force nucene zastavi vlak, resp. nastavi jeho rychlost
 // metoda je volana s force v pripade, kdy dochazi k prime zmene navesti od uzivatele (STUJ, DN, RC)
@@ -1439,7 +1439,7 @@ begin
     if ((railway.direction = TRailwayDirection.BtoA) and (Self = railway.signalB)) then
       Exit();
 
-    // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontextu zmeny smeru soupravy)
+    // Vsechna navestidla autobloku proti smeru trati se ignoruji (zejmena v kontextu zmeny smeru vlaku)
     if ((Self.inRailway <> rwNone) and (TBlkRailway(TBlkRT(track).railway).direction = TRailwayDirection.AtoB) and
       (Self.direction = THVSite.even)) then
       Exit();
@@ -1448,7 +1448,7 @@ begin
       Exit();
   end;
 
-  // zjisteni aktualni udalosti podle typu a delky soupravy
+  // zjisteni aktualni udalosti podle typu a delky vlaku
   var i: Integer := Self.CurrentEventIndex();
   var signalEv: TBlkSignalTrainEvent := Self.m_settings.events[i];
 
@@ -1500,7 +1500,7 @@ begin
   /// ////////////////////////////////////////////////
   // ZASTAVOVANI, resp. nastavovani rychlosti prislusne JC
 
-  // pokud na useku prede mnou neni souprava, koncim funkci
+  // pokud na useku prede mnou neni vlak, koncim funkci
   if (not track.IsTrain()) then
   begin
     // tady musi dojit ke zruseni registrace eventu, kdyby nedoslo, muze se stat,
@@ -1512,7 +1512,7 @@ begin
     Exit();
   end;
 
-  // pokud souprava svym predkem neni na bloku pred navestidlem, koncim funkci
+  // pokud vlak svym predkem neni na bloku pred navestidlem, koncim funkci
   var train: TTrain := Self.GetTrain(track);
   if (train.front <> track) then
   begin
@@ -1533,11 +1533,11 @@ begin
 
     if ((Train.IsPOdj(track)) and (Train.direction = Self.direction)) then
     begin
-      // predvidany odjezd neuplynul -> zastavit soupravu
+      // predvidany odjezd neuplynul -> zastavit vlak
       if (Train.wantedSpeed <> 0) then
         Train.speed := 0;
 
-      // souprava je na zastavovaci udalosti -> zacit pocitat cas
+      // vlak je na zastavovaci udalosti -> zacit pocitat cas
       if (not Train.GetPOdj(track).origin_set) then
       begin
         Train.GetPOdj(track).RecordOriginNow();
@@ -1555,7 +1555,7 @@ begin
       begin
         // je postaveno -> zkontrolujeme, jestli budeme na konci zastavovat
         if ((Train.wantedSpeed > 0) and (Train.direction <> Self.direction)) then
-          Exit(); // pokud jede souprava opacnym smerem, kaslu na ni
+          Exit(); // pokud jede vlak opacnym smerem, kaslu na ni
 
         // Aby se nezrychlilo napr. pri uvolneni predchoziho useku v trati
         track.slowingReady := false;
@@ -1643,16 +1643,16 @@ begin
   begin
     var train: TTrain := Self.GetTrain(track);
 
-    // hledame takovy event, ktery odpovida nasi souprave
+    // hledame takovy event, ktery odpovida nasemu vlaku
     if (Self.m_settings.events.Count >= 2) then
       for var i: Integer := 1 to Self.m_settings.events.Count - 1 do
         if (Self.m_settings.events[i].Match(train)) then
           Exit(i);
 
-    // pokud jsme event odpovidajici parametrum soupravy nenasli, vyhodnocujeme globalni event
+    // pokud jsme event odpovidajici parametrum vlaku nenasli, vyhodnocujeme globalni event
     Result := 0;
   end else begin
-    // na bloku neni zadna souprava -> muzeme chtit zpomaleni na jinem bloku, musime se divat na soupravu na tomto bloku
+    // na bloku neni zadny vlak -> muzeme chtit zpomaleni na jinem bloku, musime se divat na vlak na tomto bloku
 
     if (Self.m_settings.events.Count >= 2) then
     begin

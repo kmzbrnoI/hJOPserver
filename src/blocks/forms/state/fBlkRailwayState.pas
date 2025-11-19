@@ -13,7 +13,7 @@ type
     CB_Direction: TComboBox;
     B_Apply: TButton;
     B_Refresh: TButton;
-    SE_Souprava: TSpinEdit;
+    SE_Train: TSpinEdit;
     Label1: TLabel;
     E_Trains: TEdit;
     B_BP_Enable: TButton;
@@ -123,9 +123,9 @@ begin
   Self.CHB_Request.Checked := railway.request;
 
   if (railway.trainPredict <> nil) then
-    Self.SE_Souprava.Value := railway.trainPredict.traini
+    Self.SE_Train.Value := railway.trainPredict.traini
   else
-    Self.SE_Souprava.Value := -1;
+    Self.SE_Train.Value := -1;
 
   Self.E_Trains.Text := '';
   for train in railway.state.Trains do
@@ -145,10 +145,10 @@ begin
   Self.railway.direction := TRailwayDirection(Self.CB_Direction.ItemIndex - 1);
   Self.railway.request := Self.CHB_Request.Checked;
 
-  if (Self.SE_Souprava.Value = -1) then
+  if (Self.SE_Train.Value = -1) then
     Self.railway.trainPredict := nil
   else
-    Self.railway.trainPredict := TBlkRailwayTrain.Create(Self.SE_Souprava.Value);
+    Self.railway.trainPredict := TBlkRailwayTrain.Create(Self.SE_Train.Value);
 end;
 
 end.// unit

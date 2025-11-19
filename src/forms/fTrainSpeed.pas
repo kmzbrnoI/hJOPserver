@@ -67,14 +67,14 @@ end;
 procedure TF_TrainSpeed.MI_HelpClick(Sender: TObject);
 begin
   StrMessageBox('Každý øádek obsahuje rychlost v km/h a kritéria zadávané jako regulární výrazy.'+#13#10+
-    'Øádky se zpracovávají postupnì odshora dolù. Pokud souprava vyhoví kritériím v øádku, je jí nastavena rychlost v onom øádku.'+#13#10+
+    'Øádky se zpracovávají postupnì odshora dolù. Pokud vlak vyhoví kritériím v øádku, je jí nastavena rychlost v onom øádku.'+#13#10+
     'Kritéria jsou tvoøena typem vlaku a tøídou pøechodnosti hnacích vozidel. Všechna hnací vozidla musí vyhovìt regulárnímu výrazu tøídy pøechodnosti.'+#13#10+
     'Pøíklad tabulky:'+#13#10+
     '90 Sc|Ec|Ic|Ex|R .*'+#13#10+
     '60 Pn|Vn .*'+#13#10+
     '70 .* .*'+#13#10+
-    'Tento pøíklad zajistí, že soupravy typu Sc, Ec, Ic, Ec a R pojedou rychlosti 90 km/h, soupravy typu Pn a Vn 60 km/h a všechny ostatní soupravy rychlostí 70 km/h.'+#13#10+
-    'Vždy je tøeba uvést poslední øádek, kterému vyhoví všechny soupravy.'+#13#10+
+    'Tento pøíklad zajistí, že vlaky typu Sc, Ec, Ic, Ec a R pojedou rychlosti 90 km/h, vlaky typu Pn a Vn 60 km/h a všechny ostatní vlaky rychlostí 70 km/h.'+#13#10+
+    'Vždy je tøeba uvést poslední øádek, kterému vyhoví všechny vlaky.'+#13#10+
     'Úprava øádku se provádí dvojklikem.'+#13#10+
     'Pokud je rychlostní tabulka v jízdní cestì pro další návìst povolující jízdu prázdná, pøebírají se rychlosti pro další návìst nepovolující jízdu.'+#13#10+
     'Pokud je rychlostní tabulka v trati pro sudý smìr prázdná, pøebírají se rychlosti pro lichý smìr.',
