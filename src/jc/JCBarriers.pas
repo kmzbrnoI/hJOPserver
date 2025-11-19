@@ -1070,6 +1070,9 @@ end;
 
 class function TJCBarHVManual.ToUPO(addr: Integer): TUPOItem;
 begin
+  if (HVDb[addr] = nil) then
+    raise EJCBarrier.Create('Engine does not exist');
+
   Result[0] := GetUPOLine('Hnací vozidlo v ručním řízení', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine(IntToStr(addr) + ' : ' + HVDb[addr].name);
   Result[2] := GetUPOLine('Řídí: '+HVDb[addr].DriverFullNames());
@@ -1100,6 +1103,9 @@ end;
 
 function TJCBarTrainNotFront.ToUPO(): TUPOItem;
 begin
+  if (trains[Self.mTrainI] = nil) then
+    raise EJCBarrier.Create('Train does not exist');
+
   Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine('Čelo vlaku je na jiném úseku');
   Result[2] := GetUPOLine('Souprava ' + trains[Self.mTrainI].name);
@@ -1125,6 +1131,9 @@ end;
 
 function TJCBarHVNotAllManual.ToUPO(): TUPOItem;
 begin
+  if (trains[Self.mTrainI] = nil) then
+    raise EJCBarrier.Create('Train does not exist');
+
   Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine('Ne všechna HV v ručním řízení');
   Result[2] := GetUPOLine('Souprava ' + trains[Self.mTrainI].name);
@@ -1143,6 +1152,9 @@ end;
 
 function TJCBarTrainWrongDir.ToUPO(): TUPOItem;
 begin
+  if (trains[Self.mTrainI] = nil) then
+    raise EJCBarrier.Create('Train does not exist');
+
   Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine('Jízda proti směru soupravy');
   Result[2] := GetUPOLine('Souprava ' + trains[Self.mTrainI].name);
