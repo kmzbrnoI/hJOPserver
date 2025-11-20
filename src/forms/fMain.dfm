@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Trains
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3716,16 +3716,16 @@ object F_Main: TF_Main
           Tag = 5
           Left = 40
           Top = 109
-          Width = 68
+          Width = 79
           Height = 13
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
-          Caption = 'Loko p'#345'evzaty'
+          Caption = 'Vozidla p'#345'evzata'
         end
         object G_locos_acquired: TGauge
-          Left = 114
+          Left = 124
           Top = 109
           Width = 67
           Height = 14
