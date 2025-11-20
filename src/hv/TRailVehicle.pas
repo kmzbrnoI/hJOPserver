@@ -13,21 +13,21 @@
   Vozidlo muze byt ve dvou rezimech:
   a) rizeni automatem
   b) rucni rizeni
-  Rezim rizeni je jeden jediny pro cele loko. Vozidlo v rucnim rezimu ma rucni
+  Rezim rizeni je jeden jediny pro cele vozidlo. Vozidlo v rucnim rezimu ma rucni
   POM, vozidlo v automatu ma POM automatu.
 
   Jak se ziskava rizeni vozidla do klienta? Skrze autorizacni token.
   Jak to funguje: technologie si nemuze dovolit vydat jen tak nekomu rizeni
-  loko. Kontrolu nad lokomotivami v kazde stanici ma jeji dispecer, ktery
+  vozidla. Kontrolu nad vozidly v kazde stanici ma jeji vypravci, ktery
   dane vozidlo muze pridelit strojvedoucim. Strojvedouci se tedy pripoji k
-  serveru, autorizuje a pozada prislsneho dispecera (panel) o loko. Dispecer
+  serveru, autorizuje a pozada prislsneho dispecera (panel) o vozidlo. Dispecer
   mu prideli vozidlo a strojvedouci ji muze ridit.
 
   NEBO: dispecer si vyzada od serveru tzv autorizacni token, coz je unikatni
   string vytvoreny pro konkretni vozidlo v konkretni cas. Tento string je
   odeslan dispecerovi. Tento token opravnuje k rizeni vozidla bez zadosti
   dispecera. Pokud ho tedy naprikald dispecer vyda strojvedoucimu, strojvedouci
-  na jeho zaklade muze prevzit rizeni loko. Token patri vzdy ke konkretnimu
+  na jeho zaklade muze prevzit rizeni vozidla. Token patri vzdy ke konkretnimu
   vozidlu a ma omezenou casovou platnost na nekolik minut.
 
   Pozn.
@@ -40,8 +40,8 @@
   odeslana do OR2, OR3, OR4, OR5 a regulatoru na serveru, nikoliv
   vsak do OR1 (tomu prijde napriklad OK, ci error callback)
 
-  Prebirani lokomotivy:
-  1) Zavolat locoAcquire do Trakce (zjisti vsechny informace o lokomotive)
+  Prebirani vozidla:
+  1) Zavolat locoAcquire do Trakce (zjisti vsechny informace o vozidlu)
   2) Nastavit spravny smer a rychlost vozidla (vzhledem k vlaku nebo aktualni)
   3) Nastavit funkce na pozadovane hodnoty
   4) Naprogramovat POM
@@ -55,8 +55,8 @@ uses TrakceIFace, Classes, SysUtils, Area, Generics.Collections, IdContext,
 
 const
   _RV_FUNC_MAX = 28; // maximalni funkcni cislo; funkce zacinaji na cisle 0
-  _TOKEN_TIMEOUT_MIN = 3; // delka platnosti tokenu pro autorizaci hnaciho vozidla v minutach
-  _TOKEN_LEN = 24; // delka autorizacniho tokenu pro prevzeti hnaciho vozidla
+  _TOKEN_TIMEOUT_MIN = 3; // delka platnosti tokenu pro autorizaci vozidla v minutach
+  _TOKEN_LEN = 24; // delka autorizacniho tokenu pro prevzeti vozidla
   _DEFAUT_MAX_SPEED = 120; // [km/h]
 
   _LOK_VERSION_SAVE = '2.1';
@@ -68,12 +68,12 @@ type
   TFunctions = array [0 .. _RV_FUNC_MAX] of Boolean;
   TPomStatus = (unknown = -1, manual = 0, automat = 1, progr = 2, error = 3);
 
-  // typ hnaciho vozidla
+  // typ vozidla
   TRVType = (other = -1, steam = 0, diesel = 1, motor = 2, electro = 3, car = 4);
 
-  // mod posilani dat hnaciho vozidla klientovi
+  // mod posilani dat vozidla klientovi
   // full: s POM
-  TLokStringMode = (normal = 0, full = 1);
+  TRVStringMode = (normal = 0, full = 1);
 
   TRVPomCV = record // jeden zaznam POM se sklada z
     cv: Word; // oznaceni CV a
@@ -96,16 +96,16 @@ type
     POMmanual: TList<TRVPomCV>; // seznam POM pri uvolneni do rucniho rizeni
     POMrelease: TPomStatus; // [automat, manual] (other values are invalid) - POM to set when releasing engine
 
-    funcDescription: array [0 .. _RV_FUNC_MAX] of string; // seznam popisu funkci hnaciho vozidla
-    funcType: array [0 .. _RV_FUNC_MAX] of TRVFuncType; // typy funkci hnaciho vozidla
+    funcDescription: array [0 .. _RV_FUNC_MAX] of string; // seznam popisu funkci vozidla
+    funcType: array [0 .. _RV_FUNC_MAX] of TRVFuncType; // typy funkci vozidla
   end;
 
-  TRVRegulator = record // jeden regulator -- klient -- je z pohledu hnaciho vozidla reprezentovan
+  TRVRegulator = record // jeden regulator -- klient -- je z pohledu vozidla reprezentovan
     conn: TIdContext; // fyzickym spojenim k tomu regulatoru -- klientu a
     root: Boolean; // tages, jestli je uzivatel za timto regulatorem root
   end;
 
-  TRVToken = record // jeden token opravnujici prevzeti rizeni hnaciho vozidla
+  TRVToken = record // jeden token opravnujici prevzeti rizeni vozidla
     timeout: TDateTime; // cas expirace tokenu (obvykle 3 minuty od zadosti)
     token: string; // samotny token
   end;
@@ -186,7 +186,7 @@ type
     procedure CallCb(cb: TCommandCallback);
 
   public
-    index: Word; // index v seznamu vsech hnacich vozidel
+    index: Word; // index v seznamu vsech vozidel
     data: TRVData;
     state: TRVState;
     slot: TTrkLocoInfo;
@@ -207,7 +207,7 @@ type
     function ExportStats(): string;
 
     function MoveToArea(area: TArea): Integer;
-    function GetPanelLokString(mode: TLokStringMode = normal): string; // vrati RV ve standardnim formatu pro klienta
+    function GetPanelVehicleString(mode: TRVStringMode = normal): string; // vrati RV ve standardnim formatu pro klienta
     procedure UpdatePanelRuc(send_remove: Boolean = true);
     // aktualizuje informaci o rucnim rizeni do panelu (cerny text na bilem pozadi dole na panelu)
 
@@ -549,7 +549,7 @@ end;
 
 procedure TRV.SaveData();
 begin
-  Self.SaveData(RVDb.FilenameForLok(Self));
+  Self.SaveData(RVDb.FilenameForVehicle(Self));
 end;
 
 procedure TRV.SaveState(ini: TMemIniFile);
@@ -604,7 +604,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TRV.GetPanelLokString(mode: TLokStringMode = normal): string;
+function TRV.GetPanelVehicleString(mode: TRVStringMode = normal): string;
 var
   func: TFunctions;
 begin
@@ -637,7 +637,7 @@ begin
     Result := Result + Self.state.area.id;
   Result := Result + '|';
 
-  if (mode = TLokStringMode.full) then
+  if (mode = TRVStringMode.full) then
   begin
     // cv-automat
     Result := Result + '{';
@@ -939,7 +939,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// timto prikazem je lokomotive zapinano / vypinano rucni rizeni
+// timto prikazem je vozidlu zapinano / vypinano rucni rizeni
 procedure TRV.SetManual(state: Boolean);
 begin
   if (Self.state.manual = state) then
@@ -970,9 +970,9 @@ begin
     end;
   end;
 
-  if (RegCollector.IsLoko(Self)) then
-    RegCollector.LocoChanged(Self, Self.addr);
-  TCPRegulator.LokUpdateRuc(Self);
+  if (RegCollector.IsVehicle(Self)) then
+    RegCollector.VehicleChanged(Self, Self.addr);
+  TCPRegulator.VehicleUpdateRuc(Self);
 
   // aktualizace informaci do panelu
   Self.UpdatePanelRuc();
@@ -998,7 +998,7 @@ end;
 procedure TRV.UpdateAllRegulators();
 begin
   for var regulator: TRVRegulator in Self.state.regulators do
-    TCPRegulator.LokToRegulator(regulator.conn, Self);
+    TCPRegulator.VehicleToRegulator(regulator.conn, Self);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1157,7 +1157,7 @@ end;
 procedure TRV.CheckRelease();
 begin
   if ((Self.state.train = -1) and (not Self.manual) and (Self.state.regulators.Count = 0) and
-    (not RegCollector.IsLoko(Self)) and (Self.acquired)) then
+    (not RegCollector.IsVehicle(Self)) and (Self.acquired)) then
   begin
     Self.SetSpeed(0);
     Self.TrakceRelease(trakce.Callback());
@@ -1211,7 +1211,7 @@ begin
   for var i: Integer := Self.state.regulators.Count - 1 downto 0 do
   begin
     try
-      TCPRegulator.RemoveLok(Self.state.regulators[i].conn, Self, 'Násilné odhlášení dispečerem');
+      TCPRegulator.RemoveVehicle(Self.state.regulators[i].conn, Self, 'Násilné odhlášení dispečerem');
     except
       on E: Exception do
         AppEvents.LogException(E, 'TRV.ForceRemoveAllRegulators');
@@ -1360,8 +1360,8 @@ begin
     end;
   end;
 
-  TCPRegulator.LokUpdateFunc(Self, Sender);
-  RegCollector.LocoChanged(Sender, Self.addr);
+  TCPRegulator.VehicleUpdateFunc(Self, Sender);
+  RegCollector.VehicleChanged(Sender, Self.addr);
   Self.changed := true;
 end;
 
@@ -1404,8 +1404,8 @@ begin
     Self.CallCb(err);
   end;
 
-  TCPRegulator.LokUpdateFunc(Self, Sender);
-  RegCollector.LocoChanged(Sender, Self.addr);
+  TCPRegulator.VehicleUpdateFunc(Self, Sender);
+  RegCollector.VehicleChanged(Sender, Self.addr);
   Self.changed := true;
 end;
 
@@ -1462,7 +1462,7 @@ begin
     Exit();
   Self.state.trakceError := false;
   Self.changed := true;
-  RegCollector.LocoChanged(Self, Self.addr);
+  RegCollector.VehicleChanged(Self, Self.addr);
 end;
 
 procedure TRV.TrakceCallbackErr(Sender: TObject; data: Pointer);
@@ -1480,7 +1480,7 @@ begin
   begin
     Self.state.trakceError := true;
     Self.changed := true;
-    RegCollector.LocoChanged(Self, Self.addr);
+    RegCollector.VehicleChanged(Self, Self.addr);
   end;
 end;
 
@@ -1526,11 +1526,11 @@ end;
 procedure TRV.SlotChanged(Sender: TObject; speedChanged: Boolean; dirChanged: Boolean; funcChanged: Boolean);
 begin
   if (speedChanged or dirChanged) then
-    TCPRegulator.LokUpdateSpeed(Self, Sender);
+    TCPRegulator.VehicleUpdateSpeed(Self, Sender);
   if (funcChanged) then
-    TCPRegulator.LokUpdateFunc(Self, Sender);
+    TCPRegulator.VehicleUpdateFunc(Self, Sender);
 
-  RegCollector.LocoChanged(Sender, Self.addr);
+  RegCollector.VehicleChanged(Sender, Self.addr);
   Self.changed := true;
 
   if ((dirChanged) and (Self.train > -1)) then
@@ -1597,7 +1597,7 @@ end;
 
 procedure TRV.TrakceAcquiredFunctionsSet(Sender: TObject; data: Pointer);
 begin
-  Self.state.manual := (RegCollector.IsLoko(Self)) or (Self.manual);
+  Self.state.manual := (RegCollector.IsVehicle(Self)) or (Self.manual);
   Self.changed := true;
 
   if (Self.state.manual) then
@@ -1618,7 +1618,7 @@ begin
   Self.state.acquired := true;
   Self.state.acquiring := false;
   Self.changed := true;
-  RegCollector.LocoChanged(Self, Self.addr);
+  RegCollector.VehicleChanged(Self, Self.addr);
 
   Self.UpdatePanelRuc();
   if (Self.train > -1) then
@@ -1630,7 +1630,7 @@ begin
   // odesleme do regulatoru info o uspesne autorizaci
   // to je dobre tehdy, kdyz je vozidlo prebirano z centraly
   var state: string := ite(Self.manual, 'total', 'ok');
-  Self.BroadcastRegulators('AUTH;' + state + ';{' + Self.GetPanelLokString() + '}');
+  Self.BroadcastRegulators('AUTH;' + state + ';{' + Self.GetPanelVehicleString() + '}');
 
   Self.CallCb(Self.acquiredOk);
 end;
@@ -1640,7 +1640,7 @@ begin
   trakce.Log(llCommands, 'ERR: Loco Not Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
   Self.state.acquiring := false;
   Self.changed := true;
-  RegCollector.LocoChanged(Self, Self.addr);
+  RegCollector.VehicleChanged(Self, Self.addr);
   Self.CallCb(Self.acquiredErr);
 end;
 
@@ -1678,7 +1678,7 @@ begin
   Self.state.acquired := false;
   Self.state.pom := TPomStatus.unknown;
   Self.changed := true;
-  RegCollector.LocoChanged(Self, Self.addr);
+  RegCollector.VehicleChanged(Self, Self.addr);
   Self.CallCb(Self.releasedOk);
 end;
 
@@ -1710,7 +1710,7 @@ begin
     Self.state.trakceError := false;
   Self.state.pom := Self.pomTarget;
   Self.changed := true;
-  RegCollector.LocoChanged(Self, Self.addr);
+  RegCollector.VehicleChanged(Self, Self.addr);
   Self.CallCb(Self.pomOk);
 end;
 
@@ -1719,7 +1719,7 @@ begin
   Self.state.pom := TPomStatus.error;
   Self.state.trakceError := true;
   Self.changed := true;
-  RegCollector.LocoChanged(Self, Self.addr);
+  RegCollector.VehicleChanged(Self, Self.addr);
   Self.CallCb(Self.pomErr);
 end;
 
@@ -1772,7 +1772,7 @@ begin
   Self.state.trakceError := true;
   Self.state.lastUpdated := Now;
   Self.changed := true;
-  RegCollector.LocoChanged(Self, Self.addr);
+  RegCollector.VehicleChanged(Self, Self.addr);
   Self.CallCb(Self.acquiredErr);
 end;
 
@@ -1786,9 +1786,9 @@ begin
 
   Self.state.acquired := false;
   Self.state.stolen := true;
-  RegCollector.LocoChanged(Self, Self.addr);
+  RegCollector.VehicleChanged(Self, Self.addr);
 
-  TCPRegulator.LokStolen(Self);
+  TCPRegulator.VehicleStolen(Self);
   Self.UpdatePanelRuc();
   if (Self.train > -1) then
   begin

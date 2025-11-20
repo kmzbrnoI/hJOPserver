@@ -18,7 +18,7 @@ type
   ENotOverriden = class(Exception);
   ENotStoppped = class(Exception);
 
-  TTrainRVs = TList<Integer>; // seznam adres hnacich vozidel na vlaku
+  TTrainRVs = TList<Integer>; // seznam adres vozidel na vlaku
 
   TTrainAcquire = record
     ok, err: TCb;
@@ -86,7 +86,7 @@ type
      procedure AcquireOk(Sender: TObject; Data: Pointer);
      procedure AcquireErr(Sender: TObject; Data: Pointer);
 
-     procedure ReleaseAllLoko();
+     procedure ReleaseAllVehicles();
 
      procedure SetArea(area: TObject);
 
@@ -142,7 +142,7 @@ type
      procedure RemovePOdj(usekid: Integer); overload;
      procedure RemovePOdj(usek: TBlk); overload;
      procedure ClearPOdj();
-     function IsAnyLokoInRegulator(): Boolean;
+     function IsAnyVehicleInRegulator(): Boolean;
      procedure ForceRemoveAllRegulators();
      procedure EmergencyStop();
      procedure EmergencyStopRelease();
@@ -197,7 +197,7 @@ type
      property emergencyStopped: Boolean read _emergencyStopped;
      property traveled: Real read _traveled;
 
-     // uvolni stara hnaci vozidla z vlaku (pri zmene RV na vlaku)
+     // uvolni stara vozidla z vlaku (pri zmene RV na vlaku)
      class procedure UvolV(old: TTrainRVs; new: TTrainRVs);
 
   end;
@@ -256,7 +256,7 @@ end;
 
 destructor TTrain.Destroy();
 begin
-  Self.ReleaseAllLoko();
+  Self.ReleaseAllVehicles();
   Self.ClearPOdj();
   Self.data.podj.Free();
   Self.data.vehicles.Free();
@@ -368,7 +368,7 @@ begin
   Result := Result + ';' + IntToStr(Self.data.length) + ';' + Self.data.typ + ';{';
 
   for var addr in Self.vehicles do
-    Result := Result + '[{' + RVDb[addr].GetPanelLokString() + '}]';
+    Result := Result + '[{' + RVDb[addr].GetPanelVehicleString() + '}]';
   Result := Result + '};';
 
   if (Self.areaFrom <> nil) then
@@ -664,9 +664,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// uvolnit vsechna loko
+// uvolnit vsechna vozidla
 // pred uvolnenim vozidla take zastavime
-procedure TTrain.ReleaseAllLoko();
+procedure TTrain.ReleaseAllVehicles();
 begin
   if ((not Assigned(RVDb)) or (not Assigned(trakce))) then Exit();
 
@@ -887,7 +887,7 @@ procedure TTrain.ChangeDirection();
 begin
   Self.Log('Změna směru', llInfo);
 
-  // zmenit orintaci stanoviste A hnacich vozidel
+  // zmenit orintaci stanoviste A vozidel
   for var addr in Self.vehicles do
   begin
     case (RVDb[addr].state.siteA) of
@@ -953,7 +953,7 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
-// V pripade, ze vsechna hnaci vozidla vlaku otocim do opacneho smeru,
+// V pripade, ze vsechna vozidla vlaku otocim do opacneho smeru,
 // nez je smer vlaku, otoci se i smer vlaku. To umoznuje otoceni smeru
 // vlaku z Rocomaus.
 // Tato zmena je umoznena jen tehdy pokud nema sipka jednoznacne urceny smer
@@ -1129,7 +1129,7 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrain.IsAnyLokoInRegulator(): Boolean;
+function TTrain.IsAnyVehicleInRegulator(): Boolean;
 begin
   for var vehicleAddr in Self.vehicles do
     if (RVDb[vehicleAddr].state.regulators.Count > 0) then
@@ -1465,7 +1465,7 @@ begin
       Result := Result + 'VEZMI vlak,'
     else
     begin
-      if (Self.IsAnyLokoInRegulator()) then
+      if (Self.IsAnyVehicleInRegulator()) then
         Result := Result + '!VEZMI vlak,';
     end;
 

@@ -1,6 +1,6 @@
 ﻿unit DataRV;
 
-// TRVTableData - trida starajici se o vyplnovani tabulky hnacich vozidel
+// TRVTableData - trida starajici se o vyplnovani tabulky vozidel
 
 interface
 

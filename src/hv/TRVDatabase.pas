@@ -1,7 +1,7 @@
 ﻿unit TRVDatabase;
 
 {
-  Trida TRVDb je databaze hnacich vozidel.
+  Trida TRVDb je databaze vozidel.
 
   K principu indexovaci tabulky:
   kazde RV ulozene vpoli adres ma svuj index
@@ -37,8 +37,8 @@ type
     // jednu adresu muze mit pouze jedno vozidlo v Db
     mVehicles: TRVArray;
 
-    fdefault_or: Integer;
-    fLoksDir: string;
+    mdefault_or: Integer;
+    mVehicleDir: string;
     eAcquiredOk: TNotifyEvent;
     eAcquiredErr: TNotifyEvent;
     eReleasedOk: TNotifyEvent;
@@ -80,8 +80,8 @@ type
     procedure ExportStatistics(filename: string);
 
     procedure UpdateTokenTimeout();
-    function FilenameForLok(addr: Word): string; overload;
-    function FilenameForLok(vehicle: TRV): string; overload;
+    function FilenameForVehicle(addr: Word): string; overload;
+    function FilenameForVehicle(vehicle: TRV): string; overload;
 
     function AnyAcquiredRVHasActiveFunc(func: string): Boolean;
     function AllAcquiredRVsHaveActiveFunc(func: string): Boolean;
@@ -93,8 +93,8 @@ type
 
     property cnt: Word read GetCnt; // vypocet tady tohoto trva celkem dlouho, pouzivat obezretne !
     property vehicles: TRVArray read mVehicles;
-    property default_or: Integer read fdefault_or write fdefault_or;
-    property loksDir: string read fLoksDir;
+    property default_or: Integer read mdefault_or write mdefault_or;
+    property vehicleDir: string read mVehicleDir;
     property acquiring: Boolean read mAcquiring;
     property releasing: Boolean read mReleasing;
 
@@ -120,7 +120,7 @@ begin
   Self.tLocoUpdate.OnTimer := Self.OnTLocoUpdate;
   Self.tLocoUpdate.Enabled := true;
 
-  Self.fdefault_or := _DEFAULT_OR;
+  Self.mdefault_or := _DEFAULT_OR;
   Self.mAcquiring := false;
   Self.mReleasing := false;
 
@@ -165,7 +165,7 @@ begin
       if (sect = 'global') then
         continue;
 
-      // nacteni jedne loko
+      // nacteni jednoho vozidla
       var vehicle: TRV;
       try
         vehicle := TRV.Create(ini, stateini, sect);
@@ -205,7 +205,7 @@ procedure TRVDb.LoadFromDir(const dirname: string; const statefn: string);
 var SR: TSearchRec;
   stateini: TMemIniFile;
 begin
-  Self.fLoksDir := dirname;
+  Self.mVehicleDir := dirname;
   stateini := TMemIniFile.Create(statefn);
 
   try
@@ -236,7 +236,7 @@ end;
 procedure TRVDb.SaveData(const dirname: string);
 begin
   Log('Ukládám vozidla...', llInfo, lsData);
-  Self.fLoksDir := dirname;
+  Self.mVehicleDir := dirname;
 
   var count: Cardinal := 0;
   for var i: Integer := 0 to _MAX_ADDR - 1 do
@@ -244,7 +244,7 @@ begin
     if (Self.mVehicles[i] <> nil) then
     begin
       try
-        Self.mVehicles[i].SaveData(Self.FilenameForLok(Self.mVehicles[i]));
+        Self.mVehicles[i].SaveData(Self.FilenameForVehicle(Self.mVehicles[i]));
         Inc(count);
       except
         on E: Exception do
@@ -407,7 +407,7 @@ begin
   FreeAndNil(Self.mVehicles[addr]);
 
   // smazat soubor
-  SysUtils.DeleteFile(Self.FilenameForLok(addr));
+  SysUtils.DeleteFile(Self.FilenameForVehicle(addr));
 
   // ------- update indexu: ------
 
@@ -422,7 +422,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// spocita pocet hnacich vozidel
+// spocita pocet vozidel
 function TRVDb.GetCnt(): Word;
 begin
   Result := 0;
@@ -433,7 +433,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// vytvori index hnacich vozidel
+// vytvori index vozidel
 // vola se jen pri nacteni souboru
 // update indxu si zajistuji metody Add a remove trosku jinym algoritmem
 // (neni zapotrebi kontrolovat cele pole)
@@ -499,14 +499,14 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TRVDb.FilenameForLok(addr: Word): string;
+function TRVDb.FilenameForVehicle(addr: Word): string;
 begin
-  Result := Self.loksDir + '\L_' + IntToStr(addr) + _FILE_SUFFIX;
+  Result := Self.vehicleDir + '\L_' + IntToStr(addr) + _FILE_SUFFIX;
 end;
 
-function TRVDb.FilenameForLok(vehicle: TRV): string;
+function TRVDb.FilenameForVehicle(vehicle: TRV): string;
 begin
-  Result := Self.FilenameForLok(vehicle.addr);
+  Result := Self.FilenameForVehicle(vehicle.addr);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

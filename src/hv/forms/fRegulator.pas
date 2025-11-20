@@ -90,8 +90,8 @@ type
 
     procedure Open(vehicle: TRV);
 
-    procedure LocoChanged(Sender: TObject; addr: Word);
-    function IsLoko(vehicle: TRV): Boolean;
+    procedure VehicleChanged(Sender: TObject; addr: Word);
+    function IsVehicle(vehicle: TRV): Boolean;
 
     procedure KeyPress(key: Integer; var handled: Boolean);
 
@@ -392,7 +392,7 @@ begin
       FreeAndNil(Self.Forms.data[i]);
 end;
 
-procedure TRegulatorCollector.LocoChanged(Sender: TObject; addr: Word);
+procedure TRegulatorCollector.VehicleChanged(Sender: TObject; addr: Word);
 var frm: TF_DigiReg;
 begin
   frm := Self.GetForm(addr);
@@ -458,7 +458,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TRegulatorCollector.IsLoko(vehicle: TRV): Boolean;
+function TRegulatorCollector.IsVehicle(vehicle: TRV): Boolean;
 begin
   if (Self = nil) then
     Exit(false);

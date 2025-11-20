@@ -212,8 +212,8 @@ type
     procedure ORDKClickServer(callback: TBlkCallback);
     procedure ORDKClickClient();
 
-    function LokoPlease(Sender: TIDContext; user: TObject; comment: string): Integer;
-    procedure LokoCancel(Sender: TIDContext);
+    function VehiclePlease(Sender: TIDContext; user: TObject; comment: string): Integer;
+    procedure VehicleCancel(Sender: TIDContext);
 
     procedure InitLights();
 
@@ -228,7 +228,7 @@ type
     procedure PanelRVMove(Sender: TIDContext; lok_addr: word; new_or: string);
     procedure PanelZAS(Sender: TIDContext; str: TStrings);
     procedure PanelDKClick(SenderPnl: TIDContext; Button: TPanelButton);
-    procedure PanelLokoReq(Sender: TIDContext; str: TStrings);
+    procedure PanelVehicleReq(Sender: TIDContext; str: TStrings);
     procedure PanelHlaseni(Sender: TIDContext; str: TStrings);
     procedure PanelDkMenuClick(Sender: TIDContext; rootItem, subItem: string);
 
@@ -731,7 +731,7 @@ begin
 
   Blocks.GetAreaBlk(Self.id, Sender);
 
-  // zjistime RUC u vsech hnacich vozidel
+  // zjistime RUC u vsech vozidel
   for var addr: Integer := 0 to _MAX_ADDR - 1 do
     if ((RVDb[addr] <> nil) and (RVDb[addr].state.Area = Self)) then
       RVDb[addr].UpdatePanelRuc(false);
@@ -842,7 +842,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// pozadavek na ziskani sezmu hnacich vozidel
+// pozadavek na ziskani seznamu vozidel
 procedure TArea.PanelRVList(Sender: TIDContext);
 begin
   // kontrola opravneni klienta
@@ -855,7 +855,7 @@ begin
   var str: string := 'HV;LIST;{';
   for var addr: Integer := 0 to _MAX_ADDR - 1 do
     if ((Assigned(RVDb[addr])) and (RVDb[addr].state.Area = Self)) then
-      str := str + '[{' + RVDb[addr].GetPanelLokString(full) + '}]';
+      str := str + '[{' + RVDb[addr].GetPanelVehicleString(full) + '}]';
   str := str + '}';
   Self.SendLn(Sender, str);
 end;
@@ -1534,7 +1534,7 @@ begin
 end;
 
 // Tato procedura parsuje "LOK-REQ" z panelu.
-procedure TArea.PanelLokoReq(Sender: TIDContext; str: TStrings);
+procedure TArea.PanelVehicleReq(Sender: TIDContext; str: TStrings);
 begin
   // kontrola opravneni klienta
   var rights: TAreaRights := Self.PanelDbRights(Sender);
@@ -1552,12 +1552,12 @@ begin
   // or;LOK-TOKEN;ERR;addr1|addr2...;comment  - chybova odpoved na zadost o token
   if (str[2] = 'PLEASE') then
   begin
-    // parsing loko
+    // parsing vehicle
     try
       var data: TStrings := TStringList.Create();
       ExtractStringsEx(['|'], [], str[3], data);
 
-      // zkontrolujeme vsechna LOKO
+      // zkontrolujeme vsechna vozidla
       for var i: Integer := 0 to data.Count - 1 do
       begin
         var vehicle: TRV := RVDb[StrToInt(data[i])];
@@ -1567,14 +1567,14 @@ begin
           Exit();
         end;
 
-        // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
+        // pokud je uzvatel pripojen jako superuser, muze prevzit i vozidlo, ktere se nenachazi ve stanici
         if ((vehicle.state.Area <> Self) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Vozidlo ' + data[i] + ' se nenachází ve stanici');
           Exit();
         end;
 
-        // nelze vygenerovat token pro loko, ktere je uz v regulatoru
+        // nelze vygenerovat token pro vozidlo, ktere je uz v regulatoru
         if ((vehicle.state.regulators.Count > 0) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Vozidlo ' + data[i] + ' již otevřeno v regulátoru');
@@ -1597,14 +1597,14 @@ begin
     end;
   end
 
-  // klient vybral lokomotivy pro rucni rizeni
+  // klient vybral vozidla pro rucni rizeni
   // odpovedi, ktere muzu poslat panelu:
   // or;LOK-REQ;OK                           - seznam vozidel na rucni rizeni schvalen serverem
   // or;LOK-REQ;ERR;comment                  - seznam vozidel na rucni rizeni odmitnut serverem
   else if (str[2] = 'LOK') then
   begin
     try
-      // nejdriv musi probihat zadost o loko
+      // nejdriv musi probihat zadost o vozidlo
       if (Self.m_state.regPlease = nil) then
       begin
         Self.SendLn(Sender, 'LOK-REQ;ERR;Neprobíhá žádná žádost z regulátoru');
@@ -1614,7 +1614,7 @@ begin
       var data: TStrings := TStringList.Create();
       ExtractStringsEx(['|'], [], str[3], data);
 
-      // zkontrolujeme vsechna LOKO
+      // zkontrolujeme vsechna vozidla
       for var i: Integer := 0 to data.Count - 1 do
       begin
         var vehicle: TRV := RVDb[StrToInt(data[i])];
@@ -1624,14 +1624,14 @@ begin
           Exit();
         end;
 
-        // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
+        // pokud je uzvatel pripojen jako superuser, muze prevzit i vozidlo, ktere se nenachazi ve stanici
         if ((vehicle.state.Area <> Self) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-REQ;ERR;Vozidlo ' + data[i] + ' se nenachází ve stanici');
           Exit();
         end;
 
-        // nelze vygenerovat token pro loko, ktere je uz v regulatoru
+        // nelze vygenerovat token pro vozidlo, ktere je uz v regulatoru
         if ((vehicle.state.regulators.Count > 0) and (rights <> TAreaRights.superuser)) then
         begin
           Self.SendLn(Sender, 'LOK-REQ;ERR;Vozidlo ' + data[i] + ' již otevřeno v regulátoru');
@@ -1647,11 +1647,11 @@ begin
         if ((Area.IsReadable(Self.connected[i])) and (Self.connected[i].Panel <> Sender)) then
           Self.SendLn(Self.connected[i].Panel, 'LOK-REQ;CANCEL;');
 
-      // lokomotivy priradime regulatoru
+      // vozidla priradime regulatoru
       for var i: Integer := 0 to data.Count - 1 do
       begin
         var vehicle: TRV := RVDb[StrToInt(data[i])];
-        TCPRegulator.LokToRegulator(Self.m_state.regPlease, vehicle);
+        TCPRegulator.VehicleToRegulator(Self.m_state.regPlease, vehicle);
       end;
 
       // zrusit zadost regulatoru
@@ -1664,7 +1664,7 @@ begin
     end;
   end
 
-  // relief odmitl zadost regulatoru o lokomotivu
+  // relief odmitl zadost regulatoru o vozidlo
   else if (str[2] = 'DENY') then
   begin
     PanelServer.SendLn(Self.m_state.regPlease, '-;LOK;G;PLEASE-RESP;err;Dispečer odmítl žádost');
@@ -1673,9 +1673,9 @@ begin
     Self.m_state.regPlease := nil;
   end
 
-  // or;LOK-REQ;U-PLEASE;blk_id;train_index      - zadost o vydani seznamu hnacich vozidel na danem useku
+  // or;LOK-REQ;U-PLEASE;blk_id;train_index      - zadost o vydani seznamu vozidel na danem useku
   // mozne odpovedi:
-  // or;LOK-REQ;U-OK;[hv1][hv2]...           - seznamu hnacich vozidel v danem useku
+  // or;LOK-REQ;U-OK;[hv1][hv2]...           - seznamu vozidel v danem useku
   // or;LOK-REQ;U-ERR;info                   - chyba odpoved na pozadavek na seznam vozdel v danem useku
 
   else if (str[2] = 'U-PLEASE') then
@@ -1712,11 +1712,11 @@ begin
         // vsechny vlaky na useku
         for var j: Integer := 0 to track.Trains.Count - 1 do
           for var addr: Integer in Trains[track.Trains[j]].vehicles do
-            line := line + '[{' + RVDb[addr].GetPanelLokString() + '}]';
+            line := line + '[{' + RVDb[addr].GetPanelVehicleString() + '}]';
       end else begin
         // konkretni vlak
         for var addr: Integer in Trains[track.Trains[traini]].vehicles do
-          line := line + '[{' + RVDb[addr].GetPanelLokString() + '}]';
+          line := line + '[{' + RVDb[addr].GetPanelVehicleString() + '}]';
       end;
 
       line := line + '}';
@@ -1739,7 +1739,7 @@ begin
   else
     Self.SendLn(Panel, 'DK-CLICK;0');
 
-  // pripradna zadost o lokomotivu
+  // pripradna zadost o vozidlo
   if (Self.regPlease <> nil) then
   begin
     var user: TUser := (Self.regPlease.data as TPanelConnData).regulator_user;
@@ -1831,7 +1831,7 @@ end;
 
 // vraci 1 pokud zadost jiz probiha
 // vraci 0 pokud prikaz probehl vporadku
-function TArea.LokoPlease(Sender: TIDContext; user: TObject; comment: string): Integer;
+function TArea.VehiclePlease(Sender: TIDContext; user: TObject; comment: string): Integer;
 begin
   if (Self.m_state.regPlease <> nil) then
     Exit(1);
@@ -1856,7 +1856,7 @@ begin
   Result := 0;
 end;
 
-procedure TArea.LokoCancel(Sender: TIDContext);
+procedure TArea.VehicleCancel(Sender: TIDContext);
 begin
   if (Self.m_state.regPlease = nil) then
     Exit();

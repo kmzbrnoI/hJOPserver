@@ -62,8 +62,8 @@ type
 
     regulator: Boolean; // true pokud klient autorizoval rizeni pres regulator
     regulator_user: TUser; // uzivatel, ktery autorizoval regulator
-    regulator_zadost: TArea; // oblast rizeni, do ktere probiha zadost o hnaci vozidlo
-    regulator_loks: TList<TRV>; // seznam lokomotiv v regulatoru
+    regulator_zadost: TArea; // oblast rizeni, do ktere probiha zadost o vozidlo
+    regulator_vehicles: TList<TRV>; // seznam vozidel v regulatoru
 
     st_hlaseni: TList<TArea>; // stanice, do kterych je autorizovano stanicni hlaseni
     train_menu_index: Integer; // index sopuravy, ktere se aktualne zorbazuje menu (viz blok usek)
@@ -135,7 +135,7 @@ begin
   Self.regulator := False;
   Self.regulator_user := nil;
   Self.regulator_zadost := nil;
-  Self.regulator_loks := TList<TRV>.Create();
+  Self.regulator_vehicles := TList<TRV>.Create();
   Self.st_hlaseni := TList<TArea>.Create();
   Self.train_menu_index := -1;
   Self.soundDict := TDictionary<Integer, Cardinal>.Create();
@@ -156,7 +156,7 @@ begin
   Self.pathBlocks.Free();
   Self.areas.Free();
   Self.st_hlaseni.Free();
-  Self.regulator_loks.Free();
+  Self.regulator_vehicles.Free();
   Self.soundDict.Free();
   Self.ping_sent.Free();
   Self.ping_received.Free();
@@ -276,8 +276,8 @@ end;
 procedure TPanelConnData.OnUnreachable(AContext: TIdContext);
 begin
   // clear loco always (even when called after several attempts)
-  for var i: Integer := Self.regulator_loks.Count - 1 downto 0 do
-    TCPRegulator.RemoveLok(AContext, Self.regulator_loks[i], 'Zařízení neodpovídá na ping!');
+  for var i: Integer := Self.regulator_vehicles.Count - 1 downto 0 do
+    TCPRegulator.RemoveVehicle(AContext, Self.regulator_vehicles[i], 'Zařízení neodpovídá na ping!');
 
   if (not Self.ping_unreachable) then
   begin
@@ -295,7 +295,7 @@ begin
     PanelServer.SendLn(AContext, '-;PING;REQ-RESP;' + IntToStr(Self.ping_next_id));
     Self.ping_sent.Enqueue(ORPing(Self.ping_next_id, Now));
 
-    if (Self.regulator_loks.Count > 0) then
+    if (Self.regulator_vehicles.Count > 0) then
       Self.ping_next_send := Now + EncodeTime(0, 0, _PING_PERIOD_REG, 0)
     else
       Self.ping_next_send := Now + EncodeTime(0, 0, _PING_PERIOD_NOREG, 0);

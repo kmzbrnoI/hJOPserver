@@ -28,7 +28,7 @@ uses PTUtils, TRVDatabase;
 
 procedure TPTEndpointLok.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
-var lokoAddr: Word;
+var vehicleAddr: Word;
     params: TDictionary<string, string>;
 begin
  params := TDictionary<string, string>.Create();
@@ -40,7 +40,7 @@ begin
    try
      if (not match.Success) then
        raise EConvertError.Create('Unable to parse loco addr');
-     lokoAddr := StrToInt(match.Groups[1].Value);
+     vehicleAddr := StrToInt(match.Groups[1].Value);
    except
      on EConvertError do
       begin
@@ -49,13 +49,13 @@ begin
       end;
    end;
 
-   if ((lokoAddr > 9999) or (RVDb[lokoAddr] = nil)) then
+   if ((vehicleAddr > 9999) or (RVDb[vehicleAddr] = nil)) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Lokomotiva neexistuje', 'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Vozidlo neexistuje', 'Vozidlo s adresou '+IntToStr(vehicleAddr)+' neexistuje');
      Exit();
     end;
 
-   RVDb[lokoAddr].GetPtData(respJson.O['lok'], params.ContainsKey('state') and (PTUtils.HttpParamToBool(params['state'])));
+   RVDb[vehicleAddr].GetPtData(respJson.O['lok'], params.ContainsKey('state') and (PTUtils.HttpParamToBool(params['state'])));
  finally
    params.Free();
  end;

@@ -997,7 +997,7 @@ begin
         if (Self.nextRT = nil) then
         begin
           // vlak vstoupil do posledniho bloku trati
-          // zmena stanic vlaku a hnacich vozidel v ni
+          // zmena stanic vlaku a vozidel v ni
           TBlkRailway(Self.railway).TrainChangeOR(Self.train);
         end;
       end else begin

@@ -1,4 +1,4 @@
-unit PTEndpointLokState;
+  unit PTEndpointLokState;
 
 { PTserver endpoint /lokState/id. }
 
@@ -30,7 +30,7 @@ uses PTUtils, TRVDatabase;
 
 procedure TPTEndpointLokState.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
-var lokoAddr: Word;
+var vehicleAddr: Word;
     params: TDictionary<string, string>;
 begin
  params := TDictionary<string, string>.Create();
@@ -42,23 +42,23 @@ begin
    try
      if (not match.Success) then
        raise EConvertError.Create('Unable to parse loco addr');
-     lokoAddr := StrToInt(match.Groups[1].Value);
+     vehicleAddr := StrToInt(match.Groups[1].Value);
    except
      on EConvertError do
       begin
-       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Nevalidni adresa lokomotivy');
+       PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Nevalidni adresa vozidla');
        Exit();
       end;
    end;
 
-   if ((lokoAddr > 9999) or (RVDb[lokoAddr] = nil)) then
+   if ((vehicleAddr > 9999) or (RVDb[vehicleAddr] = nil)) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Lokomotiva neexistuje',
-        'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Vozidlo neexistuje',
+        'Vozidlo s adresou '+IntToStr(vehicleAddr)+' neexistuje');
      Exit();
     end;
 
-   RVDb[lokoAddr].GetPtState(respJson.O['lokState']);
+   RVDb[vehicleAddr].GetPtState(respJson.O['lokState']);
  finally
    params.Free();
  end;
@@ -67,7 +67,7 @@ end;
 
 procedure TPTEndpointLokState.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject);
-var lokoAddr: Word;
+var vehicleAddr: Word;
     params: TDictionary<string, string>;
 begin
  params := TDictionary<string, string>.Create();
@@ -79,7 +79,7 @@ begin
    try
      if (not match.Success) then
        raise EConvertError.Create('Unable to parse loco addr');
-     lokoAddr := StrToInt(match.Groups[1].Value);
+     vehicleAddr := StrToInt(match.Groups[1].Value);
    except
      on EConvertError do
       begin
@@ -88,10 +88,10 @@ begin
       end;
    end;
 
-   if ((lokoAddr > 9999) or (RVDb[lokoAddr] = nil)) then
+   if ((vehicleAddr > 9999) or (RVDb[vehicleAddr] = nil)) then
     begin
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Lokomotiva neexistuje',
-        'Lokomotiva s adresou '+IntToStr(lokoAddr)+' neexistuje');
+     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Vozidlo neexistuje',
+        'Vozidlo s adresou '+IntToStr(vehicleAddr)+' neexistuje');
      Exit();
     end;
 
@@ -101,7 +101,7 @@ begin
      Exit();
     end;
 
-   RVDb[lokoAddr].PostPtState(reqJson['lokState'], respJson);
+   RVDb[vehicleAddr].PostPtState(reqJson['lokState'], respJson);
  finally
    params.Free();
  end;

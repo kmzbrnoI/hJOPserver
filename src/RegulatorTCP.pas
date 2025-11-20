@@ -17,7 +17,7 @@ type
   TTCPRegulator = class
   private
     procedure ParseGlobal(Sender: TIDContext; parsed: TStrings);
-    procedure ParseLoko(Sender: TIDContext; parsed: TStrings);
+    procedure ParseVehicle(Sender: TIDContext; parsed: TStrings);
 
     procedure ClientAuthorise(conn: TIDContext; state: Boolean; user: TObject; comment: string = '');
     procedure ClientError(conn: TIDContext; error: string);
@@ -29,14 +29,14 @@ type
 
     procedure Parse(Sender: TIDContext; parsed: TStrings);
 
-    procedure LokUpdateFunc(vehicle: TRV; exclude: TObject = nil);
-    procedure LokUpdateSpeed(vehicle: TRV; exclude: TObject = nil);
-    procedure LokStolen(vehicle: TRV; exclude: TObject = nil);
-    procedure LokUpdateRuc(vehicle: TRV);
+    procedure VehicleUpdateFunc(vehicle: TRV; exclude: TObject = nil);
+    procedure VehicleUpdateSpeed(vehicle: TRV; exclude: TObject = nil);
+    procedure VehicleStolen(vehicle: TRV; exclude: TObject = nil);
+    procedure VehicleUpdateRuc(vehicle: TRV);
 
-    procedure LokToRegulator(Regulator: TIDContext; vehicle: TRV);
+    procedure VehicleToRegulator(Regulator: TIDContext; vehicle: TRV);
     procedure RegDisconnect(reg: TIDContext; contextDestroyed: Boolean = false);
-    procedure RemoveLok(Regulator: TIDContext; vehicle: TRV; info: string);
+    procedure RemoveVehicle(Regulator: TIDContext; vehicle: TRV; info: string);
 
     procedure SendExpectedSpeed(reg: TIDContext; vehicle: TRV);
     procedure SendPredictedSignal(reg: TIDContext; vehicle: TRV);
@@ -60,7 +60,7 @@ begin
   if (parsed[2] = 'G') then
     Self.ParseGlobal(Sender, parsed)
   else
-    Self.ParseLoko(Sender, parsed);
+    Self.ParseVehicle(Sender, parsed);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ begin
 
       if (not user.Regulator) then
       begin
-        Self.ClientAuthorise(Sender, false, user, 'Uživatel ' + user.username + ' nemá právo k řízení lokomotiv !');
+        Self.ClientAuthorise(Sender, false, user, 'Uživatel ' + user.username + ' nemá právo k řízení vozidel !');
         Exit();
       end;
 
@@ -124,10 +124,10 @@ begin
     Exit();
   end;
 
-  // regulator zacina zadost o lokomotivu ze stanice
+  // regulator zacina zadost o vozidlo ze stanice
   // -;LOK;G:PLEASE;or_id;comment            - pozadavek na rizeni vozidla z dane oblasti rizeni
   // odpoved od serveru:
-  // -;LOK;G:PLEASE-RESP;[ok, err];info      - odpoved na zadost o lokomotivu z reliefu; v info je pripadna chybova zprava
+  // -;LOK;G:PLEASE-RESP;[ok, err];info      - odpoved na zadost o vozidlo z reliefu; v info je pripadna chybova zprava
   if (parsed[3] = 'PLEASE') then
   begin
     try
@@ -156,9 +156,9 @@ begin
 
       (Sender.Data as TPanelConnData).regulator_zadost := Area;
       if (parsed.Count > 5) then
-        Area.LokoPlease(Sender, (Sender.Data as TPanelConnData).regulator_user, parsed[5])
+        Area.VehiclePlease(Sender, (Sender.Data as TPanelConnData).regulator_user, parsed[5])
       else
-        Area.LokoPlease(Sender, (Sender.Data as TPanelConnData).regulator_user, '');
+        Area.VehiclePlease(Sender, (Sender.Data as TPanelConnData).regulator_user, '');
 
       PanelServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok');
     except
@@ -166,13 +166,13 @@ begin
     end;
   end
 
-  // regulator rusi zadost o lokomotivu ze stanice
+  // regulator rusi zadost o vozidlo ze stanice
   else if (parsed[3] = 'CANCEL') then
   begin
     if ((Sender.Data as TPanelConnData).regulator_zadost = nil) then
       Exit();
 
-    (Sender.Data as TPanelConnData).regulator_zadost.LokoCancel(Sender);
+    (Sender.Data as TPanelConnData).regulator_zadost.VehicleCancel(Sender);
     (Sender.Data as TPanelConnData).regulator_zadost := nil;
     PanelServer.SendLn(Sender, '-;LOK;G;PLEASE-RESP;ok;Žádost zrušena');
   end;
@@ -181,7 +181,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;addr;"
 
-procedure TTCPRegulator.ParseLoko(Sender: TIDContext; parsed: TStrings);
+procedure TTCPRegulator.ParseVehicle(Sender: TIDContext; parsed: TStrings);
 var vehicle: TRV;
 begin
   parsed[3] := UpperCase(parsed[3]);
@@ -205,8 +205,8 @@ begin
 
   if (parsed[3] = 'RELEASE') then
   begin
-    // regulator ukoncuje rizeni LOKO
-    Self.RemoveLok(Sender, vehicle, 'Vozidlo odhlášeno');
+    // regulator ukoncuje rizeni vozidla
+    Self.RemoveVehicle(Sender, vehicle, 'Vozidlo odhlášeno');
     Exit();
   end;
 
@@ -232,7 +232,7 @@ begin
         begin
           if (not vehicle.IsReg(Sender)) then
           begin
-            // Uzivatel nema na hnaci vozidlo narok
+            // Uzivatel nema na vozidlo narok
             PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';AUTH;not;Na toto vozidlo nemáte nárok');
             Exit();
           end;
@@ -249,7 +249,7 @@ begin
       if (parsed.Count > 4) then
         vehicle.RemoveToken(parsed[4]);
 
-      Self.LokToRegulator(Sender, vehicle);
+      Self.VehicleToRegulator(Sender, vehicle);
 
       Exit();
 
@@ -435,7 +435,7 @@ begin
     PanelServer.SendLn(conn, '-;LOK;G;AUTH;not;' + comment);
 
     // odhlasime vsechny prihlasene regulatory
-    TPanelConnData(conn.Data).regulator_loks.Clear();
+    TPanelConnData(conn.Data).regulator_vehicles.Clear();
     RVDb.RemoveRegulator(conn);
   end;
 end;
@@ -484,9 +484,9 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// or;LOK;ADDR;F;F_left-F_right;states          - informace o stavu funkci lokomotivy
+// or;LOK;ADDR;F;F_left-F_right;states          - informace o stavu funkci vozidla
 // napr.; or;LOK;ADDR;0-4;00010 informuje, ze je zaple F3 a F0, F1, F2 a F4 jsou vyple
-procedure TTCPRegulator.LokUpdateFunc(vehicle: TRV; exclude: TObject = nil);
+procedure TTCPRegulator.VehicleUpdateFunc(vehicle: TRV; exclude: TObject = nil);
 var func: string;
 begin
   func := '';
@@ -507,7 +507,7 @@ begin
 end;
 
 // or;LOK;ADDR;SPD;sp_km/h;sp_stupne;dir
-procedure TTCPRegulator.LokUpdateSpeed(vehicle: TRV; exclude: TObject = nil);
+procedure TTCPRegulator.VehicleUpdateSpeed(vehicle: TRV; exclude: TObject = nil);
 begin
   for var i: Integer := 0 to vehicle.state.regulators.Count - 1 do
     if (vehicle.state.regulators[i].conn <> exclude) then
@@ -517,7 +517,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.LokStolen(vehicle: TRV; exclude: TObject = nil);
+procedure TTCPRegulator.VehicleStolen(vehicle: TRV; exclude: TObject = nil);
 begin
   for var i: Integer := 0 to vehicle.state.regulators.Count - 1 do
     if (vehicle.state.regulators[i].conn <> exclude) then
@@ -527,7 +527,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.LokUpdateRuc(vehicle: TRV);
+procedure TTCPRegulator.VehicleUpdateRuc(vehicle: TRV);
 begin
   for var i := 0 to vehicle.state.regulators.Count - 1 do
     PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) + ';TOTAL;' + ite(vehicle.manual, '1', '0'));
@@ -535,8 +535,8 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// prirazeni lokomotivy regulatoru
-procedure TTCPRegulator.LokToRegulator(Regulator: TIDContext; vehicle: TRV);
+// prirazeni vozidla regulatoru
+procedure TTCPRegulator.VehicleToRegulator(Regulator: TIDContext; vehicle: TRV);
 var found: Boolean;
     reg: TRVRegulator;
 begin
@@ -564,7 +564,7 @@ begin
   // Je vozidlo prevzato?
   if (not vehicle.acquired) then
   begin
-    // ne -> prevzit loko
+    // ne -> prevzit vozidlo
     try
       vehicle.TrakceAcquire(TTrakce.Callback(), TTrakce.Callback());
     except
@@ -592,16 +592,16 @@ begin
       end;
     end; // while
   end else begin
-    // odpoved na pozadavek o autorizaci rizeni hnaciho vozidla
+    // odpoved na pozadavek o autorizaci rizeni vozidla
     // kdyz vozidlo prebirame, je odesilana automaticky
     var typ: string := ite(vehicle.manual, 'total', 'ok');
-    PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(vehicle.addr) + ';AUTH;' + typ + ';{' + vehicle.GetPanelLokString() + '}')
+    PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(vehicle.addr) + ';AUTH;' + typ + ';{' + vehicle.GetPanelVehicleString() + '}')
   end;
 
   // pridani vozidla do seznamu autorizovanych vozidel klientem
 
   found := false;
-  for var tmpRV in TPanelConnData(Regulator.Data).regulator_loks do
+  for var tmpRV in TPanelConnData(Regulator.Data).regulator_vehicles do
   begin
     if (tmpRV = vehicle) then
     begin
@@ -613,7 +613,7 @@ begin
   if (not found) then
   begin
     // pridani noveho vozidla do seznamu
-    TPanelConnData(Regulator.Data).regulator_loks.Add(vehicle);
+    TPanelConnData(Regulator.Data).regulator_vehicles.Add(vehicle);
     PanelServer.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
   end;
 
@@ -624,7 +624,7 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-// odhlasit vsechna hnaci vozidla regulatoru
+// odhlasit vsechna vozidla regulatoru
 
 procedure TTCPRegulator.RegDisconnect(reg: TIDContext; contextDestroyed: Boolean = false);
 var addr: Integer;
@@ -643,16 +643,16 @@ begin
     authLog('reg', 'logout', TPanelConnData(reg.Data).regulator_user.username, 'Logout from regulator');
     TPanelConnData(reg.Data).regulator := false;
     TPanelConnData(reg.Data).regulator_user := nil;
-    TPanelConnData(reg.Data).regulator_loks.Clear();
+    TPanelConnData(reg.Data).regulator_vehicles.Clear();
   end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTCPRegulator.RemoveLok(Regulator: TIDContext; vehicle: TRV; info: string);
+procedure TTCPRegulator.RemoveVehicle(Regulator: TIDContext; vehicle: TRV; info: string);
 begin
   vehicle.RemoveRegulator(Regulator);
-  TPanelConnData(Regulator.Data).regulator_loks.Remove(vehicle);
+  TPanelConnData(Regulator.Data).regulator_vehicles.Remove(vehicle);
   PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(vehicle.addr) + ';AUTH;release;' + info);
   PanelServer.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
   authLog('reg', 'loco-release', TPanelConnData(Regulator.Data).regulator_user.username,

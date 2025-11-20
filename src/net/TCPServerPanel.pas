@@ -78,7 +78,7 @@ type
     function IsOpenned(): Boolean; // je server zapnut?
     function GetBind(): string; overload;
 
-    procedure OnDCCCmdErr(Sender: TObject; data: Pointer); // event chyby komunikace s lokomotivou v automatu
+    procedure OnDCCCmdErr(Sender: TObject; data: Pointer); // event chyby komunikace s vozidlem v automatu
     procedure CheckPing(Sender: TObject);
     procedure ProcessReceivedMessages();
     procedure OnReceiveTimerTick(Sender: TObject);
@@ -447,9 +447,9 @@ begin
 
   orsRef.ClearAndHidePathBlocks();
 
-  // zrusime pripadnou zadost o lokomotivu
+  // zrusime pripadnou zadost o vozidlo
   if (orsRef.regulator_zadost <> nil) then
-    orsRef.regulator_zadost.LokoCancel(AContext);
+    orsRef.regulator_zadost.VehicleCancel(AContext);
 
   // odpojeni vsech pripadne neodpojenych regulatoru
   if (orsRef.regulator) then
@@ -862,7 +862,7 @@ begin
   begin
     var i: Integer := StrToInt(parsed[3]);
     if (RVDb[i] <> nil) then
-      PanelServer.SendLn(AContext, '-;HV;ASK;' + IntToStr(i) + ';FOUND;{' + RVDb[i].GetPanelLokString() + '}')
+      PanelServer.SendLn(AContext, '-;HV;ASK;' + IntToStr(i) + ';FOUND;{' + RVDb[i].GetPanelVehicleString() + '}')
     else
       PanelServer.SendLn(AContext, '-;HV;ASK;' + IntToStr(i) + ';NOT-FOUND');
 
@@ -980,7 +980,7 @@ begin
     area.PanelDKClick(AContext, TPanelButton(StrToInt(parsed[2])))
 
   else if (parsed[1] = 'LOK-REQ') then
-    area.PanelLokoReq(AContext, parsed)
+    area.PanelVehicleReq(AContext, parsed)
 
   else if (parsed[1] = 'SHP') then
     area.PanelHlaseni(AContext, parsed);
@@ -1402,10 +1402,10 @@ begin
     else
       str := 'ano';
 
-    if (connData.regulator_loks.Count > 0) then
+    if (connData.regulator_vehicles.Count > 0) then
     begin
       str := str + ': ';
-      for var vehicle: TRV in connData.regulator_loks do
+      for var vehicle: TRV in connData.regulator_vehicles do
         str := str + IntToStr(vehicle.addr) + ', ';
       str := LeftStr(str, Length(str) - 2);
     end;

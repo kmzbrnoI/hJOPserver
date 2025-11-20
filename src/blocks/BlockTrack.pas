@@ -954,10 +954,10 @@ end;
 
 procedure TBlkTrack.MenuNewTrainClick(SenderPnl: TIdContext; SenderOR: TObject; itemindex: Integer);
 begin
-  // nejdrive posleme aktualni seznam hnacich vozidel
+  // nejdrive posleme aktualni seznam vozidel
   (SenderOR as TArea).PanelRVList(SenderPnl);
 
-  // pak posleme pozadavek na editaci hnaciho vozidla
+  // pak posleme pozadavek na editaci vozidla
   (SenderOR as TArea).BlkNewTrain(Self, SenderPnl, (itemindex - Self.MenuTopItemsCount()) div 2);
 end;
 
@@ -972,10 +972,10 @@ begin
     Self.trains.Count)) then
     Exit();
 
-  // nejdrive posleme aktualni senam hnacich vozidel
+  // nejdrive posleme aktualni seznam vozidel
   (SenderOR as TArea).PanelRVList(SenderPnl);
 
-  // pak posleme pozadavek na editaci hnaciho vozidla
+  // pak posleme pozadavek na editaci vozidla
   (SenderOR as TArea).BlkEditTrain(Self, SenderPnl,
     TrainDb.trains[Self.trains[TPanelConnData(SenderPnl.Data).train_menu_index]]);
 end;
@@ -1073,9 +1073,9 @@ begin
     // Prevzit vlak, ktery byl ukraden.
     Self.MenuXVEZMITrainClick(SenderPnl, SenderOR);
   end else begin
-    if (train.IsAnyLokoInRegulator()) then
+    if (train.IsAnyVehicleInRegulator()) then
     begin
-      // Nasilim prevzit lokomotivy z regulatoru.
+      // Nasilim prevzit vozidla z regulatoru.
       Self.MenuRegVEZMITrainClick(SenderPnl, SenderOR);
     end;
   end;
@@ -2417,7 +2417,7 @@ begin
       TBlkSignal(signal).UpdateTrainSpeed(true);
   end;
 
-  // Pri zruseni / zavedei PODJ aktualizovat rychlsot loko, ktera prijizdi,
+  // Pri zruseni / zavedei PODJ aktualizovat rychlost vozidla, ktere prijizdi,
   // protoze muze dojit ke zmene rychlosti
   var jc: TJC := JCDb.FindActiveJCWithTrack(Self.id);
   if (jc <> nil) then

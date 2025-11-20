@@ -2,7 +2,7 @@
 
 {
   Trida TFuncsVyznam, resp. jeji instance FuncsFyznam si udrzuje seznam vyznamu
-  funkci hnacich vozidel platnych pro cele kolejiste. Polozkami seznamu jsou
+  funkci vozidel platnych pro cele kolejiste. Polozkami seznamu jsou
   napriklad "houkačka dlouhá", "trubka vlakvedoucího", ...
 
   Vyznamy jsou udrzovany v jednoduchem senzamu "vyznamy".
