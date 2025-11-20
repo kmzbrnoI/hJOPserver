@@ -1505,7 +1505,7 @@ end;
 
 procedure TTrain.Log(msg: string; level: TLogLevel; source: TLogSource);
 begin
-  Logging.log('Vlk ' + Self.name + ': ' + msg, level, source);
+  Logging.log('Vlak ' + Self.name + ': ' + msg, level, source);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
