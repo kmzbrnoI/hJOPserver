@@ -385,10 +385,10 @@ object F_RVEdit: TF_RVEdit
     Style = csDropDownList
     TabOrder = 6
     Items.Strings = (
-      'parn'#237
-      'diesel'
-      'motor'
-      'elektro'
+      'parn'#237' lokomotiva'
+      'dieselov'#225' lokomotiva'
+      'motorov'#253' v'#367'z'
+      'elektrick'#225' lokomotiva'
       'v'#367'z'
       'jin'#253)
   end

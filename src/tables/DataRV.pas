@@ -104,13 +104,13 @@ begin
     TRVType.other:
       Self.LV.Items[line].SubItems[4] := 'jiný';
     TRVType.steam:
-      Self.LV.Items[line].SubItems[4] := 'parní';
+      Self.LV.Items[line].SubItems[4] := 'parní loko';
     TRVType.diesel:
-      Self.LV.Items[line].SubItems[4] := 'diesel';
+      Self.LV.Items[line].SubItems[4] := 'dieselová loko';
     TRVType.motor:
-      Self.LV.Items[line].SubItems[4] := 'motor';
+      Self.LV.Items[line].SubItems[4] := 'motorový vůz';
     TRVType.electro:
-      Self.LV.Items[line].SubItems[4] := 'elektro';
+      Self.LV.Items[line].SubItems[4] := 'elektrická loko';
     TRVType.car:
       Self.LV.Items[line].SubItems[4] := 'vůz';
   end; // case
