@@ -10,39 +10,39 @@
   pri zmene adresy je potreba RV smazat a znovu vytvorit
 
   Jak to funguje:
-  Loko muze byt ve dvou rezimech:
+  Vozidlo muze byt ve dvou rezimech:
   a) rizeni automatem
   b) rucni rizeni
-  Rezim rizeni je jeden jediny pro cele loko. Loko v rucnim rezimu ma rucni
-  POM, loko v automatu ma POM automatu.
+  Rezim rizeni je jeden jediny pro cele loko. Vozidlo v rucnim rezimu ma rucni
+  POM, vozidlo v automatu ma POM automatu.
 
-  Jak se ziskava rizeni loko do klienta? Skrze autorizacni token.
+  Jak se ziskava rizeni vozidla do klienta? Skrze autorizacni token.
   Jak to funguje: technologie si nemuze dovolit vydat jen tak nekomu rizeni
   loko. Kontrolu nad lokomotivami v kazde stanici ma jeji dispecer, ktery
-  dane loko muze pridelit strojvedoucim. Strojvedouci se tedy pripoji k
+  dane vozidlo muze pridelit strojvedoucim. Strojvedouci se tedy pripoji k
   serveru, autorizuje a pozada prislsneho dispecera (panel) o loko. Dispecer
-  mu prideli loko a strojvedouci ji muze ridit.
+  mu prideli vozidlo a strojvedouci ji muze ridit.
 
   NEBO: dispecer si vyzada od serveru tzv autorizacni token, coz je unikatni
-  string vytvoreny pro konkretni loko v konkretni cas. Tento string je
-  odeslan dispecerovi. Tento token opravnuje k rizeni loko bez zadosti
+  string vytvoreny pro konkretni vozidlo v konkretni cas. Tento string je
+  odeslan dispecerovi. Tento token opravnuje k rizeni vozidla bez zadosti
   dispecera. Pokud ho tedy naprikald dispecer vyda strojvedoucimu, strojvedouci
-  na jeho zaklade muze prevzit rizeni loko. Token patri vzdy ke konkretni
-  loko a ma omezenou casovou platnost na nekolik minut.
+  na jeho zaklade muze prevzit rizeni loko. Token patri vzdy ke konkretnimu
+  vozidlu a ma omezenou casovou platnost na nekolik minut.
 
   Pozn.
   Vsechny funkce spojene s nastavovanim dat RV maji parametr Sender
   kam je vhodne dat bud konkretni regulator, nebo OR v pripade
   regulatoru klienta.
   Informace o zmene dat RV je pak volana do vsech systemu mimo Senderu.
-  Tedy napriklad, pokud je loko otevrene v 5 regulatorech a jeste na serveru
+  Tedy napriklad, pokud je vozidlo otevrene v 5 regulatorech a jeste na serveru
   a dojde ke zmene rychlosti v OR1, je informace o zmene rychlosti
   odeslana do OR2, OR3, OR4, OR5 a regulatoru na serveru, nikoliv
   vsak do OR1 (tomu prijde napriklad OK, ci error callback)
 
   Prebirani lokomotivy:
   1) Zavolat locoAcquire do Trakce (zjisti vsechny informace o lokomotive)
-  2) Nastavit spravny smer loko a rychlost loko (vzhledem k vlaku nebo aktualni)
+  2) Nastavit spravny smer a rychlost vozidla (vzhledem k vlaku nebo aktualni)
   3) Nastavit funkce na pozadovane hodnoty
   4) Naprogramovat POM
   Pokud v libovolne casti procesu nastane chyba, je vyvolan Error callback.
@@ -410,7 +410,7 @@ var addr: Integer;
 begin
   addr := StrToInt(section);
   if ((addr < 0) or (addr > 9999)) then
-    raise Exception.Create('Adresa loko mimo rozsah');
+    raise Exception.Create('Adresa vozidla mimo rozsah');
   Self.faddr := addr;
 
   Self.data.name := ini.ReadString(section, 'nazev', section);
@@ -820,7 +820,7 @@ begin
   except
     on E: Exception do
     begin
-      raise Exception.Create('Chyba při parsování dat hnacího vozidla - ' + E.Message);
+      raise Exception.Create('Chyba při parsování dat vozidla - ' + E.Message);
       Exit();
     end;
   end;
@@ -832,7 +832,7 @@ begin
 
   strs.Free();
 
-  // aktulizace LOKO v regulatorech
+  // aktulizace vozidel v regulatorech
   Self.UpdateAllRegulators();
   Self.SaveData();
 end;
@@ -852,7 +852,7 @@ begin
 
   if (Self.stolen) then
   begin
-    // loko ukradeno ovladacem
+    // vozidlo ukradeno ovladacem
     Self.state.area.BroadcastData('RUC;' + IntToStr(Self.addr) + ';MM. ' + IntToStr(Self.addr) + ' (' + train + ')');
     Exit();
   end else begin
@@ -865,7 +865,7 @@ begin
 
       Self.state.area.BroadcastData(msg);
     end else begin
-      // loko neni v rucnim rizeni -> oznamit klientovi
+      // vozidlo neni v rucnim rizeni -> oznamit klientovi
       if (send_remove) then
         Self.state.area.BroadcastData('RUC-RM;' + IntToStr(Self.addr));
     end;
@@ -883,7 +883,7 @@ begin
     begin
       Self.state.regulators.Delete(i);
 
-      // aktualizace rychlosti v pripade, kdy byla loko rizena rucne (force = true)
+      // aktualizace rychlosti v pripade, kdy bylo vozidlo rizena rucne (force = true)
       if (Self.state.regulators.Count = 0) then
       begin
         Self.manual := false;
@@ -948,14 +948,14 @@ begin
 
   if (state) then
   begin
-    // loko je uvedeno do rucniho rizeni
+    // vozidlo je uvedeno do rucniho rizeni
 
     // nastavit POM rucniho rizeni
     // neprevzatym RV je POM nastaven pri prebirani; prebirani vozidel ale neni nase starost, to si resi volajici fuknce
     if ((Self.acquired) and (Self.pom <> TPomStatus.manual)) then
       Self.SetPom(TPomStatus.manual, TTrakce.Callback(), TTrakce.Callback());
   end else begin
-    // loko je vyjmuto z rucniho rizeni
+    // vozidlo je vyjmuto z rucniho rizeni
 
     if (Self.state.train > -1) then
     begin
@@ -965,7 +965,7 @@ begin
 
       Trains[Self.train].speed := Trains[Self.train].speed; // tento prikaz nastavi rychlost
     end else begin
-      // loko neni na vlaku -> zkusit odhlasit
+      // vozidlo neni na vlaku -> zkusit odhlasit
       Self.CheckRelease();
     end;
   end;
@@ -1093,7 +1093,7 @@ var speed: Integer;
 begin
   if (not Self.acquired) then
   begin
-    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 403, 'Loko neprevzato');
+    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 403, 'Vozidlo neprevzato');
     Exit();
   end;
 
@@ -1284,7 +1284,7 @@ begin
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
-    Log('LOKO ' + Self.name + ' ukradena, nenastavuji rychlost', llInfo);
+    Log('Vozidlo ' + Self.name + ' ukradeno, nenastavuji rychlost', llInfo);
     Self.CallCb(err);
     Exit();
   end;
@@ -1296,7 +1296,7 @@ begin
   Self.slot.step := speedStep;
 
   trakce.Callbacks(ok, err, cbOk, cbErr);
-  trakce.Log(llCommands, 'Loko ' + Self.name + ': rychlostní stupeň: ' + IntToStr(speedStep) + ', směr: ' +
+  trakce.Log(llCommands, 'Vozidlo ' + Self.name + ': rychlostní stupeň: ' + IntToStr(speedStep) + ', směr: ' +
     ownConvert.BoolToStr10(direction));
 
   Inc(Self.state.speedPendingCmds);
@@ -1335,7 +1335,7 @@ begin
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
-    Log('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', llInfo);
+    Log('Vozidlo ' + Self.name + ' ukradeno, nenastavuji funkce', llInfo);
     Self.CallCb(err);
     Exit();
   end;
@@ -1347,7 +1347,7 @@ begin
 
   Self.state.functions[func] := state;
   trakce.Callbacks(ok, err, cbOk, cbErr);
-  trakce.Log(llCommands, 'Loko ' + Self.name + ': F' + IntToStr(func) + ': ' + ownConvert.BoolToStr10(state));
+  trakce.Log(llCommands, 'Vozidlo ' + Self.name + ': F' + IntToStr(func) + ': ' + ownConvert.BoolToStr10(state));
 
   try
     trakce.LocoSetSingleFunc(Self.addr, func, Self.slot.functions, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
@@ -1374,7 +1374,7 @@ begin
   end;
   if ((Self.stolen) and (not Self.acquiring)) then
   begin
-    Log('LOKO ' + Self.name + ' ukradena, nenastavuji funkce', llInfo);
+    Log('Vozidlo ' + Self.name + ' ukradeno, nenastavuji funkce', llInfo);
     Self.CallCb(err);
     Exit();
   end;
@@ -1395,7 +1395,7 @@ begin
     Exit();
   end;
 
-  trakce.Log(llCommands, 'Loko ' + Self.name + ': změna více funkcí');
+  trakce.Log(llCommands, 'Vozidlo ' + Self.name + ': změna více funkcí');
   Self.slot.functions := funcState;
 
   try
@@ -1582,7 +1582,7 @@ begin
       speedStep := 0;
   end;
 
-  // Vzdy nastavit smer, protoze tim prevezmeme loko z rizeni jineho ovladace
+  // Vzdy nastavit smer, protoze tim prevezmeme vozidlo z rizeni jineho ovladace
   Self.SetSpeedStepDir(speedStep, direction, TTrakce.Callback(Self.TrakceAcquiredDirection),
     TTrakce.Callback(Self.TrakceAcquiredErr));
 end;
@@ -1628,7 +1628,7 @@ begin
   end;
 
   // odesleme do regulatoru info o uspesne autorizaci
-  // to je dobre tehdy, kdyz je loko prebirano z centraly
+  // to je dobre tehdy, kdyz je vozidlo prebirano z centraly
   var state: string := ite(Self.manual, 'total', 'ok');
   Self.BroadcastRegulators('AUTH;' + state + ';{' + Self.GetPanelLokString() + '}');
 

@@ -171,7 +171,7 @@ begin
         vehicle := TRV.Create(ini, stateini, sect);
       except
         on E: Exception do
-          AppEvents.LogException(E, 'Chyba pri nacitani souboru loko : ' + filename + ', sekce ' + sect);
+          AppEvents.LogException(E, 'Chyba pri nacitani souboru vozidla : ' + filename + ', sekce ' + sect);
       end;
 
       if (vehicle = nil) then
@@ -187,7 +187,7 @@ begin
   except
     on E: Exception do
     begin
-      AppEvents.LogException(E, 'Chyba pri nacitani souboru loko ' + filename);
+      AppEvents.LogException(E, 'Chyba pri nacitani souboru vozidla ' + filename);
       if (ini <> nil) then
         ini.Free();
       if (sections <> nil) then
@@ -285,9 +285,9 @@ function TRVDb.Add(Data: TRVData; addr: Word; siteA: TRVSite; area: TObject): TR
 var state: TRVState;
 begin
   if (addr > 9999) then
-    raise EInvalidAddress.Create('Neplatná adresa lokomotivy ' + IntToStr(addr));
+    raise EInvalidAddress.Create('Neplatná adresa vozidla ' + IntToStr(addr));
   if (Self.mVehicles[addr] <> nil) then
-    raise ELocoExists.Create('Lokomotiva s adresou ' + IntToStr(addr) + ' již existuje');
+    raise ELocoExists.Create('Vozidlo s adresou ' + IntToStr(addr) + ' již existuje');
 
   // pokud neexistuje, pridame ji
 
@@ -397,11 +397,11 @@ procedure TRVDb.Remove(addr: Word);
 begin
   // rv neexistuje
   if (Self.mVehicles[addr] = nil) then
-    raise ENoLoco.Create('Lokomotiva s touto adresou neexistuje!');
+    raise ENoLoco.Create('Vozidlo s touto adresou neexistuje!');
   if (Self.mVehicles[addr].state.train > -1) then
-    raise ELocoOnTrain.Create('Lokomotiva je na vlaku!');
+    raise ELocoOnTrain.Create('Vozidlo je na vlaku!');
   if ((Self.mVehicles[addr].acquired) or (Self.mVehicles[addr].stolen)) then
-    raise ELocoPrevzato.Create('Lokomotiva převzata do řízení počítače');
+    raise ELocoPrevzato.Create('Vozidlo převzato do řízení počítače');
 
   var index: Integer := Self.mVehicles[addr].index;
   FreeAndNil(Self.mVehicles[addr]);
@@ -578,8 +578,8 @@ end;
 procedure TRVDb.AcquiredErr(Sender: TObject; Data: Pointer);
 begin
   Self.mAcquiring := false;
-  trakce.Log(llErrors, 'ERR: LOKO ' + IntToStr(Word(Data)) + ' se nepodařilo převzít');
-  F_Main.LogBrief('LOKO: loko ' + IntToStr(Word(Data)) + ' se nepodařilo převzít', llError);
+  trakce.Log(llErrors, 'ERR: Vozidlo ' + IntToStr(Word(Data)) + ' se nepodařilo převzít');
+  F_Main.LogBrief('Vozidla: vozidlo ' + IntToStr(Word(Data)) + ' se nepodařilo převzít', llError);
   if (Assigned(Self.eAcquiredErr)) then
     Self.eAcquiredErr(Self);
 end;

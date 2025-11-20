@@ -179,7 +179,7 @@ begin
       on E: Exception do
       begin
         Self.vehicle := tmp;
-        ExceptionMessageBox('Lokomotivu se nepodařilo odhlásit:', E);
+        ExceptionMessageBox('Vozidlo se nepodařilo odhlásit:', E);
       end;
     end;
   end;
@@ -195,7 +195,7 @@ end;
 procedure TF_DigiReg.AcquireFailed(Sender: TObject; data: Pointer);
 begin
   Self.B_Acquire.Enabled := true;
-  ErrorMessageBox('Převezetí lokomotivy se nedařilo!');
+  ErrorMessageBox('Převezetí vozidla se nedařilo!');
 end;
 
 procedure TF_DigiReg.B_STOPClick(Sender: TObject);
@@ -218,14 +218,14 @@ begin
     if (Self.vehicle.trakceError) then
     begin
       Self.L_ComStatus.Font.Color := clRed;
-      Self.L_ComStatus.Caption := 'loko NEKOMUNIKUJE';
+      Self.L_ComStatus.Caption := 'vozidlo NEKOMUNIKUJE';
     end else begin
       Self.L_ComStatus.Font.Color := clGreen;
-      Self.L_ComStatus.Caption := 'loko KOMUNIKUJE';
+      Self.L_ComStatus.Caption := 'vozidlo KOMUNIKUJE';
     end;
   end else begin
     Self.L_ComStatus.Font.Color := clSIlver;
-    Self.L_ComStatus.Caption := 'loko odhlášeno';
+    Self.L_ComStatus.Caption := 'vozidlo odhlášeno';
   end;
 
   if (Sender <> Self) then

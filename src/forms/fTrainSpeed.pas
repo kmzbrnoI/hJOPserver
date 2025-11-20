@@ -68,7 +68,7 @@ procedure TF_TrainSpeed.MI_HelpClick(Sender: TObject);
 begin
   StrMessageBox('Každý øádek obsahuje rychlost v km/h a kritéria zadávané jako regulární výrazy.'+#13#10+
     'Øádky se zpracovávají postupnì odshora dolù. Pokud vlak vyhoví kritériím v øádku, je jí nastavena rychlost v onom øádku.'+#13#10+
-    'Kritéria jsou tvoøena typem vlaku a tøídou pøechodnosti hnacích vozidel. Všechna hnací vozidla musí vyhovìt regulárnímu výrazu tøídy pøechodnosti.'+#13#10+
+    'Kritéria jsou tvoøena typem vlaku a tøídou pøechodnosti vozidel. Všechna vozidla musí vyhovìt regulárnímu výrazu tøídy pøechodnosti.'+#13#10+
     'Pøíklad tabulky:'+#13#10+
     '90 Sc|Ec|Ic|Ex|R .*'+#13#10+
     '60 Pn|Vn .*'+#13#10+

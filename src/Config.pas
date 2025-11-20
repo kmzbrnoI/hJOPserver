@@ -130,17 +130,17 @@ begin
   end;
   F_Main.E_dataload_spnl.Text := read;
 
-  F_Splash.AddStav('Načítám hnací vozidla...');
+  F_Splash.AddStav('Načítám vozidla...');
   F_Main.E_dataload_RV_dir.Text := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'lok', 'lok');
   F_Main.E_dataload_RV_state.Text := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'lok', 'stav\lok.ini');
-  Log('Načítám hnací vozidla - ' + F_Main.E_dataload_RV_dir.Text + '\*', TLogLevel.llInfo, lsData);
+  Log('Načítám vozidla - ' + F_Main.E_dataload_RV_dir.Text + '\*', TLogLevel.llInfo, lsData);
   try
     RVDb.LoadFromDir(F_Main.E_dataload_RV_dir.Text, F_Main.E_dataload_RV_state.Text);
   except
     on e: Exception do
       AppEvents.LogException(e);
   end;
-  Log('Načteno ' + IntToStr(RVDb.cnt) + ' hnacích vozidel', TLogLevel.llInfo, lsData);
+  Log('Načteno ' + IntToStr(RVDb.cnt) + ' vozidel', TLogLevel.llInfo, lsData);
 
   F_Splash.AddStav('Načítám RCS...');
   Log('Načítám RCS...', TLogLevel.llInfo, lsData);

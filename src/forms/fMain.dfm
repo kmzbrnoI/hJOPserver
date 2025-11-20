@@ -4389,7 +4389,6 @@ object F_Main: TF_Main
         OnChange = LV_TrainsChange
         OnCustomDrawItem = LV_TrainsCustomDrawItem
         OnKeyDown = LV_TrainsKeyDown
-        ExplicitLeft = 2
       end
       object P_Trains_Bg: TPanel
         Left = 0

@@ -1115,7 +1115,7 @@ begin
         csItems.Add(CSItem(RVDb[addr].NiceName(), 'Násilné převzetí řízení'));
 
     PanelServer.ConfirmationSequence(SenderPnl, Self.PotvrRegVezmiTrain, SenderOR as TArea,
-      'Nouzové převzetí hnacích vozidel do automatického řízení', GetObjsList(Self), csItems, True, False);
+      'Nouzové převzetí vozidel do automatického řízení', GetObjsList(Self), csItems, True, False);
   finally
     csItems.Free();
   end;
@@ -1796,7 +1796,7 @@ begin
 
   if (not Self.CanStandTrain()) then
   begin
-    PanelServer.SendInfoMsg(SenderPnl, 'Loko lze přesunout pouze na staniční kolej!');
+    PanelServer.SendInfoMsg(SenderPnl, 'Vozidlo lze přesunout pouze na staniční kolej!');
     Exit(true);
   end;
 

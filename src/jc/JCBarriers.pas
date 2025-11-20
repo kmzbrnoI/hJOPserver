@@ -1073,7 +1073,7 @@ begin
   if (RVDb[addr] = nil) then
     raise EJCBarrier.Create('Engine does not exist');
 
-  Result[0] := GetUPOLine('Hnací vozidlo v ručním řízení', taCenter, TJopColor.black, TJopColor.yellow);
+  Result[0] := GetUPOLine('Vozidlo v ručním řízení', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine(IntToStr(addr) + ' : ' + RVDb[addr].name);
   Result[2] := GetUPOLine('Řídí: '+RVDb[addr].DriverFullNames());
 end;

@@ -125,7 +125,7 @@ begin
   end;
 
   // regulator zacina zadost o lokomotivu ze stanice
-  // -;LOK;G:PLEASE;or_id;comment            - pozadavek na rizeni loko z dane oblasti rizeni
+  // -;LOK;G:PLEASE;or_id;comment            - pozadavek na rizeni vozidla z dane oblasti rizeni
   // odpoved od serveru:
   // -;LOK;G:PLEASE-RESP;[ok, err];info      - odpoved na zadost o lokomotivu z reliefu; v info je pripadna chybova zprava
   if (parsed[3] = 'PLEASE') then
@@ -212,18 +212,18 @@ begin
 
   if (parsed[3] = 'PLEASE') then
   begin
-    // zadost o prime prevzeti loko -> kontrola nalezitosti
+    // zadost o prime prevzeti vozidla -> kontrola nalezitosti
 
     try
       // autorizovany regulator, ci regulator uzivatele root se nemusi prokazovat tokenem
       if ((not(Sender.Data as TPanelConnData).regulator_user.root) and (not vehicle.IsReg(Sender))) then
       begin
-        // je loko uz na nejakem nerootovskem (!) ovladaci -> odmitnout
+        // je vozidlo uz na nejakem nerootovskem (!) ovladaci -> odmitnout
         for var i := 0 to vehicle.state.regulators.Count - 1 do
         begin
           if (not vehicle.state.regulators[i].root) then
           begin
-            PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';AUTH;not;Loko je otevřené v jiném regulátoru');
+            PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';AUTH;not;Vozidlo je otevřené v jiném regulátoru');
             Exit();
           end;
         end;
@@ -233,7 +233,7 @@ begin
           if (not vehicle.IsReg(Sender)) then
           begin
             // Uzivatel nema na hnaci vozidlo narok
-            PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';AUTH;not;Na toto hnací vozidlo nemáte nárok');
+            PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';AUTH;not;Na toto vozidlo nemáte nárok');
             Exit();
           end;
         end else begin
@@ -263,7 +263,7 @@ begin
   // je tento regulator uz v seznamu regulatoru?
   if (not vehicle.IsReg(Sender)) then
   begin
-    PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';RESP;err;Loko ' + parsed[2] + ' neautorizováno');
+    PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';RESP;err;Vozidlo ' + parsed[2] + ' neautorizováno');
     Exit();
   end;
 
@@ -281,7 +281,7 @@ begin
 
   if (vehicle.stolen) then
   begin
-    PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';RESP;err;Loko ' + parsed[2] + ' ukradeno, nenastavuji');
+    PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';RESP;err;Vozidlo ' + parsed[2] + ' ukradeno, nenastavuji');
     Exit();
   end;
 
@@ -344,7 +344,7 @@ begin
 
   if (not vehicle.manual) then
   begin
-    PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';RESP;err;Loko ' + parsed[2] + ' není v ručním řízení');
+    PanelServer.SendLn(Sender, '-;LOK;' + parsed[2] + ';RESP;err;Vozidlo ' + parsed[2] + ' není v ručním řízení');
     Exit();
   end;
 
@@ -522,7 +522,7 @@ begin
   for var i: Integer := 0 to vehicle.state.regulators.Count - 1 do
     if (vehicle.state.regulators[i].conn <> exclude) then
       PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) +
-        ';AUTH;stolen;Loko ukradeno ovladačem');
+        ';AUTH;stolen;Vozidlo ukradeno ovladačem');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -561,7 +561,7 @@ begin
     vehicle.RegulatorAdd(reg);
   end;
 
-  // Je loko prevzato?
+  // Je vozidlo prevzato?
   if (not vehicle.acquired) then
   begin
     // ne -> prevzit loko
@@ -593,12 +593,12 @@ begin
     end; // while
   end else begin
     // odpoved na pozadavek o autorizaci rizeni hnaciho vozidla
-    // kdyz loko prebirame, je odesilana automaticky
+    // kdyz vozidlo prebirame, je odesilana automaticky
     var typ: string := ite(vehicle.manual, 'total', 'ok');
     PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(vehicle.addr) + ';AUTH;' + typ + ';{' + vehicle.GetPanelLokString() + '}')
   end;
 
-  // pridani loko do seznamu autorizovanych loko klientem
+  // pridani vozidla do seznamu autorizovanych vozidel klientem
 
   found := false;
   for var tmpRV in TPanelConnData(Regulator.Data).regulator_loks do
@@ -612,7 +612,7 @@ begin
 
   if (not found) then
   begin
-    // pridani nove loko do seznamu
+    // pridani noveho vozidla do seznamu
     TPanelConnData(Regulator.Data).regulator_loks.Add(vehicle);
     PanelServer.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
   end;

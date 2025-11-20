@@ -1605,7 +1605,7 @@ begin
         // kontrola prehravani stanicniho hlaseni
         Train.CheckAnnouncement(Self);
       end else begin
-        // neni povolovaci navest -> zastavit LOKO
+        // neni povolovaci navest -> zastavit vozidlo
         if ((Train.direction = Self.direction) and (Train.wantedSpeed <> 0)) then
           Train.SetSpeedDirection(0, Self.direction);
       end;

@@ -1501,7 +1501,7 @@ end;
 
 procedure TF_Main.A_Locos_AcquireExecute(Sender: TObject);
 begin
-  logging.Log('Loko: přebírám...', TLogLevel.llInfo, lsTrakce, True);
+  logging.Log('Vozidla: přebírám...', TLogLevel.llInfo, lsTrakce, True);
   Self.S_locos_acquired.Brush.Color := clBlue;
   Self.G_locos_acquired.ForeColor := clBlue;
 
@@ -1517,7 +1517,7 @@ end;
 
 procedure TF_Main.A_Locos_ReleaseExecute(Sender: TObject);
 begin
-  logging.Log('Loko: odhlašuji...', TLogLevel.llInfo, lsTrakce, True);
+  logging.Log('Vozidla: odhlašuji...', TLogLevel.llInfo, lsTrakce, True);
   Self.S_locos_acquired.Brush.Color := clBlue;
   Self.G_locos_acquired.ForeColor := clBlue;
   RVDb.TrakceReleaseAllUsed(Self.OnTrkAllReleased, Self.OnTrkLocoReleased);
@@ -1525,7 +1525,7 @@ end;
 
 procedure TF_Main.OnTrkAllAcquired(Sender: TObject);
 begin
-  logging.Log('Loko: všechna loko převzata', TLogLevel.llInfo, lsTrakce, True);
+  logging.Log('Vozidla: všechna vozidla převzata', TLogLevel.llInfo, lsTrakce, True);
 
   Self.S_locos_acquired.Brush.Color := clLime;
   Self.A_Locos_Acquire.Enabled := false;
@@ -1551,13 +1551,13 @@ begin
     Self.A_System_Stop.Enabled := true;
   end;
 
-  StrMessageBox('Nepodařilo se převzít všechny lokomotivy, více informací v logu.', 'Chyba',
+  StrMessageBox('Nepodařilo se převzít všechna vozidla, více informací v logu.', 'Chyba',
     MB_OK OR MB_ICONWARNING);
 end;
 
 procedure TF_Main.OnTrkAllReleased(Sender: TObject);
 begin
-  logging.Log('Loko: všechna loko odhlášena', TLogLevel.llInfo, lsTrakce, True);
+  logging.Log('Vozidla: všechna vozidla odhlášena', TLogLevel.llInfo, lsTrakce, True);
 
   Self.S_locos_acquired.Brush.Color := clRed;
 
@@ -1799,7 +1799,7 @@ end;
 
 procedure TF_Main.A_Turnoff_FunctionsExecute(Sender: TObject);
 begin
-  Logging.Log('Vypínám zvuky hnacích vozidel...', TLogLevel.llInfo, lsTrakce, True);
+  Logging.Log('Vypínám zvuky vozidel...', TLogLevel.llInfo, lsTrakce, True);
   Application.ProcessMessages();
   trakce.TurnOffSound(TTrakce.Callback(Self.OnTrkAllFunctionTurnedOff),
     TTrakce.Callback(Self.OnTrkAllFunctionTurnedOff));
@@ -1807,7 +1807,7 @@ end;
 
 procedure TF_Main.OnTrkAllFunctionTurnedOff(Sender: TObject; Data: Pointer);
 begin
-  logging.Log('Zvuky všech hnacích vozidel vypnuty', TLogLevel.llInfo, lsTrakce, True);
+  logging.Log('Zvuky všech vozidel vypnuty', TLogLevel.llInfo, lsTrakce, True);
   Application.ProcessMessages();
   Self.A_Locos_ReleaseExecute(Self);
 end;
@@ -2545,7 +2545,7 @@ end;
 
 procedure TF_Main.B_ClearStatsClick(Sender: TObject);
 begin
-  if (StrMessageBox('Opravdu smazat najeté bloky a kilometry všech hnacích vozidel?', 'Opravdu?',
+  if (StrMessageBox('Opravdu smazat najeté bloky a kilometry všech vozidel?', 'Opravdu?',
     MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes) then
     RVDb.ClearAllStatistics();
 end;
@@ -2966,7 +2966,7 @@ end;
 
 procedure TF_Main.MI_SaveVehiclesClick(Sender: TObject);
 begin
-  var response := StrMessageBox('Ukládání hnacích vozidel probíhá automaticky, manuální ukládání je potřeba pouze ve výjimečných situacích. Pokračovat?',
+  var response := StrMessageBox('Ukládání vozidel probíhá automaticky, manuální ukládání je potřeba pouze ve výjimečných situacích. Pokračovat?',
     'Otázka', MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2);
   if (response <> mrYes) then
     Exit();
@@ -2979,7 +2979,7 @@ begin
     on e: Exception do
       AppEvents.LogException(e);
   end;
-  Logging.log('Uložena všechna hnací vozidla', TLogLevel.llInfo, lsData, True);
+  Logging.log('Uložena všechna vozidla', TLogLevel.llInfo, lsData, True);
   Screen.Cursor := crDefault;
 end;
 

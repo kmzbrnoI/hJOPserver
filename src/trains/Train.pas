@@ -449,7 +449,7 @@ procedure TTrain.UpdateTrainFromJson(train: TJsonObject; ok: TCb; err: TCb);
 var acq: ^TTrainAcquire;
 begin
   if (Self.acquiring) then
-    raise Exception.Create('Přebírání lokomotiv vlaku již probíhá!');
+    raise Exception.Create('Přebírání vozidel vlaku již probíhá!');
 
   // zkontrolujeme, jestli nejaky vlak s timto cislem uz nahodou neexistuje
   for var i := 0 to _MAX_TRAIN-1 do
@@ -515,7 +515,7 @@ begin
   end;
 
   if (train.O['vehicles'].Count > _MAX_TRAIN_VEHICLES) then
-    raise Exception.Create('Překročen maximální počet hnacích vozidel na vlaku');
+    raise Exception.Create('Překročen maximální počet vozidel na vlaku');
 
   var new := TList<Integer>.Create();
   try
@@ -525,13 +525,13 @@ begin
       var addr := StrToInt(addrrv.Name);
 
       if (not Assigned(RVDb[addr])) then
-        raise Exception.Create('Loko '+IntToStr(addr)+' neexistuje na serveru!');
+        raise Exception.Create('Vozidlo '+IntToStr(addr)+' neexistuje na serveru!');
 
       if ((RVDb[addr].train > -1) and (RVDb[addr].train <> Self.index)) then
-        raise Exception.Create('Loko '+IntToStr(addr)+' již přiřazena vlaku '+Trains.GetTrainNameByIndex(RVDb[addr].train));
+        raise Exception.Create('Vozidlo '+IntToStr(addr)+' již přiřazeno vlaku '+Trains.GetTrainNameByIndex(RVDb[addr].train));
 
       if (new.Contains(addr)) then
-        raise Exception.Create('Duplicitní loko!');
+        raise Exception.Create('Duplicitní vozidlo!');
 
       if (vehicle.Contains('note')) then
         RVDb[addr].Data.note := vehicle['note'];
@@ -665,7 +665,7 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 // uvolnit vsechna loko
-// pred uvolnenim loko take zastavime
+// pred uvolnenim vozidla take zastavime
 procedure TTrain.ReleaseAllLoko();
 begin
   if ((not Assigned(RVDb)) or (not Assigned(trakce))) then Exit();
@@ -721,12 +721,12 @@ begin
 
     if (RVDb[addr].manual) then
     begin
-      Self.Log('LOKO ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', llInfo);
+      Self.Log('Vozidlo ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', llInfo);
       continue;
     end;
     if (RVDb[addr].stolen) then
     begin
-      Self.Log('LOKO ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', llInfo);
+      Self.Log('Vozidlo ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', llInfo);
       continue;
     end;
 

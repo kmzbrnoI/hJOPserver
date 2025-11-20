@@ -152,22 +152,22 @@ var data: TRVData;
 begin
   if (Self.E_Name.Text = '') then
   begin
-    StrMessageBox('Vypište název hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vypište název vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Class.ItemIndex = -1) then
   begin
-    StrMessageBox('Vyberte typ hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte typ vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_CabA.ItemIndex = -1) and (Self.CB_CabA.Visible) then
   begin
-    StrMessageBox('Vyberte směr stanoviště A hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte směr stanoviště A vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if (Self.CB_Area.ItemIndex = -1) then
   begin
-    StrMessageBox('Vyberte stanici hnacího vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    StrMessageBox('Vyberte stanici vozidla!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
     Exit();
   end;
   if ((not Self.E_Addr.ReadOnly) and (Self.E_Addr.Text = '')) then

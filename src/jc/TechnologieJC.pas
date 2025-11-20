@@ -2553,7 +2553,7 @@ begin
     end;
 
     track.Train.ChangeDirection();
-    Self.Log('Obsazen smyckovy usek ' + blk.name + ' - menim smer loko ve vlaku ' + track.Train.name, llInfo);
+    Self.Log('Obsazen smyckovy usek ' + blk.name + ' - menim smer vozidel ve vlaku ' + track.Train.name, llInfo);
   end;
 end;
 

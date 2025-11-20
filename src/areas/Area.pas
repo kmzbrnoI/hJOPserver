@@ -924,7 +924,7 @@ var
   tcpSender: TIDContext;
 begin
   tcpSender := data;
-  Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Nepodařilo se převzít lokomotivy z centrály!');
+  Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Nepodařilo se převzít vozidla z centrály!');
 end;
 
 procedure TArea.PanelTrainCreateErr(Sender: TObject; data: Pointer);
@@ -932,7 +932,7 @@ var
   tcpSender: TIDContext;
 begin
   tcpSender := data;
-  Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Vlak založen, ale nepodařilo se převízt lokomotivy z centrály!');
+  Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Vlak založen, ale nepodařilo se převízt vozidla z centrály!');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1421,12 +1421,12 @@ begin
   end;
   if (RVDb[addr] = nil) then
   begin
-    Self.SendLn(Sender, 'HV;REMOVE;' + IntToStr(addr) + ';ERR;Loko neexsituje');
+    Self.SendLn(Sender, 'HV;REMOVE;' + IntToStr(addr) + ';ERR;Vozidlo neexistuje');
     Exit();
   end;
   if (RVDb[addr].state.Area <> Self) then
   begin
-    Self.SendLn(Sender, 'HV;REMOVE;' + IntToStr(addr) + ';ERR;Loko se nenachází ve stanici ' + Self.name);
+    Self.SendLn(Sender, 'HV;REMOVE;' + IntToStr(addr) + ';ERR;Vozidlo se nenachází ve stanici ' + Self.name);
     Exit();
   end;
 
@@ -1457,12 +1457,12 @@ begin
     data.Free();
     if (RVDb[addr] = nil) then
     begin
-      Self.SendLn(Sender, 'HV;EDIT;' + IntToStr(addr) + ';ERR;Loko neexistuje');
+      Self.SendLn(Sender, 'HV;EDIT;' + IntToStr(addr) + ';ERR;Vozidlo neexistuje');
       Exit();
     end;
     if (RVDb[addr].state.Area <> Self) then
     begin
-      Self.SendLn(Sender, 'HV;EDIT;' + IntToStr(addr) + ';ERR;Loko se nenachází ve stanici ' + Self.name);
+      Self.SendLn(Sender, 'HV;EDIT;' + IntToStr(addr) + ';ERR;Vozidlo se nenachází ve stanici ' + Self.name);
       Exit();
     end;
 
@@ -1563,21 +1563,21 @@ begin
         var vehicle: TRV := RVDb[StrToInt(data[i])];
         if (vehicle = nil) then
         begin
-          Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Loko ' + data[i] + ' neexistuje');
+          Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Vozidlo ' + data[i] + ' neexistuje');
           Exit();
         end;
 
         // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
         if ((vehicle.state.Area <> Self) and (rights <> TAreaRights.superuser)) then
         begin
-          Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Loko ' + data[i] + ' se nenachází ve stanici');
+          Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Vozidlo ' + data[i] + ' se nenachází ve stanici');
           Exit();
         end;
 
         // nelze vygenerovat token pro loko, ktere je uz v regulatoru
         if ((vehicle.state.regulators.Count > 0) and (rights <> TAreaRights.superuser)) then
         begin
-          Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Loko ' + data[i] + ' již otevřeno v regulátoru');
+          Self.SendLn(Sender, 'LOK-TOKEN;ERR;' + str[3] + ';Vozidlo ' + data[i] + ' již otevřeno v regulátoru');
           Exit();
         end;
       end; // for i
@@ -1599,8 +1599,8 @@ begin
 
   // klient vybral lokomotivy pro rucni rizeni
   // odpovedi, ktere muzu poslat panelu:
-  // or;LOK-REQ;OK                           - seznam loko na rucni rizeni schvalen serverem
-  // or;LOK-REQ;ERR;comment                  - seznam loko na rucni rizeni odmitnut serverem
+  // or;LOK-REQ;OK                           - seznam vozidel na rucni rizeni schvalen serverem
+  // or;LOK-REQ;ERR;comment                  - seznam vozidel na rucni rizeni odmitnut serverem
   else if (str[2] = 'LOK') then
   begin
     try
@@ -1620,21 +1620,21 @@ begin
         var vehicle: TRV := RVDb[StrToInt(data[i])];
         if (vehicle = nil) then
         begin
-          Self.SendLn(Sender, 'LOK-REQ;ERR;Loko ' + data[i] + ' neexistuje');
+          Self.SendLn(Sender, 'LOK-REQ;ERR;Vozidlo ' + data[i] + ' neexistuje');
           Exit();
         end;
 
         // pokud je uzvatel pripojen jako superuser, muze prevzit i loko, ktere se nenachazi ve stanici
         if ((vehicle.state.Area <> Self) and (rights <> TAreaRights.superuser)) then
         begin
-          Self.SendLn(Sender, 'LOK-REQ;ERR;Loko ' + data[i] + ' se nenachází ve stanici');
+          Self.SendLn(Sender, 'LOK-REQ;ERR;Vozidlo ' + data[i] + ' se nenachází ve stanici');
           Exit();
         end;
 
         // nelze vygenerovat token pro loko, ktere je uz v regulatoru
         if ((vehicle.state.regulators.Count > 0) and (rights <> TAreaRights.superuser)) then
         begin
-          Self.SendLn(Sender, 'LOK-REQ;ERR;Loko ' + data[i] + ' již otevřeno v regulátoru');
+          Self.SendLn(Sender, 'LOK-REQ;ERR;Vozidlo ' + data[i] + ' již otevřeno v regulátoru');
           Exit();
         end;
       end; // for i
@@ -1676,7 +1676,7 @@ begin
   // or;LOK-REQ;U-PLEASE;blk_id;train_index      - zadost o vydani seznamu hnacich vozidel na danem useku
   // mozne odpovedi:
   // or;LOK-REQ;U-OK;[hv1][hv2]...           - seznamu hnacich vozidel v danem useku
-  // or;LOK-REQ;U-ERR;info                   - chyba odpoved na pozadavek na seznam loko v danem useku
+  // or;LOK-REQ;U-ERR;info                   - chyba odpoved na pozadavek na seznam vozdel v danem useku
 
   else if (str[2] = 'U-PLEASE') then
   begin
@@ -2136,7 +2136,7 @@ var
   Panel: TIDContext;
 begin
   Panel := TIDContext(data);
-  PanelServer.BottomError(Panel, 'Nepodařilo se nastavit zvuky hnacích vozidel!', Self.shortName, 'Trakce');
+  PanelServer.BottomError(Panel, 'Nepodařilo se nastavit zvuky vozidel!', Self.shortName, 'Trakce');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
