@@ -2304,7 +2304,6 @@ begin
                 railway.AddTrain(TBlkRailwayTrain.Create(track.TrainI));
             end;
           end;
-          railway.Zaver := false;
 
           // nastavime rychlost vlaku
           if (Self.typ = TJCType.Train) then
