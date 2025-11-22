@@ -901,7 +901,7 @@ begin
   var signalTrack: TBlkTrack;
   signalTrack := TBlkTrack(signal.track);
 
-  if (signalTrack.IsTrain()) then
+  if ((signalTrack.IsTrain()) and (Self.typ = TJCType.Train)) then
   begin
     var anyEngineManual := false;
     var train: TTrain := Self.GetTrain(signal, signalTrack);
@@ -933,16 +933,13 @@ begin
     end;
 
     // direction of a train
-    if (Self.typ = TJCType.Train) then
-    begin
-      if (train.sdata.dir_L or train.sdata.dir_S) then
-        if (((signal.direction = TRVSite.odd) and (not train.sdata.dir_L)) or
-          ((signal.direction = TRVSite.even) and (not train.sdata.dir_S))) then
-          barriers.Add(TJCBarTrainWrongDir.Create(train.index));
+    if (train.sdata.dir_L or train.sdata.dir_S) then
+      if (((signal.direction = TRVSite.odd) and (not train.sdata.dir_L)) or
+        ((signal.direction = TRVSite.even) and (not train.sdata.dir_S))) then
+        barriers.Add(TJCBarTrainWrongDir.Create(train.index));
 
-      if (train.front <> signalTrack) then
-        barriers.Add(TJCBarTrainNotFront.Create(train.index))
-    end;
+    if (train.front <> signalTrack) then
+      barriers.Add(TJCBarTrainNotFront.Create(train.index));
 
     for var addr: Integer in train.vehicles do
       for var i: Integer := 0 to _RV_FUNC_MAX do
