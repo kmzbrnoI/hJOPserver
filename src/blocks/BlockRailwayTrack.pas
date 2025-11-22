@@ -1022,8 +1022,10 @@ begin
   // kontrola poruchy blokove podminky
   if (Self.bpInBlk) then
   begin
-    if ((Self.occupied = TTrackState.Free) and (not Self.bpError) and
-      ((Self.zaver = TZaver.no) or (Self.zaver = TZaver.ab))) then
+    // Soucasti nasledujici podminky puvodne bylo take "and ((Self.zaver = TZaver.no) or (Self.zaver = TZaver.ab))"
+    // To ale zpusobovalo rozsviceni volnoznaku pri ceste postavene do trati s poslednim usekem obsazenym v momente,
+    // kdy se ztratilo obsazeni tohoto useku bez prenosu na dalsi
+    if ((Self.occupied = TTrackState.Free) and (not Self.bpError)) then
       Self.bpError := true;
     if ((Self.occupied = TTrackState.occupied) and (Self.bpError)) then
       Self.bpError := false;
