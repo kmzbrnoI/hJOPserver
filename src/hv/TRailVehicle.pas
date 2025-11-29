@@ -155,7 +155,8 @@ type
 
     procedure TrakceCallbackOk(Sender: TObject; data: Pointer);
     procedure TrakceCallbackErr(Sender: TObject; data: Pointer);
-    procedure TrakceCallbackEmergencyErr(Sender: TObject; data: Pointer);
+    procedure TrakceCallbackErrSpeed(Sender: TObject; data: Pointer);
+    procedure TrakceCallbackErrEmergency(Sender: TObject; data: Pointer);
     procedure TrakceCallbackCallEv(cb: PTCb);
     procedure SlotChanged(Sender: TObject; speedChanged: Boolean; dirChanged: Boolean; funcChanged: Boolean);
     procedure TrakceAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
@@ -1303,12 +1304,12 @@ begin
 
   try
     trakce.LocoSetSpeed(Self.addr, Self.slot.step, Self.direction, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
-      TTrakce.Callback(Self.TrakceCallbackErr, cbErr));
+      TTrakce.Callback(Self.TrakceCallbackErrSpeed, cbErr));
   except
     on E: Exception do
     begin
-      Self.TrakceCallbackErr(Self, cbErr);
-      AppEvents.LogException(E, 'TRV.SetSpeedDir');
+      Self.TrakceCallbackErrSpeed(Self, cbErr);
+      AppEvents.LogException(E, 'TRV.SetSpeedStepDir');
     end;
   end;
 
@@ -1423,11 +1424,11 @@ begin
 
   try
     trakce.LocoEmergencyStop(Self.addr, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
-      TTrakce.Callback(Self.TrakceCallbackEmergencyErr, cbErr));
+      TTrakce.Callback(Self.TrakceCallbackErrEmergency, cbErr));
   except
     on E: Exception do
     begin
-      Self.TrakceCallbackEmergencyErr(Self, cbErr);
+      Self.TrakceCallbackErrEmergency(Self, cbErr);
       AppEvents.LogException(E, 'TRV.EmergencyStop');
     end;
   end;
@@ -1465,13 +1466,27 @@ begin
   RegCollector.VehicleChanged(Self, Self.addr);
 end;
 
+// General error handler: call error event directly
 procedure TRV.TrakceCallbackErr(Sender: TObject; data: Pointer);
+begin
+  Self.TrakceCallbackCallEv(data);
+  Self.changed := true;
+  RegCollector.VehicleChanged(Self, Self.addr);
+end;
+
+// Specific error handler: call error event only if Self.state.speedPendingCmds = 0,
+// call ok event if Self.state.speedPendingCmds > 0.
+// This implementation calls ok event in case old speed command is dismissed due to
+// arrival of new command (required for e.g. Jerry application).
+procedure TRV.TrakceCallbackErrSpeed(Sender: TObject; data: Pointer);
 begin
   if (Self.state.speedPendingCmds > 0) then
     Dec(Self.state.speedPendingCmds);
 
   if (Self.state.speedPendingCmds = 0) then
-    Self.TrakceCallbackCallEv(data);
+    Self.TrakceCallbackCallEv(data) // call error callback
+  else if (TCb(data^).other <> nil) then // the command was not sent due to other speed pending command
+    Self.TrakceCallbackCallEv(PTCb(TCb(data^).other)); // call ok callback
 
   if (Self.state.trakceError) then
     Exit();
@@ -1484,7 +1499,9 @@ begin
   end;
 end;
 
-procedure TRV.TrakceCallbackEmergencyErr(Sender: TObject; data: Pointer);
+// Specific error handler for "Emergency Stop" command - set trakce.emergency := True,
+// IMMEDIATELY STOP WHOLE RAILWAY.
+procedure TRV.TrakceCallbackErrEmergency(Sender: TObject; data: Pointer);
 begin
   trakce.emergency := True;
   Self.TrakceCallbackErr(Sender, data);
