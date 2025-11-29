@@ -1297,8 +1297,8 @@ begin
   Self.slot.step := speedStep;
 
   trakce.Callbacks(ok, err, cbOk, cbErr);
-  trakce.Log(llCommands, 'Vozidlo ' + Self.name + ': rychlostní stupeň: ' + IntToStr(speedStep) + ', směr: ' +
-    ownConvert.BoolToStr10(direction));
+  trakce.Log('Vozidlo ' + Self.name + ': rychlostní stupeň: ' + IntToStr(speedStep) + ', směr: ' +
+    ownConvert.BoolToStr10(direction), TLogLevel.llInfo);
 
   Inc(Self.state.speedPendingCmds);
 
@@ -1348,7 +1348,7 @@ begin
 
   Self.state.functions[func] := state;
   trakce.Callbacks(ok, err, cbOk, cbErr);
-  trakce.Log(llCommands, 'Vozidlo ' + Self.name + ': F' + IntToStr(func) + ': ' + ownConvert.BoolToStr10(state));
+  trakce.Log('Vozidlo ' + Self.name + ': F' + IntToStr(func) + ': ' + ownConvert.BoolToStr10(state), TLogLevel.llInfo);
 
   try
     trakce.LocoSetSingleFunc(Self.addr, func, Self.slot.functions, TTrakce.Callback(Self.TrakceCallbackOk, cbOk),
@@ -1396,7 +1396,7 @@ begin
     Exit();
   end;
 
-  trakce.Log(llCommands, 'Vozidlo ' + Self.name + ': změna více funkcí');
+  trakce.Log('Vozidlo ' + Self.name + ': změna více funkcí', TLogLevel.llInfo);
   Self.slot.functions := funcState;
 
   try
@@ -1563,7 +1563,7 @@ end;
 
 procedure TRV.TrakceAcquire(ok: TCb; err: TCb);
 begin
-  trakce.Log(llCommands, 'PUT: Loco Acquire: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log('PUT: Loco Acquire: ' + Self.name + ' (' + IntToStr(Self.addr) + ')', TLogLevel.llInfo);
   Self.RecordUseNow();
   Self.state.acquiring := true;
   Self.acquiredOk := ok;
@@ -1631,7 +1631,7 @@ end;
 procedure TRV.TrakceAcquiredPOMSet(Sender: TObject; data: Pointer);
 begin
   // Everything done
-  trakce.Log(llCommands, 'Loco Fully Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log('Loco Fully Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')', TLogLevel.llInfo);
   Self.state.acquired := true;
   Self.state.acquiring := false;
   Self.changed := true;
@@ -1654,7 +1654,7 @@ end;
 
 procedure TRV.TrakceAcquiredErr(Sender: TObject; data: Pointer);
 begin
-  trakce.Log(llCommands, 'ERR: Loco Not Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log('ERR: Loco Not Acquired: ' + Self.name + ' (' + IntToStr(Self.addr) + ')', TLogLevel.llInfo);
   Self.state.acquiring := false;
   Self.changed := true;
   RegCollector.VehicleChanged(Self, Self.addr);
@@ -1667,7 +1667,7 @@ end;
 
 procedure TRV.TrakceRelease(ok: TCb);
 begin
-  trakce.Log(llCommands, 'PUT: Loco Release: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log('PUT: Loco Release: ' + Self.name + ' (' + IntToStr(Self.addr) + ')', TLogLevel.llInfo);
   Self.releasedOk := ok;
   Self.state.manual := false;
   Self.RecordUseNow();
@@ -1691,7 +1691,7 @@ end;
 
 procedure TRV.TrakceReleased(Sender: TObject; data: Pointer);
 begin
-  trakce.Log(llCommands, 'Loco Successfully Released: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log('Loco Successfully Released: ' + Self.name + ' (' + IntToStr(Self.addr) + ')', TLogLevel.llInfo);
   Self.state.acquired := false;
   Self.state.pom := TPomStatus.unknown;
   Self.changed := true;
@@ -1750,7 +1750,7 @@ begin
   if (Self.updating) then
     raise Exception.Create('Update already in progress!');
 
-  trakce.Log(llCommands, 'PUT: Loco Update Info: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log('PUT: Loco Update Info: ' + Self.name + ' (' + IntToStr(Self.addr) + ')', TLogLevel.llInfo);
   Self.acquiredOk := ok;
   Self.acquiredErr := err;
   Self.state.updating := true;
@@ -1765,7 +1765,7 @@ end;
 procedure TRV.TrakceUpdated(Sender: TObject; LocoInfo: TTrkLocoInfo);
 var slotOld: TTrkLocoInfo;
 begin
-  trakce.Log(llCommands, 'Loco Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log('Loco Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')', TLogLevel.llInfo);
 
   slotOld := Self.slot;
   Self.slot := LocoInfo;
@@ -1784,7 +1784,7 @@ end;
 
 procedure TRV.TrakceUpdatedErr(Sender: TObject; data: Pointer);
 begin
-  trakce.Log(llCommands, 'ERR: Loco Not Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')');
+  trakce.Log('ERR: Loco Not Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')', TLogLevel.llInfo);
   Self.state.updating := false;
   Self.state.trakceError := true;
   Self.state.lastUpdated := Now;

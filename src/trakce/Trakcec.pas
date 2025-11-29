@@ -14,7 +14,7 @@ interface
 
 uses
   SysUtils, Classes, StrUtils, TrakceIFace, ComCtrls, TRailVehicle,
-  Generics.Collections, IniFiles, TrakceErrors;
+  Generics.Collections, IniFiles, TrakceErrors, Logging;
 
 const
   // max speed step for speed table
@@ -105,6 +105,7 @@ type
 
     procedure TrkLog(Sender: TObject; lvl: TTrkLogLevel; msg: string);
     procedure TrkLocoStolen(Sender: TObject; addr: Word);
+    procedure TrkEmergencyChanged(Sender: TObject);
 
     procedure TurnedOffSound(Sender: TObject; Data: Pointer);
     procedure RestoredSound(Sender: TObject; Data: Pointer);
@@ -135,7 +136,7 @@ type
     procedure LoadLib(filename: string);
     function LibVersion(): string;
 
-    procedure Log(loglevel: TTrkLogLevel; msg: string);
+    procedure Log(msg: string; loglevel: Logging.TLogLevel; brief: Boolean = False);
 
     procedure LoadFromFile(ini: TMemIniFile);
     procedure SaveToFile(ini: TMemIniFile);
@@ -173,7 +174,7 @@ var
 implementation
 
 uses fMain, RCSc, fRegulator, TrainDb, GetSystems, TRVDatabase, DataRV,
-  BlockDb, RegulatorTCP, TCPServerPanel, appEv, Logging, version;
+  BlockDb, RegulatorTCP, TCPServerPanel, appEv, version;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -191,12 +192,13 @@ begin
 
   TTrakceIFace(Self).OnLog := Self.TrkLog;
   TTrakceIFace(Self).OnLocoStolen := Self.TrkLocoStolen;
+  TTrakceIFace(Self).OnEmergencyChanged := Self.TrkEmergencyChanged;
 end;
 
 destructor TTrakce.Destroy();
 begin
   try
-    Self.Log(TTrkLogLevel.llInfo, 'END');
+    Self.Log('END', TLogLevel.llInfo);
   except
 
   end;
@@ -229,7 +231,7 @@ begin
 
   TTrakceIFace(Self).LoadLib(filename, Self.configDir + '\' + ChangeFileExt(libName, '.ini'));
 
-  Self.Log(TTrkLogLevel.llInfo, 'Načtena knihovna ' + libName + ', Trakce API v'+Self.apiVersionStr());
+  Self.Log('Načtena knihovna ' + libName + ', Trakce API v'+Self.apiVersionStr(), TLogLevel.llInfo);
 
   if (Self.unbound.Count = 0) then
   begin
@@ -245,7 +247,7 @@ begin
   end;
 
   try
-    Self.Log(TTrkLogLevel.llInfo, 'Verze knihovny: '+Self.LibVersion());
+    Self.Log('Verze knihovny: '+Self.LibVersion(), TLogLevel.llInfo);
   except
 
   end;
@@ -262,10 +264,19 @@ end;
 // Logging
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakce.Log(loglevel: TTrkLogLevel; msg: string);
+procedure TTrakce.Log(msg: string; loglevel: Logging.TLogLevel; brief: Boolean = False);
+begin
+  logging.log(msg, loglevel, lsTrakce, brief);
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+// Trakce events
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TTrakce.TrkLog(Sender: TObject; lvl: TTrkLogLevel; msg: string);
 begin
   var systemLogLevel: TLogLevel;
-  case (logLevel) of
+  case (lvl) of
     TTrkLogLevel.llErrors:
       systemLogLevel := TLogLevel.llError;
     TTrkLogLevel.llWarnings:
@@ -278,27 +289,26 @@ begin
     systemLogLevel := TLogLevel.llInfo;
   end;
 
-  logging.log(UpperCase(Self.LogLevelToString(logLevel)) + ': ' + msg, systemLogLevel, lsTrakce);
-end;
+  Self.Log(UpperCase(Self.LogLevelToString(lvl)) + ': ' + msg, systemLogLevel);
 
-/// /////////////////////////////////////////////////////////////////////////////
-// Trakce events
-/// /////////////////////////////////////////////////////////////////////////////
-
-procedure TTrakce.TrkLog(Sender: TObject; lvl: TTrkLogLevel; msg: string);
-begin
-  Self.Log(lvl, msg);
   if ((Self.opening) and (lvl = llErrors) and (Assigned(Self.OnOpenError)) and (Self.apiVersion < $0101)) then
   begin
     Self.opening := false;
     Self.OnOpenError(Self, msg);
   end;
 end;
-
 procedure TTrakce.TrkLocoStolen(Sender: TObject; addr: Word);
 begin
   if (RVDb[addr] <> nil) then
     RVDb[addr].TrakceStolen();
+end;
+
+procedure TTrakce.TrkEmergencyChanged(Sender: TObject);
+begin
+  if (Self.emergency) then
+    F_Main.LogBrief('Trakce: NOUZOVÝ STAV', TLogLevel.llError)
+  else
+    F_Main.LogBrief('Trakce: nouzový stav pominul', TLogLevel.llWarning)
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -316,10 +326,7 @@ begin
     Self.LoadLib(fLibDir + '\' + lib);
   except
     on E: Exception do
-    begin
-      Self.Log(llErrors, 'Nelze načíst knihovnu ' + fLibDir + '\' + lib + ', ' + E.Message);
-      F_Main.LogBrief('Trakce: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ': ' + E.Message, Logging.llError);
-    end;
+      Self.Log('Trakce: Nelze načíst knihovnu ' + fLibDir + '\' + lib + ', ' + E.Message, TLogLevel.llError, True);
   end;
 end;
 
@@ -393,16 +400,16 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakce.LoadSpeedTable(filename: string; var LVRych: TListView);
-var j: Integer;
-  myFile: TextFile;
-  Speed: Integer;
+var myFile: TextFile;
 begin
   try
     AssignFile(myFile, filename);
     Reset(myFile);
   except
-    Log(llErrors,
-      'Chyba při načítání souboru s rychlostmi: nepodařilo se přistoupit k souboru! Používám výchozi rychlostní tabulku.');
+    Self.Log(
+      'Chyba při načítání souboru s rychlostmi: nepodařilo se přistoupit k souboru! Používám výchozi rychlostní tabulku.',
+      TLogLevel.llError
+    );
 
     // nacteme vychozi rychlostni tabulku
     for var i: Integer := 0 to _MAX_STEP do
@@ -416,21 +423,24 @@ begin
   begin
     if (Eof(myFile)) then
     begin
-      Log(llErrors,
-        'Chyba při načítání souboru s rychlostmi: příliš málo řádků! Doplňuji výchozí rychlostní tabulkou.');
+      Self.Log(
+        'Chyba při načítání souboru s rychlostmi: příliš málo řádků! Doplňuji výchozí rychlostní tabulkou.',
+        TLogLevel.llError
+      );
       CloseFile(myFile);
-      for j := i to _MAX_STEP do
+      for var j: Integer := i to _MAX_STEP do
         Self.SpeedTable[j] := _DEFAULT_SPEED_TABLE[j];
       Self.LoadSpeedTableToTable(LVRych);
       Exit();
     end else begin
       try
-        ReadLn(myFile, Speed);
-        Self.SpeedTable[i] := Speed;
+        var speed: Integer;
+        ReadLn(myFile, speed);
+        Self.SpeedTable[i] := speed;
       except
         on E: Exception do
         begin
-          Log(llErrors, 'Soubor s rychlostmi, řádek ' + IntToStr(i + 1) + ': ' + E.Message);
+          Log('Soubor s rychlostmi, řádek ' + IntToStr(i + 1) + ': ' + E.Message, TLogLevel.llError);
           Self.SpeedTable[i] := _DEFAULT_SPEED_TABLE[i];
         end;
       end;
@@ -460,7 +470,7 @@ begin
     AssignFile(myFile, filename);
     Rewrite(myFile);
   except
-    Log(llErrors, 'Chyba pri ukladani souboru s rychlostmi - nepodarilo se pristoupit k souboru !');
+    Log('Chyba pri ukladani souboru s rychlostmi - nepodarilo se pristoupit k souboru !', TLogLevel.llError);
     Exit();
   end;
 

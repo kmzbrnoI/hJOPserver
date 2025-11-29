@@ -578,8 +578,7 @@ end;
 procedure TRVDb.AcquiredErr(Sender: TObject; Data: Pointer);
 begin
   Self.mAcquiring := false;
-  trakce.Log(llErrors, 'ERR: Vozidlo ' + IntToStr(Word(Data)) + ' se nepodařilo převzít');
-  F_Main.LogBrief('Vozidla: vozidlo ' + IntToStr(Word(Data)) + ' se nepodařilo převzít', llError);
+  trakce.Log('Vozidlo ' + IntToStr(Word(Data)) + ' se nepodařilo převzít', llError, True);
   if (Assigned(Self.eAcquiredErr)) then
     Self.eAcquiredErr(Self);
 end;

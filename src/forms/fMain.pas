@@ -1370,7 +1370,7 @@ begin
   fn := StringReplace(TMenuItem(Sender).Caption, '&', '', [rfReplaceAll]);
 
   Screen.Cursor := crHourGlass;
-  trakce.Log(TTrkLogLevel.llInfo, 'Změna knihovny -> ' + fn);
+  trakce.Log('Změna knihovny -> ' + fn, TLogLevel.llInfo);
   Self.SB1.Panels.Items[_SB_TRAKCE_LIB].Text := '-';
   try
     trakce.LoadLib(trakce.libDir + '\' + fn);
@@ -1490,7 +1490,7 @@ begin
   except
     on E: Exception do
     begin
-      trakce.Log(TTrkLogLevel.llErrors, 'CLOSE: error: ' + E.Message);
+      trakce.Log('CLOSE: error: ' + E.Message, TLogLevel.llError);
       StrMessageBox('Chyba pri uzavírání komunikace s centrálou:' + #13#10 + E.Message + #13#10 +
         'Více informací naleznete v logu.', 'Chyba', MB_OK OR MB_ICONERROR);
     end;
