@@ -62,8 +62,9 @@ type
 
   procedure CreateCfgDirs();
   procedure CompleteLoadFromFile(inidata: TMemIniFile);
-  procedure CompleteSaveToFile(inidata: TMemIniFile);
+  procedure CompleteSaveToFile();
   procedure UpdateAutosave();
+  procedure SaveIniDataFile();
 
 var
   GlobalConfig: TGlobalConfig;
@@ -228,10 +229,8 @@ begin
   trakce.LoadSpeedTable('data\rychlosti.csv', F_Main.LV_DigiRych);
 end;
 
-procedure CompleteSaveToFile(inidata: TMemIniFile);
+procedure CompleteSaveToFile();
 begin
-  inidata.EraseSection(_INIDATA_PATHS_DATA_SECTION);
-  inidata.EraseSection(_INIDATA_PATHS_STATE_SECTION);
   Log('Probíha kompletní ukládání dat', TLogLevel.llInfo, lsData);
 
   try
@@ -242,15 +241,7 @@ begin
   end;
 
   try
-    RCSs.SaveToFile(inidata);
     RCSs.SaveAllConfigs();
-  except
-    on e: Exception do
-      AppEvents.LogException(e);
-  end;
-
-  try
-    trakce.SaveToFile(inidata);
   except
     on e: Exception do
       AppEvents.LogException(e);
@@ -320,36 +311,71 @@ begin
       AppEvents.LogException(e);
   end;
 
+  SaveIniDataFile();
+
   Log('Kompletní ukládání dat dokončeno', TLogLevel.llInfo, lsData, True);
+end;
 
+procedure SaveIniDataFile();
+var inidata: TMemIniFile;
+begin
   try
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Main.E_configFilename.Text);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'spnl', F_Main.E_dataload_spnl.Text);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'bloky', Blocks.filename);
-    inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'bloky', Blocks.fstatus);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', F_Main.E_dataload_zes.Text);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'JC', JCDb.filename);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'mJC', MultiJCDb.filename);
-    inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', F_Main.E_dataload_soupr.Text);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'users', UsrDB.filenameData);
-    inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'users', UsrDB.filenameStat);
-    inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'lok', F_Main.E_dataload_RV_dir.Text);
-    inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_RV_state.Text);
-    inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'console', GlobalConfig.consoleLog);
+    inidata := TMemIniFile.Create(_INIDATA_FN, TEncoding.UTF8);
+    try
+      inidata.EraseSection(_INIDATA_PATHS_DATA_SECTION);
+      inidata.EraseSection(_INIDATA_PATHS_STATE_SECTION);
 
-    var tmpStr: string;
-    if (Areas.status_filename = '') then
-      tmpStr := 'stav\or_stav.ini'
-    else
-      tmpStr := Areas.status_filename;
+      try
+        RCSs.SaveToFile(inidata);
+      except
+        on e: Exception do
+          AppEvents.LogException(e);
+      end;
 
-    inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'or', tmpStr);
+      try
+        trakce.SaveToFile(inidata);
+      except
+        on e: Exception do
+          AppEvents.LogException(e);
+      end;
+
+      inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Main.E_configFilename.Text);
+      inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'spnl', F_Main.E_dataload_spnl.Text);
+      inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'bloky', Blocks.filename);
+      inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'bloky', Blocks.fstatus);
+      inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'zesilovace', F_Main.E_dataload_zes.Text);
+      inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'JC', JCDb.filename);
+      inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'mJC', MultiJCDb.filename);
+      inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'soupravy', F_Main.E_dataload_soupr.Text);
+      inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'users', UsrDB.filenameData);
+      inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'users', UsrDB.filenameStat);
+      inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'lok', F_Main.E_dataload_RV_dir.Text);
+      inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_RV_state.Text);
+      inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'console', GlobalConfig.consoleLog);
+
+      var tmpStr: string;
+      if (Areas.status_filename = '') then
+        tmpStr := 'stav\or_stav.ini'
+      else
+        tmpStr := Areas.status_filename;
+
+      inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'or', tmpStr);
+
+      inidata.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-file-loglevel', F_Main.CB_global_loglevel_file.ItemIndex);
+      inidata.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-table-loglevel', F_Main.CB_global_loglevel_table.ItemIndex);
+      inidata.DeleteKey(_INIDATA_PATHS_LOG_SECTION, 'rcs'); // old key
+      for var i: Integer := 0 to RCSs._RCSS_MAX do
+        inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'rcs'+IntToStr(i), F_Main.CHB_RCSs_Log[i].Checked);
+      inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'auth', F_Main.CHB_log_auth.Checked);
+
+    finally
+      inidata.UpdateFile();
+      inidata.Free();
+    end;
   except
     on e: Exception do
       AppEvents.LogException(e);
   end;
-
-  inidata.UpdateFile();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

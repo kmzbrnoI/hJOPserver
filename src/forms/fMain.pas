@@ -2322,50 +2322,8 @@ begin
   end;
 
   try
-    var ini := TMemIniFile.Create(_INIDATA_FN, TEncoding.UTF8);
-    try
-      try
-        RCSs.SaveToFile(ini);
-      except
-        on E: Exception do
-          AppEvents.LogException(E, 'Save RCS');
-      end;
-
-      try
-        trakce.SaveToFile(ini);
-      except
-        on E: Exception do
-          AppEvents.LogException(E, 'Save Trakce');
-      end;
-
-      ini.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-file-loglevel', Self.CB_global_loglevel_file.ItemIndex);
-      ini.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-table-loglevel', Self.CB_global_loglevel_table.ItemIndex);
-      ini.DeleteKey(_INIDATA_PATHS_LOG_SECTION, 'rcs'); // old key
-      for var i: Integer := 0 to RCSs._RCSS_MAX do
-        ini.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'rcs'+IntToStr(i), Self.CHB_RCSs_Log[i].Checked);
-      ini.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'auth', Self.CHB_log_auth.Checked);
-
-      ini.UpdateFile();
-    finally
-      ini.Free();
-    end;
-  except
-    on E: Exception do
-      AppEvents.LogException(E, 'Save cfg');
-  end;
-
-  try
-    var ini := TMemIniFile.Create(ExtractRelativePath(ExtractFilePath(Application.ExeName), Self.E_configFilename.Text),
-      TEncoding.UTF8);
-    try
-      modelTime.SaveData(ini);
-      ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.PanelStr());
-      for var rcsi := 0 to RCSs._RCSS_MAX do
-        ini.WriteBool('RCS'+IntToStr(rcsi), 'ShowOnlyActive', Self.CHB_RCSs_Show_Only_Active[rcsi].Checked);
-      ini.UpdateFile();
-    finally
-      ini.Free();
-    end;
+    Config.SaveIniDataFile();
+    GlobalConfig.SaveToFile(Self.E_configFilename.Text); // save funcsVyznam, ShowOnlyActive
   except
     on E: Exception do
       AppEvents.LogException(E, 'Save cfg');
@@ -3003,19 +2961,12 @@ begin
 end;
 
 procedure TF_Main.MI_Save_configClick(Sender: TObject);
-var inidata: TMemIniFile;
 begin
   Application.ProcessMessages();
   Screen.Cursor := crHourGlass;
 
   try
-    inidata := TMemIniFile.Create(_INIDATA_FN, TEncoding.UTF8);
-    try
-      Config.CompleteSaveToFile(inidata);
-    finally
-      inidata.UpdateFile();
-      inidata.Free();
-    end;
+    Config.CompleteSaveToFile();
   except
     on E: Exception do
     begin
