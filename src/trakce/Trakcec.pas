@@ -105,7 +105,6 @@ type
 
     procedure TrkLog(Sender: TObject; lvl: TTrkLogLevel; msg: string);
     procedure TrkLocoStolen(Sender: TObject; addr: Word);
-    procedure TrkEmergencyChanged(Sender: TObject);
 
     procedure TurnedOffSound(Sender: TObject; Data: Pointer);
     procedure RestoredSound(Sender: TObject; Data: Pointer);
@@ -192,7 +191,6 @@ begin
 
   TTrakceIFace(Self).OnLog := Self.TrkLog;
   TTrakceIFace(Self).OnLocoStolen := Self.TrkLocoStolen;
-  TTrakceIFace(Self).OnEmergencyChanged := Self.TrkEmergencyChanged;
 end;
 
 destructor TTrakce.Destroy();
@@ -301,14 +299,6 @@ procedure TTrakce.TrkLocoStolen(Sender: TObject; addr: Word);
 begin
   if (RVDb[addr] <> nil) then
     RVDb[addr].TrakceStolen();
-end;
-
-procedure TTrakce.TrkEmergencyChanged(Sender: TObject);
-begin
-  if (Self.emergency) then
-    F_Main.LogBrief('Trakce: NOUZOVÝ STAV', TLogLevel.llError)
-  else
-    F_Main.LogBrief('Trakce: nouzový stav pominul', TLogLevel.llWarning)
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

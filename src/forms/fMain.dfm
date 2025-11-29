@@ -3510,14 +3510,14 @@ object F_Main: TF_Main
       object GB_Connected_Panels: TGroupBox
         Left = 16
         Top = 206
-        Width = 800
+        Width = 822
         Height = 206
         Caption = ' P'#345'ipojen'#233' panely '
         TabOrder = 0
         object LV_Clients: TListView
           Left = 2
           Top = 15
-          Width = 796
+          Width = 818
           Height = 189
           Align = alClient
           Columns = <
@@ -3570,12 +3570,13 @@ object F_Main: TF_Main
           TabOrder = 0
           ViewStyle = vsReport
           OnCustomDrawItem = LV_ClientsCustomDrawItem
+          ExplicitWidth = 796
         end
       end
       object GB_stav_technologie: TGroupBox
         Left = 16
         Top = 15
-        Width = 201
+        Width = 225
         Height = 186
         Margins.Left = 2
         Margins.Top = 2
@@ -3725,9 +3726,9 @@ object F_Main: TF_Main
           Caption = 'Vozidla p'#345'evzata'
         end
         object G_locos_acquired: TGauge
-          Left = 124
+          Left = 132
           Top = 109
-          Width = 67
+          Width = 77
           Height = 14
           ForeColor = clBlue
           MaxValue = 10
@@ -3824,9 +3825,23 @@ object F_Main: TF_Main
           Margins.Bottom = 2
           Brush.Color = clRed
         end
+        object L_TrkState: TLabel
+          Left = 172
+          Top = 72
+          Width = 40
+          Height = 13
+          Alignment = taRightJustify
+          Caption = 'Stav: ok'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
+          ParentFont = False
+        end
       end
       object GB_Log: TGroupBox
-        Left = 232
+        Left = 256
         Top = 14
         Width = 584
         Height = 186

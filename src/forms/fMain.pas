@@ -302,6 +302,7 @@ type
     N2: TMenuItem;
     N3: TMenuItem;
     MI_ExitApp: TMenuItem;
+    L_TrkState: TLabel;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -558,6 +559,7 @@ type
     procedure OnTrkReady(Sender: TObject; ready: Boolean);
     procedure OnTrkErrOpen(Sender: TObject; errMsg: string);
     procedure OnTrkStatusChange(Sender: TObject; trkStatus: TTrkStatus);
+    procedure OnTrkEmergencyChanged(Sender: TObject);
 
     procedure UpdateTrkLibsList();
     procedure OnDCCGoOk(Sender: TObject; Data: Pointer);
@@ -1797,6 +1799,22 @@ begin
   Simulation.DccChangedBoosterSim(trkStatus = TTrkStatus.tsOn);
 end;
 
+procedure TF_Main.OnTrkEmergencyChanged(Sender: TObject);
+begin
+  if (trakce.emergency) then
+  begin
+    Self.LogBrief('Trakce: NOUZOVÝ STAV', TLogLevel.llError);
+    Self.L_TrkState.Font.Style := [TFontStyle.fsBold];
+    Self.L_TrkState.Font.Color := clRed;
+    Self.L_TrkState.Caption := 'Stav: NOUZE';
+  end else begin
+    Self.LogBrief('Trakce: nouzový stav pominul', TLogLevel.llWarning);
+    Self.L_TrkState.Font.Style := [];
+    Self.L_TrkState.Font.Color := clBlack;
+    Self.L_TrkState.Caption := 'Stav: ok';
+  end;
+end;
+
 procedure TF_Main.A_Turnoff_FunctionsExecute(Sender: TObject);
 begin
   Logging.Log('Vypínám zvuky vozidel...', TLogLevel.llInfo, lsTrakce, True);
@@ -2053,6 +2071,7 @@ begin
   trakce.AfterClose := Self.OnTrkAfterClose;
   trakce.OnReady := Self.OnTrkReady;
   trakce.OnTrackStatusChanged := Self.OnTrkStatusChange;
+  trakce.OnEmergencyChanged := Self.OnTrkEmergencyChanged;
   trakce.OnOpenError := Self.OnTrkErrOpen;
 
   FuncNames.OnChange := Self.OnFuncNameChange;
