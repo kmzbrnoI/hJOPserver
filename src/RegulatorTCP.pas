@@ -124,7 +124,7 @@ begin
     Exit();
   end;
 
-  // regulator zacina zadost o vozidlo ze stanice
+  // regulator zacina zadost o vozidlo z dopravny
   // -;LOK;G:PLEASE;or_id;comment            - pozadavek na rizeni vozidla z dane oblasti rizeni
   // odpoved od serveru:
   // -;LOK;G:PLEASE-RESP;[ok, err];info      - odpoved na zadost o vozidlo z reliefu; v info je pripadna chybova zprava
@@ -166,7 +166,7 @@ begin
     end;
   end
 
-  // regulator rusi zadost o vozidlo ze stanice
+  // regulator rusi zadost o vozidlo z dopravny
   else if (parsed[3] = 'CANCEL') then
   begin
     if ((Sender.Data as TPanelConnData).regulator_zadost = nil) then

@@ -65,7 +65,7 @@ type
     regulator_zadost: TArea; // oblast rizeni, do ktere probiha zadost o vozidlo
     regulator_vehicles: TList<TRV>; // seznam vozidel v regulatoru
 
-    st_hlaseni: TList<TArea>; // stanice, do kterych je autorizovano stanicni hlaseni
+    st_hlaseni: TList<TArea>; // dopravny, do kterych je autorizovano stanicni hlaseni
     train_menu_index: Integer; // index sopuravy, ktere se aktualne zorbazuje menu (viz blok usek)
 
     soundDict: TDictionary<Integer, Cardinal>; // pro kazdy zvuk obsahuje pocet jeho prehravani

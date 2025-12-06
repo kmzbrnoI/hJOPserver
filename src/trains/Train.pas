@@ -1534,14 +1534,14 @@ begin
     Result.Add(CSItem('Směr: '+Self.StrArrowDirection()));
 
     if (Self.data.areaFrom <> nil) then
-      Result.Add(CSItem('Výchozí stanice: '+TArea(Self.data.areaFrom).name))
+      Result.Add(CSItem('Výchozí dopravna: '+TArea(Self.data.areaFrom).name))
     else
-      Result.Add(CSItem('Výchozí stanice: nevyplněno'));
+      Result.Add(CSItem('Výchozí dopravna: nevyplněno'));
 
     if (Self.data.areaTo <> nil) then
-      Result.Add(CSItem('Cílová stanice: '+TArea(Self.data.areaTo).name))
+      Result.Add(CSItem('Cílová dopravna: '+TArea(Self.data.areaTo).name))
     else
-      Result.Add(CSItem('Cílová stanice: nevyplněno'));
+      Result.Add(CSItem('Cílová dopravna: nevyplněno'));
 
     if (Self.data.note <> '') then
       Result.Add(CSItem('Poznámka: '+ Self.data.note));

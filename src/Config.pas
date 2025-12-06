@@ -118,7 +118,7 @@ begin
       AppEvents.LogException(e, e.Message);
   end;
 
-  F_Splash.AddStav('Načítám stanice (soubor *.spnl)...');
+  F_Splash.AddStav('Načítám dopravny (soubor *.spnl)...');
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'spnl', 'data\stanice.spnl');
   read2 := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'or', 'stav\or.ini');
   try

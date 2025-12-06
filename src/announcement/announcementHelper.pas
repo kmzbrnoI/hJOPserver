@@ -53,7 +53,7 @@ begin
     begin
       inStation := blk.areas.Contains(Area);
 
-      //trate z aktualni stanice kontrolujeme cele
+      //trate z aktualni dopravny kontrolujeme cele
       if ((not inStation) and (blk.typ = btRT) and (TBlkTrack(blk).trainPredict = Train) and
         (TBlkRT(blk).railway <> nil) and (((TBlkRailway(TBlkRT(blk).railway)).linkerA.areas[0] = Area) or
         ((TBlkRailway(TBlkRT(blk).railway)).linkerB.areas[0] = Area))) then

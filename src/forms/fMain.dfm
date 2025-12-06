@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Technologie
+    ActivePage = TS_Trains
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3570,7 +3570,6 @@ object F_Main: TF_Main
           TabOrder = 0
           ViewStyle = vsReport
           OnCustomDrawItem = LV_ClientsCustomDrawItem
-          ExplicitWidth = 796
         end
       end
       object GB_stav_technologie: TGroupBox
@@ -3904,7 +3903,7 @@ object F_Main: TF_Main
             Width = 125
           end
           item
-            Caption = 'Stanice'
+            Caption = 'Dopravna'
             Width = 125
           end
           item
@@ -4115,7 +4114,7 @@ object F_Main: TF_Main
             Width = 80
           end
           item
-            Caption = 'Stanice'
+            Caption = 'Dopravna'
           end
           item
             Caption = 'Max. rychlost'
@@ -4362,7 +4361,7 @@ object F_Main: TF_Main
             Width = 120
           end
           item
-            Caption = 'Stanice'
+            Caption = 'Dopravna'
           end
           item
             Caption = 'Front'
@@ -4374,10 +4373,10 @@ object F_Main: TF_Main
             Caption = 'Typ'
           end
           item
-            Caption = 'V'#253'choz'#237' stanice'
+            Caption = 'V'#253'choz'#237' dopravna'
           end
           item
-            Caption = 'C'#237'lov'#225' stanice'
+            Caption = 'C'#237'lov'#225' dopravna'
           end
           item
             Caption = 'Stani'#269'n'#237' hl'#225#353'en'#237
@@ -4475,14 +4474,14 @@ object F_Main: TF_Main
         end
       end
     end
-    object TS_Stanice: TTabSheet
+    object TS_Areas: TTabSheet
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'Oblasti '#345#237'zen'#237
+      Caption = 'Dopravny'
       ImageIndex = 16
-      object LV_Stanice: TListView
+      object LV_Areas: TListView
         Left = 0
         Top = 40
         Width = 1294
@@ -4535,9 +4534,9 @@ object F_Main: TF_Main
         ShowHint = False
         TabOrder = 0
         ViewStyle = vsReport
-        OnChange = LV_StaniceChange
+        OnChange = LV_AreasChange
       end
-      object P_Stanice_Pozadi: TPanel
+      object P_Areas_Bg: TPanel
         Left = 0
         Top = 0
         Width = 1294

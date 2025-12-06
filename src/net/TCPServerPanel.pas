@@ -131,7 +131,7 @@ type
     procedure PlaySound(AContext: TIdContext; code: Integer; loop: Boolean = false);
     procedure DeleteSound(AContext: TIdContext; code: Integer);
 
-    procedure BottomError(AContext: TIdContext; err: string; stanice: string; tech: string);
+    procedure BottomError(AContext: TIdContext; err: string; area: string; tech: string);
 
     procedure BroadcastBottomError(err: string; tech: string);
     procedure BroadcastData(data: string);
@@ -1174,10 +1174,10 @@ begin
   end;
 end;
 
-procedure TPanelServer.BottomError(AContext: TIdContext; err: string; stanice: string; tech: string);
+procedure TPanelServer.BottomError(AContext: TIdContext; err: string; area: string; tech: string);
 begin
-  Self.SendLn(AContext, '-;BOTTOMERR;{' + err + '};{' + stanice + '};{' + tech + '};');
-  Log(tech + ': ' + stanice + ': ' + err, llWarning);
+  Self.SendLn(AContext, '-;BOTTOMERR;{' + err + '};{' + area + '};{' + tech + '};');
+  Log(tech + ': ' + area + ': ' + err, llWarning);
 end;
 
 procedure TPanelServer.UPO(AContext: TIdContext; items: TUPOItems; critical: Boolean; callbackOK: TNotifyEvent;

@@ -76,7 +76,7 @@ type
     file_direction: TRailwayDirection;
     // tady si ukladame reference na skutecne bloky, ktere si vytvarime az pri prvnim pristupu k uvazce pres \uvazkaA a \uvazkaB
     m_linkerA, m_linkerB: TBlk;
-    // fNavLichy je navestidlo u stanice blize pocatku trati, fNavSudy navestidlo u stanice blize konce trati
+    // fNavLichy je navestidlo u dopravny blize pocatku trati, fNavSudy navestidlo u dopravny blize konce trati
     m_signalA, m_signalB: TBlk; // analogicky funguji krajni navestidla trati, viz \navLichy a \navSudy
     m_tracks: TList<TBlkRT>;
 
@@ -641,7 +641,7 @@ begin
       end; // BtoA
   end; // case
 
-  Self.Log('Vlak ' + Train.name + ' : stanice změněna na ' + (Train.station as TArea).name, llInfo);
+  Self.Log('Vlak ' + Train.name + ' : dopravna změněna na ' + (Train.station as TArea).name, llInfo);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

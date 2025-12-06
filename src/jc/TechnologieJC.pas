@@ -1937,7 +1937,7 @@ begin
         // presun vlaku z useku pred navestidlem do posledniho useku JC
 
         // Presun probehne za techto podminek:
-        // a) Bud privolavame do stanice = na dopravni kolej
+        // a) Bud privolavame do dopravny = na dopravni kolej
         // b) Nebo privolavame do trate, ktera MUSI byt ve spravnem smeru a MUSI v ni byt zavedena blokova podminka
 
         if (Self.typ = TJCType.Train) then

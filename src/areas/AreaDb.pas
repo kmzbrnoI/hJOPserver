@@ -79,11 +79,11 @@ end;
 procedure TAreas.LoadData(const filename: string; const stat_filename: string);
 var ini, ini_stat: TMemIniFile;
 begin
-  Log('Načítám stanice - ' + filename, llInfo, lsData);
+  Log('Načítám dopravny - ' + filename, llInfo, lsData);
   Self.fstat_filename := stat_filename;
 
   if (not FileExists(filename)) then
-    raise EFileNotFound.Create('Soubor se stanicemi neexistuje - ' + filename);
+    raise EFileNotFound.Create('Soubor s dopravnami neexistuje - ' + filename);
 
   Self.db.Clear();
   ini := TMemIniFile.Create(filename, TEncoding.UTF8);

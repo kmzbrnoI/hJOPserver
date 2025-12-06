@@ -680,14 +680,14 @@ end;
 
 function TRV.MoveToArea(area: TArea): Integer;
 begin
-  // zruseni RUC u stare stanice
+  // zruseni RUC u stare dopravny
   if (Self.state.area <> nil) then
     Self.state.area.BroadcastData('RUC-RM;' + IntToStr(Self.addr));
 
-  // zmena stanice
+  // zmena dopravny
   Self.state.area := area;
 
-  // RUC do nove stanice
+  // RUC do nove dopravny
   Self.UpdatePanelRuc(False);
 
   Self.changed := true;

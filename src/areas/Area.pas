@@ -192,7 +192,7 @@ type
     // Sends data to all panels with rights >= min_rights
     // Uses '-' id as message prefix
     procedure BroadcastGlobalData(data: string; min_rights: TAreaRights = read);
-    procedure BroadcastBottomError(err: string; tech: string; min_rights: TAreaRights = read; stanice: string = '');
+    procedure BroadcastBottomError(err: string; tech: string; min_rights: TAreaRights = read; area: string = '');
 
     function AnySuperuserConnected(): Boolean;
     function AnyotherWriteConnected(Sender: TIdContext): Integer;
@@ -1501,14 +1501,14 @@ begin
       PanelServer.SendLn(panel.Panel, '-;' + data);
 end;
 
-procedure TArea.BroadcastBottomError(err: string; tech: string; min_rights: TAreaRights = read; stanice: string = '');
+procedure TArea.BroadcastBottomError(err: string; tech: string; min_rights: TAreaRights = read; area: string = '');
 begin
-  if (stanice = '') then
-    stanice := Self.shortName;
+  if (area = '') then
+    area := Self.shortName;
 
   for var panel: TAreaPanel in Self.connected do
     if (panel.rights >= min_rights) then
-      PanelServer.BottomError(panel.Panel, err, stanice, tech);
+      PanelServer.BottomError(panel.Panel, err, area, tech);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

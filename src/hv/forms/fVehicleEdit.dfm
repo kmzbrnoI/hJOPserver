@@ -96,13 +96,13 @@ object F_RVEdit: TF_RVEdit
   object Label1: TLabel
     Left = 9
     Top = 279
-    Width = 39
+    Width = 50
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Stanice:'
+    Caption = 'Dopravna:'
   end
   object Label2: TLabel
     Left = 287

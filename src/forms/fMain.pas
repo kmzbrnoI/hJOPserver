@@ -115,9 +115,9 @@ type
     P_Trains_Bg: TPanel;
     P_Trains_Left: TPanel;
     E_dataload_soupr: TEdit;
-    TS_Stanice: TTabSheet;
-    LV_Stanice: TListView;
-    P_Stanice_Pozadi: TPanel;
+    TS_Areas: TTabSheet;
+    LV_Areas: TListView;
+    P_Areas_Bg: TPanel;
     P_St_Left: TPanel;
     E_dataload_spnl: TEdit;
     TS_Zesilovace: TTabSheet;
@@ -377,7 +377,7 @@ type
     procedure B_JC_ResetClick(Sender: TObject);
     procedure P_Time_modelovyDblClick(Sender: TObject);
     procedure P_ZrychleniDblClick(Sender: TObject);
-    procedure LV_StaniceChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+    procedure LV_AreasChange(Sender: TObject; Item: TListItem; Change: TItemChange);
     procedure B_RemoveStackClick(Sender: TObject);
     procedure LV_MultiJCCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
       var DefaultDraw: Boolean);
@@ -1917,7 +1917,7 @@ begin
     TrainTableData.UpdateTable();
   if (PC_1.ActivePage = Self.TS_RV) then
     RVTableData.UpdateTable();
-  if (PC_1.ActivePage = TS_Stanice) then
+  if (PC_1.ActivePage = TS_Areas) then
     ORsTableData.UpdateTable(true);
   if (PC_1.ActivePage = TS_Technologie) then
     PanelServer.GUIRefreshTable();
@@ -2046,7 +2046,7 @@ begin
   TrainTableData := TTrainTableData.Create(Self.LV_Trains);
   RVTableData := TRVTableData.Create(Self.LV_Vehicles);
   ZesTableData := TZesTableData.Create(Self.LV_Boosters);
-  ORsTableData := TORsTableData.Create(Self.LV_Stanice);
+  ORsTableData := TORsTableData.Create(Self.LV_Areas);
   MultiJCTableData := TMultiJCTableData.Create(Self.LV_MultiJC);
 
   // assign RCS events:
@@ -2657,12 +2657,12 @@ begin
 end;
 
 procedure TF_Main.B_RemoveStackClick(Sender: TObject);
-var Area: TArea;
+var area: TArea;
 begin
-  if (Self.LV_Stanice.Selected = nil) then
+  if (Self.LV_Areas.Selected = nil) then
     Exit();
-  Area := Areas[Self.LV_Stanice.ItemIndex];
-  if (StrMessageBox('Opravdu smazat zásobník jízdních cest stanice ' + Area.name + ' ?', 'Opravdu?',
+  area := Areas[Self.LV_Areas.ItemIndex];
+  if (StrMessageBox('Opravdu smazat zásobník jízdních cest dopravny ' + Area.name + ' ?', 'Opravdu?',
     MB_YESNO OR MB_ICONQUESTION) = mrYes) then
     Area.stack.Clear();
 end;
@@ -2782,7 +2782,7 @@ begin
         JCTableData.UpdateTable();
       if (Self.PC_1.ActivePage = Self.TS_MultiJC) then
         MultiJCTableData.UpdateTable();
-      if (Self.PC_1.ActivePage = Self.TS_Stanice) then
+      if (Self.PC_1.ActivePage = Self.TS_Areas) then
         ORsTableData.UpdateTable();
       if (Self.PC_1.ActivePage = Self.TS_Technologie) then
         PanelServer.GUIRefreshFromQueue();
@@ -3329,11 +3329,11 @@ begin
     Self.B_train_deleteClick(Self);
 end;
 
-procedure TF_Main.LV_StaniceChange(Sender: TObject; Item: TListItem; Change: TItemChange);
+procedure TF_Main.LV_AreasChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
-  if (Self.LV_Stanice.Selected <> nil) then
+  if (Self.LV_Areas.Selected <> nil) then
   begin
-    var area := Areas[Self.LV_Stanice.ItemIndex];
+    var area := Areas[Self.LV_Areas.ItemIndex];
     Self.B_RemoveStack.Enabled := (area.stack.Count > 0);
   end else begin
     Self.B_RemoveStack.Enabled := false;
