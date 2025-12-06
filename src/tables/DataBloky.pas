@@ -1,6 +1,6 @@
 ﻿unit DataBloky;
 
-// TBlkTableData - trida resici zobrazovani tavulky bloku
+// TBlocksTablePainter - trida resici zobrazovani tavulky bloku
 
 interface
 
@@ -17,15 +17,16 @@ type
     _LVI_NOTE = 5;
     _LVI_LOCKOUT = 6;
     _LVI_TRAIN_PREDICT = 7;
+    _LVS_IRRELEVANT = '---';
 
   private
     LV: TListView;
-
     changed: array of Boolean;
 
   public
-
     reload: Boolean;
+
+    constructor Create(LV: TListView);
 
     procedure LoadTable();
     procedure UpdateTable();
@@ -37,7 +38,6 @@ type
 
     procedure BlkMove(source, target: Integer);
 
-    constructor Create(LV: TListView);
   end;
 
 var
@@ -67,9 +67,9 @@ begin
   for var i := 0 to Blocks.count - 1 do
   begin
     var LI: TListItem := Self.LV.Items.Add;
-    LI.Caption := '---';
+    LI.Caption := _LVS_IRRELEVANT;
     for var j := 0 to Self.LV.Columns.count - 2 do
-      LI.SubItems.Add('---');
+      LI.SubItems.Add(_LVS_IRRELEVANT);
   end;
 
   Self.reload := true;
@@ -83,12 +83,14 @@ begin
   F_Main.L_BlkPocet.Caption := 'Celkem ' + IntToStr(Blocks.count) + ' bloků';
 
   for var i := 0 to Blocks.count - 1 do
+  begin
     if ((Self.changed[i]) or (Self.reload)) then
     begin
       Self.UpdateLine(i);
       Self.changed[i] := false;
       Self.LV.UpdateItems(i, i);
     end;
+  end;
 
   Self.reload := false;
 end;
@@ -138,7 +140,6 @@ begin
 
         Self.LV.Items[line].SubItems[_LVI_NOTE] := (blk as TBlkTurnout).note;
         Self.LV.Items[line].SubItems[_LVI_LOCKOUT] := (blk as TBlkTurnout).lockout;
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
     /// //////////////////////////////////////////////////
@@ -173,7 +174,7 @@ begin
         if ((blk as TBlkTrack).trainPredict <> nil) then
           Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := (blk as TBlkTrack).trainPredict.name
         else
-          Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '--#--';
+          Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '';
       end;
 
     /// //////////////////////////////////////////////////
@@ -181,8 +182,6 @@ begin
       begin
         Self.LV.Items[line].ImageIndex := 4;
         Self.LV.Items[line].SubItems[_LVI_TYPE] := 'IR';
-
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
 
         case ((blk as TBlkIR).occupied) of
           TIROccupationState.disabled:
@@ -194,11 +193,6 @@ begin
           TIROccupationState.occupied:
             Self.LV.Items[line].SubItems[_LVI_STATE] := '+++';
         end; // case
-
-        Self.LV.Items[line].SubItems[_LVI_AREA] := '---';
-        Self.LV.Items[line].SubItems[_LVI_NOTE] := '---';
-        Self.LV.Items[line].SubItems[_LVI_LOCKOUT] := '---';
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
     /// //////////////////////////////////////////////////
@@ -211,13 +205,7 @@ begin
         else
           Self.LV.Items[line].SubItems[_LVI_TYPE] := 'Návěstidlo';
 
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
-
         Self.LV.Items[line].SubItems[_LVI_STATE] := TBlkSignal.SignalToString((blk as TBlkSignal).signal);
-
-        Self.LV.Items[line].SubItems[_LVI_NOTE] := '---';
-        Self.LV.Items[line].SubItems[_LVI_LOCKOUT] := '---';
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
     /// //////////////////////////////////////////////////
@@ -225,8 +213,6 @@ begin
       begin
         Self.LV.Items[line].ImageIndex := 7;
         Self.LV.Items[line].SubItems[_LVI_TYPE] := 'Přejezd';
-
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
 
         case ((blk as TBlkCrossing).state) of
           TBlkCrossingBasicState.disabled:
@@ -247,8 +233,6 @@ begin
 
         Self.LV.Items[line].SubItems[_LVI_NOTE] := (Blk as TBlkCrossing).note;
         Self.LV.Items[line].SubItems[_LVI_LOCKOUT] := '';
-
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
     /// //////////////////////////////////////////////////
@@ -256,8 +240,6 @@ begin
       begin
         Self.LV.Items[line].ImageIndex := 8;
         Self.LV.Items[line].SubItems[_LVI_TYPE] := 'Trať';
-
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
 
         if ((blk as TBlkRailway).occupied) then
         begin
@@ -295,7 +277,7 @@ begin
         if (Assigned((blk as TBlkRailway).trainPredict)) then
           Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := (blk as TBlkRailway).trainPredict.train.name
         else
-          Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '--#--';
+          Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '';
       end;
 
     /// //////////////////////////////////////////////////
@@ -304,15 +286,12 @@ begin
         Self.LV.Items[line].ImageIndex := 9;
         Self.LV.Items[line].SubItems[_LVI_TYPE] := 'Úvazka';
 
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
-
         if ((blk as TBlkLinker).enabled) then
           Self.LV.Items[line].SubItems[_LVI_STATE] := 'enabled'
         else
           Self.LV.Items[line].SubItems[_LVI_STATE] := 'disabled';
 
         Self.LV.Items[line].SubItems[_LVI_NOTE] := (blk as TBlkLinker).note;
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
     /// //////////////////////////////////////////////////
@@ -320,8 +299,6 @@ begin
       begin
         Self.LV.Items[line].ImageIndex := 10;
         Self.LV.Items[line].SubItems[_LVI_TYPE] := 'Zámek';
-
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
 
         if ((blk as TBlkLock).state.enabled) then
         begin
@@ -334,7 +311,6 @@ begin
           Self.LV.Items[line].SubItems[_LVI_STATE] := 'disabled';
 
         Self.LV.Items[line].SubItems[_LVI_NOTE] := (blk as TBlkLock).note;
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
     /// //////////////////////////////////////////////////
@@ -342,8 +318,6 @@ begin
       begin
         Self.LV.Items[line].ImageIndex := 11;
         Self.LV.Items[line].SubItems[_LVI_TYPE] := 'Rozpojovač';
-
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
 
         case ((blk as TBlkDisconnector).state) of
           TBlkDiscBasicState.disabled:
@@ -355,7 +329,6 @@ begin
         end; // case
 
         Self.LV.Items[line].SubItems[_LVI_NOTE] := (blk as TBlkDisconnector).note;
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
     /// //////////////////////////////////////////////////
@@ -386,7 +359,7 @@ begin
         if ((blk as TBlkTrack).trainPredict <> nil) then
           Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := (blk as TBlkTrack).trainPredict.name
         else
-          Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '--#--';
+          Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '';
       end;
 
     /// //////////////////////////////////////////////////
@@ -395,8 +368,6 @@ begin
         Self.LV.Items[line].ImageIndex := 12;
         Self.LV.Items[line].SubItems[_LVI_TYPE] := 'IO';
 
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
-
         if (TBlkIO(Blk).enabled) then
           Self.LV.Items[line].SubItems[_LVI_STATE] := 'I: ' + ownConvert.BoolToYesNo(TBlkIO(Blk).activeInput) + ', O: ' +
             ownConvert.BoolToYesNo(TBlkIO(blk).activeOutput)
@@ -404,8 +375,6 @@ begin
           Self.LV.Items[line].SubItems[_LVI_STATE] := 'disabled';
 
         Self.LV.Items[line].SubItems[_LVI_NOTE] := (blk as TBlkIO).note;
-        Self.LV.Items[line].SubItems[_LVI_LOCKOUT] := '---';
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
     /// //////////////////////////////////////////////////
@@ -414,15 +383,10 @@ begin
         Self.LV.Items[line].ImageIndex := -1;
         Self.LV.Items[line].SubItems[_LVI_TYPE] := 'Součtová hláska';
 
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
-
         if ((blk as TBlkSummary).enabled) then
           Self.LV.Items[line].SubItems[_LVI_STATE] := 'ok'
         else
           Self.LV.Items[line].SubItems[_LVI_STATE] := 'disabled';
-
-        Self.LV.Items[line].SubItems[_LVI_NOTE] := '';
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
     /// //////////////////////////////////////////////////
@@ -430,8 +394,6 @@ begin
       begin
         Self.LV.Items[line].ImageIndex := -1;
         Self.LV.Items[line].SubItems[_LVI_TYPE] := 'AC';
-
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
 
         if (TBlkAC(blk).enabled) then
         begin
@@ -451,16 +413,12 @@ begin
         end
         else
           Self.LV.Items[line].SubItems[_LVI_STATE] := 'disabled';
-
-        Self.LV.Items[line].SubItems[_LVI_NOTE] := '---';
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
     btPst:
       begin
         Self.LV.Items[line].ImageIndex := -1;
         Self.LV.Items[line].SubItems[_LVI_TYPE] := 'Pomocné stavědlo';
-        Self.LV.Items[line].SubItems[_LVI_TRAIN] := '---';
 
         case (TBlkPst(blk).status) of
           pstDisabled: Self.LV.Items[line].SubItems[_LVI_STATE] := 'disabled';
@@ -469,9 +427,6 @@ begin
           pstRefuging: Self.LV.Items[line].SubItems[_LVI_STATE] := 'nastavování boční ochrany...';
           pstActive: Self.LV.Items[line].SubItems[_LVI_STATE] := 'aktivní';
         end;
-
-        Self.LV.Items[line].SubItems[_LVI_NOTE] := '---';
-        Self.LV.Items[line].SubItems[_LVI_TRAIN_PREDICT] := '---';
       end;
 
   end;
@@ -499,9 +454,9 @@ begin
   SetLength(changed, Length(changed) + 1);
 
   var LI: TListItem := Self.LV.Items.Insert(index);
-  LI.Caption := '---';
+  LI.Caption := _LVS_IRRELEVANT;
   for var j := 0 to Self.LV.Columns.count - 2 do
-    LI.SubItems.Add('---');
+    LI.SubItems.Add(_LVS_IRRELEVANT);
   Self.UpdateLine(index);
 
   F_Main.L_BlkPocet.Caption := 'Pocet bloku : ' + IntToStr(Blocks.count);
