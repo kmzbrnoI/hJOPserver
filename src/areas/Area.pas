@@ -57,7 +57,7 @@ type
   end;
 
   TAreaPanel = record
-    Panel: TIDContext;
+    panel: TIdContext;
     rights: TAreaRights;
     user: string;
   end;
@@ -200,7 +200,7 @@ type
 
     // --- called from technological blocks ---
 
-    procedure BlkChange(Sender: TObject; specificClient: TIDContext = nil);
+    procedure BlkChange(Sender: TObject; specificClient: TIdContext = nil);
     procedure BlkPlaySound(Sender: TObject; min_rights: TAreaRights; sound: Integer; loop: Boolean = false);
     procedure BlkRemoveSound(Sender: TObject; sound: Integer);
     procedure BlkWriteError(Sender: TObject; error: string; system: string; minRights: TAreaRights = TAreaRights.write);
@@ -433,7 +433,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // tato funkce je vyvolana pri zmene stavu jakehokoliv bloku
-procedure TArea.BlkChange(Sender: TObject; specificClient: TIDContext = nil);
+procedure TArea.BlkChange(Sender: TObject; specificClient: TIdContext = nil);
 var
   msg: string;
 begin

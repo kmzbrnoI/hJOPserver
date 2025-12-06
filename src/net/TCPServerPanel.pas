@@ -426,7 +426,7 @@ begin
   // Warning: AContext is destroyed, only address is left.
   // vymazeme klienta ze vsech oblasti rizeni
   for var area: TArea in orsRef.areas do
-    Area.RemoveClient(AContext, true);
+    area.RemoveClient(AContext, true);
   orsRef.areas.Clear();
 
   // ukoncime probihajici potvrzovaci sekvenci
