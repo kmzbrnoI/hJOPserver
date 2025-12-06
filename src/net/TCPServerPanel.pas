@@ -97,6 +97,7 @@ type
     procedure Start();
     procedure Stop();
     procedure DisconnectClient(conn: TIdContext);
+    class function Connected(conn: TIdContext): Boolean;
 
     // volani funkci do panelu, ktere neprislusi OR, ale jednotlivym panelum
     procedure SendInfoMsg(AContext: TIdContext; msg: string);
@@ -1292,7 +1293,10 @@ procedure TPanelServer.SendLn(AContext: TIdContext; str: string);
 begin
   // vyvolani vyjimky -> spojeni neocekavane preruseno -> melo by zavolat OnDisconnect (automaticky)
   try
-    AContext.connection.IOHandler.WriteLn(str);
+    // If connection is nil, exception was already called -> no need
+    // (it is anly access violation - no meaning for disconnect event)
+    if (AContext.connection <> nil) then
+      AContext.connection.IOHandler.WriteLn(str);
   except
 
   end;
@@ -1521,6 +1525,13 @@ end;
 procedure TPanelServer.DisconnectClient(conn: TIdContext);
 begin
   conn.connection.Disconnect();
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+class function TPanelServer.Connected(conn: TIdContext): Boolean;
+begin
+  Result := (conn.Connection <> nil) and (conn.Connection.Connected());
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

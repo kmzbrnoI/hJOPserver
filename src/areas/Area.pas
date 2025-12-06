@@ -451,8 +451,11 @@ begin
 
     Self.SendLn(areaPanel.Panel, msg);
 
+    // beware: SendLn can lead to client disconnect -> checking of TPanelServer.Connected before accessing areaPanel.Panel.data required!
+    // Otherwise: possible access violation (this really happenned)
+
     // update menu
-    if ((areaPanel.Panel.data as TPanelConnData).menu = Sender) then
+    if ((TPanelServer.Connected(areaPanel.panel)) and ((areaPanel.Panel.data as TPanelConnData).menu = Sender)) then
       PanelServer.menu(areaPanel.Panel, (Sender as TBlk), Self, (Sender as TBlk).ShowPanelMenu(areaPanel.Panel, Self,
         areaPanel.rights));
   end;
