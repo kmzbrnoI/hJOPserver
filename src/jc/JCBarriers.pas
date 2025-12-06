@@ -1075,7 +1075,9 @@ begin
 
   Result[0] := GetUPOLine('Vozidlo v ručním řízení', taCenter, TJopColor.black, TJopColor.yellow);
   Result[1] := GetUPOLine(IntToStr(addr) + ' : ' + RVDb[addr].name);
-  Result[2] := GetUPOLine('Řídí: '+RVDb[addr].DriverFullNames());
+  var drivers: string := RVDb[addr].DriverFullNames();
+  if (drivers <> '') then
+    Result[2] := GetUPOLine('Řídí: '+drivers);
 end;
 
 function TJCBarRVManual.ToUPO(): TUPOItem;
