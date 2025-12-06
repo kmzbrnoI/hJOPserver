@@ -2020,7 +2020,7 @@ begin
       begin
         if (Self.CloseMessage) then
         begin
-          CanClose := (StrMessageBox('Opravdu chcete ukončit program?', 'hJOPserver',
+          CanClose := (StrMessageBox('Opravdu chcete ukončit hJOPserver?', 'hJOPserver',
             MB_YESNO OR MB_ICONQUESTION OR MB_DEFBUTTON2) = mrYes);
         end else begin
           CanClose := true;
