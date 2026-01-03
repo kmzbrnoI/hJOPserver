@@ -262,7 +262,7 @@ object F_BlkGroupSignal: TF_BlkGroupSignal
       Style = csDropDownList
       TabOrder = 8
       Items.Strings = (
-        'S-Com'
+        'S-COM'
         'bin'#225'rn'#237' (0/1)')
     end
     object SE_RCSmodule1: TSpinEdit

@@ -73,7 +73,8 @@ var
 
 implementation
 
-uses Block, Area, DataBloky, RCSc, RCSsc, BlockSignal, ownGuiUtils;
+uses Block, Area, DataBloky, RCSc, RCSsc, BlockSignal, ownGuiUtils, ownConvert,
+  TRailVehicle;
 
 {$R *.dfm}
 /// /////////////////////////////////////////////////////////////////////////////
@@ -331,6 +332,9 @@ begin
     signalSettings.fallDelay := 0;
     signalSettings.locked := false;
     signalSettings.events := TObjectList<TBlkSignalTrainEvent>.Create();
+    signalSettings.changeTime := ownConvert.SecTenthsToTime(TBlkSignal.DefaultChangeTime(Self.CHB_RCS_Output.Checked));
+    signalSettings.PSt.enabled := False;
+    signalSettings.forceDirection := TRVOptionalSite.osNo;
 
     TBlkSignal(Self.block).SetSettings(signalSettings);
   except
