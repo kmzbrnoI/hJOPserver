@@ -528,22 +528,28 @@ begin
     strings.Free();
   end;
 
-  var crossingId := Self.CB_CrossingIds[Self.CB_Crossing.ItemIndex];
-  var crossingIndex := Self.LVFindLine(Self.LV_Crossings, 0, IntToStr(crossingId));
-  var LI: TListItem;
-  if (crossingIndex > -1) then
-    LI := Self.LV_Crossings.Items[crossingIndex]
-  else
-    LI := Self.LV_Crossings.Items.Add();
+  try
+    Self.LV_Crossings.OnChange := nil;
 
-  var refId: Integer := -1;
-  if (Self.CB_Crossing_Ref.Enabled) then
-    refId := StrToInt(Self.LV_Tracks.Items[Self.CB_Crossing_Ref.ItemIndex].SubItems.Strings[0]);
+    var crossingId := Self.CB_CrossingIds[Self.CB_Crossing.ItemIndex];
+    var crossingIndex := Self.LVFindLine(Self.LV_Crossings, 0, IntToStr(crossingId));
+    var LI: TListItem;
+    if (crossingIndex > -1) then
+      LI := Self.LV_Crossings.Items[crossingIndex]
+    else
+      LI := Self.LV_Crossings.Items.Add();
 
-  Self.FillRefLI(LI, crossingId, refId);
-  LI.SubItems.Add(Self.E_Crossing_Close_Ids.Text);
-  LI.SubItems.Add(closeNames);
-  Self.E_Crossing_Close_Names.Text := closeNames;
+    var refId: Integer := -1;
+    if (Self.CB_Crossing_Ref.Enabled) then
+      refId := StrToInt(Self.LV_Tracks.Items[Self.CB_Crossing_Ref.ItemIndex].SubItems.Strings[0]);
+
+    Self.FillRefLI(LI, crossingId, refId);
+    LI.SubItems.Add(Self.E_Crossing_Close_Ids.Text);
+    LI.SubItems.Add(closeNames);
+    Self.E_Crossing_Close_Names.Text := closeNames;
+  finally
+    Self.LV_Crossings.OnChange := Self.LV_CrossingsChange;
+  end;
 end;
 
 procedure TF_JCEdit.B_Cros_Names_To_IdsClick(Sender: TObject);
