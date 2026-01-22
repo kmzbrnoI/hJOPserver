@@ -274,7 +274,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 191
+        MaxValue = 0
         MinValue = 0
         TabOrder = 6
         Value = 0
@@ -288,7 +288,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 191
+        MaxValue = 0
         MinValue = 0
         TabOrder = 2
         Value = 0
@@ -318,7 +318,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 191
+        MaxValue = 0
         MinValue = 0
         TabOrder = 10
         Value = 0
@@ -374,7 +374,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 191
+        MaxValue = 0
         MinValue = 0
         TabOrder = 15
         Value = 0
@@ -410,7 +410,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 191
+        MaxValue = 0
         MinValue = 0
         TabOrder = 19
         Value = 0
@@ -446,7 +446,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 191
+        MaxValue = 0
         MinValue = 0
         TabOrder = 27
         Value = 0
@@ -496,7 +496,7 @@ object F_BlkCrossing: TF_BlkCrossing
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        MaxValue = 191
+        MaxValue = 0
         MinValue = 0
         TabOrder = 23
         Value = 0
