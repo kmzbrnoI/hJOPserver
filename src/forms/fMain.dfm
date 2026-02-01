@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Trains
+    ActivePage = TS_Technologie
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3512,7 +3512,7 @@ object F_Main: TF_Main
         Top = 206
         Width = 822
         Height = 206
-        Caption = ' P'#345'ipojen'#233' panely '
+        Caption = ' P'#345'ipojen'#237' klienti k Panel serveru '
         TabOrder = 0
         object LV_Clients: TListView
           Left = 2
@@ -3540,16 +3540,16 @@ object F_Main: TF_Main
               Caption = 'Ping [ms]'
             end
             item
-              Caption = 'O'#344'1'
+              Caption = 'Dopravna 1'
             end
             item
-              Caption = 'O'#344'2'
+              Caption = 'Dopravna 2'
             end
             item
-              Caption = 'O'#344'3'
+              Caption = 'Dopravna 3'
             end
             item
-              Caption = 'Dal'#353#237' O'#344
+              Caption = 'Dal'#353#237' dopravny'
             end
             item
               Caption = 'Autorizovan'#253' regul'#225'tor'
