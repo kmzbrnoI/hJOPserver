@@ -242,6 +242,7 @@ type
     function IsTargetGoSignal(jctype: TJCType = TJCType.Train): Boolean;
     function IsOpakVystraha(): Boolean;
     class function IsGoSignal(Navest: TBlkSignalCode; jctype: TJCType = TJCType.Train): Boolean; overload;
+    class function SignalOutputTypeToStr(outType: TBlkSignalOutputType): string;
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
@@ -569,6 +570,7 @@ begin
   begin
     Self.m_state.signal := ncStuj;
     Self.m_state.signalOld := ncStuj;
+    Self.SetAllRCSOutputs(Self.m_state.signal);
   end;
 
   Self.m_state.toRnz.Clear();
@@ -638,6 +640,7 @@ begin
     if (Self.m_state.signal = ncDisabled) then
     begin
       Self.m_state.signal := ncStuj;
+      Self.SetAllRCSOutputs(Self.m_state.signal);
       Self.Change();
     end;
   end else begin
@@ -2577,6 +2580,22 @@ end;
 procedure TBlkSignal.SetSpnlDirection(dir: TRVSite);
 begin
   Self.m_spnl.direction := dir;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+class function TBlkSignal.SignalOutputTypeToStr(outType: TBlkSignalOutputType): string;
+begin
+  case (outType) of
+    sotSCOM: Result := 'S-COM';
+    sotDNnotPN: Result := 'bin. vlak';
+    sotPN: Result := 'bin. PN';
+    sotTurn: Result := 'bin. odbočka';
+    sotCautinon: Result := 'bin. výstraha';
+    sotShunt: Result := 'bin. posun';
+  else
+   Result := '?';
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

@@ -144,9 +144,9 @@ begin
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
 
-  Self.CHB_RCS_Output.Checked := (signalSettings.RCSAddrs.count > 0);
+  Self.CHB_RCS_Output.Checked := (signalSettings.rcsOutputs.count > 0);
   Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
-  if (signalSettings.RCSAddrs.count > 0) then
+{  if (signalSettings.RCSAddrs.count > 0) then
   begin
     Self.SE_RCSsystem1.Value := signalSettings.RCSAddrs[0].system;
     Self.SE_RCSmodule1.Value := signalSettings.RCSAddrs[0].module;
@@ -161,7 +161,7 @@ begin
     Self.SE_RCSsystem2.Value := signalSettings.RCSAddrs[1].system;
     Self.SE_RCSmodule2.Value := signalSettings.RCSAddrs[1].module;
     Self.SE_RCSport2.Value := signalSettings.RCSAddrs[1].port;
-  end;
+  end; }
 
   Self.LV_Signals.Clear();
   for var id in settings.signalIds do
@@ -320,14 +320,14 @@ begin
     Self.block.SetSettings(settings);
 
     var signalSettings: TBlkSignalSettings;
-    signalSettings.RCSAddrs := TList<RCSsc.TRCSsAddr>.Create();
+{    signalSettings.RCSAddrs := TList<RCSsc.TRCSsAddr>.Create();
     if (Self.CHB_RCS_Output.Checked) then
     begin
       signalSettings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_RCSsystem1.Value, Self.SE_RCSmodule1.Value, SE_RCSport1.Value));
       signalSettings.OutputType := TBlkSignalOutputType(CB_Typ.ItemIndex);
     end;
     if (Self.CHB_RCS_Second_Output.Checked) then
-      signalSettings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_RCSsystem2.Value, Self.SE_RCSmodule2.Value, SE_RCSport2.Value));
+      signalSettings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_RCSsystem2.Value, Self.SE_RCSmodule2.Value, SE_RCSport2.Value)); }
 
     signalSettings.fallDelay := 0;
     signalSettings.locked := false;

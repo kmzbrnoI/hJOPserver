@@ -14,27 +14,15 @@ type
     E_Name: TEdit;
     SE_ID: TSpinEdit;
     L_ID: TLabel;
-    GB_RCS: TGroupBox;
-    Label3: TLabel;
-    Label4: TLabel;
-    SE_RCSport1: TSpinEdit;
     B_Storno: TButton;
     B_Save: TButton;
-    Label5: TLabel;
-    CB_Typ: TComboBox;
     Label1: TLabel;
     L_Track_Id: TLabel;
-    SE_RCSmodule1: TSpinEdit;
     Label2: TLabel;
     SE_Delay: TSpinEdit;
     CHB_Locked: TCheckBox;
     PC_Events: TPageControl;
     BB_Event_Add: TBitBtn;
-    CHB_RCS_Output: TCheckBox;
-    SE_RCSmodule2: TSpinEdit;
-    SE_RCSport2: TSpinEdit;
-    CHB_RCS_Second_Output: TCheckBox;
-    Label6: TLabel;
     GB_PSt: TGroupBox;
     CHB_PSt: TCheckBox;
     Label7: TLabel;
@@ -47,15 +35,30 @@ type
     SE_Cont_Port: TSpinEdit;
     CHB_changeTime: TCheckBox;
     NB_ChangeTime: TNumberBox;
-    Label11: TLabel;
-    SE_RCSsystem1: TSpinEdit;
-    SE_RCSsystem2: TSpinEdit;
     Label12: TLabel;
     SE_Ind_System: TSpinEdit;
     SE_Cont_System: TSpinEdit;
     CHB_ForceDirection: TCheckBox;
     CB_ForceDirection: TComboBox;
     Label13: TLabel;
+    GB_RCSs: TGroupBox;
+    LV_RCSs: TListView;
+    GB_RCS: TGroupBox;
+    Label3: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
+    Label11: TLabel;
+    CB_RCS_Type: TComboBox;
+    SE_RCS_inv_module: TSpinEdit;
+    SE_RCS_inv_port: TSpinEdit;
+    CHB_RCS_Inverse_Output: TCheckBox;
+    SE_RCS_inv_system: TSpinEdit;
+    SE_RCS_system: TSpinEdit;
+    SE_RCS_module: TSpinEdit;
+    SE_RCS_port: TSpinEdit;
+    B_RCS_OK: TButton;
+    B_RCS_Delete: TButton;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -68,12 +71,16 @@ type
     procedure PageControlCloseButtonMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure PageControlCloseButtonDrawTab(Control: TCustomTabControl; TabIndex: Integer; const Rect: TRect;
       Active: Boolean);
-    procedure CHB_RCS_OutputClick(Sender: TObject);
-    procedure SE_RCSmodule2Exit(Sender: TObject);
-    procedure CHB_RCS_Second_OutputClick(Sender: TObject);
     procedure CHB_PStClick(Sender: TObject);
     procedure CHB_changeTimeClick(Sender: TObject);
     procedure CHB_ForceDirectionClick(Sender: TObject);
+    procedure B_RCS_OKClick(Sender: TObject);
+    procedure B_RCS_DeleteClick(Sender: TObject);
+    procedure LV_RCSsKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure LV_RCSsChange(Sender: TObject; Item: TListItem;
+      Change: TItemChange);
+    procedure CHB_RCS_Inverse_OutputClick(Sender: TObject);
 
   private
     openIndex: Integer;
@@ -85,6 +92,8 @@ type
 
     FCloseButtonMouseDownTab: TCloseTabSheet;
     FCloseButtonShowPushed: Boolean;
+
+    const LV_RCS_ADDR_UNUSED: string = '-';
 
     procedure CommonOpenForm();
     procedure EditOpenForm();
@@ -129,16 +138,8 @@ begin
   Self.CHB_Locked.Checked := false;
   Self.L_Track_Id.Caption := 'bude zobrazen příště';
 
-  Self.SE_RCSsystem1.Value := 0;
-  Self.SE_RCSmodule1.Value := 0;
-  Self.SE_RCSport1.Value := 0;
-  Self.CB_Typ.ItemIndex := -1;
-
-  Self.CHB_RCS_Second_Output.Checked := false;
-  Self.CHB_RCS_Second_OutputClick(Self);
-
-  Self.CHB_RCS_Output.Checked := true;
-  Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
+  Self.LV_RCSs.Clear();
+  Self.LV_RCSsChange(Self.LV_RCSs, nil, TItemChange.ctState);
 
   Self.CHB_changeTime.Checked := False;
   Self.CHB_changeTimeClick(Self.CHB_changeTime);
@@ -169,24 +170,18 @@ begin
 
   Self.SE_Delay.Value := settings.fallDelay;
 
-  Self.CHB_RCS_Output.Checked := (settings.RCSAddrs.count > 0);
-  Self.CHB_RCS_OutputClick(Self.CHB_RCS_Output);
-
-  if (settings.RCSAddrs.count > 0) then
+  Self.LV_RCSs.Clear();
+  for var i: Integer := 0 to settings.rcsOutputs.Count-1 do
   begin
-    Self.SE_RCSsystem1.Value := settings.RCSAddrs[0].system;
-    Self.SE_RCSmodule1.Value := settings.RCSAddrs[0].module;
-    SE_RCSport1.Value := settings.RCSAddrs[0].port;
-    CB_Typ.ItemIndex := Integer(settings.OutputType);
-  end;
-  Self.CHB_RCS_Second_Output.Checked := (settings.RCSAddrs.count > 1);
-  Self.CHB_RCS_Second_OutputClick(Self);
-
-  if (settings.RCSAddrs.count > 1) then
-  begin
-    Self.SE_RCSsystem2.Value := settings.RCSAddrs[1].system;
-    Self.SE_RCSmodule2.Value := settings.RCSAddrs[1].module;
-    SE_RCSport2.Value := settings.RCSAddrs[1].port;
+    var li: TListItem := Self.LV_RCSs.Items.Add();
+    li.Data := Pointer(settings.rcsOutputs[i].outputType);
+    li.Caption := IntToStr(i);
+    li.SubItems.Add(TBlkSignal.SignalOutputTypeToStr(settings.rcsOutputs[i].outputType));
+    li.SubItems.Add(settings.rcsOutputs[i].rcs.ToString());
+    if (settings.rcsOutputs[i].inverseRcs.enabled) then
+      li.SubItems.Add(settings.rcsOutputs[i].inverseRcs.addr.ToString())
+    else
+      li.SubItems.Add(LV_RCS_ADDR_UNUSED)
   end;
 
   Self.CHB_Locked.Checked := settings.locked;
@@ -246,8 +241,8 @@ end;
 
 procedure TF_BlkSignal.CommonOpenForm();
 begin
-  Self.SE_RCSsystem1.MaxValue := RCSs._RCSS_MAX;
-  Self.SE_RCSsystem2.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_RCS_system.MaxValue := RCSs._RCSS_MAX;
+  Self.SE_RCS_inv_system.MaxValue := RCSs._RCSS_MAX;
   Self.ActiveControl := Self.E_Name;
 end;
 
@@ -271,7 +266,7 @@ procedure TF_BlkSignal.CHB_changeTimeClick(Sender: TObject);
 begin
   Self.NB_ChangeTime.Enabled := Self.CHB_changeTime.Checked;
   if (not Self.CHB_changeTime.Checked) then
-    Self.NB_ChangeTime.Text := TBlkSignal.DefaultChangeTime(Self.CHB_RCS_Output.Checked);
+    Self.NB_ChangeTime.Text := TBlkSignal.DefaultChangeTime(Self.LV_RCSs.Items.Count > 0);
 end;
 
 procedure TF_BlkSignal.CHB_ForceDirectionClick(Sender: TObject);
@@ -301,38 +296,16 @@ begin
   end;
 end;
 
-procedure TF_BlkSignal.CHB_RCS_OutputClick(Sender: TObject);
+procedure TF_BlkSignal.CHB_RCS_Inverse_OutputClick(Sender: TObject);
 begin
-  Self.SE_RCSsystem1.Enabled := Self.CHB_RCS_Output.Checked;
-  Self.SE_RCSmodule1.Enabled := Self.CHB_RCS_Output.Checked;
-  Self.SE_RCSport1.Enabled := Self.CHB_RCS_Output.Checked;
-  Self.CB_Typ.Enabled := Self.CHB_RCS_Output.Checked;
-  Self.CHB_RCS_Second_Output.Enabled := Self.CHB_RCS_Output.Checked;
-
-  if (not Self.CHB_RCS_Output.Checked) then
+  Self.SE_RCS_inv_system.Enabled := Self.CHB_RCS_Inverse_Output.Checked;
+  Self.SE_RCS_inv_module.Enabled := Self.CHB_RCS_Inverse_Output.Checked;
+  Self.SE_RCS_inv_port.Enabled := Self.CHB_RCS_Inverse_Output.Checked;
+  if (not Self.CHB_RCS_Inverse_Output.Checked) then
   begin
-    Self.SE_RCSsystem1.Value := 0;
-    Self.SE_RCSmodule1.Value := 0;
-    Self.SE_RCSport1.Value := 0;
-    Self.CB_Typ.ItemIndex := -1;
-    Self.CHB_RCS_Second_Output.Checked := false;
-    Self.CHB_RCS_Second_OutputClick(Self);
-  end;
-
-  Self.CHB_changeTimeClick(Self.CHB_changeTime);
-end;
-
-procedure TF_BlkSignal.CHB_RCS_Second_OutputClick(Sender: TObject);
-begin
-  Self.SE_RCSsystem2.Enabled := Self.CHB_RCS_Second_Output.Checked;
-  Self.SE_RCSmodule2.Enabled := Self.CHB_RCS_Second_Output.Checked;
-  Self.SE_RCSport2.Enabled := Self.CHB_RCS_Second_Output.Checked;
-  Self.SE_RCSmodule2Exit(Self);
-  if (not Self.CHB_RCS_Second_Output.Checked) then
-  begin
-    Self.SE_RCSsystem2.Value := 0;
-    Self.SE_RCSmodule2.Value := 0;
-    Self.SE_RCSport2.Value := 0;
+    Self.SE_RCS_inv_system.Value := 0;
+    Self.SE_RCS_inv_module.Value := 0;
+    Self.SE_RCS_inv_port.Value := 0;
   end;
 end;
 
@@ -358,6 +331,42 @@ begin
   Self.eventTabSheets.Add(ts);
 end;
 
+procedure TF_BlkSignal.B_RCS_DeleteClick(Sender: TObject);
+begin
+  if (StrMessageBox('Opravdu chcete smazat vybrané RCS výstupy?', 'Mazání zámků',
+    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+    Self.LV_RCSs.DeleteSelected();
+  end;
+end;
+
+procedure TF_BlkSignal.B_RCS_OKClick(Sender: TObject);
+begin
+  if (Self.CB_RCS_Type.ItemIndex = -1) then
+  begin
+    StrMessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+
+  var li: TListItem;
+  if (Self.LV_RCSs.Selected <> nil) then
+    li := Self.LV_RCSs.Selected
+  else
+    li := Self.LV_RCSs.Items.Add();
+
+  Self.LV_RCSs.Enabled := False;
+  li.Data := Pointer(Self.CB_RCS_Type.ItemIndex);
+  li.Caption := IntToStr(li.Index);
+  li.SubItems.Clear();
+  li.SubItems.Add(TBlkSignal.SignalOutputTypeToStr(TBlkSignalOutputType(Self.CB_RCS_Type.ItemIndex)));
+  li.SubItems.Add(IntToStr(Self.SE_RCS_system.Value) + ':' + IntToStr(Self.SE_RCS_module.Value) + ':' + IntToStr(Self.SE_RCS_port.Value));
+  if (Self.CHB_RCS_Inverse_Output.Checked) then
+    li.SubItems.Add(IntToStr(Self.SE_RCS_inv_system.Value) + ':' + IntToStr(Self.SE_RCS_inv_module.Value) + ':' + IntToStr(Self.SE_RCS_inv_port.Value))
+  else
+    li.SubItems.Add(LV_RCS_ADDR_UNUSED);
+  Self.LV_RCSs.Enabled := True;
+end;
+
 procedure TF_BlkSignal.B_SaveClick(Sender: TObject);
 begin
   if (Self.E_Name.Text = '') then
@@ -373,25 +382,20 @@ begin
 
   var messages := '';
 
-  if (Self.CHB_RCS_Output.Checked) then
+  for var li: TListItem in Self.LV_RCSs.Items do
   begin
-    if (CB_Typ.ItemIndex = -1) then
+    var addr: TRCSsAddr;
+    addr.Load(li.SubItems[1]);
+    var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
+    if (another <> nil) then
+      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
+    if (li.SubItems[2] <> LV_RCS_ADDR_UNUSED) then
     begin
-      StrMessageBox('Vyberte typ výstupu!', 'Nelze uložit data', MB_OK OR MB_ICONWARNING);
-      Exit();
+      addr.Load(li.SubItems[2]);
+      another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
+      if (another <> nil) then
+        messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
     end;
-
-    var addr := TRCSs.RCSsAddr(Self.SE_RCSsystem1.Value, Self.SE_RCSmodule1.Value, SE_RCSport1.Value);
-    var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
-  end;
-  if (Self.CHB_RCS_Second_Output.Checked) then
-  begin
-    var addr := TRCSs.RCSsAddr(Self.SE_RCSsystem2.Value, Self.SE_RCSmodule2.Value, SE_RCSport2.Value);
-    var another := Blocks.AnotherBlockUsesRCS(addr, Self.block, TRCSIOType.output);
-    if (another <> nil) then
-      messages := messages + 'Blok ' + another.name + ' využívá také RCS adresu ' + addr.ToString() + '.' + #13#10;
   end;
 
   for var fBlkNavEvent in Self.eventForms do
@@ -434,14 +438,18 @@ begin
     end;
 
     var settings: TBlkSignalSettings;
-    settings.RCSAddrs := TList<RCSsc.TRCSsAddr>.Create();
-    if (Self.CHB_RCS_Output.Checked) then
+    settings.rcsOutputs := TList<TBlkSignalOutput>.Create();
+
+    for var li: TListItem in Self.LV_RCSs.Items do
     begin
-      settings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_RCSsystem1.Value, Self.SE_RCSmodule1.Value, SE_RCSport1.Value));
-      settings.OutputType := TBlkSignalOutputType(CB_Typ.ItemIndex);
+      var output: TBlkSignalOutput;
+      output.rcs.Load(li.SubItems[1]);
+      output.outputType := TBlkSignalOutputType(li.Data);
+      output.inverseRcs.enabled := (li.SubItems[2] <> LV_RCS_ADDR_UNUSED);
+      if (li.SubItems[2] <> LV_RCS_ADDR_UNUSED) then
+        output.inverseRcs.addr.Load(li.SubItems[2]);
+      settings.rcsOutputs.Add(output);
     end;
-    if (Self.CHB_RCS_Second_Output.Checked) then
-      settings.RCSAddrs.Add(TRCSs.RCSsAddr(Self.SE_RCSsystem2.Value, Self.SE_RCSmodule2.Value, SE_RCSport2.Value));
 
     settings.fallDelay := Self.SE_Delay.Value;
     settings.changeTime := ownConvert.SecTenthsToTime(Self.NB_ChangeTime.Text);
@@ -504,6 +512,53 @@ procedure TF_BlkSignal.FormDestroy(Sender: TObject);
 begin
   Self.eventForms.Free();
   Self.eventTabSheets.Free();
+end;
+
+procedure TF_BlkSignal.LV_RCSsChange(Sender: TObject; Item: TListItem;
+  Change: TItemChange);
+begin
+  if (not Self.LV_RCSs.Enabled) then
+    Exit();
+
+  Self.B_RCS_Delete.Enabled := (Self.LV_RCSs.ItemIndex <> -1);
+
+  if (Self.LV_RCSs.Selected <> nil) then
+  begin
+    Self.CB_RCS_Type.ItemIndex := Integer(Self.LV_RCSs.Selected.Data);
+
+    var rcs: TRCSsAddr;
+    rcs.Load(Self.LV_RCSs.Selected.SubItems[1]);
+    Self.SE_RCS_system.Value := rcs.system;
+    Self.SE_RCS_module.Value := rcs.module;
+    Self.SE_RCS_port.Value := rcs.port;
+
+    if (Self.LV_RCSs.Selected.SubItems[2] <> LV_RCS_ADDR_UNUSED) then
+    begin
+      Self.CHB_RCS_Inverse_Output.Checked := True;
+      var rcsInv: TRCSsAddr;
+      rcsInv.Load(Self.LV_RCSs.Selected.SubItems[2]);
+      Self.SE_RCS_inv_system.Value := rcsInv.system;
+      Self.SE_RCS_inv_module.Value := rcsInv.module;
+      Self.SE_RCS_inv_port.Value := rcsInv.port;
+    end else begin
+      Self.CHB_RCS_Inverse_Output.Checked := False;
+      Self.CHB_RCS_Inverse_OutputClick(Self);
+    end;
+  end else begin
+    Self.CB_RCS_Type.ItemIndex := -1;
+    Self.SE_RCS_system.Value := 0;
+    Self.SE_RCS_module.Value := 0;
+    Self.SE_RCS_port.Value := 0;
+    Self.CHB_RCS_Inverse_Output.Checked := False;
+    Self.CHB_RCS_Inverse_OutputClick(Self);
+  end;
+end;
+
+procedure TF_BlkSignal.LV_RCSsKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_RCS_Delete.Enabled)) then
+    Self.B_RCS_DeleteClick(Self.B_RCS_Delete);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -639,10 +694,6 @@ begin
       PageControl.Repaint;
     end;
   end;
-end;
-
-procedure TF_BlkSignal.SE_RCSmodule2Exit(Sender: TObject);
-begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
