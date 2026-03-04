@@ -98,8 +98,8 @@ type
     function GetOutputState(addr: TRCSsAddr): TRCSOutputState; overload;
     function GetOutputStateNoEx(addr: TRCSsAddr): TRCSOutputState; overload;
 
-    function GetModuleInputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
-    function GetModuleOutputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
+    function GetModuleInputsCountSafe(system: Cardinal; module: Cardinal; default: Cardinal = TRCS._MODULE_DEFAULT_IO): Cardinal;
+    function GetModuleOutputsCountSafe(system: Cardinal; module: Cardinal; default: Cardinal = TRCS._MODULE_DEFAULT_IO): Cardinal;
 
     function IsModule(addr: TRCSsAddr): Boolean; overload;
     function IsModule(addr: TRCSsSystemModule): Boolean; overload;
@@ -113,6 +113,8 @@ type
     function IsNonFailedModule(addr: TRCSsSystemModule): Boolean; overload;
     function IsOperationalModule(addr: TRCSsAddr): Boolean; overload;
     function IsOperationalModule(addr: TRCSsSystemModule): Boolean; overload;
+    function IsOperationalInput(addr: TRCSsAddr): Boolean;
+    function IsOperationalOutput(addr: TRCSsAddr): Boolean;
 
     function IsSimulation(system: Cardinal): Boolean; overload;
     function IsSimulation(addr: TRCSsAddr): Boolean; overload;
@@ -551,18 +553,18 @@ begin
   Result := Self.m_rcss[addr.system].GetOutputStateNoEx(addr.module, addr.port);
 end;
 
-function TRCSs.GetModuleInputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
+function TRCSs.GetModuleInputsCountSafe(system: Cardinal; module: Cardinal; default: Cardinal): Cardinal;
 begin
   if (system > _RCSS_MAX) then
-    Exit(TRCS._MODULE_DEFAULT_IO);
-  Result := Self.m_rcss[system].GetModuleInputsCountSafe(module);
+    Exit(default);
+  Result := Self.m_rcss[system].GetModuleInputsCountSafe(module, default);
 end;
 
-function TRCSs.GetModuleOutputsCountSafe(system: Cardinal; module: Cardinal): Cardinal;
+function TRCSs.GetModuleOutputsCountSafe(system: Cardinal; module: Cardinal; default: Cardinal): Cardinal;
 begin
   if (system > _RCSS_MAX) then
-    Exit(TRCS._MODULE_DEFAULT_IO);
-  Result := Self.m_rcss[system].GetModuleOutputsCountSafe(module);
+    Exit(default);
+  Result := Self.m_rcss[system].GetModuleOutputsCountSafe(module, default);
 end;
 
 function TRCSs.IsModule(addr: TRCSsAddr): Boolean;
@@ -643,6 +645,16 @@ end;
 function TRCSs.IsOperationalModule(addr: TRCSsSystemModule): Boolean;
 begin
   Result := (Self.Started(addr.system)) and (Self.IsNonFailedModule(addr));
+end;
+
+function TRCSs.IsOperationalInput(addr: TRCSsAddr): Boolean;
+begin
+  Result := (Self.IsOperationalModule(addr)) and (addr.port < Self.GetModuleInputsCountSafe(addr.system, addr.module, 0));
+end;
+
+function TRCSs.IsOperationalOutput(addr: TRCSsAddr): Boolean;
+begin
+  Result := (Self.IsOperationalModule(addr)) and (addr.port < Self.GetModuleOutputsCountSafe(addr.system, addr.module, 0));
 end;
 
 function TRCSs.IsSimulation(system: Cardinal): Boolean;

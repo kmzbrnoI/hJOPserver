@@ -112,8 +112,8 @@ type
     procedure AddOutputChangeEvent(module: Cardinal; event: TRCSModuleChangeEvent);
     procedure RemoveOutputChangeEvent(event: TRCSModuleChangeEvent; module: Integer = -1);
 
-    function GetModuleInputsCountSafe(module: Cardinal): Cardinal;
-    function GetModuleOutputsCountSafe(module: Cardinal): Cardinal;
+    function GetModuleInputsCountSafe(module: Cardinal; default: Cardinal = _MODULE_DEFAULT_IO): Cardinal;
+    function GetModuleOutputsCountSafe(module: Cardinal; default: Cardinal = _MODULE_DEFAULT_IO): Cardinal;
 
     property generalError: Boolean read fGeneralError;
     class function RCSAddr(module: Cardinal; port: Byte): TRCSAddr;
@@ -450,10 +450,10 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TRCS.GetModuleInputsCountSafe(module: Cardinal): Cardinal;
+function TRCS.GetModuleInputsCountSafe(module: Cardinal; default: Cardinal): Cardinal;
 begin
   if (not Self.ready) then
-    Exit(_MODULE_DEFAULT_IO);
+    Exit(default);
   try
     Result := Self.GetModuleInputsCount(module);
   except
@@ -461,10 +461,10 @@ begin
   end;
 end;
 
-function TRCS.GetModuleOutputsCountSafe(module: Cardinal): Cardinal;
+function TRCS.GetModuleOutputsCountSafe(module: Cardinal; default: Cardinal): Cardinal;
 begin
   if (not Self.ready) then
-    Exit(_MODULE_DEFAULT_IO);
+    Exit(default);
   try
     Result := Self.GetModuleOutputsCount(module);
   except

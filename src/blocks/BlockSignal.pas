@@ -10,7 +10,6 @@ uses IniFiles, Block, Menus, AreaDb, SysUtils, Classes, rrEvent, System.Math,
 
 type
   TBlkSignalSelection = (none = 0, VC = 1, PC = 2, NC = 3, PP = 4);
-  TBlkSignalOutputType = (scom = 0, binary = 1);
   TBlkSignalSymbol = (unknown = -1, main = 0, shunting = 1);
   TBlkSignalCode = (
     ncChanging = -2,
@@ -70,12 +69,31 @@ type
     function Match(train: TTrain): Boolean;
   end;
 
-  TBlkSignalSettings = record
-    RCSAddrs: TRCSsAddrs;
+  TBlkSignalOutputType = (
+    sotSCOM = 0,
+    sotDNnotPN = 1,
+    sotPN = 2,
+    sotTurn = 3,
+    sotCautinon = 4,
+    sotShunt = 5
+  );
+
+  TBlkSignalOutput = record
+    rcs: TRCSsAddr;
     outputType: TBlkSignalOutputType;
-    events: TObjectList<TBlkSignalTrainEvent>;
+    inverseRcs: TRCSsAddrOptional;
+
+    procedure Load(line: string);
+    function ToStoreString(): string;
+  end;
+
+  TBlkSignalSettings = record
+    rcsOutputs: TList<TBlkSignalOutput>;
+
     // tady jsou ulozena veskera zastavovani a zpomalovani; zastaveni na indexu 0 je vzdy primarni
     // program si pamatuje vice zastavovacich a zpomalovaich udalosti pro ruzne typy a delky vlaku
+    events: TObjectList<TBlkSignalTrainEvent>;
+
     fallDelay: Integer; // zpozdeni padu navestidla v sekundach (standartne 0)
     changeTime: TTime; // cas zmeny navesti
     locked: Boolean; // jestli je navestidlo trvale zamknuto na STUJ (hodi se napr. u navestidel a konci kusych koleji)
@@ -134,6 +152,8 @@ type
     m_lastEvIndex: Integer;
     m_groupMaster: TBlk;
 
+    procedure LoadRCSs(ini_tech: TMemIniFile; const section: string);
+
     function IsEnabled(): Boolean;
 
     procedure mSetSignal(signal: TBlkSignalCode);
@@ -144,6 +164,10 @@ type
 
     procedure SetSelected(typ: TBlkSignalSelection);
     procedure SetZAM(ZAM: Boolean);
+
+    procedure SetAllRCSOutputs(code: TBlkSignalCode);
+    function RCSOutputState(code: TBlkSignalCode; outputType: TBlkSignalOutputType): Integer;
+    function RCSOutputsOperational(): Boolean;
 
     procedure MenuVCStartClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuVCStopClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -178,6 +202,7 @@ type
     procedure UpdateSignalSet();
     procedure OnSignalSetOk();
     procedure OnSignalSetError();
+    procedure UpdateEnabled();
 
     procedure PNDKClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton);
     procedure PNDKConfSeq(Sender: TIdContext; success: Boolean);
@@ -322,6 +347,7 @@ begin
   Self.m_globSettings.typ := btSignal;
   Self.m_state := Self._def_signal_state;
   Self.m_state.toRnz := TDictionary<Integer, Cardinal>.Create();
+  Self.m_settings.rcsOutputs := TList<TBlkSignalOutput>.Create();
   Self.m_settings.events := TObjectList<TBlkSignalTrainEvent>.Create();
   Self.m_trackId := nil;
   Self.m_groupMaster := nil;
@@ -332,6 +358,7 @@ destructor TBlkSignal.Destroy();
 begin
   Self.m_state.toRnz.Free();
   Self.m_settings.events.Free();
+  Self.m_settings.rcsOutputs.Free();
   Self.m_state.psts.Free();
 
   inherited;
@@ -339,16 +366,72 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
+procedure TBlkSignalOutput.Load(line: string);
+begin
+  var strs: TStrings := TStringList.Create();
+  try
+    ownStrUtils.ExtractStringsEx([','], [], line, strs);
+    if (strs.Count < 2) then
+      raise Exception.Create('TBlkSignalOutput strs.Count < 2');
+    var output: TBlkSignalOutput;
+    outputType := TBlkSignalOutputType(StrToInt(strs[0]));
+    rcs.Load(strs[1]);
+    if (strs.Count >= 3) then
+    begin
+      inverseRcs.enabled := True;
+      inverseRcs.addr.Load(strs[2]);
+    end else begin
+      inverseRcs.enabled := False;
+    end;
+  finally
+    strs.Free();
+  end;
+end;
+
+procedure TBlkSignal.LoadRCSs(ini_tech: TMemIniFile; const section: string);
+begin
+  Self.m_settings.rcsOutputs.Clear();
+
+  var rcsi: Integer := 0;
+  var rcso: string := ini_tech.ReadString(section, 'rcso0', '');
+  if (rcso = '') then
+  begin
+    // Backward-compatibility
+    var outputType: TBlkSignalOutputType := TBlkSignalOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
+    for var addr: TRCSsAddr in Self.LoadRCS(ini_tech, section) do
+    begin
+      var output: TBlkSignalOutput;
+      output.rcs := addr;
+      output.outputType := outputType;
+      output.inverseRcs.enabled := False;
+      Self.m_settings.rcsOutputs.Add(output);
+    end;
+  end else begin
+    // Standard "new" format
+    while (rcso <> '') do
+    begin
+      var output: TBlkSignalOutput;
+      try
+        output.Load(rcso);
+        Self.m_settings.rcsOutputs.Add(output);
+      except
+
+      end;
+      Inc(rcsi);
+      rcso := ini_tech.ReadString(section, 'rcso'+IntToStr(rcsi), '');
+    end;
+  end;
+end;
+
 procedure TBlkSignal.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile);
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
 
-  Self.m_settings.RCSAddrs := Self.LoadRCS(ini_tech, section);
+  Self.LoadRCSs(ini_tech, section);
 
   Self.m_settings.locked := ini_tech.ReadBool(section, 'zamknuti', false);
   Self.m_settings.forceDirection := TRVOptionalSite(ini_tech.ReadInteger(section, 'vnucenySmer', Integer(TRVOptionalSite.osNo)));
 
-  Self.m_settings.outputType := TBlkSignalOutputType(ini_tech.ReadInteger(section, 'OutType', 0));
   Self.m_settings.fallDelay := ini_tech.ReadInteger(section, 'zpoz', _SIG_DEFAULT_DELAY);
   Self.m_settings.changeTime := ownConvert.SecTenthsToTime(ini_tech.ReadString(section, 'changeTime', Self.DefaultChangeTime()));
 
@@ -423,20 +506,38 @@ begin
     Self.RCSsRegister(Self.m_settings.PSt.rcsControllerShunt);
   end;
 
-  Self.RCSsRegister(Self.m_settings.RCSAddrs);
+  // register RCS addresses
+  for var output in Self.m_settings.rcsOutputs do
+  begin
+    for var area: TArea in areas do
+    begin
+      area.RCSAdd(TRCSs.RCSsSystemModule(output.rcs));
+      RCSs.SetNeeded(output.rcs);
+      if (output.inverseRcs.enabled) then
+      begin
+        area.RCSAdd(TRCSs.RCSsSystemModule(output.inverseRcs.addr));
+        RCSs.SetNeeded(output.inverseRcs.addr);
+      end;
+    end;
+  end;
+end;
+
+function TBlkSignalOutput.ToStoreString(): string;
+begin
+  Result := IntToStr(Integer(outputType)) + ',' + rcs.ToString();
+  if (inverseRcs.enabled) then
+    Result := Result + ',' + inverseRcs.addr.ToString();
 end;
 
 procedure TBlkSignal.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
   inherited SaveData(ini_tech, section);
 
-  Self.SaveRCS(ini_tech, section, Self.m_settings.RCSAddrs);
+  for var i: Integer := 0 to Self.m_settings.rcsOutputs.Count-1 do
+    ini_tech.WriteString(section, 'rcso'+IntToStr(i), Self.m_settings.rcsOutputs[i].ToStoreString());
 
   for var i: Integer := 0 to Self.m_settings.events.Count - 1 do
     ini_tech.WriteString(section, 'ev' + IntToStr(i), Self.m_settings.events[i].ToFileStr(i = 0));
-
-  if (Self.m_settings.RCSAddrs.Count > 0) then
-    ini_tech.WriteInteger(section, 'OutType', Integer(Self.m_settings.outputType));
 
   if (Self.m_settings.fallDelay <> _SIG_DEFAULT_DELAY) then
     ini_tech.WriteInteger(section, 'zpoz', Self.m_settings.fallDelay);
@@ -460,21 +561,11 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkSignal.Enable();
-var enable: Boolean;
 begin
   if (Self.signal <> ncDisabled) then
     Exit(); // skip already enabled block
 
-  enable := true;
-  try
-    for var rcsaddr: TRCSsAddr in Self.m_settings.RCSAddrs do
-      if (not RCSs.IsOperationalModule(rcsaddr)) then
-        enable := false;
-  except
-    enable := false;
-  end;
-
-  if (enable) then
+  if (Self.RCSOutputsOperational()) then
   begin
     Self.m_state.signal := ncStuj;
     Self.m_state.signalOld := ncStuj;
@@ -501,7 +592,16 @@ end;
 
 function TBlkSignal.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
 begin
-  Result := ((portType = TRCSIOType.output) and (Self.m_settings.RCSAddrs.Contains(addr)));
+  if (portType = TRCSIOType.output) then
+  begin
+    for var output: TBlkSignalOutput in Self.m_settings.rcsOutputs do
+    begin
+      if (output.rcs = addr) then
+        Exit(True);
+      if ((output.inverseRcs.enabled) and (output.inverseRcs.addr = addr)) then
+        Exit(True);
+    end;
+  end;
 
   if ((portType = TRCSIOType.input) and (Self.m_settings.PSt.enabled) and
       (addr = Self.m_settings.PSt.rcsControllerShunt)) then
@@ -510,6 +610,8 @@ begin
   if ((portType = TRCSIOType.output) and (Self.m_settings.PSt.enabled) and
       (addr = Self.m_settings.PSt.rcsIndicationShunt)) then
     Exit(true);
+
+  Result := False;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -523,30 +625,32 @@ begin
   if (Self.signal = ncPrivol) then
     Self.UpdatePrivol();
 
-  if (Self.m_settings.RCSAddrs.Count > 0) then
-  begin
-    if (RCSs.IsOperationalModule(Self.m_settings.RCSAddrs[0])) then
-    begin
-      if (Self.m_state.signal = ncDisabled) then
-      begin
-        Self.m_state.signal := ncStuj;
-        Self.Change();
-      end;
-    end else begin
-      if (Self.changing) then
-        Self.OnSignalSetError();
+  Self.UpdateEnabled();
+  Self.ReadContollers();
 
-      if (Self.m_state.signal >= ncStuj) then
-      begin
-        Self.m_state.signal := ncDisabled;
-        JCDb.Cancel(Self);
-        Self.Change();
-      end;
+  inherited;
+end;
+
+procedure TBlkSignal.UpdateEnabled();
+begin
+  if (Self.RCSOutputsOperational()) then
+  begin
+    if (Self.m_state.signal = ncDisabled) then
+    begin
+      Self.m_state.signal := ncStuj;
+      Self.Change();
+    end;
+  end else begin
+    if (Self.changing) then
+      Self.OnSignalSetError();
+
+    if (Self.m_state.signal >= ncStuj) then
+    begin
+      Self.m_state.signal := ncDisabled;
+      JCDb.Cancel(Self);
+      Self.Change();
     end;
   end;
-
-  Self.ReadContollers();
-  inherited;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -574,8 +678,8 @@ begin
   if (Self.m_settings.events <> data.events) then
     Self.m_settings.events.Free();
 
-  if (Self.m_settings.RCSAddrs <> data.RCSAddrs) then
-    Self.m_settings.RCSAddrs.Free();
+  if (Self.m_settings.rcsOutputs <> data.rcsOutputs) then
+    Self.m_settings.rcsOutputs.Free();
 
   Self.m_settings := data;
   Self.Change();
@@ -586,6 +690,13 @@ end;
 procedure TBlkSignal.SetSignal(code: TBlkSignalCode; changeCallbackOk: TNotifyEvent = nil;
   changeCallbackErr: TNotifyEvent = nil);
 begin
+  if (code < ncStuj) then
+  begin
+    if (Assigned(changeCallbackErr)) then
+      changeCallbackErr(Self);
+    Exit();
+  end;
+
   if ((Self.m_state.signal = ncDisabled) or (Self.m_settings.locked)) then
   begin
     if (Assigned(changeCallbackErr)) then
@@ -624,25 +735,8 @@ begin
   Self.m_state.signal := ncChanging;
   Self.m_state.targetSignal := code;
 
-  // nastaveni vystupu
-  try
-    case (Self.m_settings.outputType) of
-      TBlkSignalOutputType.scom:
-        RCSs.SetOutputs(Self.m_settings.RCSAddrs, Integer(code));
-      TBlkSignalOutputType.binary:
-        RCSs.SetOutputs(Self.m_settings.RCSAddrs, Integer(TBlkSignal.IsGoSignal(code, TJCType.train)));
-    else
-      RCSs.SetOutputs(Self.m_settings.RCSAddrs, Integer(TBlkSignalCode.ncStuj));
-    end;
-  except
-    if (Assigned(changeCallbackErr)) then
-      changeCallbackErr(Self);
-    Self.m_state.changeCallbackOk := nil;
-    Self.m_state.changeCallbackErr := nil;
-    Self.m_state.signal := prevTargetSignal;
-    Self.m_state.targetSignal := prevTargetSignal;
-    Exit();
-  end;
+  // set physical outputs
+  Self.SetAllRCSOutputs(code);
 
   // propagace do skupinoveho navestidla
   if (Self.groupMaster <> nil) then
@@ -686,6 +780,62 @@ begin
   end;
 
   Self.Change();
+end;
+
+procedure TBlkSignal.SetAllRCSOutputs(code: TBlkSignalCode);
+begin
+  for var output: TBlkSignalOutput in Self.m_settings.rcsOutputs do
+  begin
+    const outputState: Integer = Self.RCSOutputState(code, output.outputType);
+
+    try
+      RCSs.SetOutput(output.rcs, outputState);
+    except
+      on e: RCSException do
+        Self.BottomErrorBroadcast(Self.name +  ': nelze nastavit RCS výstup '+output.rcs.ToString(), 'TECHNOLOGIE');
+    end;
+
+    try
+      if ((output.inverseRcs.enabled) and (outputState <= 1)) then
+        RCSs.SetOutput(output.inverseRcs.addr, 1-outputState);
+    except
+      on e: RCSException do
+        Self.BottomErrorBroadcast(Self.name +  ': nelze nastavit RCS výstup '+output.inverseRcs.addr.ToString(), 'TECHNOLOGIE');
+    end;
+  end;
+end;
+
+function TBlkSignal.RCSOutputState(code: TBlkSignalCode; outputType: TBlkSignalOutputType): Integer;
+begin
+  case (outputType) of
+    TBlkSignalOutputType.sotSCOM:
+      Result := Integer(code);
+    TBlkSignalOutputType.sotDNnotPN:
+      Result := Integer(TBlkSignal.IsGoSignal(code, TJCType.train));
+    TBlkSignalOutputType.sotPN:
+      Result := Integer((code = TBlkSignalCode.ncPrivol));
+    TBlkSignalOutputType.sotTurn:
+      Result := Integer((code = TBlkSignalCode.ncVolno40) or (code = TBlkSignalCode.ncVystraha40) or (code = TBlkSignalCode.nc40Ocek40) or (code = TBlkSignalCode.ncOpakVystraha40));
+    TBlkSignalOutputType.sotCautinon:
+      Result := Integer((code = TBlkSignalCode.ncVystraha) or (code = TBlkSignalCode.ncVystraha40) or (code = TBlkSignalCode.ncOpakVystraha) or (code = TBlkSignalCode.ncOpakVystraha40));
+    TBlkSignalOutputType.sotShunt:
+      Result := Integer(TBlkSignal.IsGoSignal(code, TJCType.shunt));
+  else
+    Result := 0;
+  end;
+end;
+
+function TBlkSignal.RCSOutputsOperational(): Boolean;
+begin
+  for var output: TBlkSignalOutput in Self.m_settings.rcsOutputs do
+  begin
+    if (not RCSs.IsOperationalOutput(output.rcs)) then
+      Exit(False);
+    if ((output.inverseRcs.enabled) and (not RCSs.IsOperationalOutput(output.inverseRcs.addr))) then
+      Exit(False);
+  end;
+
+  Result := True;
 end;
 
 procedure TBlkSignal.mSetSignal(signal: TBlkSignalCode);
@@ -2406,7 +2556,7 @@ end;
 
 function TBlkSignal.DefaultChangeTime(): string;
 begin
-  Result := TBlkSignal.DefaultChangeTime(Self.m_settings.RCSAddrs.Count > 0);
+  Result := TBlkSignal.DefaultChangeTime(Self.m_settings.rcsOutputs.Count > 0);
 end;
 
 function TBlkSignal.IsSpecificChangeTime(): Boolean;
