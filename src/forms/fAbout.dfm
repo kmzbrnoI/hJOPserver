@@ -96,7 +96,7 @@ object F_About: TF_About
     Margins.Bottom = 2
     Alignment = taCenter
     AutoSize = False
-    Caption = 'Vytvo'#345'il Jan Malina (Hor'#225#269'ek) 2008'#8211'2025'
+    Caption = 'Vytvo'#345'il Jan Malina (Hor'#225#269'ek) 2008'#8211'2026'
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clBlack
     Font.Height = -20
@@ -334,7 +334,6 @@ object F_About: TF_About
       Align = alBottom
       Caption = ' RCS '
       TabOrder = 0
-      ExplicitTop = 95
       object LV_RCS: TListView
         Left = 2
         Top = 15
