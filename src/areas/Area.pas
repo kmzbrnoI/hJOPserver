@@ -174,6 +174,7 @@ type
     procedure RemoveClient(Panel: TIDContext; contextDestroyed: Boolean = false);
 
     procedure Update();
+    procedure Reset();
     procedure DisconnectPanels();
 
     function AddCountdown(callback: TNotifyEvent; len: TDateTime): Byte;
@@ -994,6 +995,17 @@ begin
         callback(Self);
     end;
   end;
+end;
+
+procedure TArea.Reset();
+begin
+  Self.NUZblkCnt := 0;
+  Self.shortCircBlkCnt := 0;
+  Self.railwayReqBlkCnt := 0;
+  Self.pnBlkCnt := 0;
+  Self.timerCnt := 0;
+  Self.m_state.regPlease := nil;
+  Self.ORDKClickClient();
 end;
 
 // vraci id pridaneho mereni

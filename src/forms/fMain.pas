@@ -2405,6 +2405,7 @@ begin
   Blocks.Disable();
   Trains.ClearPOdj();
   Blocks.Reset();
+  Areas.Reset();
   Self.A_SaveStavExecute(Self);
 end;
 

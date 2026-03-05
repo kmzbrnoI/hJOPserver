@@ -32,6 +32,7 @@ type
     procedure RCSFail(addr: TRCSsSystemModule); // je vyvolano pri vypadku RCS modulu, resi zobrazeni chyby do panelu v OR
 
     procedure Update();
+    procedure Reset();
     procedure DisconnectPanels();
     procedure SendORList(Context: TIdContext); // odesle seznam vsech OR na spojeni \Context
 
@@ -170,8 +171,14 @@ end;
 
 procedure TAreas.Update();
 begin
-  for var i: Integer := 0 to Self.db.Count - 1 do
-    Self.db[i].Update();
+  for var area: TArea in Self.db do
+    area.Update();
+end;
+
+procedure TAreas.Reset();
+begin
+  for var area: TArea in Self.db do
+    area.Reset();
 end;
 
 procedure TAreas.DisconnectPanels();
