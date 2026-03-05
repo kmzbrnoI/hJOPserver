@@ -171,6 +171,7 @@ begin
   Self.SE_Delay.Value := settings.fallDelay;
 
   Self.LV_RCSs.Clear();
+  Self.LV_RCSsChange(Self.LV_RCSs, nil, TItemChange.ctState);
   for var i: Integer := 0 to settings.rcsOutputs.Count-1 do
   begin
     var li: TListItem := Self.LV_RCSs.Items.Add();
@@ -380,7 +381,7 @@ begin
     Exit();
   end;
 
-  var messages := '';
+  var messages: string := '';
 
   for var li: TListItem in Self.LV_RCSs.Items do
   begin

@@ -434,10 +434,6 @@ object F_BlkSignal: TF_BlkSignal
       ViewStyle = vsReport
       OnChange = LV_RCSsChange
       OnKeyDown = LV_RCSsKeyDown
-      ExplicitLeft = 40
-      ExplicitTop = 37
-      ExplicitWidth = 250
-      ExplicitHeight = 150
     end
     object GB_RCS: TGroupBox
       Left = 2
