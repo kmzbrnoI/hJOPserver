@@ -461,9 +461,8 @@ type
     _LV_CLIENTS_COL_OR2 = 6;
     _LV_CLIENTS_COL_OR3 = 7;
     _LV_CLIENTS_COL_OR_NEXT = 8;
-    _LV_CLIENTS_COL_REGULATOR = 9;
-    _LV_CLIENTS_COL_SH = 10;
-    _LV_CLIENTS_COL_DCC = 11;
+    _LV_CLIENTS_COL_DCC = 9;
+    _LV_CLIENTS_COL_SPECIFIC_APPS = 10;
 
   private
     call_method: TNotifyEvent;

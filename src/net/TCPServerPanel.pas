@@ -141,6 +141,7 @@ type
 
     procedure GUIInitTable();
     procedure GUIRefreshLine(index: Integer; repaint: Boolean = true);
+    procedure GUIRefreshSpecificApps(line: Integer);
     procedure GUIQueueLineToRefresh(lineindex: Integer);
     procedure GUIRefreshTable();
     procedure GUIRefreshFromQueue();
@@ -1398,35 +1399,45 @@ begin
     F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_OR_NEXT] := LeftStr(str, Length(str) - 2);
   end;
 
-  if (connData.regulator) then
-  begin
-    var str: string;
-    if (Assigned(connData.regulator_user)) then
-      str := connData.regulator_user.username
-    else
-      str := 'ano';
+  F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_DCC] := IfThen(Self.DCCStopped = Self.clients[index].connection, 'ano', '');
 
-    if (connData.regulator_vehicles.Count > 0) then
+  Self.GUIRefreshSpecificApps(index);
+  F_Main.LV_Clients.UpdateItems(index, index);
+end;
+
+procedure TPanelServer.GUIRefreshSpecificApps(line: Integer);
+begin
+  var content: string := '';
+  var panelConnData: TPanelConnData := TPanelConnData(Self.clients[line].connection.Data);
+
+  if (panelConnData.regulator) then
+  begin
+    var str: string := 'reg: ';
+    if (Assigned(panelConnData.regulator_user)) then
+      str := str + TUser(panelConnData.regulator_user).username
+    else
+      str := str + 'ano';
+
+    if (panelConnData.regulator_vehicles.Count > 0) then
     begin
       str := str + ': ';
-      for var vehicle: TRV in connData.regulator_vehicles do
+      for var vehicle: TRV in panelConnData.regulator_vehicles do
         str := str + IntToStr(vehicle.addr) + ', ';
       str := LeftStr(str, Length(str) - 2);
     end;
 
-    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_REGULATOR] := str;
-  end
-  else
-    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_REGULATOR] := '';
+    content := content + str + ' ';
+  end;
 
-  var announcement: string := '';
-  for var area: TArea in TPanelConnData(Self.clients[index].connection.data).st_hlaseni do
-    announcement := announcement + area.ShortName + ', ';
-  F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_SH] := LeftStr(announcement, Length(announcement) - 2);
+  if (panelConnData.st_hlaseni.Count > 0) then
+  begin
+    content := content + 'sh: ';
+    for var area: TArea in panelConnData.st_hlaseni do
+      content := content + area.ShortName + ', ';
+    content := LeftStr(content, Length(content) - 2);
+  end;
 
-  F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_DCC] := IfThen(Self.DCCStopped = Self.clients[index].connection, 'ano', '');
-
-  F_Main.LV_Clients.UpdateItems(index, index);
+  F_Main.LV_Clients.items[line].SubItems[TF_Main._LV_CLIENTS_COL_SPECIFIC_APPS] := content;
 end;
 
 procedure TPanelServer.GUIRefreshTable();

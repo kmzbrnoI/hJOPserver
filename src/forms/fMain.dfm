@@ -3552,14 +3552,11 @@ object F_Main: TF_Main
               Caption = 'Dal'#353#237' dopravny'
             end
             item
-              Caption = 'Autorizovan'#253' regul'#225'tor'
-            end
-            item
-              Caption = 'Stani'#269'n'#237' hl'#225#353'en'#237
-            end
-            item
               Alignment = taCenter
               Caption = 'Zastavil DCC'
+            end
+            item
+              Caption = 'Specifick'#233' aplikace'
             end>
           DoubleBuffered = True
           GridLines = True
