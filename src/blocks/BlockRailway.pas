@@ -186,6 +186,8 @@ type
     property lockout: Boolean read GetLockout;
     property tracks: TList<TBlkRT> read m_tracks;
     property railwayFree: Boolean read IsFree;
+    property redSignalWhenRequesting: Boolean read m_settings.redSignalWhenRequesting;
+    property redSignalFromPanel: Boolean read m_settings.redSignalFromPanel;
 
     // vrati hranicni navestidla
     property signalA: TBlk read GetSignalA; // hranicni navestidlo trati blize zacatku trati
@@ -463,6 +465,7 @@ begin
 
   Self.m_state.request := request;
   Self.Change();
+  Self.CallChangeToTU(); // pro nastaveni navesti na STUJ pri zadosti
 end;
 
 procedure TBlkRailway.SetTrainPredict(Train: TBlkRailwayTrain);

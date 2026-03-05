@@ -266,7 +266,8 @@ type
     procedure UpdateTrainSpeed(force: Boolean = false);
     procedure AddBlkToRnz(blkId: Integer; Change: Boolean = true);
     procedure RemoveBlkFromRnz(blkId: Integer);
-    function FourtyKmph(): Boolean;
+    class function FourtyKmph(code: TBlkSignalCode): Boolean; overload;
+    function FourtyKmph(): Boolean; overload;
     class function AddOpak(code: TBlkSignalCode): TBlkSignalCode;
 
     function GetTrain(track: TBlk = nil): TTrain;
@@ -818,7 +819,7 @@ begin
     TBlkSignalOutputType.sotPN:
       Result := Integer((code = TBlkSignalCode.ncPrivol));
     TBlkSignalOutputType.sotTurn:
-      Result := Integer((code = TBlkSignalCode.ncVolno40) or (code = TBlkSignalCode.ncVystraha40) or (code = TBlkSignalCode.nc40Ocek40) or (code = TBlkSignalCode.ncOpakVystraha40));
+      Result := Integer(TBlkSignal.FourtyKmph(code));
     TBlkSignalOutputType.sotCautinon:
       Result := Integer((code = TBlkSignalCode.ncVystraha) or (code = TBlkSignalCode.ncVystraha40) or (code = TBlkSignalCode.ncOpakVystraha) or (code = TBlkSignalCode.ncOpakVystraha40));
     TBlkSignalOutputType.sotShunt:
@@ -2263,10 +2264,15 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
+class function TBlkSignal.FourtyKmph(code: TBlkSignalCode): Boolean;
+begin
+  Result := (code = ncVolno40) or (code = ncVystraha40) or (code = nc40Ocek40) or
+    (code = ncOpakVystraha40) or (code = ncOpak40Ocek40);
+end;
+
 function TBlkSignal.FourtyKmph(): Boolean;
 begin
-  Result := (Self.targetSignal = ncVolno40) or (Self.targetSignal = ncVystraha40) or (Self.targetSignal = nc40Ocek40) or
-    (Self.targetSignal = ncOpakVystraha40) or (Self.targetSignal = ncOpak40Ocek40);
+  Result := TBlkSignal.FourtyKmph(Self.targetSignal);
 end;
 
 class function TBlkSignal.AddOpak(code: TBlkSignalCode): TBlkSignalCode;

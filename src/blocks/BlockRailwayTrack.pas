@@ -1189,65 +1189,64 @@ begin
     Exit();
 
   // NASTAVOVANI NAVESTI AUTOBLOKU:
+  var rw: TBlkRailway := TBlkRailway(Self.railway);
+  var sigCovL: TBlkSignal := TBlkSignal(Self.signalCoverL);
+  var sigCovS: TBlkSignal := TBlkSignal(Self.signalCoverS);
+  var sigCov: TBlkSignal := TBlkSignal(Self.signalCover);
+  var sigNext: TBlkSignal := TBlkSignal(Self.nextSignal);
 
-  // nejprve zhasneme navestidla v nespravnem smeru
-  if ((TBlkRailway(Self.railway).direction = TRailwayDirection.AtoB) or
-    (TBlkRailway(Self.railway).direction = TRailwayDirection.no)) then
-  begin
-    if (Self.m_rtSettings.signalSid > -1) then
-    begin
-      var signal: TBlkSignal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalSid);
-      if (signal <> nil) then
-        signal.signal := TBlkSignalCode(TBlkRailway(Self.railway).SignalCounterDirection());
-    end;
-  end;
-
-  if ((TBlkRailway(Self.railway).direction = TRailwayDirection.BtoA) or
-    (TBlkRailway(Self.railway).direction = TRailwayDirection.no)) then
-  begin
-    if (Self.m_rtSettings.signalLid > -1) then
-    begin
-      var signal: TBlkSignal := Blocks.GetBlkSignalByID(Self.m_rtSettings.signalLid);
-      if (signal <> nil) then
-        signal.signal := TBlkSignalCode(TBlkRailway(Self.railway).SignalCounterDirection());
-    end;
-  end;
-
-  if (TBlkRailway(Self.railway).direction = TRailwayDirection.no) then
-    Exit();
-
-  // zrusit jizdni cestu muzeme pouze u sekce na kraji trati (v trati se rusi
-  // navest autobloku)
-  if ((Self.prevRT = nil) and (Self.sectOccupied = TTrackState.occupied) and (TBlkRailway(Self.railway).zaver)) then
+  // Doplnkova funkce: ruseni JC pri obsazeni trati
+  // zrusit jizdni cestu muzeme pouze u sekce na kraji trati (v trati se rusi navest autobloku)
+  if ((Self.prevRT = nil) and (Self.sectOccupied = TTrackState.occupied) and (rw.zaver)) then
   begin
     var jc := JCDb.FindActiveJCWithTrack(Self.id);
     if ((jc <> nil) and (not jc.waitForLastTrackOrRailwayOccupy) and (jc.state.destroyBlock < jc.data.tracks.Count - 1)) then
       JCDb.Cancel(Self);
   end;
 
-  // nastavime kryci navestidlo
-  if ((Self.signalCover <> nil) and (not TBlkSignal(Self.signalCover).ZAM) and
-    (TBlkSignal(Self.signalCover).signal >= ncStuj) and (TBlkSignal(Self.signalCover).targetSignal <> ncPrivol)) then
+  // Pri zadosti o tratovy souhlas, pokud je to nakonfigurovano, je na vsech navestidlech trati STUJ (chovani elektronickeho autobloku)
+  if ((rw.request) and (rw.redSignalWhenRequesting)) then
+  begin
+    if (sigCovL <> nil) then
+      sigCovL.signal := ncStuj;
+    if (sigCovS <> nil) then
+      sigCovS.signal := ncStuj;
+    Exit(); // protoze nastavujeme stuj, je bezpecne skoncit (jdeme do bezpecnejsiho stavu)
+  end;
+
+  // zhasnuti/stuj navestidel v nespravnem smeru
+  if ((rw.direction = TRailwayDirection.AtoB) or (rw.direction = TRailwayDirection.no)) then
+    if (sigCovS <> nil) then
+      sigCovS.signal := TBlkSignalCode(rw.SignalCounterDirection());
+
+  if ((rw.direction = TRailwayDirection.BtoA) or (rw.direction = TRailwayDirection.no)) then
+    if (sigCovL <> nil) then
+      sigCovL.signal := TBlkSignalCode(rw.SignalCounterDirection());
+
+  if (rw.direction = TRailwayDirection.no) then
+    Exit();
+
+  // nastavit kryci navestidlo na spravnou navest
+  if ((sigCov <> nil) and (not sigCov.ZAM) and (sigCov.signal >= ncStuj) and (sigCov.targetSignal <> ncPrivol)) then
   begin
     if (not Self.sectReady) then
     begin
       // sekce obsazena -> navestidlo na STUJ
-      TBlkSignal(Self.signalCover).signal := ncStuj
+      sigCov.signal := ncStuj;
     end else begin
       // sekce uvolnena -> hledame dalsi navestidlo
-      case (TBlkRailway(Self.railway).signals) of
+      case (rw.signals) of
         TRailwaySignals.hradlo:
-          TBlkSignal(Self.signalCover).signal := ncVolno;
+          sigCov.signal := ncVolno;
         TRailwaySignals.autoblok:
           begin
-            if ((Self.nextSignal = nil) or (not TBlkSignal(Self.nextSignal).IsGoSignal()) or
-              (TBlkSignal(Self.nextSignal).IsOpakVystraha())) then
-              TBlkSignal(Self.signalCover).signal := ncVystraha
-            else if ((TBlkSignal(Self.nextSignal).FourtyKmph()) or (TBlkSignal(Self.nextSignal).signal = ncOpakOcek40))
+            if ((Self.nextSignal = nil) or (not sigNext.IsGoSignal()) or (sigNext.IsOpakVystraha())) then
+              sigCov.signal := ncVystraha
+            else if ((sigNext.FourtyKmph()) or (sigNext.signal = ncOpakOcek40))
             then
-              TBlkSignal(Self.signalCover).signal := ncOcek40
+              sigCov.signal := ncOcek40
             else
-              TBlkSignal(Self.signalCover).signal := ncVolno;
+              sigCov.signal := ncVolno;
           end;
       end;
     end;
