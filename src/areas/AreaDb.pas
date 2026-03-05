@@ -327,3 +327,4 @@ finalization
 FreeAndNil(Areas);
 
 end.
+

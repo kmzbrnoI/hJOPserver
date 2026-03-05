@@ -17,11 +17,12 @@ type
     departureForbidden: Boolean;
     note: string;
     emLock: Boolean;
+    intentionalStuj: Boolean;
   end;
 
   TBlkLinker = class(TBlk)
   const
-    _def_linker_state: TBlkLinkerState = (enabled: false; departureForbidden: false; note: ''; emLock: false;);
+    _def_linker_state: TBlkLinkerState = (enabled: false; departureForbidden: false; note: ''; emLock: false; intentionalStuj: false;);
 
   private
     m_settings: TBlkLinkerSettings;
@@ -30,10 +31,12 @@ type
     m_request: Boolean;
 
     function GetParent(): TBlk;
+    function GetOtherLinker(): TBlkLinker;
 
     procedure SetNote(stit: string);
     procedure SetDepForb(ZAK: Boolean);
     procedure SetEmLock(nouz: Boolean);
+    procedure SetIntentionalStuj(stuj: Boolean);
 
     procedure MenuZTSOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZTSOffClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -45,11 +48,14 @@ type
     procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
     procedure MenuZAVOnClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAVOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTUJOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+    procedure MenuSTUJOffClick(SenderPnl: TIdContext; SenderOR: TObject);
 
     procedure MenuTrainInfoClick(SenderPnl: TIdContext; SenderOR: TObject);
 
     procedure PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
     procedure PanelPotvrSekvZAK(Sender: TIdContext; success: Boolean);
+    procedure PanelPotvrSekvSTUJOff(Sender: TIdContext; success: Boolean);
 
     procedure UPOZTSOnClick(Sender: TObject);
     procedure UPOUTSClick(Sender: TObject);
@@ -70,6 +76,7 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
+    procedure Reset(); override;
     procedure AfterLoad(); override;
 
     procedure Change(now: Boolean = false); override;
@@ -98,8 +105,10 @@ type
     property enabled: Boolean read m_state.enabled;
 
     property parent: TBlk read GetParent;
+    property otherLinker: TBlkLinker read GetOtherLinker;
     property request: Boolean read m_request write SetRequest;
     property emLock: Boolean read m_state.emLock write SetEmLock;
+    property intentionalStuj: Boolean read m_state.intentionalStuj write SetIntentionalStuj;
 
     procedure PanelMenuClick(SenderPnl: TIdContext; SenderOR: TObject; item: string; itemindex: Integer; rights: TAreaRights); override;
     function ShowPanelMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string; override;
@@ -163,9 +172,14 @@ end;
 
 procedure TBlkLinker.Disable();
 begin
-  Self.m_state.enabled := false;
-  Self.m_state.emLock := false;
+  Self.m_state.enabled := False;
   Self.Change(true);
+end;
+
+procedure TBlkLinker.Reset();
+begin
+  Self.m_state.emLock := False;
+  Self.m_state.intentionalStuj := False;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -338,6 +352,9 @@ begin
       if (paths.Count > 0) then
         csItems.Add(CSItem(Self, 'Nouzový závěr je v nouzové cestě'));
     end;
+    if (((Self.otherLinker <> nil) and (Self.otherLinker.emLock))) then
+      csItems.Add(CSItem(Self.otherLinker, 'Nouzový závěr i na druhé úvazce'));
+
     PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvZAV, SenderOR as TArea, 'Zrušení nouzového závěru',
       GetObjsList(Self), csItems, True, False);
   finally
@@ -357,6 +374,33 @@ procedure TBlkLinker.PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
 begin
   if (success) then
     Self.emLock := false;
+end;
+
+procedure TBlkLinker.MenuSTUJOnClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  Self.intentionalStuj := True;
+  if ((Self.otherLinker <> nil) and (Self.parent <> nil) and (not TBlkRailway(Self.parent).SameUserBothLinkers())) then
+    Self.otherLinker.BottomErrorBroadcast(Self.name + ': přestavení návěstidel do STUJ', 'TECHNOLOGIE');
+end;
+
+procedure TBlkLinker.MenuSTUJOffClick(SenderPnl: TIdContext; SenderOR: TObject);
+begin
+  var csItems := TList<TConfSeqItem>.Create();
+  try
+    if ((Self.otherLinker <> nil) and (Self.otherLinker.intentionalStuj)) then
+      csItems.Add(CSItem(Self.otherLinker, 'STUJ zavedeno i na druhé úvazce'));
+
+    PanelServer.ConfirmationSequence(SenderPnl, Self.PanelPotvrSekvSTUJOff, SenderOR as TArea, 'Zrušení STUJ na návěstidlech trati',
+      GetObjsList(Self), csItems, True, False);
+  finally
+    csItems.Free();
+  end;
+end;
+
+procedure TBlkLinker.PanelPotvrSekvSTUJOff(Sender: TIdContext; success: Boolean);
+begin
+  if (success) then
+    Self.intentionalStuj := False;
 end;
 
 procedure TBlkLinker.UPOZTSOnClick(Sender: TObject);
@@ -442,10 +486,16 @@ begin
       Result := Result + '!ZAK<,'
     else if (Self.CanZAKOn()) then
       Result := Result + 'ZAK>,';
+
+    if (Self.intentionalStuj) then
+      Result := Result + '!STUJ<,';
   end;
 
   if ((IsWritable(rights)) or (Self.note <> '')) then
     Result := Result + 'STIT,';
+
+  if ((railway.redSignalFromPanel) and (not Self.intentionalStuj) and (railway.direction > TRailwayDirection.no)) then
+      Result := Result + 'STUJ>,';
 end;
 
 function TBlkLinker.AcceptsMenuClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights; item: string): Boolean;
@@ -531,6 +581,10 @@ begin
     Self.MenuZAVOnClick(SenderPnl, SenderOR)
   else if (item = 'ZAV<') then
     Self.MenuZAVOffClick(SenderPnl, SenderOR)
+  else if (item = 'STUJ>') then
+    Self.MenuSTUJOnClick(SenderPnl, SenderOR)
+  else if (item = 'STUJ<') then
+    Self.MenuSTUJOffClick(SenderPnl, SenderOR)
   else if (item = 'INFO vlak') then
     Self.MenuTrainInfoClick(SenderPnl, SenderOR);
 end;
@@ -542,6 +596,18 @@ begin
   if (Self.m_parent = nil) then
     Self.m_parent := Blocks.GetBlkRailwayByID(Self.m_settings.parent);
   Result := Self.m_parent;
+end;
+
+function TBlkLinker.GetOtherLinker(): TBlkLinker;
+begin
+  var rw: TBlkRailway := TBlkRailway(Self.parent);
+  if (Self.parent = nil) then
+    Exit(nil);
+  if (Self = rw.linkerA) then
+    Exit(TBlkLinker(rw.linkerB));
+  if (Self = rw.linkerB) then
+    Exit(TBlkLinker(rw.linkerA));
+  Result := nil;
 end;
 
 /// ////////////////////////////////////////////////////////////////////////////
@@ -720,6 +786,21 @@ begin
 
   if (Self.note <> '') then
     json['note'] := Self.note;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkLinker.SetIntentionalStuj(stuj: Boolean);
+begin
+  if (Self.m_state.intentionalStuj = stuj) then
+    Exit();
+  Self.m_state.intentionalStuj := stuj;
+  if (Self.parent <> nil) then
+  begin
+    var rw: TBlkRailway := TBlkRailway(Self.parent);
+    rw.ChangeFromLinker(Self);
+    rw.CallChangeToTU();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

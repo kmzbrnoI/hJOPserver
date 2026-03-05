@@ -1214,6 +1214,15 @@ begin
     Exit(); // protoze nastavujeme stuj, je bezpecne skoncit (jdeme do bezpecnejsiho stavu)
   end;
 
+  if (rw.intentionalStuj) then
+  begin
+    if (sigCovL <> nil) then
+      sigCovL.signal := ncStuj;
+    if (sigCovS <> nil) then
+      sigCovS.signal := ncStuj;
+    Exit(); // protoze nastavujeme stuj, je bezpecne skoncit (jdeme do bezpecnejsiho stavu)
+  end;
+
   // zhasnuti/stuj navestidel v nespravnem smeru
   if ((rw.direction = TRailwayDirection.AtoB) or (rw.direction = TRailwayDirection.no)) then
     if (sigCovS <> nil) then

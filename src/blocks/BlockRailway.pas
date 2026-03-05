@@ -70,7 +70,7 @@ type
   TBlkRailway = class(TBlk)
   const
     _def_railway_state: TBlkRailwayState = (zaver: false; direction: disabled; request: false; trainPredict: nil;
-      BP: false;);
+      BP: false);
 
   private
     m_settings: TBlkRailwaySettings;
@@ -89,6 +89,7 @@ type
     function GetDepartureForbidden(): Boolean;
     function GetRBP(): Boolean;
     function GetEmergencyLock(): Boolean;
+    function GetIntentionalStuj(): Boolean;
 
     procedure SetDirection(direction: TRailwayDirection);
     procedure SetZaver(zaver: Boolean);
@@ -188,6 +189,7 @@ type
     property railwayFree: Boolean read IsFree;
     property redSignalWhenRequesting: Boolean read m_settings.redSignalWhenRequesting;
     property redSignalFromPanel: Boolean read m_settings.redSignalFromPanel;
+    property intentionalStuj: Boolean read GetIntentionalStuj;
 
     // vrati hranicni navestidla
     property signalA: TBlk read GetSignalA; // hranicni navestidlo trati blize zacatku trati
@@ -514,10 +516,7 @@ end;
 
 function TBlkRailway.IsFirstLinker(uv: TBlk): Boolean;
 begin
-  if (uv = Self.linkerA) then
-    Result := true
-  else
-    Result := false;
+  Result := (uv = Self.linkerA);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1225,6 +1224,17 @@ begin
   if (Self.traini = -1) then
     Exit(nil);
   Result := trains[Self.traini];
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TBlkRailway.GetIntentionalStuj(): Boolean;
+begin
+  if ((Self.linkerA <> nil) and (TBlkLinker(Self.linkerA).intentionalStuj)) then
+    Exit(True);
+  if ((Self.linkerB <> nil) and (TBlkLinker(Self.linkerB).intentionalStuj)) then
+    Exit(True);
+  Result := False;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
