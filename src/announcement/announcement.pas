@@ -55,7 +55,7 @@ type
 
 implementation
 
-uses TCPServerPanel, Area, PanelConnData;
+uses TCPServerPanel, Area, PanelConnData, GUIPanelServerClients;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -86,7 +86,7 @@ begin
     if (not TPanelConnData(Sender.data).st_hlaseni.Contains(TArea(SenderOR))) then
     begin
       TPanelConnData(Sender.data).st_hlaseni.Add(TArea(SenderOR));
-      PanelServer.GUIQueueLineToRefresh(TPanelConnData(Sender.data).index);
+      PanelServerClientsGUI.GUIRefreshSpecificApps(TPanelConnData(Sender.data).index);
     end;
 
     if (Self.m_clients.Contains(Sender)) then
@@ -106,7 +106,7 @@ begin
     if (TPanelConnData(Sender.data).st_hlaseni.Contains(TArea(SenderOR))) then
     begin
       TPanelConnData(Sender.data).st_hlaseni.Remove(TArea(SenderOR));
-      PanelServer.GUIQueueLineToRefresh(TPanelConnData(Sender.data).index);
+      PanelServerClientsGUI.GUIRefreshSpecificApps(TPanelConnData(Sender.data).index);
     end;
 
     if (not Self.m_clients.Contains(Sender)) then

@@ -49,7 +49,7 @@ var
 implementation
 
 uses UserDb, user, TCPServerPanel, TrakceC, TRVDatabase, TrainDb, PanelConnData, Logging,
-  fRegulator, fMain, Area, AreaDb, ownConvert, IfThenElse;
+  fRegulator, fMain, Area, AreaDb, ownConvert, IfThenElse, GUIPanelServerClients;
 
 /// /////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;"
@@ -437,7 +437,8 @@ begin
     RVDb.RemoveRegulator(conn);
   end;
 
-  PanelServer.GUIRefreshSpecificApps((conn.Data as TPanelConnData).index);
+
+  PanelServerClientsGUI.GUIRefreshSpecificApps((conn.Data as TPanelConnData).index);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -614,7 +615,7 @@ begin
   begin
     // pridani noveho vozidla do seznamu
     TPanelConnData(Regulator.Data).regulator_vehicles.Add(vehicle);
-    PanelServer.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
+    PanelServerClientsGUI.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
   end;
 
   authLog('reg', 'loco-acquire', TPanelConnData(Regulator.Data).regulator_user.username,
@@ -654,7 +655,7 @@ begin
   vehicle.RemoveRegulator(Regulator);
   TPanelConnData(Regulator.Data).regulator_vehicles.Remove(vehicle);
   PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(vehicle.addr) + ';AUTH;release;' + info);
-  PanelServer.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
+  PanelServerClientsGUI.GUIQueueLineToRefresh(TPanelConnData(Regulator.Data).index);
   authLog('reg', 'loco-release', TPanelConnData(Regulator.Data).regulator_user.username,
     'Release loco ' + IntToStr(vehicle.addr));
 end;

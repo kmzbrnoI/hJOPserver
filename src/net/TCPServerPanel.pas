@@ -56,14 +56,12 @@ type
     received: TObjectQueue<TPanelReceived>; // locked by receivedLock!
     receivedLock: TCriticalSection;
 
-    clients: array [0 .. _MAX_CLIENTS - 1] of TPanelClient;
     tcpServer: TIdTCPServer;
     data: string; // prijata data v plain-text forme
     m_DCCStopped: TIdContext; // tady je ulozeno ID spojeni, ktere zazadalo o CentralStop
     // vsechny panely maji standartne moznost vypnout DCC
     // pokud to udela nejaky panel, ma moznost DCC zapnout jen tento panel
     // pokud vypne DCC nekdo ze serveru, nebo z ovladace, zadny klient nema moznost ho zapnout
-    refreshQueue: array [0 .. _MAX_CLIENTS - 1] of Boolean;
     pingTimer: TTimer;
 
     procedure OnTcpServerConnect(AContext: TIdContext); // event pripojeni klienta z TIdTCPServer
@@ -84,9 +82,8 @@ type
     procedure OnReceiveTimerTick(Sender: TObject);
     procedure SetDCCStopped(who: TIdContext);
 
-    property DCCStopped: TIdContext read m_DCCStopped write SetDCCStopped;
-
   public
+    clients: array [0 .. _MAX_CLIENTS - 1] of TPanelClient;
 
     constructor Create();
     destructor Destroy(); override;
@@ -139,13 +136,6 @@ type
 
     procedure SendLn(AContext: TIdContext; str: string);
 
-    procedure GUIInitTable();
-    procedure GUIRefreshLine(index: Integer; repaint: Boolean = true);
-    procedure GUIRefreshSpecificApps(line: Integer);
-    procedure GUIQueueLineToRefresh(lineindex: Integer);
-    procedure GUIRefreshTable();
-    procedure GUIRefreshFromQueue();
-
     procedure DCCStart();
     procedure DCCStop();
 
@@ -161,6 +151,7 @@ type
 
     property openned: Boolean read IsOpenned;
     property bindingsStr: string read GetBind;
+    property DCCStopped: TIdContext read m_DCCStopped write SetDCCStopped;
   end;
 
 var
@@ -172,7 +163,8 @@ uses fMain, BlockTrack, BlockTurnout, BlockSignal, AreaDb, BlockLinker,
   BlockCrossing, Logging, TimeModel, TrainDb, Config, TrakceC, TrakceIFace,
   BlockLock, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
   UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks, BlockDb,
-  BlockDisconnector, BlockIO, ownConvert, TRVDatabase, BlockPst, TCPServerPT;
+  BlockDisconnector, BlockIO, ownConvert, TRVDatabase, BlockPst, TCPServerPT,
+  GUIPanelServerClients;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -354,7 +346,7 @@ begin
   Self.tcpServer.Active := false;
 
   Self.ProcessReceivedMessages();
-  PanelServer.GUIRefreshTable();
+  PanelServerClientsGUI.GUIRefreshTable();
   F_Main.S_Server.Brush.Color := clRed;
   UDPdisc.SendDiscover();
   ACBlk.RemoveAllClients();
@@ -388,7 +380,7 @@ begin
 
     AContext.data := TPanelConnData.Create(i);
     Self.clients[i] := TPanelClient.Create(AContext);
-    Self.GUIQueueLineToRefresh(i);
+    PanelServerClientsGUI.GUIQueueLineToRefresh(i);
   finally
     Self.tcpServer.Contexts.UnlockList();
   end;
@@ -488,7 +480,7 @@ begin
 
   // aktualizujeme radek v tabulce klientu ve F_Main
   if (Self.tcpServer.Active) then
-    PanelServer.GUIRefreshTable();
+    PanelServerClientsGUI.GUIRefreshTable();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -612,16 +604,16 @@ begin
 
     // oznamime verzi komunikacniho protokolu
     connData.protocol_version := parsed[2];
-    F_Main.LV_Clients.items[connData.index].SubItems[F_Main._LV_CLIENTS_COL_PROTOCOL] := parsed[2];
+    F_Main.LV_Clients.items[connData.index].SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_PROTOCOL] := parsed[2];
 
     // jmeno klienta
     if (parsed.Count >= 4) then
       connData.client_name := parsed[3]
     else
       connData.client_name := '';
-    F_main.LV_Clients.Items[connData.index].SubItems[F_Main._LV_CLIENTS_COL_APP] := connData.client_name;
+    F_main.LV_Clients.Items[connData.index].SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_APP] := connData.client_name;
 
-    PanelServer.GUIQueueLineToRefresh(connData.index);
+    PanelServerClientsGUI.GUIQueueLineToRefresh(connData.index);
     modelTime.SendTimeToPanel(AContext);
 
     if (trakce.TrackStatusSafe() = tsOn) then
@@ -1304,167 +1296,6 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-// gui metody
-// zajistuji komunikaci s F_PanelsStatus
-
-procedure TPanelServer.GUIInitTable();
-var MI: TListItem;
-begin
-  F_Main.LV_Clients.Clear();
-  for var i: Integer := 0 to _MAX_CLIENTS - 1 do
-  begin
-    MI := F_Main.LV_Clients.items.Add;
-    MI.Caption := IntToStr(i);
-    MI.SubItems.Add('odpojen');
-    for var j: Integer := 1 to F_Main.LV_Clients.Columns.Count - 1 do
-      MI.SubItems.Add('');
-  end;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-procedure TPanelServer.GUIRefreshLine(index: Integer; repaint: Boolean = true);
-begin
-  if (not Assigned(F_Main.LV_Clients.items[index])) then
-    Exit();
-
-  if (not Assigned(Self.clients[index])) then
-  begin
-    // klient neexistuje
-    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'odpojen';
-    for var i: Integer := 1 to F_Main.LV_Clients.Columns.Count - 1 do
-      F_Main.LV_Clients.items[index].SubItems[i] := '';
-
-    Exit();
-  end;
-
-  if (not Assigned(Self.clients[index].connection)) then
-  begin
-    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'soket nenalezen';
-    for var i: Integer := 1 to F_Main.LV_Clients.Columns.Count - 1 do
-      F_Main.LV_Clients.items[index].SubItems[i] := '';
-  end;
-
-  var connData: TPanelConnData := (Self.clients[index].connection.data as TPanelConnData);
-
-  case (Self.clients[index].state) of
-    TPanelConnectionState.closed:
-      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'uzavřeno';
-    TPanelConnectionState.opening:
-      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'otevírání';
-    TPanelConnectionState.handshake:
-      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'handshake';
-    TPanelConnectionState.opened:
-      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_STATE] := 'otevřeno';
-  end;
-
-  F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_CLIENT] :=
-    Self.clients[index].connection.connection.Socket.Binding.PeerIP;
-  if (connData.ping_unreachable) then
-    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_PING] := 'unreachable'
-  else if (connData.PingComputed()) then
-  begin
-    var Hour, Min, Sec, MSec: Word;
-    DecodeTime(connData.ping, Hour, Min, Sec, MSec);
-    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_PING] := IntToStr(MSec);
-  end
-  else
-    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_PING] := '?';
-
-  for var i: Integer := 0 to 2 do
-  begin
-    if (i < connData.areas.Count) then
-    begin
-      // klient existuje
-      var ORpanel: TAreaPanel;
-      connData.areas[i].GetORPanel(Self.clients[index].connection, ORPanel);
-      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_OR1 + i] := connData.areas[i].ShortName + ' (' + ORPanel.User
-        + ' :: ' + TArea.GetRightsString(ORPanel.Rights) + ')';
-    end else begin
-      // klient neexistuje
-      F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_OR1 + i] := '';
-    end;
-  end;
-
-  if (connData.areas.Count > 3) then
-  begin
-    var str: string := '';
-    for var i: Integer := 3 to connData.areas.Count - 1 do
-    begin
-      var ORpanel: TAreaPanel;
-      connData.areas[i].GetORPanel(Self.clients[index].connection, ORPanel);
-      str := str + connData.areas[i].ShortName + ' (' + ORPanel.User + ' :: ' + TArea.GetRightsString(ORPanel.Rights) +
-        ')' + ', ';
-    end;
-    F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_OR_NEXT] := LeftStr(str, Length(str) - 2);
-  end;
-
-  F_Main.LV_Clients.items[index].SubItems[TF_Main._LV_CLIENTS_COL_DCC] := IfThen(Self.DCCStopped = Self.clients[index].connection, 'ano', '');
-
-  Self.GUIRefreshSpecificApps(index);
-  F_Main.LV_Clients.UpdateItems(index, index);
-end;
-
-procedure TPanelServer.GUIRefreshSpecificApps(line: Integer);
-begin
-  var content: string := '';
-  var panelConnData: TPanelConnData := TPanelConnData(Self.clients[line].connection.Data);
-
-  if (panelConnData.regulator) then
-  begin
-    var str: string := 'reg: ';
-    if (Assigned(panelConnData.regulator_user)) then
-      str := str + TUser(panelConnData.regulator_user).username
-    else
-      str := str + 'ano';
-
-    if (panelConnData.regulator_vehicles.Count > 0) then
-    begin
-      str := str + ': ';
-      for var vehicle: TRV in panelConnData.regulator_vehicles do
-        str := str + IntToStr(vehicle.addr) + ', ';
-      str := LeftStr(str, Length(str) - 2);
-    end;
-
-    content := content + str + ' ';
-  end;
-
-  if (panelConnData.st_hlaseni.Count > 0) then
-  begin
-    content := content + 'sh: ';
-    for var area: TArea in panelConnData.st_hlaseni do
-      content := content + area.ShortName + ', ';
-    content := LeftStr(content, Length(content) - 2);
-  end;
-
-  F_Main.LV_Clients.items[line].SubItems[TF_Main._LV_CLIENTS_COL_SPECIFIC_APPS] := content;
-end;
-
-procedure TPanelServer.GUIRefreshTable();
-begin
-  for var i: Integer := 0 to _MAX_CLIENTS - 1 do
-    Self.GUIRefreshLine(i, false);
-  F_Main.LV_Clients.repaint();
-end;
-
-procedure TPanelServer.GUIRefreshFromQueue();
-begin
-  for var i: Integer := 0 to _MAX_CLIENTS - 1 do
-  begin
-    if (Self.refreshQueue[i]) then
-    begin
-      Self.GUIRefreshLine(i);
-      Self.refreshQueue[i] := false;
-    end;
-  end;
-end;
-
-procedure TPanelServer.GUIQueueLineToRefresh(lineindex: Integer);
-begin
-  Self.refreshQueue[lineindex] := true;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
 
 procedure TPanelServer.CancelUPO(AContext: TIdContext; ref: TObject);
 begin
@@ -1676,12 +1507,12 @@ begin
   if (Self.m_DCCStopped <> nil) then
   begin
     const i = TPanelConnData(Self.m_DCCStopped.data).index;
-    F_Main.LV_Clients.items[i].SubItems[TF_Main._LV_CLIENTS_COL_DCC] := '';
+    F_Main.LV_Clients.items[i].SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_DCC] := '';
   end;
   if (who <> nil) then
   begin
     const i = TPanelConnData(who.data).index;
-    F_Main.LV_Clients.items[i].SubItems[TF_Main._LV_CLIENTS_COL_DCC] := 'ano';
+    F_Main.LV_Clients.items[i].SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_DCC] := 'ano';
   end;
 
   Self.m_DCCStopped := who;

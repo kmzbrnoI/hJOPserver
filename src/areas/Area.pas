@@ -286,7 +286,7 @@ uses BlockDb, GetSystems, BlockTrack, BlockSignal, fMain, TechnologieJC,
   TJCDatabase, ownConvert, TCPServerPanel, AreaDb, block, TRVDatabase, TrainDb,
   UserDb, TRailVehicle, TrakceIFace, user, PanelConnData, fRegulator, RegulatorTCP,
   ownStrUtils, train, changeEvent, TrakceC, ConfSeq, Config, timeHelper,
-  BlockCrossing;
+  BlockCrossing, GUIPanelServerClients;
 
 function IsReadable(right: TAreaRights): Boolean;
 begin
@@ -595,7 +595,7 @@ begin
   if (rights = TAreaRights.null) then
   begin
     Self.ORAuthoriseResponse(Sender, TAreaRights.null, 'Úspěšně autorizováno - odpojen', '');
-    PanelServer.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
+    PanelServerClientsGUI.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
     if (Self.PanelDbRights(Sender) >= write) then
       Self.AuthWriteToRead(Sender);
     Self.PanelDbRemove(Sender);
@@ -634,7 +634,7 @@ begin
     begin
       Self.PanelDbRemove(Sender);
       Self.ORAuthoriseResponse(Sender, userRights, msg, '');
-      PanelServer.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
+      PanelServerClientsGUI.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
       Exit();
     end;
     if (rights > userRights) then
@@ -646,7 +646,7 @@ begin
       Self.PanelDbAdd(Sender, TAreaRights.read, username);
       Self.ORAuthoriseResponse(Sender, TAreaRights.read, 'Nelze autorizovat zápis při vyplých systémech !',
         user.fullName);
-      PanelServer.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
+      PanelServerClientsGUI.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
       Exit();
     end;
 
@@ -662,7 +662,7 @@ begin
       // same user authorizes -> change his other panel to read
       anotherPanel.rights := TAreaRights.read;
       Self.connected[anotherWriteI] := anotherPanel;
-      PanelServer.GUIQueueLineToRefresh(anotherWriteI);
+      PanelServerClientsGUI.GUIQueueLineToRefresh(anotherWriteI);
       // ORAuthoriseResponse is sent in UpdateReadersAuth
     end else if ((rights < TAreaRights.superuser) and (anotherWriteI > -1)) then begin
       rights := TAreaRights.other; // this value is never saved to db ('read' if saved, see PanelDbAdd)
@@ -679,14 +679,14 @@ begin
   except
     on E: EMaxClients do
     begin
-      PanelServer.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
+      PanelServerClientsGUI.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
       Self.ORAuthoriseResponse(Sender, TAreaRights.null, E.Message, user.fullName);
       Exit();
     end;
   end;
 
   UsrDb.LoginUser(username);
-  PanelServer.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
+  PanelServerClientsGUI.GUIQueueLineToRefresh((Sender.data as TPanelConnData).index);
 
   var sendRights: TAreaRights := rights;
   if (rights = TAreaRights.read) and (Self.AnySuperuserConnected()) then
@@ -1220,7 +1220,7 @@ begin
     Self.ORAuthoriseResponse(Self.connected[i].Panel, TAreaRights.null, 'Odpojení systémů', '');
     var index: Integer := (Self.connected[i].Panel.data as TPanelConnData).index;
     Self.PanelDbRemove(Self.connected[i].Panel);
-    PanelServer.GUIQueueLineToRefresh(index);
+    PanelServerClientsGUI.GUIQueueLineToRefresh(index);
   end;
 
   Self.stack.Clear();

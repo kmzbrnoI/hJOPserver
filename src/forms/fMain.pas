@@ -452,18 +452,6 @@ type
 
     _SB_LOG_SHOW_TIME_MS = 3000;
 
-    _LV_CLIENTS_COL_STATE = 0;
-    _LV_CLIENTS_COL_CLIENT = 1;
-    _LV_CLIENTS_COL_PROTOCOL = 2;
-    _LV_CLIENTS_COL_APP = 3;
-    _LV_CLIENTS_COL_PING = 4;
-    _LV_CLIENTS_COL_OR1 = 5;
-    _LV_CLIENTS_COL_OR2 = 6;
-    _LV_CLIENTS_COL_OR3 = 7;
-    _LV_CLIENTS_COL_OR_NEXT = 8;
-    _LV_CLIENTS_COL_DCC = 9;
-    _LV_CLIENTS_COL_SPECIFIC_APPS = 10;
-
   private
     call_method: TNotifyEvent;
     mCpuLoad: TCpuLoad;
@@ -604,7 +592,7 @@ uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
   AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB, fBlkCrossingState,
   Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal, fBlkPst, BlockPst, fBlkSignalState,
-  fRychlostiEdit, TRailVehicle;
+  fRychlostiEdit, TRailVehicle, GUIPanelServerClients;
 
 {$R *.dfm}
 
@@ -1919,7 +1907,7 @@ begin
   if (PC_1.ActivePage = TS_Areas) then
     ORsTableData.UpdateTable(true);
   if (PC_1.ActivePage = TS_Technologie) then
-    PanelServer.GUIRefreshTable();
+    PanelServerClientsGUI.GUIRefreshTable();
 end;
 
 procedure TF_Main.PM_BlokyPopup(Sender: TObject);
@@ -2047,6 +2035,7 @@ begin
   ZesTableData := TZesTableData.Create(Self.LV_Boosters);
   ORsTableData := TORsTableData.Create(Self.LV_Areas);
   MultiJCTableData := TMultiJCTableData.Create(Self.LV_MultiJC);
+  PanelServerClientsGUI := TPanelServerClientsGUI.Create(Self.LV_Clients);
 
   // assign RCS events:
   for var i: Integer := 0 to RCSs._RCSS_MAX do
@@ -2785,7 +2774,7 @@ begin
       if (Self.PC_1.ActivePage = Self.TS_Areas) then
         ORsTableData.UpdateTable();
       if (Self.PC_1.ActivePage = Self.TS_Technologie) then
-        PanelServer.GUIRefreshFromQueue();
+        PanelServerClientsGUI.GUIRefreshFromQueue();
 
       ABTableData.Update();
     end;
@@ -3111,7 +3100,7 @@ begin
 
   Self.PC_1.ActivePage := TS_Technologie;
 
-  PanelServer.GUIInitTable();
+  PanelServerClientsGUI.GUIInitTable();
   modelTime.UpdateGUIColors();
   Self.FillGlobalConfig();
 
@@ -3663,16 +3652,16 @@ end;
 procedure TF_Main.LV_ClientsCustomDrawItem(Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
   var DefaultDraw: Boolean);
 begin
-  if ((Item.SubItems[_LV_CLIENTS_COL_STATE] = 'uzavřeno') or (Item.SubItems[_LV_CLIENTS_COL_STATE] = 'odpojen')) then
+  if ((Item.SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_STATE] = 'uzavřeno') or (Item.SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_STATE] = 'odpojen')) then
     Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_WHITE
-  else if ((Item.SubItems[_LV_CLIENTS_COL_STATE] = 'otevírání') or (Item.SubItems[_LV_CLIENTS_COL_STATE] = 'handshake'))
+  else if ((Item.SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_STATE] = 'otevírání') or (Item.SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_STATE] = 'handshake'))
   then
     Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_GRAY
-  else if (Item.SubItems[_LV_CLIENTS_COL_STATE] = 'otevřeno') then
+  else if (Item.SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_STATE] = 'otevřeno') then
   begin
-    if (Item.SubItems[_LV_CLIENTS_COL_PING] = 'unreachable') then
+    if (Item.SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_PING] = 'unreachable') then
       Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_RED
-    else if (Item.SubItems[_LV_CLIENTS_COL_PING] = '?') then
+    else if (Item.SubItems[TPanelServerClientsGUI._LV_CLIENTS_COL_PING] = '?') then
       Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
     else
       Self.LV_Clients.Canvas.Brush.Color := _TABLE_COLOR_GREEN;

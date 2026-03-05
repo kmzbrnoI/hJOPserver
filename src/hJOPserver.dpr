@@ -168,7 +168,8 @@ uses
   BlockProxy in 'blocks\BlockProxy.pas',
   ownGuiUtils in 'helpers\ownGuiUtils.pas',
   PTEndpointStatus in 'pt\PTEndpointStatus.pas',
-  rcssc in 'rcs\rcssc.pas';
+  rcssc in 'rcs\rcssc.pas',
+  GUIPanelServerClients in 'tables\GUIPanelServerClients.pas';
 
 {$R *.res}
 

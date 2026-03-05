@@ -105,7 +105,7 @@ type
 
 implementation
 
-uses fMain, TCPServerPanel, RegulatorTCP, BlockSignal, BlockTrack;
+uses fMain, TCPServerPanel, RegulatorTCP, BlockSignal, BlockTrack, GUIPanelServerClients;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -282,7 +282,7 @@ begin
   if (not Self.ping_unreachable) then
   begin
     Self.ping_received.Clear();
-    PanelServer.GUIQueueLineToRefresh(Self.index);
+    PanelServerClientsGUI.GUIQueueLineToRefresh(Self.index);
   end;
 end;
 
@@ -349,7 +349,7 @@ begin
   if (Self.ping_unreachable) then
   begin
     Self.ping_unreachable := false; // client restored
-    PanelServer.GUIQueueLineToRefresh(Self.index);
+    PanelServerClientsGUI.GUIQueueLineToRefresh(Self.index);
   end;
 
   if (Self.ping_received.Count <= Self.ping_received_next_index) then
@@ -359,7 +359,7 @@ begin
 
   Self.ping_received_next_index := (Self.ping_received_next_index + 1) mod _PING_WINDOW_SIZE;
 
-  PanelServer.GUIQueueLineToRefresh(Self.index);
+  PanelServerClientsGUI.GUIQueueLineToRefresh(Self.index);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
