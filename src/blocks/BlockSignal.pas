@@ -157,6 +157,7 @@ type
     function IsEnabled(): Boolean;
 
     procedure mSetSignal(signal: TBlkSignalCode);
+    procedure TargetSignalChanged(old: TBlkSignalCode); // also includes transitions enabled/disabled
 
     function GetAB(): Boolean;
     procedure SetAB(ab: Boolean);
@@ -641,8 +642,9 @@ begin
     if (Self.m_state.signal = ncDisabled) then
     begin
       Self.m_state.signal := ncStuj;
+      Self.m_state.targetSignal := ncStuj;
       Self.SetAllRCSOutputs(Self.m_state.signal);
-      Self.Change();
+      Self.TargetSignalChanged(ncDisabled);
     end;
   end else begin
     if (Self.changing) then
@@ -650,9 +652,11 @@ begin
 
     if (Self.m_state.signal >= ncStuj) then
     begin
+      var oldTargetSignal := Self.m_state.targetSignal;
       Self.m_state.signal := ncDisabled;
+      Self.m_state.targetSignal := ncDisabled;
       JCDb.Cancel(Self);
-      Self.Change();
+      Self.TargetSignalChanged(oldTargetSignal);
     end;
   end;
 end;
@@ -742,12 +746,21 @@ begin
   // set physical outputs
   Self.SetAllRCSOutputs(code);
 
+  Self.m_state.changeEnd := now + Self.m_settings.changeTime;
+  Self.TargetSignalChanged(prevTargetSignal);
+end;
+
+procedure TBlkSignal.TargetSignalChanged(old: TBlkSignalCode);
+begin
+  if (Self.targetSignal = ncChanging) then
+    Exit(); // changing is ignored, do NOT ignore ncDisabled
+
   // propagace do skupinoveho navestidla
   if (Self.groupMaster <> nil) then
-    TBlkGroupSignal(Self.groupMaster).SetSignal(code);
+    TBlkGroupSignal(Self.groupMaster).SetSignal(Self.targetSignal);
 
   // ruseni nouzove jizdni cesty pri padu navestidla do STUJ
-  if (code = ncStuj) then
+  if (Self.targetSignal <= ncStuj) then
   begin
     if ((Self.track <> nil) and ((Self.track.typ = btTrack) or (Self.track.typ = btRT)) and
       ((Self.track as TBlkTrack).signalJCRef.Contains(Self))) then
@@ -761,7 +774,7 @@ begin
     end;
   end;
 
-  if ((prevTargetSignal = ncPrivol) and (code = ncStuj)) then
+  if ((old = ncPrivol) and (Self.targetSignal <= ncStuj)) then
   begin
     // STUJ po privolavacce -> vypnout zvukovou vyzvu
     Self.Log('Zhasnuta PN', TLogLevel.llInfo);
@@ -770,9 +783,7 @@ begin
         area.pnBlkCnt := area.pnBlkCnt - 1;
   end;
 
-  Self.m_state.changeEnd := now + Self.m_settings.changeTime;
-
-  if (not TBlkSignal.IsGoSignal(Self.m_state.targetSignal)) then // zastavujeme ihned
+  if (not TBlkSignal.IsGoSignal(Self.targetSignal)) then // zastavujeme ihned
     Self.UpdateTrainSpeed(true);
 
   if (Self.track <> nil) then
