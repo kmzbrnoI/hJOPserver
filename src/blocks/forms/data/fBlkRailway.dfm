@@ -5,7 +5,7 @@ object F_BlkRailway: TF_BlkRailway
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'F_BlkRailway'
-  ClientHeight = 340
+  ClientHeight = 382
   ClientWidth = 671
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -21,7 +21,7 @@ object F_BlkRailway: TF_BlkRailway
   TextHeight = 13
   object B_Save: TButton
     Left = 589
-    Top = 309
+    Top = 350
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -35,7 +35,7 @@ object F_BlkRailway: TF_BlkRailway
   end
   object B_Storno: TButton
     Left = 512
-    Top = 309
+    Top = 350
     Width = 73
     Height = 25
     Margins.Left = 2
@@ -47,8 +47,8 @@ object F_BlkRailway: TF_BlkRailway
     OnClick = B_StornoClick
   end
   object GB_LinkerA: TGroupBox
-    Left = 8
-    Top = 150
+    Left = 7
+    Top = 190
     Width = 337
     Height = 90
     Margins.Left = 2
@@ -107,8 +107,8 @@ object F_BlkRailway: TF_BlkRailway
     end
   end
   object GB_LinkerB: TGroupBox
-    Left = 7
-    Top = 244
+    Left = 6
+    Top = 284
     Width = 337
     Height = 90
     Margins.Left = 2
@@ -170,19 +170,19 @@ object F_BlkRailway: TF_BlkRailway
     Left = 8
     Top = 8
     Width = 337
-    Height = 137
+    Height = 177
     Caption = ' Tra'#357' '
     TabOrder = 0
     object L_Name: TLabel
       Left = 18
       Top = 23
-      Width = 57
+      Width = 54
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'N'#225'zev trati :'
+      Caption = 'N'#225'zev trati:'
     end
     object L_ID: TLabel
       Left = 18
@@ -272,6 +272,22 @@ object F_BlkRailway: TF_BlkRailway
       Items.Strings = (
         'autoblok'
         'hradlo')
+    end
+    object CHB_redSignalWhenRequesting: TCheckBox
+      Left = 17
+      Top = 126
+      Width = 303
+      Height = 17
+      Caption = 'P'#345'i '#382#225'dosti o tra'#357'ov'#253' souhlas n'#225'v'#283'stit st'#367'j'
+      TabOrder = 4
+    end
+    object CHB_redSignalFromPanel: TCheckBox
+      Left = 17
+      Top = 149
+      Width = 303
+      Height = 17
+      Caption = 'Umo'#382'nit volbu STUJ v menu '#250'vazek panelu'
+      TabOrder = 5
     end
   end
   object GB_TratBlk: TGroupBox

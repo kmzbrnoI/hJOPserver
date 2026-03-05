@@ -23,6 +23,8 @@ type
     rType: TRailwayType;
     signals: TRailwaySignals;
     trackIds: TList<Integer>;
+    redSignalWhenRequesting: Boolean;
+    redSignalFromPanel: Boolean;
   end;
 
   TBlkRailwayEFull = class(Exception);
@@ -246,6 +248,9 @@ begin
   Self.m_settings.rType := TRailwayType(index);
   Self.m_settings.signals := TRailwaySignals(ini_tech.ReadInteger(section, 'navestidla', 0));
 
+  Self.m_settings.redSignalWhenRequesting := ini_tech.ReadBool(section, 'stujZadost', False);
+  Self.m_settings.redSignalFromPanel := ini_tech.ReadBool(section, 'stujMenu', False);
+
   Self.file_direction := TRailwayDirection(ini_stat.ReadInteger(section, 'smer', 1));
   Self.m_state.BP := ini_stat.ReadBool(section, 'BP', false);
 
@@ -288,6 +293,8 @@ begin
   ini_tech.WriteInteger(section, 'uvazkaB', Self.m_settings.linkerB);
   ini_tech.WriteInteger(section, 'zabzar', Integer(Self.m_settings.rType));
   ini_tech.WriteInteger(section, 'navestidla', Integer(Self.m_settings.signals));
+  ini_tech.WriteBool(section, 'stujZadost', Self.m_settings.redSignalWhenRequesting);
+  ini_tech.WriteBool(section, 'stujMenu', Self.m_settings.redSignalFromPanel);
   ini_tech.WriteString(section, 'useky', SerializeIntList(Self.m_settings.trackIds));
 end;
 

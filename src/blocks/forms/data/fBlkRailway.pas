@@ -35,6 +35,8 @@ type
     CB_Track: TComboBox;
     LV_Tracks: TListView;
     B_Track_Del: TButton;
+    CHB_redSignalWhenRequesting: TCheckBox;
+    CHB_redSignalFromPanel: TCheckBox;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure B_StornoClick(Sender: TObject);
     procedure LV_TracksChange(Sender: TObject; Item: TListItem; Change: TItemChange);
@@ -140,6 +142,8 @@ begin
 
   Self.CB_Type.ItemIndex := -1;
   Self.CB_Signals.ItemIndex := -1;
+  Self.CHB_redSignalWhenRequesting.Checked := False;
+  Self.CHB_redSignalFromPanel.Checked := False;
 
   Blocks.FillCB(Self.CB_Track, Self.CB_TrackIds, nil, nil, btRT);
 
@@ -176,6 +180,8 @@ begin
   end;
 
   Self.CB_Signals.ItemIndex := Integer(settings.signals);
+  Self.CHB_redSignalWhenRequesting.Checked := settings.redSignalWhenRequesting;
+  Self.CHB_redSignalFromPanel.Checked := settings.redSignalFromPanel;
 
   for var id in settings.trackIds do
   begin
@@ -356,6 +362,8 @@ begin
     end;
 
     rSettings.signals := TRailwaySignals(Self.CB_Signals.ItemIndex);
+    rSettings.redSignalWhenRequesting := Self.CHB_redSignalWhenRequesting.Checked;
+    rSettings.redSignalFromPanel := Self.CHB_redSignalFromPanel.Checked;
 
     rSettings.trackIds.Clear();
     for var LI in Self.LV_Tracks.Items do
