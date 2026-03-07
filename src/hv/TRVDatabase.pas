@@ -18,7 +18,6 @@ const
   _MAX_ADDR = 10000;
   _DEFAULT_OR = 0;
   _FILE_SUFFIX = '.2lok';
-  _LOCO_UPDATE_TIME_MS = 1000;
 
 type
 
