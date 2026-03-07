@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Config
+    ActivePage = TS_RV
     Align = alClient
     MultiLine = True
     TabOrder = 2

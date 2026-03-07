@@ -39,10 +39,10 @@ type
     function GetTrainNameByIndex(index: Integer): string;
     function GetTrainIndexByName(name: string): Integer;
 
+    procedure Update(msSinceLastUpdate: Cardinal);
     procedure UpdateFront();
     procedure StopAllTrains();
     procedure ClearPOdj();
-    procedure UpdateTraveled(msSinceLastUpdate: Cardinal);
 
     procedure GetPtData(json: TJsonObject);
 
@@ -317,7 +317,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TTrainDb.UpdateTraveled(msSinceLastUpdate: Cardinal);
+procedure TTrainDb.Update(msSinceLastUpdate: Cardinal);
 begin
   for var train in Self.trains do
   begin
@@ -325,10 +325,10 @@ begin
       continue;
 
     try
-      train.UpdateTraveled(msSinceLastUpdate);
+      train.Update(msSinceLastUpdate);
     except
       on E: Exception do
-        AppEvents.LogException(E, 'TTrainDb.OnTTraveledUpdate');
+        AppEvents.LogException(E, 'TTrainDb.Update');
     end;
   end;
 end;

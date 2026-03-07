@@ -130,7 +130,7 @@ type
     updating: Boolean;
     nextUpdate: TTime;
     speedPendingCmds: Cardinal; // number of pending set speed commands
-    continuousSpeed: Real; // continuous model speed [km/h]
+    continuousSpeed: Real; // continuous modeled speed [km/h]
     continuousDirection: Boolean;
   end;
 
@@ -148,8 +148,8 @@ type
     procedure LoadData(ini: TMemIniFile; section: string);
     procedure LoadState(ini: TMemIniFile; section: string);
 
-    procedure UpdateTraveled(msSinceLastUpdate: Cardinal);
     procedure UpdateContinuousSpeed(msSinceLastUpdate: Cardinal);
+    procedure UpdateTraveled(msSinceLastUpdate: Cardinal);
 
     procedure SetManual(state: Boolean);
     procedure UpdateFuncDict();
@@ -191,9 +191,6 @@ type
     class function PomToJson(pom: TRVPomCV): TJsonObject;
 
     procedure CallCb(cb: TCommandCallback);
-
-    class function Acceleration(): Real; // [model km/h/s]
-    class function Deceleration(): Real; // [model km/h/s]
 
   public
     index: Word; // index v seznamu vsech vozidel
@@ -273,6 +270,9 @@ type
 
     class function CharToRVFuncType(c: char): TRVFuncType;
     class function RVFuncTypeToChar(t: TRVFuncType): char;
+
+    class function Acceleration(): Real; // [model km/h/s]
+    class function Deceleration(): Real; // [model km/h/s]
 
     // PT:
     procedure GetPtData(json: TJsonObject; includeState: Boolean);
@@ -1860,6 +1860,8 @@ end;
 procedure TRV.UpdateContinuousSpeed(msSinceLastUpdate: Cardinal);
 const _EPSILON = 0.1;
 begin
+  // This algorithm is very simillar to the algorithm in TTrain
+
   if ((Self.realSpeed = 0) and (Self.continuousSpeed = 0) and (Self.direction <> Self.continuousDirection)) then
     Self.state.continuousDirection := Self.direction; // immediately change direction when standing
 

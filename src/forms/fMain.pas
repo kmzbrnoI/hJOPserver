@@ -1847,7 +1847,7 @@ begin
     RCSd.Update();
     trakce.Update();
     ABlist.Update();
-    trains.UpdateTraveled(Self.T_Main.Interval);
+    trains.Update(Self.T_Main.Interval);
     RVDb.Update(Self.T_Main.Interval);
   except
     on E: Exception do
@@ -3073,7 +3073,7 @@ begin
     F_AutoStartSystems.Show();
     Self.autostart.goTime := Now + EncodeTime(0, 0, 6, 0);
     Self.autostart.state := asWaiting;
-  end else if (Self.autostart.state = asWaiting) then begin           
+  end else if (Self.autostart.state = asWaiting) then begin
     if (Round((Now - Self.autostart.goTime) * 24 * 3600) = 0) then
     begin
       Log('Automaticke pripojovani k systemum - t=0 - zapinam systemy', TLogLevel.llInfo);

@@ -135,6 +135,7 @@ begin
   Self.LV.Items[line].SubItems[7] := IntToStr(train.speed) + ' km/h';
   if (train.speed <> train.wantedSpeed) then
     Self.LV.Items[line].SubItems[7] := Self.LV.Items[line].SubItems[7] + ' (' + IntToStr(train.wantedSpeed) + ' km/h)';
+  Self.LV.Items[line].SubItems[7] := Self.LV.Items[line].SubItems[7] + ' / ' + IntToStr(Round(trains[line].continuousSpeed)) + ' km/h';
 
   case (train.direction) of
     TRVSite.odd:

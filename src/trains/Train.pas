@@ -74,6 +74,7 @@ type
     fAcquiring: Boolean;
     _speedOverride: TTrainSpeedOverride;
     _emergencyStopped: Boolean;
+    _continuousSpeed: Real; // continuous modeled speed [km/h]
     _traveled: Real; // never decreasing (for distance rrEvents); in meters
     _nextTraveledChange: TDateTime;
 
@@ -105,6 +106,9 @@ type
 
      procedure Log(msg: string; level: TLogLevel; source: TLogSource = lsAny);
 
+     procedure UpdateContinuousSpeed(msSinceLastUpdate: Cardinal);
+     procedure UpdateTraveled(msSinceLastUpdate: Cardinal);
+
   public
 
     changed: Boolean;
@@ -115,6 +119,8 @@ type
      destructor Destroy(); override;
 
      procedure SaveToFile(ini: TMemIniFile; const section: string);
+
+     procedure Update(msSinceLastUpdate: Cardinal);
 
      function GetPanelString(): string;   // vraci string, kterym je definovany vlak, do panelu
      procedure UpdateTrainFromPanel(train: TStrings; usek: TObject; area: TObject; ok: TCb; err: TCb);
@@ -169,8 +175,6 @@ type
      procedure RucUPO(AContext: TIdContext; ref: TObject = nil; callbackOk: TNotifyEvent = nil; callbackEsc: TNotifyEvent = nil);
      function IsAnyRVManual(): Boolean;
 
-     procedure UpdateTraveled(msSinceLastUpdate: Cardinal);
-
      property index: Integer read findex;
      property sdata: TTrainData read data;
 
@@ -196,6 +200,7 @@ type
      property acquiring: Boolean read fAcquiring;
      property emergencyStopped: Boolean read _emergencyStopped;
      property traveled: Real read _traveled;
+     property continuousSpeed: Real read _continuousSpeed;
 
      // uvolni stara vozidla z vlaku (pri zmene RV na vlaku)
      class procedure UvolV(old: TTrainRVs; new: TTrainRVs);
@@ -252,6 +257,7 @@ begin
   Self._emergencyStopped := false;
   Self._traveled := 0;
   Self._nextTraveledChange := 0;
+  Self._continuousSpeed := 0;
 end;
 
 destructor TTrain.Destroy();
@@ -1619,6 +1625,45 @@ begin
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrain.Update(msSinceLastUpdate: Cardinal);
+begin
+  Self.UpdateContinuousSpeed(msSinceLastUpdate);
+  Self.UpdateTraveled(msSinceLastUpdate);
+end;
+
+procedure TTrain.UpdateContinuousSpeed(msSinceLastUpdate: Cardinal);
+const _EPSILON = 0.1;
+begin
+  // This algorithm is very simillar to the algorithm in TRV
+  // Train does not incorporate direction, because it does not know true train direction
+  // E.g. change of direction of train in railway does NOT mean train must decrese speed, stop and then increase speed again.
+
+  if ((CompareValue(Self.continuousSpeed, Self.speed, _EPSILON) = 0)) then
+  begin
+    Self._continuousSpeed := Self.speed;
+    Exit();
+  end;
+
+  var lastContinuousSpeed := Self.continuousSpeed;
+
+  var accel: Real;
+  if (Self.speed > Self.continuousSpeed) then // speed = target speed
+    accel := TRV.Acceleration()
+  else
+    accel := -TRV.Deceleration();
+
+  var changeOfSpeedSinceLastCall: Real := accel*(msSinceLastUpdate/1000);
+
+  if ((accel > 0) and ((Self.continuousSpeed+changeOfSpeedSinceLastCall) >= Self.speed)) then
+    Self._continuousSpeed := Self.speed // target speed reached
+  else if ((accel < 0) and ((Self.continuousSpeed+changeOfSpeedSinceLastCall) <= Self.speed)) then
+    Self._continuousSpeed := Self.speed // target speed reached
+  else
+    Self._continuousSpeed := Self._continuousSpeed + changeOfSpeedSinceLastCall;
+
+  if (Round(Self.continuousSpeed) <> Round(lastContinuousSpeed)) then
+    Self.changed := True;end;
 
 procedure TTrain.UpdateTraveled(msSinceLastUpdate: Cardinal);
 begin
