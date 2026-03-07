@@ -244,8 +244,6 @@ type
     P_ConfigHeader: TPanel;
     E_configFilename: TEdit;
     P_Config: TPanel;
-    CHB_Log_console: TCheckBox;
-    CHB_autostart: TCheckBox;
     GB_Autosave: TGroupBox;
     Label5: TLabel;
     CHB_Autosave: TCheckBox;
@@ -254,8 +252,6 @@ type
     Label6: TLabel;
     Label8: TLabel;
     E_Scale: TEdit;
-    CB_MainTimerInterval: TComboBox;
-    Label9: TLabel;
     GB_Speeds: TGroupBox;
     LV_DigiRych: TListView;
     B_ConfigApply: TButton;
@@ -268,8 +264,6 @@ type
     SE_timeRCPC: TSpinEdit;
     Label13: TLabel;
     SE_timeNUZ: TSpinEdit;
-    Label14: TLabel;
-    SE_jcMaxMovingTurnouts: TSpinEdit;
     B_FuncUpdate: TButton;
     NB_TimeJCZav: TNumberBox;
     Label15: TLabel;
@@ -303,6 +297,23 @@ type
     N3: TMenuItem;
     MI_ExitApp: TMenuItem;
     L_TrkState: TLabel;
+    GB_VehicleDynamicModel: TGroupBox;
+    Label2: TLabel;
+    SE_VD_BreakFromSpeed: TSpinEdit;
+    SE_VD_BreakDistance: TSpinEdit;
+    Label7: TLabel;
+    Label16: TLabel;
+    Label17: TLabel;
+    SE_VD_AccelDistance: TSpinEdit;
+    SE_VD_AccelTargetSpeed: TSpinEdit;
+    GB_JC: TGroupBox;
+    SE_jcMaxMovingTurnouts: TSpinEdit;
+    Label14: TLabel;
+    GB_General: TGroupBox;
+    CHB_Log_console: TCheckBox;
+    CHB_autostart: TCheckBox;
+    Label9: TLabel;
+    CB_MainTimerInterval: TComboBox;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -3878,6 +3889,11 @@ begin
   Self.NB_TimeJCZav.Text := TimeToSecTenths(GlobalConfig.times.jcReleaseZaver);
 
   Self.SE_jcMaxMovingTurnouts.Value := GlobalConfig.jcMaxMovingTurnouts;
+
+  Self.SE_VD_BreakFromSpeed.Value := GlobalConfig.vehicleDynamics.breakFromSpeedModelKmH;
+  Self.SE_VD_BreakDistance.Value := GlobalConfig.vehicleDynamics.breakDistanceCm;
+  Self.SE_VD_AccelTargetSpeed.Value := GlobalConfig.vehicleDynamics.accelTargetSpeedModelKmH;
+  Self.SE_VD_AccelDistance.Value := GlobalConfig.vehicleDynamics.accelDistanceCm;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -3927,6 +3943,11 @@ begin
     GlobalConfig.times.jcReleaseZaver := SecTenthsToTime(Self.NB_TimeJCZav.Text);
 
     GlobalConfig.jcMaxMovingTurnouts := Self.SE_jcMaxMovingTurnouts.Value;
+
+    GlobalConfig.vehicleDynamics.breakFromSpeedModelKmH := Self.SE_VD_BreakFromSpeed.Value;
+    GlobalConfig.vehicleDynamics.breakDistanceCm := Self.SE_VD_BreakDistance.Value;
+    GlobalConfig.vehicleDynamics.accelTargetSpeedModelKmH := Self.SE_VD_AccelTargetSpeed.Value;
+    GlobalConfig.vehicleDynamics.accelDistanceCm := Self.SE_VD_AccelDistance.Value;
   except
     on E: Exception do
     begin

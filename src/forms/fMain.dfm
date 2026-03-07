@@ -2,7 +2,7 @@ object F_Main: TF_Main
   Left = 264
   Top = 316
   Caption = 'hJOPserver'
-  ClientHeight = 695
+  ClientHeight = 727
   ClientWidth = 1302
   Color = clWhite
   Constraints.MinHeight = 244
@@ -3449,7 +3449,7 @@ object F_Main: TF_Main
   end
   object SB1: TStatusBar
     Left = 0
-    Top = 675
+    Top = 707
     Width = 1302
     Height = 20
     Hint = 'Status bar'
@@ -3490,12 +3490,12 @@ object F_Main: TF_Main
     Left = 0
     Top = 33
     Width = 1302
-    Height = 642
+    Height = 674
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Technologie
+    ActivePage = TS_Config
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -3870,7 +3870,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -4073,7 +4073,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -4311,7 +4311,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -4482,7 +4482,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -4603,7 +4603,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -4827,7 +4827,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5018,7 +5018,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 24
         Width = 1294
-        Height = 590
+        Height = 622
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5121,7 +5121,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 24
         Width = 1294
-        Height = 590
+        Height = 622
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5259,7 +5259,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 24
         Width = 1294
-        Height = 590
+        Height = 622
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5364,7 +5364,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 24
         Width = 1294
-        Height = 590
+        Height = 622
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5545,7 +5545,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5732,7 +5732,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5833,7 +5833,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -5894,60 +5894,19 @@ object F_Main: TF_Main
         end
       end
       object P_Config: TPanel
-        Left = 9
+        Left = 3
         Top = 45
-        Width = 560
+        Width = 862
         Height = 548
         BevelOuter = bvNone
         TabOrder = 1
-        object Label9: TLabel
-          Left = 245
-          Top = 58
-          Width = 132
-          Height = 13
-          Caption = 'Interval hlavn'#237'ho '#269'asova'#269'e:'
-        end
-        object Label14: TLabel
-          Left = 245
-          Top = 88
-          Width = 194
-          Height = 13
-          Caption = 'V JC z'#225'rove'#328' p'#345'estavovat max. v'#253'hybek:'
-        end
-        object CHB_Log_console: TCheckBox
-          Left = 246
-          Top = 15
-          Width = 107
-          Height = 17
-          Hint = 'Ukl'#225'd'#225'n'#237' logu vyuziti prihlasovani'
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          Caption = 'Logovat konzoli'
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 1
-        end
-        object CHB_autostart: TCheckBox
-          Left = 246
-          Top = 36
-          Width = 243
-          Height = 17
-          Margins.Left = 2
-          Margins.Top = 2
-          Margins.Right = 2
-          Margins.Bottom = 2
-          Caption = 'Po startu programu automaticky spustit syst'#233'my'
-          TabOrder = 2
-        end
         object GB_Autosave: TGroupBox
           Left = 246
-          Top = 117
+          Top = 174
           Width = 301
           Height = 59
           Caption = ' Automatick'#233' ulo'#382'en'#237' stavu koleji'#353't'#283' '
-          TabOrder = 5
+          TabOrder = 3
           object Label5: TLabel
             Left = 94
             Top = 18
@@ -5989,11 +5948,11 @@ object F_Main: TF_Main
         end
         object GB_Scale: TGroupBox
           Left = 246
-          Top = 182
+          Top = 239
           Width = 301
           Height = 72
           Caption = ' M'#283#345#237'tko koleji'#353't'#283' '
-          TabOrder = 6
+          TabOrder = 4
           object Label6: TLabel
             Left = 14
             Top = 20
@@ -6023,21 +5982,6 @@ object F_Main: TF_Main
             TabOrder = 0
             Text = '1'
           end
-        end
-        object CB_MainTimerInterval: TComboBox
-          Left = 399
-          Top = 58
-          Width = 145
-          Height = 21
-          Style = csDropDownList
-          TabOrder = 3
-          Items.Strings = (
-            '25 ms'
-            '50 ms'
-            '100 ms'
-            '200 ms'
-            '250 ms'
-            '500 ms')
         end
         object GB_Speeds: TGroupBox
           Left = 9
@@ -6074,22 +6018,22 @@ object F_Main: TF_Main
           end
         end
         object B_ConfigApply: TButton
-          Left = 471
-          Top = 520
+          Left = 777
+          Top = 512
           Width = 75
           Height = 25
           Caption = 'Pou'#382#237't'
           Default = True
-          TabOrder = 8
+          TabOrder = 7
           OnClick = B_ConfigApplyClick
         end
         object GB_Times: TGroupBox
-          Left = 247
-          Top = 260
+          Left = 553
+          Top = 0
           Width = 299
           Height = 165
           Caption = ' '#268'asy (v sekund'#225'ch) '
-          TabOrder = 7
+          TabOrder = 5
           object Label10: TLabel
             Left = 14
             Top = 24
@@ -6175,15 +6119,163 @@ object F_Main: TF_Main
             TabOrder = 4
           end
         end
-        object SE_jcMaxMovingTurnouts: TSpinEdit
-          Left = 445
-          Top = 89
-          Width = 99
-          Height = 22
-          MaxValue = 100
-          MinValue = 1
-          TabOrder = 4
-          Value = 1
+        object GB_VehicleDynamicModel: TGroupBox
+          Left = 553
+          Top = 171
+          Width = 299
+          Height = 148
+          Caption = ' Dynamick'#253' j'#237'zdn'#237' model vozidel '
+          TabOrder = 6
+          object Label2: TLabel
+            Left = 16
+            Top = 24
+            Width = 136
+            Height = 13
+            Caption = 'Po'#269#225'te'#269'n'#237' rychlost [m km/h]:'
+          end
+          object Label7: TLabel
+            Left = 16
+            Top = 52
+            Width = 89
+            Height = 13
+            Caption = 'Brzdn'#225' dr'#225'ha [cm]:'
+          end
+          object Label16: TLabel
+            Left = 16
+            Top = 80
+            Width = 130
+            Height = 13
+            Caption = 'Koncov'#225' rychlost [m km/h]:'
+          end
+          object Label17: TLabel
+            Left = 16
+            Top = 108
+            Width = 113
+            Height = 13
+            Caption = 'Akcelera'#269'n'#237' dr'#225'ha [cm]:'
+          end
+          object SE_VD_BreakFromSpeed: TSpinEdit
+            Left = 200
+            Top = 24
+            Width = 81
+            Height = 22
+            MaxValue = 0
+            MinValue = 0
+            TabOrder = 0
+            Value = 0
+          end
+          object SE_VD_BreakDistance: TSpinEdit
+            Left = 200
+            Top = 52
+            Width = 81
+            Height = 22
+            MaxValue = 0
+            MinValue = 0
+            TabOrder = 1
+            Value = 0
+          end
+          object SE_VD_AccelDistance: TSpinEdit
+            Left = 200
+            Top = 108
+            Width = 81
+            Height = 22
+            MaxValue = 0
+            MinValue = 0
+            TabOrder = 2
+            Value = 0
+          end
+          object SE_VD_AccelTargetSpeed: TSpinEdit
+            Left = 200
+            Top = 80
+            Width = 81
+            Height = 22
+            MaxValue = 0
+            MinValue = 0
+            TabOrder = 3
+            Value = 0
+          end
+        end
+        object GB_JC: TGroupBox
+          Left = 246
+          Top = 105
+          Width = 301
+          Height = 63
+          Caption = ' J'#237'zdn'#237' cesty '
+          TabOrder = 2
+          object Label14: TLabel
+            Left = 16
+            Top = 24
+            Width = 171
+            Height = 13
+            Caption = 'Z'#225'rove'#328' p'#345'estavovat max. v'#253'hybek:'
+          end
+          object SE_jcMaxMovingTurnouts: TSpinEdit
+            Left = 215
+            Top = 24
+            Width = 73
+            Height = 22
+            MaxValue = 100
+            MinValue = 1
+            TabOrder = 0
+            Value = 1
+          end
+        end
+        object GB_General: TGroupBox
+          Left = 246
+          Top = 0
+          Width = 301
+          Height = 99
+          Caption = ' V'#353'eobecn'#233' '
+          TabOrder = 1
+          object Label9: TLabel
+            Left = 15
+            Top = 66
+            Width = 132
+            Height = 13
+            Caption = 'Interval hlavn'#237'ho '#269'asova'#269'e:'
+          end
+          object CHB_Log_console: TCheckBox
+            Left = 15
+            Top = 23
+            Width = 107
+            Height = 17
+            Hint = 'Ukl'#225'd'#225'n'#237' logu vyuziti prihlasovani'
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Caption = 'Logovat konzoli'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 0
+          end
+          object CHB_autostart: TCheckBox
+            Left = 15
+            Top = 44
+            Width = 243
+            Height = 17
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Caption = 'Po startu programu automaticky spustit syst'#233'my'
+            TabOrder = 1
+          end
+          object CB_MainTimerInterval: TComboBox
+            Left = 168
+            Top = 66
+            Width = 120
+            Height = 21
+            Style = csDropDownList
+            TabOrder = 2
+            Items.Strings = (
+              '25 ms'
+              '50 ms'
+              '100 ms'
+              '200 ms'
+              '250 ms'
+              '500 ms')
+          end
         end
       end
     end
@@ -6194,7 +6286,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Align = alClient
         DoubleBuffered = True
         ParentDoubleBuffered = False
@@ -6252,7 +6344,7 @@ object F_Main: TF_Main
         Left = 0
         Top = 40
         Width = 1294
-        Height = 574
+        Height = 606
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
