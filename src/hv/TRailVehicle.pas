@@ -1861,7 +1861,7 @@ begin
 
   var lastContinuousSpeed := Self.continousSpeed;
 
-  var accel: Real := 0;
+  var accel: Real;
   if (Self.realSpeed > Self.continousSpeed) then // realSpeed = target speed
     accel := TRV.Acceleration()
   else
@@ -2039,14 +2039,36 @@ end;
 
 class function TRV.Acceleration(): Real; // [model km/h/s]
 begin
+  var accelDistanceCm: Cardinal := GlobalConfig.vehicleDynamics.accelDistanceCm;
+  if (accelDistanceCm = 0) then
+    accelDistanceCm := 1; // avoid division by zero
+
+  var scale: Cardinal := GlobalConfig.scale;
+  if (scale = 0) then
+    scale := 1; // avoid division by zero
+
   Result := (GlobalConfig.vehicleDynamics.accelTargetSpeedModelKmH*GlobalConfig.vehicleDynamics.accelTargetSpeedModelKmH) /
-    (7.2 * GlobalConfig.vehicleDynamics.accelDistanceCm / 100 * GlobalConfig.scale);
+    (7.2 * accelDistanceCm / 100 * scale);
+
+  if (Result = 0) then
+    Result := 10000; // maximum possible acceleration - acceleration takes no effect
 end;
 
 class function TRV.Deceleration(): Real; // [model km/h/s]
 begin
+  var breakDistanceCm: Cardinal := GlobalConfig.vehicleDynamics.breakDistanceCm;
+  if (breakDistanceCm = 0) then
+    breakDistanceCm := 1; // avoid division by zero
+
+  var scale: Cardinal := GlobalConfig.scale;
+  if (scale = 0) then
+    scale := 1; // avoid division by zero
+
   Result := (GlobalConfig.vehicleDynamics.breakFromSpeedModelKmH*GlobalConfig.vehicleDynamics.breakFromSpeedModelKmH) /
-    (7.2 * GlobalConfig.vehicleDynamics.breakDistanceCm / 100 * GlobalConfig.scale);
+    (7.2 * breakDistanceCm / 100 * scale);
+
+  if (Result = 0) then
+    Result := 10000; // maximum possible acceleration - acceleration takes no effect
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
