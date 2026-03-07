@@ -22,6 +22,8 @@ type
     _TIME_DEFAULT_NUZ: Integer = 20; // seconds
     _TIME_DEFAULT_JC_RELEASE_ZAVER: string = '1.0'; // seconds
     _JC_DEFAULT_MAX_MOVING_TURNOUTS: Integer = 4;
+    _BREAK_DEFAULT_SPEED: Integer = 40; // 40 km/h
+    _BREAK_DEFAULT_DISTANCE: Integer = 50; // 50 cm
 
   public
     autosave: Boolean;
@@ -38,6 +40,13 @@ type
       rcPcOccupied: Cardinal;
       nuz: Cardinal;
       jcReleaseZaver: TTime;
+    end;
+
+    vehicleDynamics: record
+      breakFromSpeedModelKmH: Cardinal;
+      breakDistanceCm: Cardinal;
+      accelTargetSpeedModelKmH: Cardinal;
+      accelDistanceCm: Cardinal;
     end;
 
     procedure LoadFromFile(filename: string);
@@ -449,6 +458,11 @@ begin
     if (Self.jcMaxMovingTurnouts < 1) then
       Self.jcMaxMovingTurnouts := 1;
 
+    vehicleDynamics.breakFromSpeedModelKmH := ini.ReadInteger('vehicleDynamics', 'breakFromSpeedModelKmH', _BREAK_DEFAULT_SPEED);
+    vehicleDynamics.breakDistanceCm := ini.ReadInteger('vehicleDynamics', 'breakDistanceCm', _BREAK_DEFAULT_DISTANCE);
+    vehicleDynamics.accelTargetSpeedModelKmH := ini.ReadInteger('vehicleDynamics', 'accelTargetSpeedModelKmH', _BREAK_DEFAULT_SPEED);
+    vehicleDynamics.accelDistanceCm := ini.ReadInteger('vehicleDynamics', 'accelDistanceCm', _BREAK_DEFAULT_DISTANCE);
+
     Log('Globální konfigurace načtena', TLogLevel.llInfo, lsData);
   finally
     ini.Free();
@@ -488,6 +502,11 @@ begin
     ini.WriteString('times', 'jcReleaseZaver', TimeToSecTenths(Self.times.jcReleaseZaver));
 
     ini.WriteInteger('JC', 'maxMovingTurnouts', Self.jcMaxMovingTurnouts);
+
+    ini.WriteInteger('vehicleDynamics', 'breakFromSpeedModelKmH', vehicleDynamics.breakFromSpeedModelKmH);
+    ini.WriteInteger('vehicleDynamics', 'breakDistanceCm', vehicleDynamics.breakDistanceCm);
+    ini.WriteInteger('vehicleDynamics', 'accelTargetSpeedModelKmH', vehicleDynamics.accelTargetSpeedModelKmH);
+    ini.WriteInteger('vehicleDynamics', 'accelDistanceCm', vehicleDynamics.accelDistanceCm);
   finally
     ini.UpdateFile();
     ini.Free();
