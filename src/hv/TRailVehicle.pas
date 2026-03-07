@@ -131,6 +131,7 @@ type
     nextUpdate: TTime;
     speedPendingCmds: Cardinal; // number of pending set speed commands
     continuousSpeed: Real; // continuous model speed [km/h]
+    continuousDirection: Boolean;
   end;
 
   TRV = class
@@ -286,8 +287,9 @@ type
     property train: Integer read state.train write SetTrain;
     property speedStep: Byte read slot.step;
     property realSpeed: Cardinal read GetRealSpeed;
-    property continousSpeed: Real read state.continuousSpeed;
+    property continuousSpeed: Real read state.continuousSpeed;
     property direction: Boolean read slot.direction;
+    property continuousDirection: Boolean read state.continuousDirection;
     property stACurrentDirection: Boolean read GetStACurrentDirection;
     property acquired: Boolean read state.acquired;
     property stolen: Boolean read state.stolen;
@@ -1065,8 +1067,9 @@ procedure TRV.GetPtState(json: TJsonObject);
 begin
   json['speedStep'] := Self.speedStep;
   json['realSpeed'] := Self.realSpeed;
-  json.F['continuousSpeed'] := Self.continousSpeed;
   json['direction'] := ite(Self.direction, 'backward', 'forward');
+  json.F['continuousSpeed'] := Self.continuousSpeed;
+  json['continuousDirection'] := ite(Self.continuousDirection, 'backward', 'forward');
 
   var funcState: string := '';
   for var i: Integer := 0 to _RV_FUNC_MAX do
@@ -1449,15 +1452,16 @@ end;
 
 procedure TRV.CSReset();
 begin
-  Self.state.acquiring := false;
-  Self.state.updating := false;
+  Self.state.acquiring := False;
+  Self.state.updating := False;
   Self.state.nextUpdate := 0;
-  Self.state.acquired := false;
-  Self.state.stolen := false;
+  Self.state.acquired := False;
+  Self.state.stolen := False;
   Self.state.pom := TPomStatus.unknown;
-  Self.state.trakceError := false;
+  Self.state.trakceError := False;
   Self.state.speedPendingCmds := 0;
   Self.state.continuousSpeed := 0;
+  Self.state.continuousDirection := False;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1856,42 +1860,49 @@ end;
 procedure TRV.UpdateContinuousSpeed(msSinceLastUpdate: Cardinal);
 const _EPSILON = 0.1;
 begin
-  if (CompareValue(Self.continousSpeed, Self.realSpeed, _EPSILON) = 0) then
+  if ((Self.realSpeed = 0) and (Self.continuousSpeed = 0) and (Self.direction <> Self.continuousDirection)) then
+    Self.state.continuousDirection := Self.direction; // immediately change direction when standing
+
+  if ((CompareValue(Self.continuousSpeed, Self.realSpeed, _EPSILON) = 0) and (Self.direction = Self.continuousDirection)) then
   begin
     Self.state.continuousSpeed := Self.realSpeed;
     Exit();
   end;
 
-  var lastContinuousSpeed := Self.continousSpeed;
+  var lastContinuousSpeed := Self.continuousSpeed;
 
   var accel: Real;
-  if (Self.realSpeed > Self.continousSpeed) then // realSpeed = target speed
+  if ((Self.realSpeed > Self.continuousSpeed) and (Self.direction = Self.continuousDirection)) then // realSpeed = target speed
     accel := TRV.Acceleration()
   else
     accel := -TRV.Deceleration();
 
   var changeOfSpeedSinceLastCall: Real := accel*(msSinceLastUpdate/1000);
 
-  if ((accel > 0) and ((Self.continousSpeed+changeOfSpeedSinceLastCall) >= Self.realSpeed)) then
+  if ((accel > 0) and ((Self.continuousSpeed+changeOfSpeedSinceLastCall) >= Self.realSpeed)) then
     Self.state.continuousSpeed := Self.realSpeed // target speed reached
-  else if ((accel < 0) and ((Self.continousSpeed+changeOfSpeedSinceLastCall) <= Self.realSpeed)) then
+  else if ((accel < 0) and (Self.direction <> Self.continuousDirection) and (Self.continuousSpeed+changeOfSpeedSinceLastCall <= 0)) then begin
+    // change of direction
+    Self.state.continuousDirection := Self.direction;
+    Self.changed := True;
+  end else if ((accel < 0) and (Self.direction = Self.continuousDirection) and ((Self.continuousSpeed+changeOfSpeedSinceLastCall) <= Self.realSpeed)) then
     Self.state.continuousSpeed := Self.realSpeed // target speed reached
   else
     Self.state.continuousSpeed := Self.state.continuousSpeed + changeOfSpeedSinceLastCall;
 
-  if (Round(Self.continousSpeed) <> Round(lastContinuousSpeed)) then
+  if (Round(Self.continuousSpeed) <> Round(lastContinuousSpeed)) then
     Self.changed := True;
 end;
 
 procedure TRV.UpdateTraveled(msSinceLastUpdate: Cardinal);
 begin
-  if (Self.continousSpeed = 0) then
+  if (Self.continuousSpeed = 0) then
     Exit();
 
   if (Self.direction = _LOCO_DIR_FORWARD) then
-    Self.state.traveled_forward := Self.state.traveled_forward + (Self.continousSpeed * msSinceLastUpdate / (3.6 * GlobalConfig.scale * 1000))
+    Self.state.traveled_forward := Self.state.traveled_forward + (Self.continuousSpeed * msSinceLastUpdate / (3.6 * GlobalConfig.scale * 1000))
   else
-    Self.state.traveled_backward := Self.state.traveled_backward + (Self.continousSpeed * msSinceLastUpdate / (3.6 * GlobalConfig.scale * 1000));
+    Self.state.traveled_backward := Self.state.traveled_backward + (Self.continuousSpeed * msSinceLastUpdate / (3.6 * GlobalConfig.scale * 1000));
 
   Self.changed := true;
 end;
