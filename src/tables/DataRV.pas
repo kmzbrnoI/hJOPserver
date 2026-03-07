@@ -167,7 +167,7 @@ begin
   end else begin
     // prevzato
 
-    Self.LV.Items[line].SubItems[9] := IntToStr(vehicle.realSpeed) + 'km/h / ' + IntToStr(slot.step) + ' st';
+    Self.LV.Items[line].SubItems[9] := IntToStr(vehicle.realSpeed) + ' km/h / ' + IntToStr(slot.step) + ' st / ' + IntToStr(Round(vehicle.continousSpeed)) + ' km/h';
     Self.LV.Items[line].SubItems[10] := ownConvert.BoolToStr10(slot.direction);
     Self.LV.Items[line].SubItems[11] := ownConvert.BoolToStr10(vehicle.slotFunctions[0]);
 

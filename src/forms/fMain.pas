@@ -1848,6 +1848,7 @@ begin
     trakce.Update();
     ABlist.Update();
     trains.UpdateTraveled(Self.T_Main.Interval);
+    RVDb.Update(Self.T_Main.Interval);
   except
     on E: Exception do
     begin

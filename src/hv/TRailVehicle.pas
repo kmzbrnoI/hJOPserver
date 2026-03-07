@@ -51,13 +51,14 @@
 interface
 
 uses TrakceIFace, Classes, SysUtils, Area, Generics.Collections, IdContext,
-  IniFiles, JsonDataObjects, Math;
+  IniFiles, JsonDataObjects, Math, DateUtils;
 
 const
   _RV_FUNC_MAX = 28; // maximalni funkcni cislo; funkce zacinaji na cisle 0
   _TOKEN_TIMEOUT_MIN = 3; // delka platnosti tokenu pro autorizaci vozidla v minutach
   _TOKEN_LEN = 24; // delka autorizacniho tokenu pro prevzeti vozidla
   _DEFAUT_MAX_SPEED = 120; // [km/h]
+  _LOCO_UPDATE_TIME_MS = 1000;
 
   _LOK_VERSION_SAVE = '2.1';
 
@@ -127,8 +128,9 @@ type
     trakceError: Boolean;
     acquiring: Boolean;
     updating: Boolean;
-    lastUpdated: TTime;
+    nextUpdate: TTime;
     speedPendingCmds: Cardinal; // number of pending set speed commands
+    continuousSpeed: Real; // continuous model speed [km/h]
   end;
 
   TRV = class
@@ -144,6 +146,9 @@ type
 
     procedure LoadData(ini: TMemIniFile; section: string);
     procedure LoadState(ini: TMemIniFile; section: string);
+
+    procedure UpdateTraveled(msSinceLastUpdate: Cardinal);
+    procedure UpdateContinuousSpeed(msSinceLastUpdate: Cardinal);
 
     procedure SetManual(state: Boolean);
     procedure UpdateFuncDict();
@@ -186,6 +191,9 @@ type
 
     procedure CallCb(cb: TCommandCallback);
 
+    class function Acceleration(): Real; // [model km/h/s]
+    class function Deceleration(): Real; // [model km/h/s]
+
   public
     index: Word; // index v seznamu vsech vozidel
     data: TRVData;
@@ -227,7 +235,7 @@ type
     procedure RecordUseNow();
     function NiceName(): string;
     function ShouldAcquire(): Boolean;
-    procedure UpdateTraveled(period: Cardinal);
+    procedure Update(periodMs: Cardinal);
 
     procedure SetSpeed(speed: Integer; ok: TCb; err: TCb; Sender: TObject = nil); overload;
     procedure SetSpeed(speed: Integer; Sender: TObject = nil); overload;
@@ -278,6 +286,7 @@ type
     property train: Integer read state.train write SetTrain;
     property speedStep: Byte read slot.step;
     property realSpeed: Cardinal read GetRealSpeed;
+    property continousSpeed: Real read state.continuousSpeed;
     property direction: Boolean read slot.direction;
     property stACurrentDirection: Boolean read GetStACurrentDirection;
     property acquired: Boolean read state.acquired;
@@ -288,7 +297,6 @@ type
     property stateFunctions: TFunctions read state.functions;
     property acquiring: Boolean read state.acquiring;
     property updating: Boolean read state.updating;
-    property lastUpdated: TTime read state.lastUpdated;
   end;
 
 implementation
@@ -1057,6 +1065,7 @@ procedure TRV.GetPtState(json: TJsonObject);
 begin
   json['speedStep'] := Self.speedStep;
   json['realSpeed'] := Self.realSpeed;
+  json.F['continuousSpeed'] := Self.continousSpeed;
   json['direction'] := ite(Self.direction, 'backward', 'forward');
 
   var funcState: string := '';
@@ -1442,12 +1451,13 @@ procedure TRV.CSReset();
 begin
   Self.state.acquiring := false;
   Self.state.updating := false;
-  Self.state.lastUpdated := 0;
+  Self.state.nextUpdate := 0;
   Self.state.acquired := false;
   Self.state.stolen := false;
   Self.state.pom := TPomStatus.unknown;
   Self.state.trakceError := false;
   Self.state.speedPendingCmds := 0;
+  Self.state.continuousSpeed := 0;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1771,7 +1781,6 @@ begin
   Self.slot := LocoInfo;
   Self.state.updating := false;
   Self.state.trakceError := false;
-  Self.state.lastUpdated := Now;
 
   if (slotOld <> Self.slot) then
   begin
@@ -1787,7 +1796,6 @@ begin
   trakce.Log('ERR: Loco Not Updated: ' + Self.name + ' (' + IntToStr(Self.addr) + ')', TLogLevel.llInfo);
   Self.state.updating := false;
   Self.state.trakceError := true;
-  Self.state.lastUpdated := Now;
   Self.changed := true;
   RegCollector.VehicleChanged(Self, Self.addr);
   Self.CallCb(Self.acquiredErr);
@@ -1827,16 +1835,61 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TRV.UpdateTraveled(period: Cardinal);
+procedure TRV.Update(periodMs: Cardinal);
+begin
+  Self.UpdateContinuousSpeed(periodMs);
+
+  if (Now >= Self.state.nextUpdate) then
+  begin
+    var delayMs: Integer := 0;
+    if (Self.state.nextUpdate <> 0) then // initial value
+      delayMs := MilliSecondsBetween(Self.state.nextUpdate, Now);
+    Self.state.nextUpdate := Now + EncodeTime(0, 0, _LOCO_UPDATE_TIME_MS div 1000, _LOCO_UPDATE_TIME_MS mod 1000);
+
+    if ((Self.stolen) and (not Self.acquiring) and (not Self.updating)) then
+      Self.TrakceUpdateState(TTrakce.Callback(), TTrakce.Callback());
+
+    Self.UpdateTraveled(_LOCO_UPDATE_TIME_MS + delayMs);
+  end;
+end;
+
+procedure TRV.UpdateContinuousSpeed(msSinceLastUpdate: Cardinal);
+const _EPSILON = 0.1;
+begin
+  if (CompareValue(Self.continousSpeed, Self.realSpeed, _EPSILON) = 0) then
+    Exit();
+
+  var lastContinuousSpeed := Self.continousSpeed;
+
+  var accel: Real := 0;
+  if (Self.realSpeed > Self.continousSpeed) then // realSpeed = target speed
+    accel := TRV.Acceleration()
+  else
+    accel := -TRV.Deceleration();
+
+  var changeOfSpeedSinceLastCall: Real := accel*(msSinceLastUpdate/1000);
+
+  if ((accel > 0) and ((Self.continousSpeed+changeOfSpeedSinceLastCall) >= Self.realSpeed)) then
+    Self.state.continuousSpeed := Self.realSpeed // target speed reached
+  else if ((accel < 0) and ((Self.continousSpeed+changeOfSpeedSinceLastCall) <= Self.realSpeed)) then
+    Self.state.continuousSpeed := Self.realSpeed // target speed reached
+  else
+    Self.state.continuousSpeed := Self.state.continuousSpeed + changeOfSpeedSinceLastCall;
+
+  if (Round(Self.continousSpeed) <> Round(lastContinuousSpeed)) then
+    Self.changed := True;
+end;
+
+procedure TRV.UpdateTraveled(msSinceLastUpdate: Cardinal);
 begin
   if (Self.speedStep = 0) then
     Exit();
 
   if (Self.direction = _LOCO_DIR_FORWARD) then
-    Self.state.traveled_forward := Self.state.traveled_forward + (Self.realSpeed * period / (3.6 * GlobalConfig.scale))
+    Self.state.traveled_forward := Self.state.traveled_forward + (Self.realSpeed * msSinceLastUpdate / (3.6 * GlobalConfig.scale * 1000))
   else
     Self.state.traveled_backward := Self.state.traveled_backward +
-      (Self.realSpeed * period / (3.6 * GlobalConfig.scale));
+      (Self.realSpeed * msSinceLastUpdate / (3.6 * GlobalConfig.scale * 1000));
 
   Self.changed := true;
 end;
@@ -1980,6 +2033,20 @@ begin
     on e: Exception do
       AppEvents.LogException(e, 'TRV.CallCb');
   end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+class function TRV.Acceleration(): Real; // [model km/h/s]
+begin
+  Result := (GlobalConfig.vehicleDynamics.accelTargetSpeedModelKmH*GlobalConfig.vehicleDynamics.accelTargetSpeedModelKmH) /
+    (7.2 * GlobalConfig.vehicleDynamics.accelDistanceCm / 100 * GlobalConfig.scale);
+end;
+
+class function TRV.Deceleration(): Real; // [model km/h/s]
+begin
+  Result := (GlobalConfig.vehicleDynamics.breakFromSpeedModelKmH*GlobalConfig.vehicleDynamics.breakFromSpeedModelKmH) /
+    (7.2 * GlobalConfig.vehicleDynamics.breakDistanceCm / 100 * GlobalConfig.scale);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

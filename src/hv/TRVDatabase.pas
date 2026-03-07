@@ -45,7 +45,6 @@ type
     eLocoAcquired, eLocoReleased: TNotifyEvent;
     mAcquiring: Boolean;
     mReleasing: Boolean;
-    tLocoUpdate: TTimer; // always running
 
     procedure Clear();
     procedure LoadFile(filename: string; stateini: TMemIniFile);
@@ -59,12 +58,12 @@ type
     procedure AcquiredErr(Sender: TObject; Data: Pointer);
     procedure ReleasedOk(Sender: TObject; Data: Pointer);
 
-    procedure OnTLocoUpdate(Sender: TObject);
-
   public
 
     constructor Create();
     destructor Destroy(); override;
+
+    procedure Update(periodMs: Cardinal);
 
     procedure LoadFromDir(const dirname: string; const statefn: string);
     procedure SaveData(const dirname: string);
@@ -115,11 +114,6 @@ constructor TRVDb.Create();
 begin
   inherited Create();
 
-  Self.tLocoUpdate := TTimer.Create(nil);
-  Self.tLocoUpdate.Interval := _LOCO_UPDATE_TIME_MS;
-  Self.tLocoUpdate.OnTimer := Self.OnTLocoUpdate;
-  Self.tLocoUpdate.Enabled := true;
-
   Self.mdefault_or := _DEFAULT_OR;
   Self.mAcquiring := false;
   Self.mReleasing := false;
@@ -130,7 +124,6 @@ end;
 
 destructor TRVDb.Destroy();
 begin
-  Self.tLocoUpdate.Free();
   Self.Clear();
   inherited;
 end;
@@ -630,27 +623,20 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TRVDb.OnTLocoUpdate(Sender: TObject);
-var addr: Word;
+procedure TRVDb.Update(periodMs: Cardinal);
 begin
-  for addr := 0 to _MAX_ADDR - 1 do
+  for var addr: Word := 0 to _MAX_ADDR - 1 do
   begin
     if (Self.mVehicles[addr] = nil) then
       continue;
 
     try
-      if ((Self.mVehicles[addr].stolen) and (not Self.mVehicles[addr].acquiring) and (not Self.mVehicles[addr].updating) and
-        (Now > Self.mVehicles[addr].lastUpdated + EncodeTime(0, 0, _LOCO_UPDATE_TIME_MS div 1000,
-        _LOCO_UPDATE_TIME_MS mod 1000))) then
-        Self.mVehicles[addr].TrakceUpdateState(TTrakce.Callback(), TTrakce.Callback());
-
-      Self.mVehicles[addr].UpdateTraveled(_LOCO_UPDATE_TIME_MS div 1000);
+      Self.mVehicles[addr].Update(periodMs);
     except
       on E: Exception do
-        AppEvents.LogException(E, 'RVDb.OnTLocoUpdate');
+        AppEvents.LogException(E, 'RVDb.Update');
     end;
   end;
-
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
