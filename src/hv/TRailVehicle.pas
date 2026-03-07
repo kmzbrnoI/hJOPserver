@@ -1857,7 +1857,10 @@ procedure TRV.UpdateContinuousSpeed(msSinceLastUpdate: Cardinal);
 const _EPSILON = 0.1;
 begin
   if (CompareValue(Self.continousSpeed, Self.realSpeed, _EPSILON) = 0) then
+  begin
+    Self.state.continuousSpeed := Self.realSpeed;
     Exit();
+  end;
 
   var lastContinuousSpeed := Self.continousSpeed;
 
@@ -1882,14 +1885,13 @@ end;
 
 procedure TRV.UpdateTraveled(msSinceLastUpdate: Cardinal);
 begin
-  if (Self.speedStep = 0) then
+  if (Self.continousSpeed = 0) then
     Exit();
 
   if (Self.direction = _LOCO_DIR_FORWARD) then
-    Self.state.traveled_forward := Self.state.traveled_forward + (Self.realSpeed * msSinceLastUpdate / (3.6 * GlobalConfig.scale * 1000))
+    Self.state.traveled_forward := Self.state.traveled_forward + (Self.continousSpeed * msSinceLastUpdate / (3.6 * GlobalConfig.scale * 1000))
   else
-    Self.state.traveled_backward := Self.state.traveled_backward +
-      (Self.realSpeed * msSinceLastUpdate / (3.6 * GlobalConfig.scale * 1000));
+    Self.state.traveled_backward := Self.state.traveled_backward + (Self.continousSpeed * msSinceLastUpdate / (3.6 * GlobalConfig.scale * 1000));
 
   Self.changed := true;
 end;
