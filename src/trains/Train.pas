@@ -1667,10 +1667,10 @@ begin
 
 procedure TTrain.UpdateTraveled(msSinceLastUpdate: Cardinal);
 begin
-  if (Self.speed = 0) then
+  if (Self.continuousSpeed = 0) then
     Exit();
 
-  Self._traveled := Self._traveled + (Self.speed * Integer(msSinceLastUpdate) / (3.6 * GlobalConfig.scale * 1000));
+  Self._traveled := Self._traveled + (Self.continuousSpeed * Integer(msSinceLastUpdate) / (3.6 * GlobalConfig.scale * 1000));
 
   if (Now > Self._nextTraveledChange) then
   begin
