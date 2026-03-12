@@ -31,6 +31,7 @@ type
 
     procedure VehicleFuncChanged(vehicle: TRV; exclude: TObject = nil);
     procedure VehicleSpeedChanged(vehicle: TRV; exclude: TObject = nil);
+    procedure VehicleSpeedContinuousChanged(vehicle: TRV);
     procedure VehicleStolen(vehicle: TRV; exclude: TObject = nil);
     procedure VehicleUpdateRuc(vehicle: TRV);
 
@@ -455,17 +456,11 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TTCPRegulator.PanelLOKResponseOK(Sender: TObject; Data: Pointer);
-var speed: Cardinal;
-  vehicle: TRV;
 begin
   try
-    vehicle := RVDb[TLokResponseData(Data^).addr];
-    speed := vehicle.realSpeed;
-    if (speed > vehicle.Data.maxSpeed) then
-      speed := vehicle.Data.maxSpeed;
-
+    var vehicle := RVDb[TLokResponseData(Data^).addr];
     PanelServer.SendLn(TLokResponseData(Data^).conn, '-;LOK;' + IntToStr(TLokResponseData(Data^).addr) + ';RESP;ok;;' +
-      IntToStr(speed));
+      IntToStr(vehicle.realSpeed) + ';' + IntToStr(Round(vehicle.continuousSpeed)));
     FreeMem(Data);
   except
 
@@ -507,13 +502,19 @@ begin
         ';' + Func + ';');
 end;
 
-// or;LOK;ADDR;SPD;speed_km/h;sp_stupne;dir;speed_dynamic_km/h
+// or;LOK;ADDR;SPD;speed_km/h;sp_stupne;dir
 procedure TTCPRegulator.VehicleSpeedChanged(vehicle: TRV; exclude: TObject = nil);
 begin
   for var i: Integer := 0 to vehicle.state.regulators.Count - 1 do
     if (vehicle.state.regulators[i].conn <> exclude) then
       PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) + ';SPD;' + IntToStr(vehicle.realSpeed) +
-        ';' + IntToStr(vehicle.speedStep) + ';' + ownConvert.BoolToStr10(vehicle.direction) + ';' + IntToStr(Round(vehicle.continuousSpeed)));
+        ';' + IntToStr(vehicle.speedStep) + ';' + ownConvert.BoolToStr10(vehicle.direction));
+end;
+
+procedure TTCPRegulator.VehicleSpeedContinuousChanged(vehicle: TRV);
+begin
+  for var i: Integer := 0 to vehicle.state.regulators.Count - 1 do
+    PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) + ';SPC;' + IntToStr(Round(vehicle.continuousSpeed)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

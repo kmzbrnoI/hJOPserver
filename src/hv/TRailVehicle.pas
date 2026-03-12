@@ -1432,6 +1432,7 @@ begin
   end;
 
   Self.slot.step := 0;
+  Self.state.continuousSpeed := 0;
   trakce.Callbacks(ok, err, cbOk, cbErr);
 
   try
@@ -1895,7 +1896,7 @@ begin
   if (Round(Self.continuousSpeed) <> Round(lastContinuousSpeed)) then
   begin
     Self.changed := True;
-    TCPRegulator.VehicleSpeedChanged(Self);
+    TCPRegulator.VehicleSpeedContinuousChanged(Self);
   end;
 end;
 
