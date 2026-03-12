@@ -1373,7 +1373,7 @@ begin
     end;
   end;
 
-  TCPRegulator.VehicleUpdateFunc(Self, Sender);
+  TCPRegulator.VehicleFuncChanged(Self, Sender);
   RegCollector.VehicleChanged(Sender, Self.addr);
   Self.changed := true;
 end;
@@ -1417,7 +1417,7 @@ begin
     Self.CallCb(err);
   end;
 
-  TCPRegulator.VehicleUpdateFunc(Self, Sender);
+  TCPRegulator.VehicleFuncChanged(Self, Sender);
   RegCollector.VehicleChanged(Sender, Self.addr);
   Self.changed := true;
 end;
@@ -1557,9 +1557,9 @@ end;
 procedure TRV.SlotChanged(Sender: TObject; speedChanged: Boolean; dirChanged: Boolean; funcChanged: Boolean);
 begin
   if (speedChanged or dirChanged) then
-    TCPRegulator.VehicleUpdateSpeed(Self, Sender);
+    TCPRegulator.VehicleSpeedChanged(Self, Sender);
   if (funcChanged) then
-    TCPRegulator.VehicleUpdateFunc(Self, Sender);
+    TCPRegulator.VehicleFuncChanged(Self, Sender);
 
   RegCollector.VehicleChanged(Sender, Self.addr);
   Self.changed := true;
@@ -1893,7 +1893,10 @@ begin
     Self.state.continuousSpeed := Self.state.continuousSpeed + changeOfSpeedSinceLastCall;
 
   if (Round(Self.continuousSpeed) <> Round(lastContinuousSpeed)) then
+  begin
     Self.changed := True;
+    TCPRegulator.VehicleSpeedChanged(Self);
+  end;
 end;
 
 procedure TRV.UpdateTraveled(msSinceLastUpdate: Cardinal);

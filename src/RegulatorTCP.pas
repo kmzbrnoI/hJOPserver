@@ -29,8 +29,8 @@ type
 
     procedure Parse(Sender: TIDContext; parsed: TStrings);
 
-    procedure VehicleUpdateFunc(vehicle: TRV; exclude: TObject = nil);
-    procedure VehicleUpdateSpeed(vehicle: TRV; exclude: TObject = nil);
+    procedure VehicleFuncChanged(vehicle: TRV; exclude: TObject = nil);
+    procedure VehicleSpeedChanged(vehicle: TRV; exclude: TObject = nil);
     procedure VehicleStolen(vehicle: TRV; exclude: TObject = nil);
     procedure VehicleUpdateRuc(vehicle: TRV);
 
@@ -487,7 +487,7 @@ end;
 
 // or;LOK;ADDR;F;F_left-F_right;states          - informace o stavu funkci vozidla
 // napr.; or;LOK;ADDR;0-4;00010 informuje, ze je zaple F3 a F0, F1, F2 a F4 jsou vyple
-procedure TTCPRegulator.VehicleUpdateFunc(vehicle: TRV; exclude: TObject = nil);
+procedure TTCPRegulator.VehicleFuncChanged(vehicle: TRV; exclude: TObject = nil);
 var func: string;
 begin
   func := '';
@@ -507,13 +507,13 @@ begin
         ';' + Func + ';');
 end;
 
-// or;LOK;ADDR;SPD;sp_km/h;sp_stupne;dir
-procedure TTCPRegulator.VehicleUpdateSpeed(vehicle: TRV; exclude: TObject = nil);
+// or;LOK;ADDR;SPD;speed_km/h;sp_stupne;dir;speed_dynamic_km/h
+procedure TTCPRegulator.VehicleSpeedChanged(vehicle: TRV; exclude: TObject = nil);
 begin
   for var i: Integer := 0 to vehicle.state.regulators.Count - 1 do
     if (vehicle.state.regulators[i].conn <> exclude) then
       PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) + ';SPD;' + IntToStr(vehicle.realSpeed) +
-        ';' + IntToStr(vehicle.speedStep) + ';' + ownConvert.BoolToStr10(vehicle.direction) + ';');
+        ';' + IntToStr(vehicle.speedStep) + ';' + ownConvert.BoolToStr10(vehicle.direction) + ';' + IntToStr(Round(vehicle.continuousSpeed)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
