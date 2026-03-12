@@ -201,6 +201,8 @@ end;
 procedure TF_DigiReg.B_STOPClick(Sender: TObject);
 begin
   Self.vehicle.EmergencyStop(TTrakce.Callback(), TTrakce.Callback(), Self);
+  Self.speed := 0;
+  Self.TB_reg.Position := 0;
 end;
 
 procedure TF_DigiReg.RG_SmerClick(Sender: TObject);
