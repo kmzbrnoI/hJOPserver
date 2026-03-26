@@ -936,7 +936,7 @@ var
   tcpSender: TIDContext;
 begin
   tcpSender := data;
-  Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Vlak založen, ale nepodařilo se převízt vozidla z centrály!');
+  Self.SendLn(tcpSender, 'SPR-EDIT-ERR;Vlak založen, ale nepodařilo se převzít vozidla z centrály!');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
