@@ -539,8 +539,11 @@ begin
       if (new.Contains(addr)) then
         raise Exception.Create('Duplicitní vozidlo!');
 
-      if (vehicle.Contains('note')) then
-        RVDb[addr].Data.note := vehicle['note'];
+      if ((vehicle.Contains('note')) and (RVDb[addr].data.note <> vehicle['note'])) then
+      begin
+        RVDb[addr].data.note := vehicle['note'];
+        RVDb[addr].SaveData();
+      end;
       if (vehicle.Contains('sta')) then
         RVDb[addr].state.siteA := TRVSite(vehicle.I['sta']);
 
@@ -554,6 +557,7 @@ begin
       end;
 
       new.Add(addr);
+      RVDb[addr].changed := True;
     end;
 
     GetMem(acq, sizeof(TTrainAcquire));
