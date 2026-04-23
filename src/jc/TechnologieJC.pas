@@ -310,7 +310,7 @@ implementation
 uses GetSystems, RCSc, TRailVehicle, BlockSignal, AreaDb, PanelConnData,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   TRVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
-  BlockPSt, appEv, ConfSeq, BlockDb, Config, colorHelper;
+  BlockPSt, appEv, ConfSeq, BlockDb, Config, colorHelper, GTNif;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -2509,26 +2509,30 @@ begin
   if (Self.destroyBlock = 0) then
   begin
     trackActual := TBlkTrack(TBlkSignal(Self.signal).track);
-    Train := Self.GetTrain(Self.signal, trackActual);
+    train := Self.GetTrain(Self.signal, trackActual);
     if ((trackActual as TBlkTrack).IsTrain()) then
-      if (Train.front <> trackActual) then
+      if (train.front <> trackActual) then
         Exit();
   end else begin
     trackActual := Blocks.GetBlkTrackOrRTByID(Self.m_data.tracks[Self.destroyBlock - 1]);
-    train := TBlkTrack(trackActual).Train;
+    train := TBlkTrack(trackActual).train;
   end;
 
   trackNext := Blocks.GetBlkTrackOrRTByID(Self.m_data.tracks[Self.destroyBlock]);
   if (not trackActual.IsTrain()) then
     Exit();
+  if (train = nil) then
+    Exit();
 
   trackNext.slowingReady := true;
-  trackNext.AddTrainL(Train);
-  trackNext.Train.front := trackNext;
+  trackNext.AddTrainL(train);
+  train.front := trackNext;
   trackNext.houkEvEnabled := true;
   Self.Log('Predan vlak ' + trackNext.Train.name + ' z bloku ' + trackActual.name + ' do bloku ' + trackNext.name, llInfo);
 
   Self.CheckLoopBlock(trackNext);
+  if (Self.destroyBlock = 0) then
+    gtn.Broadcast('TRAINPASS;'+IntToStr(Self.signal.id)+';'+Self.signal.name+';'+train.name+';'+IntToStr(Self.lastTrack.id)+';'+Self.lastTrack.name);
 end;
 
 procedure TJC.CheckLoopBlock(blk: TBlk);

@@ -164,7 +164,7 @@ uses fMain, BlockTrack, BlockTurnout, BlockSignal, AreaDb, BlockLinker,
   BlockLock, RegulatorTCP, ownStrUtils, FunkceVyznam, RCSdebugger,
   UDPDiscover, TJCDatabase, TechnologieJC, BlockAC, ACBlocks, BlockDb,
   BlockDisconnector, BlockIO, ownConvert, TRVDatabase, BlockPst, TCPServerPT,
-  GUIPanelServerClients;
+  GUIPanelServerClients, GTNif;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -333,14 +333,14 @@ begin
         Context := items[iA];
         if Context = nil then
           Continue;
-        Context.connection.IOHandler.WriteBufferClear;
-        Context.connection.IOHandler.InputBuffer.Clear;
-        Context.connection.IOHandler.Close;
+        Context.connection.IOHandler.WriteBufferClear();
+        Context.connection.IOHandler.InputBuffer.Clear();
+        Context.connection.IOHandler.Close();
         if Context.connection.Connected then
-          Context.connection.Disconnect;
+          Context.connection.Disconnect();
       end;
     finally
-      Self.tcpServer.Contexts.UnlockList;
+      Self.tcpServer.Contexts.UnlockList();
     end;
 
   Self.tcpServer.Active := false;
@@ -350,6 +350,7 @@ begin
   F_Main.S_Server.Brush.Color := clRed;
   UDPdisc.SendDiscover();
   ACBlk.RemoveAllClients();
+  gtn.Reset();
 
   if (SystemData.status = stopping) then
     F_Main.A_Turnoff_FunctionsExecute(Self);
@@ -448,6 +449,9 @@ begin
   // odpojeni vsech pripadne neodpojenych regulatoru
   if (orsRef.regulator) then
     TCPRegulator.RegDisconnect(AContext, true);
+
+  if (orsRef.gtn) then
+    gtn.ClientDisconnected(AContext, true);
 
   // vymazeme klienta z RCS debuggeru
   RCSd.RemoveClient(AContext);
@@ -867,6 +871,9 @@ begin
     const pkey_block = TPanelConnData(AContext.data).pkey_block;
     if (pkey_block <> nil) then
       pkey_block.PanelKey(AContext, LowerCase(parsed[2]), ownConvert.StrToBool(parsed[3]));
+
+  end else if ((parsed[1] = 'GTN') and (parsed.Count > 2)) then begin
+    gtn.ParseGTNMsg(AContext, parsed);
 
   end;
 end;

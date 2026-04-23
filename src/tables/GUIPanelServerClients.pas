@@ -183,6 +183,9 @@ begin
     content := LeftStr(content, Length(content) - 2);
   end;
 
+  if (panelConnData.gtn) then
+    content := content + 'GTN';
+
   LV.items[line].SubItems[_LV_CLIENTS_COL_SPECIFIC_APPS] := content;
 end;
 

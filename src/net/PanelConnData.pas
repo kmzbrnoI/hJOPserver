@@ -83,6 +83,8 @@ type
 
     pkey_block: TBlk; // blok, kam zavolat funkci PanelKey pri prijmu PKEY
 
+    gtn: Boolean; // jestli je GTN klient
+
     constructor Create(index: Integer);
     destructor Destroy(); override;
 
@@ -141,6 +143,7 @@ begin
   Self.soundDict := TDictionary<Integer, Cardinal>.Create();
   Self.podj_track := nil;
   Self.podj_trainid := -1;
+  Self.gtn := False;
 
   Self.ping_next_id := 0;
   Self.ping_next_send := Now + EncodeTime(0, 0, 0, 500); // do not disturb device for first half a sec
