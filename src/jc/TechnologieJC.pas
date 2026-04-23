@@ -2532,7 +2532,13 @@ begin
 
   Self.CheckLoopBlock(trackNext);
   if (Self.destroyBlock = 0) then
-    gtn.Broadcast('TRAINPASS;'+IntToStr(Self.signal.id)+';'+Self.signal.name+';'+train.name+';'+IntToStr(Self.lastTrack.id)+';'+Self.lastTrack.name);
+  begin
+    var areaId: string := '-';
+    if ((Self.signal <> nil) and (Self.signal.areas.Count > 0)) then
+      areaId := Self.signal.areas[0].id;
+    gtn.Broadcast('TRAINPASS;'+IntToStr(Self.signal.id)+';'+Self.signal.name+';'+train.name+';'+
+      IntToStr(Self.lastTrack.id)+';'+Self.lastTrack.name, areaId);
+  end;
 end;
 
 procedure TJC.CheckLoopBlock(blk: TBlk);

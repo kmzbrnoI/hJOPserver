@@ -14,7 +14,7 @@ type
   private
     m_clients: THashSet<TIdContext>;
 
-    procedure SendLn(AContext: TIdContext; str: string);
+    procedure SendLn(AContext: TIdContext; str: string; area: string = '-');
 
   public
     constructor Create();
@@ -24,7 +24,7 @@ type
     procedure ClientDisconnected(conn: TIDContext; contextDestroyed: Boolean = false);
     procedure Reset();
 
-    procedure Broadcast(msg: string);
+    procedure Broadcast(msg: string; area: string = '-');
 
   end;
 
@@ -51,9 +51,9 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TGtnClients.SendLn(AContext: TIdContext; str: string);
+procedure TGtnClients.SendLn(AContext: TIdContext; str: string; area: string);
 begin
-  PanelServer.SendLn(AContext, '-;GTN;'+str);
+  PanelServer.SendLn(AContext, area+';GTN;'+str);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -107,10 +107,10 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TGtnClients.Broadcast(msg: string);
+procedure TGtnClients.Broadcast(msg: string; area: string);
 begin
   for var client: TIdContext in Self.m_clients do
-    Self.SendLn(client, msg);
+    Self.SendLn(client, msg, area);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
