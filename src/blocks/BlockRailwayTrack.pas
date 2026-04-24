@@ -476,13 +476,20 @@ begin
       Exit();
 
     // kontrola spravneho smeru
-    if (((Self.train.direction = TRVSite.odd) and (not Self.stopL)) or ((Self.train.direction = TRVSite.even) and
-      (not Self.stopS))) then
+    if (((Self.train.direction = TRVSite.odd) and (not Self.stopL)) or
+        ((Self.train.direction = TRVSite.even) and (not Self.stopS))) then
       Exit();
 
     // kontrola typu vlaku
     if (not TRegEx.IsMatch(Self.train.typ, Self.m_rtSettings.stop.trainType)) then
       Exit();
+
+    // rucne rizena vozidla nenutit zastavovat v zastavkach
+    if (Self.train.IsAnyRVManual()) then
+    begin
+      Self.m_rtState.stopPassed := True; // tento vlak do uvolneni z useku nezastavit v zastavce, i kdyby bylo zruseno rucni rizeni
+      Exit();
+    end;
 
     // zpomalovani pred zastavkou:
     if (Self.m_rtState.stopSlowReady) then
