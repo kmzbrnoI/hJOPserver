@@ -469,8 +469,10 @@ procedure TBlkRT.StopUpdate();
 begin
   if (not Self.rtState.stopStopped) then
   begin
-    if ((not Self.rtState.stopEnabled) or (Self.rtState.stopPassed) or
-      (Self.train.length > Self.m_rtSettings.stop.maxLength) or (Self.train.front <> Self)) then
+    if ((not Self.rtState.stopEnabled) or
+        (Self.rtState.stopPassed) or
+        ((Self.train.length > Self.m_rtSettings.stop.maxLength) and (Self.m_rtSettings.stop.maxLength <> 0)) or
+        (Self.train.front <> Self)) then
       Exit();
 
     // kontrola spravneho smeru
