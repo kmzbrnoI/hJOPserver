@@ -228,6 +228,8 @@ type
     procedure ReadContollers();
     function DefaultChangeTime(): string; overload;
 
+    function JCSpeed(train: TTrain): Integer; // -1 -> do not set speed
+
     function SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
 
   protected
@@ -1725,47 +1727,9 @@ begin
         // Aby se nezrychlilo napr. pri uvolneni predchoziho useku v trati
         track.slowingReady := false;
 
-        case (Self.dnJC.data.nextSignalType) of
-          TJCNextSignalType.signal:
-            begin
-              var signal := Blocks.GetBlkSignalByID(Self.dnJC.data.nextSignalId);
-
-              if ((signal <> nil) and (signal.IsGoSignal()) and (not train.IsPOdj(Self.dnJC.lastTrack))) then
-              begin
-                // na konci JC jedeme dal
-                var speed: Cardinal;
-                var success: Boolean;
-                if (Self.dnJC.data.speedsGo.Count > 0) then // if go speeds empty, use stop speeds
-                  success := TTrainSpeed.Pick(train, Self.dnJC.data.speedsGo, speed)
-                else
-                  success := TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed);
-                if ((success) and (train.wantedSpeed <> Integer(speed)) or (train.direction <> Self.direction)) then
-                  train.SetSpeedDirection(speed, Self.direction);
-              end else begin
-                // na konci JC stojime
-                var speed: Cardinal;
-                if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed)) then // if success
-                  if ((train.wantedSpeed <> Integer(speed)) or (train.direction <> Self.direction)) then
-                    train.SetSpeedDirection(speed, Self.direction);
-              end;
-            end;
-
-          TJCNextSignalType.railway:
-            begin
-              var speed: Cardinal;
-              if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsGo, speed)) then // if success
-                if ((train.wantedSpeed <> Integer(speed)) or (train.direction <> Self.direction)) then
-                  Train.SetSpeedDirection(speed, Self.direction);
-            end;
-
-          TJCNextSignalType.no:
-            begin
-              var speed: Cardinal;
-              if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed)) then // if success
-                if ((train.wantedSpeed <> Integer(speed)) or (train.direction <> Self.direction)) then
-                  train.SetSpeedDirection(speed, Self.direction);
-            end;
-        end;
+        var speed: Integer := Self.JCSpeed(train);
+        if ((speed <> -1) and ((train.wantedSpeed <> speed) or (train.direction <> Self.direction))) then
+          train.SetSpeedDirection(speed, Self.direction);
 
         // kontrola prehravani stanicniho hlaseni
         train.CheckAnnouncement(Self);
@@ -1775,7 +1739,7 @@ begin
           train.SetSpeedDirection(0, Self.direction);
       end;
     end else begin
-      // nenalezena jizdni cesta -> muze se jednat o navestidlo v autobloku
+      // nenalezena jizdni cesta -> muze se jednat o navestidlo v trati
       if (train.direction = Self.direction) then
       begin
         if ((Self.IsGoSignal()) and (not Self.m_state.falling) and (Self.track.typ = btRT) and
@@ -1792,6 +1756,55 @@ begin
         end;
       end;
     end;
+  end;
+end;
+
+function TBlkSignal.JCSpeed(train: TTrain): Integer;
+begin
+  Result := -1; // default = do not set speed
+
+  if (Self.dnJC = nil) then
+    Exit();
+  if ((train.wantedSpeed > 0) and (train.direction <> Self.direction)) then
+    Exit(); // pokud jede vlak opacnym smerem, kaslu na nej
+
+  case (Self.dnJC.data.nextSignalType) of
+    TJCNextSignalType.signal:
+      begin
+        var signal := Blocks.GetBlkSignalByID(Self.dnJC.data.nextSignalId);
+
+        if ((signal <> nil) and (signal.IsGoSignal()) and (not train.IsPOdj(Self.dnJC.lastTrack))) then
+        begin
+          // na konci JC jedeme dal
+          var speed: Cardinal;
+          var success: Boolean;
+          if (Self.dnJC.data.speedsGo.Count > 0) then // if go speeds empty, use stop speeds
+            success := TTrainSpeed.Pick(train, Self.dnJC.data.speedsGo, speed)
+          else
+            success := TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed);
+          if (success) then
+            Exit(speed);
+        end else begin
+          // na konci JC stojime
+          var speed: Cardinal;
+          if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed)) then // if success
+            Exit(speed);
+        end;
+      end;
+
+    TJCNextSignalType.railway:
+      begin
+        var speed: Cardinal;
+        if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsGo, speed)) then // if success
+          Exit(speed);
+      end;
+
+    TJCNextSignalType.no:
+      begin
+        var speed: Cardinal;
+        if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed)) then // if success
+          Exit(speed);
+      end;
   end;
 end;
 
