@@ -1636,7 +1636,7 @@ begin
   /// ////////////////////////////////////////////////
 
   // ZPOMALOVANI
-  // Zpomalni je mozne i na jinem useku nez je usek pred navestidlem
+  // Zpomaleni je mozne i na jinem useku nez je usek pred navestidlem
   // Proto kontroly pritmnosti vlaku na useku pred navestidlem jsou az nize
 
   if (signalEv.slow.enabled) then
@@ -1696,16 +1696,16 @@ begin
   begin
     // event se odregistruje automaticky pri zmene
 
-    if ((Train.IsPOdj(track)) and (Train.direction = Self.direction)) then
+    if ((train.IsPOdj(track)) and (train.direction = Self.direction)) then
     begin
       // predvidany odjezd neuplynul -> zastavit vlak
-      if (Train.wantedSpeed <> 0) then
-        Train.speed := 0;
+      if (train.wantedSpeed <> 0) then
+        train.speed := 0;
 
       // vlak je na zastavovaci udalosti -> zacit pocitat cas
-      if (not Train.GetPOdj(track).origin_set) then
+      if (not train.GetPOdj(track).origin_set) then
       begin
-        Train.GetPOdj(track).RecordOriginNow();
+        train.GetPOdj(track).RecordOriginNow();
         track.PropagatePOdjToRailway();
         track.Change();
       end;
@@ -1719,8 +1719,8 @@ begin
       if ((Self.IsGoSignal()) and (not Self.m_state.falling)) then
       begin
         // je postaveno -> zkontrolujeme, jestli budeme na konci zastavovat
-        if ((Train.wantedSpeed > 0) and (Train.direction <> Self.direction)) then
-          Exit(); // pokud jede vlak opacnym smerem, kaslu na ni
+        if ((train.wantedSpeed > 0) and (train.direction <> Self.direction)) then
+          Exit(); // pokud jede vlak opacnym smerem, kaslu na nej
 
         // Aby se nezrychlilo napr. pri uvolneni predchoziho useku v trati
         track.slowingReady := false;
@@ -1730,65 +1730,65 @@ begin
             begin
               var signal := Blocks.GetBlkSignalByID(Self.dnJC.data.nextSignalId);
 
-              if ((signal <> nil) and (signal.IsGoSignal()) and (not Train.IsPOdj(Self.dnJC.lastTrack))) then
+              if ((signal <> nil) and (signal.IsGoSignal()) and (not train.IsPOdj(Self.dnJC.lastTrack))) then
               begin
                 // na konci JC jedeme dal
                 var speed: Cardinal;
                 var success: Boolean;
                 if (Self.dnJC.data.speedsGo.Count > 0) then // if go speeds empty, use stop speeds
-                  success := TTrainSpeed.Pick(Train, Self.dnJC.data.speedsGo, speed)
+                  success := TTrainSpeed.Pick(train, Self.dnJC.data.speedsGo, speed)
                 else
-                  success := TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed);
-                if ((success) and (Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.direction)) then
-                  Train.SetSpeedDirection(speed, Self.direction);
+                  success := TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed);
+                if ((success) and (train.wantedSpeed <> Integer(speed)) or (train.direction <> Self.direction)) then
+                  train.SetSpeedDirection(speed, Self.direction);
               end else begin
                 // na konci JC stojime
                 var speed: Cardinal;
-                if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed)) then // if success
-                  if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.direction)) then
-                    Train.SetSpeedDirection(speed, Self.direction);
+                if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed)) then // if success
+                  if ((train.wantedSpeed <> Integer(speed)) or (train.direction <> Self.direction)) then
+                    train.SetSpeedDirection(speed, Self.direction);
               end;
             end;
 
           TJCNextSignalType.railway:
             begin
               var speed: Cardinal;
-              if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsGo, speed)) then // if success
-                if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.direction)) then
+              if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsGo, speed)) then // if success
+                if ((train.wantedSpeed <> Integer(speed)) or (train.direction <> Self.direction)) then
                   Train.SetSpeedDirection(speed, Self.direction);
             end;
 
           TJCNextSignalType.no:
             begin
               var speed: Cardinal;
-              if (TTrainSpeed.Pick(Train, Self.dnJC.data.speedsStop, speed)) then // if success
-                if ((Train.wantedSpeed <> Integer(speed)) or (Train.direction <> Self.direction)) then
-                  Train.SetSpeedDirection(speed, Self.direction);
+              if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed)) then // if success
+                if ((train.wantedSpeed <> Integer(speed)) or (train.direction <> Self.direction)) then
+                  train.SetSpeedDirection(speed, Self.direction);
             end;
         end;
 
         // kontrola prehravani stanicniho hlaseni
-        Train.CheckAnnouncement(Self);
+        train.CheckAnnouncement(Self);
       end else begin
         // neni povolovaci navest -> zastavit vozidlo
-        if ((Train.direction = Self.direction) and (Train.wantedSpeed <> 0)) then
-          Train.SetSpeedDirection(0, Self.direction);
+        if ((train.direction = Self.direction) and (train.wantedSpeed <> 0)) then
+          train.SetSpeedDirection(0, Self.direction);
       end;
     end else begin
       // nenalezena jizdni cesta -> muze se jednat o navestidlo v autobloku
-      if (Train.direction = Self.direction) then
+      if (train.direction = Self.direction) then
       begin
         if ((Self.IsGoSignal()) and (not Self.m_state.falling) and (Self.track.typ = btRT) and
           (TBlkRT(Self.track).inRailway > -1)) then
         begin
           var speed: Cardinal;
-          var success := Train.GetRailwaySpeed(speed);
-          if ((success) and (Cardinal(Train.wantedSpeed) <> speed) and (not Train.IsSpeedOverride())) then
-            Train.SetSpeedDirection(speed, Self.direction)
+          var success := train.GetRailwaySpeed(speed);
+          if ((success) and (Cardinal(train.wantedSpeed) <> speed) and (not train.IsSpeedOverride())) then
+            train.SetSpeedDirection(speed, Self.direction)
         end else begin
           // neni povolovaci navest -> zastavit
-          if (Train.wantedSpeed <> 0) then
-            Train.SetSpeedDirection(0, Self.direction);
+          if (train.wantedSpeed <> 0) then
+            train.SetSpeedDirection(0, Self.direction);
         end;
       end;
     end;
