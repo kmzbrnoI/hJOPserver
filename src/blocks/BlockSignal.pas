@@ -1647,7 +1647,7 @@ begin
     var slowTrain := Self.GetTrain(slowTrack);
 
     if ((slowTrain <> nil) and (slowTrain.front = slowTrack) and (slowTrain.wantedSpeed > signalEv.slow.speed) and (slowTrack.slowingReady) and
-        ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(slowTrack))) and (slowTrain.direction = Self.direction)) then
+        ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(track))) and (slowTrain.direction = Self.direction)) then
     begin
       if (not signalEv.slow.ev.enabled) then
         signalEv.slow.ev.Register(slowTrain.index);
