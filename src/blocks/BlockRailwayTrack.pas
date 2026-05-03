@@ -67,7 +67,7 @@ type
     evL: TBlkRTStopEvents;
     evS: TBlkRTStopEvents;
     trainType: string;
-    maxLength: Integer;
+    maxLength: Integer; // 0 = no max length
     delay: TTime;
 
     constructor Create(); overload;
@@ -1499,7 +1499,8 @@ end;
 
 procedure TBlkRTStop.SaveToFile(ini_tech: TMemIniFile; const section: string);
 begin
-  ini_tech.WriteInteger(section, 'zast_max_delka', Self.maxLength);
+  if (Self.maxLength <> 0) then
+    ini_tech.WriteInteger(section, 'zast_max_delka', Self.maxLength);
   ini_tech.WriteString(section, 'zast_delay', TimeToStr(Self.delay));
   ini_tech.WriteString(section, 'zast_soupravy', 're:' + Self.trainType);
   if (Self.evL <> nil) then
