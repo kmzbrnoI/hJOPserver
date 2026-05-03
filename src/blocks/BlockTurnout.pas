@@ -761,9 +761,18 @@ begin
   if ((coupling <> nil) and (inp.plus <> TRCSInputState.failure) and (inp.minus <> TRCSInputState.failure)) then
   begin
     couplingInp := coupling.GetInputs();
+    var together: TBlkTurnoutInputs;
+    together.plus := CombineCouplingInputs(inp.plus, couplingInp.plus);
+    together.minus := CombineCouplingInputs(inp.minus, couplingInp.minus);
 
-    inp.plus := CombineCouplingInputs(inp.plus, couplingInp.plus);
-    inp.minus := CombineCouplingInputs(inp.minus, couplingInp.minus);
+    if (((inp.plus = TRCSInputState.isOn) and (inp.minus = TRCSInputState.isOn)) or
+        ((couplingInp.plus = TRCSInputState.isOn) and (couplingInp.minus = TRCSInputState.isOn))) then
+    begin
+      together.plus := TRCSInputState.isOn;
+      together.minus := TRCSInputState.isOn;
+    end;
+
+    inp := together;
   end;
 
   try
