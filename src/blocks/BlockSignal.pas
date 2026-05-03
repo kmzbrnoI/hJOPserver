@@ -1650,24 +1650,35 @@ procedure TBlkSignal.UpdateTrainSlow(signalEv: TBlkSignalTrainEvent);
 begin
   if (not signalEv.slow.enabled) then
     Exit();
-  var track := TBlkTrack(Self.track);
-  if (track = nil) then
+  if (Self.track = nil) then
     Exit();
 
-  var slowTrack := TBlkTrack(signalEv.slow.ev.Track(track));
-  var slowTrain := Self.GetTrain(slowTrack);
+  var slowTrack: TBlkTrack := TBlkTrack(signalEv.slow.ev.Track(Self.track));
+  var slowTrain: TTrain := Self.GetTrain(slowTrack);
 
-  if ((slowTrain <> nil) and (slowTrain.front = slowTrack) and (slowTrain.wantedSpeed > signalEv.slow.speed) and (slowTrack.slowingReady) and
-      ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(track))) and (slowTrain.direction = Self.direction)) then
+  if ((slowTrain <> nil) and (slowTrain.front = slowTrack) and (slowTrain.direction = Self.direction) and (slowTrack.slowingReady)) then
   begin
-    if (not signalEv.slow.ev.enabled) then
-      signalEv.slow.ev.Register(slowTrain.index);
+    const stopping: Boolean = ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(track)));
+    var speed: Integer;
+    if (stopping) then
+      speed := signalEv.slow.speed
+    else
+      speed := Self.JCSpeed(slowTrain);
 
-    if (signalEv.slow.ev.IsTriggerred(slowTrack, true)) then
+    if ((speed <> -1) and (slowTrain.wantedSpeed > speed)) then
     begin
-      signalEv.slow.ev.Unregister();
-      slowTrain.speed := signalEv.slow.speed;
-      slowTrack.slowingReady := false;
+      if (not signalEv.slow.ev.enabled) then
+        signalEv.slow.ev.Register(slowTrain.index);
+
+      if (signalEv.slow.ev.IsTriggerred(slowTrack, true)) then
+      begin
+        signalEv.slow.ev.Unregister();
+        slowTrain.speed := speed;
+        slowTrack.slowingReady := false;
+      end;
+    end else begin
+      if (signalEv.slow.ev.enabled) then
+        signalEv.slow.ev.Unregister();
     end;
   end else begin
     if (signalEv.slow.ev.enabled) then
