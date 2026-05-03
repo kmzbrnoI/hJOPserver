@@ -149,7 +149,7 @@ type
 
   private
     m_trackId: TBlk;
-    m_lastEvIndex: Integer;
+    m_lastEvIndex: Integer; // indexc eventu, ktery momentalne zpracovavame
     m_groupMaster: TBlk;
 
     procedure LoadRCSs(ini_tech: TMemIniFile; const section: string);
@@ -228,6 +228,8 @@ type
     procedure ReadContollers();
     function DefaultChangeTime(): string; overload;
 
+    procedure UpdateTrainSlow(signalEv: TBlkSignalTrainEvent);
+    procedure UpdateTrainStop(signalEv: TBlkSignalTrainEvent; force: Boolean);
     function JCSpeed(train: TTrain): Integer; // -1 -> do not set speed
 
     function SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
@@ -1590,9 +1592,9 @@ procedure TBlkSignal.UpdateTrainSpeed(force: Boolean = false);
 begin
   if (Self.m_settings.events.Count = 0) then
     Exit();
-  var track := TBlkTrack(Self.track);
   if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then
     Exit(); // pokud jsem posunove navestidlo, koncim funkci
+  var track := TBlkTrack(Self.track);
   if (track = nil) then
     Exit(); // pokud pred navestidlem neni usek, koncim funkci
 
@@ -1637,42 +1639,55 @@ begin
 
   /// ////////////////////////////////////////////////
 
-  // ZPOMALOVANI
-  // Zpomaleni je mozne i na jinem useku nez je usek pred navestidlem
-  // Proto kontroly pritmnosti vlaku na useku pred navestidlem jsou az nize
+  Self.UpdateTrainSlow(signalEv);
+  Self.UpdateTrainStop(signalEv, force);
+end;
 
-  if (signalEv.slow.enabled) then
+// ZPOMALOVANI
+// Zpomaleni je mozne i na jinem useku nez je usek pred navestidlem
+// Proto kontroly pritmnosti vlaku na useku pred navestidlem jsou az nize
+procedure TBlkSignal.UpdateTrainSlow(signalEv: TBlkSignalTrainEvent);
+begin
+  if (not signalEv.slow.enabled) then
+    Exit();
+  var track := TBlkTrack(Self.track);
+  if (track = nil) then
+    Exit();
+
+  var slowTrack := TBlkTrack(signalEv.slow.ev.Track(track));
+  var slowTrain := Self.GetTrain(slowTrack);
+
+  if ((slowTrain <> nil) and (slowTrain.front = slowTrack) and (slowTrain.wantedSpeed > signalEv.slow.speed) and (slowTrack.slowingReady) and
+      ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(track))) and (slowTrain.direction = Self.direction)) then
   begin
-    var slowTrack := TBlkTrack(signalEv.slow.ev.Track(track));
-    var slowTrain := Self.GetTrain(slowTrack);
+    if (not signalEv.slow.ev.enabled) then
+      signalEv.slow.ev.Register(slowTrain.index);
 
-    if ((slowTrain <> nil) and (slowTrain.front = slowTrack) and (slowTrain.wantedSpeed > signalEv.slow.speed) and (slowTrack.slowingReady) and
-        ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(track))) and (slowTrain.direction = Self.direction)) then
+    if (signalEv.slow.ev.IsTriggerred(slowTrack, true)) then
     begin
-      if (not signalEv.slow.ev.enabled) then
-        signalEv.slow.ev.Register(slowTrain.index);
-
-      if (signalEv.slow.ev.IsTriggerred(slowTrack, true)) then
-      begin
-        signalEv.slow.ev.Unregister();
-        slowTrain.speed := signalEv.slow.speed;
-        slowTrack.slowingReady := false;
-      end;
-    end else begin
-      if (signalEv.slow.ev.enabled) then
-        signalEv.slow.ev.Unregister();
+      signalEv.slow.ev.Unregister();
+      slowTrain.speed := signalEv.slow.speed;
+      slowTrack.slowingReady := false;
     end;
+  end else begin
+    if (signalEv.slow.ev.enabled) then
+      signalEv.slow.ev.Unregister();
   end;
+end;
 
-  /// ////////////////////////////////////////////////
-  // ZASTAVOVANI, resp. nastavovani rychlosti prislusne JC
+// ZASTAVOVANI, resp. nastavovani rychlosti prislusne JC
+procedure TBlkSignal.UpdateTrainStop(signalEv: TBlkSignalTrainEvent; force: Boolean);
+begin
+  var track := TBlkTrack(Self.track);
+  if (track = nil) then
+    Exit();
 
   // pokud na useku prede mnou neni vlak, koncim funkci
   if (not track.IsTrain()) then
   begin
     // tady musi dojit ke zruseni registrace eventu, kdyby nedoslo, muze se stat,
     // ze za nejakou dobu budou splneny podminky, pro overovani eventu, ale
-    // event bude porad bezet -> pokud je casovy, okamzite byse spustil
+    // event bude porad bezet -> pokud je casovy, okamzite by se spustil
     if ((Self.m_lastEvIndex >= 0) and (Self.m_lastEvIndex < Self.m_settings.events.Count)) then
       if (Self.m_settings.events[Self.m_lastEvIndex].stop.enabled) then
         Self.m_settings.events[Self.m_lastEvIndex].stop.Unregister();
@@ -1757,6 +1772,7 @@ begin
       end;
     end;
   end;
+
 end;
 
 function TBlkSignal.JCSpeed(train: TTrain): Integer;
