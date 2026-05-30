@@ -7,7 +7,7 @@
 interface
 
 uses TechnologieJC, Block, IniFiles, SysUtils, Windows, IdContext, System.Math,
-  Generics.Collections, Classes, BlockDb, BlockSignal;
+  Generics.Collections, Classes, BlockDb, BlockSignal, Train;
 
 type
   EJCIdAlreadyExists = class(Exception);
@@ -29,8 +29,8 @@ type
     procedure JCOnIDChanged(Sender: TObject);
     procedure JCOnNavChanged(Sender: TObject; origNav: TBlk);
 
-    function FindActiveJCs(finder: TJCContains; blockid: Integer): TList<TJC>;
-    function FindActiveNCs(finder: TJCContains; blockid: Integer): TList<TJC>;
+    function FindActiveJCs(finder: TJCContains; id: Integer): TList<TJC>;
+    function FindActiveNCs(finder: TJCContains; id: Integer): TList<TJC>;
 
   public
 
@@ -64,6 +64,7 @@ type
     function FindActiveJCWithTrack(track_id: Integer): TJC;
     function FindActiveJCsWithCrossing(blk_id: Integer): TList<TJC>;
     function FindActiveNCsWithPSt(pst_id: Integer): TList<TJC>;
+    function FindActiveJCsWithTrain(train: TTrain): TList<TJC>;
 
     // jakmile dojde ke zmene navesti navestidla nav, muze dojit k ovlivneni nejakeho jineho navestidla
     // tato fce zajisti, ze k ovlivneni dojde
@@ -385,12 +386,12 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TJCDb.FindActiveJCs(finder: TJCContains; blockid: Integer): TList<TJC>;
+function TJCDb.FindActiveJCs(finder: TJCContains; id: Integer): TList<TJC>;
 begin
   Result := TList<TJC>.Create();
   try
     for var jc: TJC in Self.JCs do
-      if (jc.active) and (finder(jc, blockid)) then
+      if (jc.active) and (finder(jc, id)) then
         Result.Add(jc);
   except
     Result.Free();
@@ -398,12 +399,12 @@ begin
   end;
 end;
 
-function TJCDb.FindActiveNCs(finder: TJCContains; blockid: Integer): TList<TJC>;
+function TJCDb.FindActiveNCs(finder: TJCContains; id: Integer): TList<TJC>;
 begin
   Result := TList<TJC>.Create();
   try
     for var jc: TJC in Self.JCs do
-      if (jc.ncActive) and (finder(jc, blockid)) then
+      if (jc.ncActive) and (finder(jc, id)) then
         Result.Add(jc);
   except
     Result.Free();
@@ -480,6 +481,11 @@ begin
     Result.Free();
     raise;
   end;
+end;
+
+function TJCDb.FindActiveJCsWithTrain(train: TTrain): TList<TJC>;
+begin
+  Result := Self.FindActiveJCs(TechnologieJC.ContainsTrain, train.index);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

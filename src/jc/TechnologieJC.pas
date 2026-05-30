@@ -266,6 +266,7 @@ type
     function ContainsTurnout(blockid: Integer): Boolean;
     function ContainsRailway(blockid: Integer): Boolean;
     function ContainsCrossing(blockid: Integer): Boolean;
+    function ContainsTrain(traini: Integer): Boolean;
 
     procedure EmergencyStopTrainInVC();
 
@@ -294,7 +295,7 @@ type
     property OnSignalChanged: ENavChanged read fOnSignalChanged write fOnSignalChanged;
   end;
 
-  TJCContains = function(jc:TJC; blockid: Integer): Boolean;
+  TJCContains = function(jc:TJC; id: Integer): Boolean;
 
   function NewJCData(): TJCdata;
   procedure FreeJCData(jcdata: TJCData);
@@ -304,6 +305,7 @@ type
   function ContainsTurnout(jc: TJC; blockid: Integer): Boolean;
   function ContainsRailway(jc: TJC; blockid: Integer): Boolean;
   function ContainsCrossing(jc: TJC; blockid: Integer): Boolean;
+  function ContainsTrain(jc: TJC; traini: Integer): Boolean;
 
 implementation
 
@@ -3845,6 +3847,17 @@ begin
   Result := False;
 end;
 
+function TJC.ContainsTrain(traini: Integer): Boolean;
+begin
+  for var trackId: Integer in Self.data.tracks do
+  begin
+    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackId);
+    if ((track <> nil) and (track.IsTrain(traini))) then
+      Exit(True);
+  end;
+  Result := False;
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.TrackCancelZaver(track: TBlkTrack);
@@ -3932,6 +3945,11 @@ end;
 function ContainsCrossing(jc: TJC; blockid: Integer): Boolean;
 begin
   Result := jc.ContainsCrossing(blockid);
+end;
+
+function ContainsTrain(jc: TJC; traini: Integer): Boolean;
+begin
+  Result := jc.ContainsTrain(traini);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
