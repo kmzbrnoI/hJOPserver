@@ -1771,10 +1771,9 @@ begin
         if ((Self.IsGoSignal()) and (not Self.m_state.falling) and (Self.track.typ = btRT) and
           (TBlkRT(Self.track).inRailway > -1)) then
         begin
-          var speed: Cardinal;
-          var success := train.GetRailwaySpeed(speed);
-          if ((success) and (Cardinal(train.wantedSpeed) <> speed) and (not train.IsSpeedOverride())) then
-            train.SetSpeedDirection(speed, Self.direction)
+          var speed: Integer := train.GetTrackSpeed();
+          if ((speed >= 0) and (train.wantedSpeed <> speed) and (not train.IsSpeedOverride())) then
+            train.SetSpeedDirection(Cardinal(speed), Self.direction)
         end else begin
           // neni povolovaci navest -> zastavit
           if (train.wantedSpeed <> 0) then
@@ -1793,45 +1792,16 @@ begin
   if (Self.dnJC = nil) then
     Exit();
   if ((train.wantedSpeed > 0) and (train.direction <> Self.direction)) then
-    Exit(); // pokud jede vlak opacnym smerem, kaslu na nej
+    Exit(); // opposite direction -> ignore
 
-  case (Self.dnJC.data.nextSignalType) of
-    TJCNextSignalType.signal:
-      begin
-        var signal := Blocks.GetBlkSignalByID(Self.dnJC.data.nextSignalId);
+  Result := Self.dnJC.TrainSpeed(train);
 
-        if ((signal <> nil) and (signal.IsGoSignal()) and (not train.IsPOdj(Self.dnJC.lastTrack))) then
-        begin
-          // na konci JC jedeme dal
-          var speed: Cardinal;
-          var success: Boolean;
-          if (Self.dnJC.data.speedsGo.Count > 0) then // if go speeds empty, use stop speeds
-            success := TTrainSpeed.Pick(train, Self.dnJC.data.speedsGo, speed)
-          else
-            success := TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed);
-          if (success) then
-            Exit(speed);
-        end else begin
-          // na konci JC stojime
-          var speed: Cardinal;
-          if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed)) then // if success
-            Exit(speed);
-        end;
-      end;
-
-    TJCNextSignalType.railway:
-      begin
-        var speed: Cardinal;
-        if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsGo, speed)) then // if success
-          Exit(speed);
-      end;
-
-    TJCNextSignalType.no:
-      begin
-        var speed: Cardinal;
-        if (TTrainSpeed.Pick(train, Self.dnJC.data.speedsStop, speed)) then // if success
-          Exit(speed);
-      end;
+  // incorporate track speed
+  if (Result <> -1) then
+  begin
+    var trackSpeed: Integer := train.GetTrackSpeed();
+    if (trackSpeed <> -1) then
+      Result := Min(Result, trackSpeed);
   end;
 end;
 

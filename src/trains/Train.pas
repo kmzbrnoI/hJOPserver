@@ -154,8 +154,8 @@ type
      procedure EmergencyStopRelease();
      function HasAnyRVNote(): Boolean;
 
-     procedure UpdateRailwaySpeed();
-     function GetRailwaySpeed(var speed: Cardinal): Boolean;
+     procedure UpdateTrainSpeed();
+     function GetTrackSpeed(): Integer;
      function GetBlocks(): TList<TBlk>;
 
      function PredictedSignal(): TBlk;
@@ -1309,77 +1309,67 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// Returns speed train should have based on its presence in railways.
-// Returns true iff train speed should be controlled by railway.
-function TTrain.GetRailwaySpeed(var speed: Cardinal): Boolean;
+// Returns speed train should have based on its presence in railways and paths.
+function TTrain.GetTrackSpeed(): Integer;
 begin
-  if (Self.front = nil) then
-    Exit(false);
-
-  var rtsSpeed: Integer := -1;
-  var tracks := Blocks.GetBlkWithTrain(Self);
-  var onlyInRailway: Boolean := true;
-  var jc: TJC := nil;
+  var speedLimits := TList<Cardinal>.Create();
+  var anyRailway: Boolean := False;
   try
-    for var track: TBlk in tracks do
+    // Get speeds from railways
     begin
-      if (track.typ = btRT) then
-      begin
-        var rtSpeed := TBlkRT(track).Speed(Self);
-        rtsSpeed := ite(rtsSpeed = -1, rtSpeed, Min(rtsSpeed, rtSpeed));
-      end else begin
-        // assert TBlk(track).typ = btTrack
-        onlyInRailway := false;
-        var _jc: TJC := JCDb.FindActiveJCWithTrack(track.id);
-        if (jc = nil) then
-          jc := _jc
-        else if ((_jc <> nil) and (jc <> _jc)) then
-          Exit(false); // train in different paths -> definitelly should not be controlled by railway
+      var tracks := Blocks.GetBlkWithTrain(Self);
+      try
+        for var track: TBlk in tracks do
+        begin
+          if (track.typ = TBlkType.btRT) then
+          begin
+            speedLimits.Add(TBlkRT(track).speed(Self));
+            anyRailway := True;
+          end;
+        end;
+      finally
+        tracks.Free();
       end;
     end;
-  finally
-    tracks.Free();
-  end;
 
-  if ((rtsSpeed = -1) or (not onlyInRailway)) then
-  begin
-    // train not in railway -> it could be on path going to railway
-    // or it could be on path entering area
-    if (jc = nil) then
-      Exit(false);
-    if (jc.lastTrack.typ <> btRT) then
-      Exit(false);
-
-    // all tracks with train (except the last track) cannot contain turnouts
-    for var i: Integer := 0 to jc.data.tracks.Count-1 do
-    begin
-      var trackId: Integer := jc.data.tracks[i];
-      var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackId);
-      if ((i < jc.data.tracks.Count-1) and (track.IsTrain(Self))) then
+    var paths: TList<TJC> := JCDb.FindActiveJCsWithTrain(Self);
+    try
+      // In railway -> ignore paths with last-track-without-turnouts-occupied only
+      for var path: TJC in paths do
       begin
-        // do not consider last track -> could be a railway track with turnout
-        var turnouts: TList<TBlk> := Blocks.GetTurnoutsAtTrack(trackId);
-        try
-          if (turnouts.Count > 0) then
-            Exit(false);
-        finally
-          turnouts.Free();
+        if ((path.typ = TJCType.train) and ((not anyRailway) or (not path.TrainSpeedIgnore()))) then
+        begin
+          var speed: Integer := path.TrainSpeed(Self);
+          if (speed <> -1) then
+            speedLimits.Add(Cardinal(speed));
         end;
       end;
+    finally
+      paths.Free();
     end;
 
-    rtsSpeed := TBlkRT(jc.lastTrack).speed(Self);
+    // Calculate minimum
+    if (speedLimits.Count > 0) then
+    begin
+      Result := speedLimits[0];
+      for var speed: Cardinal in speedLimits do
+        if (speed < Result) then
+          Result := speed;
+    end else begin
+      Result := -1; // train not in path nor in railway
+    end;
+  finally
+    speedLimits.Free();
   end;
-
-  speed := rtsSpeed;
-  Result := true;
 end;
 
-procedure TTrain.UpdateRailwaySpeed();
+procedure TTrain.UpdateTrainSpeed();
 begin
-  var speed: Cardinal;
-  var success := Self.GetRailwaySpeed(speed);
-  if ((not success) or (Self.wantedSpeed = 0) or (Self.front = nil)) then
+  if ((Self.wantedSpeed = 0) or (Self.front = nil)) then
+    Exit();
+
+  var speed: Integer := Self.GetTrackSpeed();
+  if (speed < 0) then
     Exit();
 
   if ((TBlkTrack(Self.front).slowingReady) and

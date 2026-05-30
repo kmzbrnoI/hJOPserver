@@ -270,6 +270,9 @@ type
 
     procedure EmergencyStopTrainInVC();
 
+    function TrainSpeed(train: TTrain): Integer;
+    function TrainSpeedIgnore(): Boolean;
+
     property data: TJCdata read m_data write SetData;
     property state: TJCstate read m_state;
 
@@ -2362,8 +2365,7 @@ begin
         var train := track.Train;
         track.RemoveTrains();
         Self.Log('Smazan vlak ' + train.name + ' z bloku ' + track.name, llInfo);
-        if (Self.lastTrack.typ = TBlkType.btRT) then
-          train.UpdateRailwaySpeed();
+        train.UpdateTrainSpeed();
       end;
     end; // if Self.rozpadBlok >= 1
   end; // if (cyklus2 = Self.rozpadRuseniBlok)
@@ -3988,6 +3990,84 @@ begin
       Self.signal.BottomErrorBroadcast('Narušení JC - nouzově zastaven vlak ' + trains[trainI].name + '!', 'TECHNOLOGIE');
     end;
   end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+function TJC.TrainSpeed(train: TTrain): Integer;
+begin
+  Result := -1; // default
+
+  case (Self.data.nextSignalType) of
+    TJCNextSignalType.signal:
+      begin
+        var signal := Blocks.GetBlkSignalByID(Self.data.nextSignalId);
+
+        if ((signal <> nil) and (signal.IsGoSignal()) and (not train.IsPOdj(Self.lastTrack))) then
+        begin
+          // na konci JC jedeme dal
+          var speed: Cardinal;
+          var success: Boolean;
+          if (Self.data.speedsGo.Count > 0) then // if go speeds empty, use stop speeds
+            success := TTrainSpeed.Pick(train, Self.data.speedsGo, speed)
+          else
+            success := TTrainSpeed.Pick(train, Self.data.speedsStop, speed);
+          if (success) then
+            Exit(speed);
+        end else begin
+          // na konci JC stojime
+          var speed: Cardinal;
+          if (TTrainSpeed.Pick(train, Self.data.speedsStop, speed)) then // if success
+            Exit(speed);
+        end;
+      end;
+
+    TJCNextSignalType.railway:
+      begin
+        var speed: Cardinal;
+        if (TTrainSpeed.Pick(train, Self.data.speedsGo, speed)) then // if success
+          Exit(speed);
+      end;
+
+    TJCNextSignalType.no:
+      begin
+        var speed: Cardinal;
+        if (TTrainSpeed.Pick(train, Self.data.speedsStop, speed)) then // if success
+          Exit(speed);
+      end;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+// Returns true iff train is present only at last tracks of path (without turnouts)
+// excluding the last track.
+function TJC.TrainSpeedIgnore(): Boolean;
+begin
+  if (Self.lastTrack.typ <> btRT) then
+    Exit(False);
+  if (Self.data.tracks.Count < 2) then
+    Exit(False);
+
+  // all tracks with train (except the last track) cannot contain turnouts
+  // do not consider last track -> could be a railway track with turnout
+  for var i: Integer := 0 to Self.data.tracks.Count-2 do
+  begin
+    var trackId: Integer := Self.data.tracks[i];
+    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackId);
+    if (track.IsTrain()) then
+    begin
+      var turnouts: TList<TBlk> := Blocks.GetTurnoutsAtTrack(trackId);
+      try
+        if (turnouts.Count > 0) then
+          Exit(False);
+      finally
+        turnouts.Free();
+      end;
+    end;
+  end;
+
+  Result := True;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

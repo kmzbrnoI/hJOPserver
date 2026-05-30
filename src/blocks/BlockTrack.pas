@@ -2284,11 +2284,10 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTrack.RemoveTrains();
-var Train: Integer;
 begin
-  for Train in Self.trains do
-    if (TrainDb.trains[Train].IsPOdj(Self)) then
-      TrainDb.trains[Train].RemovePOdj(Self);
+  for var train: Integer in Self.trains do
+    if (TrainDb.trains[train].IsPOdj(Self)) then
+      TrainDb.trains[train].RemovePOdj(Self);
 
   Self.m_state.trains.Clear();
   Self.m_state.trainMoving := -1;

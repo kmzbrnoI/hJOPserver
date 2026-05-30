@@ -796,7 +796,7 @@ begin
       Self.m_rtSettings.stop.evS.slow.ev.Unregister();
   end;
 
-  oldTrain.UpdateRailwaySpeed();
+  oldTrain.UpdateTrainSpeed();
 
   // vlak uvolnen z useku, mozna bude nutne ji uvolnit z cele trati
   if (Self.railway <> nil) then
@@ -1288,7 +1288,7 @@ begin
     Dec(Self.m_rtState.trainSpeedUpdateIter);
     if (Self.m_rtState.trainSpeedUpdateIter = 0) then
       if ((Self.IsTrain()) and (Self.slowingReady) and (Self.train.wantedSpeed > 0)) then
-        Self.train.UpdateRailwaySpeed();
+        Self.train.UpdateTrainSpeed();
   end;
 end;
 
