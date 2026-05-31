@@ -36,12 +36,17 @@ type
     Label3: TLabel;
     SE_RCS_Input_System: TSpinEdit;
     Label4: TLabel;
+    Label5: TLabel;
+    CB_input: TColorBox;
+    CB_output: TColorBox;
+    Label6: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure CHB_RCS_InputClick(Sender: TObject);
     procedure CHB_RCS_OutputClick(Sender: TObject);
     procedure CHB_NullableClick(Sender: TObject);
+    procedure CB_inputGetColors(Sender: TCustomColorBox; Items: TStrings);
   private
     isNewBlock: Boolean;
     block: TBlkIO;
@@ -63,7 +68,7 @@ var
 
 implementation
 
-uses GetSystems, RCSc, RCSsc, BlockDb, Block, DataBloky, ownGuiUtils;
+uses GetSystems, RCSc, RCSsc, BlockDb, Block, DataBloky, ownGuiUtils, colorHelper;
 
 {$R *.dfm}
 
@@ -102,6 +107,7 @@ begin
   Self.CHB_RCS_Input.Checked := false;
   Self.CHB_RCS_InputClick(Self);
   Self.CHB_RCS_Input_Needed.Checked := true;
+  Self.CB_input.Selected := TBlkIO._DEFAULT_IN_ACTIVE_COLOR;
 
   Self.SE_RCS_Output_System.Value := 0;
   Self.SE_RCS_Output_Module.Value := 0;
@@ -109,6 +115,7 @@ begin
   Self.CHB_RCS_Output.Checked := false;
   Self.CHB_RCS_OutputClick(Self);
   Self.CHB_RCS_Output_Needed.Checked := true;
+  Self.CB_output.Selected := TBlkIO._DEFAULT_OUT_ACTIVE_COLOR;
 
   Self.CHB_Activate_On_Start.Checked := false;
   Self.CHB_Nullable.Checked := false;
@@ -140,6 +147,7 @@ begin
     Self.SE_RCS_Input_Port.Value := 0;
     Self.CHB_RCS_Input_Needed.Checked := false;
   end;
+  Self.CB_input.Selected := settings.inputActiveColor;
 
   Self.CHB_RCS_Output.Checked := settings.isRCSOutput;
   Self.CHB_RCS_OutputClick(Self);
@@ -155,6 +163,7 @@ begin
     Self.SE_RCS_Output_Port.Value := 0;
     Self.CHB_RCS_Output_Needed.Checked := false;
   end;
+  Self.CB_output.Selected := settings.outputActiveColor;
 
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
@@ -178,6 +187,16 @@ end;
 procedure TF_BlkIO.B_StornoClick(Sender: TObject);
 begin
   Self.Close();
+end;
+
+procedure TF_BlkIO.CB_inputGetColors(Sender: TCustomColorBox; Items: TStrings);
+begin
+  Items.AddObject('Červená',TObject(TJopColor.red));
+  Items.AddObject('Zelená',TObject(TJopColor.green));
+  Items.AddObject('Bílá',TObject(TJopColor.white));
+  Items.AddObject('Tyrkysová',TObject(TJopColor.turq));
+  Items.AddObject('Modrá',TObject(TJopColor.blue));
+  Items.AddObject('Žlutá',TObject(TJopColor.yellow));
 end;
 
 procedure TF_BlkIO.CHB_NullableClick(Sender: TObject);
@@ -215,10 +234,16 @@ begin
       Self.block, TRCSIOType.input);
     if (another <> nil) then
     begin
-      if (StrMessageBox(PChar('RCS adresa vstupu se již používá na bloku ' + another.name +
-        ', chcete pokračovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+      if (StrMessageBox('RCS adresa vstupu se již používá na bloku ' + another.name +
+        ', chcete pokračovat?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
     end;
+  end;
+
+  if (Self.CB_input.ItemIndex < 0) then
+  begin
+    StrMessageBox('Nevybrána barva prvku v panelu při aktivním vstupu!', 'Chyba', MB_OK OR MB_ICONWARNING);
+    Exit();
   end;
 
   if (Self.CHB_RCS_Output.Checked) then
@@ -227,10 +252,16 @@ begin
       Self.block, TRCSIOType.output);
     if (another <> nil) then
     begin
-      if (StrMessageBox(PChar('RCS adresa výstupu se již používá na bloku ' + another.name +
-        ', chcete pokračovat?'), 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
+      if (StrMessageBox('RCS adresa výstupu se již používá na bloku ' + another.name +
+        ', chcete pokračovat?', 'Otázka', MB_YESNO OR MB_ICONQUESTION) = mrNo) then
         Exit();
     end;
+  end;
+
+  if (Self.CB_output.ItemIndex < 0) then
+  begin
+    StrMessageBox('Nevybrána barva prvku v panelu při aktivním výstupu!', 'Chyba', MB_OK OR MB_ICONWARNING);
+    Exit();
   end;
 
   try
@@ -269,6 +300,7 @@ begin
       settings.RCSOutput := TRCSs.RCSsAddr(Self.SE_RCS_Output_System.Value, Self.SE_RCS_Output_Module.Value, Self.SE_RCS_Output_Port.Value);
       settings.RCSoutputNeeded := Self.CHB_RCS_Output_Needed.Checked;
     end;
+    settings.outputActiveColor := Self.CB_output.Selected;
 
     settings.isRCSinput := Self.CHB_RCS_Input.Checked;
     if (Self.CHB_RCS_Input.Checked) then
@@ -276,6 +308,7 @@ begin
       settings.RCSinput := TRCSs.RCSsAddr(Self.SE_RCS_Input_System.Value, Self.SE_RCS_Input_Module.Value, Self.SE_RCS_Input_Port.Value);
       settings.RCSinputNeeded := Self.CHB_RCS_Input_Needed.Checked;
     end;
+    settings.inputActiveColor := Self.CB_input.Selected;
 
     settings.setOutputOnStart := Self.CHB_Activate_On_Start.Checked;
     if (Self.CHB_Nullable.Checked) then

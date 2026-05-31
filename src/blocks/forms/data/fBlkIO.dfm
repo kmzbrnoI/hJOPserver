@@ -4,7 +4,7 @@ object F_BlkIO: TF_BlkIO
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku [blok] (IO)'
-  ClientHeight = 511
+  ClientHeight = 556
   ClientWidth = 321
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -68,7 +68,7 @@ object F_BlkIO: TF_BlkIO
     Left = 10
     Top = 148
     Width = 304
-    Height = 157
+    Height = 181
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -107,6 +107,13 @@ object F_BlkIO: TF_BlkIO
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'RCS syst'#233'm:'
+    end
+    object Label5: TLabel
+      Left = 16
+      Top = 152
+      Width = 75
+      Height = 13
+      Caption = 'Barva v panelu:'
     end
     object SE_RCS_Input_Port: TSpinEdit
       Left = 216
@@ -167,10 +174,20 @@ object F_BlkIO: TF_BlkIO
       TabOrder = 2
       Value = 1
     end
+    object CB_input: TColorBox
+      Left = 144
+      Top = 150
+      Width = 145
+      Height = 22
+      Selected = clScrollBar
+      Style = [cbCustomColors]
+      TabOrder = 5
+      OnGetColors = CB_inputGetColors
+    end
   end
   object B_Storno: TButton
     Left = 151
-    Top = 478
+    Top = 525
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -183,7 +200,7 @@ object F_BlkIO: TF_BlkIO
   end
   object B_Save: TButton
     Left = 240
-    Top = 478
+    Top = 525
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -224,9 +241,9 @@ object F_BlkIO: TF_BlkIO
   end
   object GB_RCS_Output: TGroupBox
     Left = 10
-    Top = 309
+    Top = 333
     Width = 304
-    Height = 156
+    Height = 181
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -265,6 +282,13 @@ object F_BlkIO: TF_BlkIO
       Margins.Right = 2
       Margins.Bottom = 2
       Caption = 'RCS syst'#233'm:'
+    end
+    object Label6: TLabel
+      Left = 16
+      Top = 152
+      Width = 75
+      Height = 13
+      Caption = 'Barva v panelu:'
     end
     object SE_RCS_Output_Port: TSpinEdit
       Left = 216
@@ -324,6 +348,16 @@ object F_BlkIO: TF_BlkIO
       MinValue = 0
       TabOrder = 2
       Value = 1
+    end
+    object CB_output: TColorBox
+      Left = 144
+      Top = 150
+      Width = 145
+      Height = 22
+      Selected = clScrollBar
+      Style = [cbCustomColors]
+      TabOrder = 5
+      OnGetColors = CB_inputGetColors
     end
   end
   object CHB_AllowOutChange: TCheckBox

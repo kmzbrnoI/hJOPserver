@@ -11,7 +11,7 @@ unit BlockIO;
 interface
 
 uses IniFiles, Block, RCSc, RCSsc, Classes, SysUtils, IdContext, Area,
-  Graphics, JsonDataObjects, RCSErrors, RCSIFace;
+  Graphics, JsonDataObjects, RCSErrors, RCSIFace, colorHelper;
 
 type
 
@@ -19,11 +19,13 @@ type
     isRCSinput: Boolean;
     RCSinputNeeded: Boolean;
     RCSinput: TRCSsAddr;
+    inputActiveColor: TColor;
 
     isRCSOutput: Boolean;
     RCSoutputNeeded: Boolean;
     RCSoutput: TRCSsAddr;
     allowOutChange: Boolean;
+    outputActiveColor: TColor;
 
     setOutputOnStart: Boolean;
     nullAfterSec: Integer;
@@ -45,6 +47,9 @@ type
       outputState: TRCSOutputState.osDisabled;
       nullTime: 0;
     );
+
+    _DEFAULT_IN_ACTIVE_COLOR: TColor = TJopColor.green;
+    _DEFAULT_OUT_ACTIVE_COLOR: TColor = TJopColor.yellow;
 
   private
     m_settings: TBlkIOsettings;
@@ -109,7 +114,7 @@ type
 
 implementation
 
-uses AreaDb, TCPServerPanel, ownConvert, Config, timeHelper, colorHelper, PTUtils;
+uses AreaDb, TCPServerPanel, ownConvert, Config, timeHelper, PTUtils;
 
 constructor TBlkIO.Create(index: Integer);
 begin
@@ -134,6 +139,7 @@ begin
     Self.m_settings.RCSoutput := RCSsFromIni(ini_tech, section, 'RCSout', 'RCSb0', 'RCSp0');
     Self.m_settings.RCSoutputNeeded := ini_tech.ReadBool(section, 'RCSno', true) or ini_tech.ReadBool(section, 'RCSn0', true);
   end;
+  Self.m_settings.outputActiveColor := TColor(StrToInt('$'+ini_tech.ReadString(section, 'outputActiveColor', IntToHex(_DEFAULT_OUT_ACTIVE_COLOR))));
 
   Self.m_settings.isRCSinput := (ini_tech.ReadString(section, 'RCSin', '') <> '') or (ini_tech.ReadInteger(section, 'RCSbi', -1) <> -1); // old format
   if (Self.m_settings.isRCSinput) then
@@ -141,6 +147,7 @@ begin
     Self.m_settings.RCSinput := RCSsFromIni(ini_tech, section, 'RCSin', 'RCSbi', 'RCSpi');
     Self.m_settings.RCSinputNeeded := ini_tech.ReadBool(section, 'RCSni', true);
   end;
+  Self.m_settings.inputActiveColor := TColor(StrToInt('$'+ini_tech.ReadString(section, 'inputActiveColor', IntToHex(_DEFAULT_IN_ACTIVE_COLOR))));
 
   Self.LoadAreas(ini_rel, 'POM').Free();
   Self.m_settings.setOutputOnStart := ini_tech.ReadBool(section, 'activateOnStart', false);
@@ -170,12 +177,14 @@ begin
   end;
   if ((Self.isRCSOutput <> Self.allowOutChange)) then
      ini_tech.WriteBool(section, 'allowOutChange', Self.m_settings.allowOutChange);
+  ini_tech.WriteString(section, 'outputActiveColor', IntToHex(Self.m_settings.outputActiveColor, 6));
 
   if (Self.isRCSinput) then
   begin
     ini_tech.WriteString(section, 'RCSin', Self.m_settings.RCSinput.ToString());
     ini_tech.WriteBool(section, 'RCSni', Self.m_settings.RCSinputNeeded);
   end;
+  ini_tech.WriteString(section, 'inputActiveColor', IntToHex(Self.m_settings.inputActiveColor, 6));
 
   if (Self.m_settings.setOutputOnStart) then
     ini_tech.WriteBool(section, 'activateOnStart', true);
@@ -375,14 +384,14 @@ begin
   if (not Self.enabled) then
     fg := TJopColor.purple
   else if (Self.activeOutput) then
-    fg := TJopColor.yellow
+    fg := Self.m_settings.outputActiveColor
   else if (Self.isRCSinput) then
   begin
     case (Self.m_state.inputState) of
       TRCSInputState.isOff:
         fg := TJopColor.grayDark;
       TRCSInputState.isOn:
-        fg := TJopColor.green;
+        fg := Self.m_settings.inputActiveColor;
     else
       fg := TJopColor.purple;
     end;
