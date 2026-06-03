@@ -1794,7 +1794,7 @@ begin
   if ((train.wantedSpeed > 0) and (train.direction <> Self.direction)) then
     Exit(); // opposite direction -> ignore
 
-  Result := Self.dnJC.TrainSpeed(train);
+  Result := Self.dnJC.TrainSpeedStored(train);
 
   // incorporate track speed
   if (Result <> -1) then

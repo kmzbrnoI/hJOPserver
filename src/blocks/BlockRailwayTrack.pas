@@ -212,7 +212,7 @@ type
     procedure RemoveTrains(); override;
     procedure RemoveTrain(index: Integer); override;
 
-    function speed(train: TTrain): Cardinal;
+    function Speed(train: TTrain): Cardinal;
 
     // pro vyznam properties viz hlavicky getteru a setteru
     property rtState: TBlkRTState read m_rtState;
@@ -1396,7 +1396,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkRT.speed(train: TTrain): Cardinal;
+function TBlkRT.Speed(train: TTrain): Cardinal;
 begin
   if (Self.railway = nil) then
     Exit(0);

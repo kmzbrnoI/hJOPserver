@@ -1323,7 +1323,7 @@ begin
         begin
           if (track.typ = TBlkType.btRT) then
           begin
-            speedLimits.Add(TBlkRT(track).speed(Self));
+            speedLimits.Add(TBlkRT(track).Speed(Self));
             anyRailway := True;
           end;
         end;
@@ -1334,12 +1334,11 @@ begin
 
     var paths: TList<TJC> := JCDb.FindActiveJCsWithTrain(Self);
     try
-      // In railway -> ignore paths with last-track-without-turnouts-occupied only
       for var path: TJC in paths do
       begin
-        if ((path.typ = TJCType.train) and ((not anyRailway) or (not path.TrainSpeedIgnore()))) then
+        if (path.typ = TJCType.train) then
         begin
-          var speed: Integer := path.TrainSpeed(Self);
+          var speed: Integer := path.TrainSpeedCurrent(Self);
           if (speed <> -1) then
             speedLimits.Add(Cardinal(speed));
         end;

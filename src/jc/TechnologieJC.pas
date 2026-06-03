@@ -270,7 +270,8 @@ type
 
     procedure EmergencyStopTrainInVC();
 
-    function TrainSpeed(train: TTrain): Integer;
+    function TrainSpeedStored(train: TTrain): Integer;
+    function TrainSpeedCurrent(train: TTrain): Integer;
     function TrainSpeedIgnore(): Boolean;
 
     property data: TJCdata read m_data write SetData;
@@ -3994,7 +3995,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TJC.TrainSpeed(train: TTrain): Integer;
+function TJC.TrainSpeedStored(train: TTrain): Integer;
 begin
   Result := -1; // default
 
@@ -4038,12 +4039,22 @@ begin
   end;
 end;
 
+// Speed of train in path incorporating railway speed if train is at the end of path
+function TJC.TrainSpeedCurrent(train: TTrain): Integer;
+begin
+  Result := Self.TrainSpeedStored(train);
+  if ((Self.lastTrack <> nil) and (Self.lastTrack.typ = btRT) and (Self.TrainSpeedIgnore())) then
+    Result := TBlkRT(Self.lastTrack).Speed(train);
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 // Returns true iff train is present only at last tracks of path (without turnouts)
 // excluding the last track.
 function TJC.TrainSpeedIgnore(): Boolean;
 begin
+  if (Self.lastTrack = nil) then
+    Exit(False);
   if (Self.lastTrack.typ <> btRT) then
     Exit(False);
   if (Self.data.tracks.Count < 2) then
