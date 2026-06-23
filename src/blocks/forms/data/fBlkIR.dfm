@@ -100,13 +100,13 @@ object F_BlkIR: TF_BlkIR
     object Label1: TLabel
       Left = 16
       Top = 22
-      Width = 56
+      Width = 60
       Height = 13
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
       Margins.Bottom = 2
-      Caption = 'RCS modul:'
+      Caption = 'RCS syst'#233'm:'
     end
     object SE_port: TSpinEdit
       Left = 216
