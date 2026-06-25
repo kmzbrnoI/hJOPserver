@@ -2839,51 +2839,61 @@ begin
   end;
 
   // tracks
-  var tracksStr: string := SerializeIntList(Self.m_data.tracks);
-  if (tracksStr <> '') then
-    ini.WriteString(section, 'useky', tracksStr);
+  begin
+    var tracksStr: string := SerializeIntList(Self.m_data.tracks);
+    if (tracksStr <> '') then
+      ini.WriteString(section, 'useky', tracksStr);
+  end;
 
   // turnouts
-  var turnoutsStr := '';
-  for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
-    turnoutsStr := turnoutsStr + '(' + IntToStr(turnoutZav.block) + ',' + IntToStr(Integer(turnoutZav.position)) + ')';
-  if (turnoutsStr <> '') then
-    ini.WriteString(section, 'vyhybky', turnoutsStr);
+  begin
+    var turnoutsStr := '';
+    for var turnoutZav: TJCTurnoutZav in Self.m_data.turnouts do
+      turnoutsStr := turnoutsStr + '(' + IntToStr(turnoutZav.block) + ',' + IntToStr(Integer(turnoutZav.position)) + ')';
+    if (turnoutsStr <> '') then
+      ini.WriteString(section, 'vyhybky', turnoutsStr);
+  end;
 
   // refugees
-  var refugeesStr: string := '';
-  for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
-    refugeesStr := refugeesStr + '(' + IntToStr(refugeeZav.block) + ',' +
-      IntToStr(Integer(refugeeZav.position)) + ',' + IntToStr(refugeeZav.refBlk) + ')';
-  if (refugeesStr <> '') then
-    ini.WriteString(section, 'odvraty', refugeesStr);
+  begin
+    var refugeesStr: string := '';
+    for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
+      refugeesStr := refugeesStr + '(' + IntToStr(refugeeZav.block) + ',' +
+        IntToStr(Integer(refugeeZav.position)) + ',' + IntToStr(refugeeZav.refBlk) + ')';
+    if (refugeesStr <> '') then
+      ini.WriteString(section, 'odvraty', refugeesStr);
+  end;
 
   // crossings
-  var crossingsStr: string := '';
-  for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
   begin
-    crossingsStr := crossingsStr + '(' + IntToStr(crossingZav.crossingId);
-    if (crossingZav.openTrack > -1) then
-      crossingsStr := crossingsStr + ',' + IntToStr(crossingZav.openTrack) + ',';
+    var crossingsStr: string := '';
+    for var crossingZav: TJCCrossingZav in Self.m_data.crossings do
+    begin
+      crossingsStr := crossingsStr + '(' + IntToStr(crossingZav.crossingId);
+      if (crossingZav.openTrack > -1) then
+        crossingsStr := crossingsStr + ',' + IntToStr(crossingZav.openTrack) + ',';
 
-    if (crossingZav.closeTracks.Count > 0) then
-      for var closeTrackId: Integer in crossingZav.closeTracks do
-        crossingsStr := crossingsStr + IntToStr(closeTrackId) + ',';
+      if (crossingZav.closeTracks.Count > 0) then
+        for var closeTrackId: Integer in crossingZav.closeTracks do
+          crossingsStr := crossingsStr + IntToStr(closeTrackId) + ',';
 
-    if (crossingsStr[Length(crossingsStr)] = ',') then
-      crossingsStr[Length(crossingsStr)] := ')'
-    else
-      crossingsStr := crossingsStr + ')';
+      if (crossingsStr[Length(crossingsStr)] = ',') then
+        crossingsStr[Length(crossingsStr)] := ')'
+      else
+        crossingsStr := crossingsStr + ')';
+    end;
+    if (crossingsStr <> '') then
+      ini.WriteString(section, 'prj', crossingsStr);
   end;
-  if (crossingsStr <> '') then
-    ini.WriteString(section, 'prj', crossingsStr);
 
   // locks
-  var locksStr: string := '';
-  for var lockZav: TJCRefZav in Self.m_data.locks do
-    locksStr := locksStr + '(' + IntToStr(lockZav.block) + ';' + IntToStr(lockZav.refBlk) + ')';
-  if (locksStr <> '') then
-    ini.WriteString(section, 'podm-zamky', locksStr);
+  begin
+    var locksStr: string := '';
+    for var lockZav: TJCRefZav in Self.m_data.locks do
+      locksStr := locksStr + '(' + IntToStr(lockZav.block) + ';' + IntToStr(lockZav.refBlk) + ')';
+    if (locksStr <> '') then
+      ini.WriteString(section, 'podm-zamky', locksStr);
+  end;
 
   // Variant points
   var vpsStr: string := SerializeIntList(Self.m_data.vb);
