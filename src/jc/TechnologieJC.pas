@@ -2890,7 +2890,7 @@ begin
   begin
     var locksStr: string := '';
     for var lockZav: TJCRefZav in Self.m_data.locks do
-      locksStr := locksStr + '(' + IntToStr(lockZav.block) + ';' + IntToStr(lockZav.refBlk) + ')';
+      locksStr := locksStr + '(' + IntToStr(lockZav.block) + ',' + IntToStr(lockZav.refBlk) + ')';
     if (locksStr <> '') then
       ini.WriteString(section, 'podm-zamky', locksStr);
   end;
