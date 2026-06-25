@@ -4,7 +4,7 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'J'#237'zdn'#237' cesta ...'
-  ClientHeight = 854
+  ClientHeight = 897
   ClientWidth = 1057
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -320,7 +320,7 @@ object F_JCEdit: TF_JCEdit
   end
   object B_Save: TButton
     Left = 975
-    Top = 822
+    Top = 864
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -329,12 +329,12 @@ object F_JCEdit: TF_JCEdit
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 15
+    TabOrder = 16
     OnClick = B_SaveClick
   end
   object B_Storno: TButton
     Left = 888
-    Top = 822
+    Top = 864
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -342,7 +342,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 16
+    TabOrder = 17
     OnClick = B_StornoClick
   end
   object CB_Signal: TComboBox
@@ -382,7 +382,7 @@ object F_JCEdit: TF_JCEdit
     Caption = 'auto'
     Checked = True
     State = cbChecked
-    TabOrder = 17
+    TabOrder = 18
   end
   object GB_Railway: TGroupBox
     Left = 8
@@ -560,7 +560,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Z'#225'mky '
-    TabOrder = 10
+    TabOrder = 11
     object LV_Locks: TListView
       Left = 2
       Top = 15
@@ -697,7 +697,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Odvraty '
-    TabOrder = 11
+    TabOrder = 12
     object LV_Refugees: TListView
       Left = 2
       Top = 15
@@ -866,7 +866,7 @@ object F_JCEdit: TF_JCEdit
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' P'#345'ejezdy '
-    TabOrder = 14
+    TabOrder = 10
     object LV_Crossings: TListView
       Left = 2
       Top = 15
@@ -1063,7 +1063,7 @@ object F_JCEdit: TF_JCEdit
     Width = 365
     Height = 72
     Caption = ' Smy'#269'ka '
-    TabOrder = 12
+    TabOrder = 13
     object Label4: TLabel
       Left = 12
       Top = 39
@@ -1095,7 +1095,7 @@ object F_JCEdit: TF_JCEdit
     Width = 365
     Height = 105
     Caption = ' Permanentn'#237' '#353't'#237'tky (1 '#353't'#237'tek na 1 '#345#225'dek) '
-    TabOrder = 13
+    TabOrder = 14
     object M_permNote: TMemo
       Left = 2
       Top = 15
@@ -1105,6 +1105,172 @@ object F_JCEdit: TF_JCEdit
       Lines.Strings = (
         'M_permNote')
       TabOrder = 0
+    end
+  end
+  object GB_IOs: TGroupBox
+    Left = 685
+    Top = 653
+    Width = 365
+    Height = 204
+    Margins.Left = 2
+    Margins.Top = 2
+    Margins.Right = 2
+    Margins.Bottom = 2
+    Caption = ' IO bloky '
+    TabOrder = 15
+    object LV_IO: TListView
+      Left = 2
+      Top = 15
+      Width = 361
+      Height = 93
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alClient
+      Columns = <
+        item
+          Caption = '#'
+          Width = 20
+        end
+        item
+          Caption = 'ID'
+        end
+        item
+          Caption = 'N'#225'zev'
+          Width = 100
+        end
+        item
+          Caption = 'Stav'
+        end
+        item
+          Alignment = taCenter
+          Caption = 'Ref. ID'
+        end
+        item
+          Caption = 'Ref. '#250'sek'
+          Width = 80
+        end>
+      GridLines = True
+      MultiSelect = True
+      ReadOnly = True
+      RowSelect = True
+      TabOrder = 0
+      ViewStyle = vsReport
+      OnChange = LV_IOChange
+      OnKeyDown = LV_IOKeyDown
+    end
+    object GB_IO: TGroupBox
+      Left = 2
+      Top = 108
+      Width = 361
+      Height = 94
+      Margins.Left = 2
+      Margins.Top = 2
+      Margins.Right = 2
+      Margins.Bottom = 2
+      Align = alBottom
+      Caption = ' P'#345'idat/upravit/smazat IO blok '
+      TabOrder = 1
+      object Label18: TLabel
+        Left = 8
+        Top = 16
+        Width = 37
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'IO blok:'
+      end
+      object Label19: TLabel
+        Left = 8
+        Top = 64
+        Width = 82
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Referen'#269'n'#237' '#250'sek:'
+      end
+      object Label20: TLabel
+        Left = 8
+        Top = 41
+        Width = 60
+        Height = 13
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Stav vstupu:'
+      end
+      object CB_IO: TComboBox
+        Left = 109
+        Top = 15
+        Width = 180
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 0
+      end
+      object CB_IO_Ref: TComboBox
+        Left = 109
+        Top = 64
+        Width = 180
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 2
+      end
+      object B_IO_Ok: TButton
+        Left = 301
+        Top = 64
+        Width = 49
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Ok'
+        TabOrder = 3
+        OnClick = B_IO_OkClick
+      end
+      object B_IO_Del: TButton
+        Left = 301
+        Top = 39
+        Width = 49
+        Height = 22
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Caption = 'Smazat'
+        Enabled = False
+        TabOrder = 4
+        OnClick = B_IO_DelClick
+      end
+      object CB_IO_Input_State: TComboBox
+        Left = 109
+        Top = 40
+        Width = 180
+        Height = 21
+        Margins.Left = 2
+        Margins.Top = 2
+        Margins.Right = 2
+        Margins.Bottom = 2
+        Style = csDropDownList
+        TabOrder = 1
+        Items.Strings = (
+          '0 - neaktivn'#237
+          '1 - aktivn'#237)
+      end
     end
   end
 end

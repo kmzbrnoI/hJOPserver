@@ -96,6 +96,17 @@ type
     CB_Loop_Track: TComboBox;
     GB_permNote: TGroupBox;
     M_permNote: TMemo;
+    GB_IOs: TGroupBox;
+    LV_IO: TListView;
+    GB_IO: TGroupBox;
+    Label18: TLabel;
+    Label19: TLabel;
+    CB_IO: TComboBox;
+    CB_IO_Ref: TComboBox;
+    B_IO_Ok: TButton;
+    B_IO_Del: TButton;
+    CB_IO_Input_State: TComboBox;
+    Label20: TLabel;
     procedure B_StornoClick(Sender: TObject);
     procedure B_Turnout_OkClick(Sender: TObject);
     procedure B_Track_OkClick(Sender: TObject);
@@ -136,6 +147,11 @@ type
     procedure B_Cros_Names_To_IdsClick(Sender: TObject);
     procedure CHB_emOnlyClick(Sender: TObject);
     procedure CHB_LoopClick(Sender: TObject);
+    procedure B_IO_DelClick(Sender: TObject);
+    procedure B_IO_OkClick(Sender: TObject);
+    procedure LV_IOChange(Sender: TObject; Item: TListItem;
+      Change: TItemChange);
+    procedure LV_IOKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     OpenIndex: Integer;
     mNewJC: Boolean;
@@ -144,6 +160,7 @@ type
     CB_TrackIds: TList<Integer>;
     CB_TurnoutIds: TList<Integer>;
     CB_LockIds: TList<Integer>;
+    CB_IOIds: TList<Integer>;
     CB_RailwayIds: TList<Integer>;
     CB_CrossingIds: TList<Integer>;
     JCData: TJCdata;
@@ -168,6 +185,7 @@ type
     procedure FillTurnoutLI(var LI: TListItem; blockId: Integer; pos: string);
     procedure FillRefugeeLI(var LI: TListItem; blockId: Integer; pos: string; refId: Integer);
     procedure FillRefLI(var LI: TListItem; blockId: Integer; refId: Integer);
+    procedure FillIOLI(var LI: TListItem; blockId: Integer; state: Boolean; refId: Integer);
 
     procedure FillRefTracks(var cb: TComboBox); overload;
     procedure FillRefTracks(); overload;
@@ -201,6 +219,7 @@ begin
   Self.CB_TrackIds := TList<Integer>.Create();
   Self.CB_LockIds := TList<Integer>.Create();
   Self.CB_CrossingIds := TList<Integer>.Create();
+  Self.CB_IOIds := TList<Integer>.Create();
 
   Self.fTrainSpeedGo := TF_TrainSpeed.Create(nil);
   Self.fTrainSpeedGo.Parent := Self.GB_SpeedsGo;
@@ -222,6 +241,7 @@ begin
   Self.CB_TrackIds.Free();
   Self.CB_LockIds.Free();
   Self.CB_CrossingIds.Free();
+  Self.CB_IOIds.Free();
 
   Self.fTrainSpeedGo.Free();
   Self.fTrainSpeedStop.Free();
@@ -349,6 +369,12 @@ begin
     LI.SubItems.Add(names);
   end;
 
+  for var ioZav in JCData.io do
+  begin
+    var LI := Self.LV_IO.Items.Add();
+    Self.FillIOLI(LI, ioZav.blockid, ioZav.inputState, ioZav.refBlk);
+  end;
+
   Self.CHB_Loop.Checked := (JCData.loopTrackI > -1);
   Self.CB_Loop_Track.ItemIndex := JCData.loopTrackI;
   Self.CHB_LoopClick(Self.CHB_Loop);
@@ -370,6 +396,7 @@ begin
   Self.LV_Locks.Clear();
   Self.LV_Refugees.Clear();
   Self.LV_Crossings.Clear();
+  Self.LV_IO.Clear();
   Self.FillRefTracks(); // will clear ref tracks
   Self.M_permNote.Clear();
 
@@ -580,6 +607,45 @@ begin
   end;
 
   Self.E_Crossing_Close_Ids.Text := ids;
+end;
+
+procedure TF_JCEdit.B_IO_DelClick(Sender: TObject);
+begin
+  if (StrMessageBox('Opravdu chcete smazat vybrané IO bloky z jízdní cesty?', 'Mazání IO bloků',
+    MB_YESNO OR MB_ICONQUESTION) = mrYes) then
+  begin
+    Self.LV_IO.DeleteSelected();
+    Self.UpdateIndexes(Self.LV_IO);
+  end;
+end;
+
+procedure TF_JCEdit.B_IO_OkClick(Sender: TObject);
+begin
+  if ((not Self.CB_IO.Enabled) or (Self.CB_IO.ItemIndex = -1)) then
+  begin
+    StrMessageBox('Vyberte IO blok!', 'Nelze přídat IO blok', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+  if (Self.CB_IO_Input_State.ItemIndex = -1) then
+  begin
+    StrMessageBox('Vyberte stav vstupu!', 'Nelze přidat IO blok', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+  if (Self.CB_IO_Ref.ItemIndex = -1) then
+  begin
+    StrMessageBox('Vyberte referenční úsek!', 'Nelze přidat IO blok', MB_OK OR MB_ICONWARNING);
+    Exit();
+  end;
+
+  var ioId := Self.CB_IOIds[Self.CB_IO.ItemIndex];
+  var ioIndex := Self.LVFindLine(Self.LV_IO, 0, IntToStr(ioId));
+  var LI: TListItem;
+  if (ioIndex > -1) then
+    LI := Self.LV_IO.Items[ioIndex]
+  else
+    LI := Self.LV_IO.Items.Add();
+
+  Self.FillIOLI(LI, ioId, (Self.CB_IO_Input_State.ItemIndex = 1), StrToInt(Self.LV_Tracks.Items[Self.CB_IO_Ref.ItemIndex].SubItems.Strings[0]));
 end;
 
 procedure TF_JCEdit.B_Lock_DelClick(Sender: TObject);
@@ -865,6 +931,16 @@ begin
       JCTableData.UpdateLine(JC.index);
     end;
 
+    // io blocks
+    for var LI: TListItem in Self.LV_IO.Items do
+    begin
+      var zav: TJCIOZav;
+      zav.blockid := StrToInt(LI.SubItems.Strings[0]);
+      zav.inputState := StrToBool(LI.SubItems.Strings[2]);
+      zav.refBlk := StrToInt(LI.SubItems.Strings[3]);
+      JCsaveData.io.Add(zav);
+    end;
+
   except
     on E: Exception do
     begin
@@ -960,6 +1036,40 @@ procedure TF_JCEdit.LV_CrossingsKeyDown(Sender: TObject; var Key: Word;
 begin
   if ((Key = VK_DELETE) and (Self.B_Crossing_Del.Enabled)) then
     Self.B_Crossing_DelClick(Self.B_Crossing_Del);
+end;
+
+procedure TF_JCEdit.LV_IOChange(Sender: TObject; Item: TListItem;
+  Change: TItemChange);
+begin
+  Self.B_IO_Del.Enabled := (Self.LV_IO.Selected <> nil);
+
+  if (Self.LV_IO.Selected = nil) then
+  begin
+    Self.CB_IO.ItemIndex := -1;
+    Self.CB_IO_Input_State.ItemIndex := -1;
+    Self.CB_IO_Ref.ItemIndex := -1;
+    Exit();
+  end;
+
+  var blockId: Integer := StrToInt(Self.LV_IO.Selected.SubItems.Strings[0]);
+  Self.SetBlocksCbItemIndex(Self.CB_IO, Self.CB_IOIds, blockId);
+
+  Self.CB_IO_Input_State.ItemIndex := IfThen(Self.LV_IO.Selected.SubItems.Strings[2] = '1', 1, 0);
+
+  var refId: Integer := -1;
+  if (Self.LV_IO.Selected.SubItems.Count > 2) then
+    refId := StrToIntDef(Self.LV_IO.Selected.SubItems.Strings[3], -1);
+  Self.CB_IO_Ref.ItemIndex := -1;
+  for var i := 0 to Self.LV_Tracks.Items.Count - 1 do
+    if (Self.LV_Tracks.Items[i].SubItems.Strings[0] = IntToStr(refId)) then
+      Self.CB_IO_Ref.ItemIndex := i;
+end;
+
+procedure TF_JCEdit.LV_IOKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (Self.B_IO_Del.Enabled)) then
+    Self.B_IO_DelClick(Self.B_IO_Del);
 end;
 
 procedure TF_JCEdit.LV_LocksChange(Sender: TObject; Item: TListItem;
@@ -1354,6 +1464,14 @@ begin
   end;
 end;
 
+procedure TF_JCEdit.FillIOLI(var LI: TListItem; blockId: Integer; state: Boolean; refId: Integer);
+begin
+  Self.FillBlockLI(LI, blockId);
+  LI.SubItems.Add(BoolToStr10(state));
+  LI.SubItems.Add(IntToStr(refId));
+  LI.SubItems.Add(Blocks.GetBlkName(refId));
+end;
+
 procedure TF_JCEdit.FillRefugeeLI(var LI: TListItem; blockId: Integer; pos: string; refId: Integer);
 begin
   Self.FillBlockLI(LI, blockId);
@@ -1371,6 +1489,7 @@ begin
     Blocks.FillCB(Self.CB_Track, Self.CB_TrackIds, nil, areas, btTrack, btRT);
     Blocks.FillCB(Self.CB_Lock, Self.CB_LockIds, nil, areas, btLock);
     Blocks.FillCB(Self.CB_Crossing, Self.CB_CrossingIds, nil, nil, btCrossing);
+    Blocks.FillCB(Self.CB_IO, Self.CB_IOIds, nil, areas, btIO);
   finally
     areas.Free();
   end;
@@ -1389,6 +1508,7 @@ begin
   Self.FillRefTracks(Self.CB_Lock_Ref);
   Self.FillRefTracks(Self.CB_Refugee_Ref);
   Self.FillRefTracks(Self.CB_Crossing_Ref);
+  Self.FillRefTracks(Self.CB_IO_Ref);
 
   begin
     var i: Integer := Self.CB_Signal_Fall.ItemIndex;
