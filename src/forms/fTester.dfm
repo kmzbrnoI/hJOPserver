@@ -99,7 +99,6 @@ object F_Tester: TF_Tester
       Height = 352
       Align = alClient
       BevelOuter = bvNone
-      ParentBackground = False
       TabOrder = 1
     end
   end

@@ -103,7 +103,6 @@ begin
   Self.panel.Left := 0;
   Self.panel.BevelOuter := bvNone;
   Self.panel.ParentColor := false;
-  Self.panel.ParentBackground := false;
 
   Self.shape := TShape.Create(nil);
   Self.shape.Parent := Self.panel;
