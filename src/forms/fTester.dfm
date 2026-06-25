@@ -6,6 +6,8 @@ object F_Tester: TF_Tester
   ClientHeight = 465
   ClientWidth = 360
   Color = clBtnFace
+  Constraints.MinHeight = 200
+  Constraints.MinWidth = 200
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

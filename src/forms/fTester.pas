@@ -327,21 +327,15 @@ begin
   Self.GB_Outputs.Height := Self.ClientHeight - Self.GB_Outputs.Top - 5;
 
   begin
-    var aTop: Integer := 0;
+    const height: Real = (Self.P_Inputs.ClientHeight / Self.inputs.Count);
     for var i: Integer := 0 to Self.inputs.Count-1 do
-    begin
-      Self.inputs[i].Resize(aTop, Self.P_Inputs.ClientWidth, Self.P_Inputs.ClientHeight div Self.inputs.Count);
-      aTop := aTop + (Self.P_Inputs.ClientHeight div Self.inputs.Count);
-    end;
+      Self.inputs[i].Resize(Round(i*height), Self.P_Inputs.ClientWidth, Self.P_Inputs.ClientHeight div Self.inputs.Count);
   end;
 
   begin
-    var aTop: Integer := 0;
+    const height: Real = (Self.P_Outputs.ClientHeight / Self.outputs.Count);
     for var i: Integer := 0 to Self.outputs.Count-1 do
-    begin
-      Self.outputs[i].Resize(aTop, Self.P_Outputs.ClientWidth, Self.P_Outputs.ClientHeight div Self.outputs.Count);
-      aTop := aTop + (Self.P_Outputs.ClientHeight div Self.outputs.Count);
-    end;
+      Self.outputs[i].Resize(Round(i*height), Self.P_Outputs.ClientWidth, Self.P_Outputs.ClientHeight div Self.outputs.Count);
   end;
 end;
 
