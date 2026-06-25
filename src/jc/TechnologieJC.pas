@@ -898,8 +898,10 @@ begin
   // locks
   for var refZaver: TJCRefZav in Self.m_data.locks do
   begin
-    var lock: TBlkLock := TBlkLock(Blocks.GetBlkByID(refZaver.block));
-    if (lock.keyReleased) then
+    var lock: TBlkLock := Blocks.GetBlkLockByID(refZaver.block);
+    if (not lock.state.enabled) then
+      barriers.Add(TJCBarBlockDisabled.Create(lock))
+    else if (lock.keyReleased) then
       barriers.Add(TJCBarLockNotLocked.Create(lock));
   end;
 
@@ -3443,6 +3445,9 @@ begin
   for var refZav in Self.m_data.locks do
   begin
     var lock := Blocks.GetBlkLockByID(refZav.block);
+
+    if (not lock.state.enabled) then
+      barriers.Add(TJCBarBlockDisabled.Create(lock));
 
     if (lock.keyReleased) then
       bariery.Add(TJCBarLockNotLocked.Create(lock));
