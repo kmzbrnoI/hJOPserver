@@ -85,6 +85,7 @@ type
     function GetBlkLinkerByID(id: Integer): TBlkLinker;
     function GetBlkLockByID(id: Integer): TBlkLock;
     function GetBlkIrByID(id: Integer): TBlkIR;
+    function GetBlkIOByID(id: Integer): TBlkIO;
     function GetBlkDisconnectorByID(id: Integer): TBlkDisconnector;
 
     function GetBlkTrackTrainMoving(obl: string): TBlk;
@@ -647,6 +648,14 @@ begin
   var blk: TBlk := Self.GetBlkByID(id);
   if ((blk <> nil) and (blk.typ = btDisconnector)) then
     Result := TBlkDisconnector(blk);
+end;
+
+function TBlocks.GetBlkIOByID(id: Integer): TBlkIO;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btIO)) then
+    Result := TBlkIO(blk);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
