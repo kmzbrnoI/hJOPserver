@@ -321,13 +321,13 @@ begin
   for var refugeeZav in JCData.refuges do
   begin
     var LI := Self.LV_Refugees.Items.Add();
-    Self.FillRefugeeLI(LI, refugeeZav.block, TBlkTurnout.PositionToStr(refugeeZav.position), refugeeZav.ref_blk);
+    Self.FillRefugeeLI(LI, refugeeZav.block, TBlkTurnout.PositionToStr(refugeeZav.position), refugeeZav.refBlk);
   end;
 
   for var lockZav in JCData.locks do
   begin
     var LI := Self.LV_Locks.Items.Add();
-    Self.FillRefLI(LI, lockZav.block, lockZav.ref_blk);
+    Self.FillRefLI(LI, lockZav.block, lockZav.refBlk);
   end;
 
   for var crossingZav in JCData.crossings do
@@ -799,7 +799,7 @@ begin
     begin
       var zav: TJCRefZav;
       zav.block := StrToInt(LI.SubItems.Strings[0]);
-      zav.ref_blk := StrToInt(LI.SubItems.Strings[2]);
+      zav.refBlk := StrToInt(LI.SubItems.Strings[2]);
       JCsaveData.locks.Add(zav);
     end;
 
@@ -809,7 +809,7 @@ begin
       var zav: TJCRefugeeZav;
       zav.block := StrToInt(LI.SubItems.Strings[0]);
       zav.position := TBlkTurnout.StrToPosition(LI.SubItems.Strings[2]);
-      zav.ref_blk := StrToInt(LI.SubItems.Strings[3]);
+      zav.refBlk := StrToInt(LI.SubItems.Strings[3]);
       JCsaveData.refuges.Add(zav);
     end;
 

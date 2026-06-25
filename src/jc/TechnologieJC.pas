@@ -66,13 +66,13 @@ type
   TJCRefugeeZav = record
     block: Integer;
     position: TTurnoutPosition;
-    ref_blk: Integer; // id bloku, pri jehoz zruseni zaveru dojde i k uvolneni zaveru odvratove vyhybky
+    refBlk: Integer; // id bloku, pri jehoz zruseni zaveru dojde i k uvolneni zaveru odvratove vyhybky
   end;
 
   // bloky v JC, ketre jsou navazany na konkretni useky v ramci JC (napr. zamky)
   TJCRefZav = record
     block: Integer;
-    ref_blk: Integer; // id bloku, pri jehoz uvolneni zaveru dojde ke zruseni
+    refBlk: Integer; // id bloku, pri jehoz uvolneni zaveru dojde ke zruseni
   end;
 
   // prejezd v JC
@@ -525,10 +525,10 @@ begin
   // refugees
   for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
   begin
-    var refugeeRef: TBlk := Blocks.GetBlkTrackOrRTByID(refugeeZav.ref_blk);
+    var refugeeRef: TBlk := Blocks.GetBlkTrackOrRTByID(refugeeZav.refBlk);
     if (refugeeRef = nil) then
     begin
-      Result.Insert(0, TJCBarBlockNotExists.Create(refugeeZav.ref_blk));
+      Result.Insert(0, TJCBarBlockNotExists.Create(refugeeZav.refBlk));
       Exit();
     end;
 
@@ -567,10 +567,10 @@ begin
       Exit();
     end;
 
-    var lockRef: TBlkTrack := Blocks.GetBlkTrackOrRTByID(refZaver.ref_blk);
+    var lockRef: TBlkTrack := Blocks.GetBlkTrackOrRTByID(refZaver.refBlk);
     if (lockRef = nil) then
     begin
-      Result.Insert(0, TJCBarBlockNotExists.Create(refZaver.ref_blk));
+      Result.Insert(0, TJCBarBlockNotExists.Create(refZaver.refBlk));
       Exit();
     end;
   end;
@@ -1435,7 +1435,7 @@ begin
           refugee.IntentionalLock();
 
           // zaver odvratu se rusi pri ruseni zaveru referencniho bloku
-          var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(refugeeZav.ref_blk));
+          var track: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(refugeeZav.refBlk));
           track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.TurnoutUnlock, refugeeZav.block));
 
           // Warning: this may call callback directly
@@ -1449,7 +1449,7 @@ begin
         Self.LogStep('Zamky: nastavuji zavery');
         for var refZav: TJCRefZav in Self.m_data.locks do
         begin
-          var refTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(refZav.ref_blk));
+          var refTrack: TBlkTrack := TBlkTrack(Blocks.GetBlkByID(refZav.refBlk));
           refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.LockCancelZaver, refZav.block));
 
           // nastaveni zaveru zamku
@@ -2700,7 +2700,7 @@ begin
         var refugeeZav: TJCRefugeeZav;
         refugeeZav.block := StrToInt(sl[i * sect_size]);
         refugeeZav.position := TTurnoutPosition(StrToInt(sl[(i * sect_size) + 1]));
-        refugeeZav.ref_blk := StrToInt(sl[(i * sect_size) + 2]);
+        refugeeZav.refBlk := StrToInt(sl[(i * sect_size) + 2]);
         Self.m_data.refuges.Add(refugeeZav);
       end;
     end;
@@ -2753,7 +2753,7 @@ begin
 
           var refZav: TJCRefZav;
           refZav.block := StrToInt(lockStrs[0]);
-          refZav.ref_blk := StrToInt(lockStrs[1]);
+          refZav.refBlk := StrToInt(lockStrs[1]);
           Self.m_data.locks.Add(refZav);
         end;
       finally
@@ -2852,7 +2852,7 @@ begin
   var refugeesStr: string := '';
   for var refugeeZav: TJCRefugeeZav in Self.m_data.refuges do
     refugeesStr := refugeesStr + '(' + IntToStr(refugeeZav.block) + ',' +
-      IntToStr(Integer(refugeeZav.position)) + ',' + IntToStr(refugeeZav.ref_blk) + ')';
+      IntToStr(Integer(refugeeZav.position)) + ',' + IntToStr(refugeeZav.refBlk) + ')';
   if (refugeesStr <> '') then
     ini.WriteString(section, 'odvraty', refugeesStr);
 
@@ -2879,7 +2879,7 @@ begin
   // locks
   var locksStr: string := '';
   for var lockZav: TJCRefZav in Self.m_data.locks do
-    locksStr := locksStr + '(' + IntToStr(lockZav.block) + ';' + IntToStr(lockZav.ref_blk) + ')';
+    locksStr := locksStr + '(' + IntToStr(lockZav.block) + ';' + IntToStr(lockZav.refBlk) + ')';
   if (locksStr <> '') then
     ini.WriteString(section, 'podm-zamky', locksStr);
 
@@ -3182,7 +3182,7 @@ begin
       begin
         refugee.IntentionalLock();
 
-        var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.refuges[i].ref_blk);
+        var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.refuges[i].refBlk);
         track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.TurnoutUnlock,
           Self.m_data.refuges[i].block));
 
@@ -3648,7 +3648,7 @@ begin
       TTurnoutPosition.minus:
         newObj['position'] := '-';
     end;
-    newObj['refBlock'] := refugeeZav.ref_blk;
+    newObj['refBlock'] := refugeeZav.refBlk;
   end;
 
   for var crossingZav in Self.m_data.crossings do
@@ -3664,7 +3664,7 @@ begin
   begin
     var newObj := json.A['locks'].AddObject();
     newObj['lock'] := refZav.block;
-    newObj['refTrack'] := refZav.ref_blk;
+    newObj['refTrack'] := refZav.refBlk;
   end;
 
   for var trackId in Self.m_data.vb do

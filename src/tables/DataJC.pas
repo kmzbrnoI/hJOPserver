@@ -154,10 +154,10 @@ begin
       case (JCData.refuges[j].position) of
         TTurnoutPosition.plus:
           str := str + '(' + Blocks.GetBlkName(JCData.refuges[j].Block) + ', +, ' +
-            Blocks.GetBlkName(JCData.refuges[j].ref_blk) + ')';
+            Blocks.GetBlkName(JCData.refuges[j].refBlk) + ')';
         TTurnoutPosition.minus:
           str := str + '(' + Blocks.GetBlkName(JCData.refuges[j].Block) + ', -, ' +
-            Blocks.GetBlkName(JCData.refuges[j].ref_blk) + ')';
+            Blocks.GetBlkName(JCData.refuges[j].refBlk) + ')';
       end;
     end; // for j
     Self.LV.Items[line].SubItems[11] := str;
@@ -181,7 +181,7 @@ begin
     var str: string := '';
     for var j := 0 to JCData.locks.Count - 1 do
       str := str + '(' + Blocks.GetBlkName(JCData.locks[j].Block) + ' : ' +
-        Blocks.GetBlkName(JCData.locks[j].ref_blk) + ')';
+        Blocks.GetBlkName(JCData.locks[j].refBlk) + ')';
     Self.LV.Items[line].SubItems[14] := str;
   end;
 
