@@ -19,7 +19,7 @@ uses IniFiles, Block, SysUtils, Windows, AreaDb, Area, StdCtrls,
   JsonDataObjects, Train, System.Math,
   BlockTrack, BlockTurnout, BlockIR, BlockLock, BlockRailway, BlockGroupSignal,
   BlockLinker, BlockAC, BlockRailwayTrack, BlockPst, BlockSignal, BlockSummary,
-  BlockCrossing, BlockDisconnector;
+  BlockCrossing, BlockDisconnector, BlockIO;
 
 CONST
   BLK_NOT_FOUND: Integer = -1;
@@ -150,7 +150,7 @@ var
 implementation
 
 uses fMain, TJCDatabase, Logging, DataBloky, TrainDb, TechnologieJC,
-  AreaStack, GetSystems, appEv, BlockIO, PTUtils, TechnologieAB,
+  AreaStack, GetSystems, appEv, PTUtils, TechnologieAB,
   ACBlocks, TCPServerPanel;
 
 /// /////////////////////////////////////////////////////////////////////////////

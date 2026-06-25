@@ -401,6 +401,17 @@ type
   end;
 
   // -----------------------------------------------------------------------
+  // IO
+
+  TJCBarIOInputBadValue = class(TJCBlockBarrier)
+  private
+    const MSG: string = 'Nevyhovující stav vstupu';
+  public
+    function ToUPO(): TUPOItem; override;
+    function ToConfSeq(): TConfSeqItem; override;
+  end;
+
+  // -----------------------------------------------------------------------
   // Vehicles & trains
 
   TJCBarTrainWrongDir = class(TJCBarrier)
@@ -1060,6 +1071,16 @@ end;
 function TPStBarControllerNotInBasicPosWarn.IsWarning(): Boolean;
 begin
   Result := True;
+end;
+
+function TJCBarIOInputBadValue.ToUPO(): TUPOItem;
+begin
+  Result := Self.BlockerUPO(Self.MSG);
+end;
+
+function TJCBarIOInputBadValue.ToConfSeq(): TConfSeqItem;
+begin
+  Result := CSItem(Self.block, Self.MSG);
 end;
 
 constructor TJCBarRVManual.Create(addr: Integer);

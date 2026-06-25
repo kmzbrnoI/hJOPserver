@@ -82,6 +82,13 @@ type
     openTrack: Integer; // pokud se prejezd nezavira, je -1
   end;
 
+  // IO blok v JC
+  TJCIOZav = record
+    blockid: Integer;
+    refBlk: Integer; // id bloku, pri jehoz uvolneni zaveru dojde ke zruseni
+    inputState: Boolean;
+  end;
+
   /// ////////////////////////////////////////////////////////////////////////
 
   TJCdata = record
@@ -102,6 +109,7 @@ type
     locks: TList<TJCRefZav>;
     vb: TList<Integer>; // seznam variantnich bodu JC - obashuje postupne ID bloku typu usek
     permNotes: TList<string>;
+    io: TList<TJCIoZav>;
 
     railwayId: Integer;
     railwayDir: TRailwayDirection;
@@ -316,7 +324,7 @@ implementation
 uses GetSystems, RCSc, TRailVehicle, BlockSignal, AreaDb, PanelConnData,
   BlockCrossing, TJCDatabase, TCPServerPanel, TrainDb, timeHelper, ownConvert,
   TRVDatabase, AreaStack, BlockLinker, BlockLock, BlockRailwayTrack, BlockDisconnector,
-  BlockPSt, appEv, ConfSeq, BlockDb, Config, colorHelper, GTNif;
+  BlockPSt, appEv, ConfSeq, BlockDb, Config, colorHelper, GTNif, BlockIO;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -373,6 +381,7 @@ begin
   Result.locks := TList<TJCRefZav>.Create();
   Result.vb := TList<Integer>.Create();
   Result.permNotes := TList<string>.Create();
+  Result.io := TList<TJCIOZav>.Create();
   Result.speedsGo := TList<TTrainSpeed>.Create();
   Result.speedsStop := TList<TTrainSpeed>.Create();
 end;
@@ -397,6 +406,8 @@ begin
     jcdata.vb.Free();
   if (Assigned(jcdata.permNotes)) then
     FreeAndNil(jcdata.permNotes);
+  if (Assigned(jcdata.io)) then
+    FreeAndNil(jcdata.io);
   if (Assigned(jcdata.speedsGo)) then
     jcdata.speedsGo.Free();
   if (Assigned(jcdata.speedsStop)) then
@@ -575,6 +586,25 @@ begin
     end;
   end;
 
+  // IO
+  for var ioZav: TJCIOZav in Self.m_data.io do
+  begin
+    var io: TBlkIO := Blocks.GetBlkIOByID(ioZav.blockid);
+    if (io = nil) then
+    begin
+      Result.Insert(0, TJCBarBlockNotExists.Create(ioZav.blockid));
+      Exit();
+    end;
+
+    var ref: TBlkTrack := Blocks.GetBlkTrackOrRTByID(ioZav.refBlk);
+    if (ref = nil) then
+    begin
+      Result.Insert(0, TJCBarBlockNotExists.Create(ioZav.refBlk));
+      Exit();
+    end;
+  end;
+
+  // Permanent notes
   for var note: string in Self.m_data.permNotes do
     Result.Add(TJCBarGeneralNote.Create(note));
 
@@ -903,6 +933,16 @@ begin
       barriers.Add(TJCBarBlockDisabled.Create(lock))
     else if (lock.keyReleased) then
       barriers.Add(TJCBarLockNotLocked.Create(lock));
+  end;
+
+  // IO blocks
+  for var ioZav: TJCIOZav in Self.m_data.io do
+  begin
+    var io: TBlkIO := Blocks.GetBlkIOByID(ioZav.blockid);
+    if (not io.enabled) then
+      barriers.Add(TJCBarBlockDisabled.Create(io))
+    else if ((not io.isRCSinput) or (io.activeInput <> ioZav.inputState)) then
+      barriers.Add(TJCBarIOInputBadValue.Create(io));
   end;
 
   // stolen engine
@@ -2763,6 +2803,29 @@ begin
       end;
     end;
 
+    // io blocks
+    begin
+      var ioStrs: TStrings := TStringList.Create();
+      try
+        sl.Clear();
+        ExtractStrings(['(', ')'], [], PChar(ini.ReadString(section, 'io', '')), sl);
+        Self.m_data.locks.Clear();
+        for var i: Integer := 0 to sl.Count - 1 do
+        begin
+          ioStrs.Clear();
+          ExtractStrings([';', ',', '|', '-'], [], PChar(sl[i]), ioStrs);
+
+          var ioZav: TJCIOZav;
+          ioZav.blockid := StrToInt(ioStrs[0]);
+          ioZav.refBlk := StrToInt(ioStrs[1]);
+          ioZav.inputState := StrToBool(ioStrs[2]);
+          Self.m_data.io.Add(ioZav);
+        end;
+      finally
+        ioStrs.Free();
+      end;
+    end;
+
     // variant points
     begin
       sl.Clear();
@@ -2896,9 +2959,20 @@ begin
   end;
 
   // Variant points
-  var vpsStr: string := SerializeIntList(Self.m_data.vb);
-  if (vpsStr <> '') then
-    ini.WriteString(section, 'vb', vpsStr);
+  begin
+    var vpsStr: string := SerializeIntList(Self.m_data.vb);
+    if (vpsStr <> '') then
+      ini.WriteString(section, 'vb', vpsStr);
+  end;
+
+  // io blocks
+  begin
+    var ioStr: string := '';
+    for var ioZav: TJCIOZav in Self.m_data.io do
+      ioStr := ioStr + '(' + IntToStr(ioZav.blockid) + ',' + IntToStr(ioZav.refBlk) + ',' + BoolToStr10(ioZav.inputState) + ')';
+    if (ioStr <> '') then
+      ini.WriteString(section, 'io', ioStr);
+  end;
 
   for var i: Integer := 0 to Self.m_data.permNotes.Count-1 do
     ini.WriteString(section, 'stit'+IntToStr(i), Self.m_data.permNotes[i]);
@@ -3056,13 +3130,19 @@ begin
       Exit(false);
   end;
 
-  // kontrola uzamceni zamku:
+  // check locks are locked
   for var refZav: TJCRefZav in Self.m_data.locks do
   begin
     var lock: TBlkLock := Blocks.GetBlkLockByID(refZav.block);
+    if ((not lock.state.enabled) or (lock.keyReleased)) then
+      Exit(false);
+  end;
 
-    // kontrola uzamceni
-    if (lock.keyReleased) then
+  // check IO blocks
+  for var ioZav: TJCIOZav in Self.m_data.io do
+  begin
+    var io: TBlkIO := Blocks.GetBlkIOByID(ioZav.blockid);
+    if ((not io.enabled) or (not io.isRCSinput) or (io.activeInput <> ioZav.inputState)) then
       Exit(false);
   end;
 
@@ -3464,6 +3544,16 @@ begin
 
     if (not lock.emLock) then
       bariery.Add(TJCBarLockEmLock.Create(lock));
+  end;
+
+  // IO blocks
+  for var ioZav: TJCIOZav in Self.m_data.io do
+  begin
+    var io: TBlkIO := Blocks.GetBlkIOByID(ioZav.blockid);
+    if (not io.enabled) then
+      barriers.Add(TJCBarBlockDisabled.Create(io));
+    if ((not io.isRCSinput) or (io.activeInput <> ioZav.inputState)) then
+      barriers.Add(TJCBarIOInputBadValue.Create(io));
   end;
 end;
 
