@@ -1313,20 +1313,14 @@ end;
 function TTrain.GetTrackSpeed(): Integer;
 begin
   var speedLimits := TList<Cardinal>.Create();
-  var anyRailway: Boolean := False;
   try
     // Get speeds from railways
     begin
       var tracks := Blocks.GetBlkWithTrain(Self);
       try
         for var track: TBlk in tracks do
-        begin
           if (track.typ = TBlkType.btRT) then
-          begin
             speedLimits.Add(TBlkRT(track).Speed(Self));
-            anyRailway := True;
-          end;
-        end;
       finally
         tracks.Free();
       end;
@@ -1352,7 +1346,7 @@ begin
     begin
       Result := speedLimits[0];
       for var speed: Cardinal in speedLimits do
-        if (speed < Result) then
+        if (Integer(speed) < Result) then
           Result := speed;
     end else begin
       Result := -1; // train not in path nor in railway
@@ -1375,11 +1369,11 @@ begin
       ((TBlk(Self.front).typ <> btRT) or (not TBlkRT(Self.front).stopSlowedDown))) then
   begin
     // Not yet slowed -> increase & decrease speed
-    if (Cardinal(Self.wantedSpeed) <> speed) then
+    if (Self.wantedSpeed <> speed) then
       Self.speed := speed;
   end else begin
     // Already slowed down -> do not increase speed, just decrease
-    if (Cardinal(Self.wantedSpeed) > speed) then
+    if (Self.wantedSpeed > speed) then
       Self.speed := speed;
   end;
 end;

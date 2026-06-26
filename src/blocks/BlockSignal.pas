@@ -380,7 +380,6 @@ begin
     ownStrUtils.ExtractStringsEx([','], [], line, strs);
     if (strs.Count < 2) then
       raise Exception.Create('TBlkSignalOutput strs.Count < 2');
-    var output: TBlkSignalOutput;
     outputType := TBlkSignalOutputType(StrToInt(strs[0]));
     rcs.Load(strs[1]);
     if (strs.Count >= 3) then

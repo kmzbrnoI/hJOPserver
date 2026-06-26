@@ -11,7 +11,7 @@ unit BlockIO;
 interface
 
 uses IniFiles, Block, RCSc, RCSsc, Classes, SysUtils, IdContext, Area,
-  Graphics, JsonDataObjects, RCSErrors, RCSIFace, colorHelper;
+  Graphics, JsonDataObjects, RCSErrors, RCSIFace, colorHelper, Generics.Collections;
 
 type
 
@@ -37,6 +37,7 @@ type
     outputState: TRCSOutputState;
     nullTime: TTime;
     note: string;
+    inZaver: Cardinal; // n.o. blocks who gave me zaver
   end;
 
   TBlkIO = class(TBlk)
@@ -46,6 +47,8 @@ type
       inputState: TRCSInputState.isOff;
       outputState: TRCSOutputState.osDisabled;
       nullTime: 0;
+      note: '';
+      inZaver: 0
     );
 
     _DEFAULT_IN_ACTIVE_COLOR: TColor = TJopColor.green;
@@ -60,6 +63,10 @@ type
     function IsActiveOutput(): Boolean;
 
     procedure SetNote(note: string);
+
+    function GetInZaver(): Boolean;
+    procedure SetInZaver(new: Boolean);
+    procedure CheckPathBreak();
 
     procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
     procedure MenuAktivOnClick(SenderPnl: TIdContext; SenderOR: TObject);
@@ -81,6 +88,7 @@ type
     procedure Deactivate();
 
     procedure Update(); override;
+    procedure Change(now: Boolean = false); override;
 
     procedure PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;
       params: string = ''); override;
@@ -107,6 +115,7 @@ type
     property activeInput: Boolean read IsActiveInput;
     property nullable: Boolean read IsNullable;
     property note: string read m_state.note write SetNote;
+    property inZaver: Boolean read GetInZaver write SetInZaver;
 
   end;
 
@@ -114,7 +123,8 @@ type
 
 implementation
 
-uses AreaDb, TCPServerPanel, ownConvert, Config, timeHelper, PTUtils;
+uses AreaDb, TCPServerPanel, ownConvert, Config, timeHelper, PTUtils, TechnologieJC,
+  TJCDatabase;
 
 constructor TBlkIO.Create(index: Integer);
 begin
@@ -202,8 +212,7 @@ end;
 
 procedure TBlkIO.Enable();
 begin
-  if ((Self.isRCSOutput) and (Self.RCSoutputNeeded) and (not RCSs.IsOperationalModule(Self.m_settings.RCSoutput)))
-  then
+  if ((Self.isRCSOutput) and (Self.RCSoutputNeeded) and (not RCSs.IsOperationalModule(Self.m_settings.RCSoutput))) then
     Exit();
   if ((Self.isRCSinput) and (Self.RCSinputNeeded) and (not RCSs.IsOperationalModule(Self.m_settings.RCSinput))) then
     Exit();
@@ -221,6 +230,7 @@ begin
   Self.m_state.enabled := false;
   Self.m_state.outputState := TRCSOutputState.osDisabled;
   Self.m_state.inputState := TRCSInputState.isOff;
+  Self.m_state.inZaver := 0;
 end;
 
 function TBlkIO.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
@@ -288,6 +298,14 @@ begin
 
   if ((Self.enabled) and (Self.nullable) and (Self.activeOutput) and (Now > Self.m_state.nullTime)) then
     Self.Deactivate();
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkIO.Change(now: Boolean = false);
+begin
+  inherited Change(now);
+  Self.CheckPathBreak();
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -428,6 +446,7 @@ begin
   json['enabled'] := Self.m_state.enabled;
   json['activeOutput'] := Self.activeOutput;
   json['activeInput'] := Self.activeInput;
+  json['inZaver'] := Self.inZaver;
 end;
 
 procedure TBlkIO.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
@@ -559,6 +578,45 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-end.// unit
+function TBlkIO.GetInZaver(): Boolean;
+begin
+  Result := (Self.m_state.inZaver > 0);
+end;
 
+procedure TBlkIO.SetInZaver(new: Boolean);
+begin
+  if (new) then
+  begin
+    Inc(Self.m_state.inZaver);
+    if (Self.m_state.inZaver = 1) then
+      Self.Change();
+  end else begin
+    if (Self.m_state.inZaver > 0) then
+    begin
+      Dec(Self.m_state.inZaver);
+      if (Self.m_state.inZaver = 0) then
+        Self.Change();
+    end;
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkIO.CheckPathBreak();
+begin
+  if (not Self.inZaver) then
+    Exit();
+
+  var JCs: TList<TJC> := JCDb.FindActiveJCsWithIO(Self.id);
+  try
+    for var jc: TJC in JCs do
+      for var ioZav: TJCIOZav in jc.data.io do
+        if ((ioZav.blockid = Self.id) and ((not Self.isRCSinput) or (Self.activeInput <> ioZav.inputState))) then
+          jc.CancelOrStop();
+  finally
+    JCs.Free();
+  end;
+end;
+
+end.// unit
 

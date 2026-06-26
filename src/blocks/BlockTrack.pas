@@ -180,7 +180,6 @@ type
 
     function SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
     function MenuShowLength(): Boolean;
-    function MenuTopItemsCount(): Integer; override;
 
   protected
     m_settings: TBlkTrackSettings;
@@ -188,6 +187,7 @@ type
     function MenuVBClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
     function MenuKCClick(SenderPnl: TIdContext; SenderOR: TObject): Boolean;
     function MoveTrain(SenderPnl: TIdContext; SenderOR: TObject; trainLocalIndex: Integer): Boolean;
+    function MenuTopItemsCount(): Integer; override;
 
   public
 

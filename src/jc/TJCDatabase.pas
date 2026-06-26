@@ -65,6 +65,7 @@ type
     function FindActiveJCsWithCrossing(blk_id: Integer): TList<TJC>;
     function FindActiveNCsWithPSt(pst_id: Integer): TList<TJC>;
     function FindActiveJCsWithTrain(train: TTrain): TList<TJC>;
+    function FindActiveJCsWithIO(io_id: Integer): TList<TJC>;
 
     // jakmile dojde ke zmene navesti navestidla nav, muze dojit k ovlivneni nejakeho jineho navestidla
     // tato fce zajisti, ze k ovlivneni dojde
@@ -488,6 +489,11 @@ begin
   Result := Self.FindActiveJCs(TechnologieJC.ContainsTrain, train.index);
 end;
 
+function TJCDb.FindActiveJCsWithIO(io_id: Integer): TList<TJC>;
+begin
+  Result := Self.FindActiveJCs(TechnologieJC.ContainsIO, io_id);
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 // Jakmile dojde k nastaveni navestidla na ceste JC, tady se zkontroluje, zda-li
@@ -568,6 +574,8 @@ begin
           JCs := JCDb.FindActiveJCsWithRailway(blk.id);
       btLock:
           JCs := JCDb.FindActiveJCsWithLock(blk.id);
+      btIO:
+          JCs := JCDb.FindActiveJCsWithIO(blk.id);
     else
       JCs := TList<TJC>.Create();
     end; // case

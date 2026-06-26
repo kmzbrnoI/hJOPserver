@@ -21,82 +21,77 @@ type
     constructor Create(events: TChangeEvents; event: TChangeEvent);
   end;
 
-  TChangeEventCaller = class
-    procedure CopyTrackZaver(Sender: TObject; data: Integer);
-    procedure LockCancelZaver(Sender: TObject; data: Integer);
-    procedure CrossingCancelZaver(Sender: TObject; data: Integer);
-    procedure RailwayCancelZaver(Sender: TObject; data: Integer);
-    procedure TurnoutUnlock(Sender: TObject; data: Integer);
-    procedure RemoveUsekNeprofil(Sender: TObject; data: Pointer);
-    procedure RemoveEvent(Sender: TObject; data: Pointer);
+  TCECaller = class
+    class procedure CopyTrackZaver(Sender: TObject; data: Integer);
+    class procedure LockCancelZaver(Sender: TObject; data: Integer);
+    class procedure CrossingCancelZaver(Sender: TObject; data: Integer);
+    class procedure RailwayCancelZaver(Sender: TObject; data: Integer);
+    class procedure TurnoutUnlock(Sender: TObject; data: Integer);
+    class procedure IOCancelZaver(Sender: TObject; data: Integer);
+    class procedure RemoveUsekNeprofil(Sender: TObject; data: Pointer);
+    class procedure RemoveEvent(Sender: TObject; data: Pointer);
   end;
-
-var ceCaller: TChangeEventCaller;
 
 implementation
 
 uses BlockDb, Block, BlockTrack, BlockTurnout, BlockLock, BlockCrossing,
-  BlockRailway;
+  BlockRailway, BlockIO;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TChangeEventCaller.CopyTrackZaver(Sender: TObject; data: Integer);
+class procedure TCECaller.CopyTrackZaver(Sender: TObject; data: Integer);
 begin
   var track := Blocks.GetBlkTrackOrRTByID(data);
-  if (track = nil) then
-    Exit();
-
-  track.zaver := TBlkTrack(Sender).zaver;
+  if (track <> nil) then
+    track.zaver := TBlkTrack(Sender).zaver;
 end;
 
-procedure TChangeEventCaller.LockCancelZaver(Sender: TObject; data: Integer);
+class procedure TCECaller.LockCancelZaver(Sender: TObject; data: Integer);
 begin
   var lock: TBlkLock := Blocks.GetBlkLockByID(data);
-  if (lock = nil) then
-    Exit();
-  lock.zaver := false;
+  if (lock <> nil) then
+    lock.zaver := False;
 end;
 
-procedure TChangeEventCaller.CrossingCancelZaver(Sender: TObject; data: Integer);
+class procedure TCECaller.IOCancelZaver(Sender: TObject; data: Integer);
+begin
+  var io: TBlkIO := Blocks.GetBlkIOByID(data);
+  if (io <> nil) then
+    io.inZaver := False;
+end;
+class
+procedure TCECaller.CrossingCancelZaver(Sender: TObject; data: Integer);
 begin
   var crossing := Blocks.GetBlkCrossingByID(data);
-  if (crossing = nil) then
-    Exit();
-  crossing.zaver := false;
+  if (crossing <> nil) then
+    crossing.zaver := False;
 end;
 
-procedure TChangeEventCaller.RailwayCancelZaver(Sender: TObject; data: Integer);
+class procedure TCECaller.RailwayCancelZaver(Sender: TObject; data: Integer);
 begin
   var railway: TBlkRailway := Blocks.GetBlkRailwayByID(data);
-  if (railway = nil) then
-    Exit();
-  railway.Zaver := false;
+  if (railway <> nil) then
+    railway.Zaver := False;
 end;
 
-/// /////////////////////////////////////////////////////////////////////////////
-
-procedure TChangeEventCaller.TurnoutUnlock(Sender: TObject; data: Integer);
+class procedure TCECaller.TurnoutUnlock(Sender: TObject; data: Integer);
 begin
   var turnout := Blocks.GetBlkTurnoutByID(data);
-  if (turnout = nil) then
-    Exit();
-
-  turnout.IntentionalUnlock();
+  if (turnout <> nil) then
+    turnout.IntentionalUnlock();
 end;
 
-/// /////////////////////////////////////////////////////////////////////////////
-
-procedure TChangeEventCaller.RemoveUsekNeprofil(Sender: TObject; data: Pointer);
+class procedure TCECaller.RemoveUsekNeprofil(Sender: TObject; data: Pointer);
 var caller: ^TNPCallerData;
 begin
   caller := data;
 
   var track := Blocks.GetBlkTrackOrRTByID(caller^.usekId);
-  if (track = nil) then
-    Exit();
-
-  track.RemoveNeprofilJC(caller^.jcId);
-  FreeMem(caller);
+  if (track <> nil) then
+  begin
+    track.RemoveNeprofilJC(caller^.jcId);
+    FreeMem(caller);
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -107,7 +102,7 @@ begin
   Self.event := event;
 end;
 
-procedure TChangeEventCaller.RemoveEvent(Sender: TObject; data: Pointer);
+class procedure TCECaller.RemoveEvent(Sender: TObject; data: Pointer);
 var event: ^TRemoveEventData;
 begin
   event := data;
@@ -117,15 +112,5 @@ begin
 
   FreeMem(event);
 end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-initialization
-
-ceCaller := TChangeEventCaller.Create();
-
-finalization
-
-ceCaller.Free();
 
 end.

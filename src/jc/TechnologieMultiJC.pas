@@ -454,7 +454,6 @@ begin
         begin
           for var barrier: TJCBarrier in jcbarriers do
           begin
-            var newBar: TJCBarrier := barrier;
             if ((barrier.ClassType = TJCBarTrackLastOccupied) or (barrier.ClassType = TJCBarRailwayOccupied)) then
             begin
               Result.Add(TJCBarTrackOccupied.Create((barrier as TJCBlockBarrier).block));

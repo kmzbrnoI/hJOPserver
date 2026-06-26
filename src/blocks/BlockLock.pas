@@ -148,6 +148,7 @@ begin
   Self.m_state.keyReleased := false;
   Self.m_state.emLock := 0;
   Self.m_state.error := false;
+  Self.m_state.zaver := 0;
 
   Self.Change(true);
 end;

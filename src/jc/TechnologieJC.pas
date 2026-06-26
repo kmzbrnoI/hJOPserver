@@ -197,7 +197,7 @@ type
 
     procedure BarriersVCPC(var barriers: TJCBarriers);
     procedure BarriersNC(var barriers: TJCBarriers);
-    procedure BarriersNCToAccept(var bariery: TJCBarriers);
+    procedure BarriersNCToAccept(var barriers: TJCBarriers);
 
     function GetTrain(signal: TBlk = nil; track: TBlk = nil): TTrain; // vraci vlak na useku pred navestidlem
 
@@ -275,6 +275,7 @@ type
     function ContainsRailway(blockid: Integer): Boolean;
     function ContainsCrossing(blockid: Integer): Boolean;
     function ContainsTrain(traini: Integer): Boolean;
+    function ContainsIO(blockid: Integer): Boolean;
 
     procedure EmergencyStopTrainInVC();
 
@@ -318,6 +319,7 @@ type
   function ContainsRailway(jc: TJC; blockid: Integer): Boolean;
   function ContainsCrossing(jc: TJC; blockid: Integer): Boolean;
   function ContainsTrain(jc: TJC; traini: Integer): Boolean;
+  function ContainsIO(jc: TJC; blockid: Integer): Boolean;
 
 implementation
 
@@ -1420,7 +1422,7 @@ begin
           var oneButLastTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.tracks[Self.m_data.tracks.Count-2]);
           oneButLastTrack.AddChangeEvent(
             oneButLastTrack.eventsOnZaverReleaseOrAB,
-            CreateChangeEventInt(ceCaller.CopyTrackZaver, Self.lastTrack.id)
+            CreateChangeEventInt(TCECaller.CopyTrackZaver, Self.lastTrack.id)
           );
         end;
 
@@ -1478,7 +1480,7 @@ begin
 
           // zaver odvratu se rusi pri ruseni zaveru referencniho bloku
           var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(refugeeZav.refBlk);
-          track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.TurnoutUnlock, refugeeZav.block));
+          track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.TurnoutUnlock, refugeeZav.block));
 
           // Warning: this may call callback directly
           // Callback for just-locking turnout will have no effect due to nextVyhybka = -1
@@ -1488,15 +1490,28 @@ begin
 
         Self.m_state.nextTurnout := nextTurnout;
 
-        Self.LogStep('Zamky: nastavuji zavery');
-        for var refZav: TJCRefZav in Self.m_data.locks do
+        if (Self.m_data.locks.Count > 0) then
         begin
-          var refTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(refZav.refBlk);
-          refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.LockCancelZaver, refZav.block));
+          Self.LogStep('Zamky: nastavuji zavery');
+          for var refZav: TJCRefZav in Self.m_data.locks do
+          begin
+            var refTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(refZav.refBlk);
+            refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.LockCancelZaver, refZav.block));
+            var lock: TBlkLock := Blocks.GetBlkLockByID(refZav.block);
+            lock.zaver := true;
+          end;
+        end;
 
-          // nastaveni zaveru zamku
-          var lock: TBlkLock := Blocks.GetBlkLockByID(refZav.block);
-          lock.zaver := true;
+        if (Self.m_data.io.Count > 0) then
+        begin
+          Self.LogStep('IO: nastavuji zavery');
+          for var ioZav: TJCIOZav in Self.m_data.io do
+          begin
+            var refTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(ioZav.refBlk);
+            refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.LockCancelZaver, ioZav.blockid));
+            var io: TBlkIO := Blocks.GetBlkIOByID(ioZav.blockid);
+            io.inZaver := true;
+          end;
         end;
 
         // trat
@@ -1515,7 +1530,7 @@ begin
 
           // zruseni zaveru posledniho bloku JC zpusobi zruseni zaveru trati
           Self.lastTrack.AddChangeEvent(Self.lastTrack.eventsOnZaverReleaseOrAB,
-            CreateChangeEventInt(ceCaller.RailwayCancelZaver, Self.m_data.railwayId));
+            CreateChangeEventInt(TCECaller.RailwayCancelZaver, Self.m_data.railwayId));
         end;
 
         Self.step := stepJcTurnoutsMoving;
@@ -1577,7 +1592,7 @@ begin
             npCall := GetMemory(SizeOf(TNPCallerData));
             npCall^.usekId := neprofil.id;
             npCall^.jcId := Self.m_data.id;
-            turnoutTrack.AddChangeEvent(turnoutTrack.eventsOnZaverReleaseOrAB, CreateChangeEvent(ceCaller.RemoveUsekNeprofil, npCall));
+            turnoutTrack.AddChangeEvent(turnoutTrack.eventsOnZaverReleaseOrAB, CreateChangeEvent(TCECaller.RemoveUsekNeprofil, npCall));
           end;
         end;
 
@@ -1611,7 +1626,7 @@ begin
             var openTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(crossingZav.openTrack);
             openTrack.AddChangeEvent(
               openTrack.eventsOnZaverReleaseOrAB,
-              CreateChangeEventInt(ceCaller.CrossingCancelZaver, crossingZav.crossingId)
+              CreateChangeEventInt(TCECaller.CrossingCancelZaver, crossingZav.crossingId)
             );
 
             anyClosed := true;
@@ -2809,7 +2824,7 @@ begin
       try
         sl.Clear();
         ExtractStrings(['(', ')'], [], PChar(ini.ReadString(section, 'io', '')), sl);
-        Self.m_data.locks.Clear();
+        Self.m_data.io.Clear();
         for var i: Integer := 0 to sl.Count - 1 do
         begin
           ioStrs.Clear();
@@ -3188,7 +3203,7 @@ begin
 
     // prejezd se uzavira -> po uvolneni zaveru bloku pod prejezdem prejezd opet otevrit
     var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.crossings[data].openTrack);
-    track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.CrossingCancelZaver,
+    track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.CrossingCancelZaver,
       Self.m_data.crossings[data].crossingId));
   end;
 
@@ -3275,7 +3290,7 @@ begin
         refugee.IntentionalLock();
 
         var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.refuges[i].refBlk);
-        track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(ceCaller.TurnoutUnlock,
+        track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.TurnoutUnlock,
           Self.m_data.refuges[i].block));
 
         Self.m_state.nextTurnout := i + Self.m_data.turnouts.Count + 1;
@@ -3379,12 +3394,12 @@ end;
 // generuje podminky branici postaveni nouzove posunove ceste
 // tyto podminky jsou prubezne zobrazovany dispecerovi v potvrzovaci sekvenci
 
-procedure TJC.BarriersNCToAccept(var bariery: TJCBarriers);
+procedure TJC.BarriersNCToAccept(var barriers: TJCBarriers);
 begin
   // signal
   var signal := Blocks.GetBlkByID(Self.m_data.signalId);
   if (not(signal as TBlkSignal).enabled) then
-    bariery.Add(TJCBarBlockDisabled.Create(signal));
+    barriers.Add(TJCBarBlockDisabled.Create(signal));
 
   // tracks
   for var i := 0 to Self.m_data.tracks.Count - 1 do
@@ -3394,16 +3409,16 @@ begin
     var glob := track.GetGlobalSettings();
 
     if (track.occupied = TTrackState.disabled) then
-      bariery.Add(TJCBarBlockDisabled.Create(track))
+      barriers.Add(TJCBarBlockDisabled.Create(track))
 
     else if ((i <> Self.m_data.tracks.Count - 1) or (Self.typ <> TJCType.shunt)) then
     begin
       if (track.occupied <> TTrackState.Free) then
-        bariery.Add(TJCBarTrackOccupied.Create(track));
+        barriers.Add(TJCBarTrackOccupied.Create(track));
     end;
 
     if ((track.IsTrain()) and (Self.typ = TJCType.Train)) then
-      bariery.Add(TJCBarTrackTrain.Create(track));
+      barriers.Add(TJCBarTrackTrain.Create(track));
   end;
 
   // turnouts
@@ -3413,35 +3428,35 @@ begin
     var glob := turnout.GetGlobalSettings();
 
     if (turnout.position <> turnoutZav.position) then
-      bariery.Add(TJCBarTurnoutWrongPos.Create(turnout));
+      barriers.Add(TJCBarTurnoutWrongPos.Create(turnout));
 
     if (not turnout.emLock) then
-      bariery.Add(TJCBarTurnoutEmLock.Create(turnout));
+      barriers.Add(TJCBarTurnoutEmLock.Create(turnout));
 
     var coupling := Blocks.GetBlkTurnoutByID(turnout.GetSettings.coupling);
     if ((coupling <> nil) and (turnout.position <> turnoutZav.position)) then
     begin
       if (not coupling.emLock) then
-        bariery.Add(TJCBarTurnoutEmLock.Create(coupling));
+        barriers.Add(TJCBarTurnoutEmLock.Create(coupling));
 
       if (coupling.occupied = TTrackState.occupied) then
-        bariery.Add(TJCBarTrackOccupied.Create(coupling));
+        barriers.Add(TJCBarTrackOccupied.Create(coupling));
     end;
 
     if ((turnoutZav.position = TTurnoutPosition.plus) and (turnout.npBlokPlus <> nil)) then
     begin
       if (TBlkTrack(turnout.npBlokPlus).occupied = TTrackState.disabled) then
-        bariery.Add(TJCBarBlockDisabled.Create(turnout.npBlokPlus))
+        barriers.Add(TJCBarBlockDisabled.Create(turnout.npBlokPlus))
       else if (TBlkTrack(turnout.npBlokPlus).occupied <> TTrackState.Free) then
-        bariery.Add(TJCBarTrackOccupied.Create(turnout.npBlokPlus));
+        barriers.Add(TJCBarTrackOccupied.Create(turnout.npBlokPlus));
     end;
 
     if ((turnoutZav.position = TTurnoutPosition.minus) and (turnout.npBlokMinus <> nil)) then
     begin
       if (TBlkTrack(turnout.npBlokMinus).occupied = TTrackState.disabled) then
-        bariery.Add(TJCBarBlockDisabled.Create(turnout.npBlokMinus))
+        barriers.Add(TJCBarBlockDisabled.Create(turnout.npBlokMinus))
       else if (TBlkTrack(turnout.npBlokMinus).occupied <> TTrackState.Free) then
-        bariery.Add(TJCBarTrackOccupied.Create(turnout.npBlokMinus));
+        barriers.Add(TJCBarTrackOccupied.Create(turnout.npBlokMinus));
     end;
   end;
 
@@ -3454,14 +3469,14 @@ begin
     begin
       if (crossing.pcEmOpen) then
       begin
-        bariery.Add(TJCBarCrossingEmergencyOpened.Create(crossing));
+        barriers.Add(TJCBarCrossingEmergencyOpened.Create(crossing));
       end else begin
         if ((crossingZav.closeTracks.Count > 0) and (not crossing.safelyClosed)) then
-          bariery.Add(TJCBarCrossingNotClosed.Create(crossing));
+          barriers.Add(TJCBarCrossingNotClosed.Create(crossing));
       end;
     end
     else
-      bariery.Add(TJCBarCrossingError.Create(crossing));
+      barriers.Add(TJCBarCrossingError.Create(crossing));
   end;
 
   // refugees
@@ -3470,17 +3485,17 @@ begin
     var refugee := Blocks.GetBlkTurnoutByID(refugeeZav.block);
 
     if (refugee.position <> refugeeZav.position) then
-      bariery.Add(TJCBarTurnoutWrongPos.Create(refugee));
+      barriers.Add(TJCBarTurnoutWrongPos.Create(refugee));
 
     if (not refugee.emLock) then
-      bariery.Add(TJCBarTurnoutEmLock.Create(refugee));
+      barriers.Add(TJCBarTurnoutEmLock.Create(refugee));
 
     var coupling := Blocks.GetBlkTurnoutByID(refugee.GetSettings.coupling);
     if (coupling <> nil) then
     begin
       if (refugee.position <> refugeeZav.position) then
         if (not coupling.emLock) then
-          bariery.Add(TJCBarTurnoutEmLock.Create(coupling));
+          barriers.Add(TJCBarTurnoutEmLock.Create(coupling));
     end;
   end;
 
@@ -3492,7 +3507,7 @@ begin
       if (not lastTrack.sectReady) then
       begin
         var railway := Blocks.GetBlkRailwayByID(Self.m_data.railwayId);
-        bariery.Add(TJCBarRailwayNotReady.Create(railway));
+        barriers.Add(TJCBarRailwayNotReady.Create(railway));
       end;
     end;
 
@@ -3500,17 +3515,17 @@ begin
       var railway := Blocks.GetBlkRailwayByID(Self.m_data.railwayId);
 
       if ((railway.departureForbidden) and (Self.typ = TJCType.Train)) then
-        bariery.Add(TJCBarRailwayZAKVC.Create(railway));
+        barriers.Add(TJCBarRailwayZAKVC.Create(railway));
       if ((not railway.departureForbidden) and (Self.typ = TJCType.shunt)) then
-        bariery.Add(TJCBarRailwayNoZAK.Create(railway));
+        barriers.Add(TJCBarRailwayNoZAK.Create(railway));
       if (railway.Zaver) then
-        bariery.Add(TJCBarRailwayZaver.Create(railway));
+        barriers.Add(TJCBarRailwayZaver.Create(railway));
       if (railway.request) then
-        bariery.Add(TJCBarRailwayRequesting.Create(railway));
+        barriers.Add(TJCBarRailwayRequesting.Create(railway));
       if (Self.m_data.railwayDir <> railway.direction) then
-        bariery.Add(TJCBarRailwayWrongDir.Create(railway));
+        barriers.Add(TJCBarRailwayWrongDir.Create(railway));
       if ((not railway.BP) and (Self.typ = TJCType.Train)) then
-        bariery.Add(TJCBarRailwayNoBp.Create(railway));
+        barriers.Add(TJCBarRailwayNoBp.Create(railway));
 
       var track := TBlkTrack((Self.signal as TBlkSignal).track);
 
@@ -3520,12 +3535,12 @@ begin
         begin
           if ((railway.state.trains.Count > 0) or ((railway.GetLastTrack(Self.data.railwayDir) as TBlkRT).Zaver <>
             TZaver.no)) then
-            bariery.Add(TJCBarRailwayNoTrainMove.Create(railway))
+            barriers.Add(TJCBarRailwayNoTrainMove.Create(railway))
           else
-            bariery.Add(TJCBarRailwayMoveToEnd.Create(railway));
+            barriers.Add(TJCBarRailwayMoveToEnd.Create(railway));
         end else begin
           if ((Self.lastTrack.IsTrain()) or (not railway.BP) or (railway.direction <> Self.data.railwayDir)) then
-            bariery.Add(TJCBarRailwayNoTrainMove.Create(railway));
+            barriers.Add(TJCBarRailwayNoTrainMove.Create(railway));
         end;
       end;
     end;
@@ -3540,10 +3555,10 @@ begin
       barriers.Add(TJCBarBlockDisabled.Create(lock));
 
     if (lock.keyReleased) then
-      bariery.Add(TJCBarLockNotLocked.Create(lock));
+      barriers.Add(TJCBarLockNotLocked.Create(lock));
 
     if (not lock.emLock) then
-      bariery.Add(TJCBarLockEmLock.Create(lock));
+      barriers.Add(TJCBarLockEmLock.Create(lock));
   end;
 
   // IO blocks
@@ -3966,6 +3981,14 @@ begin
   Result := False;
 end;
 
+function TJC.ContainsIO(blockid: Integer): Boolean;
+begin
+  for var ioZav: TJCIOZav in Self.data.io do
+    if (ioZav.blockid = blockid) then
+      Exit(True);
+  Result := False;
+end;
+
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TJC.TrackCancelZaver(track: TBlkTrack);
@@ -4058,6 +4081,11 @@ end;
 function ContainsTrain(jc: TJC; traini: Integer): Boolean;
 begin
   Result := jc.ContainsTrain(traini);
+end;
+
+function ContainsIO(jc: TJC; blockid: Integer): Boolean;
+begin
+  Result := jc.ContainsIO(blockid);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
