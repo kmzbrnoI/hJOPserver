@@ -1325,7 +1325,7 @@ begin
       Exit(); // will call barriers.Free() in finally block
     end;
 
-    Self.Log('Krok 2 : povrzovaci sekvence OK');
+    Self.LogStep('Povrzovaci sekvence OK');
     Self.SetInitStep();
   finally
     barriers.Free();
@@ -1340,7 +1340,7 @@ begin
   if (Self.step <> stepConfBarriers) then
     Exit();
 
-  Self.Log('Krok 1 : upozornění schválena, kontroluji znovu bariéry');
+  Self.LogStep('Upozornění schválena, kontroluji znovu bariéry');
 
   // znovu zkontrolujeme bariery (behem potvrzovani se mohly zmenit)
   var barriers: TJCBarriers := Self.barriers(Self.m_state.nc);
@@ -1580,7 +1580,7 @@ begin
               if (Self.m_state.senderPnl <> nil) and (Self.m_state.senderOR <> nil) then
                 PanelServer.BottomError(Self.m_state.senderPnl, 'Neuvolněn ' + neprofil.name,
                   (Self.m_state.senderOR as TArea).ShortName, 'TECHNOLOGIE');
-              Self.LogStep('Krok 14 : Neprofilovy usek ' + neprofil.name + ' neuvolnen!');
+              Self.LogStep('Neprofilovy usek ' + neprofil.name + ' neuvolnen!');
               Self.CancelActivating();
               Exit();
             end;
@@ -1703,12 +1703,12 @@ begin
       begin
         if (signal.signal > ncStuj) then
         begin
-          Self.Log('Krok 15 : navestidlo postaveno');
+          Self.LogStep('Navestidlo postaveno');
           Self.step := stepJcFinish;
         end else if ((signal.targetSignal = ncStuj) and (signal.signal = ncStuj)) then
         begin
           // Nekdo ihned pri staveni navestidla dal STUJ
-          Self.Log('Krok 15 : navestidlo NEpostaveno');
+          Self.LogStep('Navestidlo NEpostaveno');
           Self.step := stepJcFinish;
         end;
       end;
