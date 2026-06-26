@@ -1508,7 +1508,7 @@ begin
           for var ioZav: TJCIOZav in Self.m_data.io do
           begin
             var refTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(ioZav.refBlk);
-            refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.LockCancelZaver, ioZav.blockid));
+            refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.IOCancelZaver, ioZav.blockid));
             var io: TBlkIO := Blocks.GetBlkIOByID(ioZav.blockid);
             io.inZaver := true;
           end;
