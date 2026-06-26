@@ -222,7 +222,6 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
-    procedure Reset(); override;
     function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
@@ -539,12 +538,6 @@ begin
     Self.m_state.positionSave := Self.m_state.position;
 
   Self.m_state.position := disabled;
-  Self.m_state.psts.Clear();
-  Self.Change(true);
-end;
-
-procedure TBlkTurnout.Reset();
-begin
   Self.m_state.intentionalLocks := 0;
   Self.m_state.movingPlus := false;
   Self.m_state.movingMinus := false;
@@ -552,6 +545,8 @@ begin
   Self.m_state.locks := 0;
   Self.m_state.psts.Clear();
   Self.ShowIndication();
+
+  Self.Change(true);
 end;
 
 function TBlkTurnout.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;

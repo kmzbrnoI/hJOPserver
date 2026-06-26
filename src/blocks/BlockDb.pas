@@ -63,7 +63,6 @@ type
 
     procedure Enable();
     procedure Disable();
-    procedure Reset();
 
     procedure Update();
 
@@ -509,15 +508,6 @@ begin
   for var blk: TBlk in Self.data do
     blk.Disable();
   Self.fenabled := false;
-  BlocksTablePainter.reload := true;
-  BlocksTablePainter.UpdateTable();
-end;
-
-procedure TBlocks.Reset();
-var Blk: TBlk;
-begin
-  for Blk in Self.data do
-    Blk.Reset();
   BlocksTablePainter.reload := true;
   BlocksTablePainter.UpdateTable();
 end;

@@ -76,7 +76,6 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
-    procedure Reset(); override;
     procedure AfterLoad(); override;
 
     procedure Change(now: Boolean = false); override;
@@ -172,14 +171,10 @@ end;
 
 procedure TBlkLinker.Disable();
 begin
-  Self.m_state.enabled := False;
-  Self.Change(true);
-end;
-
-procedure TBlkLinker.Reset();
-begin
   Self.m_state.emLock := False;
   Self.m_state.intentionalStuj := False;
+  Self.m_state.enabled := False;
+  Self.Change(true);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

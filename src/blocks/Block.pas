@@ -81,7 +81,6 @@ type
 
     procedure Enable(); virtual; abstract;
     procedure Disable(); virtual;
-    procedure Reset(); virtual;
     procedure AfterLoad(); virtual;
     // AfterLoad je volano po nacteni vsech dat, slouzi napriklad pro vytvoreni tratFlagu
 
@@ -344,11 +343,6 @@ end;
 procedure TBlk.Disable();
 begin
   Self.ffrozen := false;
-end;
-
-procedure TBlk.Reset();
-begin
-
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

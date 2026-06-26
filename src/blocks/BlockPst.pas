@@ -112,7 +112,6 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
-    procedure Reset(); override;
     procedure SetStatus(new: TBlkPstStatus);
     function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
@@ -328,19 +327,14 @@ end;
 
 procedure TBlkPst.Disable();
 begin
+  Self.m_state.senderOR := nil;
+  Self.m_state.senderPnl := nil;
   Self.m_state.status := pstDisabled;
   Self.m_state.emLock := 0;
   Self.m_state.error := false;
   Self.m_state.rcsError := false;
-  Self.Change(true);
-end;
 
-procedure TBlkPst.Reset();
-begin
-  Self.m_state.senderOR := nil;
-  Self.m_state.senderPnl := nil;
-  Self.m_state.error := false;
-  Self.m_state.rcsError := false;
+  Self.Change(true);
 end;
 
 procedure TBlkPst.SetStatus(new: TBlkPstStatus);

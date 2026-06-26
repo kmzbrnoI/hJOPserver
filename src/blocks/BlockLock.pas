@@ -13,7 +13,7 @@ type
     enabled: Boolean;
     keyReleased: Boolean;
     emLock: Cardinal; // n.o. blocks who gave emergency lock
-    zaver: Integer; // n.o. blocks who game me zaver
+    zaver: Integer; // n.o. blocks who gave me zaver
     note: string;
     error: Boolean;
   end;
@@ -33,7 +33,7 @@ type
 
   private
     m_state: TBlkLockState;
-    last_zaver: Boolean; // tady je ulozena posledni hodnota zaveru (aby mohlo byt rozponano, kdy volat Change)
+    last_zaver: Boolean; // tady je ulozena posledni hodnota zaveru (aby mohlo byt rozpoznano, kdy volat Change)
 
     procedure MenuUKClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZUKClick(SenderPnl: TIdContext; SenderOR: TObject);

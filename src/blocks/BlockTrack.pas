@@ -204,7 +204,6 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
-    procedure Reset(); override;
     function UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean; override;
 
     procedure Update(); override;
@@ -541,17 +540,12 @@ begin
   Self.m_state.sectionsOccupied.Clear();
   Self.m_state.neprofilJCcheck.Clear();
   Self.m_state.psts.Clear();
-
-  Self.Change(true);
-end;
-
-procedure TBlkTrack.Reset();
-begin
   Self.eventsOnOccupy.Clear();
   Self.eventsOnFree.Clear();
   Self.eventsOnZaverReleaseOrAB.Clear();
   Self.zaver := TZaver.no;
-  Self.m_state.psts.Clear();
+
+  Self.Change(true);
 end;
 
 function TBlkTrack.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;

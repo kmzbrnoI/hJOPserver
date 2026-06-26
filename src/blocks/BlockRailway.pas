@@ -127,7 +127,6 @@ type
 
     procedure Enable(); override;
     procedure Disable(); override;
-    procedure Reset(); override;
     procedure AfterLoad(); override;
 
     procedure Change(now: Boolean = false); override;
@@ -331,14 +330,10 @@ begin
     Self.file_direction := Self.direction;
   Self.trainPredict := nil;
   Self.m_state.direction := TRailwayDirection.disabled;
-  Self.Change(true);
-end;
-
-procedure TBlkRailway.Reset();
-begin
   Self.zaver := false;
   Self.request := false;
-  Self.trainPredict := nil;
+
+  Self.Change(true);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
