@@ -9,14 +9,16 @@ uses IniFiles, Block, SysUtils, BlockTrack, Menus, AreaDb, ConfSeq,
   Area, RCSc, RCSsc;
 
 {
-  intentionalLock:
-  intentionalLock is used only on refugees. These turnouts do not have to be directly
+  refugeeLock:
+  refugeeLock is used only on refugees. These turnouts do not have to be directly
   in path of a train so they don't know they should be locked (based on zaver
-  of tracks). So we must lock them manually - intentionalLock.
-  One turnout can be locked from multiple train paths thus turnout remebers
-  number of paths which lock the turnout. When value decrements to 0, turnout
-  is unlocked. While unlocking the turnout beware that turnout in coupling can
-  have different (> 0) intentionalLock!
+  of tracks). So we must lock them manually - refugeeLock.
+  One turnout can be locked from multiple train paths, thus turnout remembers
+  which paths and which reference track blockes locked it. When position breaks,
+  all stored paths are deactivated. Storing just number of locks is not enough -
+  - we need to remove path from refugeeLock when zaver of reference block is cleared.
+  While unlocking the turnout beware that turnout in coupling can
+  have different refugeeLock!
 }
 
 type
@@ -70,7 +72,7 @@ type
     }
     note, lockout: string;
     movingPlus, movingMinus: Boolean;
-    intentionalLocks: Integer;
+    refugeeLock: TDictionary<Integer, Integer>; // key: track/pst block id, value: path id; pathid=-1 is used for pst
     locks: Cardinal; // number of blocks which gave emergency lock
 
     movingOKCallback: TNotifyEvent;
@@ -103,7 +105,6 @@ type
       lockout: '';
       movingPlus: false;
       movingMinus: false;
-      intentionalLocks: 0;
       locks: 0;
       movingOKCallback: nil;
       movingErrCallback: nil;
@@ -140,7 +141,7 @@ type
     procedure SetNote(note: string);
     procedure SetLockout(lockout: string); overload;
 
-    function GetIntentionalLock(): Boolean;
+    function GetRefugeeLocked(): Boolean;
 
     procedure UpdatePosition();
     procedure UpdateMovingTimeout();
@@ -165,7 +166,6 @@ type
     procedure UPONSPlusClick(Sender: TObject);
     procedure UPONSMinusClick(Sender: TObject);
 
-    procedure MenuAdminREDUKClick(SenderPnl: TIDContext; SenderOR: TObject);
     procedure MenuAdminPolPlusClick(SenderPnl: TIDContext; SenderOR: TObject);
     procedure MenuAdminPolMinusClick(SenderPnl: TIDContext; SenderOR: TObject);
     procedure MenuAdminNepolClick(SenderPnl: TIDContext; SenderOR: TObject);
@@ -237,8 +237,8 @@ type
     procedure SetLockout(Sender: TIDContext; lockout: string); overload;
     procedure SetCouplingNoPropag(coupling: Integer);
 
-    procedure IntentionalLock();
-    procedure IntentionalUnlock();
+    procedure RefugeeLock(trackid: Integer; pathid: Integer);
+    procedure RefugeeUnlock(trackid: Integer);
 
     procedure ResetEmLocks();
     procedure DecreaseEmergencyLock(amount: Cardinal);
@@ -260,7 +260,7 @@ type
     property occupied: TTrackState read GetOccupied;
     property note: string read m_state.note write SetNote;
     property lockout: string read m_state.lockout write SetLockout;
-    property intentionalLocked: Boolean read GetIntentionalLock;
+    property refugeeLocked: Boolean read GetRefugeeLocked;
     property trackID: Integer read m_spnl.track;
     property emLock: Boolean read IsEmergencyLock write SetEmergencyLock;
     property lock: TBlk read GetLock;
@@ -314,11 +314,13 @@ begin
   Self.m_npPlus := nil;
   Self.m_npMinus := nil;
   Self.m_state.psts := TList<TBlk>.Create();
+  Self.m_state.refugeeLock := TDictionary<Integer, Integer>.Create();
 end;
 
 destructor TBlkTurnout.Destroy();
 begin
   Self.m_state.psts.Free();
+  Self.m_state.refugeeLock.Free();
   inherited;
 end;
 
@@ -503,8 +505,6 @@ begin
       Self.SetPosition(Self.m_state.positionSave);
   end;
 
-  Self.m_state.psts.Clear();
-
   Self.MapNpEvents();
   Self.Update(); // update will call Change()
 
@@ -538,12 +538,12 @@ begin
     Self.m_state.positionSave := Self.m_state.position;
 
   Self.m_state.position := disabled;
-  Self.m_state.intentionalLocks := 0;
   Self.m_state.movingPlus := false;
   Self.m_state.movingMinus := false;
   Self.m_state.positionLock := TTurnoutPosition.none;
   Self.m_state.locks := 0;
   Self.m_state.psts.Clear();
+  Self.m_state.refugeeLock.Clear();
   Self.ShowIndication();
 
   Self.Change(true);
@@ -725,9 +725,9 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkTurnout.GetIntentionalLock(): Boolean;
+function TBlkTurnout.GetRefugeeLocked(): Boolean;
 begin
-  Result := (Self.m_state.intentionalLocks > 0);
+  Result := (not Self.m_state.refugeeLock.IsEmpty);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -797,7 +797,7 @@ begin
     Self.m_state.position := none;
 
     if ((Self.m_state.position <> Self.m_state.positionReal) and ((Self.zaver > TZaver.no) or (Self.emLock) or
-      ((Self.intentionalLocked) and (not Self.m_state.movingPlus) and (not Self.m_state.movingMinus)) or
+      ((Self.refugeeLocked) and (not Self.m_state.movingPlus) and (not Self.m_state.movingMinus)) or
       (Self.LockLocked())) and (Self.zaver <> TZaver.staveni)) then
     begin
       Self.BottomErrorBroadcast('Není koncová poloha ' + Self.m_globSettings.name, 'TECHNOLOGIE');
@@ -1207,12 +1207,6 @@ begin
     Self.ResetEmLocks();
 end;
 
-procedure TBlkTurnout.MenuAdminREDUKClick(SenderPnl: TIDContext; SenderOR: TObject);
-begin
-  Self.m_state.intentionalLocks := 0;
-  Self.Change();
-end;
-
 procedure TBlkTurnout.MenuAdminPolPlusCLick(SenderPnl: TIDContext; SenderOR: TObject);
 begin
   try
@@ -1299,7 +1293,7 @@ begin
 
   if ((IsWritable(rights)) and (not Self.ShouldBeLocked())) then
   begin
-    // na vyhybce neni zaver a menu neni redukovane
+    // na vyhybce neni zaver a ani jiny zamek
 
     if ((Self.SelfMenuNS()) or ((coupling <> nil) and (coupling.SelfMenuNS()))) then
     begin
@@ -1330,13 +1324,6 @@ begin
       Result := Result + '!ZAV<,'
     else if ((Self.position = TTurnoutPosition.plus) or (Self.position = TTurnoutPosition.minus)) then
       Result := Result + 'ZAV>,';
-
-    if (rights = TAreaRights.superuser) then
-    begin
-      Result := Result + '-,';
-      if (Self.intentionalLocked) then
-        Result := Result + '*ZRUŠ REDUKCI,';
-    end;
 
     // pokud mame simulacni knihovnu, pridame do menu simulacni volby
     var menusim: string := Self.SimMenu(SenderPnl, SenderOR, rights);
@@ -1403,8 +1390,6 @@ begin
     Self.MenuZAVEnableClick(SenderPnl, SenderOR)
   else if (item = 'ZAV<') then
     Self.MenuZAVDisableClick(SenderPnl, SenderOR)
-  else if (item = 'ZRUŠ REDUKCI') then
-    Self.MenuAdminREDUKClick(SenderPnl, SenderOR)
   else if (item = 'POL+') then
     Self.MenuAdminPolPlusCLick(SenderPnl, SenderOR)
   else if (item = 'POL-') then
@@ -1444,7 +1429,7 @@ begin
 
   if (not Self.outputLocked) and (Self.ShouldBeLocked()) then
   begin
-    // pokud je vyhybka redukovana, nebo je na ni zaver a je v koncove poloze a neni zamkla, zamkneme ji
+    // pokud ma byt vyhybka zamknuta nebo je na ni zaver a je v koncove poloze, zamkneme ji
     if (Self.m_state.position = TTurnoutPosition.plus) then
     begin
       Self.SetPosition(TTurnoutPosition.plus, true);
@@ -1474,20 +1459,17 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.IntentionalLock();
+procedure TBlkTurnout.RefugeeLock(trackid: Integer; pathid: Integer);
 begin
-  Inc(Self.m_state.intentionalLocks);
-
-  if (Self.m_state.intentionalLocks = 1) then
+  Self.m_state.refugeeLock.Add(trackid, pathid); // intentionally throw exception when key exists
+  if (Self.m_state.refugeeLock.Count = 1) then
     Self.Change();
 end;
 
-procedure TBlkTurnout.IntentionalUnlock();
+procedure TBlkTurnout.RefugeeUnlock(trackid: Integer);
 begin
-  if (Self.m_state.intentionalLocks > 0) then
-    Dec(Self.m_state.intentionalLocks);
-
-  if (Self.m_state.intentionalLocks = 0) then
+  Self.m_state.refugeeLock.Remove(trackid);
+  if (Self.m_state.refugeeLock.IsEmpty) then
     Self.Change();
 end;
 
@@ -1966,11 +1948,11 @@ end;
 
 function TBlkTurnout.ShouldBeLocked(withLock: Boolean): Boolean;
 begin
-  Result := (Self.zaver > TZaver.no) or (Self.emLock) or (Self.intentionalLocked) or
+  Result := (Self.zaver > TZaver.no) or (Self.emLock) or (Self.refugeeLocked) or
     ((withLock) and (Self.LockLocked()));
 
   if (Self.coupling <> nil) then
-    Result := Result or (Self.coupling.zaver > TZaver.no) or (Self.coupling.emLock) or (Self.coupling.intentionalLocked)
+    Result := Result or (Self.coupling.zaver > TZaver.no) or (Self.coupling.emLock) or (Self.coupling.refugeeLocked)
       or ((withLock) and (Self.coupling.LockLocked()));
 end;
 
@@ -2116,11 +2098,19 @@ end;
 
 procedure TBlkTurnout.PositionError();
 begin
-  JCDb.Cancel(Self);
+  for var blkid: Integer in Self.m_state.refugeeLock.Keys do
+  begin
+    var pst: TBlkPst := Blocks.GetBlkPstByID(blkid);
+    if (pst <> nil) then
+      pst.CheckRefugeesPos();
+  end;
 
-  for var blk: TBlk in Blocks do
-    if (blk.typ = btPst) then
-      TBlkPst(blk).CheckRefugeesPos();
+  for var pathid: Integer in Self.m_state.refugeeLock.Values do
+  begin
+    var path: TJC := JCDb.GetJCByID(pathid);
+    if (path <> nil) then
+      path.CancelOrStop();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

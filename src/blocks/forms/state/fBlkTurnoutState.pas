@@ -18,7 +18,6 @@ type
     Label3: TLabel;
     SE_Locks: TSpinEdit;
     SE_Zaver: TSpinEdit;
-    B_Unlock: TButton;
     CHB_Moving_Plus: TCheckBox;
     CHB_Moving_Minus: TCheckBox;
     CHB_Locked: TCheckBox;
@@ -26,7 +25,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure B_ApplyClick(Sender: TObject);
     procedure B_RefreshClick(Sender: TObject);
-    procedure B_UnlockClick(Sender: TObject);
   private
     turnout: TBlkTurnout;
 
@@ -51,12 +49,6 @@ uses ownConvert;
 procedure TF_BlkTurnoutState.B_ApplyClick(Sender: TObject);
 begin
   Self.Apply();
-  Self.Refresh();
-end;
-
-procedure TF_BlkTurnoutState.B_UnlockClick(Sender: TObject);
-begin
-  Self.turnout.IntentionalUnlock();
   Self.Refresh();
 end;
 
@@ -95,9 +87,7 @@ begin
   Self.CHB_Moving_Minus.Checked := Self.turnout.movingMinus;
 
   Self.CHB_Locked.Checked := Self.turnout.outputLocked;
-  Self.SE_Locks.Value := Self.turnout.state.intentionalLocks;
-
-  Self.B_Unlock.Enabled := Self.turnout.intentionalLocked;
+  Self.SE_Locks.Value := Self.turnout.state.refugeeLock.Count;
 end;
 
 procedure TF_BlkTurnoutState.Apply();

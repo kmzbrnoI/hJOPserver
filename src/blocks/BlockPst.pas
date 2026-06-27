@@ -399,7 +399,7 @@ begin
     for var refugeeZav in Self.m_settings.refugees do
     begin
       var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
-      refugee.IntentionalUnlock();
+      refugee.RefugeeUnlock(Self.id);
     end;
     for var discId in Self.m_settings.disconnectors do
     begin
@@ -1379,14 +1379,14 @@ end;
 procedure TBlkPst.MoveRefugees();
 begin
   Self.status := pstRefuging;
-  Self.Log('Pst připraveno, nastavuji odvraty...', llInfo);
+  Self.Log('PSt připraveno, nastavuji odvraty...', llInfo);
 
   // Move all refugees at once, we suppose there is not many of them...
   // In case of many refugees one could implement window refuging in future...
   for var refugeeZav in Self.m_settings.refugees do
   begin
     var refugee: TBlkTurnout := TBlkTurnout(Blocks.GetBlkByID(refugeeZav.block));
-    refugee.IntentionalLock();
+    refugee.RefugeeLock(Self.id, -1);
     // Warning: this may call callback directly
     refugee.SetPosition(TTurnoutPosition(refugeeZav.position), true, false, Self.RefugeeMoved, Self.RefugeeNotMoved);
   end;

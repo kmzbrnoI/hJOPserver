@@ -1476,11 +1476,11 @@ begin
             Inc(stavim);
           end;
 
-          refugee.IntentionalLock();
+          refugee.RefugeeLock(refugeeZav.refBlk, Self.id);
 
           // zaver odvratu se rusi pri ruseni zaveru referencniho bloku
           var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(refugeeZav.refBlk);
-          track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.TurnoutUnlock, refugeeZav.block));
+          track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.TurnoutRefugeeUnlock, refugeeZav.block));
 
           // Warning: this may call callback directly
           // Callback for just-locking turnout will have no effect due to nextVyhybka = -1
@@ -3287,10 +3287,10 @@ begin
       var refugee: TBlkTurnout := Blocks.GetBlkTurnoutByID(Self.m_data.refuges[i].block);
       if (refugee.position <> TTurnoutPosition(Self.m_data.refuges[i].position)) then
       begin
-        refugee.IntentionalLock();
+        refugee.RefugeeLock(Self.m_data.refuges[i].refBlk, Self.id);
 
         var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.refuges[i].refBlk);
-        track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.TurnoutUnlock,
+        track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.TurnoutRefugeeUnlock,
           Self.m_data.refuges[i].block));
 
         Self.m_state.nextTurnout := i + Self.m_data.turnouts.Count + 1;

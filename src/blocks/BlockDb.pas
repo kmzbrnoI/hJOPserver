@@ -83,6 +83,7 @@ type
     function GetBlkRailwayByID(id: Integer): TBlkRailway;
     function GetBlkLinkerByID(id: Integer): TBlkLinker;
     function GetBlkLockByID(id: Integer): TBlkLock;
+    function GetBlkPStByID(id: Integer): TBlkPSt;
     function GetBlkIrByID(id: Integer): TBlkIR;
     function GetBlkIOByID(id: Integer): TBlkIO;
     function GetBlkDisconnectorByID(id: Integer): TBlkDisconnector;
@@ -622,6 +623,14 @@ begin
   var blk: TBlk := Self.GetBlkByID(id);
   if ((blk <> nil) and (blk.typ = btLock)) then
     Result := TBlkLock(blk);
+end;
+
+function TBlocks.GetBlkPStByID(id: Integer): TBlkPSt;
+begin
+  Result := nil;
+  var blk: TBlk := Self.GetBlkByID(id);
+  if ((blk <> nil) and (blk.typ = btPst)) then
+    Result := TBlkPst(blk);
 end;
 
 function TBlocks.GetBlkIrByID(id: Integer): TBlkIR;

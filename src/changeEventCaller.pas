@@ -26,7 +26,7 @@ type
     class procedure LockCancelZaver(Sender: TObject; data: Integer);
     class procedure CrossingCancelZaver(Sender: TObject; data: Integer);
     class procedure RailwayCancelZaver(Sender: TObject; data: Integer);
-    class procedure TurnoutUnlock(Sender: TObject; data: Integer);
+    class procedure TurnoutRefugeeUnlock(Sender: TObject; data: Integer);
     class procedure IOCancelZaver(Sender: TObject; data: Integer);
     class procedure RemoveUsekNeprofil(Sender: TObject; data: Pointer);
     class procedure RemoveEvent(Sender: TObject; data: Pointer);
@@ -74,11 +74,11 @@ begin
     railway.Zaver := False;
 end;
 
-class procedure TCECaller.TurnoutUnlock(Sender: TObject; data: Integer);
+class procedure TCECaller.TurnoutRefugeeUnlock(Sender: TObject; data: Integer);
 begin
   var turnout := Blocks.GetBlkTurnoutByID(data);
   if (turnout <> nil) then
-    turnout.IntentionalUnlock();
+    turnout.RefugeeUnlock(TBlk(Sender).id);
 end;
 
 class procedure TCECaller.RemoveUsekNeprofil(Sender: TObject; data: Pointer);

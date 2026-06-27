@@ -13,11 +13,9 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
   Font.Name = 'Tahoma'
   Font.Style = []
   FormStyle = fsStayOnTop
-  OldCreateOrder = False
   Position = poScreenCenter
   OnClose = FormClose
   OnCreate = FormCreate
-  PixelsPerInch = 96
   TextHeight = 13
   object Label6: TLabel
     Left = 298
@@ -69,7 +67,7 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Width = 76
     Height = 26
     Caption = 'Obnovit'
-    TabOrder = 9
+    TabOrder = 8
     OnClick = B_RefreshClick
   end
   object B_Apply: TButton
@@ -79,7 +77,7 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Height = 26
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 8
+    TabOrder = 7
     OnClick = B_ApplyClick
   end
   object M_Lockout: TMemo
@@ -89,7 +87,7 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Height = 49
     Lines.Strings = (
       'M_Lockout')
-    TabOrder = 7
+    TabOrder = 6
   end
   object M_Note: TMemo
     Left = 296
@@ -98,13 +96,14 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Height = 49
     Lines.Strings = (
       'M_Note')
-    TabOrder = 6
+    TabOrder = 5
   end
   object SE_Locks: TSpinEdit
     Left = 176
     Top = 40
     Width = 107
     Height = 22
+    Enabled = False
     MaxValue = 0
     MinValue = 0
     ReadOnly = True
@@ -121,22 +120,13 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     TabOrder = 0
     Value = 0
   end
-  object B_Unlock: TButton
-    Left = 176
-    Top = 68
-    Width = 107
-    Height = 25
-    Caption = 'Odemknout'
-    TabOrder = 2
-    OnClick = B_UnlockClick
-  end
   object CHB_Moving_Plus: TCheckBox
     Left = 6
     Top = 91
     Width = 130
     Height = 17
     Caption = 'Stav'#283'n'#237' do polohy plus'
-    TabOrder = 3
+    TabOrder = 2
   end
   object CHB_Moving_Minus: TCheckBox
     Left = 6
@@ -144,15 +134,15 @@ object F_BlkTurnoutState: TF_BlkTurnoutState
     Width = 142
     Height = 17
     Caption = 'Stav'#283'n'#237' do polohy m'#237'nus'
-    TabOrder = 4
+    TabOrder = 3
   end
   object CHB_Locked: TCheckBox
     Left = 6
     Top = 137
-    Width = 161
+    Width = 171
     Height = 17
     Caption = 'RCS v'#253'stup dr'#382'en (zamknuto)'
     Enabled = False
-    TabOrder = 5
+    TabOrder = 4
   end
 end
