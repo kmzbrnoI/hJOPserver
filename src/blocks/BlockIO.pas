@@ -622,7 +622,7 @@ begin
     if ((path <> nil) and (path.active)) then
     begin
       for var ioZav: TJCIOZav in path.data.io do
-        if ((ioZav.blockid = Self.id) and ((not Self.isRCSinput) or (Self.activeInput <> ioZav.inputState))) then
+        if ((ioZav.blockid = Self.id) and ((not Self.isRCSinput) or (not Self.enabled) or (Self.activeInput <> ioZav.inputState))) then
           path.CancelOrStop();
     end;
   end;

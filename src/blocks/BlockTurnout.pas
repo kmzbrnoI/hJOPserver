@@ -1585,6 +1585,8 @@ end;
 procedure TBlkTurnout.GetPtState(json: TJsonObject);
 begin
   json['position'] := PositionToStr(Self.position);
+  json['zaver'] := Self.zaver;
+  json['emLock'] := Self.emLock;
   if (Self.note <> '') then
     json['note'] := Self.note;
   if (Self.lockout <> '') then

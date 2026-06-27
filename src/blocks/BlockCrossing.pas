@@ -60,7 +60,7 @@ type
     note, lockout: string;
     pcEmOpen, pcClosed: Boolean;
     // uzavreni prejezdu z pocitace (tj z technologie), prejezd muze byt uzavren taky z pultu
-    zaver: Integer; // pocet bloku, ktere mi daly zaver (pokud > 0, mam zaver; jinak zaver nemam)
+    pathZaver: TDictionary<Integer, Integer>; // key: track block id, value: path id
     cautionStart: TDateTime;
     warningTimeout: TDateTime;
     barriersClosed: Boolean;
@@ -75,8 +75,7 @@ type
 
   TBlkCrossing = class(TBlk)
   const
-    _def_crossing_state: TBlkCrossingState = (state: disabled; note: ''; lockout: ''; pcEmOpen: false; pcClosed: false;
-      zaver: 0;);
+    _def_crossing_state: TBlkCrossingState = (state: disabled; note: ''; lockout: ''; pcEmOpen: false; pcClosed: false;);
 
     _SECT_RCSICLOSED = 'RCSIclosed';
     _SECT_RCSIOPEN = 'RCSIopen';
@@ -116,9 +115,7 @@ type
     procedure SetEmOpen(state: Boolean);
     procedure SetClosed(state: Boolean);
 
-    procedure SetZaver(zaver: Boolean);
-    function GetZaver(): Boolean;
-
+    function IsZaver(): Boolean;
     function IsSignalClosed(): Boolean;
     function IsSignalCaution(): Boolean;
     function IsSignalOpen(): Boolean;
@@ -150,7 +147,6 @@ type
     procedure MenuAdminVystraha(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAdminAnulaceStart(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuAdminAnulaceStop(SenderPnl: TIdContext; SenderOR: TObject);
-    procedure MenuAdminNUZClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure SetSimInputs(closed, caution, open: Boolean);
     procedure SetPanelSimInputs(closed, caution, open: Boolean; SenderPnl: TIdContext; SenderOR: TObject);
 
@@ -159,6 +155,7 @@ type
 
     function OccupiedTrackIds(): TList<Integer>;
     procedure CSAddOccupiedTracks(var items: TConfSeqItems);
+    procedure BreakPaths();
 
     procedure PanelShowState(pnl: TIdContext; area: TArea);
 
@@ -190,6 +187,9 @@ type
     procedure AddSH(Sender: TBlk);
     procedure RemoveSH(Sender: TBlk);
 
+    procedure AddPathZaver(blockid: Integer; pathid: Integer);
+    procedure RemovePathZaver(blockid: Integer);
+
     function WantClose(): Boolean;
 
     property state: TBlkCrossingBasicState read m_state.state;
@@ -198,7 +198,7 @@ type
     property pcClosed: Boolean read m_state.pcClosed write SetClosed;
     property note: string read m_state.note write SetNote;
     property lockout: string read m_state.lockout write SetLockout;
-    property zaver: Boolean read GetZaver write SetZaver;
+    property zaver: Boolean read IsZaver;
     property annulation: Boolean read IsAnnulation;
     property positive: Boolean read IsPositive;
     property enabled: Boolean read IsEnabled;
@@ -225,7 +225,7 @@ implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCSIFace, UPO,
   Graphics, PanelConnData, Diagnostics, appEv, ownConvert, Config, timeHelper,
-  BlockTrack, BlockTrackRef, colorHelper, RCSErrors, PTUtils, IfThenElse;
+  BlockTrack, BlockTrackRef, colorHelper, RCSErrors, PTUtils, IfThenElse, TechnologieJC;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
@@ -235,6 +235,7 @@ begin
   Self.m_state := Self._def_crossing_state;
   Self.m_state.shs := TList<TBlk>.Create();
   Self.m_state.rcsModules := TList<TRCSsSystemModule>.Create();
+  Self.m_state.pathZaver := TDictionary<Integer, Integer>.Create();
   Self.tracks := TObjectList<TBlkCrossingTrack>.Create();
   Self.positiveRules := TPositiveRules.Create();
 end;
@@ -243,6 +244,7 @@ destructor TBlkCrossing.Destroy();
 begin
   Self.m_state.shs.Free();
   Self.m_state.rcsModules.Free();
+  Self.m_state.pathZaver.Free();
   Self.tracks.Free();
   Self.positiveRules.Free();
   inherited;
@@ -440,7 +442,7 @@ begin
   if ((not available) and (Self.m_state.state <> TBlkCrossingBasicState.disabled)) then
   begin
     Self.m_state.state := TBlkCrossingBasicState.disabled;
-    JCDb.Cancel(Self);
+    Self.BreakPaths();
     Self.Change(true);
   end;
 
@@ -544,7 +546,7 @@ begin
         if (Self.m_settings.closedRequired) then
         begin
           Self.BottomErrorBroadcast('Ztráta dohledu na přejezdu ' + Self.m_globSettings.name, 'TECHNOLOGIE');
-          JCDb.Cancel(Self);
+          Self.BreakPaths();
         end else begin
           Self.BottomErrorBroadcast('Nouzový stav ' + Self.m_globSettings.name, 'TECHNOLOGIE');
         end;
@@ -679,7 +681,7 @@ begin
   if (state) then
   begin
     // NOT rusi jizdni cesty vedouci pres prejezd
-    JCDb.Cancel(Self);
+    Self.BreakPaths();
   end;
 
   Self.m_state.pcEmOpen := state;
@@ -847,12 +849,6 @@ begin
   end;
 end;
 
-procedure TBlkCrossing.MenuAdminNUZClick(SenderPnl: TIdContext; SenderOR: TObject);
-begin
-  Self.m_state.zaver := 0;
-  Self.Change();
-end;
-
 procedure TBlkCrossing.SetSimInputs(closed, caution, open: Boolean);
 begin
   if (Self.m_settings.RCSInputs.closed.enabled) then
@@ -915,13 +911,6 @@ begin
     if (menusim <> '') then
       Result := Result + '-,' + menusim;
   end;
-
-  if (rights = TAreaRights.superuser) then
-  begin
-    Result := Result + '-,';
-    if (Self.zaver) then
-      Result := Result + '*NUZ>,';
-  end;
 end;
 
 function TBlkCrossing.SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
@@ -961,8 +950,6 @@ begin
     Self.MenuSTITClick(SenderPnl, SenderOR, rights)
   else if (item = 'STAV?') then
     Self.MenuSTAVClick(SenderPnl, SenderOR)
-  else if (item = 'NUZ>') then
-    Self.MenuAdminNUZClick(SenderPnl, SenderOR)
   else if (item = 'ZAVŘENO') then
     Self.MenuAdminZavreno(SenderPnl, SenderOR)
   else if (item = 'OTEVŘENO') then
@@ -993,35 +980,32 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkCrossing.SetZaver(zaver: Boolean);
+procedure TBlkCrossing.AddPathZaver(blockid: Integer; pathid: Integer);
 begin
-  if (zaver) then
+  if (Self.pcEmOpen) then
+    raise EPrjNOT.Create('Prejezd nouzove otevren, nelze udelit zaver!');
+
+  Self.m_state.pathZaver.Add(blockid, pathid); // intentionally throw exception when key exists
+  if (Self.m_state.pathZaver.Count = 1) then
   begin
-    Inc(Self.m_state.zaver);
-
-    if (Self.pcEmOpen) then
-      raise EPrjNOT.Create('Prejezd nouzove otevren, nelze udelit zaver!');
-
-    if (Self.m_state.zaver = 1) then
-    begin
-      // prvni udeleni zaveru
-      Self.SetEmOpen(False);
-      Self.Change();
-    end;
-  end else begin
-    Dec(Self.m_state.zaver);
-
-    if (Self.m_state.zaver <= 0) then
-    begin
-      // posledni odstraneni zaveru
-      Self.Change();
-    end;
+    Self.SetEmOpen(False);
+    Self.Change();
   end;
 end;
 
-function TBlkCrossing.GetZaver(): Boolean;
+procedure TBlkCrossing.RemovePathZaver(blockid: Integer);
 begin
-  Result := (Self.m_state.zaver > 0);
+  if (Self.m_state.pathZaver.ContainsKey(blockid)) then
+  begin
+    Self.m_state.pathZaver.Remove(blockid);
+    if (Self.m_state.pathZaver.IsEmpty) then
+      Self.Change();
+  end;
+end;
+
+function TBlkCrossing.IsZaver(): Boolean;
+begin
+  Result := (not Self.m_state.pathZaver.IsEmpty);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1204,7 +1188,7 @@ begin
   json['annulation'] := Self.annulation;
   json['pcEmOpen'] := Self.m_state.pcEmOpen;
   json['pcClosed'] := Self.m_state.pcClosed;
-  json['locks'] := Self.m_state.zaver;
+  json['zaver'] := Self.zaver;
 end;
 
 procedure TBlkCrossing.PutPtState(reqJson: TJsonObject; respJson: TJsonObject);
@@ -1389,7 +1373,7 @@ begin
   if ((new = TBlkCrossingBasicState.error) and (Self.state <> TBlkCrossingBasicState.disabled)) then
   begin
     Self.BottomErrorBroadcast('Porucha přejezdu ' + Self.m_globSettings.name, 'TECHNOLOGIE');
-    JCDb.Cancel(Self);
+    Self.BreakPaths();
   end;
 
   if (new = TBlkCrossingBasicState.caution) then // going to 'closed'
@@ -1474,6 +1458,18 @@ begin
     PanelServer.InfoWindow(pnl, nil, area, 'Zobrazení stavu přejezdu', GetObjsList(Self), lines, True, False);
   finally
     lines.Free();
+  end;
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+procedure TBlkCrossing.BreakPaths();
+begin
+  for var pathid: Integer in Self.m_state.pathZaver.Values do
+  begin
+    var path: TJC := JCDb.GetJCByID(pathid);
+    if ((path <> nil) and (path.active)) then
+      path.CancelOrStop();
   end;
 end;
 

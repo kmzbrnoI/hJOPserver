@@ -64,7 +64,7 @@ procedure TCECaller.CrossingCancelZaver(Sender: TObject; data: Integer);
 begin
   var crossing := Blocks.GetBlkCrossingByID(data);
   if (crossing <> nil) then
-    crossing.zaver := False;
+    crossing.RemovePathZaver(TBlk(Sender).id);
 end;
 
 class procedure TCECaller.RailwayCancelZaver(Sender: TObject; data: Integer);

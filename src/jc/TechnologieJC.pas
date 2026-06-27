@@ -1620,7 +1620,6 @@ begin
           if (Self.m_state.crossingsToClose[i]) then
           begin
             Self.LogStep('Prejezd ' + crossing.name + ' - uzaviram');
-            crossing.zaver := true;
 
             // uvolnit zaver prejezdu pri zruseni zaveru (nebo nastaveni na AB zaver) referencniho useku prejezdu
             var openTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(crossingZav.openTrack);
@@ -1628,6 +1627,8 @@ begin
               openTrack.eventsOnZaverReleaseOrAB,
               CreateChangeEventInt(TCECaller.CrossingCancelZaver, crossingZav.crossingId)
             );
+
+            crossing.AddPathZaver(openTrack.id, Self.id);
 
             anyClosed := true;
           end else begin
@@ -3194,23 +3195,39 @@ end;
 
 procedure TJC.TrackCloseCrossing(Sender: TObject; data: Integer);
 begin
-  if ((Self.active) or (Self.activating)) then
-  begin
-    // zavrit prejezd
-    var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(Self.m_data.crossings[data].crossingId);
-    crossing.Zaver := true;
-    Self.Log('Obsazen ' + TBlkTrack(Sender).name + ' - uzaviram prejezd ' + crossing.name);
+  try
+    for var blkId: Integer in Self.m_data.crossings[data].closeTracks do
+    begin
+      var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(blkId);
+      track.RemoveChangeEvent(track.eventsOnOccupy, CreateChangeEventInt(Self.TrackCloseCrossing, data));
+    end;
 
-    // prejezd se uzavira -> po uvolneni zaveru bloku pod prejezdem prejezd opet otevrit
-    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.crossings[data].openTrack);
-    track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.CrossingCancelZaver,
-      Self.m_data.crossings[data].crossingId));
-  end;
+    if ((Self.active) or (Self.activating)) then
+    begin
+      // zavrit prejezd
+      var crossing: TBlkCrossing := Blocks.GetBlkCrossingByID(Self.m_data.crossings[data].crossingId);
+      Self.Log('Obsazen ' + TBlkTrack(Sender).name + ' - uzaviram prejezd ' + crossing.name);
 
-  for var blkId: Integer in Self.m_data.crossings[data].closeTracks do
-  begin
-    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(blkId);
-    track.RemoveChangeEvent(track.eventsOnOccupy, CreateChangeEventInt(Self.TrackCloseCrossing, data));
+      if (crossing.pcEmOpen) then
+      begin
+        Self.Log('Prejezd nouzove otevren - rusim JC!');
+        Self.CancelOrStop();
+        Exit();
+      end;
+
+      // prejezd se uzavira -> po uvolneni zaveru bloku pod prejezdem prejezd opet otevrit
+      var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.m_data.crossings[data].openTrack);
+      track.AddChangeEvent(track.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.CrossingCancelZaver,
+        Self.m_data.crossings[data].crossingId));
+
+      crossing.AddPathZaver(track.id, Self.id);
+    end;
+  except
+    on e: Exception do
+    begin
+      Self.CancelOrStop();
+      AppEvents.LogException(e);
+    end;
   end;
 end;
 
