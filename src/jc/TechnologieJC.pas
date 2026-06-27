@@ -1498,7 +1498,7 @@ begin
             var refTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(refZav.refBlk);
             refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.LockCancelZaver, refZav.block));
             var lock: TBlkLock := Blocks.GetBlkLockByID(refZav.block);
-            lock.zaver := true;
+            lock.AddPathZaver(refTrack.id, Self.id);
           end;
         end;
 

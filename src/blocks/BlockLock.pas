@@ -13,7 +13,7 @@ type
     enabled: Boolean;
     keyReleased: Boolean;
     emLock: Cardinal; // n.o. blocks who gave emergency lock
-    zaver: Integer; // n.o. blocks who gave me zaver
+    pathZaver: TDictionary<Integer, Integer>; // key: track block id, value: path id
     note: string;
     error: Boolean;
   end;
@@ -26,7 +26,6 @@ type
       enabled: false;
       keyReleased: false;
       emLock: 0;
-      zaver: 0;
       note: '';
       error: false;
     );
@@ -41,23 +40,24 @@ type
     procedure MenuZAVEnableClick(SenderPnl: TIdContext; SenderOR: TObject);
     procedure MenuZAVDisableClick(SenderPnl: TIdContext; SenderOR: TObject);
 
-    function GetZaver(): Boolean;
-    function GetEmLock(): Boolean;
+    function IsZaver(): Boolean;
+    function IsEmLock(): Boolean;
     function IsRightPosition(): Boolean; // vraci true, pokud jsou vyhybky s timto zamkem v poloze pro zamknuti
 
     procedure SetEmLock(new: Boolean);
     procedure SetNote(note: string);
     procedure SetError(new: Boolean);
-    procedure SetZaver(new: Boolean);
 
     procedure SetKeyRelesed(new: Boolean);
     procedure PanelPotvrSekvZAV(Sender: TIdContext; success: Boolean);
 
     procedure CallChangeToTurnout();
+    procedure CheckPathBreak();
 
   public
 
     constructor Create(index: Integer);
+    destructor Destroy(); override;
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
@@ -72,12 +72,15 @@ type
 
     // ----- lock own functions -----
 
+    procedure AddPathZaver(blockid: Integer; pathid: Integer);
+    procedure RemovePathZaver(blockid: Integer);
+
     procedure DecreaseEmLock(amount: Cardinal);
 
     property state: TBlkLockState read m_state;
 
-    property zaver: Boolean read GetZaver write SetZaver;
-    property emLock: Boolean read GetEmLock write SetEmLock;
+    property zaver: Boolean read IsZaver;
+    property emLock: Boolean read IsEmLock write SetEmLock;
     property note: string read m_state.note write SetNote;
     property keyReleased: Boolean read m_state.keyReleased write SetKeyRelesed;
     property error: Boolean read m_state.error write SetError;
@@ -107,7 +110,14 @@ begin
 
   Self.m_globSettings.typ := btLock;
   Self.m_state := _def_lock_state;
+  Self.m_state.pathZaver := TDictionary<Integer, Integer>.Create();
   Self.last_zaver := false;
+end;
+
+destructor TBlkLock.Destroy();
+begin
+  Self.m_state.pathZaver.Free();
+  inherited;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -148,7 +158,7 @@ begin
   Self.m_state.keyReleased := false;
   Self.m_state.emLock := 0;
   Self.m_state.error := false;
-  Self.m_state.zaver := 0;
+  Self.m_state.pathZaver.Clear();
 
   Self.Change(true);
 end;
@@ -164,10 +174,7 @@ end;
 procedure TBlkLock.Change(now: Boolean = false);
 begin
   inherited Change(now);
-
-  // porucha zamku -> zrusit postavenou JC
-  if ((Self.zaver) and ((Self.keyReleased) or (Self.error))) then
-    JCDb.Cancel(Self);
+  Self.CheckPathBreak();
 end;
 
 procedure TBlkLock.ChangeFromTurnout(sender: TObject);
@@ -181,6 +188,19 @@ begin
   end else begin
     if ((Self.error) and (Self.IsRightPosition())) then
       Self.keyReleased := False; // restore 'locked' state
+  end;
+end;
+
+procedure TBlkLock.CheckPathBreak();
+begin
+  if ((Self.zaver) and ((Self.keyReleased) or (Self.error))) then
+  begin
+    for var pathid: Integer in Self.m_state.pathZaver.Values do
+    begin
+      var path: TJC := JCDb.GetJCByID(pathid);
+      if ((path <> nil) and (path.active)) then
+        path.CancelOrStop();
+    end;
   end;
 end;
 
@@ -287,29 +307,29 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkLock.GetZaver(): Boolean;
+function TBlkLock.IsZaver(): Boolean;
 begin
-  Result := (Self.m_state.zaver > 0);
+  Result := (not Self.m_state.pathZaver.IsEmpty);
 end;
 
-procedure TBlkLock.SetZaver(new: Boolean);
+procedure TBlkLock.AddPathZaver(blockid: Integer; pathid: Integer);
 begin
-  if (new) then
+  Self.m_state.pathZaver.Add(blockid, pathid); // intentionally throw exception when key exists
+  if (Self.m_state.pathZaver.Count = 1) then
+    Self.Change();
+end;
+
+procedure TBlkLock.RemovePathZaver(blockid: Integer);
+begin
+  if (Self.m_state.pathZaver.ContainsKey(blockid)) then
   begin
-    Inc(Self.m_state.zaver);
-    if (Self.m_state.zaver = 1) then
+    Self.m_state.pathZaver.Remove(blockid);
+    if (Self.m_state.pathZaver.IsEmpty) then
       Self.Change();
-  end else begin
-    if (Self.m_state.zaver > 0) then
-    begin
-      Dec(Self.m_state.zaver);
-      if (Self.m_state.zaver = 0) then
-        Self.Change();
-    end;
   end;
 end;
 
-function TBlkLock.GetEmLock(): Boolean;
+function TBlkLock.IsEmLock(): Boolean;
 begin
   Result := (Self.m_state.emLock > 0);
 end;
@@ -467,7 +487,7 @@ begin
   json['enabled'] := Self.m_state.enabled;
   json['keyReleased'] := Self.m_state.keyReleased;
   json['emLock'] := Self.m_state.emLock;
-  json['zaver'] := Self.m_state.zaver;
+  json['zaver'] := Self.zaver;
   json['note'] := Self.m_state.note;
   json['error'] := Self.m_state.error;
 end;

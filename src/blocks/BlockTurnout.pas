@@ -237,8 +237,8 @@ type
     procedure SetLockout(Sender: TIDContext; lockout: string); overload;
     procedure SetCouplingNoPropag(coupling: Integer);
 
-    procedure RefugeeLock(trackid: Integer; pathid: Integer);
-    procedure RefugeeUnlock(trackid: Integer);
+    procedure RefugeeLock(blockid: Integer; pathid: Integer);
+    procedure RefugeeUnlock(blockid: Integer);
 
     procedure ResetEmLocks();
     procedure DecreaseEmergencyLock(amount: Cardinal);
@@ -1459,18 +1459,21 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkTurnout.RefugeeLock(trackid: Integer; pathid: Integer);
+procedure TBlkTurnout.RefugeeLock(blockid: Integer; pathid: Integer);
 begin
-  Self.m_state.refugeeLock.Add(trackid, pathid); // intentionally throw exception when key exists
+  Self.m_state.refugeeLock.Add(blockid, pathid); // intentionally throw exception when key exists
   if (Self.m_state.refugeeLock.Count = 1) then
     Self.Change();
 end;
 
-procedure TBlkTurnout.RefugeeUnlock(trackid: Integer);
+procedure TBlkTurnout.RefugeeUnlock(blockid: Integer);
 begin
-  Self.m_state.refugeeLock.Remove(trackid);
-  if (Self.m_state.refugeeLock.IsEmpty) then
-    Self.Change();
+  if (Self.m_state.refugeeLock.ContainsKey(blockid)) then
+  begin
+    Self.m_state.refugeeLock.Remove(blockid);
+    if (Self.m_state.refugeeLock.IsEmpty) then
+      Self.Change();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -2108,7 +2111,7 @@ begin
   for var pathid: Integer in Self.m_state.refugeeLock.Values do
   begin
     var path: TJC := JCDb.GetJCByID(pathid);
-    if (path <> nil) then
+    if ((path <> nil) and (path.active)) then
       path.CancelOrStop();
   end;
 end;

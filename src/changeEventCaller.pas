@@ -50,7 +50,7 @@ class procedure TCECaller.LockCancelZaver(Sender: TObject; data: Integer);
 begin
   var lock: TBlkLock := Blocks.GetBlkLockByID(data);
   if (lock <> nil) then
-    lock.zaver := False;
+    lock.RemovePathZaver(TBlk(Sender).id);
 end;
 
 class procedure TCECaller.IOCancelZaver(Sender: TObject; data: Integer);
