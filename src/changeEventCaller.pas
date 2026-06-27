@@ -57,7 +57,7 @@ class procedure TCECaller.IOCancelZaver(Sender: TObject; data: Integer);
 begin
   var io: TBlkIO := Blocks.GetBlkIOByID(data);
   if (io <> nil) then
-    io.inZaver := False;
+    io.RemoveInPathZaver(TBlk(Sender).id);
 end;
 class
 procedure TCECaller.CrossingCancelZaver(Sender: TObject; data: Integer);

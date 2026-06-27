@@ -37,7 +37,7 @@ type
     outputState: TRCSOutputState;
     nullTime: TTime;
     note: string;
-    inZaver: Cardinal; // n.o. blocks who gave me zaver
+    pathInZaver: TDictionary<Integer, Integer>; // key: track block id, value: path id
   end;
 
   TBlkIO = class(TBlk)
@@ -48,7 +48,6 @@ type
       outputState: TRCSOutputState.osDisabled;
       nullTime: 0;
       note: '';
-      inZaver: 0
     );
 
     _DEFAULT_IN_ACTIVE_COLOR: TColor = TJopColor.green;
@@ -61,11 +60,10 @@ type
     function IsNullable(): Boolean;
     function IsActiveInput(): Boolean;
     function IsActiveOutput(): Boolean;
+    function IsInZaver(): Boolean;
 
     procedure SetNote(note: string);
 
-    function GetInZaver(): Boolean;
-    procedure SetInZaver(new: Boolean);
     procedure CheckPathBreak();
 
     procedure MenuStitClick(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights);
@@ -75,6 +73,7 @@ type
 
   public
     constructor Create(index: Integer);
+    destructor Destroy(); override;
 
     procedure LoadData(ini_tech: TMemIniFile; const section: string; ini_rel, ini_stat: TMemIniFile); override;
     procedure SaveData(ini_tech: TMemIniFile; const section: string); override;
@@ -98,6 +97,9 @@ type
 
     // ----- IO own functions -----
 
+    procedure AddInPathZaver(blockid: Integer; pathid: Integer);
+    procedure RemoveInPathZaver(blockid: Integer);
+
     function GetSettings(): TBlkIOsettings;
     procedure SetSettings(data: TBlkIOsettings);
 
@@ -115,7 +117,7 @@ type
     property activeInput: Boolean read IsActiveInput;
     property nullable: Boolean read IsNullable;
     property note: string read m_state.note write SetNote;
-    property inZaver: Boolean read GetInZaver write SetInZaver;
+    property inZaver: Boolean read IsInZaver;
 
   end;
 
@@ -130,7 +132,14 @@ constructor TBlkIO.Create(index: Integer);
 begin
   inherited;
   Self.m_state := _def_io_state;
+  Self.m_state.pathInZaver := TDictionary<Integer, Integer>.Create();
   Self.m_globSettings.typ := btIO;
+end;
+
+destructor TBlkIO.Destroy();
+begin
+  Self.m_state.pathInZaver.Free();
+  inherited;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -230,7 +239,7 @@ begin
   Self.m_state.enabled := false;
   Self.m_state.outputState := TRCSOutputState.osDisabled;
   Self.m_state.inputState := TRCSInputState.isOff;
-  Self.m_state.inZaver := 0;
+  Self.m_state.pathInZaver.Clear();
 end;
 
 function TBlkIO.UsesRCS(addr: TRCSsAddr; portType: TRCSIOType): Boolean;
@@ -578,25 +587,25 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkIO.GetInZaver(): Boolean;
+function TBlkIO.IsInZaver(): Boolean;
 begin
-  Result := (Self.m_state.inZaver > 0);
+  Result := (not Self.m_state.pathInZaver.IsEmpty);
 end;
 
-procedure TBlkIO.SetInZaver(new: Boolean);
+procedure TBlkIO.AddInPathZaver(blockid: Integer; pathid: Integer);
 begin
-  if (new) then
+  Self.m_state.pathInZaver.Add(blockid, pathid); // intentionally throw exception when key exists
+  if (Self.m_state.pathInZaver.Count = 1) then
+    Self.Change();
+end;
+
+procedure TBlkIO.RemoveInPathZaver(blockid: Integer);
+begin
+  if (Self.m_state.pathInZaver.ContainsKey(blockid)) then
   begin
-    Inc(Self.m_state.inZaver);
-    if (Self.m_state.inZaver = 1) then
+    Self.m_state.pathInZaver.Remove(blockid);
+    if (Self.m_state.pathInZaver.IsEmpty) then
       Self.Change();
-  end else begin
-    if (Self.m_state.inZaver > 0) then
-    begin
-      Dec(Self.m_state.inZaver);
-      if (Self.m_state.inZaver = 0) then
-        Self.Change();
-    end;
   end;
 end;
 
@@ -607,14 +616,15 @@ begin
   if (not Self.inZaver) then
     Exit();
 
-  var JCs: TList<TJC> := JCDb.FindActiveJCsWithIO(Self.id);
-  try
-    for var jc: TJC in JCs do
-      for var ioZav: TJCIOZav in jc.data.io do
+  for var pathid: Integer in Self.m_state.pathInZaver.Values do
+  begin
+    var path: TJC := JCDb.GetJCByID(pathid);
+    if ((path <> nil) and (path.active)) then
+    begin
+      for var ioZav: TJCIOZav in path.data.io do
         if ((ioZav.blockid = Self.id) and ((not Self.isRCSinput) or (Self.activeInput <> ioZav.inputState))) then
-          jc.CancelOrStop();
-  finally
-    JCs.Free();
+          path.CancelOrStop();
+    end;
   end;
 end;
 

@@ -1510,7 +1510,7 @@ begin
             var refTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(ioZav.refBlk);
             refTrack.AddChangeEvent(refTrack.eventsOnZaverReleaseOrAB, CreateChangeEventInt(TCECaller.IOCancelZaver, ioZav.blockid));
             var io: TBlkIO := Blocks.GetBlkIOByID(ioZav.blockid);
-            io.inZaver := true;
+            io.AddInPathZaver(refTrack.id, Self.id);
           end;
         end;
 
