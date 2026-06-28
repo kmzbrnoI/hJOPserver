@@ -33,6 +33,7 @@ type
     autostart: Boolean;
     consoleLog: Boolean;
     jcMaxMovingTurnouts: Cardinal;
+    dccStartFromPanelAfterCSSStopAllowed: Boolean;
 
     times: record // in seconds
       rcFree: Cardinal;
@@ -402,6 +403,7 @@ begin
     if (Self.autostart) then
       F_Main.autostart.state := asEnabled;
     Self.scale := ini.ReadInteger('SystemCfg', 'scale', 120);
+    Self.dccStartFromPanelAfterCSSStopAllowed := ini.ReadBool('SystemCfg', 'dccStartFromPanelAfterCSSStopAllowed', False);
 
     modelTime.LoadData(ini);
     FuncNames.Clear();
@@ -484,6 +486,7 @@ begin
     ini.WriteInteger('SystemCfg', 'mainTimerIntervalMs', F_Main.T_Main.Interval);
     ini.WriteBool('SystemCfg', 'AutSpusteni', Self.autostart);
     ini.WriteInteger('SystemCfg', 'scale', Self.scale);
+    ini.WriteBool('SystemCfg', 'dccStartFromPanelAfterCSSStopAllowed', Self.dccStartFromPanelAfterCSSStopAllowed);
 
     ini.EraseSection('autosave');
     ini.WriteBool('autosave', 'enabled', Self.autosave);

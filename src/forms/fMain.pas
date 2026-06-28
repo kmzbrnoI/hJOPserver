@@ -314,6 +314,7 @@ type
     CHB_autostart: TCheckBox;
     Label9: TLabel;
     CB_MainTimerInterval: TComboBox;
+    CHB_DCCStartFromPanel: TCheckBox;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -3870,6 +3871,7 @@ begin
   Self.E_Scale.Text := IntToStr(GlobalConfig.scale);
   Self.CHB_autostart.Checked := GlobalConfig.autostart;
   Self.CHB_Log_console.Checked := GlobalConfig.consoleLog;
+  Self.CHB_DCCStartFromPanel.Checked := GlobalConfig.dccStartFromPanelAfterCSSStopAllowed;
 
   case (Self.T_Main.Interval) of
     25: Self.CB_MainTimerInterval.ItemIndex := 0;
@@ -3914,6 +3916,7 @@ begin
     GlobalConfig.autosave := Self.CHB_Autosave.Checked;
     GlobalConfig.autostart := Self.CHB_autostart.Checked;
     GlobalConfig.consoleLog := Self.CHB_Log_console.Checked;
+    GlobalConfig.dccStartFromPanelAfterCSSStopAllowed := Self.CHB_DCCStartFromPanel.Checked;
 
     if (Self.CHB_Autosave.Checked) then
     begin

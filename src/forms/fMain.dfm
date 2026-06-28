@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_RV
+    ActivePage = TS_Config
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -5902,7 +5902,7 @@ object F_Main: TF_Main
         TabOrder = 1
         object GB_Autosave: TGroupBox
           Left = 246
-          Top = 174
+          Top = 195
           Width = 301
           Height = 59
           Caption = ' Automatick'#233' ulo'#382'en'#237' stavu koleji'#353't'#283' '
@@ -5948,7 +5948,7 @@ object F_Main: TF_Main
         end
         object GB_Scale: TGroupBox
           Left = 246
-          Top = 239
+          Top = 260
           Width = 301
           Height = 72
           Caption = ' M'#283#345#237'tko koleji'#353't'#283' '
@@ -6197,7 +6197,7 @@ object F_Main: TF_Main
         end
         object GB_JC: TGroupBox
           Left = 246
-          Top = 105
+          Top = 126
           Width = 301
           Height = 63
           Caption = ' J'#237'zdn'#237' cesty '
@@ -6224,7 +6224,7 @@ object F_Main: TF_Main
           Left = 246
           Top = 0
           Width = 301
-          Height = 99
+          Height = 120
           Caption = ' V'#353'eobecn'#233' '
           TabOrder = 1
           object Label9: TLabel
@@ -6275,6 +6275,18 @@ object F_Main: TF_Main
               '200 ms'
               '250 ms'
               '500 ms')
+          end
+          object CHB_DCCStartFromPanel: TCheckBox
+            Left = 15
+            Top = 92
+            Width = 266
+            Height = 17
+            Margins.Left = 2
+            Margins.Top = 2
+            Margins.Right = 2
+            Margins.Bottom = 2
+            Caption = 'Umo'#382'nit zapnout DCC z panelu p'#345'i n'#225'hl'#233'm vypnut'#237
+            TabOrder = 3
           end
         end
       end

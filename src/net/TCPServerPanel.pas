@@ -1353,10 +1353,9 @@ begin
   begin
     if (Assigned(Self.clients[i])) then
     begin
-      if ((Self.DCCStopped = Self.clients[i].connection) and (trakce.TrackStatusSafe() = tsOff)) then
-        Self.SendLn(Self.clients[i].connection, '-;DCC;STOP')
-      else
-        Self.SendLn(Self.clients[i].connection, '-;DCC;DISABLED');
+      const command: string = IfThen(((Self.DCCStopped = Self.clients[i].connection) or (GlobalConfig.dccStartFromPanelAfterCSSStopAllowed)) and
+          (trakce.TrackStatusSafe() = tsOff), 'STOP', 'DISABLED');
+      Self.SendLn(Self.clients[i].connection, '-;DCC;'+command)
     end;
   end;
 end;
