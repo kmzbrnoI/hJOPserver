@@ -1370,11 +1370,17 @@ begin
   begin
     // Not yet slowed -> increase & decrease speed
     if (Self.wantedSpeed <> speed) then
+    begin
+      Self.Log('Nastavuji rychlost podle přítomných úseků: v='+IntToStr(speed)+' km/h', TLogLevel.llInfo);
       Self.speed := speed;
+    end;
   end else begin
     // Already slowed down -> do not increase speed, just decrease
     if (Self.wantedSpeed > speed) then
+    begin
+      Self.Log('Snižuji rychlost podle přítomných úseků: v='+IntToStr(speed)+' km/h', TLogLevel.llInfo);
       Self.speed := speed;
+    end;
   end;
 end;
 

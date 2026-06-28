@@ -78,9 +78,11 @@ type
     constructor Create(trackAllowed: Boolean; data: TRREvData); overload;
 
     function GetDefStr(): string;
+    function GetReprStr(): string;
 
     procedure Register(traini: Cardinal);
     procedure Unregister();
+    class function RREvTypeToStr(t: TRREvType): string;
 
     // Sender must be a valid "Usek" blok.
     function IsTriggerred(Sender: TObject; safeState: Boolean): Boolean;
@@ -204,6 +206,28 @@ begin
 
   if (Self.trackDefined) then
     Result := Result + ',' + IntToStr(Self.m_data.trackId);
+end;
+
+function TRREv.GetReprStr(): string;
+begin
+  Result := RREvTypeToStr(Self.m_data.typ) + ' ';
+
+  case (Self.m_data.typ) of
+    rrtTrack:
+      Result := Result + IntToStr(Self.m_data.trackPart) + '=' +  ownConvert.BoolToStr10(Self.m_data.trackState);
+
+    rrtIR:
+      Result := Result + Blocks.GetBlkName(Self.m_data.irId) + '=' +  ownConvert.BoolToStr10(Self.m_data.irState);
+
+    rrtTime:
+      Result := Result + FormatDateTime('nn:ss.z', Self.m_data.time);
+
+    rrtDist:
+      Result := Result + IntToStr(Self.m_data.distanceCm) + ' cm';
+  end;
+
+  if (Self.trackDefined) then
+    Result := Result + ' (' + Blocks.GetBlkName(Self.m_data.trackId) + ')';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -355,6 +379,20 @@ end;
 function TRREv.IsTrackDefined(): Boolean;
 begin
   Result := ((Self.trackAllowed) and (Self.m_data.trackId > -1));
+end;
+
+/// /////////////////////////////////////////////////////////////////////////////
+
+class function TRREv.RREvTypeToStr(t: TRREvType): string;
+begin
+  case (t) of
+    rrtTrack: Result := 'úsek';
+    rrtIR: Result := 'IR';
+    rrtTime: Result := 'èas';
+    rrtDist: Result := 'vzdálenost';
+  else
+    Result := '?';
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

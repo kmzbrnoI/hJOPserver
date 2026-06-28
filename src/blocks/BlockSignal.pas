@@ -64,6 +64,8 @@ type
     procedure Parse(str: string; old: Boolean);
     class function ParseTrainTypes(types: string): string;
     function ToFileStr(short: Boolean = false): string;
+    function ToReprStr(): string;
+    class function MeAndStopReprStr(ev: TBlkSignalTrainEvent): string;
     class function ParseOldRychEvent(trackAllowed: Boolean; str: string): TRREv;
 
     function Match(train: TTrain): Boolean;
@@ -229,7 +231,7 @@ type
     function DefaultChangeTime(): string; overload;
 
     procedure UpdateTrainSlow(signalEv: TBlkSignalTrainEvent);
-    procedure UpdateTrainStop(signalEv: TBlkSignalTrainEvent; force: Boolean);
+    procedure UpdateTrainStop(signalEv: TBlkSignalTrainEvent);
     function JCSpeed(train: TTrain): Integer; // -1 -> do not set speed
 
     function SimMenu(SenderPnl: TIdContext; SenderOR: TObject; rights: TAreaRights): string;
@@ -1589,8 +1591,6 @@ end;
 // metoda je volana s force v pripade, kdy dochazi k prime zmene navesti od uzivatele (STUJ, DN, RC)
 procedure TBlkSignal.UpdateTrainSpeed(force: Boolean = false);
 begin
-  if (Self.m_settings.events.Count = 0) then
-    Exit();
   if (Self.m_spnl.symbolType = TBlkSignalSymbol.shunting) then
     Exit(); // pokud jsem posunove navestidlo, koncim funkci
   var track := TBlkTrack(Self.track);
@@ -1616,35 +1616,41 @@ begin
       Exit();
   end;
 
-  // zjisteni aktualni udalosti podle typu a delky vlaku
-  var i: Integer := Self.CurrentEventIndex();
-  var signalEv: TBlkSignalTrainEvent := Self.m_settings.events[i];
-
-  if (i <> Self.m_lastEvIndex) then
+  if (force) then
   begin
-    // Z nejakeho duvodu reagujeme na novou udalost -> vypnout starou udalost
-    if ((Self.m_lastEvIndex >= 0) and (Self.m_lastEvIndex < Self.m_settings.events.Count)) then
-    begin
-      if (Self.m_settings.events[Self.m_lastEvIndex].stop.enabled) then
-        Self.m_settings.events[Self.m_lastEvIndex].stop.Unregister();
+    Self.UpdateTrainStop(nil);
+  end else begin
+    if (Self.m_settings.events.Count = 0) then
+      Exit();
 
-      if ((Self.m_settings.events[Self.m_lastEvIndex].slow.enabled) and
-        (Self.m_settings.events[Self.m_lastEvIndex].slow.ev.enabled)) then
-        Self.m_settings.events[Self.m_lastEvIndex].slow.ev.Unregister();
+    // zjisteni aktualni udalosti podle typu a delky vlaku
+    var i: Integer := Self.CurrentEventIndex();
+    var signalEv: TBlkSignalTrainEvent := Self.m_settings.events[i];
+
+    if (i <> Self.m_lastEvIndex) then
+    begin
+      // Z nejakeho duvodu reagujeme na novou udalost -> vypnout starou udalost
+      if ((Self.m_lastEvIndex >= 0) and (Self.m_lastEvIndex < Self.m_settings.events.Count)) then
+      begin
+        if (Self.m_settings.events[Self.m_lastEvIndex].stop.enabled) then
+          Self.m_settings.events[Self.m_lastEvIndex].stop.Unregister();
+
+        if ((Self.m_settings.events[Self.m_lastEvIndex].slow.enabled) and
+          (Self.m_settings.events[Self.m_lastEvIndex].slow.ev.enabled)) then
+          Self.m_settings.events[Self.m_lastEvIndex].slow.ev.Unregister();
+      end;
+
+      Self.m_lastEvIndex := i;
     end;
 
-    Self.m_lastEvIndex := i;
+    Self.UpdateTrainSlow(signalEv);
+    Self.UpdateTrainStop(signalEv);
   end;
-
-  /// ////////////////////////////////////////////////
-
-  Self.UpdateTrainSlow(signalEv);
-  Self.UpdateTrainStop(signalEv, force);
 end;
 
 // ZPOMALOVANI
 // Zpomaleni je mozne i na jinem useku nez je usek pred navestidlem
-// Proto kontroly pritmnosti vlaku na useku pred navestidlem jsou az nize
+// Proto tu nejsou kontroly pritomnosti vlaku na useku pred navestidlem
 procedure TBlkSignal.UpdateTrainSlow(signalEv: TBlkSignalTrainEvent);
 begin
   if (not signalEv.slow.enabled) then
@@ -1671,6 +1677,8 @@ begin
 
       if (signalEv.slow.ev.IsTriggerred(slowTrack, true)) then
       begin
+        Self.Log('Zpomaluji vlak ' + slowTrain.name + ' v='+IntToStr(speed)+' km/h '+
+          IfThen(stopping, 'před zastavením', 'na rychlost navazující VC') + ' - událost ' + signalEv.ToReprStr() + ' ' + signalEv.slow.ev.GetReprStr(), TLogLevel.llInfo);
         signalEv.slow.ev.Unregister();
         slowTrain.speed := speed;
         slowTrack.slowingReady := false;
@@ -1686,7 +1694,8 @@ begin
 end;
 
 // ZASTAVOVANI, resp. nastavovani rychlosti prislusne JC
-procedure TBlkSignal.UpdateTrainStop(signalEv: TBlkSignalTrainEvent; force: Boolean);
+// signalEv = nil -> aplikovat hned
+procedure TBlkSignal.UpdateTrainStop(signalEv: TBlkSignalTrainEvent);
 begin
   var track := TBlkTrack(Self.track);
   if (track = nil) then
@@ -1715,10 +1724,10 @@ begin
     Exit();
   end;
 
-  if (not signalEv.stop.enabled) then
+  if ((signalEv <> nil) and (not signalEv.stop.enabled)) then
     signalEv.stop.Register(train.index);
 
-  if ((signalEv.stop.IsTriggerred(track, true)) or (force)) then
+  if ((signalEv = nil) or (signalEv.stop.IsTriggerred(track, true))) then
   // podminka IsTriggerred take resi to, ze usek musi byt obsazeny (tudiz resi vypadek useku)
   begin
     // event se odregistruje automaticky pri zmene
@@ -1754,14 +1763,20 @@ begin
 
         var speed: Integer := Self.JCSpeed(train);
         if ((speed <> -1) and ((train.wantedSpeed <> speed) or (train.direction <> Self.direction))) then
+        begin
+          Self.Log('Nastavuji rychlost vlaku ' + train.name + ' v='+IntToStr(speed)+' km/h (je JC, je povolovací návěst) - ' + TBlkSignalTrainEvent.MeAndStopReprStr(signalEv), TLogLevel.llInfo);
           train.SetSpeedDirection(speed, Self.direction);
+        end;
 
         // kontrola prehravani stanicniho hlaseni
         train.CheckAnnouncement(Self);
       end else begin
         // neni povolovaci navest -> zastavit vozidlo
         if ((train.direction = Self.direction) and (train.wantedSpeed <> 0)) then
+        begin
+          Self.Log('Zastavuji vlak ' + train.name + ' (je JC, není povolovací návěst) - ' + TBlkSignalTrainEvent.MeAndStopReprStr(signalEv), TLogLevel.llInfo);
           train.SetSpeedDirection(0, Self.direction);
+        end;
       end;
     end else begin
       // nenalezena jizdni cesta -> muze se jednat o navestidlo v trati
@@ -1772,11 +1787,17 @@ begin
         begin
           var speed: Integer := train.GetTrackSpeed();
           if ((speed >= 0) and (train.wantedSpeed <> speed) and (not train.IsSpeedOverride())) then
+          begin
+            Self.Log('Nastavuji rychlost vlaku ' + train.name + ' v='+IntToStr(speed)+' km/h (žádná JC, je povolovací návěst) - ' + TBlkSignalTrainEvent.MeAndStopReprStr(signalEv), TLogLevel.llInfo);
             train.SetSpeedDirection(Cardinal(speed), Self.direction)
+          end;
         end else begin
           // neni povolovaci navest -> zastavit
           if (train.wantedSpeed <> 0) then
+          begin
+            Self.Log('Zastavuji vlak ' + train.name + ' (žádná JC, není povolovací návěst) - ' + TBlkSignalTrainEvent.MeAndStopReprStr(signalEv), TLogLevel.llInfo);
             train.SetSpeedDirection(0, Self.direction);
+          end;
         end;
       end;
     end;
@@ -2433,6 +2454,21 @@ begin
     Result := Result + '{re:' + Self.train_type_re + '}|' + IntToStr(Self.length.min) + '|' +
       IntToStr(Self.length.max);
   end;
+end;
+
+function TBlkSignalTrainEvent.ToReprStr(): string;
+begin
+  Result := IfThen(Self.train_type_re <> '', Self.train_type_re, '.*');
+  if ((Self.length.min <> -1) or (Self.length.max <> -1)) then
+    Result := Result + ' l=' + IntToStr(Self.length.min) + '-' + IntToStr(Self.length.max) + ' cm';
+end;
+
+class function TBlkSignalTrainEvent.MeAndStopReprStr(ev: TBlkSignalTrainEvent): string;
+begin
+  if (ev = nil) then
+    Result := 'vynucené'
+  else
+    Result := 'událost ' + ev.ToReprStr() + ' ' + ev.stop.GetReprStr();
 end;
 
 // ziskavani zpomalovacich a zastavovaich dat ze souboru (parsing dat)

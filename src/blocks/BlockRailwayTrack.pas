@@ -506,6 +506,7 @@ begin
                 (Self.train.wantedSpeed > Self.m_rtSettings.stop.evL.slow.speed) and
                 (Self.m_rtSettings.stop.evL.slow.ev.IsTriggerred(Self, true))) then
               begin
+                Self.Log('Zpomaluji vlak '+Self.train.name+' do liché zastávky', TLogLevel.llInfo);
                 Self.train.speed := Self.m_rtSettings.stop.evL.slow.speed;
                 Self.m_rtState.stopSlowReady := false;
                 Self.speedUpdate := false;
@@ -524,6 +525,7 @@ begin
               if ((Self.train.wantedSpeed > Self.m_rtSettings.stop.evS.slow.speed) and
                 (Self.m_rtSettings.stop.evS.slow.ev.IsTriggerred(Self, true))) then
               begin
+                Self.Log('Zpomaluji vlak '+Self.train.name+' do sudé zastávky', TLogLevel.llInfo);
                 Self.train.speed := Self.m_rtSettings.stop.evS.slow.speed;
                 Self.m_rtState.stopSlowReady := false;
                 Self.speedUpdate := false;
@@ -609,6 +611,7 @@ end;
 
 procedure TBlkRT.StopStopTrain();
 begin
+  Self.Log('Zastavuji vlak '+Self.train.name+' v zastávce', TLogLevel.llInfo);
   Self.m_rtState.stopStopped := true;
   Self.m_rtState.stopSoundStep := 0;
   Self.m_rtState.stopRunTime := now + Self.m_rtSettings.stop.delay;
@@ -624,6 +627,7 @@ end;
 
 procedure TBlkRT.StopRunTrain();
 begin
+  Self.Log('Rozjíždím vlak '+Self.train.name + ' ze zastávky', TLogLevel.llInfo);
   Self.m_rtState.stopStopped := false;
   Self.m_rtState.stopPassed := true;
   Self.m_rtState.stopSoundStep := 0;
