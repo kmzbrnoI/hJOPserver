@@ -302,7 +302,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, PanelConnData, ownConvert,
-  IfThenElse, RCSErrors, BlockPst, JCBarriers, Config, TechnologieJC, colorHelper;
+  IfThenElse, RCSErrors, BlockPst, JCBarriers, Config, TechnologieJC, colorHelper, Logging;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin
@@ -2116,7 +2116,10 @@ begin
   begin
     var path: TJC := JCDb.GetJCByID(pathid);
     if ((path <> nil) and (path.active)) then
+    begin
+      Self.Log('Není koncová poloha, ruším JC '+path.name, TLogLevel.llWarning, TLogSource.lsJC);
       path.CancelOrStop();
+    end;
   end;
 end;
 

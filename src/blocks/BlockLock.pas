@@ -102,7 +102,7 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ConfSeq, TechnologieJC,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, TRVDatabase, BlockTurnout, colorHelper,
-  IfThenElse;
+  IfThenElse, Logging;
 
 constructor TBlkLock.Create(index: Integer);
 begin
@@ -199,7 +199,10 @@ begin
     begin
       var path: TJC := JCDb.GetJCByID(pathid);
       if ((path <> nil) and (path.active)) then
+      begin
+        Self.Log('Neuzamčen, ruším JC '+path.name, TLogLevel.llWarning, TLogSource.lsJC);
         path.CancelOrStop();
+      end;
     end;
   end;
 end;

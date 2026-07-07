@@ -225,7 +225,7 @@ implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCSIFace, UPO,
   Graphics, PanelConnData, Diagnostics, appEv, ownConvert, Config, timeHelper,
-  BlockTrack, BlockTrackRef, colorHelper, RCSErrors, PTUtils, IfThenElse, TechnologieJC;
+  BlockTrack, BlockTrackRef, colorHelper, RCSErrors, PTUtils, IfThenElse, TechnologieJC, Logging;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
@@ -1469,7 +1469,10 @@ begin
   begin
     var path: TJC := JCDb.GetJCByID(pathid);
     if ((path <> nil) and (path.active)) then
+    begin
+      Self.Log('Špatný stav přejezdu, ruším JC '+path.name, TLogLevel.llWarning, TLogSource.lsJC);
       path.CancelOrStop();
+    end;
   end;
 end;
 

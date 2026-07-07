@@ -126,7 +126,7 @@ type
 implementation
 
 uses AreaDb, TCPServerPanel, ownConvert, Config, timeHelper, PTUtils, TechnologieJC,
-  TJCDatabase;
+  TJCDatabase, Logging;
 
 constructor TBlkIO.Create(index: Integer);
 begin
@@ -622,8 +622,13 @@ begin
     if ((path <> nil) and (path.active)) then
     begin
       for var ioZav: TJCIOZav in path.data.io do
+      begin
         if ((ioZav.blockid = Self.id) and ((not Self.isRCSinput) or (not Self.enabled) or (Self.activeInput <> ioZav.inputState))) then
+        begin
+          Self.Log('Špatný stav vstupu, ruším JC '+path.name, TLogLevel.llWarning, TLogSource.lsJC);
           path.CancelOrStop();
+        end;
+      end;
     end;
   end;
 end;
