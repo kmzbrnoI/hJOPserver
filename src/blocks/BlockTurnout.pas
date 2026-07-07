@@ -2103,6 +2103,8 @@ end;
 
 procedure TBlkTurnout.PositionError();
 begin
+  JCDb.Cancel(Self); // for turnouts directly in path
+
   for var blkid: Integer in Self.m_state.refugeeLock.Keys do
   begin
     var pst: TBlkPst := Blocks.GetBlkPstByID(blkid);

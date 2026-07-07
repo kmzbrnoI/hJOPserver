@@ -3962,10 +3962,6 @@ begin
     if (turnoutZav.block = turnout.id) then
       Exit(True);
 
-  for var refugeeZav: TJCRefugeeZav in Self.data.refuges do
-    if (refugeeZav.block = turnout.id) then
-      Exit(True);
-
   if ((turnout <> nil) and (turnout.lock <> nil)) then
     for var refZav: TJCRefZav in Self.data.locks do
       if (refZav.block = turnout.lock.id) then
