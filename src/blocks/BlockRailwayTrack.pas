@@ -1331,8 +1331,10 @@ begin
     (not railway.RBPCan) and (railway.state.trains.Count = 0) and (not railway.emLock)) then
     railway.direction := TRailwayDirection.no;
 
-  // pokud je trat uplne volna, zrusime blokovou podminku
-  if (not railway.occupied) then
+  // Pokud je trat uplne volna, zrusime blokovou podminku.
+  // "or (railway.tracks.Count = 1)" je doplneno kvuli jednousekovym tratim, ze kterych vede jednousekova vlakova cesta - trat zustavala v poruse BP.
+  // Zrusit BP na jednousekove trati lze, protoze v trati nemuze byt zadny dalsi vlak (ani do trati nemuze byt postavena vlakova cesta).
+  if ((not railway.occupied) or (railway.tracks.Count = 1)) then
     railway.BP := false;
 
   railway.UpdateTrainPredict();
