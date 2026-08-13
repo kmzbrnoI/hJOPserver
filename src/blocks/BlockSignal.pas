@@ -2458,8 +2458,8 @@ end;
 
 function TBlkSignalTrainEvent.ToReprStr(): string;
 begin
-  Result := IfThen(Self.train_type_re <> '', Self.train_type_re, '.*');
-  if ((Self.length.min <> -1) or (Self.length.max <> -1)) then
+  Result := IfThen(Self.train_type_re <> '', Self.train_type_re.Substring(1, System.Length(Self.train_type_re)-2), '.*');
+  if ((Self.length.min > 0) or (Self.length.max > 0)) then
     Result := Result + ' l=' + IntToStr(Self.length.min) + '-' + IntToStr(Self.length.max) + ' cm';
 end;
 
