@@ -624,7 +624,7 @@ begin
   end else begin
     userRights := user.GetRights(Self.id);
     if (userRights < rights) then
-      msg := 'K této OŘ nemáte oprávnění';
+      msg := 'K této dopravně nemáte oprávnění';
   end;
 
   var lastRights := Self.PanelDbRights(Sender);
@@ -832,7 +832,7 @@ begin
   var area: TArea := areas.Get(recepient);
   if (area = nil) then
   begin
-    Self.SendLn(Sender, 'MSG-ERR;' + recepient + ';Tato OŘ neexistuje');
+    Self.SendLn(Sender, 'MSG-ERR;' + recepient + ';Tato dopravna neexistuje');
     Exit();
   end;
 
@@ -840,7 +840,7 @@ begin
     Area.SendMessage(Self, msg);
   except
     on E: ENoClientConnected do
-      Self.SendLn(Sender, 'MSG-ERR;' + recepient + ';K této OŘ aktuálně není připojen žádný panel');
+      Self.SendLn(Sender, 'MSG-ERR;' + recepient + ';K této dopravně aktuálně není připojen žádný panel');
   end;
 end;
 

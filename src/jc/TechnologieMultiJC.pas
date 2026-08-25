@@ -248,7 +248,7 @@ begin
   // No paths to activate in PV mode -> exit
   if (Self.m_state.activatingJCs.Count = 0) then
   begin
-    Self.Log('Zásobník OŘ všech JC v režimu VZ -> nestavím žádnou cestu rovnou');
+    Self.Log('Zásobníky dopraven všech JC v režimu VZ -> nestavím žádnou cestu rovnou');
     Exit();
   end;
 

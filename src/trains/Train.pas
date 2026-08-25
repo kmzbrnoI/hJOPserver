@@ -465,7 +465,7 @@ begin
     if ((Trains[i].name = train['name']) and (Trains[i] <> Self)) then
     begin
       if (Trains[i].station <> nil) then
-        raise Exception.Create('Vlak '+Trains[i].name+' již existuje v OŘ '+(Trains[i].station as TArea).name);
+        raise Exception.Create('Vlak '+Trains[i].name+' již existuje v dopravně '+(Trains[i].station as TArea).name);
       raise Exception.Create('Vlak '+Trains[i].name+' již existuje');
     end;
   end;

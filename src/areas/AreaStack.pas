@@ -4,7 +4,7 @@
 
 interface
 
-uses Generics.Collections, Classes, IdContext, SysUtils;
+uses Generics.Collections, Classes, IdContext, SysUtils, Logging;
 
 type
   TORStackMode = (PV = 0, VZ = 1);
@@ -76,6 +76,8 @@ type
 
     function FindCmdIndexById(id: Integer): Integer;
 
+    procedure Log(text: string; level: TLogLevel; source: TLogSource = lsStack; brief: Boolean = False);
+
   public
 
     constructor Create(index: Integer; area: TObject);
@@ -112,7 +114,7 @@ type
 
 implementation
 
-uses area, TCPServerPanel, Logging, TechnologieJC, Block, BlockDb,
+uses area, TCPServerPanel, TechnologieJC, Block, BlockDb,
   BlockLinker, BlockRailway, appEv, JCBarriers;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -169,7 +171,7 @@ begin
     end;
   except
     on e: Exception do
-      Log('Server: stack data parse error : ' + e.Message, llError, lsStack);
+      Self.Log('Stack data parse error: ' + e.Message, llError);
   end;
 end;
 
@@ -294,7 +296,7 @@ procedure TORStack.AddCmd(cmd: TORStackCmd);
 begin
   if (Self.m_stack.count >= _MAX_STACK_JC) then
   begin
-    Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - zásobník je plný, nelze přidat další příkaz', llWarning, lsStack);
+    Self.Log('Zásobník je plný, nelze přidat další příkaz', llWarning, lsStack);
     raise Exception.Create('Zásobník je plný');
   end;
 
@@ -308,8 +310,7 @@ begin
   var description: string := Self.GetStackString(cmd);
   Self.m_stack.Add(cmd);
   (Self.m_area as TArea).BroadcastData('ZAS;ADD;' + IntToStr(cmd.id) + '|' + description);
-  Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - : přidán příkaz ' + description + ', id = ' +
-    IntToStr(cmd.id), llInfo, lsStack);
+  Self.Log('Přidán příkaz ' + description + ', id = ' + IntToStr(cmd.id), llInfo, lsStack);
   (Self.m_area as TArea).changed := true;
 end;
 
@@ -377,12 +378,12 @@ begin
       begin
         (Self.m_area as TArea).BroadcastData('ZAS;PV');
         Self.UPOenabled := false;
-        Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - PV', llInfo, lsStack);
+        Self.Log('PV', llInfo, lsStack);
       end;
     TORStackMode.VZ:
       begin
         (Self.m_area as TArea).BroadcastData('ZAS;VZ');
-        Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - VZ', llInfo, lsStack);
+        Self.Log('VZ', llInfo, lsStack);
       end;
   end; // case
 
@@ -419,7 +420,7 @@ begin
   except
     on e: Exception do
     begin
-      AppEvents.LogException(e, 'Zásobník OŘ ' + (Self.m_area as TArea).id +
+      AppEvents.LogException(e, 'Zásobník dopravny ' + (Self.m_area as TArea).id +
         ' - update exception, mažu příkaz ze zásobníku');
       Self.RemoveFromStack(0);
     end;
@@ -485,7 +486,7 @@ begin
 
     // zadne bariery -> stavim jizdni cestu
 
-    Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + JC.name + ' : podmínky splněny, stavím', llInfo, lsStack);
+    Self.Log('JC ' + JC.name + ' : podmínky splněny, stavím', llInfo, lsStack);
 
     // pokud nejsou zadne bariery, stavime jizdni cestu
     (Self.m_area as TArea).BroadcastData('ZAS;FIRST;0');
@@ -611,8 +612,7 @@ begin
   for var i: Integer := 0 to Self.m_stack.count - 1 do
     if ((Self.m_stack[i].ClassType = TORStackCmdJC) and ((Self.m_stack[i] as TORStackCmdJC).JC = JC)) then
     begin
-      Log('Zásobník OŘ ' + (Self.m_area as TArea).id + ' - JC ' + ((Self.m_stack[i] as TORStackCmdJC).JC as TJC)
-        .name + ' : smazána ze zásobníku, id = ' + IntToStr(Self.m_stack[i].id), llInfo, lsStack);
+      Self.Log('JC ' + ((Self.m_stack[i] as TORStackCmdJC).JC as TJC).name + ' : smazána ze zásobníku, id = ' + IntToStr(Self.m_stack[i].id), llInfo, lsStack);
       Self.RemoveFromStack(i);
       Exit();
     end;
@@ -736,6 +736,13 @@ begin
       Exit(i);
 
   Result := -1;
+end;
+
+/// ////////////////////////////////////////////////////////////////////////////
+
+procedure TORStack.Log(text: string; level: TLogLevel; source: TLogSource = lsStack; brief: Boolean = False);
+begin
+  Logging.Log((Self.m_area as TArea).id + ': ' + text, level, source, brief);
 end;
 
 /// ////////////////////////////////////////////////////////////////////////////
