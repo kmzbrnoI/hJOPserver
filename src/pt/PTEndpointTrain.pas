@@ -189,6 +189,10 @@ begin
    Exit();
   end;
 
+ const urlSuffix: string = RightStr(ARequestInfo.Document, Length(ARequestInfo.Document)-Length('/trains/'));
+ const trainName: string = strTillChar(urlSuffix, '/');
+
+ reqJson['train']['name'] := trainName;
  train := Trains.Add(reqJson['train'], TTrakce.Callback(), TTrakce.Callback());
  train.GetPtData(respJson.O['train']);
 end;
