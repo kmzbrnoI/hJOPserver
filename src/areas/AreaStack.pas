@@ -13,6 +13,8 @@ type
   // Z teto abstratni tridy dedi konkretni povely.
   TORStackCmd = class abstract
     id: Integer;
+    function ToStackString(): string; virtual; abstract;
+    function ToLogString(): string;
   end;
 
   // povel ke staveni jizdni cesty
@@ -21,16 +23,19 @@ type
     nouz: Boolean;
     Pnl: TIDContext;
     ab: Boolean;
+    function ToStackString(): string; override;
   end;
 
   // povel k zapnuti zadosti o tratovy souhlas
   TORStackCmdZTS = class(TORStackCmd)
     linker: TObject; // TBlkLinker
+    function ToStackString(): string; override;
   end;
 
   // povel k udeleni tratoveho souhlasu
   TORStackCmdUTS = class(TORStackCmd)
     linker: TObject; // TBlkLinker
+    function ToStackString(): string; override;
   end;
 
   TORStack = class
@@ -63,7 +68,6 @@ type
 
     procedure RemoveFromStack(index: Integer; SenderPnl: TIDContext = nil);
 
-    function GetStackString(cmd: TORStackCmd): string;
     function GetCount(): Integer;
 
     procedure AddCmd(cmd: TORStackCmd);
@@ -226,7 +230,6 @@ begin
 end;
 
 procedure TORStack.ORCmdSWITCH(SenderPnl: TIDContext; fromId: Integer; toId: Integer; listend: Boolean = false);
-var i, j: Integer;
 begin
   if ((fromId = toId) and (not listend)) then
   begin
@@ -234,7 +237,7 @@ begin
     Exit();
   end;
 
-  i := Self.FindCmdIndexById(fromId);
+  var i: Integer := Self.FindCmdIndexById(fromId);
   if (i = -1) then
   begin
     PanelServer.SendInfoMsg(SenderPnl, 'Povel s výchozím ID v zásobníku neexistuje!');
@@ -249,7 +252,7 @@ begin
     begin
       Self.m_stack.Add(tmp);
     end else begin
-      j := Self.FindCmdIndexById(toId);
+      var j: Integer := Self.FindCmdIndexById(toId);
       if (j = -1) then
       begin
         PanelServer.SendInfoMsg(SenderPnl, 'Povel s cílovým ID v zásobníku neexistuje!');
@@ -265,6 +268,7 @@ begin
 
   (Self.m_area as TArea).BroadcastData('ZAS; LIST;' + Self.GetList());
   (Self.m_area as TArea).changed := true;
+  Self.Log('Přeorganizován zásobník, nový seznam: '+Self.GetList(), llInfo);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -290,13 +294,13 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
-// Pridani obecneho prikazu do zasobniku:
+// Pridani obecneho povelu do zasobniku:
 
 procedure TORStack.AddCmd(cmd: TORStackCmd);
 begin
   if (Self.m_stack.count >= _MAX_STACK_JC) then
   begin
-    Self.Log('Zásobník je plný, nelze přidat další příkaz', llWarning, lsStack);
+    Self.Log('Zásobník je plný, nelze přidat další povel', llWarning, lsStack);
     raise Exception.Create('Zásobník je plný');
   end;
 
@@ -307,10 +311,9 @@ begin
 
   cmd.id := max + 1;
 
-  var description: string := Self.GetStackString(cmd);
   Self.m_stack.Add(cmd);
-  (Self.m_area as TArea).BroadcastData('ZAS;ADD;' + IntToStr(cmd.id) + '|' + description);
-  Self.Log('Přidán příkaz ' + description + ', id = ' + IntToStr(cmd.id), llInfo, lsStack);
+  (Self.m_area as TArea).BroadcastData('ZAS;ADD;' + IntToStr(cmd.id) + '|' + cmd.ToStackString());
+  Self.Log('Přidán povel ' + cmd.ToLogString(), llInfo, lsStack);
   (Self.m_area as TArea).changed := true;
 end;
 
@@ -402,7 +405,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-// tady se resi zpracovani prikazu v zasobniku
+// tady se resi zpracovani povelu v zasobniku
 procedure TORStack.Update();
 begin
   if (Self.m_stack.count = 0) then
@@ -421,7 +424,7 @@ begin
     on e: Exception do
     begin
       AppEvents.LogException(e, 'Zásobník dopravny ' + (Self.m_area as TArea).id +
-        ' - update exception, mažu příkaz ze zásobníku');
+        ' - update exception, mažu povel ze zásobníku');
       Self.RemoveFromStack(0);
     end;
   end;
@@ -486,7 +489,7 @@ begin
 
     // zadne bariery -> stavim jizdni cestu
 
-    Self.Log('JC ' + JC.name + ' : podmínky splněny, stavím', llInfo, lsStack);
+    Self.Log('JC ' + JC.name + ': podmínky splněny, stavím', llInfo, lsStack);
 
     // pokud nejsou zadne bariery, stavime jizdni cestu
     (Self.m_area as TArea).BroadcastData('ZAS;FIRST;0');
@@ -555,7 +558,7 @@ begin
     Result := '0;';
 
   for var i: Integer := 0 to Self.m_stack.count - 1 do
-    Result := Result + '[' + IntToStr(Self.m_stack[i].id) + '|' + Self.GetStackString(Self.m_stack[i]) + ']';
+    Result := Result + '[' + IntToStr(Self.m_stack[i].id) + '|' + Self.m_stack[i].ToStackString() + ']';
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -612,7 +615,7 @@ begin
   for var i: Integer := 0 to Self.m_stack.count - 1 do
     if ((Self.m_stack[i].ClassType = TORStackCmdJC) and ((Self.m_stack[i] as TORStackCmdJC).JC = JC)) then
     begin
-      Self.Log('JC ' + ((Self.m_stack[i] as TORStackCmdJC).JC as TJC).name + ' : smazána ze zásobníku, id = ' + IntToStr(Self.m_stack[i].id), llInfo, lsStack);
+      Self.Log('JC ' + ((Self.m_stack[i] as TORStackCmdJC).JC as TJC).name + ': smazána ze zásobníku, id = ' + IntToStr(Self.m_stack[i].id), llInfo, lsStack);
       Self.RemoveFromStack(i);
       Exit();
     end;
@@ -663,6 +666,7 @@ procedure TORStack.RemoveFromStack(index: Integer; SenderPnl: TIDContext = nil);
 begin
   if (index < Self.m_stack.count) then
   begin
+    Self.Log('Mažu povel '+Self.m_stack[index].ToLogString(), llInfo);
     (Self.m_area as TArea).BroadcastData('ZAS;RM;' + IntToStr(Self.m_stack[index].id));
     Self.m_stack.Delete(index);
     Self.hint := '';
@@ -679,35 +683,32 @@ end;
 
 /// ////////////////////////////////////////////////////////////////////////////
 
-function TORStack.GetStackString(cmd: TORStackCmd): string;
+function TORStackCmdJC.ToStackString(): string;
 begin
-  try
-    if (cmd.ClassType = TORStackCmdJC) then
-    begin
-      if ((cmd as TORStackCmdJC).nouz) then
-        Result := 'NC  ' + ((cmd as TORStackCmdJC).JC as TJC).name
-      else
-        case (((cmd as TORStackCmdJC).JC as TJC).typ) of
-          TJCType.train:
-            Result := 'VC  ' + ((cmd as TORStackCmdJC).JC as TJC).name;
-          TJCType.shunt:
-            Result := 'PC  ' + ((cmd as TORStackCmdJC).JC as TJC).name;
-        end; // case
-    end
+  if (Self.nouz) then
+    Result := 'NC ' + (Self.JC as TJC).name
+  else
+    case ((Self.JC as TJC).typ) of
+      TJCType.train:
+        Result := 'VC ' + (Self.JC as TJC).name;
+      TJCType.shunt:
+        Result := 'PC ' + (Self.JC as TJC).name;
+    end; // case
+end;
 
-    else if (cmd.ClassType = TORStackCmdZTS) then
-    begin
-      Result := 'ZTS ' + ((cmd as TORStackCmdZTS).linker as TBlk).name;
-    end
+function TORStackCmdZTS.ToStackString(): string;
+begin
+  Result := 'ZTS ' + (Self.linker as TBlk).name;
+end;
 
-    else if (cmd.ClassType = TORStackCmdUTS) then
-    begin
-      Result := 'UTS ' + ((cmd as TORStackCmdUTS).linker as TBlk).name;
-    end;
+function TORStackCmdUTS.ToStackString(): string;
+begin
+  Result := 'UTS ' + (Self.linker as TBlk).name;
+end;
 
-  except
-    Result := 'neexistující příkaz';
-  end;
+function TORStackCmd.ToLogString(): string;
+begin
+  Result := Self.ToStackString() + ', id=' + IntToStr(Self.id);
 end;
 
 /// ////////////////////////////////////////////////////////////////////////////
