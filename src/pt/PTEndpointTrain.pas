@@ -65,7 +65,7 @@ begin
  Result.AddOrSetValue('type', _ET_NONE);
  if (trainIndex = -1) then
  begin
-   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Vlak neexistuje', 'Vlak s id '+trainName+' neexistuje');
+   PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Vlak neexistuje', 'Vlak cisla '+trainName+' neexistuje');
    Exit();
  end;
 
@@ -202,9 +202,7 @@ begin
  dict := Self.CommonGetPut(AContext, ARequestInfo, respJson);
  try
    if (dict['type'] = _ET_TRAIN) then
-     Trains.Remove(Trains[dict['train']].index)
-   else
-     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 405, 'Method not allowed', 'S touto HTTP metodou si neumim poradit');
+     Trains.Remove(Trains[dict['train']].index);
  finally
    dict.Free();
  end;
