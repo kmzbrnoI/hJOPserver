@@ -4,7 +4,7 @@ object F_BlkRT: TF_BlkRT
   ActiveControl = B_OK
   BorderStyle = bsToolWindow
   Caption = 'Editovat data bloku : [blok] (tratovy usek)'
-  ClientHeight = 610
+  ClientHeight = 601
   ClientWidth = 697
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -62,20 +62,9 @@ object F_BlkRT: TF_BlkRT
     Margins.Bottom = 2
     Caption = 'Zesilova'#269':'
   end
-  object L_Usek33: TLabel
-    Left = 8
-    Top = 126
-    Width = 78
-    Height = 13
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    Caption = 'Smy'#269'kov'#253' blok :'
-  end
   object B_OK: TButton
     Left = 615
-    Top = 578
+    Top = 569
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -84,12 +73,12 @@ object F_BlkRT: TF_BlkRT
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 9
+    TabOrder = 8
     OnClick = B_OKClick
   end
   object B_Storno: TButton
     Left = 536
-    Top = 578
+    Top = 569
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -97,7 +86,7 @@ object F_BlkRT: TF_BlkRT
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 10
+    TabOrder = 9
     OnClick = B_StornoClick
   end
   object SE_ID: TSpinEdit
@@ -128,7 +117,7 @@ object F_BlkRT: TF_BlkRT
   end
   object GB_RCS: TGroupBox
     Left = 7
-    Top = 147
+    Top = 128
     Width = 305
     Height = 142
     Margins.Left = 2
@@ -136,7 +125,7 @@ object F_BlkRT: TF_BlkRT
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = ' Detekce obsazen'#237' - vstupy - RCS  '
-    TabOrder = 5
+    TabOrder = 4
     object L_Usek04: TLabel
       Left = 12
       Top = 35
@@ -479,7 +468,7 @@ object F_BlkRT: TF_BlkRT
     Width = 365
     Height = 435
     Caption = ' Zast'#225'vka '
-    TabOrder = 8
+    TabOrder = 7
     object Label5: TLabel
       Left = 16
       Top = 40
@@ -571,24 +560,13 @@ object F_BlkRT: TF_BlkRT
       OnClick = CHB_Stop_OddClick
     end
   end
-  object CHB_loop: TCheckBox
-    Left = 119
-    Top = 126
-    Width = 17
-    Height = 17
-    Margins.Left = 2
-    Margins.Top = 2
-    Margins.Right = 2
-    Margins.Bottom = 2
-    TabOrder = 4
-  end
   object GB_Autoblok: TGroupBox
     Left = 324
     Top = 8
     Width = 365
     Height = 112
     Caption = ' Autoblok '
-    TabOrder = 7
+    TabOrder = 6
     object CHB_SignalL: TCheckBox
       Left = 16
       Top = 15
@@ -625,12 +603,12 @@ object F_BlkRT: TF_BlkRT
     end
   end
   object GB_Speeds: TGroupBox
-    Left = 8
-    Top = 294
+    Left = 7
+    Top = 275
     Width = 305
     Height = 309
     Caption = ' Rychlosti '
-    TabOrder = 6
+    TabOrder = 5
     object GB_SpeedsL: TGroupBox
       Left = 2
       Top = 15

@@ -44,8 +44,6 @@ type
     SE_Stop_Length: TSpinEdit;
     Label7: TLabel;
     ME_Stop_Delay: TMaskEdit;
-    CHB_loop: TCheckBox;
-    L_Usek33: TLabel;
     GB_Autoblok: TGroupBox;
     CHB_SignalL: TCheckBox;
     CB_SignalL: TComboBox;
@@ -169,7 +167,6 @@ begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
   Self.E_Length.Text := '0';
-  Self.CHB_loop.Checked := false;
   Self.CB_Booster.ItemIndex := -1;
 
   Self.SE_System0.Value := 0;
