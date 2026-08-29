@@ -4,7 +4,7 @@ object F_JCEdit: TF_JCEdit
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'J'#237'zdn'#237' cesta ...'
-  ClientHeight = 897
+  ClientHeight = 855
   ClientWidth = 1057
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -320,7 +320,7 @@ object F_JCEdit: TF_JCEdit
   end
   object B_Save: TButton
     Left = 975
-    Top = 864
+    Top = 822
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -334,7 +334,7 @@ object F_JCEdit: TF_JCEdit
   end
   object B_Storno: TButton
     Left = 888
-    Top = 864
+    Top = 822
     Width = 75
     Height = 25
     Margins.Left = 2
@@ -554,7 +554,7 @@ object F_JCEdit: TF_JCEdit
     Left = 685
     Top = 7
     Width = 365
-    Height = 188
+    Height = 172
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -565,7 +565,7 @@ object F_JCEdit: TF_JCEdit
       Left = 2
       Top = 15
       Width = 361
-      Height = 100
+      Height = 84
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -599,10 +599,11 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_LocksChange
       OnKeyDown = LV_LocksKeyDown
+      ExplicitHeight = 100
     end
     object GB_Lock: TGroupBox
       Left = 2
-      Top = 115
+      Top = 99
       Width = 361
       Height = 71
       Margins.Left = 2
@@ -612,6 +613,7 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit/smazat z'#225'mek '
       TabOrder = 1
+      ExplicitTop = 115
       object Label12: TLabel
         Left = 8
         Top = 16
@@ -689,9 +691,9 @@ object F_JCEdit: TF_JCEdit
   end
   object GB_Refugees: TGroupBox
     Left = 685
-    Top = 199
+    Top = 183
     Width = 365
-    Height = 261
+    Height = 232
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
@@ -702,7 +704,7 @@ object F_JCEdit: TF_JCEdit
       Left = 2
       Top = 15
       Width = 361
-      Height = 148
+      Height = 119
       Margins.Left = 2
       Margins.Top = 2
       Margins.Right = 2
@@ -740,10 +742,11 @@ object F_JCEdit: TF_JCEdit
       ViewStyle = vsReport
       OnChange = LV_RefugeesChange
       OnKeyDown = LV_RefugeesKeyDown
+      ExplicitHeight = 148
     end
     object GB_Refugee: TGroupBox
       Left = 2
-      Top = 163
+      Top = 134
       Width = 361
       Height = 96
       Margins.Left = 2
@@ -753,6 +756,7 @@ object F_JCEdit: TF_JCEdit
       Align = alBottom
       Caption = ' P'#345'idat/upravit/smazat odvrat '
       TabOrder = 1
+      ExplicitTop = 163
       object Label7: TLabel
         Left = 8
         Top = 16
@@ -1058,8 +1062,8 @@ object F_JCEdit: TF_JCEdit
     OnClick = CHB_emOnlyClick
   end
   object GB_Loop: TGroupBox
-    Left = 684
-    Top = 465
+    Left = 685
+    Top = 420
     Width = 365
     Height = 72
     Caption = ' Smy'#269'ka '
@@ -1090,8 +1094,8 @@ object F_JCEdit: TF_JCEdit
     end
   end
   object GB_permNote: TGroupBox
-    Left = 684
-    Top = 543
+    Left = 685
+    Top = 498
     Width = 365
     Height = 105
     Caption = ' Permanentn'#237' '#353't'#237'tky (1 '#353't'#237'tek na 1 '#345#225'dek) '
@@ -1109,7 +1113,7 @@ object F_JCEdit: TF_JCEdit
   end
   object GB_IOs: TGroupBox
     Left = 685
-    Top = 653
+    Top = 608
     Width = 365
     Height = 204
     Margins.Left = 2
