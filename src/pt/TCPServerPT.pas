@@ -117,7 +117,8 @@ uses appEv, fMain, OwnStrUtils, StrUtils,
       PTEndpointBlock, PTEndpointBlocks, PTEndpointBlockState, PTEndpointJC,
       PTEndpointLok, PTEndpointLoks, PTEndpointLokState, PTEndpointJCs,
       PTEndpointJCStav, PTEndpointTrains, PTEndpointTrain, PTEndpointUsers,
-      PTEndpointUser, PTEndpointAreas, PTEndpointArea, PTEndpointStatus, PTEndpointTime;
+      PTEndpointUser, PTEndpointAreas, PTEndpointArea, PTEndpointStatus, PTEndpointTime,
+      PTEndpointJCCancel;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -182,6 +183,7 @@ begin
   Self.endpoints.Add(TPTEndpointJCs.Create());
   Self.endpoints.Add(TPTEndpointJC.Create());
   Self.endpoints.Add(TPTEndpointJCStav.Create());
+  Self.endpoints.Add(TPTEndpointJCCancel.Create());
   Self.endpoints.Add(TPTEndpointTrains.Create());
   Self.endpoints.Add(TPTEndpointTrain.Create());
   Self.endpoints.Add(TPTEndpointUsers.Create());

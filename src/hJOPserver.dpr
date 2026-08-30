@@ -170,7 +170,8 @@ uses
   PTEndpointStatus in 'pt\PTEndpointStatus.pas',
   rcssc in 'rcs\rcssc.pas',
   GUIPanelServerClients in 'tables\GUIPanelServerClients.pas',
-  GTNif in 'net\GTNif.pas';
+  GTNif in 'net\GTNif.pas',
+  PTEndpointJCCancel in 'pt\PTEndpointJCCancel.pas';
 
 {$R *.res}
 
