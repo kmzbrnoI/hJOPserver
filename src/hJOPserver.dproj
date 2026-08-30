@@ -403,6 +403,7 @@
         <DCCReference Include="tables\GUIPanelServerClients.pas"/>
         <DCCReference Include="net\GTNif.pas"/>
         <DCCReference Include="pt\PTEndpointJCCancel.pas"/>
+        <DCCReference Include="areas\AreaCountdowns.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

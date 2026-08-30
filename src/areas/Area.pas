@@ -16,7 +16,7 @@ interface
 uses IniFiles, SysUtils, Classes, Graphics, Menus, announcement,
   IdContext, RCSc, StrUtils, ComCtrls, Forms, AreaLighting,
   Generics.Collections, AreaStack, Windows, Generics.Defaults,
-  JsonDataObjects, Logging, UPO, RCSsc, RCSErrors;
+  JsonDataObjects, Logging, UPO, RCSsc, RCSErrors, AreaCountdowns;
 
 const
   _MAX_CON_PNL = 16; // max number of panels connected to single area
@@ -49,12 +49,6 @@ type
 
   TCSCallback = procedure(Relief: TObject; Panel: TObject; success: Boolean) of object;
   TBlkCallback = procedure(SenderPnl: TIDContext; SenderOR: TObject; Button: TPanelButton) of object;
-
-  TAreaCountdown = record
-    start: TDateTime;
-    duration: TDateTime;
-    callback: TNotifyEvent;
-  end;
 
   TAreaPanel = record
     panel: TIdContext;
@@ -99,8 +93,6 @@ type
     m_index: Integer; // index in all areas
     m_data: TAreaData;
     m_state: TAreaState;
-    m_next_countdown_id: Byte;
-    countdowns: TDictionary<Byte, TAreaCountdown>;
     m_rcss: TAreaRCSs; // list of RCS addresses in area (based on blocks)
 
     procedure PanelDbAdd(Panel: TIDContext; rights: TAreaRights; user: string);
@@ -162,6 +154,7 @@ type
     changed: Boolean;
     connected: TList<TAreaPanel>;
     announcement: TStationAnnouncement;
+    countdowns: TAreaCountdowns;
 
     constructor Create(index: Integer);
     destructor Destroy(); override;
@@ -176,10 +169,6 @@ type
     procedure Update();
     procedure Reset();
     procedure DisconnectPanels();
-
-    function AddCountdown(callback: TNotifyEvent; len: TDateTime): Byte;
-    procedure RemoveCountdown(id: Integer);
-    function IsCountdown(id: Integer): Boolean;
 
     procedure RCSAdd(addr: TRCSsSystemModule);
     procedure RCSFail(addr: TRCSsSystemModule);
@@ -324,10 +313,8 @@ begin
   Self.stack := TORStack.Create(index, Self);
   Self.changed := false;
 
-  Self.countdowns := TDictionary<Byte, TAreaCountdown>.Create();
+  Self.countdowns := TAreaCountdowns.Create(Self);
   Self.announcement := nil;
-
-  Self.m_next_countdown_id := 0;
 end;
 
 destructor TArea.Destroy();
@@ -982,19 +969,7 @@ procedure TArea.Update();
 begin
   Self.RCSUpdate();
   Self.stack.Update();
-
-  // aktualizace mereni casu:
-  for var id: Byte in Self.countdowns.Keys do
-  begin
-    var countdown := Self.countdowns[id];
-    if (Now >= (countdown.start + countdown.duration)) then
-    begin
-      var callback: TNotifyEvent := countdown.callback;
-      Self.countdowns.Remove(id);
-      if (Assigned(callback)) then
-        callback(Self);
-    end;
-  end;
+  Self.countdowns.Update();
 end;
 
 procedure TArea.Reset();
@@ -1006,37 +981,6 @@ begin
   Self.timerCnt := 0;
   Self.m_state.regPlease := nil;
   Self.ORDKClickClient();
-end;
-
-// vraci id pridaneho mereni
-function TArea.AddCountdown(callback: TNotifyEvent; len: TDateTime): Byte;
-begin
-  var id := Self.m_next_countdown_id;
-
-  Self.BroadcastData('CAS;START;' + IntToStr(id) + ';' + FormatDateTime('s', len) + ';');
-
-  var mc: TAreaCountdown;
-  mc.start := Now;
-  mc.duration := len;
-  mc.callback := callback;
-  Self.countdowns.Add(id, mc);
-
-  Result := id;
-  Inc(Self.m_next_countdown_id); // Inc ignores overflows
-end;
-
-procedure TArea.RemoveCountdown(id: Integer);
-begin
-  if (Self.countdowns.ContainsKey(id)) then
-  begin
-    Self.countdowns.Remove(id);
-    Self.BroadcastData('CAS;STOP;' + IntToStr(id) + ';');
-  end;
-end;
-
-function TArea.IsCountdown(id: Integer): Boolean;
-begin
-  Result := Self.countdowns.ContainsKey(id);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1080,7 +1024,7 @@ begin
   end;
 
   Self.BroadcastData('NUZ;2;');
-  Self.m_state.NUZtimerId := Self.AddCountdown(Self.NUZTimeOut, EncodeTimeSec(GlobalConfig.times.nuz));
+  Self.m_state.NUZtimerId := Self.countdowns.Add(Self.NUZTimeOut, EncodeTimeSec(GlobalConfig.times.nuz));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1116,7 +1060,7 @@ begin
     if (Self.NUZtimer) then
     begin
       Self.NUZtimer := false;
-      Self.RemoveCountdown(Self.m_state.NUZtimerId);
+      Self.countdowns.Remove(Self.m_state.NUZtimerId);
     end;
   end;
 

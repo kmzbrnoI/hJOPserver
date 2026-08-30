@@ -171,7 +171,8 @@ uses
   rcssc in 'rcs\rcssc.pas',
   GUIPanelServerClients in 'tables\GUIPanelServerClients.pas',
   GTNif in 'net\GTNif.pas',
-  PTEndpointJCCancel in 'pt\PTEndpointJCCancel.pas';
+  PTEndpointJCCancel in 'pt\PTEndpointJCCancel.pas',
+  AreaCountdowns in 'areas\AreaCountdowns.pas';
 
 {$R *.res}
 

@@ -265,7 +265,7 @@ type
     function IsAnyTurnoutMinus(): Boolean;
     procedure ClientDisconnect(AContext: TIdContext);
 
-    procedure GetPtData(json: TJsonObject; includeStaveni: Boolean);
+    procedure GetPtData(json: TJsonObject; state: Boolean);
     procedure GetPtState(json: TJsonObject);
     procedure PostPtActivate(reqJson: TJsonObject; respJson: TJsonObject);
 
@@ -2186,7 +2186,7 @@ begin
     Self.m_state.occupyStateWhenCancellingStarted.Add(Blocks.GetBlkTrackOrRTByID(trackId).occupied);
 
   Self.m_state.RCtimerArea := senderArea;
-  Self.m_state.RCtimer := senderArea.AddCountdown(Self.Cancel, EncodeTimeSec(Self.CancelTimeSec()));
+  Self.m_state.RCtimer := senderArea.countdowns.Add(Self.Cancel, EncodeTimeSec(Self.CancelTimeSec()));
 
   if ((Assigned(Self.signal)) and (Self.signal.typ = TBlkType.btSignal)) then
     TBlkSignal(Self.signal).ab := False;
@@ -2201,7 +2201,7 @@ begin
   if (not Self.cancelling) then
     Exit();
   if (Self.m_state.RCtimerArea <> nil) then
-    Self.m_state.RCtimerArea.RemoveCountdown(Self.m_state.RCtimer);
+    Self.m_state.RCtimerArea.countdowns.Remove(Self.m_state.RCtimer);
   Self.m_state.RCtimer := -1;
   Self.m_state.RCtimerArea := nil;
   Self.Log('Zastaveno rušení cesty.');
@@ -2210,8 +2210,8 @@ end;
 procedure TJC.Cancel(Sender: TObject = nil);
 begin
   if ((Self.m_state.RCtimer > -1) and (Self.m_state.RCtimerArea <> nil)) then
-    if (Self.m_state.RCtimerArea.IsCountdown(Self.m_state.RCtimer)) then
-      Self.m_state.RCtimerArea.RemoveCountdown(Self.m_state.RCtimer);
+    if (Self.m_state.RCtimerArea.countdowns.IsCd(Self.m_state.RCtimer)) then
+      Self.m_state.RCtimerArea.countdowns.Remove(Self.m_state.RCtimer);
 
   Self.m_state.occupyStateWhenCancellingStarted.Clear();
   Self.m_state.RCtimer := -1;
@@ -3736,7 +3736,7 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TJC.GetPtData(json: TJsonObject; includeStaveni: Boolean);
+procedure TJC.GetPtData(json: TJsonObject; state: Boolean);
 begin
   json['name'] := Self.m_data.name;
   json['id'] := Self.m_data.id;
@@ -3819,7 +3819,7 @@ begin
 
   json['loopTrackI'] := Self.m_data.loopTrackI;
 
-  if (includeStaveni) then
+  if (state) then
     Self.GetPtState(json['state']);
 end;
 
@@ -3831,6 +3831,9 @@ begin
   json['destroyBlock'] := Self.m_state.destroyBlock;
   json['destroyEndBlock'] := Self.m_state.destroyEndBlock;
   json['ab'] := Self.ab;
+  json['cancelling'] := Self.cancelling;
+  if ((Self.cancelling) and (Self.m_state.RCtimerArea <> nil)) then
+    json['cancelRemainingTime'] := FormatDateTime('nn:ss', Self.m_state.RCtimerArea.countdowns.RemainingTime(Self.m_state.RCtimer));
 end;
 
 procedure TJC.PostPtActivate(reqJson: TJsonObject; respJson: TJsonObject);

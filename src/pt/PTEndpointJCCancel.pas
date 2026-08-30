@@ -51,9 +51,7 @@ begin
    Exit();
   end;
 
- if (JC.activating) then
-   JC.Cancel()
- else if (JC.active) then
+ if (JC.active) then
  begin
    JC.StartCancelling(JC.signal.areas[0]);
  end else begin
