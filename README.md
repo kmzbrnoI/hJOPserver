@@ -24,15 +24,15 @@ hJOPserver connects to the model railroad via 2 dynamic libraries:
  * RCS ([API specification](https://github.com/kmzbrnoI/mtb-lib/wiki))
  * Trakce ([API specification](https://github.com/kmzbrnoI/xn-lib-cpp-qt/wiki))
 
-It creates:
+It features:
 
- 1. TCP server for connecting of the model railroad operators ([API
+ 1. *Panel server* for connecting GUIs interfacing model railroad operators ([API
     specification](https://github.com/kmzbrnoI/hJOPserver/wiki/panelServer)),
- 2. creates *UDP discover server* ([API
+ 2. *PT server* ([API
+    specification](https://github.com/kmzbrnoI/hJOPserver/wiki/ptServer))
+    for remote diagnostics, external control of the server and scripting.
+ 3. *UDP discover server* ([API
     specification](https://github.com/kmzbrnoI/hJOPserver/wiki/udpDiscover)),
- 3. *PT server* ([API
-    specification](https://github.com/kmzbrnoI/hJOPserver/wiki/ptServer)), which is
-    used for remote diagnostics of the server.
 
 It maintains several databases and allows operators to control model railroad
 like [JOP](https://cs.wikipedia.org/wiki/Jednotné_obslužné_pracoviště) system
