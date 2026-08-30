@@ -117,7 +117,7 @@ object F_About: TF_About
     Margins.Bottom = 2
     Alignment = taCenter
     AutoSize = False
-    Caption = 'jan.horacek@kmz-brno.cz'
+    Caption = 'jan.malina@kmz-brno.cz'
     Font.Charset = EASTEUROPE_CHARSET
     Font.Color = clWindowText
     Font.Height = -13

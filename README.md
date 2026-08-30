@@ -56,7 +56,7 @@ Main project file: [`src/hJOPserver.dpr`](src/hJOPserver.dpr)
 
 This project was created by:
 
- * Jan Horacek ([jan.horacek@kmz-brno.cz](mailto:jan.horacek@kmz-brno.cz))
+ * Jan Malina (ex Horacek) ([jan.malina@kmz-brno.cz](mailto:jan.malina@kmz-brno.cz))
 
 Do not hesitate to contact author in case of any troubles!
 
