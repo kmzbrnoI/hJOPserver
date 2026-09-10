@@ -243,7 +243,7 @@ begin
     if (trains.Exists(traini)) then
     begin
       Self.m_state.registerDist := trains[traini].traveled;
-      Self.m_state.triggerDist := trains[traini].traveled + (Self.m_data.distanceCm / 100)
+      Self.m_state.triggerDist := trains[traini].traveled + (Real(Self.m_data.distanceCm) / 100);
     end else begin
       Self.m_state.registerDist := 0;
       Self.m_state.triggerDist := 0;

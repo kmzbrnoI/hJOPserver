@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, TrakceIFace,
   inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils, RCSsc,
-  ComObj, BoosterDb, System.Actions, System.ImageList, Logging,
+  ComObj, BoosterDb, System.Actions, System.ImageList, Logging, System.Diagnostics,
   Vcl.Mask, Vcl.Samples.Spin, Generics.Collections, Vcl.NumberBox;
 
 const
@@ -474,6 +474,7 @@ type
     mRCSGUIInitialized: Boolean;
     mSb1Log: Boolean;
     mSb1LogHideTime: TDateTime;
+    tMainStopwatch: TStopwatch;
 
     procedure UpdateCallMethod();
     procedure OnFuncNameChange(Sender: TObject);
@@ -1836,6 +1837,12 @@ end;
 procedure TF_Main.T_MainTimer(Sender: TObject);
 begin
   try
+    var msSinceLastTimer: Cardinal := Self.T_Main.Interval;
+    if (Self.tMainStopwatch.IsRunning) then
+      msSinceLastTimer := Cardinal(Self.tMainStopwatch.ElapsedMilliseconds);
+    Self.tMainStopwatch.Reset();
+    Self.tMainStopwatch.Start();
+
     AutostartUpdate();
     Blocks.Update();
     ShowDateTime();
@@ -1848,8 +1855,8 @@ begin
     RCSd.Update();
     trakce.Update();
     ABlist.Update();
-    trains.Update(Self.T_Main.Interval);
-    RVDb.Update(Self.T_Main.Interval);
+    trains.Update(msSinceLastTimer);
+    RVDb.Update(msSinceLastTimer);
   except
     on E: Exception do
     begin
