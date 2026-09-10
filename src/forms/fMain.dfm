@@ -5956,9 +5956,9 @@ object F_Main: TF_Main
           object Label6: TLabel
             Left = 14
             Top = 20
-            Width = 267
+            Width = 225
             Height = 13
-            Caption = 'Pro v'#253'po'#269'et ujet'#233' vzd'#225'lenosti a rychlosti hnac'#237'ch vozidel'
+            Caption = 'Pro v'#253'po'#269'et ujet'#233' vzd'#225'lenosti a rychlosti vozidel'
           end
           object Label8: TLabel
             Left = 17

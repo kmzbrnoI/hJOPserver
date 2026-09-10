@@ -63,13 +63,13 @@ object F_BlkTrack: TF_BlkTrack
   object Label6: TLabel
     Left = 8
     Top = 110
-    Width = 97
+    Width = 85
     Height = 13
     Margins.Left = 2
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    Caption = 'Max. po'#269'et souprav:'
+    Caption = 'Max. po'#269'et vlak'#367':'
     Color = clBtnFace
     ParentColor = False
   end
