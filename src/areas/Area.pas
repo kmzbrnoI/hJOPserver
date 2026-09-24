@@ -769,10 +769,6 @@ begin
   end;
 
   Self.ORDKClickClient();
-
-  var blk := Blocks.GetBlkTrackTrainMoving(Self.id);
-  if (blk <> nil) then
-    (blk as TBlkTrack).trainMoving := -1;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1323,7 +1319,7 @@ begin
 
   Result := '{';
   for var i: Integer := 0 to _MAX_TRAIN - 1 do
-    if ((Assigned(Trains[i])) and (Trains[i].station = Self)) then
+    if ((Assigned(Trains[i])) and (Trains[i].area = Self)) then
       Result := Result + '[{' + Trains[i].GetPanelString() + '}]';
   Result := Result + '}';
 end;
@@ -1338,7 +1334,7 @@ begin
     Exit();
   end;
 
-  if ((Trains[train_index] <> nil) and (Trains[train_index].station = Self)) then
+  if ((Trains[train_index] <> nil) and (Trains[train_index].area = Self)) then
   begin
     Trains.Remove(train_index);
     PanelServer.SendInfoMsg(Sender, 'Vlak smazán');

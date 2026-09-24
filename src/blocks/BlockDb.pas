@@ -88,8 +88,6 @@ type
     function GetBlkIOByID(id: Integer): TBlkIO;
     function GetBlkDisconnectorByID(id: Integer): TBlkDisconnector;
 
-    function GetBlkTrackTrainMoving(obl: string): TBlk;
-
     function PNSignals(Area: TArea): TBlksList;
 
     // send state of all blocks in area 'areaId' to 'conn'
@@ -745,29 +743,6 @@ begin
   if (index < 0) or (index >= Self.data.count) then
     Exit('## Blok s timto ID neexistuje ##');
   Result := Self.data[index].name;
-end;
-
-/// /////////////////////////////////////////////////////////////////////////////
-
-function TBlocks.GetBlkTrackTrainMoving(obl: string): TBlk;
-begin
-  for var blk: TBlk in Self.data do
-  begin
-    if ((Blk.typ <> btTrack) and (Blk.typ <> btRT)) then
-      continue;
-
-    var orindex: Integer := -1;
-    for var j: Integer := 0 to (Blk as TBlkTrack).areas.count - 1 do
-      if ((Blk as TBlkTrack).areas[j].id = obl) then
-        orindex := j;
-
-    if (orindex = -1) then
-      continue;
-    if ((Blk as TBlkTrack).IsTrainMoving()) then
-      Exit(Blk);
-  end;
-
-  Result := nil;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

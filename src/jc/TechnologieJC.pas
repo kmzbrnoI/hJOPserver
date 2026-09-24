@@ -2053,7 +2053,7 @@ begin
                 .Zaver = TZaver.no)) then
               begin
                 rtAdd := (railway.GetLastTrack(Self.data.railwayDir) as TBlkRT);
-                railway.TrainChangeOR(Train, Self.data.railwayDir);
+                railway.TrainChangeArea(Train, Self.data.railwayDir);
                 if (railway.ChangesTrainDir()) then
                   train.ChangeDirection();
               end;

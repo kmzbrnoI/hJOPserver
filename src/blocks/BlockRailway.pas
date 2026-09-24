@@ -43,12 +43,12 @@ type
     traini: Integer; // index of a train
     predict: Boolean;
 
-    constructor Create(Train: Integer); overload;
-    constructor Create(Train: Integer; time: TTime; predict: Boolean = false); overload;
+    constructor Create(train: Integer); overload;
+    constructor Create(train: Integer; time: TTime; predict: Boolean = false); overload;
     function IsTimeDefined(): Boolean;
     procedure UndefTime();
     property time: TTime read GetTime write SetTime;
-    property Train: TTrain read GeTTrain;
+    property train: TTrain read GeTTrain;
 
     function SerializeForPanel(railway: TBlk; trainPredict: Boolean = false): string;
   end;
@@ -110,8 +110,8 @@ type
 
     // vrati, jestli jsou vsechny tratove useky pripraveny pro vjezd vlaku, pouziva se pri zjistovani toho, jestli je mozne obratit smer trati
     function GetReady(): Boolean;
-    function GetTrainIndex(Train: TTrain): Integer;
-    function TrainTUsCount(Train: TTrain): Integer;
+    function GetTrainIndex(train: TTrain): Integer;
+    function TrainTUsCount(train: TTrain): Integer;
 
     function GetLastTrack(): TBlk; overload;
     function GetLockout(): Boolean;
@@ -139,17 +139,17 @@ type
     procedure SetSettings(data: TBlkRailwaySettings);
 
     function IsFirstLinker(uv: TBlk): Boolean;
-    procedure TrainChangeOR(Train: TTrain); overload;
-    procedure TrainChangeOR(Train: TTrain; smer: TRailwayDirection); overload;
+    procedure TrainChangeArea(train: TTrain); overload;
+    procedure TrainChangeArea(train: TTrain; direction: TRailwayDirection); overload;
 
-    procedure AddTrain(Train: TTrain); overload;
-    procedure AddTrain(Train: TBlkRailwayTrain); overload;
+    procedure AddTrain(train: TTrain); overload;
+    procedure AddTrain(train: TBlkRailwayTrain); overload;
     function GetTrainsList(separator: Char): string;
-    procedure RemoveTrain(Train: TTrain);
+    procedure RemoveTrain(train: TTrain);
 
-    function IsTrain(Train: TTrain; predict: Boolean = true): Boolean;
-    function IsTrainInAnyTU(Train: TTrain): Boolean;
-    function IsTrainInMoreTUs(Train: TTrain): Boolean;
+    function IsTrain(train: TTrain; predict: Boolean = true): Boolean;
+    function IsTrainInAnyTU(train: TTrain): Boolean;
+    function IsTrainInMoreTUs(train: TTrain): Boolean;
 
     procedure CallChangeToTU();
     procedure UpdateTrainPredict(call_prediction: Boolean = true);
@@ -159,7 +159,7 @@ type
     // kdyz je true, do trati neni potreba zadat
 
     function ChangesTrainDir(): Boolean; // vraci true prave tehdy, kdyz se v trati meni smer vlaku
-    function GetTrainTrack(Train: TTrain): TBlk;
+    function GetTrainTrack(train: TTrain): TBlk;
     function GetLastTrack(smer: TRailwayDirection): TBlk; overload;
     function HasAutoblokSignal(blk: TBlk): Boolean;
 
@@ -465,16 +465,16 @@ begin
   Self.CallChangeToTU(); // pro nastaveni navesti na STUJ pri zadosti
 end;
 
-procedure TBlkRailway.SetTrainPredict(Train: TBlkRailwayTrain);
+procedure TBlkRailway.SetTrainPredict(train: TBlkRailwayTrain);
 begin
-  if (Self.m_state.trainPredict = Train) then
+  if (Self.m_state.trainPredict = train) then
     Exit();
 
   if (Self.m_state.trainPredict <> nil) then
     FreeAndNil(Self.m_state.trainPredict);
 
-  if (Train <> nil) then
-    Self.m_state.trainPredict := Train;
+  if (train <> nil) then
+    Self.m_state.trainPredict := train;
 
   Self.Change();
 end;
@@ -563,42 +563,42 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRailway.AddTrain(Train: TTrain);
+procedure TBlkRailway.AddTrain(train: TTrain);
 begin
-  Self.AddTrain(TBlkRailwayTrain.Create(Train.index, timeHelper.hJOPnow()));
+  Self.AddTrain(TBlkRailwayTrain.Create(train.index, timeHelper.hJOPnow()));
 end;
 
-procedure TBlkRailway.AddTrain(Train: TBlkRailwayTrain);
+procedure TBlkRailway.AddTrain(train: TBlkRailwayTrain);
 begin
-  Self.m_state.trains.Add(Train);
-  if (Train <> Self.trainPredict) then
+  Self.m_state.trains.Add(train);
+  if (train <> Self.trainPredict) then
     Self.trainPredict := nil // will also Free
   else
     Self.m_state.trainPredict := nil; // will not Free
 
-  if (not Train.IsTimeDefined()) then
-    Train.time := timeHelper.hJOPnow();
+  if (not train.IsTimeDefined()) then
+    train.time := timeHelper.hJOPnow();
 
-  Self.Log('Přidán vlak ' + Train.Train.name, llInfo);
+  Self.Log('Přidán vlak ' + train.train.name, llInfo);
 
   Self.Change();
 end;
 
-procedure TBlkRailway.RemoveTrain(Train: TTrain);
+procedure TBlkRailway.RemoveTrain(train: TTrain);
 var toChange: Boolean;
 begin
   toChange := false;
 
-  if ((Self.trainPredict <> nil) and (Self.trainPredict.Train = Train)) then
+  if ((Self.trainPredict <> nil) and (Self.trainPredict.train = train)) then
   begin
     Self.trainPredict := nil;
     toChange := true;
   end;
 
-  if (Self.IsTrain(Train)) then
+  if (Self.IsTrain(train)) then
   begin
-    Self.m_state.trains.Delete(Self.GetTrainIndex(Train));
-    Self.Log('Smazán vlak ' + Train.name, llInfo);
+    Self.m_state.trains.Delete(Self.GetTrainIndex(train));
+    Self.Log('Smazán vlak ' + train.name, llInfo);
     toChange := true;
   end;
 
@@ -621,31 +621,31 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TBlkRailway.TrainChangeOR(Train: TTrain);
+procedure TBlkRailway.TrainChangeArea(train: TTrain);
 begin
-  Self.TrainChangeOR(Train, Self.direction);
+  Self.TrainChangeArea(train, Self.direction);
 end;
 
-procedure TBlkRailway.TrainChangeOR(Train: TTrain; smer: TRailwayDirection);
+procedure TBlkRailway.TrainChangeArea(train: TTrain; direction: TRailwayDirection);
 begin
-  case (smer) of
+  case (direction) of
     TRailwayDirection.AtoB:
       begin
         if ((Self.linkerB <> nil) and ((Self.linkerB as TBlkLinker).areas.Count > 0)) then
-          Train.station := (Self.linkerB as TBlkLinker).areas[0]
+          train.area := (Self.linkerB as TBlkLinker).areas[0]
         else
-          Train.station := nil;
+          train.area := nil;
       end; // AtoB
     TRailwayDirection.BtoA:
       begin
         if ((Self.linkerA <> nil) and ((Self.linkerA as TBlkLinker).areas.Count > 0)) then
-          Train.station := (Self.linkerA as TBlkLinker).areas[0]
+          train.area := (Self.linkerA as TBlkLinker).areas[0]
         else
-          Train.station := nil;
+          train.area := nil;
       end; // BtoA
   end; // case
 
-  Self.Log('Vlak ' + Train.name + ' : dopravna změněna na ' + (Train.station as TArea).name, llInfo);
+  Self.Log('Vlak ' + Train.name + ' : dopravna změněna na ' + (Train.area as TArea).name, llInfo);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -724,18 +724,18 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkRailway.IsTrain(Train: TTrain; predict: Boolean = true): Boolean;
+function TBlkRailway.IsTrain(train: TTrain; predict: Boolean = true): Boolean;
 begin
-  Result := ((Self.GetTrainIndex(Train) > -1) or ((predict) and (Self.trainPredict <> nil) and
-    (Self.trainPredict.Train = Train)));
+  Result := ((Self.GetTrainIndex(train) > -1) or ((predict) and (Self.trainPredict <> nil) and
+    (Self.trainPredict.train = train)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkRailway.GetTrainIndex(Train: TTrain): Integer;
+function TBlkRailway.GetTrainIndex(train: TTrain): Integer;
 begin
   for var i: Integer := 0 to Self.m_state.trains.Count - 1 do
-    if (Self.m_state.trains[i].Train = Train) then
+    if (Self.m_state.trains[i].train = train) then
       Exit(i);
   Exit(-1);
 end;
@@ -765,22 +765,22 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkRailway.TrainTUsCount(Train: TTrain): Integer;
+function TBlkRailway.TrainTUsCount(train: TTrain): Integer;
 begin
   Result := 0;
   for var blkRT: TBlkRT in Self.tracks do
-    if (blkRT.IsTrain(Train)) then
+    if (blkRT.IsTrain(train)) then
       Inc(Result);
 end;
 
-function TBlkRailway.IsTrainInAnyTU(Train: TTrain): Boolean;
+function TBlkRailway.IsTrainInAnyTU(train: TTrain): Boolean;
 begin
-  Result := (Self.TrainTUsCount(Train) > 0);
+  Result := (Self.TrainTUsCount(train) > 0);
 end;
 
-function TBlkRailway.IsTrainInMoreTUs(Train: TTrain): Boolean;
+function TBlkRailway.IsTrainInMoreTUs(train: TTrain): Boolean;
 begin
-  Result := (Self.TrainTUsCount(Train) > 1);
+  Result := (Self.TrainTUsCount(train) > 1);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1004,10 +1004,10 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlkRailway.GetTrainTrack(Train: TTrain): TBlk;
+function TBlkRailway.GetTrainTrack(train: TTrain): TBlk;
 begin
   for var blkRT: TBlkRT in Self.tracks do
-    if (blkRT.Train = Train) then
+    if (blkRT.train = train) then
       Exit(blkRT);
   Result := nil;
 end;
@@ -1126,18 +1126,18 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 // TBlkTraTTrain
 
-constructor TBlkRailwayTrain.Create(Train: Integer);
+constructor TBlkRailwayTrain.Create(train: Integer);
 begin
   inherited Create();
-  Self.traini := Train;
+  Self.traini := train;
   Self.mTimeDefined := false;
   Self.predict := false;
 end;
 
-constructor TBlkRailwayTrain.Create(Train: Integer; time: TTime; predict: Boolean = false);
+constructor TBlkRailwayTrain.Create(train: Integer; time: TTime; predict: Boolean = false);
 begin
   inherited Create();
-  Self.traini := Train;
+  Self.traini := train;
   Self.time := time;
   Self.predict := predict;
 end;

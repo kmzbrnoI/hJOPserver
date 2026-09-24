@@ -758,7 +758,7 @@ begin
   // kontrola zmeny OR trati, ve ktere jen jeden blok
   if (((Self.railway as TBlkRailway).direction >= TRailwayDirection.AtoB) and (Self.prevRT = nil) and
     (Self.nextRT = nil)) then
-    TBlkRailway(Self.railway).TrainChangeOR(Self.train);
+    TBlkRailway(Self.railway).TrainChangeArea(Self.train);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -1011,7 +1011,7 @@ begin
         begin
           // vlak vstoupil do posledniho bloku trati
           // zmena stanic vlaku a vozidel v ni
-          TBlkRailway(Self.railway).TrainChangeOR(Self.train);
+          TBlkRailway(Self.railway).TrainChangeArea(Self.train);
         end;
       end else begin
         Self.AddTrainL(Self.prevRT.trainI);

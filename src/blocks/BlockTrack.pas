@@ -1233,14 +1233,19 @@ begin
     Self.trains.Count)) then
     Exit();
 
+  var panelConnData := TPanelConnData(SenderPnl.Data);
+
   if (new_state) then
   begin
-    var blk: TBlk := Blocks.GetBlkTrackTrainMoving((SenderOR as TArea).id);
+    var blk: TBlkTrack := Blocks.GetBlkTrackOrRTByID(panelConnData.trainMoveTrackId);
     if (blk <> nil) then
-      (blk as TBlkTrack).trainMoving := -1;
-    Self.trainMoving := TPanelConnData(SenderPnl.Data).train_menu_index;
+      blk.trainMoving := -1; // no need to set TPanelConnData(SenderPnl.Data).trainMove: set on lines below
+
+    Self.trainMoving := panelConnData.train_menu_index;
+    TPanelConnData(SenderPnl.Data).trainMoveTrackId := Self.id;
   end else begin
     Self.trainMoving := -1;
+    panelConnData.trainMoveTrackId := -1;
   end;
 end;
 
@@ -1538,7 +1543,7 @@ begin
     Result := Result + '-,'; // readd '-,'
   end;
 
-  if (Blocks.GetBlkTrackTrainMoving((SenderOR as TArea).id) <> nil) then
+  if (TPanelConnData(SenderPnl.Data).trainMoveTrackId > -1) then
     addStr := 'VLOŽ vlak,'
   else
     addStr := 'NOVÝ vlak,';
@@ -1782,19 +1787,18 @@ end;
 
 // vraci true, pokud volba vyvolala nejaky efekt (false pokud se ma zobrazit menu)
 function TBlkTrack.MoveTrain(SenderPnl: TIdContext; SenderOR: TObject; trainLocalIndex: Integer): Boolean;
-var blk: TBlk;
 begin
-  blk := Blocks.GetBlkTrackTrainMoving((SenderOR as TArea).id);
-  if (blk = nil) then
-    Exit(false);
+  var fromTrack: TBlkTrack := Blocks.GetBlkTrackOrRTByID(TPanelConnData(SenderPnl.Data).trainMoveTrackId);
+  if (fromTrack = nil) then
+    Exit(False);
 
   if (not Self.CanStandTrain()) then
   begin
-    PanelServer.SendInfoMsg(SenderPnl, 'Vozidlo lze přesunout pouze na staniční kolej!');
+    PanelServer.SendInfoMsg(SenderPnl, 'Vlak lze přesunout pouze na staniční kolej!');
     Exit(true);
   end;
 
-  if ((Self.TrainsFull()) and (blk <> Self)) then
+  if ((Self.TrainsFull()) and (fromTrack <> Self)) then
   begin
     PanelServer.SendInfoMsg(SenderPnl, 'Do úseku se již nevejde další vlak!');
     Exit(true);
@@ -1812,9 +1816,15 @@ begin
     Exit(true);
   end;
 
-  var train: TTrain := TrainDb.trains[TBlkTrack(blk).trains[TBlkTrack(blk).trainMoving]];
+  if ((fromTrack.trainMoving < 0) or (fromTrack.trainMoving >= fromTrack.trains.Count)) then
+  begin
+    PanelServer.SendInfoMsg(SenderPnl, 'Neplatný vlak k přesunu!');
+    Exit(true);
+  end;
 
-  if (blk = Self) then
+  var train: TTrain := TrainDb.trains[fromTrack.trains[fromTrack.trainMoving]];
+
+  if (fromTrack = Self) then
   begin
     Self.m_state.trains.Insert(trainLocalIndex, Train.index);
 
@@ -1829,7 +1839,7 @@ begin
 
     try
       Self.AddTrain(trainLocalIndex, Train);
-      (blk as TBlkTrack).RemoveTrain(Train);
+      fromTrack.RemoveTrain(Train);
     except
       on E: Exception do
       begin
@@ -1839,10 +1849,13 @@ begin
     end;
   end;
 
-  if (train.station <> TArea(SenderOR)) then
-    train.station := TArea(SenderOR);
+  TPanelConnData(SenderPnl.Data).trainMoveTrackId := -1;
 
-  PanelServer.SendInfoMsg(SenderPnl, 'Vlak ' + Train.name + ' přesunut na ' + Self.m_globSettings.name + '.');
+  if (train.area <> TArea(SenderOR)) then
+    train.area := TArea(SenderOR);
+
+  PanelServer.SendInfoMsg(SenderPnl, 'Vlak ' + train.name + ' přesunut na ' + Self.name + '.');
+  Logging.log('Vlak '+train.name+': přesunut z ' + fromTrack.name + ' na ' + Self.name, TLogLevel.llInfo);
 
   if (Blocks.GetBlkWithTrain(Train).Count = 1) then
   begin
@@ -1852,13 +1865,13 @@ begin
       TBlkSignal(signal).UpdateTrainSpeed(true); // if any active signal has affect to train speed, let it affect
   end;
 
-  for var signal: TBlk in (blk as TBlkTrack).signalJCRef do
+  for var signal: TBlk in fromTrack.signalJCRef do
   begin
     Blocks.TrainPrediction(signal as TBlkSignal);
     TBlkSignal(signal).UpdateTrainSpeed(true);
   end;
 
-  if (blk <> Self) then
+  if (fromTrack <> Self) then
     for var signal: TBlk in Self.signalJCRef do
       Blocks.TrainPrediction(signal as TBlkSignal);
 
@@ -2660,7 +2673,7 @@ begin
     if ((train.sdata.note <> '') or (train.HasAnyRVNote())) then
       sbg := TJopColor.turqDark;
 
-    if (train.areaTo = train.station) then
+    if (train.areaTo = train.area) then
       sbg := TJopColor.gray;
 
     if ((train.IsAnyRVManual()) or (train.stolen)) then

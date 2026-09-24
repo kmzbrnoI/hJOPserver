@@ -786,7 +786,7 @@ begin
   begin
     var i: Integer := Trains.GetTrainIndexByName(parsed[2]);
     if (i >= 0) then
-      (Trains[i].station as TArea).PanelRemoveTrain(AContext, i);
+      (Trains[i].area as TArea).PanelRemoveTrain(AContext, i);
 
     var trains: string := '';
     for var area: TArea in connData.areas do

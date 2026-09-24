@@ -179,7 +179,7 @@ type
      property sdata: TTrainData read data;
 
      property name: string read data.name;
-     property station: TObject read data.area write SetArea;
+     property area: TObject read data.area write SetArea;
      property speed: Integer read data.speed write SetSpeed;
      property wantedSpeed: Integer read data.wantedSpeed;
      property direction: TRVSite read data.direction write SetDirection;
@@ -464,8 +464,8 @@ begin
 
     if ((Trains[i].name = train['name']) and (Trains[i] <> Self)) then
     begin
-      if (Trains[i].station <> nil) then
-        raise Exception.Create('Vlak '+Trains[i].name+' již existuje v dopravně '+(Trains[i].station as TArea).name);
+      if (Trains[i].area <> nil) then
+        raise Exception.Create('Vlak '+Trains[i].name+' již existuje v dopravně '+(Trains[i].area as TArea).name);
       raise Exception.Create('Vlak '+Trains[i].name+' již existuje');
     end;
   end;
@@ -693,6 +693,20 @@ end;
 
 procedure TTrain.SetArea(area: TObject);
 begin
+  if (Self.data.area = area) then
+    Exit();
+
+  begin
+    var fromStr: string := 'žádná';
+    if (Self.data.area <> nil) then
+      fromStr := TArea(Self.data.area).name;
+    var toStr: string := 'žádná';
+    if (area <> nil) then
+      toStr := TArea(area).name;
+
+    Self.Log('Změna dopravny: '+fromStr+' -> '+toStr, llInfo);
+  end;
+
   Self.data.area := area;
   for var addr in Self.vehicles do
     RVDb[addr].MoveToArea(area as TArea);

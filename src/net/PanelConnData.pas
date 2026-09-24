@@ -85,6 +85,8 @@ type
 
     gtn: Boolean; // jestli je GTN klient
 
+    trainMoveTrackId: Integer; // -1 = no moving
+
     constructor Create(index: Integer);
     destructor Destroy(); override;
 
@@ -107,7 +109,7 @@ type
 
 implementation
 
-uses fMain, TCPServerPanel, RegulatorTCP, BlockSignal, BlockTrack, GUIPanelServerClients;
+uses fMain, TCPServerPanel, RegulatorTCP, BlockSignal, BlockTrack, GUIPanelServerClients, BlockDb;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -144,6 +146,7 @@ begin
   Self.podj_track := nil;
   Self.podj_trainid := -1;
   Self.gtn := False;
+  Self.trainMoveTrackId := -1;
 
   Self.ping_next_id := 0;
   Self.ping_next_send := Now + EncodeTime(0, 0, 0, 500); // do not disturb device for first half a sec
@@ -176,19 +179,19 @@ begin
   if (Self.note <> nil) then
   begin
     Self.note := nil;
-    Result := true;
+    Result := True;
   end;
 
   if (Self.lockout <> nil) then
   begin
     Self.lockout := nil;
-    Result := true;
+    Result := True;
   end;
 
   if (Assigned(Self.potvr)) then
   begin
     Self.potvr := nil;
-    Result := true;
+    Result := True;
   end;
 
   if (Self.menu <> nil) then
@@ -196,7 +199,7 @@ begin
     Self.menu := nil;
     Self.menu_or := nil;
     Self.train_menu_index := -1;
-    Result := true;
+    Result := True;
   end;
 
   if (Self.UPO_ref <> nil) then
@@ -204,26 +207,26 @@ begin
     Self.UPO_OK := nil;
     Self.UPO_Esc := nil;
     Self.UPO_ref := nil;
-    Result := true;
+    Result := True;
   end;
 
   if ((Self.train_edit <> nil) or (Self.train_usek <> nil)) then
   begin
     Self.ResetTrains();
-    Result := true;
+    Result := True;
   end;
 
   if (Self.podj_track <> nil) then
   begin
     Self.podj_track := nil;
     Self.podj_trainid := -1;
-    Result := true;
+    Result := True;
   end;
 
   if ((not Result) and (Self.pathBlocks.Count > 0)) then
   begin
     Self.DeleteAndHideLastPathBlock();
-    Result := true;
+    Result := True;
   end;
 
   if ((not Result) and (Self.lastActivatedPath <> nil) and (Self.lastActivatedPath.activating) and
@@ -235,6 +238,15 @@ begin
   end;
 
   Self.funcsVyznamReq := false;
+
+  if (Self.trainMoveTrackId > -1) then
+  begin
+    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(Self.trainMoveTrackId);
+    if (track <> nil) then
+      track.trainMoving := -1;
+    Self.trainMoveTrackId := -1;
+    Result := True;
+  end;
 
   if (not Result) then
     for var area: TArea in Self.areas do
