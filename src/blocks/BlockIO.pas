@@ -36,6 +36,7 @@ type
     inputState: TRCSInputState;
     outputState: TRCSOutputState;
     nullTime: TTime;
+    nullRequest: Boolean;
     note: string;
     pathInZaver: TDictionary<Integer, Integer>; // key: track block id, value: path id
   end;
@@ -47,6 +48,7 @@ type
       inputState: TRCSInputState.isOff;
       outputState: TRCSOutputState.osDisabled;
       nullTime: 0;
+      nullRequest: False;
       note: '';
     );
 
@@ -305,8 +307,11 @@ begin
     end;
   end;
 
-  if ((Self.enabled) and (Self.nullable) and (Self.activeOutput) and (Now > Self.m_state.nullTime)) then
+  if ((Self.enabled) and (Self.nullable) and (Self.activeOutput) and (Now > Self.m_state.nullTime) and (Self.m_state.nullRequest)) then
+  begin
+    Self.m_state.nullRequest := False;
     Self.Deactivate();
+  end;
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -338,7 +343,10 @@ begin
   end;
 
   if (Self.nullable) then
+  begin
     Self.m_state.nullTime := Now + EncodeTimeSec(Self.m_settings.nullAfterSec);
+    Self.m_state.nullRequest := True;
+  end;
 
   Self.Update();
 end;
