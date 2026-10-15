@@ -18,13 +18,10 @@ type
 
   private
 
-    function CommonGetPut(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-      var respJson:TJsonObject): TDictionary<string, Integer>;
-
     procedure OnGETTrain(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject; train: TTrain);
     procedure OnPUTTrain(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
-    procedure OnGETPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject; train: TTrain; podjId: Integer);
-    procedure OnPUTPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain; podjId: Integer);
+    procedure OnGETPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject; train: TTrain);
+    procedure OnPUTPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
     procedure OnPUTStop(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
     procedure OnPUTUnstop(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
 
@@ -45,44 +42,21 @@ uses PTUtils, TrainDb, StrUtils, ownStrUtils, predvidanyOdjezd, BlockDb,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TPTEndpointTrain.CommonGetPut(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-        var respJson:TJsonObject): TDictionary<string, Integer>;
+procedure TPTEndpointTrain.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+        var respJson:TJsonObject);
 begin
-  Result := TDictionary<string, Integer>.Create();
-  var urlSuffix: string := RightStr(ARequestInfo.Document, Length(ARequestInfo.Document)-Length('/trains/'));
-  var trainName: string := strTillChar(urlSuffix, '/');
-
+  var trainName: string := strTillChar(RightStr(ARequestInfo.Document, Length(ARequestInfo.Document)-Length('/trains/')), '/');
   var trainIndex: Integer := Trains.GetTrainIndexByName(trainName);
-  Result.AddOrSetValue('type', _ET_NONE);
   if (trainIndex = -1) then
   begin
     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Vlak neexistuje', 'Vlak cisla '+trainName+' neexistuje');
     Exit();
   end;
 
-  Result.AddOrSetValue('train', trainIndex);
-  var match := TRegEx.Match(ARequestInfo.Document, 'podj/(\d+)/?$');
-
-  if (match.Success) then
-  begin
-    Result.AddOrSetValue('type', _ET_PODJ);
-    Result.AddOrSetValue('podj', StrToInt(match.Groups[1].Value));
-  end else
-    Result.AddOrSetValue('type', _ET_TRAIN);
-end;
-
-procedure TPTEndpointTrain.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-        var respJson:TJsonObject);
-begin
-  var dict: TDictionary<string, Integer> := Self.CommonGetPut(AContext, ARequestInfo, respJson);
-  try
-    if (dict['type'] = _ET_TRAIN) then
-      Self.OnGETTrain(AContext, ARequestInfo, respJson, Trains[dict['train']])
-    else if (dict['type'] = _ET_PODJ) then
-      Self.OnGETPodj(AContext, ARequestInfo, respJson, Trains[dict['train']], dict['podj']);
-  finally
-    dict.Free();
-  end;
+  if (TRegEx.Match(ARequestInfo.Document, '^/trains/.+?/podj/(\d+)/?$').Success) then
+    Self.OnGETPodj(AContext, ARequestInfo, respJson, Trains[trainIndex])
+  else
+    Self.OnGETTrain(AContext, ARequestInfo, respJson, Trains[trainIndex]);
 end;
 
 procedure TPTEndpointTrain.OnGETTrain(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -92,8 +66,16 @@ begin
 end;
 
 procedure TPTEndpointTrain.OnGETPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-  var respJson:TJsonObject; train: TTrain; podjId: Integer);
+  var respJson:TJsonObject; train: TTrain);
 begin
+  var match := TRegEx.Match(ARequestInfo.Document, 'podj/(\d+)/?$');
+  if (not match.Success) then
+  begin
+    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'PODJ neplatné id bloku', 'Neplatné ID bloku PODJ v URL');
+    Exit();
+  end;
+
+  var podjId := StrToInt(match.Groups[1].Value);
   if (not train.IsPOdj(podjId)) then
   begin
     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'PODJ neexistuje', 'PODJ na blok '+IntToStr(podjId)+' neexistuje');
@@ -108,15 +90,22 @@ end;
 procedure TPTEndpointTrain.OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject);
 begin
-  var dict: TDictionary<string, Integer> := Self.CommonGetPut(AContext, ARequestInfo, respJson);
-  try
-    if (dict['type'] = _ET_TRAIN) then
-      Self.OnPUTTrain(AContext, ARequestInfo, respJson, reqJson, Trains[dict['train']])
-    else if (dict['type'] = _ET_PODJ) then
-      Self.OnPUTPodj(AContext, ARequestInfo, respJson, reqJson, Trains[dict['train']], dict['podj']);
-  finally
-    dict.Free();
+  var trainName: string := strTillChar(RightStr(ARequestInfo.Document, Length(ARequestInfo.Document)-Length('/trains/')), '/');
+  var trainIndex: Integer := Trains.GetTrainIndexByName(trainName);
+  if (trainIndex = -1) then
+  begin
+    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Vlak neexistuje', 'Vlak cisla '+trainName+' neexistuje');
+    Exit();
   end;
+
+  if (TRegEx.Match(ARequestInfo.Document, '^/trains/.+?/podj/(\d+)/?$').Success) then
+    Self.OnPUTPodj(AContext, ARequestInfo, respJson, reqJson, Trains[trainIndex])
+  else if (TRegEx.Match(ARequestInfo.Document, '^/trains/.+?/stop/?$').Success) then
+    Self.OnPUTStop(AContext, ARequestInfo, respJson, reqJson, Trains[trainIndex])
+  else if (TRegEx.Match(ARequestInfo.Document, '^/trains/.+?/unstop/?$').Success) then
+    Self.OnPUTUnstop(AContext, ARequestInfo, respJson, reqJson, Trains[trainIndex])
+  else
+    Self.OnPUTTrain(AContext, ARequestInfo, respJson, reqJson, Trains[trainIndex]);
 end;
 
 procedure TPTEndpointTrain.OnPUTTrain(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -132,8 +121,17 @@ begin
 end;
 
 procedure TPTEndpointTrain.OnPUTPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-  var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain; podjId: Integer);
+  var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
 begin
+  var match := TRegEx.Match(ARequestInfo.Document, 'podj/(\d+)/?$');
+  if (not match.Success) then
+  begin
+    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'PODJ neplatné id bloku', 'Neplatné ID bloku PODJ v URL');
+    Exit();
+  end;
+
+  var podjId := StrToInt(match.Groups[1].Value);
+
   if (not reqJson.Contains('podj')) then
   begin
     PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Chybi json sekce podj');
@@ -190,13 +188,15 @@ end;
 procedure TPTEndpointTrain.OnDELETE(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject);
 begin
-  var dict: TDictionary<string, Integer> := Self.CommonGetPut(AContext, ARequestInfo, respJson);
-  try
-    if (dict['type'] = _ET_TRAIN) then
-      Trains.Remove(Trains[dict['train']].index);
-  finally
-    dict.Free();
+  var trainName: string := strTillChar(RightStr(ARequestInfo.Document, Length(ARequestInfo.Document)-Length('/trains/')), '/');
+  var trainIndex: Integer := Trains.GetTrainIndexByName(trainName);
+  if (trainIndex = -1) then
+  begin
+    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 404, 'Vlak neexistuje', 'Vlak cisla '+trainName+' neexistuje');
+    Exit();
   end;
+
+  Trains.Remove(Trains[trainIndex].index);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -211,13 +211,21 @@ end;
 procedure TPTEndpointTrain.OnPUTStop(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
 begin
-
+  train.EmergencyStop();
+  train.GetPtData(respJson.O['train']);
 end;
 
 procedure TPTEndpointTrain.OnPUTUnstop(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
   var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
 begin
+  if (not train.emergencyStopped) then
+  begin
+    PTUtils.PtErrorToJson(respJson.A['errors'].AddObject, 400, 'Vlak nezastaven', 'Vlak neni nouzove zastaven, nelze odzastavit');
+    Exit();
+  end;
 
+  train.EmergencyStopRelease();
+  train.GetPtData(respJson.O['train']);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1288,6 +1288,7 @@ begin
     json['areaTo'] := TArea(Self.data.areaTo).id;
   json['announcement'] := Self.data.announcement;
   json.F['traveled'] := Self.traveled;
+  json['emergencyStop'] := Self.emergencyStopped;
 
   for var blkId: Integer in Self.data.podj.Keys do
     Self.data.podj[blkId].GetPtData(json.O['podj'].O[IntToStr(blkId)]);
