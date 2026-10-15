@@ -29,6 +29,10 @@ type
         var respJson:TJsonObject; train: TTrain; podjId: Integer);
       procedure OnPUTPodj(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain; podjId: Integer);
+      procedure OnPUTStop(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+        var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
+      procedure OnPUTUnstop(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+        var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
 
     public
       procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
@@ -217,6 +221,20 @@ end;
 function TPTEndpointTrain.EndpointMatch(path:string):Boolean;
 begin
  Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TPTEndpointTrain.OnPUTStop(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+  var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
+begin
+
+end;
+
+procedure TPTEndpointTrain.OnPUTUnstop(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
+  var respJson:TJsonObject; const reqJson:TJsonObject; train: TTrain);
+begin
+
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
