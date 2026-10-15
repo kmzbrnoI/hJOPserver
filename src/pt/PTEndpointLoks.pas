@@ -9,14 +9,13 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
 
 type
   TPTEndpointLoks = class(TPTEndpoint)
-    private const
-      _ENDPOINT_MATCH_REGEX = '^/loks/?$';
+  private const
+    _ENDPOINT_MATCH_REGEX = '^/loks/?$';
 
-    public
-      procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-        var respJson:TJsonObject); override;
+  public
+    procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject); override;
 
-      function EndpointMatch(path:string):Boolean; override;
+    function EndpointMatch(path:string):Boolean; override;
 
   end;
 
@@ -29,38 +28,36 @@ uses PTUtils, TRVDatabase, TRailVehicle, ownConvert;
 procedure TPTEndpointLoks.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
 var params:TDictionary<string, string>;
-    addr:Word;
-    aktivni:Integer;
 begin
- aktivni := 0;
- params := TDictionary<string, string>.Create();
+  var active: Integer := 0;
+  params := TDictionary<string, string>.Create();
 
- try
-   PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
+  try
+    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
-   if (params.ContainsKey('active')) then
-     aktivni := ownConvert.BoolToInt(PTUtils.HttpParamToBool(params['active'])) + 1;
+    if (params.ContainsKey('active')) then
+      active := ownConvert.BoolToInt(PTUtils.HttpParamToBool(params['active'])) + 1;
 
-   for addr := 0 to _MAX_ADDR-1 do
+    for var addr: Word := 0 to _MAX_ADDR-1 do
     begin
-     if (RVDb[addr] <> nil) then
+      if (RVDb[addr] <> nil) then
       begin
-       if ((aktivni = 0) or
-          ((aktivni = 1) and (not RVDb[addr].acquired)) or
-          ((aktivni = 2) and (RVDb[addr].acquired))) then
-         RVDb[addr].GetPtData(respJson.A['loks'].AddObject, params.ContainsKey('state') and PTUtils.HttpParamToBool(params['state']));
+        if ((active = 0) or
+           ((active = 1) and (not RVDb[addr].acquired)) or
+           ((active = 2) and (RVDb[addr].acquired))) then
+          RVDb[addr].GetPtData(respJson.A['loks'].AddObject, params.ContainsKey('state') and PTUtils.HttpParamToBool(params['state']));
       end;
     end;
- finally
-   params.Free();
- end;
+  finally
+    params.Free();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TPTEndpointLoks.EndpointMatch(path:string):Boolean;
 begin
- Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
+  Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

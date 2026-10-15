@@ -9,14 +9,13 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
 
 type
   TPTEndpointAreas = class(TPTEndpoint)
-    private const
-      _ENDPOINT_MATCH_REGEX = '^/areas/?$';
+  private const
+    _ENDPOINT_MATCH_REGEX = '^/areas/?$';
 
-    public
-      procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-        var respJson:TJsonObject); override;
+  public
+    procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject); override;
 
-      function EndpointMatch(path:string):Boolean; override;
+    function EndpointMatch(path:string):Boolean; override;
 
   end;
 
@@ -30,25 +29,25 @@ procedure TPTEndpointAreas.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequ
         var respJson:TJsonObject);
 var params:TDictionary<string, string>;
 begin
- params := TDictionary<string, string>.Create();
+  params := TDictionary<string, string>.Create();
 
- try
-   PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
+  try
+    PTUtils.HttpParametersToDict(ARequestInfo.Params, params);
 
-   Areas.GetPtData(
-     respJson,
-     params.ContainsKey('dict') and PTUtils.HttpParamToBool(params['dict'])
-   );
- finally
-   params.Free();
- end;
+    Areas.GetPtData(
+      respJson,
+      params.ContainsKey('dict') and PTUtils.HttpParamToBool(params['dict'])
+    );
+  finally
+    params.Free();
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TPTEndpointAreas.EndpointMatch(path:string):Boolean;
 begin
- Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
+  Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -13,10 +13,8 @@ type
     _ENDPOINT_MATCH_REGEX = '^/time/?$';
 
   public
-    procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-      var respJson: TJsonObject); override;
-    procedure OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-      var respJson:TJsonObject; const reqJson:TJsonObject); override;
+    procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson: TJsonObject); override;
+    procedure OnPUT(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject; const reqJson:TJsonObject); override;
 
     function EndpointMatch(path: string): Boolean; override;
 

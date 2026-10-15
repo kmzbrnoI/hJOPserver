@@ -9,14 +9,13 @@ uses IdContext, IdCustomHTTPServer, JsonDataObjects, PTEndpoint, SysUtils,
 
 type
   TPTEndpointTrains = class(TPTEndpoint)
-    private const
-      _ENDPOINT_MATCH_REGEX = '^/trains/?$';
+  private const
+    _ENDPOINT_MATCH_REGEX = '^/trains/?$';
 
-    public
-      procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
-        var respJson:TJsonObject); override;
+  public
+    procedure OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo; var respJson:TJsonObject); override;
 
-      function EndpointMatch(path: string): Boolean; override;
+    function EndpointMatch(path: string): Boolean; override;
 
   end;
 
@@ -29,18 +28,18 @@ uses TrainDb;
 procedure TPTEndpointTrains.OnGET(AContext: TIdContext; ARequestInfo: TIdHTTPRequestInfo;
         var respJson:TJsonObject);
 begin
- try
-   Trains.GetPtData(respJson);
- finally
+  try
+    Trains.GetPtData(respJson);
+  finally
 
- end;
+  end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TPTEndpointTrains.EndpointMatch(path:string):Boolean;
 begin
- Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
+  Result := TPTEndpoint.PatternMatch(path, _ENDPOINT_MATCH_REGEX);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
