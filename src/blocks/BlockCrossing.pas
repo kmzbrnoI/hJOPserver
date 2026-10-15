@@ -402,6 +402,7 @@ procedure TBlkCrossing.Disable();
 begin
   Self.m_state.state := TBlkCrossingBasicState.disabled;
   Self.m_state.shs.Clear();
+  Self.m_state.pathZaver.Clear();
   Self.Change(true);
 end;
 
