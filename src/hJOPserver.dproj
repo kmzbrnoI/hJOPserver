@@ -2,7 +2,7 @@
     <PropertyGroup>
         <ProjectGuid>{3843E8C1-425E-4564-AD11-0A95B3B00280}</ProjectGuid>
         <MainSource>hJOPserver.dpr</MainSource>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
         <ProjectVersion>20.1</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
