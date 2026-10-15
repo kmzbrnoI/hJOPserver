@@ -17,6 +17,7 @@ type
     Label4: TLabel;
     E_AccessToken: TEdit;
     B_GenToken: TButton;
+    CHB_ActivateAfterConnect: TCheckBox;
     procedure B_StornoClick(Sender: TObject);
     procedure B_SaveClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -75,6 +76,7 @@ begin
   Self.E_Name.Text := '';
   Self.SE_ID.Value := Blocks.GetBlkID(Blocks.count - 1) + 1;
   Self.E_AccessToken.Text := '';
+  Self.CHB_ActivateAfterConnect.Checked := False;
 
   Self.Caption := 'Nový blok AC';
 end;
@@ -89,6 +91,7 @@ begin
   Self.E_Name.Text := glob.name;
   Self.SE_ID.Value := glob.id;
   Self.E_AccessToken.Text := settings.accessToken;
+  Self.CHB_ActivateAfterConnect.Checked := settings.activateAfterConnect;
 
   Self.Caption := 'Upravit blok ' + glob.name + ' (AC)';
 end;
@@ -124,6 +127,7 @@ begin
 
     var settings: TBlkACSettings;
     settings.accessToken := Self.E_AccessToken.Text;
+    settings.activateAfterConnect := Self.CHB_ActivateAfterConnect.Checked;
 
     if (Self.isNewBlock) then
     begin

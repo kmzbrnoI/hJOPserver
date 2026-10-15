@@ -13,6 +13,7 @@ type
 
   TBlkACSettings = record
     accessToken: string;
+    activateAfterConnect: Boolean;
   end;
 
   TBlkACState = record
@@ -130,6 +131,7 @@ procedure TBlkAC.LoadData(ini_tech: TMemIniFile; const section: string; ini_rel,
 begin
   inherited LoadData(ini_tech, section, ini_rel, ini_stat);
   Self.m_settings.accessToken := ini_tech.ReadString(section, 'accessToken', '');
+  Self.m_settings.activateAfterConnect := ini_tech.ReadBool(section, 'activateAfterConnect', False);
   Self.LoadAreas(ini_rel, 'POM').Free();
 end;
 
@@ -137,6 +139,8 @@ procedure TBlkAC.SaveData(ini_tech: TMemIniFile; const section: string);
 begin
   inherited SaveData(ini_tech, section);
   ini_tech.WriteString(section, 'accessToken', Self.m_settings.accessToken);
+  if (Self.m_settings.activateAfterConnect) then
+    ini_tech.WriteBool(section, 'activateAfterConnect', Self.m_settings.activateAfterConnect);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -412,6 +416,14 @@ begin
       Self.m_state.client := Sender;
       Self.SendLn(Sender, 'AUTH;ok;');
       Self.Change();
+
+      try
+        if (Self.m_settings.activateAfterConnect) then
+          Self.Start();
+      except
+        on E: Exception do
+          PanelServer.BroadcastBottomError('Autostart chyba: '+E.Message, 'AC '+Self.name);
+      end;
     end;
   end;
 

@@ -4,7 +4,7 @@ object F_BlkAC: TF_BlkAC
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Upravit blok [blok] (AC)'
-  ClientHeight = 165
+  ClientHeight = 180
   ClientWidth = 320
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -76,8 +76,8 @@ object F_BlkAC: TF_BlkAC
     Value = 1
   end
   object B_Storno: TButton
-    Left = 151
-    Top = 134
+    Left = 150
+    Top = 150
     Width = 76
     Height = 24
     Margins.Left = 2
@@ -85,12 +85,12 @@ object F_BlkAC: TF_BlkAC
     Margins.Right = 2
     Margins.Bottom = 2
     Caption = 'Storno'
-    TabOrder = 4
+    TabOrder = 5
     OnClick = B_StornoClick
   end
   object B_Save: TButton
-    Left = 240
-    Top = 134
+    Left = 239
+    Top = 150
     Width = 74
     Height = 24
     Margins.Left = 2
@@ -99,7 +99,7 @@ object F_BlkAC: TF_BlkAC
     Margins.Bottom = 2
     Caption = 'Pou'#382#237't'
     Default = True
-    TabOrder = 3
+    TabOrder = 4
     OnClick = B_SaveClick
   end
   object E_AccessToken: TEdit
@@ -115,7 +115,15 @@ object F_BlkAC: TF_BlkAC
     Width = 75
     Height = 20
     Caption = 'Vygenerovat'
-    TabOrder = 5
+    TabOrder = 6
     OnClick = B_GenTokenClick
+  end
+  object CHB_ActivateAfterConnect: TCheckBox
+    Left = 8
+    Top = 125
+    Width = 185
+    Height = 17
+    Caption = 'Aktivovat AC po p'#345'ipojen'#237' klienta'
+    TabOrder = 3
   end
 end
