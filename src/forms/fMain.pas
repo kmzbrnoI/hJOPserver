@@ -1462,7 +1462,8 @@ begin
   end;
 
   try
-    trakce.Connect();
+    if (not trakce.opening) then
+      trakce.Connect();
   except
     on E: Exception do
     begin
