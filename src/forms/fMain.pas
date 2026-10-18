@@ -1550,8 +1550,7 @@ begin
   if (SystemData.Status = TSystemStatus.starting) then
   begin
     SystemData.Status := TSystemStatus.null;
-    Self.A_System_Start.Enabled := true;
-    Self.A_System_Stop.Enabled := true;
+    Self.UpdateSystemButtons();
   end;
 
   StrMessageBox('Nepodařilo se převzít všechna vozidla, více informací v logu.', 'Chyba',
@@ -1749,8 +1748,7 @@ begin
   if (SystemData.Status = TSystemStatus.starting) then
   begin
     SystemData.Status := TSystemStatus.null;
-    Self.A_System_Start.Enabled := true;
-    Self.A_System_Stop.Enabled := true;
+    Self.UpdateSystemButtons();
   end;
 
   trakce.opening := false;
@@ -3815,9 +3813,9 @@ end;
 procedure TF_Main.UpdateSystemButtons();
 begin
   Self.A_System_Start.Enabled := ((not RCSs.AllActiveRCSsStateGTE(rsStartedNotScanned)) or (not trakce.ConnectedSafe()) or (Self.A_Locos_Acquire.Enabled)
-    or (not PanelServer.openned) or (not Blocks.Enabled) or ((PtServer.autoStart) and (not PtServer.openned))) and (not RCSs.IsStateActionInProgress());
-  Self.A_System_Stop.Enabled := (((RCSs.AnyRCSStateGTE(rsOpenStopped)) or (trakce.ConnectedSafe()) or (PanelServer.openned) or
-    (PtServer.openned)) and (not RCSs.IsStateActionInProgress()));
+    or (not PanelServer.openned) or (not Blocks.Enabled) or ((PtServer.autoStart) and (not PtServer.openned))) and (not RCSs.IsStateActionInProgress()) and (SystemData.Status <> TSystemStatus.starting);
+  Self.A_System_Stop.Enabled := ((RCSs.AnyRCSStateGTE(rsOpenStopped)) or (trakce.ConnectedSafe()) or (PanelServer.openned) or
+    (PtServer.openned)) and (not RCSs.IsStateActionInProgress()) and (SystemData.Status <> TSystemStatus.stopping);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
