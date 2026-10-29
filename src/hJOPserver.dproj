@@ -4,7 +4,7 @@
         <MainSource>hJOPserver.dpr</MainSource>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <DCC_DCCCompiler>DCC32</DCC_DCCCompiler>
-        <ProjectVersion>20.1</ProjectVersion>
+        <ProjectVersion>20.3</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
@@ -112,10 +112,11 @@
         <DCC_BplOutput>..\x86-64\outunit\</DCC_BplOutput>
         <DCC_DcuOutput>..\x86-64\outunit\</DCC_DcuOutput>
         <DCC_ExeOutput>..\x86-64\output\</DCC_ExeOutput>
-        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=6.2.2.0;InternalName=;LegalCopyright=Jan Malina (Horáček);LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=hJOPserver;FileVersion=6.2.3.0;InternalName=;LegalCopyright=Jan Malina (Horáček);LegalTrademarks=;OriginalFilename=hJOPserver.exe;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_MinorVer>2</VerInfo_MinorVer>
         <VerInfo_MajorVer>6</VerInfo_MajorVer>
+        <VerInfo_Release>3</VerInfo_Release>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>True</DCC_LocalDebugSymbols>
@@ -473,20 +474,9 @@
                 <Platform value="Win32">True</Platform>
                 <Platform value="Win64">True</Platform>
             </Platforms>
-            <Deployment Version="4">
+            <Deployment Version="5">
                 <DeployFile LocalName="..\x86-64\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput"/>
-                <DeployFile LocalName="..\x86-64\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win64">
-                        <RemoteName>hJOPserver.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="..\x86-64\output\hJOPserver.exe" Configuration="Release" Class="ProjectOutput">
-                    <Platform Name="Win64">
-                        <RemoteName>hJOPserver.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
+                <DeployFile LocalName="..\x86-64\output\hJOPserver.exe" Configuration="Release" Class="ProjectOutput"/>
                 <DeployFile LocalName="..\x86\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployClass Name="AdditionalDebugSymbols">
                     <Platform Name="OSX32">
@@ -496,16 +486,6 @@
                         <Operation>0</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="AndroidClasses">
-                    <Platform Name="Android">
-                        <RemoteDir>classes</RemoteDir>
-                        <Operation>64</Operation>
-                    </Platform>
-                    <Platform Name="Android64">
-                        <RemoteDir>classes</RemoteDir>
-                        <Operation>64</Operation>
-                    </Platform>
-                </DeployClass>
                 <DeployClass Name="AndroidFileProvider">
                     <Platform Name="Android">
                         <RemoteDir>res\xml</RemoteDir>
@@ -513,12 +493,6 @@
                     </Platform>
                     <Platform Name="Android64">
                         <RemoteDir>res\xml</RemoteDir>
-                        <Operation>1</Operation>
-                    </Platform>
-                </DeployClass>
-                <DeployClass Name="AndroidGDBServer">
-                    <Platform Name="Android">
-                        <RemoteDir>library\lib\armeabi-v7a</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
@@ -611,6 +585,16 @@
                     </Platform>
                     <Platform Name="Android64">
                         <RemoteDir>res\values-v31</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                </DeployClass>
+                <DeployClass Name="AndroidSplashStylesV35">
+                    <Platform Name="Android">
+                        <RemoteDir>res\values-v35</RemoteDir>
+                        <Operation>1</Operation>
+                    </Platform>
+                    <Platform Name="Android64">
+                        <RemoteDir>res\values-v35</RemoteDir>
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
