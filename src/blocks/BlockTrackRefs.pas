@@ -65,18 +65,15 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkTrackRefs.Parse(str: string);
-var strs: TStrings;
-  _str: string;
-  ref: TBlkTrackRef;
 begin
   Self.parts.Clear();
 
-  strs := TStringList.Create();
+  var strs: TStrings := TStringList.Create();
   try
     ExtractStringsEx([_SEPARATOR], [' '], str, strs);
-    for _str in strs do
+    for var _str: string in strs do
     begin
-      ref := TBlkTrackRef.Create(_str);
+      var ref: TBlkTrackRef := TBlkTrackRef.Create(_str);
       Self.parts.Add(ref);
     end;
   finally

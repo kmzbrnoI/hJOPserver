@@ -22,17 +22,17 @@ type
   );
 
   TLogSource = (
-    lsAny,
-    lsSystem,
-    lsJC,
-    lsData,
-    lsRCS,
-    lsTrakce,
-    lsConsole,
-    lsStack,
-    lsPanelServer,
-    lsPTServer,
-    lsUDPDiscover
+    lsAny = 0,
+    lsSystem = 1,
+    lsJC = 2,
+    lsData = 3,
+    lsRCS = 4,
+    lsTrakce = 5,
+    lsConsole = 6,
+    lsStack = 7,
+    lsPanelServer = 8,
+    lsPTServer = 9,
+    lsUDPDiscover = 10
   );
 
 procedure logInit();
@@ -128,7 +128,7 @@ function logSourceStr(source: TLogSource): string;
 begin
   case (source) of
     lsAny:
-      Result := '';
+      Result := 'všeobecné';
     lsSystem:
       Result := 'SYSTEM';
     lsJC:
@@ -157,8 +157,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure intLog(text: string; level: TLogLevel; source: TLogSource; multiline: Boolean = false; brief: Boolean = False);
-var f: TextFile;
-  xTime, xDate: string;
+var xTime, xDate: string;
 begin
   if (F_Main = nil) then
     Exit();
@@ -173,7 +172,8 @@ begin
     F_Main.LV_log.Clear();
 
   try
-    if (Integer(level) <= F_Main.CB_global_loglevel_table.ItemIndex) then
+    if ((Integer(level) <= F_Main.CB_global_loglevel_table.ItemIndex) and
+        ((Integer(source) >= F_Main.LV_LogSourcesTable.Items.Count) or (F_Main.LV_LogSourcesTable.Items[Integer(source)].Checked))) then
     begin
       var LI: TListItem := F_Main.LV_log.Items.Insert(0);
       LI.Data := Pointer(logColor(level, source));
@@ -189,8 +189,10 @@ begin
   end;
 
   try
-    if (Integer(level) <= F_Main.CB_global_loglevel_file.ItemIndex) then
+    if ((Integer(level) <= F_Main.CB_global_loglevel_file.ItemIndex) and
+        ((Integer(source) >= F_Main.LV_LogSourcesFile.Items.Count) or (F_Main.LV_LogSourcesFile.Items[Integer(source)].Checked))) then
     begin
+      var f: TextFile;
       AssignFile(f, _MAIN_LOG_PATH + '\' + xDate + '.log');
       if (FileExists(_MAIN_LOG_PATH + '\' + xDate + '.log')) then
         Append(f)
@@ -236,8 +238,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure authLog(system, operation, user, text: string);
-var f: TextFile;
-  time, date: string;
+var time, date: string;
 begin
   if (not auth_logging) then
     Exit();
@@ -246,6 +247,7 @@ begin
   DateTimeToString(time, 'hh:mm:ss', Now);
 
   try
+    var f: TextFile;
     AssignFile(f, _AUTH_LOG_PATH + '\' + date + '.log');
     if (FileExists(_AUTH_LOG_PATH + '\' + date + '.log')) then
       Append(f)

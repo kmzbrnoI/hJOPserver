@@ -373,11 +373,12 @@ begin
 
       inidata.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-file-loglevel', F_Main.CB_global_loglevel_file.ItemIndex);
       inidata.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-table-loglevel', F_Main.CB_global_loglevel_table.ItemIndex);
+      inidata.WriteString(_INIDATA_PATHS_LOG_SECTION, 'main-file-sources', F_Main.GetLVChecked(F_Main.LV_LogSourcesFile));
+      inidata.WriteString(_INIDATA_PATHS_LOG_SECTION, 'main-table-sources', F_Main.GetLVChecked(F_Main.LV_LogSourcesTable));
       inidata.DeleteKey(_INIDATA_PATHS_LOG_SECTION, 'rcs'); // old key
       for var i: Integer := 0 to RCSs._RCSS_MAX do
         inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'rcs'+IntToStr(i), F_Main.CHB_RCSs_Log[i].Checked);
       inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'auth', F_Main.CHB_log_auth.Checked);
-
     finally
       inidata.UpdateFile();
       inidata.Free();

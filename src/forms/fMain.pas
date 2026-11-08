@@ -315,6 +315,10 @@ type
     Label9: TLabel;
     CB_MainTimerInterval: TComboBox;
     CHB_DCCStartFromPanel: TCheckBox;
+    Label18: TLabel;
+    LV_LogSourcesFile: TListView;
+    Label19: TLabel;
+    LV_LogSourcesTable: TListView;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -505,6 +509,9 @@ type
 
     procedure SB1LogUpdate();
 
+    procedure FillLogSources(lv: TListView; checked: string);
+    procedure InitLogGUI();
+
   public
     CHB_RCSs_Show_Only_Active: array [0..TRCSs._RCSS_MAX] of TCheckBox;
     CHB_RCSs_Log: array [0..TRCSs._RCSS_MAX] of TCheckBox;
@@ -519,7 +526,6 @@ type
 
     procedure CloseForm();
     procedure RepaintObjects();
-    procedure LoadIniLibData();
     procedure AutostartUpdate();
     procedure OnStart();
     procedure ShowDateTime();
@@ -577,6 +583,8 @@ type
     // GlobalConfig
     procedure FillGlobalConfig();
 
+    function GetLVChecked(lv: TListView): string;
+
   end; // public
 
   TSystemStatus = (null, starting, stopping); // stav startovani / vypinani systemu
@@ -605,7 +613,7 @@ uses fTester, fModelTimeSet, fSplash, fHoukEvsUsek, DataJC, ownConvert,
   fBlkDisconnector, fFuncsSet, FunkceVyznam, fBlkRT, RCSdebugger, Booster, DataAB,
   AppEv, fBlkIO, BlockIO, TCPServerPT, RCSErrors, TechnologieAB, fBlkCrossingState,
   Diagnostics, BlockAC, fBlkAC, fBlkGroupSignal, fBlkPst, BlockPst, fBlkSignalState,
-  fRychlostiEdit, TRailVehicle, GUIPanelServerClients;
+  fRychlostiEdit, TRailVehicle, GUIPanelServerClients, ownStrUtils;
 
 {$R *.dfm}
 
@@ -2083,7 +2091,7 @@ begin
 
   FuncNames.OnChange := Self.OnFuncNameChange;
 
-  Self.LoadIniLibData();
+  Self.InitLogGUI();
 
   Self.Caption := 'hJOPserver – ' + StandardVersionBuildStr();
 end;
@@ -3041,13 +3049,14 @@ begin
   end;
 end;
 
-procedure TF_Main.LoadIniLibData();
-var inidata: TMemIniFile;
+procedure TF_Main.InitLogGUI();
 begin
-  inidata := TMemIniFile.Create(_INIDATA_FN, TEncoding.UTF8);
+  var inidata := TMemIniFile.Create(_INIDATA_FN, TEncoding.UTF8);
   try
     Self.CB_global_loglevel_file.ItemIndex := inidata.ReadInteger(_INIDATA_PATHS_LOG_SECTION, 'main-file-loglevel', 3);
     Self.CB_global_loglevel_table.ItemIndex := inidata.ReadInteger(_INIDATA_PATHS_LOG_SECTION, 'main-table-loglevel', 3);
+    Self.FillLogSources(Self.LV_LogSourcesFile, inidata.ReadString(_INIDATA_PATHS_LOG_SECTION, 'main-file-sources', ''));
+    Self.FillLogSources(Self.LV_LogSourcesTable, inidata.ReadString(_INIDATA_PATHS_LOG_SECTION, 'main-table-sources', ''));
     for var i: Integer := 0 to RCSs._RCSS_MAX do
     begin
       var log: Boolean := inidata.ReadBool(_INIDATA_PATHS_LOG_SECTION, 'rcs'+IntToStr(i), false);
@@ -3060,6 +3069,26 @@ begin
   finally
     inidata.Free();
   end;
+end;
+
+procedure TF_Main.FillLogSources(lv: TListView; checked: string);
+begin
+  lv.Clear();
+  var i: Integer := 1;
+  for var ls: TLogSource := Low(TLogSource) to High(TLogSource) do
+  begin
+    var li: TListItem := lv.Items.Add();
+    li.Caption := Logging.logSourceStr(ls);
+    li.Checked := (i >= Length(checked)) or (checked[i] = '1');
+    Inc(i);
+  end;
+end;
+
+function TF_Main.GetLVChecked(lv: TListView): string;
+begin
+  Result := '';
+  for var li: TListItem in lv.Items do
+    Result := Result + BoolToStr10(li.Checked);
 end;
 
 procedure TF_Main.AutostartUpdate();

@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Technologie
+    ActivePage = TS_log
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -6353,10 +6353,10 @@ object F_Main: TF_Main
       Caption = 'Hlavn'#237' LOG'
       ImageIndex = 3
       object LV_log: TListView
-        Left = 0
-        Top = 40
-        Width = 1294
-        Height = 606
+        Left = 160
+        Top = 0
+        Width = 1134
+        Height = 646
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
@@ -6377,7 +6377,7 @@ object F_Main: TF_Main
           end
           item
             Caption = 'Zpr'#225'va'
-            Width = 850
+            Width = 750
           end>
         DoubleBuffered = True
         Font.Charset = DEFAULT_CHARSET
@@ -6395,53 +6395,72 @@ object F_Main: TF_Main
         ViewStyle = vsReport
         OnCustomDrawItem = LV_logCustomDrawItem
         OnDblClick = LV_logDblClick
+        ExplicitLeft = 0
+        ExplicitTop = 40
+        ExplicitWidth = 1294
+        ExplicitHeight = 606
       end
       object P_log: TPanel
         Left = 0
         Top = 0
-        Width = 1294
-        Height = 40
+        Width = 160
+        Height = 646
         Margins.Left = 2
         Margins.Top = 2
         Margins.Right = 2
         Margins.Bottom = 2
-        Align = alTop
+        Align = alLeft
         BevelOuter = bvNone
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
         object Label3: TLabel
-          Left = 11
-          Top = 1
-          Width = 78
+          Left = 6
+          Top = 2
+          Width = 73
           Height = 13
-          Caption = 'Loglevel soubor:'
+          Caption = #218'rove'#328' soubor:'
         end
         object Label4: TLabel
-          Left = 176
-          Top = 1
-          Width = 81
+          Left = 6
+          Top = 265
+          Width = 76
           Height = 13
-          Caption = 'Loglevel tabulka:'
+          Caption = #218'rove'#328' tabulka:'
+        end
+        object Label18: TLabel
+          Left = 6
+          Top = 48
+          Width = 87
+          Height = 13
+          Caption = 'Log zdroje soubor:'
+        end
+        object Label19: TLabel
+          Left = 6
+          Top = 312
+          Width = 90
+          Height = 13
+          Caption = 'Log zdroje tabulka:'
         end
         object CHB_log_auth: TCheckBox
-          Left = 341
-          Top = 10
-          Width = 217
-          Height = 17
+          Left = 6
+          Top = 530
+          Width = 145
+          Height = 31
           Caption = 'Logovat p'#345#237'stupy do syst'#233'mu do souboru'
-          TabOrder = 2
+          TabOrder = 4
+          WordWrap = True
           OnClick = CHB_log_authClick
         end
         object CB_global_loglevel_file: TComboBox
-          Left = 11
-          Top = 14
+          Left = 6
+          Top = 21
           Width = 145
           Height = 21
           Style = csDropDownList
           TabOrder = 0
           Items.Strings = (
-            '0 '#8211' '#382#225'dn'#233' zpr'#225'vy'
+            '0 '#8211' nic'
             '1 '#8211' chyby'
             '2 '#8211' varov'#225'n'#237
             '3 '#8211' zpr'#225'vy '
@@ -6449,19 +6468,55 @@ object F_Main: TF_Main
             '5 '#8211' debug')
         end
         object CB_global_loglevel_table: TComboBox
-          Left = 176
-          Top = 14
+          Left = 6
+          Top = 284
           Width = 145
           Height = 21
           Style = csDropDownList
-          TabOrder = 1
+          TabOrder = 2
           Items.Strings = (
-            '0 - '#382#225'dn'#233' zpr'#225'vy'
+            '0 - nic'
             '1 - chyby'
             '2 - varov'#225'n'#237
             '3 - zpr'#225'vy '
             '4 - detaily'
             '5 - debug')
+        end
+        object LV_LogSourcesFile: TListView
+          Left = 6
+          Top = 67
+          Width = 145
+          Height = 182
+          Checkboxes = True
+          Columns = <
+            item
+              Caption = 'Zdroj'
+              MaxWidth = 140
+              Width = 140
+            end>
+          ColumnClick = False
+          ReadOnly = True
+          ShowColumnHeaders = False
+          TabOrder = 1
+          ViewStyle = vsList
+        end
+        object LV_LogSourcesTable: TListView
+          Left = 6
+          Top = 331
+          Width = 145
+          Height = 182
+          Checkboxes = True
+          Columns = <
+            item
+              Caption = 'Zdroj'
+              MaxWidth = 140
+              Width = 140
+            end>
+          ColumnClick = False
+          ReadOnly = True
+          ShowColumnHeaders = False
+          TabOrder = 3
+          ViewStyle = vsList
         end
       end
     end
