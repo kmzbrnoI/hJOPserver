@@ -4217,7 +4217,7 @@ begin
     var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackId);
     if (track.IsTrain()) then
     begin
-      var turnouts: TList<TBlk> := Blocks.GetTurnoutsAtTrack(trackId);
+      var turnouts: TList<TBlkTurnout> := Blocks.GetTurnoutsAtTrack(trackId);
       try
         if (turnouts.Count > 0) then
           Exit(False);

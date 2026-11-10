@@ -110,9 +110,9 @@ type
     procedure RemoveTrain(Train: TTrain);
     procedure TrainPrediction(signal: TBlkSignal);
 
-    function GetBlkWithTrain(Train: TTrain): TBlksList;
-    function GetTurnoutWithLock(zamekID: Integer): TBlksList;
-    function GetTurnoutsAtTrack(trackId: Integer): TList<TBlk>;
+    function GetBlkWithTrain(Train: TTrain): TList<TBlkTrack>;
+    function GetTurnoutWithLock(zamekID: Integer): TList<TBlkTurnout>;
+    function GetTurnoutsAtTrack(trackId: Integer): TList<TBlkTurnout>;
 
     // call 'Change' on all tracks with train 'Train'
     procedure ChangeAllTracksWithTrain(Train: TTrain);
@@ -178,7 +178,7 @@ begin
   if ((TBlk(Sender).typ = btTrack) or (TBlk(Sender).typ = btRT)) then
   begin
     // track change -> on-track turnouts change
-    var turnouts: TList<TBlk> := Self.GetTurnoutsAtTrack(TBlk(Sender).id);
+    var turnouts: TList<TBlkTurnout> := Self.GetTurnoutsAtTrack(TBlk(Sender).id);
     try
       for var turnout: TBlk in turnouts do
         turnout.Change(true);
@@ -874,26 +874,26 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlocks.GetBlkWithTrain(Train: TTrain): TBlksList;
+function TBlocks.GetBlkWithTrain(Train: TTrain): TList<TBlkTrack>;
 begin
-  Result := TList<TBlk>.Create();
+  Result := TList<TBlkTrack>.Create();
   try
     for var blk: TBlk in Self.data do
       if (((Blk.typ = btTrack) or (Blk.typ = btRT)) and ((Blk as TBlkTrack).IsTrain(Train))) then
-        Result.Add(Blk);
+        Result.Add(blk as TBlkTrack);
   except
     Result.Free();
   end;
 end;
 
-function TBlocks.GetTurnoutsAtTrack(trackId: Integer): TList<TBlk>;
+function TBlocks.GetTurnoutsAtTrack(trackId: Integer): TList<TBlkTurnout>;
 begin
-  Result := TList<TBlk>.Create();
+  Result := TList<TBlkTurnout>.Create();
   try
     for var blk: TBlk in Self.data do
       if (blk.typ = btTurnout) then
         if ((blk as TBlkTurnout).trackID = trackId) then
-          Result.Add(blk);
+          Result.Add(blk as TBlkTurnout);
   except
     Result.Free();
   end;
@@ -1019,13 +1019,15 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-function TBlocks.GetTurnoutWithLock(zamekID: Integer): TBlksList;
+function TBlocks.GetTurnoutWithLock(zamekID: Integer): TList<TBlkTurnout>;
 begin
-  Result := TBlksList.Create();
-  for var blk: TBlk in Self.data do
-  begin
-    if ((Blk.typ = btTurnout) and ((Blk as TBlkTurnout).GetSettings().lock = zamekID)) then
-      Result.Add(Blk);
+  Result := TList<TBlkTurnout>.Create();
+  try
+    for var blk: TBlk in Self.data do
+      if ((Blk.typ = btTurnout) and ((Blk as TBlkTurnout).GetSettings().lock = zamekID)) then
+        Result.Add(blk as TBlkTurnout);
+  except
+    Result.Free();
   end;
 end;
 

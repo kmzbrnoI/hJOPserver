@@ -386,14 +386,13 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 procedure TBlkLock.CallChangeToTurnout();
-var blks: TBlksList;
 begin
-  blks := Blocks.GetTurnoutWithLock(Self.id);
+  var turnouts: TList<TBlkTurnout> := Blocks.GetTurnoutWithLock(Self.id);
   try
-    for var turnout: TBlk in blks do
+    for var turnout: TBlkTurnout in turnouts do
       turnout.Change();
   finally
-    blks.Free();
+    turnouts.Free();
   end;
 end;
 
@@ -413,15 +412,14 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkLock.IsRightPosition(): Boolean;
-var blks: TBlksList;
 begin
-  blks := Blocks.GetTurnoutWithLock(Self.id);
+  var turnouts: TList<TBlkTurnout> := Blocks.GetTurnoutWithLock(Self.id);
   try
-    for var blk: TBlk in blks do
-      if (TBlkTurnout(blk).position <> TBlkTurnout(blk).GetSettings().lockPosition) then
+    for var turnout: TBlkTurnout in turnouts do
+      if (turnout.position <> turnout.GetSettings().lockPosition) then
         Exit(false);
   finally
-    blks.Free();
+    turnouts.Free();
   end;
 
   Result := true;

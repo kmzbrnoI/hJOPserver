@@ -49,7 +49,7 @@ type
 
     slowingReady: Boolean;
     // pri predani vlaku do tohoto useku z trati, ci z jizdni cesty, je tento flag nastaven na true
-    // to znamena, ze je vlak pripraven ke zpomalovani; navetidlo umozni zpomaleni jen, pokud je tento flag na true
+    // to znamena, ze je vlak pripraven ke zpomalovani; navestidlo umozni zpomaleni jen, pokud je tento flag na true
     // po zpomaleni si navestidlo flag zrusi
 
     // ztrata vlaku na useku se pozna tak, ze blok po urcity cas obsahuje vlak, ale neni obsazen

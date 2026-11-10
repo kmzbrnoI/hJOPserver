@@ -1331,9 +1331,9 @@ begin
   try
     // Get speeds from railways
     begin
-      var tracks := Blocks.GetBlkWithTrain(Self);
+      var tracks: TList<TBlkTrack> := Blocks.GetBlkWithTrain(Self);
       try
-        for var track: TBlk in tracks do
+        for var track: TBlkTrack in tracks do
           if (track.typ = TBlkType.btRT) then
             speedLimits.Add(TBlkRT(track).Speed(Self));
       finally
@@ -1341,6 +1341,7 @@ begin
       end;
     end;
 
+    // get speed from paths
     var paths: TList<TJC> := JCDb.FindActiveJCsWithTrain(Self);
     try
       for var path: TJC in paths do
@@ -1403,7 +1404,7 @@ end;
 
 function TTrain.GetBlocks(): TList<TBlk>;
 begin
-  Result := Blocks.GetBlkWithTrain(Self);
+  Result := TList<TBlk>(Blocks.GetBlkWithTrain(Self));
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
