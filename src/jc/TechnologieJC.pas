@@ -2467,6 +2467,7 @@ begin
 
         Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
         track.RemoveTrains();
+        train.UpdateTrainSpeed();
       end;
     end;
   end;
@@ -2481,6 +2482,7 @@ begin
         var train: TTrain := Self.GetTrain(signal, signalTrack);
         signalTrack.RemoveTrain(train);
         Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
+        train.UpdateTrainSpeed();
       end;
 
       Self.destroyEndBlock := 0;
@@ -2515,6 +2517,7 @@ begin
       begin
         signalTrack.RemoveTrain(train);
         Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
+        train.UpdateTrainSpeed();
       end;
 
       if ((signalTrack.typ = btRT) and (TBlkRT(signalTrack).railway <> nil) and (TBlkRT(signalTrack).bpInBlk)) then
