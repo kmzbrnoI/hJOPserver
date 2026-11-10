@@ -4211,12 +4211,14 @@ begin
 
   // all tracks with train (except the last track) cannot contain turnouts
   // do not consider last track -> could be a railway track with turnout
+  var trainFound: Boolean := False;
   for var i: Integer := 0 to Self.data.tracks.Count-2 do
   begin
     var trackId: Integer := Self.data.tracks[i];
     var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackId);
-    if (track.IsTrain()) then
+    if ((trainFound) or (track.IsTrain())) then
     begin
+      trainFound := True;
       var turnouts: TList<TBlkTurnout> := Blocks.GetTurnoutsAtTrack(trackId);
       try
         if (turnouts.Count > 0) then
