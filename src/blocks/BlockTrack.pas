@@ -2670,6 +2670,9 @@ begin
       ownConvert.BoolToStr10(train.sdata.dir_L) +
       ownConvert.BoolToStr10(train.sdata.dir_S) + ';';
 
+    if (train.sideTrack) then
+      trainbg := TJopColor.blueDark;
+
     if ((train.sdata.note <> '') or (train.HasAnyRVNote())) then
       trainbg := TJopColor.turqDark;
 
