@@ -546,22 +546,27 @@ begin
           RVDb[addr].state.functions[i] := (vehicle.S['func'][i+1] = '1');
       end;
 
-      if (Self.sideTrack) then
-        RVDb[addr].CheckRelease()
-      else
-        new.Add(addr);
-
+      new.Add(addr);
       RVDb[addr].changed := True;
     end;
 
-    GetMem(acq, sizeof(TTrainAcquire));
-    acq^.ok := ok;
-    acq^.err := err;
-    acq^.toAcquire := new;
-    acq^.nextAcquire := 0;
+    if (Self.sideTrack) then
+    begin
+      Self.AllLocoAcquiredOk(new);
+      for var addrrv in new do
+        RVDb[addrrv].CheckRelease();
+      if (Assigned(ok.callback)) then
+        ok.callback(Self, ok.data);
+    end else begin
+      GetMem(acq, sizeof(TTrainAcquire));
+      acq^.ok := ok;
+      acq^.err := err;
+      acq^.toAcquire := new;
+      acq^.nextAcquire := 0;
 
-    Self.fAcquiring := true;
-    Self.LocoAcquiredOk(Self, acq);
+      Self.fAcquiring := true;
+      Self.LocoAcquiredOk(Self, acq);
+    end;
   except
     new.Free();
   end;
@@ -719,43 +724,47 @@ begin
   dir_changed := (Self.direction <> dir);
   Self.data.direction := dir;
   Self.data.wantedSpeed := speed;
-  if (Self.emergencyStopped) then
-    Self.data.speed := 0
-  else if (Self.IsSpeedOverride()) then
-    Self.data.speed := Self._speedOverride.speed
-  else if (speed > Self.maxSpeed) then
-    Self.data.speed := Self.maxSpeed
-  else
-    Self.data.speed := speed;
 
-  if ((Self.front <> nil) and (TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).railway <> nil)) then
-    TBlkRT(Self.front).railway.Change();
-
-  for var addr in Self.vehicles do
+  if (not Self.sideTrack) then
   begin
-    RVDb[addr].OnExpectedSpeedChange();
-    if (dir_changed) then
-      RVDb[addr].OnPredictedSignalChange();
+    if (Self.emergencyStopped) then
+      Self.data.speed := 0
+    else if (Self.IsSpeedOverride()) then
+      Self.data.speed := Self._speedOverride.speed
+    else if (speed > Self.maxSpeed) then
+      Self.data.speed := Self.maxSpeed
+    else
+      Self.data.speed := speed;
 
-    if (RVDb[addr].manual) then
+    if ((Self.front <> nil) and (TBlk(Self.front).typ = btRT) and (TBlkRT(Self.front).railway <> nil)) then
+      TBlkRT(Self.front).railway.Change();
+
+    for var addr in Self.vehicles do
     begin
-      Self.Log('Vozidlo ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', llInfo);
-      continue;
-    end;
-    if (RVDb[addr].stolen) then
-    begin
-      Self.Log('Vozidlo ' + IntToStr(addr) + ' ukradena, nenastavuji rychlost', llInfo);
-      continue;
-    end;
+      RVDb[addr].OnExpectedSpeedChange();
+      if (dir_changed) then
+        RVDb[addr].OnPredictedSignalChange();
 
-    var direction := ownConvert.IntToBool(Integer(dir) xor Integer(RVDb[addr].state.siteA));
+      if (RVDb[addr].manual) then
+      begin
+        Self.Log('Vozidlo ' + IntToStr(addr) + ' v ručním regulátoru, nenastavuji rychlost', llInfo);
+        continue;
+      end;
+      if (RVDb[addr].stolen) then
+      begin
+        Self.Log('Vozidlo ' + IntToStr(addr) + ' ukradeno, nenastavuji rychlost', llInfo);
+        continue;
+      end;
 
-    try
-      RVDb[addr].SetSpeedDir(Self.data.speed, direction,
-                             TTrakce.Callback(), TTrakce.Callback(Self.RVComErr), Self);
-    except
-      on E: Exception do
-        AppEvents.LogException(E, 'TTrain.SetSpeedDirection');
+      var direction := ownConvert.IntToBool(Integer(dir) xor Integer(RVDb[addr].state.siteA));
+
+      try
+        RVDb[addr].SetSpeedDir(Self.data.speed, direction,
+                               TTrakce.Callback(), TTrakce.Callback(Self.RVComErr), Self);
+      except
+        on E: Exception do
+          AppEvents.LogException(E, 'TTrain.SetSpeedDirection');
+      end;
     end;
   end;
 
@@ -764,7 +773,7 @@ begin
        ((Self.front as TBlkTrack).trains[(Self.front as TBlkTrack).trainMoving] = Self.index)) then
    (Self.front as TBlkTrack).trainMoving := -1;
 
-  Self.Log('rychlost want='+IntToStr(speed)+', real='+IntToStr(Self.speed)+', směr : '+IntToStr(Integer(dir)), llInfo);
+  Self.Log('rychlost want='+IntToStr(speed)+', real='+IntToStr(Self.speed)+', směr='+IntToStr(Integer(dir)), llInfo);
   Self.changed := true;
 end;
 
