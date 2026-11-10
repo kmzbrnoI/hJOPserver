@@ -377,20 +377,11 @@ begin
     Result := Result + '[{' + RVDb[addr].GetPanelVehicleString() + '}]';
   Result := Result + '};';
 
-  if (Self.areaFrom <> nil) then
-    Result := Result + TArea(Self.areaFrom).id;
-  Result := Result + ';';
-
-  if (Self.areaTo <> nil) then
-    Result := Result + TArea(Self.areaTo).id;
-  Result := Result + ';';
-
+  Result := Result + (if (Self.areaFrom <> nil) then TArea(Self.areaFrom).id else '') + ';';
+  Result := Result + (if (Self.areaTo <> nil) then TArea(Self.areaTo).id else '') + ';';
   Result := Result + ownConvert.BoolToStr10(Self.data.announcement) + ';';
-
-  if (Self.data.maxSpeed <> 0) then
-    Result := Result + IntToStr(Self.data.maxSpeed) + ';'
-  else
-    Result := Result + ';';
+  Result := Result + (if (Self.data.maxSpeed <> 0) then IntToStr(Self.data.maxSpeed) else '') + ';';
+  Result := Result + (if (Self.front <> nil) then TBlk(Self.front).name else '') + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

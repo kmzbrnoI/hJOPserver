@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_log
+    ActivePage = TS_Trains
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -4361,7 +4361,7 @@ object F_Main: TF_Main
             Caption = 'Dopravna'
           end
           item
-            Caption = 'Front'
+            Caption = #268'elo'
           end
           item
             Caption = 'D'#233'lka'
