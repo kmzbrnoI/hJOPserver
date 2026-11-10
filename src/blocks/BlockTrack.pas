@@ -2570,7 +2570,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 function TBlkTrack.PanelStateString(): string;
-var fg, bg, nebarVetve, sfg, sbg: TColor;
+var fg, bg, nebarVetve: TColor;
 begin
   // Pro blok trati se vola take
   Result := IntToStr(Integer(btTrack)) + ';' + IntToStr(Self.id) + ';';;
@@ -2660,36 +2660,31 @@ begin
     var trainI: Integer := Self.trains[i];
     var train := TrainDb.trains[trainI];
 
-    sfg := fg;
-    sbg := bg;
+    var trainfg: TColor := fg;
+    var trainbg: TColor := bg;
 
     if (Self.occupied = TTrackState.free) then
-      sfg := TJopColor.turq;
+      trainfg := TJopColor.turq;
 
     Result := Result + '(' + train.name + ';' +
       ownConvert.BoolToStr10(train.sdata.dir_L) +
       ownConvert.BoolToStr10(train.sdata.dir_S) + ';';
 
     if ((train.sdata.note <> '') or (train.HasAnyRVNote())) then
-      sbg := TJopColor.turqDark;
+      trainbg := TJopColor.turqDark;
 
     if (train.areaTo = train.area) then
-      sbg := TJopColor.gray;
+      trainbg := TJopColor.gray;
 
     if ((train.IsAnyRVManual()) or (train.stolen)) then
-      sbg := TJopColor.brown;
+      trainbg := TJopColor.brown;
 
     // predvidany odjezd
     if (train.IsPOdj(Self)) then
-      predvidanyOdjezd.GetPOdjColors(train.GetPOdj(Self), sfg, sbg);
+      predvidanyOdjezd.GetPOdjColors(train.GetPOdj(Self), trainfg, trainbg);
 
-    Result := Result + ownConvert.ColorToStr(sfg) + ';' + ownConvert.ColorToStr(sbg) + ';';
-
-    if (Self.trainMoving = i) then
-      Result := Result + ownConvert.ColorToStr(clYellow) + ';'
-    else
-      Result := Result + '-;';
-
+    Result := Result + ownConvert.ColorToStr(trainfg) + ';' + ownConvert.ColorToStr(trainbg) + ';';
+    Result := Result + (if (Self.trainMoving = i) then ownConvert.ColorToStr(clYellow) else '-') + ';';
     Result := Result + ownConvert.BoolToStr10(train.emergencyStopped) + ';';
     Result := Result + ')';
   end;
@@ -2698,19 +2693,19 @@ begin
   if (Self.trainPredict <> nil) then
   begin
     // predvidany odjezd
-    sfg := fg;
-    sbg := bg;
+    var trainfg: TColor := fg;
+    var trainbg: TColor := bg;
 
     if ((Self.trainPredict.sdata.note <> '') or (Self.trainPredict.HasAnyRVNote())) then
-      sbg := TJopColor.turqDark;
+      trainbg := TJopColor.turqDark;
 
     // Do not show end station as train text is not contrast compared to background
 
     if (Self.trainPredict.IsPOdj(Self)) then
-      predvidanyOdjezd.GetPOdjColors(Self.trainPredict.GetPOdj(Self), sfg, sbg);
+      predvidanyOdjezd.GetPOdjColors(Self.trainPredict.GetPOdj(Self), trainfg, trainbg);
 
-    Result := Result + '(' + Self.trainPredict.name + ';' + '00;' + ownConvert.ColorToStr(sfg) + ';' +
-      ownConvert.ColorToStr(sbg) + ';)';
+    Result := Result + '(' + Self.trainPredict.name + ';' + '00;' + ownConvert.ColorToStr(trainfg) + ';' +
+      ownConvert.ColorToStr(trainbg) + ';)';
   end;
 
   Result := Result + '}';
