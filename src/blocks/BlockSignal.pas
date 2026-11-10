@@ -1662,7 +1662,7 @@ begin
   var slowTrack: TBlkTrack := TBlkTrack(signalEv.slow.ev.Track(Self.track));
   var slowTrain: TTrain := Self.GetTrain(slowTrack);
 
-  if ((slowTrain <> nil) and (slowTrain.front = slowTrack) and (slowTrain.direction = Self.direction) and (slowTrack.slowingReady)) then
+  if ((slowTrain <> nil) and (slowTrain.front = slowTrack) and (not slowTrain.sideTrack) and (slowTrain.direction = Self.direction) and (slowTrack.slowingReady)) then
   begin
     const stopping: Boolean = ((not Self.IsGoSignal()) or (slowTrain.IsPOdj(track)));
     var speed: Integer;
@@ -1719,7 +1719,7 @@ begin
 
   // pokud vlak svym predkem neni na bloku pred navestidlem, koncim funkci
   var train: TTrain := Self.GetTrain(track);
-  if (train.front <> track) then
+  if ((train.front <> track) or (train.sideTrack)) then
   begin
     // tady musime zrusit registraci eventu, viz vyse
     if ((Self.m_lastEvIndex >= 0) and (Self.m_lastEvIndex < Self.m_settings.events.Count)) then

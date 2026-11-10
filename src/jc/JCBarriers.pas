@@ -445,6 +445,16 @@ type
     function Equal(other: TJCBarrier): Boolean; override;
   end;
 
+  TJCBarTrainSideTrack = class(TJCBarrier)
+  private
+    mTrainI: Integer;
+  public
+    constructor Create(traini: Integer);
+    function ToUPO(): TUPOItem; override;
+    function IsWarning(): Boolean; override;
+    function Equal(other: TJCBarrier): Boolean; override;
+  end;
+
   TJCBarRVNotAllManual = class(TJCBarrier)
   private
     mTrainI: Integer;
@@ -1140,6 +1150,34 @@ begin
 end;
 
 function TJCBarTrainNotFront.Equal(other: TJCBarrier): Boolean;
+begin
+  Result := inherited;
+  if ((Result) and (other.InheritsFrom(TJCBarTrainNotFront))) then
+    Result := (Result) and (Self.mTrainI = (other as TJCBarTrainNotFront).mTrainI);
+end;
+
+constructor TJCBarTrainSideTrack.Create(traini: Integer);
+begin
+  inherited Create();
+  Self.mTrainI := traini;
+end;
+
+function TJCBarTrainSideTrack.ToUPO(): TUPOItem;
+begin
+  if (trains[Self.mTrainI] = nil) then
+    raise EJCBarrier.Create('Train does not exist');
+
+  Result[0] := GetUPOLine('POZOR !', taCenter, TJopColor.black, TJopColor.yellow);
+  Result[1] := GetUPOLine('Vlak ' + trains[Self.mTrainI].name + ' je odstaven');
+  Result[2] := GetUPOLine('Nebude jízda ani přenos vlaku');
+end;
+
+function TJCBarTrainSideTrack.IsWarning(): Boolean;
+begin
+  Result := True;
+end;
+
+function TJCBarTrainSideTrack.Equal(other: TJCBarrier): Boolean;
 begin
   Result := inherited;
   if ((Result) and (other.InheritsFrom(TJCBarTrainNotFront))) then

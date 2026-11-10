@@ -166,7 +166,7 @@ type
     procedure SetData(prop: TJCdata);
 
     procedure CancelVBs();
-    procedure MoveTrainToNextTrack();
+    procedure TryMoveTrainToNextTrack();
     // kontroluje zmenu smeru vlaku a vozidel pri vkroceni do smyckove bloku,
     // tato kontrola probiha pouze pri vkroceni do posledniho bloku JC
     procedure CheckLoopBlock(blk: TBlk);
@@ -956,46 +956,51 @@ begin
     var anyEngineManual := false;
     var train: TTrain := Self.GetTrain(signal, signalTrack);
 
-    // manual-controlled engline
-    if (Self.typ = TJCType.Train) then
+    if (train.sideTrack) then
     begin
-      for var addr: Integer in train.vehicles do
+      barriers.Add(TJCBarTrainSideTrack.Create(train.index));
+    end else begin
+      // manual-controlled engline
+      if (Self.typ = TJCType.Train) then
       begin
-        if ((RVDb[addr].data.typ <> TRVType.car) and ((RVDb[addr].stolen) or (RVDb[addr].manual))) then
+        for var addr: Integer in train.vehicles do
         begin
-          barriers.Add(TJCBarRVManual.Create(addr));
-          anyEngineManual := true;
+          if ((RVDb[addr].data.typ <> TRVType.car) and ((RVDb[addr].stolen) or (RVDb[addr].manual))) then
+          begin
+            barriers.Add(TJCBarRVManual.Create(addr));
+            anyEngineManual := true;
+          end;
         end;
       end;
-    end;
 
-    // only some manual-controlled englines
-    if (anyEngineManual) then
-    begin
-      for var addr: Integer in train.vehicles do
+      // only some manual-controlled englines
+      if (anyEngineManual) then
       begin
-        if ((RVDb[addr].data.typ <> TRVType.car) and (not RVDb[addr].stolen) and (not RVDb[addr].manual)) then
+        for var addr: Integer in train.vehicles do
         begin
-          barriers.Add(TJCBarRVNotAllManual.Create(train.index));
-          break;
+          if ((RVDb[addr].data.typ <> TRVType.car) and (not RVDb[addr].stolen) and (not RVDb[addr].manual)) then
+          begin
+            barriers.Add(TJCBarRVNotAllManual.Create(train.index));
+            break;
+          end;
         end;
       end;
+
+      // direction of a train
+      if (train.sdata.dir_L or train.sdata.dir_S) then
+        if (((signal.direction = TRVSite.odd) and (not train.sdata.dir_L)) or
+          ((signal.direction = TRVSite.even) and (not train.sdata.dir_S))) then
+          barriers.Add(TJCBarTrainWrongDir.Create(train.index));
+
+      if (train.front <> signalTrack) then
+        barriers.Add(TJCBarTrainNotFront.Create(train.index));
+
+      for var addr: Integer in train.vehicles do
+        for var i: Integer := 0 to _RV_FUNC_MAX do
+          if (((RVDb[addr].data.funcDescription[i].Contains('posun')) or (RVDb[addr].data.funcDescription[i].Contains('Posun'))) and
+              (RVDb[addr].stateFunctions[i])) then
+            barriers.Add(TJCBarRVFuncActive.Create(addr, i));
     end;
-
-    // direction of a train
-    if (train.sdata.dir_L or train.sdata.dir_S) then
-      if (((signal.direction = TRVSite.odd) and (not train.sdata.dir_L)) or
-        ((signal.direction = TRVSite.even) and (not train.sdata.dir_S))) then
-        barriers.Add(TJCBarTrainWrongDir.Create(train.index));
-
-    if (train.front <> signalTrack) then
-      barriers.Add(TJCBarTrainNotFront.Create(train.index));
-
-    for var addr: Integer in train.vehicles do
-      for var i: Integer := 0 to _RV_FUNC_MAX do
-        if (((RVDb[addr].data.funcDescription[i].Contains('posun')) or (RVDb[addr].data.funcDescription[i].Contains('Posun'))) and
-            (RVDb[addr].stateFunctions[i])) then
-          barriers.Add(TJCBarRVFuncActive.Create(addr, i));
   end;
 end;
 
@@ -2015,7 +2020,7 @@ begin
           if ((lastTrack.typ = btTrack) and (Self.lastTrack.spnl.stationTrack) and
             (not Self.lastTrack.TrainsFull())) then
           begin
-            if (signalTrack.IsTrain()) then
+            if ((signalTrack.IsTrain()) and (not train.sideTrack)) then
             begin
               if ((signalTrack.typ = btRT) and (TBlkRT(signalTrack).inRailway > -1)) then
               begin
@@ -2041,7 +2046,7 @@ begin
           else
             railway := nil;
 
-          if ((railway <> nil) and (signalTrack.IsTrain()) and (lastTrack.typ = btRT) and
+          if ((railway <> nil) and (signalTrack.IsTrain()) and (not signalTrack.train.sideTrack) and (lastTrack.typ = btRT) and
             ((lastTrack as TBlkRT).inRailway = Self.data.railwayId)) then
           begin
             var rtAdd: TBlkRT := nil;
@@ -2318,7 +2323,7 @@ begin
         track.Zaver := TZaver.nouz;
 
         if (Self.typ = TJCType.Train) then
-          Self.MoveTrainToNextTrack();
+          Self.TryMoveTrainToNextTrack();
 
         // obsazeni useku rusiciho navest (obvykle 0. usek, u skupinoveho navestidla byva jiny)
         // pozor: toto musi byt na tomto miste kvuli nastavovani train.front
@@ -2356,7 +2361,7 @@ begin
           if (Self.typ = TJCType.Train) then
           begin
             railway.BP := true;
-            if (track.IsTrain()) then
+            if ((track.IsTrain()) and (not track.train.sideTrack)) then
             begin
               if ((railway.TrainPredict <> nil) and (railway.TrainPredict.Train = track.Train))
               then
@@ -2419,9 +2424,9 @@ begin
       Self.TrackCancelZaver(track);
       Self.destroyEndBlock := Self.destroyEndBlock + 1;
 
-      if ((Self.typ = TJCType.Train) and (track.IsTrain())) then
+      if ((Self.typ = TJCType.Train) and (track.IsTrain()) and (not track.train.sideTrack)) then
       begin
-        var train := track.Train;
+        var train := track.train;
         track.RemoveTrains();
         Self.Log('Smazan vlak ' + train.name + ' z bloku ' + track.name, llInfo);
         train.UpdateTrainSpeed();
@@ -2459,15 +2464,18 @@ begin
       begin
         // mazani vlaku z useku pred navestidlem
         var train: TTrain := Self.GetTrain(signal, signalTrack);
-        if (train = TBlkTrack(track).Train) then
+        if (not train.sideTrack) then
         begin
-          Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
-          (signalTrack as TBlkTrack).RemoveTrain(train);
-        end;
+          if (train = TBlkTrack(track).Train) then
+          begin
+            Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
+            (signalTrack as TBlkTrack).RemoveTrain(train);
+          end;
 
-        Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
-        track.RemoveTrains();
-        train.UpdateTrainSpeed();
+          Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
+          track.RemoveTrains();
+          train.UpdateTrainSpeed();
+        end;
       end;
     end;
   end;
@@ -2480,9 +2488,12 @@ begin
       if (signalTrack.IsTrain() and (Self.typ = TJCType.Train)) then
       begin
         var train: TTrain := Self.GetTrain(signal, signalTrack);
-        signalTrack.RemoveTrain(train);
-        Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
-        train.UpdateTrainSpeed();
+        if (not train.sideTrack) then
+        begin
+          signalTrack.RemoveTrain(train);
+          Self.Log('Smazan vlak ' + train.name + ' z bloku ' + signalTrack.name, llInfo);
+          train.UpdateTrainSpeed();
+        end;
       end;
 
       Self.destroyEndBlock := 0;
@@ -2568,7 +2579,7 @@ end;
 /// /////////////////////////////////////////////////////////////////////////////
 
 // preda vlak v jizdni ceste dalsimu bloku v poradi
-procedure TJC.MoveTrainToNextTrack();
+procedure TJC.TryMoveTrainToNextTrack();
 var trackActual, trackNext: TBlkTrack;
   train: TTrain;
 begin
@@ -2588,6 +2599,8 @@ begin
   if (not trackActual.IsTrain()) then
     Exit();
   if (train = nil) then
+    Exit();
+  if (train.sideTrack) then
     Exit();
 
   trackNext.slowingReady := If Self.destroyBlock = 0 then True else trackActual.slowingReady;
@@ -2624,7 +2637,7 @@ begin
       end;
     end;
 
-    track.Train.ChangeDirection();
+    track.train.ChangeDirection();
     Self.Log('Obsazen smyckovy usek ' + blk.name + ' - menim smer vozidel ve vlaku ' + track.Train.name, llInfo);
   end;
 end;

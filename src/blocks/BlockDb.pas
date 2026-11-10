@@ -924,6 +924,8 @@ begin
     end
     else
       train := nil;
+    if ((train <> nil) and (train.sideTrack)) then
+      train := nil;
     JC := signal.DNjc;
 
     // predict while paths exist

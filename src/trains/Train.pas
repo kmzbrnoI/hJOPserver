@@ -465,6 +465,12 @@ begin
       raise Exception.Create('Číslo vlaku není validní číslo!');
   end;
 
+  if (train.O['vehicles'].Count > _MAX_TRAIN_VEHICLES) then
+    raise Exception.Create('Překročen maximální počet vozidel na vlaku');
+
+  if ((train.B['sideTrack']) and (Self.speed > 0)) then
+    raise Exception.Create('Nelze odstavit jedoucí vlak');
+
   Self.changed := true;
   Self.data.name := train['name'];
 
@@ -509,9 +515,6 @@ begin
     for var addr in Self.vehicles do
       RVDb[addr].OnPredictedSignalChange();
   end;
-
-  if (train.O['vehicles'].Count > _MAX_TRAIN_VEHICLES) then
-    raise Exception.Create('Překročen maximální počet vozidel na vlaku');
 
   var new := TList<Integer>.Create();
   try
@@ -1377,7 +1380,7 @@ end;
 
 procedure TTrain.UpdateTrainSpeed();
 begin
-  if ((Self.wantedSpeed = 0) or (Self.front = nil)) then
+  if ((Self.wantedSpeed = 0) or (Self.front = nil) or (Self.sideTrack)) then
     Exit();
 
   var speed: Integer := Self.GetTrackSpeed();

@@ -472,7 +472,7 @@ begin
     if ((not Self.rtState.stopEnabled) or
         (Self.rtState.stopPassed) or
         ((Self.train.length > Self.m_rtSettings.stop.maxLength) and (Self.m_rtSettings.stop.maxLength <> 0)) or
-        (Self.train.front <> Self)) then
+        (Self.train.front <> Self) or (Self.train.sideTrack)) then
       Exit();
 
     // kontrola spravneho smeru
