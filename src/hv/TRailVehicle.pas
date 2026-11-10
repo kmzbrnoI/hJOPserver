@@ -1169,7 +1169,7 @@ end;
 
 procedure TRV.CheckRelease();
 begin
-  if ((Self.state.train = -1) and (not Self.manual) and (Self.state.regulators.Count = 0) and
+  if (((Self.state.train = -1) or (trains[Self.state.train].sideTrack)) and (not Self.manual) and (Self.state.regulators.Count = 0) and
     (not RegCollector.IsVehicle(Self)) and (Self.acquired)) then
   begin
     Self.SetSpeed(0);
@@ -1214,7 +1214,7 @@ end;
 
 function TRV.ShouldAcquire(): Boolean;
 begin
-  Result := ((Self.train > -1) and ((not Self.acquired) or (Self.pom = TPomStatus.error)));
+  Result := ((Self.train > -1) and (not trains[Self.train].sideTrack) and ((not Self.acquired) or (Self.pom = TPomStatus.error)));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

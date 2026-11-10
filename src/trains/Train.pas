@@ -546,7 +546,11 @@ begin
           RVDb[addr].state.functions[i] := (vehicle.S['func'][i+1] = '1');
       end;
 
-      new.Add(addr);
+      if (Self.sideTrack) then
+        RVDb[addr].CheckRelease()
+      else
+        new.Add(addr);
+
       RVDb[addr].changed := True;
     end;
 
