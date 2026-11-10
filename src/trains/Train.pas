@@ -40,12 +40,11 @@ type
     dir_L, dir_S: Boolean; // allowed directions
     vehicles: TTrainRVs; // locomotives (engines)
     area: TObject; // Instance of TArea
-
     speed: Integer; // real speed passed to locomotives after all limitations
     wantedSpeed: Integer; // speed wanted by caller, before limitations
     maxSpeed: Cardinal; // max speed in km/h entered by user; maxSpeed = 0 <=> no limitation
     direction: TRVSite;
-
+    sideTrack: Boolean;
     front: TObject; // most forward block train is/was on (always instance of TBlkUsek)
     areaFrom: TObject; // instance of TArea or Nil
     areaTo: TObject; // instance of TArea or Nil
@@ -187,6 +186,7 @@ type
      property front: TObject read data.front write SetFront;
      property length: Integer read data.length;
      property typ: string read data.typ;
+     property sideTrack: Boolean read data.sideTrack;
 
      property areaFrom: TObject read data.areaFrom;
      property areaTo: TObject read data.areaTo;
@@ -252,9 +252,9 @@ begin
   Self.findex := index;
   Self.data.podj := TDictionary<Integer, TPOdj>.Create();
   Self.data.vehicles := TList<Integer>.Create();
-  Self.data.announcementPlayed := false;
-  Self.fAcquiring := false;
-  Self._emergencyStopped := false;
+  Self.data.announcementPlayed := False;
+  Self.fAcquiring := False;
+  Self._emergencyStopped := False;
   Self._traveled := 0;
   Self._nextTraveledChange := 0;
   Self._continuousSpeed := 0;
@@ -284,6 +284,7 @@ begin
   Self.filefront := ini.ReadInteger(section, 'front', -1);
   Self.data.direction := TRVSite(ini.ReadInteger(section, 'smer', Integer(TRVSite.odd)));
   Self.data.maxSpeed := ini.ReadInteger(section, 'maxRychlost', 0);
+  Self.data.sideTrack := ini.ReadBool(section, 'odstaven', False);
 
   Self.data.areaFrom := Areas.Get(ini.ReadString(section, 'z', ''));
   Self.data.areaTo := Areas.Get(ini.ReadString(section, 'do', ''));
@@ -333,6 +334,7 @@ begin
   ini.WriteInteger(section, 'smer', Integer(Self.data.direction));
   if (Self.data.maxSpeed > 0) then
     ini.WriteInteger(section, 'maxRychlost', Self.data.maxSpeed);
+  ini.WriteBool(section, 'odstaven', Self.data.sideTrack);
 
   if (Self.data.areaFrom <> nil) then
     ini.WriteString(section, 'z', TArea(Self.data.areaFrom).id)
@@ -382,6 +384,7 @@ begin
   Result := Result + ownConvert.BoolToStr10(Self.data.announcement) + ';';
   Result := Result + (if (Self.data.maxSpeed <> 0) then IntToStr(Self.data.maxSpeed) else '') + ';';
   Result := Result + (if (Self.front <> nil) then TBlk(Self.front).name else '') + ';';
+  Result := Result + ownConvert.BoolToStr10(Self.data.sideTrack) + ';';
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -406,15 +409,9 @@ begin
     if (train.Count > 8) then
       json['areaTo'] := train[8];
 
-    if (train.Count > 9) then
-      json['announcement'] := (train[9] = '1')
-    else
-      json['announcement'] := TStationAnnouncement.AnnounceTrainType(json.S['type']);
-
-    if ((train.Count > 10) and (train[10] <> '')) then
-      json['maxSpeed'] := StrToInt(train[10])
-    else
-      json['maxSpeed'] := 0;
+    json['announcement'] := (if (train.Count > 9) then (train[9] = '1') else TStationAnnouncement.AnnounceTrainType(json.S['type']));
+    json['maxSpeed'] := (if ((train.Count > 10) and (train[10] <> '')) then StrToInt(train[10]) else 0);
+    json['sideTrack'] := (if (train.Count > 12) then (train[12] = '1') else False);
 
     var vehicles: TStrings := TStringList.Create();
     var vehicle: TStrings := TStringList.Create();
@@ -498,6 +495,8 @@ begin
 
   if (train.Contains('maxSpeed')) then
     Self.data.maxSpeed := StrToInt(train['maxSpeed']);
+  if (train.Contains('sideTrack')) then
+    Self.data.sideTrack := train.B['sideTrack'];
 
   if ((Self.wantedSpeed = 0) and (Self.data.dir_L xor Self.data.dir_S)) then
   begin

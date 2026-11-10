@@ -4379,6 +4379,10 @@ object F_Main: TF_Main
             Caption = 'Stani'#269'n'#237' hl'#225#353'en'#237
           end
           item
+            Alignment = taCenter
+            Caption = 'Odstaven'#253
+          end
+          item
             Caption = 'Najeto metr'#367
           end>
         DoubleBuffered = True
@@ -4400,6 +4404,7 @@ object F_Main: TF_Main
         OnChange = LV_TrainsChange
         OnCustomDrawItem = LV_TrainsCustomDrawItem
         OnKeyDown = LV_TrainsKeyDown
+        ExplicitLeft = 9
       end
       object P_Trains_Bg: TPanel
         Left = 0

@@ -3355,7 +3355,9 @@ begin
   if (Trains[Item.Index].emergencyStopped) then
     (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_RED
   else if (Trains[Item.Index].IsSpeedOverride) then
-    (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW;
+    (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_YELLOW
+  else if (Trains[Item.Index].sideTrack) then
+    (Sender as TCustomListView).Canvas.Brush.Color := _TABLE_COLOR_GRAY;
 end;
 
 procedure TF_Main.LV_TrainsKeyDown(Sender: TObject; var Key: Word;

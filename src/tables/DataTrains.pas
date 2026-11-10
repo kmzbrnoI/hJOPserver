@@ -117,20 +117,12 @@ begin
   end;
 
   Self.LV.Items[line].SubItems[3] := train.note;
-  if (train.dir_L) then
-    Self.LV.Items[line].SubItems[4] := 'L'
-  else
-    Self.LV.Items[line].SubItems[4] := '';
-
+  Self.LV.Items[line].SubItems[4] := (if (train.dir_L) then 'L' else '');
   if (train.dir_S) then
     Self.LV.Items[line].SubItems[4] := Self.LV.Items[line].SubItems[4] + 'S';
 
   Self.LV.Items[line].SubItems[5] := IntToStr(train.carsCount);
-
-  if (train.maxSpeed <> 0) then
-    Self.LV.Items[line].SubItems[6] := IntToStr(train.maxSpeed) + ' km/h'
-  else
-    Self.LV.Items[line].SubItems[6] := '-';
+  Self.LV.Items[line].SubItems[6] := (if (train.maxSpeed <> 0) then IntToStr(train.maxSpeed) + ' km/h' else '-');
 
   Self.LV.Items[line].SubItems[7] := IntToStr(train.speed) + ' km/h';
   if (train.speed <> train.wantedSpeed) then
@@ -145,34 +137,19 @@ begin
   end;
 
   try
-    if (train.Area <> nil) then
-      Self.LV.Items[line].SubItems[9] := (train.Area as TArea).name
-    else
-      Self.LV.Items[line].SubItems[9] := '-';
+    Self.LV.Items[line].SubItems[9] := (if (train.area <> nil) then (train.area as TArea).name else '-');
   except
     Self.LV.Items[line].SubItems[9] := '-';
   end;
 
-  if (train.front <> nil) then
-    Self.LV.Items[line].SubItems[10] := (train.front as TBlk).name
-  else
-    Self.LV.Items[line].SubItems[10] := '-';
-
+  Self.LV.Items[line].SubItems[10] := (if (train.front <> nil) then (train.front as TBlk).name else '-');
   Self.LV.Items[line].SubItems[11] := IntToStr(train.Length);
   Self.LV.Items[line].SubItems[12] := train.typ;
-
-  if (train.areaFrom <> nil) then
-    Self.LV.Items[line].SubItems[13] := TArea(train.areaFrom).name
-  else
-    Self.LV.Items[line].SubItems[13] := '-';
-
-  if (train.areaTo <> nil) then
-    Self.LV.Items[line].SubItems[14] := TArea(train.areaTo).name
-  else
-    Self.LV.Items[line].SubItems[14] := '-';
-
+  Self.LV.Items[line].SubItems[13] := (if (train.areaFrom <> nil) then TArea(train.areaFrom).name else '-');
+  Self.LV.Items[line].SubItems[14] := (if (train.areaTo <> nil) then TArea(train.areaTo).name else '-');
   Self.LV.Items[line].SubItems[15] := ownConvert.BoolToTick(train.announcement);
-  Self.LV.Items[line].SubItems[16] := Format('%.2f', [trains[line].traveled]);
+  Self.LV.Items[line].SubItems[16] := (if (train.sideTrack) then '✓' else '');
+  Self.LV.Items[line].SubItems[17] := Format('%.2f', [trains[line].traveled]);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
