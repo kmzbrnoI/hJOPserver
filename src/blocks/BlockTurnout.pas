@@ -302,7 +302,7 @@ implementation
 
 uses BlockDb, GetSystems, fMain, TJCDatabase, UPO, Graphics, Diagnostics, Math,
   TCPServerPanel, BlockLock, PTUtils, changeEvent, PanelConnData, ownConvert,
-  IfThenElse, RCSErrors, BlockPst, JCBarriers, Config, TechnologieJC, colorHelper, Logging;
+  RCSErrors, BlockPst, JCBarriers, Config, TechnologieJC, colorHelper, Logging;
 
 constructor TBlkTurnout.Create(index: Integer);
 begin
@@ -2015,12 +2015,12 @@ begin
     if (Self.movingPlus) then
       RCSs.SetOutput(Self.m_settings.indication.rcsPlus, osf180)
     else
-      RCSs.SetOutput(Self.m_settings.indication.rcsPlus, ite(Self.position = TTurnoutPosition.plus, 1, 0));
+      RCSs.SetOutput(Self.m_settings.indication.rcsPlus, (if Self.position = TTurnoutPosition.plus then 1 else 0));
 
     if (Self.movingMinus) then
       RCSs.SetOutput(Self.m_settings.indication.rcsMinus, osf180)
     else
-      RCSs.SetOutput(Self.m_settings.indication.rcsMinus, ite(Self.position = TTurnoutPosition.minus, 1, 0));
+      RCSs.SetOutput(Self.m_settings.indication.rcsMinus, (if Self.position = TTurnoutPosition.minus then 1 else 0));
   except
 
   end;

@@ -225,7 +225,7 @@ implementation
 
 uses BlockDb, GetSystems, ownStrUtils, TJCDatabase, TCPServerPanel, RCSIFace, UPO,
   Graphics, PanelConnData, Diagnostics, appEv, ownConvert, Config, timeHelper,
-  BlockTrack, BlockTrackRef, colorHelper, RCSErrors, PTUtils, IfThenElse, TechnologieJC, Logging;
+  BlockTrack, BlockTrackRef, colorHelper, RCSErrors, PTUtils, TechnologieJC, Logging;
 
 constructor TBlkCrossing.Create(index: Integer);
 begin
@@ -922,7 +922,7 @@ begin
     Result := Result + '*ZAVŘENO,*OTEVŘENO,*VÝSTRAHA,';
 
   if ((Self.m_settings.RCSInputs.annulation.enabled) and (RCSs.IsSimulation(Self.m_settings.RCSInputs.annulation.addr))) then
-    Result := Result + ite(RCSs.GetInputNoEx(Self.m_settings.RCSInputs.annulation.addr) = TRCSInputState.isOn, '*ANULACE<', '*ANULACE>');
+    Result := Result + (if RCSs.GetInputNoEx(Self.m_settings.RCSInputs.annulation.addr) = TRCSInputState.isOn then '*ANULACE<' else '*ANULACE>');
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

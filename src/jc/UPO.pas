@@ -8,7 +8,7 @@ unit UPO;
 
 interface
 
-uses Graphics, Generics.Collections, Classes, System.Math, colorHelper, IfThenElse;
+uses Graphics, Generics.Collections, Classes, System.Math, colorHelper;
 
 const
   _UPO_LINES = 3; // pocet radek upozorneni

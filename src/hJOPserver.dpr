@@ -146,7 +146,6 @@ uses
   BlockTrackRefs in 'blocks\BlockTrackRefs.pas',
   AreaLighting in 'areas\AreaLighting.pas',
   PTEndpointTrain in 'pt\PTEndpointTrain.pas',
-  IfThenElse in 'helpers\IfThenElse.pas',
   PTEndpointAreas in 'pt\PTEndpointAreas.pas',
   PTEndpointArea in 'pt\PTEndpointArea.pas',
   BlockDb in 'blocks\BlockDb.pas',

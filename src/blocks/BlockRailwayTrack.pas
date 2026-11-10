@@ -244,7 +244,7 @@ type
 implementation
 
 uses TrainDb, BlockDb, TCPServerPanel, BlockRailway, BlockSignal, TJCDatabase,
-  logging, TechnologieJC, ownStrUtils, TRVDatabase, IfThenElse, ConfSeq, ownConvert;
+  logging, TechnologieJC, ownStrUtils, TRVDatabase, ConfSeq, ownConvert;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -664,7 +664,7 @@ begin
     Result := Result + '-,';
     // pokud neni v zastavce zastaven vlak, lze zastavku vypinat a zapinat
     if (not Self.rtState.stopStopped) then
-      Result := Result + ite(Self.rtState.stopEnabled, 'ZAST<,', 'ZAST>,');
+      Result := Result + (if Self.rtState.stopEnabled then 'ZAST<,' else 'ZAST>,');
   end;
 
   if (Self.bpError) then

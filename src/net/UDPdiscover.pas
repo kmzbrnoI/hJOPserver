@@ -86,7 +86,7 @@ var
 
 implementation
 
-uses TCPServerPanel, ownStrUtils, Logging, USock, IfThenElse, StrUtils;
+uses TCPServerPanel, ownStrUtils, Logging, USock, StrUtils;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -180,7 +180,7 @@ begin
       Self.name + ';' +
       ABinding.IP + ';' +
       IntToStr(Self.binds[ABinding.IP].panelServerPort) + ';' +
-      ite(PanelServer.openned, 'on', 'off') + ';' +
+      (if PanelServer.openned then 'on' else 'off') + ';' +
       Self.description + ';';
 
     var data: TIdBytes := TIdBytes(TEncoding.UTF8.GetBytes(Msg));

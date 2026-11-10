@@ -154,7 +154,7 @@ implementation
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ownStrUtils,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, TRVDatabase, BlockTrack,
   RCSErrors, RCSIFace, PanelConnData, BlockSignal, Logging, BlockDisconnector, ConfSeq,
-  TechnologieJC, colorHelper, IfThenElse, PTUtils;
+  TechnologieJC, colorHelper, PTUtils;
 
 constructor TBlkPst.Create(index: Integer);
 begin
@@ -675,7 +675,7 @@ begin
 
   if (IsWritable(rights)) then
   begin
-    Result := Result + ite(Self.emLock, '!ZAV<,', 'ZAV>,');
+    Result := Result + (If (Self.emLock) then '!ZAV<,' else 'ZAV>,');
 
     if ((RCSs.IsSimulation(Self.m_settings.rcsInTake)) and (RCSs.IsSimulation(Self.m_settings.rcsInRelease))) then
     begin

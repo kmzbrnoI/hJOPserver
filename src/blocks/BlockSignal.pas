@@ -346,7 +346,7 @@ implementation
 uses BlockDb, BlockTrack, TJCDatabase, TCPServerPanel, Graphics, BlockGroupSignal,
   GetSystems, Logging, TrainDb, BlockIR, AreaStack, ownStrUtils, BlockPst,
   BlockRailwayTrack, BlockRailway, BlockTurnout, BlockLock, TechnologieAB,
-  predvidanyOdjezd, ownConvert, RCSIFace, IfThenElse, RCSErrors, UPO, PanelConnData,
+  predvidanyOdjezd, ownConvert, RCSIFace, RCSErrors, UPO, PanelConnData,
   TrainSpeed, ConfSeq, PTUtils, timeHelper, Config, colorHelper;
 
 constructor TBlkSignal.Create(index: Integer);
@@ -1254,7 +1254,7 @@ begin
       var ir: TBlkIR := Blocks.GetBlkIrByID(Self.m_settings.events[0].stop.data.irId);
       if (ir = nil) then
         Exit();
-      RCSs.SetInput(ir.GetSettings().RCSAddr, ite(enabled, 1, 0));
+      RCSs.SetInput(ir.GetSettings().RCSAddr, (if enabled then 1 else 0));
     end;
   except
     PanelServer.BottomError(SenderPnl, 'Nepodařilo se nastavit stav IR čidla!', TArea(SenderOR).ShortName, 'SIMULACE');
@@ -2598,7 +2598,7 @@ begin
       RCSs.SetOutput(Self.m_settings.PSt.rcsIndicationShunt, TRCSOutputState.osf240)
     else
       RCSs.SetOutput(Self.m_settings.PSt.rcsIndicationShunt,
-        ite((Self.signal = ncPosunZaj) or (Self.signal = ncPosunNezaj), 1, 0));
+        (if ((Self.signal = ncPosunZaj) or (Self.signal = ncPosunNezaj)) then 1 else 0));
   except
 
   end;
@@ -2620,7 +2620,7 @@ end;
 
 class function TBlkSignal.DefaultChangeTime(hasRCSoutput: Boolean): string;
 begin
-  Result := ite(hasRCSoutput, _SIG_DEFAULT_CHANGE_DELAY_OUTPUT, _SIG_DEFAULT_CHANGE_DELAY_NO_OUTPUT);
+  Result := (if hasRCSoutput then _SIG_DEFAULT_CHANGE_DELAY_OUTPUT else _SIG_DEFAULT_CHANGE_DELAY_NO_OUTPUT);
 end;
 
 function TBlkSignal.DefaultChangeTime(): string;

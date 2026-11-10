@@ -32,7 +32,7 @@ var
 
 implementation
 
-uses RCSIFace, IfThenElse;
+uses RCSIFace;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -157,7 +157,7 @@ begin
   end;
 
 
-  LI.SubItems[0] := ite(rcs.GetNeeded(addr), 'X', '');
+  LI.SubItems[0] := (if rcs.GetNeeded(addr) then 'X' else '');
 
   try
     if (rcs.IsModule(addr)) then

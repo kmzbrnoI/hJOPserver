@@ -50,7 +50,7 @@ var
 implementation
 
 uses UserDb, user, TCPServerPanel, TrakceC, TRVDatabase, TrainDb, PanelConnData, Logging,
-  fRegulator, fMain, Area, AreaDb, ownConvert, IfThenElse, GUIPanelServerClients;
+  fRegulator, fMain, Area, AreaDb, ownConvert, GUIPanelServerClients;
 
 /// /////////////////////////////////////////////////////////////////////////////
 // parsing dat s prefixem "-;LOK;"
@@ -532,7 +532,7 @@ end;
 procedure TTCPRegulator.VehicleUpdateRuc(vehicle: TRV);
 begin
   for var i := 0 to vehicle.state.regulators.Count - 1 do
-    PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) + ';TOTAL;' + ite(vehicle.manual, '1', '0'));
+    PanelServer.SendLn(vehicle.state.regulators[i].conn, '-;LOK;' + IntToStr(vehicle.addr) + ';TOTAL;' + (if vehicle.manual then '1' else '0'));
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
@@ -596,7 +596,7 @@ begin
   end else begin
     // odpoved na pozadavek o autorizaci rizeni vozidla
     // kdyz vozidlo prebirame, je odesilana automaticky
-    var typ: string := ite(vehicle.manual, 'total', 'ok');
+    var typ: string := (if vehicle.manual then 'total' else 'ok');
     PanelServer.SendLn(Regulator, '-;LOK;' + IntToStr(vehicle.addr) + ';AUTH;' + typ + ';{' + vehicle.GetPanelVehicleString() + '}')
   end;
 

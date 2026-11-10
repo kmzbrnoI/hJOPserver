@@ -124,7 +124,7 @@ implementation
 
 uses GetSystems, RCSc, BlockDb, UPO, Graphics, Train, ownConvert, TrainDb,
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, AreaStack, BlockTrack,
-  Logging, ConfSeq, TechnologieJC, colorHelper, IfThenElse;
+  Logging, ConfSeq, TechnologieJC, colorHelper;
 
 constructor TBlkLinker.Create(index: Integer);
 begin
@@ -475,7 +475,7 @@ begin
     if (RightStr(Result, 2) <> '-,') then
       Result := Result + '-,';
 
-    Result := Result + ite(Self.emLock, '!ZAV<,', 'ZAV>,');
+    Result := Result + (if Self.emLock then '!ZAV<,' else 'ZAV>,');
 
     if (Self.CanZAKOff()) then
       Result := Result + '!ZAK<,'

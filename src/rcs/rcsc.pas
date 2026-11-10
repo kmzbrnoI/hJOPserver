@@ -140,7 +140,7 @@ function RCSAddrComparer(): IComparer<TRCSAddr>;
 implementation
 
 uses fMain, diagnostics, GetSystems, BlockDb, Block, BlockTurnout, BlockTrack,
-  BoosterDb, BlockCrossing, AreaDb, IfThenElse, RCSsc,
+  BoosterDb, BlockCrossing, AreaDb, RCSsc,
   TCPServerPanel, TrainDb, DataRCS, appEv, Booster, StrUtils, fTester;
 
 constructor TRCS.Create(systemI: Cardinal);

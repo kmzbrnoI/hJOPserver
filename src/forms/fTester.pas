@@ -90,7 +90,7 @@ var
 
 implementation
 
-uses Logging, RCSIFace, BlockSignal, RCSErrors, IfThenElse, ownGuiUtils;
+uses Logging, RCSIFace, BlockSignal, RCSErrors, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -217,19 +217,19 @@ begin
     state := Self.rcs.GetInputNoEx(Self.RCSModuleInputs, i);
 
     if (state = TRCSInputState.isOn) then begin
-      Self.inputs[i].panel.Color := ite(Self.inputs[i].shape.Brush.Color = clRed, clYellow, clBtnFace);
+      Self.inputs[i].panel.Color := (if Self.inputs[i].shape.Brush.Color = clRed then clYellow else clBtnFace);
       Self.inputs[i].shape.Brush.Color := clLime;
       Self.inputs[i].value.Caption := 'on';
     end else if (state = TRCSInputState.isOff) then begin
-      Self.inputs[i].panel.Color := ite(Self.inputs[i].shape.Brush.Color = clLime, clYellow, clBtnFace);
+      Self.inputs[i].panel.Color := (if Self.inputs[i].shape.Brush.Color = clLime then clYellow else clBtnFace);
       Self.inputs[i].shape.Brush.Color := clRed;
       Self.inputs[i].value.Caption := 'off';
     end else if (state = TRCSInputState.notYetScanned) then begin
-      Self.inputs[i].panel.Color := ite(Self.inputs[i].shape.Brush.Color <> clSilver, clYellow, clBtnFace);
+      Self.inputs[i].panel.Color := (if Self.inputs[i].shape.Brush.Color <> clSilver then clYellow else clBtnFace);
       Self.inputs[i].shape.Brush.Color := clSilver;
       Self.inputs[i].value.Caption := 'NYS';
     end else begin
-      Self.inputs[i].panel.Color := ite(Self.inputs[i].shape.Brush.Color <> clGray, clYellow, clBtnFace);
+      Self.inputs[i].panel.Color := (if Self.inputs[i].shape.Brush.Color <> clGray then clYellow else clBtnFace);
       Self.inputs[i].shape.Brush.Color := clGray;
       Self.inputs[i].value.Caption := '-';
     end;
@@ -258,10 +258,10 @@ begin
 
     if (typ = optSCom) then
     begin
-      Self.outputs[i].shape.Brush.Color := ite(state = osDisabled, clBlue, clWhite);
+      Self.outputs[i].shape.Brush.Color := (if state = osDisabled then clBlue else clWhite);
       Self.outputs[i].value.Caption := IntToStr(Integer(state));
     end else begin
-      Self.outputs[i].shape.Brush.Color := ite(state = osDisabled, clRed, clLime);
+      Self.outputs[i].shape.Brush.Color := (if state = osDisabled then clRed else clLime);
       if (state = osDisabled) then
         Self.outputs[i].value.Caption := 'off'
       else if (state = osEnabled) then

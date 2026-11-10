@@ -102,7 +102,7 @@ implementation
 
 uses GetSystems, BlockDb, Graphics, Diagnostics, ownConvert, ConfSeq, TechnologieJC,
   TJCDatabase, fMain, TCPServerPanel, TrainDb, TRVDatabase, BlockTurnout, colorHelper,
-  IfThenElse, Logging;
+  Logging;
 
 constructor TBlkLock.Create(index: Integer);
 begin
@@ -272,7 +272,7 @@ begin
       if (not Self.keyReleased) then
         Result := Result + 'UK,';
 
-    Result := Result + ite(Self.emLock, '!ZAV<,', 'ZAV>,');
+    Result := Result + (if Self.emLock then '!ZAV<,' else 'ZAV>,');
   end;
 
   if ((IsWritable(rights)) or (Self.note <> '')) then

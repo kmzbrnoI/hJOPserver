@@ -131,7 +131,7 @@ type
 
 implementation
 
-uses TCPServerPanel, ownConvert, Graphics, PTUtils, IfThenElse, BlockPst,
+uses TCPServerPanel, ownConvert, Graphics, PTUtils, BlockPst,
     RCSErrors, UPO, timeHelper, colorHelper, PanelConnData;
 
 constructor TBlkDisconnector.Create(index: Integer);

@@ -52,7 +52,7 @@ implementation
 
 {$R *.dfm}
 
-uses ownConvert, TrainDb, IfThenElse, ownGuiUtils;
+uses ownConvert, TrainDb, ownGuiUtils;
 
 procedure TF_BlkRailwayState.B_Train_AddClick(Sender: TObject);
 begin
@@ -131,7 +131,7 @@ begin
   for train in railway.state.Trains do
     Self.E_Trains.Text := Self.E_Trains.Text + IntToStr(train.train.index) + ',';
 
-  Self.L_BP.Caption := ite(railway.BP, 'zavedena', 'nezavedena');
+  Self.L_BP.Caption := (if railway.BP then 'zavedena' else 'nezavedena');
   Self.B_BP_Enable.Enabled := not railway.BP;
   Self.B_BP_Disable.Enabled := railway.BP;
 end;

@@ -313,7 +313,7 @@ uses GetSystems, BlockDb, BlockSignal, Logging, RCSIFace, ownStrUtils, Diagnosti
   TJCDatabase, fMain, TCPServerPanel, BlockRailway, TrainDb, TRVDatabase, Math,
   TRailVehicle, BlockRailwayTrack, BoosterDb, appEv, StrUtils, UPO, TrakceIFace,
   announcementHelper, TechnologieJC, PTUtils, RegulatorTCP, PanelConnData, ConfSeq,
-  Graphics, ownConvert, TrakceC, TMultiJCDatabase, BlockPst, IfThenElse,
+  Graphics, ownConvert, TrakceC, TMultiJCDatabase, BlockPst,
   colorHelper, Config, RCSErrors;
 
 constructor TBlkTrack.Create(index: Integer);
@@ -1658,11 +1658,11 @@ begin
   if (bst <> nil) then
   begin
     if ((bst.isOverloadDetection) and (RCSs.IsSimulation(bst.settings.rcs.overload.addr.addr.system))) then
-      Result := Result + ite(bst.overload = TBoosterSignal.ok, '*ZES zkrat>,', '*ZES zkrat<,');
+      Result := Result + (if bst.overload = TBoosterSignal.ok then '*ZES zkrat>,' else '*ZES zkrat<,');
     if ((bst.isPowerDetection) and (RCSs.IsSimulation(bst.settings.rcs.power.addr.addr.system))) then
-      Result := Result + ite(bst.power = TBoosterSignal.ok, '*ZES nap<,', '*ZES nap>,');
+      Result := Result + (if bst.power = TBoosterSignal.ok then '*ZES nap<,' else '*ZES nap>,');
     if ((bst.isDCCdetection) and (RCSs.IsSimulation(bst.settings.rcs.dcc.addr.addr.system))) then
-      Result := Result + ite(bst.DCC = TBoosterSignal.ok, '*ZES DCC<,', '*ZES DCC>,');
+      Result := Result + (if bst.DCC = TBoosterSignal.ok then '*ZES DCC<,' else '*ZES DCC>,');
   end;
 end;
 
@@ -2583,7 +2583,7 @@ begin
     TTrackState.disabled:
       fg := TJopColor.purple;
     TTrackState.none, TTrackState.free:
-      fg := ite(Self.PstIs(), TJopColor.blue, TJopColor.grayDark);
+      fg := (if Self.PstIs() then TJopColor.blue else TJopColor.grayDark);
     TTrackState.occupied:
       fg := TJopColor.red;
   else

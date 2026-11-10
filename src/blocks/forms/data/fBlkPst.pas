@@ -137,8 +137,7 @@ var
 
 implementation
 
-uses BlockDb, Block, Area, DataBloky, IfThenElse, BlockTurnout, RCSc, RCSsc,
-  ownGuiUtils;
+uses BlockDb, Block, Area, DataBloky, BlockTurnout, RCSc, RCSsc, ownGuiUtils;
 
 {$R *.dfm}
 
@@ -637,7 +636,7 @@ begin
         if (Self.CB_RefugeeItems[i] = id) then
         begin
           Self.CB_Ref_Block.ItemIndex := i;
-          Self.CB_Ref_Pos.ItemIndex := ite(Self.LV_Refugees.Selected.SubItems[2] = '+', 0, 1);
+          Self.CB_Ref_Pos.ItemIndex := If (Self.LV_Refugees.Selected.SubItems[2] = '+') then 0 else 1;
         end;
       end;
     end;

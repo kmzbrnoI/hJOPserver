@@ -305,7 +305,7 @@ implementation
 
 uses ownStrUtils, AreaDb, TRVDatabase, TrainDb, DataRV, fRegulator, BlockDb,
   RegulatorTCP, fMain, PTUtils, TCPServerPanel, appEv, Logging, TrakceC,
-  ownConvert, BlockSignal, IfThenElse, PanelConnData, Config;
+  ownConvert, BlockSignal, PanelConnData, Config;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -435,7 +435,7 @@ begin
 
   Self.data.POMautomat.Free();
   try
-    var sectAut: string := ite(ini.ValueExists(section, 'pom_automat'), 'pom_automat', 'pom_take'); // backward compatibility
+    var sectAut: string := (if ini.ValueExists(section, 'pom_automat') then 'pom_automat' else 'pom_take'); // backward compatibility
     Self.data.POMautomat := Poms(ini.ReadString(section, sectAut, ''));
   except
     Self.data.POMautomat := TList<TRVPomCV>.Create();
@@ -444,7 +444,7 @@ begin
 
   Self.data.POMmanual.Free();
   try
-    var sectMan: string := ite(ini.ValueExists(section, 'pom_manual'), 'pom_manual', 'pom_release'); // backward compatibility
+    var sectMan: string := (if ini.ValueExists(section, 'pom_manual') then 'pom_manual' else 'pom_release'); // backward compatibility
     Self.data.POMmanual := Poms(ini.ReadString(section, sectMan, ''));
   except
     Self.data.POMmanual := TList<TRVPomCV>.Create();
@@ -529,7 +529,7 @@ begin
       POMmanual := POMmanual + '(' + IntToStr(pom.cv) + ',' + IntToStr(pom.value) + ')';
     ini.WriteString(addr, 'pom_manual', POMmanual);
 
-    ini.WriteString(addr, 'pom_release', ite(Self.data.POMrelease = TPomStatus.automat, 'automat', 'manual'));
+    ini.WriteString(addr, 'pom_release', (if Self.data.POMrelease = TPomStatus.automat then 'automat' else 'manual'));
 
     // vyznam funkci
     var funcDesc: string := '';
@@ -682,7 +682,7 @@ begin
 
   Result := Result + IntToStr(Self.data.maxSpeed) + '|';
   Result := Result + IntToStr(Self.data.transience) + '|';
-  Result := Result + ite(Self.data.POMrelease = TPomStatus.manual, 'manual', 'automat') + '|';
+  Result := Result + (if Self.data.POMrelease = TPomStatus.manual then 'manual' else 'automat') + '|';
   Result := Result + ownConvert.BoolToStr10(Self.data.multitrackCapable) + '|';
 end;
 
@@ -1057,7 +1057,7 @@ begin
   for var pom: TRVPomCV in Self.data.POMmanual do
     json.A['POMmanual'].Add(Self.PomToJson(pom));
   if ((Self.data.POMautomat.Count > 0) or (Self.data.POMmanual.Count > 0)) then
-    json['POMrelease'] := ite(Self.data.POMrelease = TPomStatus.automat, 'automat', 'manual');
+    json['POMrelease'] := (if Self.data.POMrelease = TPomStatus.automat then 'automat' else 'manual');
 
   if (includeState) then
     Self.GetPtState(json['lokState']);
@@ -1067,9 +1067,9 @@ procedure TRV.GetPtState(json: TJsonObject);
 begin
   json['speedStep'] := Self.speedStep;
   json['realSpeed'] := Self.realSpeed;
-  json['direction'] := ite(Self.direction, 'backward', 'forward');
+  json['direction'] := (if Self.direction then 'backward' else 'forward');
   json.F['continuousSpeed'] := Self.continuousSpeed;
-  json['continuousDirection'] := ite(Self.continuousDirection, 'backward', 'forward');
+  json['continuousDirection'] := (if Self.continuousDirection then 'backward' else 'forward');
 
   var funcState: string := '';
   for var i: Integer := 0 to _RV_FUNC_MAX do
@@ -1661,7 +1661,7 @@ begin
 
   // odesleme do regulatoru info o uspesne autorizaci
   // to je dobre tehdy, kdyz je vozidlo prebirano z centraly
-  var state: string := ite(Self.manual, 'total', 'ok');
+  var state: string := (if Self.manual then 'total' else 'ok');
   Self.BroadcastRegulators('AUTH;' + state + ';{' + Self.GetPanelVehicleString() + '}');
 
   Self.CallCb(Self.acquiredOk);

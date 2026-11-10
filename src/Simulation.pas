@@ -53,7 +53,7 @@ implementation
 
 uses GetSystems, RCSc, TJCDatabase, Block, BlockTrack, BlockDb, BlockSignal,
   BlockRailwayTrack, BlockTurnout, RCSsc, Booster, BoosterDb, BlockCrossing,
-  Diagnostics, IfThenElse;
+  Diagnostics;
 
 /// /////////////////////////////////////////////////////////////////////////////
 // simulator obsazovani useku v jizdni ceste
@@ -291,11 +291,11 @@ begin
   begin
     try
       if ((booster.isPowerDetection) and (RCSs.IsSimulation(booster.settings.rcs.power.addr.addr.system))) then
-        RCSs.SetInput(Booster.settings.rcs.power.addr.addr, ite(booster.settings.rcs.power.reversed, 0, 1));
+        RCSs.SetInput(Booster.settings.rcs.power.addr.addr, if booster.settings.rcs.power.reversed then 0 else 1);
       if ((booster.isOverloadDetection) and (RCSs.IsSimulation(booster.settings.rcs.overload.addr.addr.system))) then
-        RCSs.SetInput(Booster.settings.rcs.overload.addr.addr, ite(booster.settings.rcs.overload.reversed, 1, 0));
+        RCSs.SetInput(Booster.settings.rcs.overload.addr.addr, if booster.settings.rcs.overload.reversed then 1 else 0);
       if ((booster.isDCCdetection) and (RCSs.IsSimulation(booster.settings.rcs.DCC.addr.addr.system))) then
-        RCSs.SetInput(Booster.settings.rcs.DCC.addr.addr, ite(booster.settings.rcs.DCC.reversed, 0, 1));
+        RCSs.SetInput(Booster.settings.rcs.DCC.addr.addr, if booster.settings.rcs.DCC.reversed then 0 else 1);
     except
 
     end;
@@ -320,7 +320,7 @@ begin
     if ((booster.settings.rcs.DCC.addr.enabled) and (RCSs.IsSimulation(booster.settings.rcs.DCC.addr.addr.system))) then
     begin
       try
-        RCSs.SetInput(booster.settings.rcs.DCC.addr.addr, ite(booster.settings.rcs.DCC.reversed xor dcc, 1, 0));
+        RCSs.SetInput(booster.settings.rcs.DCC.addr.addr, if (booster.settings.rcs.DCC.reversed xor dcc) then 1 else 0);
       except
 
       end;

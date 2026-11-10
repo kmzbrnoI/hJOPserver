@@ -141,7 +141,7 @@ type
 
 implementation
 
-uses BlockDb, DataBloky, appEv, ownStrUtils, Diagnostics, Config, IfThenElse;
+uses BlockDb, DataBloky, appEv, ownStrUtils, Diagnostics, Config;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -371,7 +371,7 @@ end;
 
 function TBlk.MenuTopItemsCount(): Integer;
 begin
-  Result := ite(diag.showBlockId, 3, 2);
+  Result := (if diag.showBlockId then 3 else 2);
 end;
 
 procedure TBlk.PanelClick(SenderPnl: TIdContext; SenderOR: TObject; Button: TPanelButton; rights: TAreaRights;

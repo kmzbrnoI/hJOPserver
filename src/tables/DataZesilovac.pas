@@ -26,7 +26,7 @@ var
 
 implementation
 
-uses Booster, BoosterDb, IfThenElse;
+uses Booster, BoosterDb;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
@@ -52,15 +52,15 @@ begin
     LI.Caption := Booster.id;
     LI.SubItems.Add(Booster.name);
     if (Booster.settings.rcs.overload.addr.enabled) then
-      LI.SubItems.Add(ite(Booster.settings.rcs.overload.reversed, '! ', '') + Booster.settings.rcs.overload.addr.addr.ToString())
+      LI.SubItems.Add((if Booster.settings.rcs.overload.reversed then '! ' else '') + Booster.settings.rcs.overload.addr.addr.ToString())
     else
       LI.SubItems.Add('-');
     if (Booster.settings.rcs.power.addr.enabled) then
-      LI.SubItems.Add(ite(Booster.settings.rcs.power.reversed, '! ', '') + Booster.settings.rcs.power.addr.addr.ToString())
+      LI.SubItems.Add((if Booster.settings.rcs.power.reversed then '! ' else '') + Booster.settings.rcs.power.addr.addr.ToString())
     else
       LI.SubItems.Add('-');
     if (Booster.settings.rcs.DCC.addr.enabled) then
-      LI.SubItems.Add(ite(Booster.settings.rcs.DCC.reversed, '! ', '') + Booster.settings.rcs.DCC.addr.addr.ToString())
+      LI.SubItems.Add((if Booster.settings.rcs.DCC.reversed then '! ' else '') + Booster.settings.rcs.DCC.addr.addr.ToString())
     else
       LI.SubItems.Add('-');
   end;

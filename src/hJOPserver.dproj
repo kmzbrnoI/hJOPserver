@@ -367,7 +367,6 @@
         <DCCReference Include="blocks\BlockTrackRefs.pas"/>
         <DCCReference Include="areas\AreaLighting.pas"/>
         <DCCReference Include="pt\PTEndpointTrain.pas"/>
-        <DCCReference Include="helpers\IfThenElse.pas"/>
         <DCCReference Include="pt\PTEndpointAreas.pas"/>
         <DCCReference Include="pt\PTEndpointArea.pas"/>
         <DCCReference Include="blocks\BlockDb.pas"/>
@@ -476,6 +475,12 @@
             </Platforms>
             <Deployment Version="5">
                 <DeployFile LocalName="..\x86-64\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput"/>
+                <DeployFile LocalName="..\x86-64\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>hJOPserver.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\x86-64\output\hJOPserver.exe" Configuration="Release" Class="ProjectOutput"/>
                 <DeployFile LocalName="..\x86\output\hJOPserver.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployClass Name="AdditionalDebugSymbols">

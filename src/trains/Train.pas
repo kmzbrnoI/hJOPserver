@@ -212,7 +212,7 @@ implementation
 uses TRVDatabase, ownStrUtils, TrainDb, BlockTrack, appEv,
       DataRV, AreaDb, TCPServerPanel, BlockDb, BlockSignal, blockRailway,
       fRegulator, fMain, BlockRailwayTrack, announcementHelper, announcement,
-      TrakceC, ownConvert, TJCDatabase, TechnologieJC, IfThenElse,
+      TrakceC, ownConvert, TJCDatabase, TechnologieJC,
       PanelConnData, JCBarriers, Config;
 
 ////////////////////////////////////////////////////////////////////////////////
