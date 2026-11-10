@@ -1671,17 +1671,20 @@ begin
     else
       speed := Self.JCSpeed(slowTrain);
 
-    if ((speed <> -1) and (slowTrain.wantedSpeed > speed)) then
+    if (speed <> -1) then
     begin
       if (not signalEv.slow.ev.enabled) then
         signalEv.slow.ev.Register(slowTrain.index);
 
       if (signalEv.slow.ev.IsTriggerred(slowTrack, true)) then
       begin
-        Self.Log('Zpomaluji vlak ' + slowTrain.name + ' v='+IntToStr(speed)+' km/h '+
-          IfThen(stopping, 'před zastavením', 'na rychlost navazující VC') + ' - událost ' + signalEv.ToReprStr() + ' ' + signalEv.slow.ev.GetReprStr(), TLogLevel.llInfo);
         signalEv.slow.ev.Unregister();
-        slowTrain.speed := speed;
+        if (slowTrain.wantedSpeed > speed) then // intentionally nested if so slowingReady := false is set for TTrain.GetTrackSpeed
+        begin
+          Self.Log('Zpomaluji vlak ' + slowTrain.name + ' v='+IntToStr(speed)+' km/h '+
+            IfThen(stopping, 'před zastavením', 'na rychlost navazující VC') + ' - událost ' + signalEv.ToReprStr() + ' ' + signalEv.slow.ev.GetReprStr(), TLogLevel.llInfo);
+          slowTrain.speed := speed;
+        end;
         slowTrack.slowingReady := false;
       end;
     end else begin

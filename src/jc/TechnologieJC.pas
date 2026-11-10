@@ -2587,7 +2587,7 @@ begin
   if (train = nil) then
     Exit();
 
-  trackNext.slowingReady := true;
+  trackNext.slowingReady := If Self.destroyBlock = 0 then True else trackActual.slowingReady;
   trackNext.AddTrainL(train);
   train.front := trackNext;
   trackNext.houkEvEnabled := true;
