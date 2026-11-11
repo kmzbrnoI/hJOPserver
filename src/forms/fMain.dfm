@@ -4420,20 +4420,20 @@ object F_Main: TF_Main
         ParentBackground = False
         TabOrder = 1
         object E_TrainNumSearch: TEdit
-          Left = 326
+          Left = 427
           Top = 9
           Width = 83
           Height = 21
-          TabOrder = 2
+          TabOrder = 3
           OnKeyPress = E_TrainNumSearchKeyPress
         end
         object B_TrainSearch: TButton
-          Left = 418
+          Left = 519
           Top = 7
           Width = 75
           Height = 25
           Caption = 'Hledat vlak'
-          TabOrder = 3
+          TabOrder = 4
           OnClick = B_TrainSearchClick
         end
         object E_dataload_soupr: TEdit
@@ -4475,6 +4475,26 @@ object F_Main: TF_Main
           ParentFont = False
           TabOrder = 1
           OnClick = B_train_deleteClick
+        end
+        object B_TrainEmStop: TButton
+          Left = 318
+          Top = 7
+          Width = 97
+          Height = 25
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Caption = 'Nouzov'#283' zastavit'
+          Enabled = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 2
+          OnClick = B_TrainEmStopClick
         end
       end
     end

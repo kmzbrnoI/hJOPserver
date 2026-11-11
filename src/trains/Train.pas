@@ -99,6 +99,7 @@ type
      function GetMaxSpeed(): Cardinal;
      function GetMaxSpeedStep(): Cardinal;
      function IsOnlyInRailway(): Boolean;
+     function IsAcquired(): Boolean;
 
      procedure UpdateTrainFromJson(train: TJsonObject; ok: TCb; err: TCb);
      class procedure PtRVsListToDict(train: TJsonObject);
@@ -201,6 +202,7 @@ type
      property emergencyStopped: Boolean read _emergencyStopped;
      property traveled: Real read _traveled;
      property continuousSpeed: Real read _continuousSpeed;
+     property acquired: Boolean read IsAcquired;
 
      // uvolni stara vozidla z vlaku (pri zmene RV na vlaku)
      class procedure UvolV(old: TTrainRVs; new: TTrainRVs);
@@ -1692,6 +1694,16 @@ begin
     Self.changed := true;
     Self._nextTraveledChange := Now + EncodeTime(0, 0, _TRAVELED_REFRESH_PERIOD_MS div 1000, _TRAVELED_REFRESH_PERIOD_MS mod 1000);
   end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TTrain.IsAcquired(): Boolean;
+begin
+  for var addr in Self.vehicles do
+    if (not RVDb[addr].acquired) then
+      Exit(False);
+  Result := True;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////

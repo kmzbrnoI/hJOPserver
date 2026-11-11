@@ -320,6 +320,7 @@ type
     B_TrainSearch: TButton;
     E_dataload_soupr: TEdit;
     B_train_delete: TButton;
+    B_TrainEmStop: TButton;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -462,6 +463,7 @@ type
     procedure MI_ExitAppClick(Sender: TObject);
     procedure B_TrainSearchClick(Sender: TObject);
     procedure E_TrainNumSearchKeyPress(Sender: TObject; var Key: Char);
+    procedure B_TrainEmStopClick(Sender: TObject);
 
   public const
     _SB_LOG = 0;
@@ -2614,6 +2616,13 @@ begin
   end;
 end;
 
+procedure TF_Main.B_TrainEmStopClick(Sender: TObject);
+begin
+  for var item: TListItem in Self.LV_Trains.Items do
+    if ((item.Selected) and (item.Caption <> '') and (Trains[item.Index].acquired)) then
+      Trains[item.Index].EmergencyStop();
+end;
+
 procedure TF_Main.B_TrainSearchClick(Sender: TObject);
 begin
   Self.LV_Trains.Selected := nil;
@@ -3318,12 +3327,7 @@ procedure TF_Main.LV_MultiJCCustomDrawItem(Sender: TCustomListView; Item: TListI
   var DefaultDraw: Boolean);
 begin
   if (Item.SubItems.Count >= 4) then
-  begin
-    if (Item.SubItems[1] <> '0') then
-      Self.LV_MultiJC.Canvas.Brush.Color := _TABLE_COLOR_YELLOW
-    else
-      Self.LV_MultiJC.Canvas.Brush.Color := _TABLE_COLOR_WHITE;
-  end;
+    Self.LV_MultiJC.Canvas.Brush.Color := if (Item.SubItems[1] <> '0') then _TABLE_COLOR_YELLOW else _TABLE_COLOR_WHITE;
 end;
 
 procedure TF_Main.LV_MultiJCDblClick(Sender: TObject);
@@ -3348,11 +3352,8 @@ end;
 procedure TF_Main.LV_TrainsChange(Sender: TObject; Item: TListItem; Change: TItemChange);
 begin
   Self.B_train_delete.Enabled := (Self.TrainsSelectedCount() > 0);
-
-  if (Self.TrainsSelectedCount() > 1) then
-    Self.B_train_delete.Caption := 'Smazat vlaky'
-  else
-    Self.B_train_delete.Caption := 'Smazat vlak';
+  Self.B_TrainEmStop.Enabled := (Self.TrainsSelectedCount() > 0);
+  Self.B_train_delete.Caption := if (Self.TrainsSelectedCount() > 1) then 'Smazat vlaky' else 'Smazat vlak';
 end;
 
 procedure TF_Main.LV_TrainsCustomDrawItem(Sender: TCustomListView;
