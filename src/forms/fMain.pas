@@ -113,8 +113,6 @@ type
     TS_Trains: TTabSheet;
     LV_Trains: TListView;
     P_Trains_Bg: TPanel;
-    P_Trains_Left: TPanel;
-    E_dataload_soupr: TEdit;
     TS_Areas: TTabSheet;
     LV_Areas: TListView;
     P_Areas_Bg: TPanel;
@@ -215,7 +213,6 @@ type
     B_BlkDelete: TButton;
     B_RV_Add: TButton;
     B_RV_Delete: TButton;
-    B_train_delete: TButton;
     B_RVStats_Export: TButton;
     B_RVStats_Clear: TButton;
     B_zes_add: TButton;
@@ -319,6 +316,10 @@ type
     LV_LogSourcesFile: TListView;
     Label19: TLabel;
     LV_LogSourcesTable: TListView;
+    E_TrainNumSearch: TEdit;
+    B_TrainSearch: TButton;
+    E_dataload_soupr: TEdit;
+    B_train_delete: TButton;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -459,6 +460,8 @@ type
     procedure CHB_RCS0_LogClick(Sender: TObject);
     procedure MI_SaveVehiclesClick(Sender: TObject);
     procedure MI_ExitAppClick(Sender: TObject);
+    procedure B_TrainSearchClick(Sender: TObject);
+    procedure E_TrainNumSearchKeyPress(Sender: TObject; var Key: Char);
 
   public const
     _SB_LOG = 0;
@@ -2611,6 +2614,12 @@ begin
   end;
 end;
 
+procedure TF_Main.B_TrainSearchClick(Sender: TObject);
+begin
+  Self.LV_Trains.Selected := nil;
+  Self.LV_Trains.ItemIndex := trains.GetTrainIndexByName(Self.E_TrainNumSearch.Text);
+end;
+
 procedure TF_Main.B_JC_ResetClick(Sender: TObject);
 var jc: TJC;
 begin
@@ -3822,6 +3831,12 @@ begin
   Self.B_JC_Reset.Enabled := false;
   Self.B_RemoveStack.Enabled := false;
   Self.B_mJC_Remove.Enabled := false;
+end;
+
+procedure TF_Main.E_TrainNumSearchKeyPress(Sender: TObject; var Key: Char);
+begin
+  if (Key = #13) then
+    Self.B_TrainSearchClick(Self);
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////

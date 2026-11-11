@@ -4404,7 +4404,6 @@ object F_Main: TF_Main
         OnChange = LV_TrainsChange
         OnCustomDrawItem = LV_TrainsCustomDrawItem
         OnKeyDown = LV_TrainsKeyDown
-        ExplicitLeft = 9
       end
       object P_Trains_Bg: TPanel
         Left = 0
@@ -4420,59 +4419,62 @@ object F_Main: TF_Main
         Color = clWhite
         ParentBackground = False
         TabOrder = 1
-        object P_Trains_Left: TPanel
-          Left = 0
-          Top = 0
-          Width = 321
-          Height = 40
+        object E_TrainNumSearch: TEdit
+          Left = 326
+          Top = 9
+          Width = 83
+          Height = 21
+          TabOrder = 2
+          OnKeyPress = E_TrainNumSearchKeyPress
+        end
+        object B_TrainSearch: TButton
+          Left = 418
+          Top = 7
+          Width = 75
+          Height = 25
+          Caption = 'Hledat vlak'
+          TabOrder = 3
+          OnClick = B_TrainSearchClick
+        end
+        object E_dataload_soupr: TEdit
+          Left = 9
+          Top = 9
+          Width = 197
+          Height = 21
+          Hint = 'cesta k souboru souprav'
           Margins.Left = 2
           Margins.Top = 2
           Margins.Right = 2
           Margins.Bottom = 2
-          Align = alLeft
-          BevelOuter = bvNone
-          Color = clWhite
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
+          ParentColor = True
+          ParentFont = False
+          ReadOnly = True
           TabOrder = 0
-          object E_dataload_soupr: TEdit
-            Left = 9
-            Top = 9
-            Width = 197
-            Height = 21
-            Hint = 'cesta k souboru souprav'
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentColor = True
-            ParentFont = False
-            ReadOnly = True
-            TabOrder = 0
-          end
-          object B_train_delete: TButton
-            Left = 214
-            Top = 7
-            Width = 97
-            Height = 25
-            Margins.Left = 2
-            Margins.Top = 2
-            Margins.Right = 2
-            Margins.Bottom = 2
-            Caption = 'Smazat vlak'
-            Enabled = False
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -11
-            Font.Name = 'MS Sans Serif'
-            Font.Style = []
-            ParentFont = False
-            TabOrder = 1
-            OnClick = B_train_deleteClick
-          end
+        end
+        object B_train_delete: TButton
+          Left = 214
+          Top = 7
+          Width = 97
+          Height = 25
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          Caption = 'Smazat vlak'
+          Enabled = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 1
+          OnClick = B_train_deleteClick
         end
       end
     end
