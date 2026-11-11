@@ -50,8 +50,9 @@ type
       accelDistanceCm: Cardinal;
     end;
 
-    procedure LoadFromFile(filename: string);
-    procedure SaveToFile(filename: string);
+    procedure LoadFromFile(configFn: string; stateFn: string);
+    procedure SaveToFile(configFn: string);
+    procedure SaveState(stateFn: string);
   end;
 
   TFormData = class
@@ -110,8 +111,9 @@ begin
     Logging.log(_INIDATA_FN + ': neexistuje sekce ' + _INIDATA_PATHS_STATE_SECTION, llWarning);
 
   read := inidata.ReadString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', 'data\konfigurace.ini');
+  read2 := inidata.ReadString(_INIDATA_PATHS_STATE_SECTION, 'stav', 'stav\stav.ini');
   try
-    GlobalConfig.LoadFromFile(read);
+    GlobalConfig.LoadFromFile(read, read2);
   except
     on e: Exception do
       AppEvents.LogException(e);
@@ -235,7 +237,7 @@ begin
       AppEvents.LogException(e);
   end;
 
-  F_Splash.AddStav('Načítám vedlejší databáze...');
+  F_Splash.AddStav('Načítám rychlosti...');
   trakce.LoadSpeedTable('data\rychlosti.csv', F_Main.LV_DigiRych);
 end;
 
@@ -259,6 +261,7 @@ begin
 
   try
     GlobalConfig.SaveToFile(F_Main.E_configFilename.Text);
+    GlobalConfig.SaveState(F_Main.E_stateFilename.Text);
   except
     on e: Exception do
       AppEvents.LogException(e);
@@ -350,6 +353,7 @@ begin
       end;
 
       inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'konfigurace', F_Main.E_configFilename.Text);
+      inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'stav', F_Main.E_stateFilename.Text);
       inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'spnl', F_Main.E_dataload_spnl.Text);
       inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'bloky', Blocks.filename);
       inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'bloky', Blocks.fstatus);
@@ -362,15 +366,7 @@ begin
       inidata.WriteString(_INIDATA_PATHS_DATA_SECTION, 'lok', F_Main.E_dataload_RV_dir.Text);
       inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'lok', F_Main.E_dataload_RV_state.Text);
       inidata.WriteBool(_INIDATA_PATHS_LOG_SECTION, 'console', GlobalConfig.consoleLog);
-
-      var tmpStr: string;
-      if (Areas.status_filename = '') then
-        tmpStr := 'stav\or_stav.ini'
-      else
-        tmpStr := Areas.status_filename;
-
-      inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'or', tmpStr);
-
+      inidata.WriteString(_INIDATA_PATHS_STATE_SECTION, 'or', if (Areas.status_filename = '') then 'stav\or_stav.ini' else Areas.status_filename);
       inidata.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-file-loglevel', F_Main.CB_global_loglevel_file.ItemIndex);
       inidata.WriteInteger(_INIDATA_PATHS_LOG_SECTION, 'main-table-loglevel', F_Main.CB_global_loglevel_table.ItemIndex);
       inidata.WriteString(_INIDATA_PATHS_LOG_SECTION, 'main-file-sources', F_Main.GetLVChecked(F_Main.LV_LogSourcesFile));
@@ -391,37 +387,39 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TGlobalConfig.LoadFromFile(filename: string);
-var ini: TMemIniFile;
+procedure TGlobalConfig.LoadFromFile(configFn: string; stateFn: string);
+var iniConfig, iniState: TMemIniFile;
 begin
-  Log('Načítám globální konfiguraci: ' + filename, TLogLevel.llInfo, lsData);
-  F_Main.E_configFilename.Text := filename;
+  Log('Načítám globální konfiguraci: ' + configFn, TLogLevel.llInfo, lsData);
+  F_Main.E_configFilename.Text := configFn;
+  F_Main.E_stateFilename.Text := stateFn;
 
-  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+  iniConfig := TMemIniFile.Create(configFn, TEncoding.UTF8);
+  iniState := TMemIniFile.Create(stateFn, TEncoding.UTF8);
   try
-    F_Main.T_Main.Interval := ini.ReadInteger('SystemCfg', 'mainTimerIntervalMs', 100);
-    Self.autostart := ini.ReadBool('SystemCfg', 'AutSpusteni', false);
+    F_Main.T_Main.Interval := iniConfig.ReadInteger('SystemCfg', 'mainTimerIntervalMs', 100);
+    Self.autostart := iniConfig.ReadBool('SystemCfg', 'AutSpusteni', false);
     if (Self.autostart) then
       F_Main.autostart.state := asEnabled;
-    Self.scale := ini.ReadInteger('SystemCfg', 'scale', 120);
-    Self.dccStartFromPanelAfterCSSStopAllowed := ini.ReadBool('SystemCfg', 'dccStartFromPanelAfterCSSStopAllowed', False);
+    Self.scale := iniConfig.ReadInteger('SystemCfg', 'scale', 120);
+    Self.dccStartFromPanelAfterCSSStopAllowed := iniConfig.ReadBool('SystemCfg', 'dccStartFromPanelAfterCSSStopAllowed', False);
 
-    modelTime.LoadData(ini);
+    modelTime.LoadData(iniState);
     FuncNames.Clear();
-    FuncNames.Add(ini.ReadString('funcsVyznam', 'funcsVyznam', ''));
+    FuncNames.Add(iniConfig.ReadString('funcsVyznam', 'funcsVyznam', ''));
 
     for var rcsi: Integer := 0 to RCSs._RCSS_MAX do
-      F_Main.CHB_RCSs_Show_Only_Active[rcsi].Checked := ini.ReadBool('RCS'+IntToStr(rcsi), 'ShowOnlyActive', false);
+      F_Main.CHB_RCSs_Show_Only_Active[rcsi].Checked := iniConfig.ReadBool('RCS'+IntToStr(rcsi), 'ShowOnlyActive', false);
 
     try
-      PanelServer.LoadConfig(ini);
+      PanelServer.LoadConfig(iniConfig);
     except
       on E:Exception do
         AppEvents.LogException(E, 'PanelServer.LoadConfig');
     end;
 
     try
-      PtServer.LoadConfig(ini);
+      PtServer.LoadConfig(iniConfig);
     except
       on E:Exception do
         AppEvents.LogException(E, 'PtServer.LoadConfig');
@@ -429,91 +427,104 @@ begin
 
     // autosave
     begin
-      Self.autosave := ini.ReadBool('autosave', 'enabled', true);
-      var str := ini.ReadString('autosave', 'period', '00:30');
+      Self.autosave := iniConfig.ReadBool('autosave', 'enabled', true);
+      var str := iniConfig.ReadString('autosave', 'period', '00:30');
       Self.autosave_period := EncodeTime(0, StrToIntDef(LeftStr(str, 2), 1), StrToIntDef(Copy(str, 4, 2), 0), 0);
       if (Self.autosave) then
         Self.autosave_next := Now + Self.autosave_period;
     end;
 
     try
-      UDPdisc.LoadConfig(ini);
+      UDPdisc.LoadConfig(iniConfig);
     except
       on E:Exception do
         AppEvents.LogException(E, 'UDPdisc.LoadConfig');
     end;
 
     try
-      diag.LoadData(ini, 'AdminData');
-      F_Admin.LoadData(ini);
+      diag.LoadData(iniConfig, 'AdminData');
+      F_Admin.LoadData(iniConfig);
     except
       on e: Exception do
         AppEvents.LogException(e);
     end;
 
-    Self.times.rcFree := ini.ReadInteger('times', 'rcFree', _TIME_DEFAULT_RC);
-    Self.times.rcVcOccupied := ini.ReadInteger('times', 'rcVcOccupied', _TIME_DEFAULT_RC_VC);
-    Self.times.rcPcOccupied := ini.ReadInteger('times', 'rcPcOccupied', _TIME_DEFAULT_RC_PC);
-    Self.times.nuz := ini.ReadInteger('times', 'nuz', _TIME_DEFAULT_NUZ);
-    Self.times.jcReleaseZaver := SecTenthsToTime(ini.ReadString('times', 'jcReleaseZaver', _TIME_DEFAULT_JC_RELEASE_ZAVER));
+    Self.times.rcFree := iniConfig.ReadInteger('times', 'rcFree', _TIME_DEFAULT_RC);
+    Self.times.rcVcOccupied := iniConfig.ReadInteger('times', 'rcVcOccupied', _TIME_DEFAULT_RC_VC);
+    Self.times.rcPcOccupied := iniConfig.ReadInteger('times', 'rcPcOccupied', _TIME_DEFAULT_RC_PC);
+    Self.times.nuz := iniConfig.ReadInteger('times', 'nuz', _TIME_DEFAULT_NUZ);
+    Self.times.jcReleaseZaver := SecTenthsToTime(iniConfig.ReadString('times', 'jcReleaseZaver', _TIME_DEFAULT_JC_RELEASE_ZAVER));
 
-    Self.jcMaxMovingTurnouts := ini.ReadInteger('JC', 'maxMovingTurnouts', _JC_DEFAULT_MAX_MOVING_TURNOUTS);
+    Self.jcMaxMovingTurnouts := iniConfig.ReadInteger('JC', 'maxMovingTurnouts', _JC_DEFAULT_MAX_MOVING_TURNOUTS);
     if (Self.jcMaxMovingTurnouts < 1) then
       Self.jcMaxMovingTurnouts := 1;
 
-    vehicleDynamics.breakFromSpeedModelKmH := ini.ReadInteger('vehicleDynamics', 'breakFromSpeedModelKmH', _BREAK_DEFAULT_SPEED);
-    vehicleDynamics.breakDistanceCm := ini.ReadInteger('vehicleDynamics', 'breakDistanceCm', _BREAK_DEFAULT_DISTANCE);
-    vehicleDynamics.accelTargetSpeedModelKmH := ini.ReadInteger('vehicleDynamics', 'accelTargetSpeedModelKmH', _BREAK_DEFAULT_SPEED);
-    vehicleDynamics.accelDistanceCm := ini.ReadInteger('vehicleDynamics', 'accelDistanceCm', _BREAK_DEFAULT_DISTANCE);
+    vehicleDynamics.breakFromSpeedModelKmH := iniConfig.ReadInteger('vehicleDynamics', 'breakFromSpeedModelKmH', _BREAK_DEFAULT_SPEED);
+    vehicleDynamics.breakDistanceCm := iniConfig.ReadInteger('vehicleDynamics', 'breakDistanceCm', _BREAK_DEFAULT_DISTANCE);
+    vehicleDynamics.accelTargetSpeedModelKmH := iniConfig.ReadInteger('vehicleDynamics', 'accelTargetSpeedModelKmH', _BREAK_DEFAULT_SPEED);
+    vehicleDynamics.accelDistanceCm := iniConfig.ReadInteger('vehicleDynamics', 'accelDistanceCm', _BREAK_DEFAULT_DISTANCE);
 
     Log('Globální konfigurace načtena', TLogLevel.llInfo, lsData);
   finally
-    ini.Free();
+    iniConfig.Free();
+    iniState.Free();
   end;
 end;
 
-procedure TGlobalConfig.SaveToFile(filename: string);
-var ini: TMemIniFile;
+procedure TGlobalConfig.SaveToFile(configFn: string);
+var iniConfig: TMemIniFile;
 begin
-  ini := TMemIniFile.Create(filename, TEncoding.UTF8);
+  iniConfig := TMemIniFile.Create(configFn, TEncoding.UTF8);
 
   try
-    PanelServer.SaveConfig(ini);
-    modelTime.SaveData(ini);
-    UDPdisc.SaveConfig(ini);
-    PtServer.SaveConfig(ini);
+    PanelServer.SaveConfig(iniConfig);
+    UDPdisc.SaveConfig(iniConfig);
+    PtServer.SaveConfig(iniConfig);
 
-    ini.EraseSection('SystemCfg');
-    ini.WriteInteger('SystemCfg', 'mainTimerIntervalMs', F_Main.T_Main.Interval);
-    ini.WriteBool('SystemCfg', 'AutSpusteni', Self.autostart);
-    ini.WriteInteger('SystemCfg', 'scale', Self.scale);
-    ini.WriteBool('SystemCfg', 'dccStartFromPanelAfterCSSStopAllowed', Self.dccStartFromPanelAfterCSSStopAllowed);
+    iniConfig.EraseSection('SystemCfg');
+    iniConfig.WriteInteger('SystemCfg', 'mainTimerIntervalMs', F_Main.T_Main.Interval);
+    iniConfig.WriteBool('SystemCfg', 'AutSpusteni', Self.autostart);
+    iniConfig.WriteInteger('SystemCfg', 'scale', Self.scale);
+    iniConfig.WriteBool('SystemCfg', 'dccStartFromPanelAfterCSSStopAllowed', Self.dccStartFromPanelAfterCSSStopAllowed);
 
-    ini.EraseSection('autosave');
-    ini.WriteBool('autosave', 'enabled', Self.autosave);
-    ini.WriteString('autosave', 'period', FormatDateTime('nn:ss', Self.autosave_period));
+    iniConfig.EraseSection('autosave');
+    iniConfig.WriteBool('autosave', 'enabled', Self.autosave);
+    iniConfig.WriteString('autosave', 'period', FormatDateTime('nn:ss', Self.autosave_period));
 
-    ini.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.PanelStr());
+    iniConfig.WriteString('funcsVyznam', 'funcsVyznam', FuncNames.PanelStr());
 
-    ini.EraseSection('RCS'); // old section
+    iniConfig.EraseSection('RCS'); // old section
     for var rcsi: Integer := 0 to RCSs._RCSS_MAX do
-      ini.WriteBool('RCS'+IntToStr(rcsi), 'ShowOnlyActive', F_Main.CHB_RCSs_Show_Only_Active[rcsi].Checked);
+      iniConfig.WriteBool('RCS'+IntToStr(rcsi), 'ShowOnlyActive', F_Main.CHB_RCSs_Show_Only_Active[rcsi].Checked);
 
-    ini.WriteInteger('times', 'rcFree', Self.times.rcFree);
-    ini.WriteInteger('times', 'rcVcOccupied', Self.times.rcVcOccupied);
-    ini.WriteInteger('times', 'rcPcOccupied', Self.times.rcPcOccupied);
-    ini.WriteInteger('times', 'nuz', Self.times.nuz);
-    ini.WriteString('times', 'jcReleaseZaver', TimeToSecTenths(Self.times.jcReleaseZaver));
+    iniConfig.WriteInteger('times', 'rcFree', Self.times.rcFree);
+    iniConfig.WriteInteger('times', 'rcVcOccupied', Self.times.rcVcOccupied);
+    iniConfig.WriteInteger('times', 'rcPcOccupied', Self.times.rcPcOccupied);
+    iniConfig.WriteInteger('times', 'nuz', Self.times.nuz);
+    iniConfig.WriteString('times', 'jcReleaseZaver', TimeToSecTenths(Self.times.jcReleaseZaver));
 
-    ini.WriteInteger('JC', 'maxMovingTurnouts', Self.jcMaxMovingTurnouts);
+    iniConfig.WriteInteger('JC', 'maxMovingTurnouts', Self.jcMaxMovingTurnouts);
 
-    ini.WriteInteger('vehicleDynamics', 'breakFromSpeedModelKmH', vehicleDynamics.breakFromSpeedModelKmH);
-    ini.WriteInteger('vehicleDynamics', 'breakDistanceCm', vehicleDynamics.breakDistanceCm);
-    ini.WriteInteger('vehicleDynamics', 'accelTargetSpeedModelKmH', vehicleDynamics.accelTargetSpeedModelKmH);
-    ini.WriteInteger('vehicleDynamics', 'accelDistanceCm', vehicleDynamics.accelDistanceCm);
+    iniConfig.WriteInteger('vehicleDynamics', 'breakFromSpeedModelKmH', vehicleDynamics.breakFromSpeedModelKmH);
+    iniConfig.WriteInteger('vehicleDynamics', 'breakDistanceCm', vehicleDynamics.breakDistanceCm);
+    iniConfig.WriteInteger('vehicleDynamics', 'accelTargetSpeedModelKmH', vehicleDynamics.accelTargetSpeedModelKmH);
+    iniConfig.WriteInteger('vehicleDynamics', 'accelDistanceCm', vehicleDynamics.accelDistanceCm);
   finally
-    ini.UpdateFile();
-    ini.Free();
+    iniConfig.UpdateFile();
+    iniConfig.Free();
+  end;
+end;
+
+procedure TGlobalConfig.SaveState(stateFn: string);
+var iniState: TMemIniFile;
+begin
+  iniState := TMemIniFile.Create(stateFn, TEncoding.UTF8);
+
+  try
+    modelTime.SaveData(iniState);
+  finally
+    iniState.UpdateFile();
+    iniState.Free();
   end;
 end;
 

@@ -3495,7 +3495,7 @@ object F_Main: TF_Main
     Margins.Top = 2
     Margins.Right = 2
     Margins.Bottom = 2
-    ActivePage = TS_Trains
+    ActivePage = TS_Config
     Align = alClient
     MultiLine = True
     TabOrder = 2
@@ -5908,7 +5908,7 @@ object F_Main: TF_Main
         object E_configFilename: TEdit
           Left = 9
           Top = 9
-          Width = 313
+          Width = 152
           Height = 21
           Hint = 'cesta k souboru klonfigurace'
           Margins.Left = 2
@@ -5918,6 +5918,20 @@ object F_Main: TF_Main
           ParentColor = True
           ReadOnly = True
           TabOrder = 0
+        end
+        object E_stateFilename: TEdit
+          Left = 168
+          Top = 9
+          Width = 152
+          Height = 21
+          Hint = 'cesta k souboru klonfigurace'
+          Margins.Left = 2
+          Margins.Top = 2
+          Margins.Right = 2
+          Margins.Bottom = 2
+          ParentColor = True
+          ReadOnly = True
+          TabOrder = 1
         end
       end
       object P_Config: TPanel

@@ -321,6 +321,7 @@ type
     E_dataload_soupr: TEdit;
     B_train_delete: TButton;
     B_TrainEmStop: TButton;
+    E_stateFilename: TEdit;
     procedure T_MainTimer(Sender: TObject);
     procedure PM_ResetVClick(Sender: TObject);
     procedure MI_Trk_libClick(Sender: TObject);
@@ -2344,6 +2345,7 @@ begin
   try
     Config.SaveIniDataFile();
     GlobalConfig.SaveToFile(Self.E_configFilename.Text); // save funcsVyznam, ShowOnlyActive
+    GlobalConfig.SaveState(F_Main.E_stateFilename.Text);
   except
     on E: Exception do
       AppEvents.LogException(E, 'Save cfg');
