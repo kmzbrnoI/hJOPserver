@@ -647,6 +647,9 @@ begin
   for var signal in TBlkTrack(Self.front).signalJCRef do
     TBlkSignal(signal).UpdateTrainSpeed(true);
 
+  for var addr in Self.vehicles do
+    RVDb[addr].OnPredictedSignalChange();
+
   Self.changed := true;
 end;
 

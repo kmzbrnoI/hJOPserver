@@ -1962,11 +1962,10 @@ begin
 end;
 
 function TRV.PredictedSignalStr(): string;
-var signal: TBlkSignal;
 begin
-  if (Self.IsTrain()) then
+  if ((Self.IsTrain()) and (Trains[Self.train] <> nil) and (not Trains[Self.train].sideTrack)) then
   begin
-    signal := TBlkSignal(Trains[Self.train].PredictedSignal());
+    var signal: TBlkSignal := TBlkSignal(Trains[Self.train].PredictedSignal());
     if (signal <> nil) then
     begin
       var code: TBlkSignalCode := signal.targetSignal;
