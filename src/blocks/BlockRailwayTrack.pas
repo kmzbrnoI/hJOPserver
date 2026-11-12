@@ -997,11 +997,11 @@ begin
     // nastala aktivace blokove podminky
     Self.bpInBlk := true;
 
-    if ((not Self.IsTrain()) and (Self.prevRT.IsTrain())) then
+    if ((not Self.IsTrain()) and (Self.prevRT.IsTrain()) and (not Self.prevRT.train.sideTrack)) then
     begin
-      if (Self.prevRT.Train.front = Self.prevRT) then
+      if (Self.prevRT.train.front = Self.prevRT) then
       begin
-        Self.prevRT.Train.front := Self;
+        Self.prevRT.train.front := Self;
         Self.AddTrainL(Self.prevRT.trainI); // must be after setting front! must be before setting houkEvEnabled = true!
         Self.slowingReady := true;
         Self.houkEvEnabled := true;
@@ -1022,12 +1022,13 @@ begin
     end;
   end;
 
-  // uvolnovani vlaku z TU (pokud je jiz predana do dalsiho TU)
-  if ((Self.bpInBlk) and (Self.nextRT <> nil) and (Self.nextRT.Train = Self.train) and
-    (Self.occupied = TTrackState.Free) and (Self.nextRT.occupied = TTrackState.occupied)) then
+  // uvolnovani tratovych useku
+  if ((Self.bpInBlk) and (Self.nextRT <> nil) and (Self.nextRT.train = Self.train) and
+      (Self.occupied = TTrackState.Free) and (Self.nextRT.occupied = TTrackState.occupied)) then
   begin
     Self.bpInBlk := false;
-    Self.RemoveTrains();
+    if ((Self.train <> nil) and (not Self.train.sideTrack)) then
+      Self.RemoveTrains();
     if (not TBlkRailway(Self.railway).occupied) then
       TBlkRailway(Self.railway).BP := false;
   end;
