@@ -7,7 +7,7 @@ uses
   Dialogs, ExtCtrls, StdCtrls, Menus, ImgList, Buttons, ComCtrls, TrakceIFace,
   inifiles, ActnList, AppEvnts, cpuLoad, ExtDlgs, Gauges, StrUtils, RCSsc,
   ComObj, BoosterDb, System.Actions, System.ImageList, Logging, System.Diagnostics,
-  Vcl.Mask, Vcl.Samples.Spin, Generics.Collections, Vcl.NumberBox;
+  Vcl.Mask, Vcl.Samples.Spin, Generics.Collections, Vcl.NumberBox, System.Math;
 
 const
   _INIDATA_FN = 'inidata.ini';
@@ -1522,12 +1522,14 @@ begin
   Self.S_locos_acquired.Brush.Color := clBlue;
   Self.G_locos_acquired.ForeColor := clBlue;
 
-  Self.G_locos_acquired.MaxValue := 0;
-  for var addr := 0 to TRVDatabase._MAX_ADDR - 1 do
-    if (RVDb[addr] <> nil) and (RVDb[addr].ShouldAcquire()) then
-      Self.G_locos_acquired.MaxValue := Self.G_locos_acquired.MaxValue + 1;
-  if (Self.G_locos_acquired.MaxValue = 0) then
-    Self.G_locos_acquired.MaxValue := 1;
+  begin
+    var mmax: Integer := 0;
+    for var addr := 0 to TRVDatabase._MAX_ADDR - 1 do
+      if ((RVDb[addr] <> nil) and (RVDb[addr].ShouldAcquire())) then
+        Inc(mmax);
+    Self.G_locos_acquired.MaxValue := System.Math.Max(mmax, 1);
+    Self.G_locos_acquired.Progress := 0;
+  end;
 
   RVDb.TrakceAcquireAllUsed(Self.OnTrkAllAcquired, Self.OnTrkAcquireError, Self.OnTrkLocoAcquired);
 end;
@@ -1537,6 +1539,16 @@ begin
   logging.Log('Vozidla: odhlašuji...', TLogLevel.llInfo, lsTrakce, True);
   Self.S_locos_acquired.Brush.Color := clBlue;
   Self.G_locos_acquired.ForeColor := clBlue;
+
+  begin
+    var mmax: Integer := 0;
+    for var addr := 0 to TRVDatabase._MAX_ADDR - 1 do
+      if ((RVDb[addr] <> nil) and (RVDb[addr].acquired)) then
+        Inc(mmax);
+    Self.G_locos_acquired.MaxValue := System.Math.Max(mmax, 1);
+    Self.G_locos_acquired.Progress := Self.G_locos_acquired.MaxValue;
+  end;
+
   RVDb.TrakceReleaseAllUsed(Self.OnTrkAllReleased, Self.OnTrkLocoReleased);
 end;
 
