@@ -276,6 +276,7 @@ type
     function ContainsCrossing(blockid: Integer): Boolean;
     function ContainsTrain(traini: Integer): Boolean;
     function ContainsIO(blockid: Integer): Boolean;
+    function TrainFrontInPathOrSignalPath(train: TTrain): Boolean;
 
     procedure EmergencyStopTrainInVC();
 
@@ -4169,7 +4170,7 @@ begin
       begin
         var signal := Blocks.GetBlkSignalByID(Self.data.nextSignalId);
 
-        if ((signal <> nil) and (signal.IsGoSignal()) and (not train.IsPOdj(Self.lastTrack))) then
+        if ((signal <> nil) and ((signal.IsGoSignal()) and (not train.IsPOdj(Self.lastTrack)) or (not Self.TrainFrontInPathOrSignalPath(train)))) then
         begin
           // na konci JC jedeme dal
           var speed: Cardinal;
@@ -4249,5 +4250,24 @@ begin
 end;
 
 /// /////////////////////////////////////////////////////////////////////////////
+
+function TJC.TrainFrontInPathOrSignalPath(train: TTrain): Boolean;
+begin
+  for var trackZav: Integer in Self.m_data.tracks do
+  begin
+    var track: TBlkTrack := Blocks.GetBlkTrackOrRTByID(trackZav);
+    if ((track <> nil) and (track.IsTrain(train)) and (train.front = track)) then
+      Exit(True);
+  end;
+
+  if ((Self.signal <> nil) and (Self.signal.typ = TBlkType.btSignal)) then
+  begin
+    var signalTrack: TBlk := TBlkSignal(Self.signal).track;
+    if (((signalTrack.typ = btTrack) or (signalTrack.typ = btRT)) and (TBlkTrack(signalTrack).IsTrain(train)) and (train.front = signalTrack)) then
+      Exit(True);
+  end;
+
+  Result := False;
+end;
 
 end.
