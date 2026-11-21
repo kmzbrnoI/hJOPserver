@@ -1476,7 +1476,7 @@ begin
             if (stavim >= GlobalConfig.jcMaxMovingTurnouts) then
             begin
               if (nextTurnout = -1) then
-                nextTurnout := i;
+                nextTurnout := Self.m_data.turnouts.Count + i;
               continue;
             end;
             Inc(stavim);
