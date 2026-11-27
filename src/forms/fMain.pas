@@ -1663,8 +1663,8 @@ begin
   Self.A_DCC_Go.Enabled := true;
   Self.A_DCC_Stop.Enabled := true;
   Self.S_DCC.Brush.Color := clGray;
-  logging.Log('DCC: START: ERR: centrála neodpověděla na příkaz', TLogLevel.llError, lsTrakce);
-  StrMessageBox('Centrála neodpověděla na příkaz DCC START', 'Varování', MB_OK OR MB_ICONWARNING);
+  logging.Log('DCC: GO: ERR: centrála neodpověděla na příkaz', TLogLevel.llError, lsTrakce);
+  StrMessageBox('Centrála neodpověděla na příkaz DCC GO', 'Varování', MB_OK OR MB_ICONWARNING);
 end;
 
 procedure TF_Main.OnDCCStopOk(Sender: TObject; Data: Pointer);

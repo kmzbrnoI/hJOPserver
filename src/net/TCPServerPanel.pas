@@ -76,7 +76,8 @@ type
     function IsOpenned(): Boolean; // je server zapnut?
     function GetBind(): string; overload;
 
-    procedure OnDCCCmdErr(Sender: TObject; data: Pointer); // event chyby komunikace s vozidlem v automatu
+    procedure OnDCCOnCmdErr(Sender: TObject; data: Pointer);
+    procedure OnDCCOffCmdErr(Sender: TObject; data: Pointer);
     procedure CheckPing(Sender: TObject);
     procedure ProcessReceivedMessages();
     procedure OnReceiveTimerTick(Sender: TObject);
@@ -757,7 +758,7 @@ begin
     if ((parsed[2] = 'GO') and (trakce.TrackStatusSafe() <> tsOn)) then
     begin
       try
-        trakce.SetTrackStatus(tsOn, TTrakce.callback(), TTrakce.callback(Self.OnDCCCmdErr, AContext));
+        trakce.SetTrackStatus(tsOn, TTrakce.callback(), TTrakce.callback(Self.OnDCCOnCmdErr, AContext));
       except
         on E: Exception do
           Self.BottomError(AContext, E.Message, '-', 'CENTRÁLA');
@@ -766,7 +767,7 @@ begin
     begin
       Self.DCCStopped := AContext;
       try
-        trakce.SetTrackStatus(tsOff, TTrakce.callback(), TTrakce.callback(Self.OnDCCCmdErr, AContext));
+        trakce.SetTrackStatus(tsOff, TTrakce.callback(), TTrakce.callback(Self.OnDCCOffCmdErr, AContext));
       except
         on E: Exception do
           Self.BottomError(AContext, E.Message, '-', 'CENTRÁLA');
@@ -1362,9 +1363,15 @@ end;
 
 /// /////////////////////////////////////////////////////////////////////////////
 
-procedure TPanelServer.OnDCCCmdErr(Sender: TObject; data: Pointer);
+procedure TPanelServer.OnDCCOnCmdErr(Sender: TObject; data: Pointer);
 begin
-  Self.BottomError(TIdContext(data), 'Centrála neodpověděla na příkaz', '-', 'CENTRÁLA');
+  Self.BottomError(TIdContext(data), 'Centrála neodpověděla na příkaz ON', '-', 'CENTRÁLA');
+  // Do not raise emergency - ON could not be performed due to e.g. short-circuit
+end;
+
+procedure TPanelServer.OnDCCOffCmdErr(Sender: TObject; data: Pointer);
+begin
+  Self.BottomError(TIdContext(data), 'Centrála neodpověděla na příkaz OFF', '-', 'CENTRÁLA');
   trakce.emergency := True;
 end;
 
